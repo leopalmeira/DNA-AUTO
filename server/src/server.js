@@ -68,12 +68,19 @@ app.use((req, res) => {
     }
 });
 
-// Iniciar Servidor
-if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`🚀 DNA AUTO Server rodando em http://localhost:${PORT}`);
-        console.log(`🌐 Frontend disponível em http://localhost:${PORT}`);
+// Função para iniciar o servidor
+function startServer() {
+    return app.listen(PORT, '0.0.0.0', () => {
+        console.log(`🚀 DNA AUTO Server rodando na porta ${PORT}`);
+        console.log(`🌐 Frontend disponível em http://0.0.0.0:${PORT}`);
     });
 }
 
+// Iniciar Servidor automaticamente se executado diretamente
+if (require.main === module) {
+    startServer();
+}
+
 module.exports = app;
+module.exports.startServer = startServer;
+
