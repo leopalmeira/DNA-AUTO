@@ -1,0 +1,77 @@
+/* ==============================================================================
+   DNA AUTO — ESTILOS DE IMPRESSÃO (RELATÓRIO PARA VENDA & CARTAZ OFICINA)
+   ============================================================================== */
+
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt;
+    }
+
+    /* Ocultar elementos da aplicação web */
+    .top-navbar,
+    .sidebar,
+    .nav-actions,
+    .btn,
+    .mobile-menu-btn,
+    .search-lens-container,
+    .dossier-tabs-nav,
+    .modal-close-btn,
+    .modal-footer {
+        display: none !important;
+    }
+
+    .content-viewport {
+        padding: 0 !important;
+        margin: 0 !important;
+        background: #ffffff !important;
+    }
+
+    .modal-overlay {
+        position: static !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        padding: 0 !important;
+        display: block !important;
+        opacity: 1 !important;
+    }
+
+    .modal-container {
+        max-width: 100% !important;
+        max-height: none !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: #ffffff !important;
+    }
+
+    /* Layout do Relatório de Venda A4 */
+    .sale-report-document {
+        border: 2px solid #111827;
+        padding: 24px;
+        margin: 0 auto;
+        color: #111827;
+        font-family: Arial, sans-serif;
+    }
+
+    .report-header-print {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 2px solid #111827;
+        padding-bottom: 16px;
+        margin-bottom: 20px;
+    }
+
+    .report-qr-box {
+        text-align: center;
+    }
+
+    /* Layout do Cartaz da Oficina A4 */
+    .workshop-poster-a4 {
+        border: 4px solid #0088ff;
+        padding: 30px;
+        text-align: center;
+        page-break-inside: avoid;
+    }
+}

@@ -1,0 +1,818 @@
+/* ==============================================================================
+   DNA AUTO — ESTILOS DEDICADOS DO DOSSIÊ 360° DO VEÍCULO
+   ============================================================================== */
+
+/* Cabeçalho do Dossiê (Item 7) */
+.dossier-hero {
+    background: linear-gradient(180deg, var(--bg-surface-elevated), var(--bg-surface));
+    border: 1px solid var(--border-highlight);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Barra de Nova Busca Mini no topo do Dossiê carregado */
+.dossier-search-bar-mini {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+}
+
+.dossier-hero-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.dossier-hero-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Central de Busca Inicial do Dossiê (quando nenhum veículo foi buscado) */
+.dossier-search-landing {
+    padding: 20px 0 40px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.search-landing-card {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(11, 15, 25, 0.98));
+    border: 1px solid var(--border-highlight);
+    border-radius: var(--radius-lg);
+    padding: 36px 24px;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    position: relative;
+    overflow: hidden;
+}
+
+.search-landing-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--brand-primary), var(--brand-cyan));
+}
+
+.search-input-plate-group {
+    display: flex;
+    max-width: 540px;
+    margin: 24px auto 16px;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-highlight);
+}
+
+.search-input-plate-group input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: #ffffff;
+    padding: 10px 14px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.search-input-plate-group input::placeholder {
+    color: #64748b;
+    font-size: 13px;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+.search-sample-pills {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.search-sample-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.search-sample-btn:hover {
+    color: var(--brand-cyan);
+    border-color: var(--brand-cyan);
+    background: rgba(0, 212, 255, 0.08);
+}
+
+.search-pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 28px;
+    text-align: left;
+}
+
+.pillar-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 18px;
+}
+
+.pillar-card h4 {
+    font-size: 14px;
+    color: #ffffff;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pillar-card p {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* Card Lateral de Saúde do Histórico no Topo */
+.dossier-health-hero {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    min-width: 220px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.health-gauge-circle {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 2px;
+    margin: 8px 0;
+}
+
+.health-score-big {
+    font-size: 38px;
+    font-weight: 800;
+    color: var(--proof-level-4);
+    font-family: var(--font-mono);
+}
+
+.health-score-base {
+    font-size: 16px;
+    color: var(--text-dim);
+    font-weight: 600;
+}
+
+.health-status-text {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-main);
+    text-transform: uppercase;
+}
+
+.health-documented-perc {
+    font-size: 11px;
+    color: var(--brand-cyan);
+    font-weight: 600;
+    margin-top: 4px;
+}
+
+/* Contadores Resumo 360° (Item 8) */
+.dossier-counters-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.counter-chip {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 8px 12px;
+    text-align: center;
+}
+
+.counter-chip .val {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text-highlight);
+    font-family: var(--font-mono);
+}
+
+.counter-chip .lbl {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+/* 🔍 LUPA DO DOSSIÊ — BARRA DE PESQUISA INTELIGENTE (Item 11) */
+.search-lens-container {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(20, 30, 50, 0.95)) !important;
+    border: 1px solid var(--border-highlight) !important;
+    border-left: 3px solid var(--brand-cyan) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 10px 16px !important;
+    margin-bottom: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    flex-wrap: wrap !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+}
+
+.lens-icon {
+    font-size: 18px !important;
+    color: var(--brand-cyan) !important;
+    flex-shrink: 0 !important;
+}
+
+.search-lens-input {
+    flex: 1 1 280px !important;
+    min-width: 220px !important;
+    background: rgba(0, 0, 0, 0.35) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 8px 14px !important;
+    font-size: 13px !important;
+    color: #ffffff !important;
+    font-family: var(--font-sans) !important;
+    outline: none !important;
+    transition: var(--transition-fast) !important;
+}
+
+.search-lens-input:focus {
+    border-color: var(--brand-cyan) !important;
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.15) !important;
+}
+
+.search-lens-input::placeholder {
+    color: var(--text-dim) !important;
+    font-size: 13px !important;
+}
+
+.lens-examples-tags {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: wrap !important;
+    flex-shrink: 0 !important;
+}
+
+.lens-tag-chip {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--border-subtle) !important;
+    padding: 4px 10px !important;
+    border-radius: var(--radius-full) !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    color: var(--text-muted) !important;
+    cursor: pointer !important;
+    transition: var(--transition-fast) !important;
+    white-space: nowrap !important;
+    user-select: none !important;
+}
+
+.lens-tag-chip:hover {
+    color: var(--brand-cyan) !important;
+    border-color: var(--brand-cyan) !important;
+    background: rgba(0, 212, 255, 0.08) !important;
+}
+
+/* Abas de Navegação do Dossiê (Item 38) */
+.dossier-tabs-nav {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-bottom: 1px solid var(--border-subtle) !important;
+    margin-bottom: 24px !important;
+    padding: 4px 2px 8px 2px !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--border-highlight) transparent !important;
+}
+
+.dossier-tabs-nav::-webkit-scrollbar {
+    height: 5px;
+}
+
+.dossier-tabs-nav::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+}
+
+.dossier-tabs-nav::-webkit-scrollbar-thumb {
+    background: var(--border-highlight);
+    border-radius: 4px;
+}
+
+.dossier-tab-btn {
+    padding: 9px 16px !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0 !important;
+    color: var(--text-muted) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    transition: var(--transition-fast) !important;
+    outline: none !important;
+}
+
+.dossier-tab-btn:hover {
+    color: #ffffff !important;
+    background: var(--bg-surface-elevated) !important;
+    border-color: var(--border-highlight) !important;
+}
+
+.dossier-tab-btn.active {
+    color: var(--brand-cyan) !important;
+    background: var(--bg-surface-elevated) !important;
+    border-color: var(--border-highlight) !important;
+    border-bottom: 2px solid var(--brand-cyan) !important;
+    font-weight: 700 !important;
+    box-shadow: 0 -2px 10px rgba(0, 212, 255, 0.08) !important;
+}
+
+/* Linha do Tempo Cronológica (Item 10) */
+.timeline-track {
+    position: relative;
+    padding-left: 36px;
+    margin-top: 16px;
+}
+
+.timeline-track::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    left: 12px;
+    width: 2px;
+    background: var(--border-highlight);
+}
+
+.timeline-node {
+    position: relative;
+    margin-bottom: 28px;
+}
+
+.timeline-bullet {
+    position: absolute;
+    left: -36px;
+    top: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bg-surface);
+    border: 2px solid var(--brand-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    z-index: 2;
+}
+
+.timeline-bullet.proven { border-color: var(--proof-level-4); color: var(--proof-level-4); }
+.timeline-bullet.confirmed { border-color: var(--proof-level-3); color: var(--proof-level-3); }
+.timeline-bullet.declared { border-color: var(--proof-level-1); color: var(--proof-level-1); }
+
+.timeline-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 18px 22px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-fast);
+}
+
+.timeline-card:hover {
+    border-color: var(--border-highlight);
+    box-shadow: var(--shadow-md);
+}
+
+.timeline-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.timeline-km-badge {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-highlight);
+    background: var(--bg-surface-elevated);
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+}
+
+.timeline-date {
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.timeline-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 6px;
+}
+
+.timeline-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.timeline-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 10px;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+/* Galeria de Fotos das Peças e Veículo (Item 20) */
+.photos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.photo-card {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.photo-card:hover {
+    transform: scale(1.02);
+    border-color: var(--brand-cyan);
+    box-shadow: var(--shadow-md);
+}
+
+.photo-card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    display: block;
+}
+
+.photo-info {
+    padding: 10px 12px;
+}
+
+.photo-info h4 {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.photo-info p {
+    font-size: 10px;
+    color: var(--text-dim);
+}
+
+/* ==============================================================================
+   RESPONSIVIDADE MOBILE (TELAS DE CELULAR / IPHONE / ANDROID)
+   ============================================================================== */
+@media (max-width: 768px) {
+    .dossier-hero {
+        padding: 14px 12px;
+        margin-bottom: 16px;
+        border-radius: var(--radius-md);
+    }
+
+    .dossier-hero-top {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .vehicle-thumb-box {
+        width: 100% !important;
+        height: 190px !important;
+        max-height: 200px;
+        border-radius: var(--radius-md);
+        background: linear-gradient(135deg, #0b1329, #172554);
+    }
+
+    .vehicle-thumb-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .dossier-meta {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .dossier-hero-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .dossier-dna-badge-hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 4px;
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: var(--radius-md);
+        box-sizing: border-box;
+    }
+
+    .dna-code-highlight {
+        font-size: 15px;
+        word-break: break-all;
+        letter-spacing: 0.5px;
+    }
+
+    /* Botões de Ação do Hero no Mobile: Empilhados 100% de largura para toque seguro */
+    .dossier-hero-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 8px !important;
+        margin-top: 4px;
+    }
+
+    .dossier-hero-actions .btn {
+        width: 100% !important;
+        height: 44px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        padding: 0 14px !important;
+    }
+
+    .vehicle-title-row h2 {
+        font-size: 21px;
+        line-height: 1.2;
+        margin-top: 6px;
+    }
+
+    .vehicle-version-row {
+        font-size: 12px;
+        margin-top: 2px;
+    }
+
+    .vehicle-specs-tags {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-top: 12px;
+        width: 100%;
+    }
+
+    .spec-tag {
+        font-size: 11px;
+        padding: 8px 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        min-width: 0;
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .spec-tag strong {
+        font-size: 12px;
+        word-break: break-word;
+    }
+
+    .spec-tag-full {
+        grid-column: span 2;
+    }
+
+    .dossier-health-hero {
+        width: 100%;
+        min-width: 0;
+        margin-top: 10px;
+        padding: 14px;
+        box-sizing: border-box;
+    }
+
+    .health-score-big {
+        font-size: 32px;
+    }
+
+    .dossier-counters-bar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        padding: 10px 4px;
+    }
+
+    /* Adaptação de Busca Inicial no Mobile */
+    .search-input-plate-group {
+        flex-direction: column;
+        gap: 10px;
+        background: transparent;
+        border: none;
+        padding: 0;
+    }
+
+    .search-input-plate-group input {
+        width: 100%;
+        height: 48px;
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid var(--border-highlight);
+        border-radius: var(--radius-md);
+        box-sizing: border-box;
+        text-align: center;
+    }
+
+    .search-input-plate-group .btn {
+        width: 100%;
+        height: 46px;
+        font-size: 14px;
+        justify-content: center;
+    }
+
+    /* Adaptações da Área do Cliente / Garagem Digital no Celular */
+    .owner-header-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 8px !important;
+        margin-top: 10px;
+    }
+
+    .owner-header-actions .btn {
+        width: 100% !important;
+        height: 44px !important;
+        font-size: 12px !important;
+        font-weight: 700 !important;
+        justify-content: center !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .owner-hero-panel {
+        padding: 14px !important;
+    }
+
+    .owner-hero-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 14px !important;
+    }
+
+    .owner-hero-thumb {
+        width: 100% !important;
+        height: 180px !important;
+        border-radius: var(--radius-md);
+    }
+
+    .owner-specs-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+        margin-top: 10px !important;
+    }
+
+    .owner-specs-grid span {
+        background: rgba(255, 255, 255, 0.04);
+        padding: 6px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+    }
+
+    .owner-score-card {
+        width: 100% !important;
+        margin-top: 10px;
+        box-sizing: border-box;
+    }
+
+    .counter-chip {
+        padding: 8px 4px;
+    }
+
+    .counter-chip .val {
+        font-size: 16px;
+    }
+
+    .counter-chip .lbl {
+        font-size: 10px;
+    }
+
+    .dossier-tabs-nav {
+        display: flex;
+        gap: 4px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 8px;
+        margin-bottom: 16px;
+    }
+
+    .dossier-tabs-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .dossier-tab-btn {
+        font-size: 12px;
+        padding: 8px 12px;
+        flex-shrink: 0;
+    }
+
+    .lens-search-box {
+        padding: 14px;
+    }
+
+    .lens-search-bar {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .lens-search-bar input {
+        width: 100%;
+    }
+
+    .lens-filters-row {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+    }
+
+    .timeline-item {
+        padding-left: 20px;
+    }
+
+    .timeline-dot {
+        left: -6px;
+        width: 12px;
+        height: 12px;
+    }
+
+    .timeline-card {
+        padding: 14px;
+    }
+}
+

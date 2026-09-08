@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA AUTO — Identidade e Histórico Digital Permanente de Veículos</title>
+    <meta name="description" content="Cada veículo possui um DNA permanente. Toda a história do carro acompanha o veículo durante toda a sua vida útil.">
+
+    <!-- CSS do Sistema (v=4.0) -->
+    <link rel="stylesheet" href="/css/variables.css?v=4.0">
+    <link rel="stylesheet" href="/css/base.css?v=4.0">
+    <link rel="stylesheet" href="/css/components.css?v=4.0">
+    <link rel="stylesheet" href="/css/dossier.css?v=4.0">
+    <link rel="stylesheet" href="/css/print.css?v=4.0">
+</head>
+<body>
+    <div id="app-container">
+        <!-- Topo Global -->
+        <header class="top-navbar">
+            <div style="display:flex; align-items:center; gap:16px;">
+                <button id="mobile-menu-toggle" class="mobile-menu-btn" title="Menu">☰</button>
+                <div class="brand-wrapper" onclick="App.switchView('dossier', null)">
+                    <div class="brand-logo-icon">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 15c6.667-6 13.333 0 20-6"></path>
+                            <path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"></path>
+                            <path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"></path>
+                            <path d="M17 6l-2.5-2.5"></path>
+                            <path d="M14 8l-1-1"></path>
+                            <path d="M7 18l2.5 2.5"></path>
+                            <path d="M3.5 14.5l3-3"></path>
+                            <path d="M20.5 9.5l-3 3"></path>
+                            <path d="M10 16l1 1"></path>
+                        </svg>
+                    </div>
+                    <div class="brand-text-block">
+                        <h1>DNA AUTO</h1>
+                        <p>Passaporte Digital do Veículo</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indicador da Rede em Tempo Real -->
+            <div class="network-pill">
+                <div class="pulse-dot"></div>
+                <span>REDE AO VIVO: <strong>4 VEÍCULOS</strong> • <strong>5 COMPROVADOS</strong></span>
+            </div>
+
+            <!-- Ações do Topo / Sessão do Usuário Autenticado -->
+            <div class="nav-actions" id="top-nav-actions">
+                <!-- Preenchido dinamicamente por App.updateTopNavbar() -->
+                <button class="btn btn-sm btn-cyan" onclick="App.switchView('login')" title="Entrar ou Criar Conta">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                    <span>Entrar / Cadastrar</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Layout Central -->
+        <div class="main-layout">
+            <!-- Backdrop escuro para fechar o menu no celular -->
+            <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+            <!-- Sidebar Lateral Corporativa Estilo TOTVS -->
+            <aside class="sidebar">
+                <div>
+                    <!-- Badge de Módulo / Ambiente Corporativo -->
+                    <div class="sidebar-brand-badge">
+                        <span class="env-pill">
+                            <span class="pulse-dot" style="width:5px; height:5px;"></span>
+                            REDE HOMOLOGADA
+                        </span>
+                        <span class="sys-version">ERP v1.0</span>
+                    </div>
+
+                    <!-- MÓDULO 1: GESTÃO CENTRAL (ERP MATRIZ) -->
+                    <div class="nav-module-group" id="nav-module-admin">
+                        <div class="nav-section-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>
+                            <span>DNA CENTRAL (MATRIZ)</span>
+                        </div>
+                        <ul class="nav-menu">
+                            <li class="nav-item" data-view="admin">
+                                <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                <span>Painel Administrativo</span>
+                                <span class="nav-badge primary">Gestão</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- MÓDULO 2: OFICINA CREDENCIADA (SERVICE DESK) -->
+                    <div class="nav-module-group" id="nav-module-workshop">
+                        <div class="nav-section-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                            <span>OFICINA CREDENCIADA</span>
+                        </div>
+                        <ul class="nav-menu">
+                            <li class="nav-item" data-view="workshop">
+                                <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                                <span>Painel Operacional</span>
+                                <span class="nav-badge warning">1 Pendente</span>
+                            </li>
+                            <li class="nav-item" onclick="WorkshopView.openNewServiceModal()">
+                                <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                                <span>Novo Serviço Nível 4</span>
+                            </li>
+                            <li class="nav-item" onclick="PosterGenerator.open('ws_veloce')">
+                                <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="3" height="3"></rect><rect x="18" y="18" width="3" height="3"></rect></svg>
+                                <span>Cartaz QR da Oficina</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- MÓDULO 3: PORTAL DO PROPRIETÁRIO (GARAGEM DIGITAL) -->
+                    <div class="nav-module-group" id="nav-module-owner">
+                        <div class="nav-section-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            <span>PORTAL DO CLIENTE</span>
+                        </div>
+                        <ul class="nav-menu">
+                            <li class="nav-item" data-view="owner">
+                                <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L1.4 12c-.2.4-.4.9-.4 1.4V16c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><circle cx="17" cy="17" r="2"></circle></svg>
+                                <span>Garagem Digital</span>
+                                <span class="nav-badge success">95/100</span>
+                            </li>
+                            <li class="nav-item" onclick="SaleReportModal.open('veh_civic_touring')">
+                                <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                                <span>Relatório para Venda</span>
+                            </li>
+                            <li class="nav-item" onclick="OwnerView.openTransferModal('veh_civic_touring')">
+                                <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m16 3 4 4-4 4"></path><path d="M20 7H4"></path><path d="m8 21-4-4 4-4"></path><path d="M4 17h16"></path></svg>
+                                <span>Transferir Titularidade</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- MÓDULO 4: CONSULTAS (visível após login) -->
+                    <div class="nav-module-group" id="nav-module-dossier">
+                        <div class="nav-section-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <span>CONSULTAS & DOSSIÊ</span>
+                        </div>
+                        <ul class="nav-menu">
+                            <li class="nav-item" data-view="dossier">
+                                <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                <span>Consultar Placa / DNA</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Rodapé Corporativo de Sessão do Usuário Conectado -->
+                <div class="sidebar-user-session">
+                    <div class="user-session-card">
+                        <div class="user-session-avatar">
+                            <svg id="session-avatar-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="user-session-info">
+                            <div class="user-session-name" id="session-user-name">Administrador Geral</div>
+                            <div class="user-session-role" id="session-user-role">
+                                <span class="status-dot"></span>
+                                <span id="session-role-text">Matriz DNA Central</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="App.switchView('login')" title="Login / Cadastrar / Trocar de Conta" style="padding:4px 8px; font-size:10px; flex-shrink:0; border-color:rgba(255,255,255,0.15);">
+                            Acessar
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Área Central Dinâmica -->
+            <main class="content-viewport" id="view-content">
+                <!-- Conteúdo renderizado dinamicamente via JS -->
+            </main>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAIS DO SISTEMA                                                         -->
+    <!-- ========================================================================= -->
+
+    <!-- Modal 1: Oferta / Ativação de DNA ao Cliente (Item 16 e 17) -->
+    <div id="dna-offer-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Ativar DNA Permanente no Veículo</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="dna-offer-vehicle-id" />
+                <div class="alert-box alert-warning">
+                    ⚠️ <strong>Veículo Identificado:</strong> <span id="dna-offer-model-label"></span> (<span id="dna-offer-plate-label" class="mono"></span>) ainda não possui DNA AUTO.
+                </div>
+
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+                    Ao ativar o DNA, o veículo recebe um código permanente e passa a integrar a rede DNA AUTO. Selecione a modalidade comercial autorizada para este atendimento:
+                </p>
+
+                <div class="form-group">
+                    <label>Condição Comercial da Ativação:</label>
+                    <select id="dna-offer-modality" class="form-control">
+                        <option value="CAMPAIGN">🎉 Campanha Promocional da Oficina (R$ 79,00)</option>
+                        <option value="DISCOUNT_50">🏷️ Cupom de 50% de Desconto (R$ 74,50)</option>
+                        <option value="COURTESY">🎁 Cortesia Fidelidade da Oficina (R$ 0,00)</option>
+                        <option value="NORMAL">💳 Preço Padrão de Tabela (R$ 149,00)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Plano Vinculado:</label>
+                    <select id="dna-offer-plan" class="form-control">
+                        <option value="plan_workshop_promo">Campanha Oficina Credenciada (Comissão R$ 19,75)</option>
+                        <option value="plan_discount_50">Desconto 50% Especial</option>
+                        <option value="plan_courtesy">Cortesia Fidelidade</option>
+                        <option value="plan_normal">Ativação Normal</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close-btn">Cancelar</button>
+                <button class="btn btn-cyan" onclick="WorkshopView.confirmDnaActivation()">CONFIRMAR E GERAR DNA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Cadastro de Novo Serviço Comprovado (Nível 4) (Item 19 e 20) -->
+    <div id="new-service-modal" class="modal-overlay">
+        <div class="modal-container wide">
+            <div class="modal-header">
+                <h3>🔧 Registrar Novo Serviço Comprovado (Nível 4)</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <form id="new-service-form">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Veículo com DNA:</label>
+                            <select name="vehicle_id" class="form-control" required>
+                                <option value="veh_civic_touring">Honda Civic Touring (BRA2E19) - DNA Ativo</option>
+                                <option value="veh_corolla_xei">Toyota Corolla XEi (ABC1D23) - DNA Ativo</option>
+                                <option value="veh_gol_msi">VW Gol MSI (KXZ9012) - DNA Ativo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Data do Serviço:</label>
+                            <input type="date" name="service_date" class="form-control" value="2026-03-08" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Quilometragem no Odômetro:</label>
+                            <input type="number" name="mileage" class="form-control" value="128500" required />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Título do Serviço:</label>
+                            <input type="text" name="service_title" class="form-control" placeholder="Ex: Substituição de Discos e Pastilhas Dianteiras" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Categoria:</label>
+                            <select name="category" class="form-control">
+                                <option value="Freios">Freios</option>
+                                <option value="Lubrificação e Filtros">Lubrificação e Filtros</option>
+                                <option value="Motor e Arrefecimento">Motor e Arrefecimento</option>
+                                <option value="Suspensão e Direção">Suspensão e Direção</option>
+                                <option value="Câmbio e Transmissão">Câmbio e Transmissão</option>
+                                <option value="Elétrica e Ignição">Elétrica e Ignição</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Técnico Responsável:</label>
+                            <input type="text" name="responsible_technician_name" class="form-control" value="Roberto Mecânico Chefe" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descrição Detalhada do Serviço:</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="Procedimentos executados, torques aplicados e observações técnicas..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Valor Mão de Obra (R$):</label>
+                            <input type="number" name="labor_cost_cents" class="form-control" value="25000" placeholder="Ex: 25000 para R$ 250,00" />
+                        </div>
+                        <div class="form-group">
+                            <label>Garantia (Meses):</label>
+                            <input type="number" name="warranty_months" class="form-control" value="6" />
+                        </div>
+                        <div class="form-group">
+                            <label>Número da NF-e:</label>
+                            <input type="text" name="invoice_number" class="form-control" value="NF-e 009284" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>📷 Registro Fotográfico (Peça Nova/Instalada/Odômetro):</label>
+                            <input type="file" name="photos" class="form-control" accept="image/*" multiple />
+                        </div>
+                        <div class="form-group">
+                            <label>🧾 Anexar Nota Fiscal (PDF ou Imagem):</label>
+                            <input type="file" name="invoice" class="form-control" accept="image/*,application/pdf" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancelar</button>
+                    <button type="submit" class="btn btn-success">✅ SALVAR COMO SERVIÇO COMPROVADO</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 3: Transferência Segura do Veículo (Item 23) -->
+    <div id="transfer-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Transferência de Propriedade do Veículo</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="transfer-vehicle-id" />
+                <div class="alert-box alert-info">
+                    🛡️ <strong>Regra Fundamental do DNA AUTO:</strong> O DNA pertence ao veículo. Ao transferir, o novo proprietário assume a titularidade, mas o histórico completo e o código do DNA permanecem intactos.
+                </div>
+
+                <div style="border-bottom:1px solid var(--border-subtle); padding-bottom:16px; margin-bottom:16px;">
+                    <h4 style="font-size:14px; font-weight:700; margin-bottom:8px;">Passo 1: Vendedor Solicita Código</h4>
+                    <div class="form-group">
+                        <label>Quilometragem no momento da venda:</label>
+                        <input type="number" id="transfer-mileage-input" class="form-control" value="125200" />
+                    </div>
+                    <button class="btn btn-primary" onclick="OwnerView.handleRequestTransferCode()">
+                        GERAR CÓDIGO TEMPORÁRIO (6 DÍGITOS)
+                    </button>
+
+                    <div id="transfer-code-result" style="display:none; margin-top:14px; background:var(--bg-surface-elevated); padding:16px; border-radius:var(--radius-md); text-align:center;">
+                        <span style="font-size:12px; color:var(--text-muted);">CÓDIGO DE TRANSFERÊNCIA GERADO:</span>
+                        <div id="transfer-generated-code" class="mono" style="font-size:32px; font-weight:800; color:var(--brand-cyan); letter-spacing:4px; margin:8px 0;"></div>
+                        <p style="font-size:11px; color:var(--text-dim);">Envie este código ao comprador para confirmação dentro do prazo de 48 horas.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="font-size:14px; font-weight:700; margin-bottom:8px;">Passo 2: Comprador Confirma e Assume o Carro</h4>
+                    <div class="form-group">
+                        <label>Código de 6 Dígitos:</label>
+                        <input type="text" id="buyer-transfer-code-input" class="form-control mono" placeholder="Ex: 829401" maxlength="6" />
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Novo Proprietário:</label>
+                        <input type="text" id="buyer-name-input" class="form-control" placeholder="Ex: Ana Carolina Martins" />
+                    </div>
+                    <button class="btn btn-success" onclick="OwnerView.handleConfirmTransferByBuyer()">
+                        ASSUMIR VEÍCULO E PRESERVAR HISTÓRICO
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close-btn">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4: Visualização em Zoom de Foto -->
+    <div id="photo-zoom-modal" class="modal-overlay">
+        <div class="modal-container" style="max-width:800px; background:#000;">
+            <div class="modal-header" style="border-color:#222;">
+                <h3 id="photo-zoom-title" style="color:#fff;">Registro Fotográfico</h3>
+                <button class="modal-close-btn" style="color:#fff;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:0; text-align:center;">
+                <img id="photo-zoom-img" src="" alt="Zoom" style="max-width:100%; max-height:75vh; object-fit:contain; display:block; margin:0 auto;" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 5: Emissão do Relatório Oficial para Venda (Item 26) -->
+    <div id="sale-report-modal" class="modal-overlay">
+        <div class="modal-container wide">
+            <div class="modal-header" style="flex-direction:column; align-items:stretch; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                    <h3 style="margin:0; font-size:16px; font-weight:800; color:var(--text-highlight);">Relatório Oficial DNA AUTO para Venda</h3>
+                    <button class="modal-close-btn" style="font-size:24px; padding:0 6px;">&times;</button>
+                </div>
+                <div style="display:flex; gap:8px; width:100%;">
+                    <button class="btn btn-cyan btn-sm" style="flex:1; justify-content:center; font-weight:700; height:38px;" onclick="SaleReportModal.printReport()">
+                        🖨️ IMPRIMIR / SALVAR PDF
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" id="sale-report-modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Modal 6: Cartaz Imprimível da Oficina (Item 18) -->
+    <div id="poster-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header" style="flex-direction:column; align-items:stretch; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                    <h3 style="margin:0; font-size:16px; font-weight:800; color:var(--text-highlight);">Cartaz Digital e Imprimível para Oficinas</h3>
+                    <button class="modal-close-btn" style="font-size:24px; padding:0 6px;">&times;</button>
+                </div>
+                <div style="display:flex; gap:8px; width:100%;">
+                    <button class="btn btn-primary btn-sm" style="flex:1; justify-content:center; font-weight:700; height:38px;" onclick="PosterGenerator.printPoster()">
+                        🖨️ IMPRIMIR CARTAZ A4
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" id="poster-modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Modal 7: Declaração de Serviço com Peças e Nota Fiscal pelo Dono -->
+    <div id="owner-declare-modal" class="modal-overlay">
+        <div class="modal-container wide">
+            <div class="modal-header">
+                <h3>Declarar Serviço Realizado (Peças & Nota Fiscal)</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="owner-declare-form" onsubmit="OwnerView.submitDeclaredService(event)">
+                    <input type="hidden" id="owner-declare-vehicle-id" name="vehicle_id" value="veh_civic_touring" />
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">CNPJ da Oficina / Mecânica Responsável *</label>
+                            <input type="text" id="owner-declare-cnpj" name="workshop_cnpj" class="form-control" required placeholder="Ex: 12.345.678/0001-90" value="12.345.678/0001-90" />
+                            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">
+                                Dica: informe o CNPJ da Veloce (12.345.678/0001-90) para validação imediata no teste.
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">Nome Fantasia da Oficina (opcional)</label>
+                            <input type="text" id="owner-declare-wsname" name="workshop_name" class="form-control" placeholder="Ex: Veloce Auto Center Premium" value="Veloce Auto Center Premium" />
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:14px; margin-bottom:14px;">
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">Título do Serviço *</label>
+                            <input type="text" name="service_title" class="form-control" required placeholder="Ex: Troca de Amortecedores e Coxins" value="Revisão de Amortecedores e Alinhamento 3D" />
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">Data da Manutenção *</label>
+                            <input type="date" name="service_date" class="form-control" required value="2026-03-01" />
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">Quilometragem (Km) *</label>
+                            <input type="number" name="mileage" class="form-control" required value="128500" />
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:14px;">
+                        <label style="display:block; margin-bottom:4px; font-weight:600;">Descrição Detalhada do Serviço</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="Descreva os serviços executados...">Troca preventiva do par de amortecedores dianteiros com batentes, coifas e alinhamento computadorizado.</textarea>
+                    </div>
+
+                    <!-- Tabela Dinâmica de Peças Utilizadas -->
+                    <div style="margin-bottom:16px; background:var(--bg-surface); padding:14px; border-radius:8px; border:1px solid var(--border-subtle);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <strong style="font-size:13px; color:#fff;">Peças Utilizadas no Serviço</strong>
+                            <button type="button" class="btn btn-sm btn-cyan" onclick="OwnerView.addPartRow()">+ Adicionar Peça</button>
+                        </div>
+                        <div id="owner-parts-container">
+                            <div class="part-row" style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr 30px; gap:8px; margin-bottom:8px; align-items:center;">
+                                <input type="text" class="form-control part-name" placeholder="Nome da Peça (Ex: Amortecedor Dianteiro)" value="Amortecedor Dianteiro Direito Cofap" required />
+                                <input type="text" class="form-control part-mfr" placeholder="Marca (Ex: Cofap)" value="Cofap TurboGás" />
+                                <input type="text" class="form-control part-num" placeholder="Part Number" value="GP32948" />
+                                <input type="number" class="form-control part-qty" placeholder="Qtd" value="1" min="1" />
+                                <button type="button" style="background:transparent; border:none; color:var(--status-rejected); cursor:pointer; font-weight:700; font-size:16px;" onclick="this.closest('.part-row').remove()">&times;</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Anexo da Foto da Nota Fiscal -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px;">
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">Foto / PDF da Nota Fiscal (DANFE / NFS-e)</label>
+                            <input type="file" name="invoice" class="form-control" accept="image/*,.pdf" />
+                            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">A nota fiscal comprova a autenticidade e permite a validação pelo mecânico.</div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">Valor Total da Nota (R$)</label>
+                            <input type="number" step="0.01" name="total_cost_cents" class="form-control" placeholder="Ex: 850.00" value="850.00" />
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px;">
+                        <button type="button" class="btn btn-secondary modal-close-btn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" style="padding:10px 24px;">ENVIAR PARA VALIDAÇÃO DA OFICINA</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts da Aplicação (v=4.0) -->
+    <script src="/js/components/qrcode.js?v=4.0"></script>
+    <script src="/js/api.js?v=4.0"></script>
+    <script src="/js/components/dossierView.js?v=4.0"></script>
+    <script src="/js/components/workshopView.js?v=4.0"></script>
+    <script src="/js/components/ownerView.js?v=4.0"></script>
+    <script src="/js/components/adminView.js?v=4.0"></script>
+    <script src="/js/components/loginView.js?v=4.0"></script>
+    <script src="/js/components/salesPageView.js?v=4.0"></script>
+    <script src="/js/components/posterGenerator.js?v=4.0"></script>
+    <script src="/js/components/saleReportModal.js?v=4.0"></script>
+    <script src="/js/app.js?v=4.0"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+/* ==============================================================================
+   DNA AUTO — DESIGN SYSTEM TOKENS & VARIÁVEIS VISUAIS
+   Estética: Enterprise High-End / Dark Modern com Acabamento Refinado
+   ============================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root {
+    /* Paleta Principal */
+    --bg-main: #0b0f19;
+    --bg-surface: #111827;
+    --bg-surface-elevated: #1a2236;
+    --bg-surface-hover: #222d46;
+    --bg-glass: rgba(17, 24, 39, 0.75);
+    --border-subtle: #1f293d;
+    --border-highlight: #2e3d5b;
+    --border-focus: #00d4ff;
+
+    /* Acentos e Cores de Marca */
+    --brand-primary: #0088ff;
+    --brand-glow: rgba(0, 136, 255, 0.25);
+    --brand-cyan: #00d4ff;
+    --brand-cyan-glow: rgba(0, 212, 255, 0.2);
+
+    /* Níveis de Comprovação do DNA AUTO */
+    --proof-level-4: #10b981; /* Nível 4: ✅ COMPROVADO PELA OFICINA (Esmeralda) */
+    --proof-level-4-bg: rgba(16, 185, 129, 0.12);
+    --proof-level-4-border: rgba(16, 185, 129, 0.35);
+
+    --proof-level-3: #0ea5e9; /* Nível 3: ✅ CONFIRMADO PELA OFICINA (Azul Elétrico) */
+    --proof-level-3-bg: rgba(14, 165, 233, 0.12);
+    --proof-level-3-border: rgba(14, 165, 233, 0.35);
+
+    --proof-level-2: #8b5cf6; /* Nível 2: 📄 DOCUMENTADO (Roxo Suave) */
+    --proof-level-2-bg: rgba(139, 92, 246, 0.12);
+    --proof-level-2-border: rgba(139, 92, 246, 0.35);
+
+    --proof-level-1: #f59e0b; /* Nível 1: ⚠️ DECLARADO (Âmbar) */
+    --proof-level-1-bg: rgba(245, 158, 11, 0.12);
+    --proof-level-1-border: rgba(245, 158, 11, 0.35);
+
+    --status-rejected: #ef4444; /* Rejeitado / Débito (Vermelho) */
+    --status-rejected-bg: rgba(239, 68, 68, 0.12);
+
+    /* Tipografia */
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Textos */
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    --text-highlight: #ffffff;
+
+    /* Sombras e Elevações */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+    --shadow-cyan-glow: 0 0 25px rgba(0, 212, 255, 0.15);
+
+    /* Transições */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Layout */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+}

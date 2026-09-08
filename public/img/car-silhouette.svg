@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1329" />
+      <stop offset="50%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#070a13" />
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0088ff" stop-opacity="0.2" />
+      <stop offset="50%" stop-color="#00d4ff" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#0088ff" stop-opacity="0.2" />
+    </linearGradient>
+    <linearGradient id="carBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="50%" stop-color="#334155" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="lineGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00d4ff" />
+      <stop offset="100%" stop-color="#0088ff" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fundo do Card -->
+  <rect width="800" height="450" fill="url(#bgGrad)" rx="12" />
+  <circle cx="400" cy="225" r="280" fill="url(#glowGrad)" filter="blur(40px)" />
+
+  <!-- Grade sutil de fundo (estilo blueprint / tech) -->
+  <path d="M0 100 H800 M0 200 H800 M0 300 H800 M0 400 H800 M200 0 V450 M400 0 V450 M600 0 V450" stroke="rgba(255,255,255,0.03)" stroke-width="1" />
+
+  <!-- Silhueta Esportiva Moderna de Veículo -->
+  <g transform="translate(100, 110)">
+    <!-- Chassi e Carroceria Principal -->
+    <path d="M40 180 
+             C60 160, 110 130, 160 120 
+             C210 110, 240 60, 310 50 
+             C380 40, 430 45, 470 70 
+             C500 88, 520 115, 550 135 
+             C570 148, 590 165, 600 180 
+             C605 188, 595 195, 580 195 
+             L530 195 
+             C520 165, 480 145, 450 170 
+             C435 182, 430 195, 420 195 
+             L210 195 
+             C200 165, 160 145, 130 170 
+             C115 182, 110 195, 100 195 
+             L30 195 
+             C20 195, 15 190, 20 185 Z" 
+          fill="url(#carBodyGrad)" 
+          stroke="url(#lineGlow)" 
+          stroke-width="3" />
+
+    <!-- Janelas e Teto Aerodinâmico -->
+    <path d="M250 105 
+             C280 68, 330 62, 400 62 
+             C440 62, 470 78, 490 105 
+             C460 110, 360 112, 250 105 Z" 
+          fill="rgba(0, 212, 255, 0.15)" 
+          stroke="#00d4ff" 
+          stroke-width="1.8" />
+
+    <!-- Coluna da Janela -->
+    <path d="M370 62 L360 108" stroke="#00d4ff" stroke-width="1.5" stroke-opacity="0.6" />
+
+    <!-- Linha de Cintura Esportiva Luminosa -->
+    <path d="M60 155 C150 135, 300 130, 560 150" stroke="#00d4ff" stroke-width="2" stroke-linecap="round" filter="drop-shadow(0 0 6px #00d4ff)" />
+
+    <!-- Farol Dianteiro Led Neon -->
+    <path d="M570 150 L595 160 L575 165 Z" fill="#00d4ff" filter="drop-shadow(0 0 8px #00d4ff)" />
+
+    <!-- Lanterna Traseira Led Vermelha -->
+    <path d="M30 170 L50 172 L45 178 Z" fill="#ef4444" filter="drop-shadow(0 0 6px #ef4444)" />
+
+    <!-- Roda Dianteira -->
+    <g transform="translate(470, 195)">
+      <circle cx="0" cy="0" r="42" fill="#0b1329" stroke="#334155" stroke-width="4" />
+      <circle cx="0" cy="0" r="28" fill="#1e293b" stroke="#00d4ff" stroke-width="2" />
+      <circle cx="0" cy="0" r="10" fill="#00d4ff" />
+      <!-- Raios da roda -->
+      <line x1="-20" y1="0" x2="20" y2="0" stroke="#94a3b8" stroke-width="2" />
+      <line x1="0" y1="-20" x2="0" y2="20" stroke="#94a3b8" stroke-width="2" />
+      <line x1="-14" y1="-14" x2="14" y2="14" stroke="#94a3b8" stroke-width="2" />
+      <line x1="14" y1="-14" x2="-14" y2="14" stroke="#94a3b8" stroke-width="2" />
+    </g>
+
+    <!-- Roda Traseira -->
+    <g transform="translate(150, 195)">
+      <circle cx="0" cy="0" r="42" fill="#0b1329" stroke="#334155" stroke-width="4" />
+      <circle cx="0" cy="0" r="28" fill="#1e293b" stroke="#00d4ff" stroke-width="2" />
+      <circle cx="0" cy="0" r="10" fill="#00d4ff" />
+      <!-- Raios da roda -->
+      <line x1="-20" y1="0" x2="20" y2="0" stroke="#94a3b8" stroke-width="2" />
+      <line x1="0" y1="-20" x2="0" y2="20" stroke="#94a3b8" stroke-width="2" />
+      <line x1="-14" y1="-14" x2="14" y2="14" stroke="#94a3b8" stroke-width="2" />
+      <line x1="14" y1="-14" x2="-14" y2="14" stroke="#94a3b8" stroke-width="2" />
+    </g>
+  </g>
+
+  <!-- Tag Oficial DNA AUTO no canto do veículo -->
+  <rect x="30" y="30" width="130" height="28" rx="6" fill="rgba(0, 212, 255, 0.15)" stroke="#00d4ff" stroke-width="1.2" />
+  <text x="95" y="49" fill="#00d4ff" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="800" text-anchor="middle" letter-spacing="1">DNA AUTO CERTIFIED</text>
+</svg>
