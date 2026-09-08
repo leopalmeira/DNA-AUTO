@@ -1,6 +1,8 @@
 // ==============================================================================
-// DNA AUTO — TELA DE LOGIN & CADASTRO (REDESENHADA — PREMIUM VISUAL)
-// Apenas Cliente e Oficina visíveis. Admin acessa por link próprio.
+// DNA AUTO — TELA DE LOGIN & CERTIFICAÇÃO (DESIGN SYSTEM OFICIAL)
+// Fiel à referência: Automotive Technology, Fintech Premium & Cyber Security
+// Background: Fotografia automotiva de luxo com vinheta escura de alta fidelidade
+// Paleta: Amarelo DNA AUTO #FFD21C, Obsidiana #05080D, Superfícies #0A0F16 / #111923
 // ==============================================================================
 
 const LoginView = {
@@ -37,160 +39,77 @@ const LoginView = {
         if (topbar) topbar.style.display = 'none';
         if (backdrop) backdrop.style.display = 'none';
 
-        // Se é modo admin, renderiza login admin simples
+        // Se é modo admin, renderiza login admin executivo
         if (this.isAdminMode) {
             this.renderAdminLogin(container);
             return;
         }
 
+        const isOwner = this.selectedRoleTab === 'OWNER';
+
         container.innerHTML = `
-            <div class="login-fullscreen">
-                <!-- Partículas de fundo animadas -->
-                <div class="login-particles">
-                    <div class="particle p1"></div>
-                    <div class="particle p2"></div>
-                    <div class="particle p3"></div>
-                    <div class="particle p4"></div>
-                    <div class="particle p5"></div>
-                    <div class="particle p6"></div>
+            <div class="auth-fullscreen-container">
+                <!-- Barra de Status Mobile Elegante -->
+                <div class="auth-status-bar">
+                    <span class="auth-time">9:41</span>
+                    <div class="auth-status-icons">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.58 10.57 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4z"/></svg>
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17 5v14h4V5h-4zm-6 4v10h4V9h-4zm-6 5v5h4v-5H5z"/></svg>
+                    </div>
                 </div>
 
-                <!-- Glow radial central -->
-                <div class="login-glow-bg"></div>
-
-                <div class="login-center-wrapper">
-                    <!-- LOGO GRANDE E TITLE -->
-                    <div class="login-hero-header">
-                        <div class="login-logo-circle">
-                            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M2 15c6.667-6 13.333 0 20-6"></path>
-                                <path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"></path>
-                                <path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"></path>
-                                <path d="M17 6l-2.5-2.5"></path>
-                                <path d="M14 8l-1-1"></path>
-                                <path d="M7 18l2.5 2.5"></path>
-                                <path d="M3.5 14.5l3-3"></path>
-                                <path d="M20.5 9.5l-3 3"></path>
-                                <path d="M10 16l1 1"></path>
+                <div class="auth-content-box">
+                    <!-- LOGO & IDENTIDADE VISUAL CONFORME A REFERÊNCIA -->
+                    <div class="auth-brand-header">
+                        <div class="auth-emblem-wrapper">
+                            <!-- Ícone de Impressão Digital Automotiva Exata da Referência -->
+                            <svg class="auth-fingerprint-svg" viewBox="0 0 120 120" width="80" height="80" fill="none" stroke="#FFD21C" stroke-linecap="round" stroke-linejoin="round">
+                                <!-- Núcleo central da digital -->
+                                <path d="M 54 62 C 51 55 51 46 57 41 C 62 36 67 40 65 50 C 63 56 64 64 64 64" stroke-width="4.5" />
+                                <!-- Anel concêntrico interno -->
+                                <path d="M 45 66 C 41 53 41 39 50 30 C 58 21 68 21 75 30 C 82 40 82 55 77 66" stroke-width="5" />
+                                <!-- Anel concêntrico intermediário -->
+                                <path d="M 36 68 C 30 52 31 32 43 20 C 54 9 72 9 83 20 C 93 32 94 52 88 68" stroke-width="5" />
+                                <!-- Anel concêntrico externo -->
+                                <path d="M 28 70 C 21 52 23 27 36 14 C 50 1 78 1 91 14 C 103 27 105 52 98 70" stroke-width="5" />
+                                <!-- Base / Grade aerodinâmica automotiva com faróis -->
+                                <path d="M 22 84 L 32 84 C 36 78 42 75 48 75 L 72 75 C 78 75 84 78 88 84 L 98 84" stroke-width="5.5" />
+                                <circle cx="34" cy="85" r="2.5" fill="#FFD21C" stroke="none" />
+                                <circle cx="86" cy="85" r="2.5" fill="#FFD21C" stroke="none" />
                             </svg>
                         </div>
-                        <h1 class="login-title">DNA AUTO</h1>
-                        <p class="login-subtitle">Passaporte Digital do Veículo</p>
+
+                        <h1 class="auth-title">DNA <span class="text-gold">AUTO</span></h1>
+                        <p class="auth-subtitle">CERTIFICAÇÃO DE REGISTROS VEICULARES</p>
+                        <p class="auth-motto">Mais segurança, transparência e confiança em cada veículo.</p>
                     </div>
 
-                    <!-- CARD PRINCIPAL DE LOGIN -->
-                    <div class="login-card">
-                        <!-- Linha gradiente no topo -->
-                        <div class="login-card-topline"></div>
-
-                        <!-- SELETOR DE PERFIL: CLIENTE vs OFICINA -->
-                        <div class="login-role-selector">
-                            <button class="login-role-btn ${this.selectedRoleTab === 'OWNER' ? 'active owner-active' : ''}" onclick="LoginView.switchRoleTab('OWNER')">
-                                <span class="login-role-icon">🚗</span>
-                                <span class="login-role-label">Sou Cliente</span>
-                            </button>
-                            <button class="login-role-btn ${this.selectedRoleTab === 'WORKSHOP' ? 'active workshop-active' : ''}" onclick="LoginView.switchRoleTab('WORKSHOP')">
-                                <span class="login-role-icon">🔧</span>
-                                <span class="login-role-label">Oficina Parceira</span>
-                            </button>
-                        </div>
-
-                        <!-- TABS: ENTRAR vs CADASTRAR -->
-                        <div class="login-mode-tabs">
-                            <button class="login-mode-tab ${this.activeMode === 'LOGIN' ? 'active' : ''}" onclick="LoginView.switchMode('LOGIN')">
-                                Entrar
-                            </button>
-                            <button class="login-mode-tab ${this.activeMode === 'REGISTER' ? 'active' : ''}" onclick="LoginView.switchMode('REGISTER')">
-                                Cadastre-se
-                            </button>
-                            <div class="login-mode-indicator" style="transform: translateX(${this.activeMode === 'REGISTER' ? '100%' : '0'})"></div>
-                        </div>
-
-                        <!-- CONTEÚDO DINÂMICO -->
-                        <div class="login-form-area">
-                            ${this.activeMode === 'LOGIN' ? this.renderLoginForm() : this.renderRegisterForm()}
-                        </div>
+                    <!-- ÁREA DO FORMULÁRIO -->
+                    <div class="auth-card-body">
+                        ${this.activeMode === 'LOGIN' ? this.renderLoginForm() : this.renderRegisterForm()}
                     </div>
 
-                    <!-- FOOTER -->
-                    <div class="login-footer-links">
-                        <p class="login-footer-copy">© ${new Date().getFullYear()} DNA AUTO — Todos os direitos reservados</p>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Injetar CSS da tela de login se ainda não existir
-        if (!document.getElementById('login-premium-css')) {
-            this.injectCSS();
-        }
-    },
-
-    renderAdminLogin(container) {
-        container.innerHTML = `
-            <div class="login-fullscreen login-admin-bg">
-                <div class="login-particles">
-                    <div class="particle p1"></div>
-                    <div class="particle p2"></div>
-                    <div class="particle p3"></div>
-                </div>
-                <div class="login-glow-bg" style="background: radial-gradient(ellipse at center, rgba(245,158,11,0.1) 0%, transparent 65%);"></div>
-
-                <div class="login-center-wrapper">
-                    <div class="login-hero-header">
-                        <div class="login-logo-circle" style="background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 0 35px rgba(245,158,11,0.35);">
-                            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0b0f19" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                            </svg>
-                        </div>
-                        <h1 class="login-title">DNA CENTRAL</h1>
-                        <p class="login-subtitle" style="color:#f59e0b; letter-spacing:2px;">Governança Matriz — Acesso Restrito</p>
-                    </div>
-
-                    <div class="login-card" style="border-color: rgba(245,158,11,0.3);">
-                        <div class="login-card-topline" style="background: linear-gradient(90deg, #d97706, #f59e0b, #fbbf24);"></div>
-                        
-                        <div style="padding: 6px 0 16px; text-align: center;">
-                            <span style="display:inline-flex; align-items:center; gap:8px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); padding:6px 16px; border-radius:var(--radius-sm); font-size:11px; font-weight:700; color:#fbbf24; text-transform:uppercase; letter-spacing:0.8px;">
-                                🛡️ Terminal de Gestão Governança
-                            </span>
-                        </div>
-
-                        <form id="admin-login-form" onsubmit="LoginView.handleAdminLogin(event)">
-                            <div class="login-field-group">
-                                <label class="login-field-label">E-mail Corporativo</label>
-                                <input type="email" id="admin-login-email" class="login-field-input" required
-                                       placeholder="admin@dnaauto.com.br" autocomplete="email" />
-                            </div>
-                            <div class="login-field-group">
-                                <label class="login-field-label">Chave Master de Acesso</label>
-                                <input type="password" id="admin-login-password" class="login-field-input" required
-                                       placeholder="••••••••" autocomplete="current-password" />
-                            </div>
-                            <button type="submit" class="login-submit-btn" id="admin-submit-btn" style="background: linear-gradient(135deg, #d97706, #f59e0b); color:#0b0f19; font-weight:800; box-shadow: 0 4px 15px rgba(245,158,11,0.3);">
-                                ACESSAR PAINEL ADMINISTRATIVO
+                    <!-- ACESSO DEMO RÁPIDO (PRÁTICO & DISCRETO) -->
+                    <div class="auth-demo-bar">
+                        <div class="auth-demo-label">⚡ Acesso Rápido para Avaliação:</div>
+                        <div class="auth-demo-buttons">
+                            <button type="button" class="auth-demo-pill ${isOwner ? 'active' : ''}" onclick="LoginView.quickLogin('OWNER')">
+                                🚗 Cliente (Carlos)
                             </button>
-                        </form>
-
-                        <div style="text-align:center; margin-top:18px;">
-                            <a href="javascript:void(0)" onclick="LoginView.isAdminMode=false; LoginView.render()" style="color:#94a3b8; font-size:12px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
-                                ← Voltar ao Portal Geral
+                            <button type="button" class="auth-demo-pill ${!isOwner ? 'active' : ''}" onclick="LoginView.quickLogin('WORKSHOP')">
+                                🔧 Oficina (Veloce)
+                            </button>
+                            <a href="/admin" class="auth-demo-pill admin-pill">
+                                🛡️ Admin Governança
                             </a>
                         </div>
-
-                        <!-- Demo rápido admin -->
-                        <div style="margin-top:16px; padding:12px; background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.2); border-radius:var(--radius-sm); text-align:center;">
-                            <span style="font-size:11px; color:#94a3b8; font-family:var(--font-mono);">Credencial: admin@dnaauto.com.br / admin123</span>
-                            <button type="button" onclick="LoginView.quickLogin('ADMIN')" style="display:block; margin:8px auto 0; padding:6px 20px; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.35); color:#fbbf24; border-radius:var(--radius-sm); cursor:pointer; font-size:11px; font-weight:700;">
-                                ⚡ Autenticar Demo Master
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
         `;
 
-        if (!document.getElementById('login-premium-css')) {
+        if (!document.getElementById('login-automotive-luxury-css')) {
             this.injectCSS();
         }
     },
@@ -201,146 +120,252 @@ const LoginView = {
 
         return `
             <form id="login-form" onsubmit="LoginView.handleSubmit(event)">
-                <div class="login-field-group">
-                    <label class="login-field-label">E-mail</label>
-                    <input type="email" id="login-email" class="login-field-input" required
-                           placeholder="${isOwner ? 'seuemail@provedor.com' : 'contato@minhaoficina.com.br'}"
-                           autocomplete="email" />
+                <!-- CAMPO 1: E-MAIL OU USUÁRIO COM ÍCONE -->
+                <div class="auth-input-group">
+                    <div class="auth-input-icon">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <input type="text" id="login-email" class="auth-input" required
+                           value="${cred.email}"
+                           placeholder="E-mail ou usuário"
+                           autocomplete="username" />
                 </div>
 
-                <div class="login-field-group">
-                    <label class="login-field-label">Senha</label>
-                    <input type="password" id="login-password" class="login-field-input" required
-                           placeholder="••••••••" autocomplete="current-password" />
+                <!-- CAMPO 2: SENHA COM ÍCONE DE CADEADO E TOGGLE DO OLHO -->
+                <div class="auth-input-group">
+                    <div class="auth-input-icon">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <input type="password" id="login-password" class="auth-input" required
+                           value="${cred.password}"
+                           placeholder="Senha"
+                           autocomplete="current-password" />
+                    <button type="button" class="auth-eye-btn" onclick="LoginView.togglePasswordVisibility()" title="Mostrar/Ocultar Senha">
+                        <svg id="password-eye-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
                 </div>
 
-                <button type="submit" class="login-submit-btn" id="login-submit-btn">
-                    ${isOwner ? '🚗  ENTRAR NA MINHA GARAGEM' : '🔧  ENTRAR NO PAINEL DA OFICINA'}
+                <!-- LEMBRAR DE MIM & ESQUECI MINHA SENHA -->
+                <div class="auth-options-row">
+                    <label class="auth-checkbox-label">
+                        <input type="checkbox" id="auth-remember-me" checked class="auth-custom-checkbox" />
+                        <span class="auth-checkbox-custom"></span>
+                        <span class="auth-remember-text">Lembrar de mim</span>
+                    </label>
+                    <a href="javascript:void(0)" onclick="alert('Recuperação de Acesso: Instruções de segurança foram simuladas para seu e-mail cadastrado.')" class="auth-forgot-link">
+                        Esqueci minha senha
+                    </a>
+                </div>
+
+                <!-- BOTÃO PRINCIPAL: AMARELO DNA AUTO COM SETA -->
+                <button type="submit" class="auth-btn-primary" id="login-submit-btn">
+                    <span class="auth-btn-arrow">→</span>
+                    <span>Entrar</span>
                 </button>
             </form>
 
-            <!-- DEMO quick access -->
-            <div class="login-demo-box">
-                <div class="login-demo-header">
-                    <span>🔑 Acesso Demo</span>
-                    <span class="login-demo-badge">TESTE</span>
+            <!-- DIVISOR "ou" -->
+            <div class="auth-divider">
+                <span class="auth-divider-line"></span>
+                <span class="auth-divider-text">ou</span>
+                <span class="auth-divider-line"></span>
+            </div>
+
+            <!-- BOTÃO SECUNDÁRIO: ACESSAR COMO OFICINA / CLIENTE -->
+            <button type="button" class="auth-btn-secondary" onclick="LoginView.toggleRole()">
+                <div class="auth-secondary-icon">
+                    ${isOwner ? `
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                            <line x1="9" y1="22" x2="9" y2="22.01"></line>
+                            <line x1="15" y1="22" x2="15" y2="22.01"></line>
+                            <line x1="9" y1="6" x2="9" y2="6.01"></line>
+                            <line x1="15" y1="6" x2="15" y2="6.01"></line>
+                            <line x1="9" y1="10" x2="9" y2="10.01"></line>
+                            <line x1="15" y1="10" x2="15" y2="10.01"></line>
+                            <line x1="9" y1="14" x2="9" y2="14.01"></line>
+                            <line x1="15" y1="14" x2="15" y2="14.01"></line>
+                        </svg>
+                    ` : `
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L1.4 12c-.2.4-.4.9-.4 1.4V16c0 .6.4 1 1 1h2"></path>
+                            <circle cx="7" cy="17" r="2"></circle>
+                            <circle cx="17" cy="17" r="2"></circle>
+                        </svg>
+                    `}
                 </div>
-                <div class="login-demo-credentials">
-                    <span><strong style="color:#f8fafc;">${cred.email}</strong></span>
-                    <span style="color:#10b981;font-family:var(--font-mono);font-weight:600;">${cred.password}</span>
-                </div>
-                <button type="button" class="login-demo-btn" onclick="LoginView.quickLogin('${this.selectedRoleTab}')">
-                    ⚡ Entrar com 1 Clique
-                </button>
+                <span>${isOwner ? 'Acessar como oficina' : 'Acessar como cliente'}</span>
+            </button>
+
+            <!-- SOLICITAR ACESSO / CADASTRO -->
+            <div class="auth-footer-prompt">
+                <span>Ainda não tem uma conta?</span>
+                <a href="javascript:void(0)" onclick="LoginView.switchMode('REGISTER')" class="auth-link-gold">
+                    Solicitar acesso
+                </a>
             </div>
         `;
     },
 
     renderRegisterForm() {
-        if (this.selectedRoleTab === 'WORKSHOP') {
-            return `
-                <form id="register-ws-form" onsubmit="LoginView.handleRegisterWorkshop(event)">
-                    <div class="login-field-group">
-                        <label class="login-field-label">Nome Fantasia da Oficina *</label>
-                        <input type="text" id="reg-ws-trade" class="login-field-input" required placeholder="Ex: Auto Mecânica Premium" />
-                    </div>
+        const isOwner = this.selectedRoleTab === 'OWNER';
 
-                    <div class="login-field-row">
-                        <div class="login-field-group">
-                            <label class="login-field-label">CNPJ *</label>
-                            <input type="text" id="reg-ws-cnpj" class="login-field-input" required placeholder="00.000.000/0001-00" />
+        return `
+            <div class="auth-register-header">
+                <h3 style="font-size:18px; color:#ffffff; font-weight:700; margin-bottom:4px;">
+                    ${isOwner ? 'Cadastrar como Cliente' : 'Credenciar Nova Oficina'}
+                </h3>
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:18px;">
+                    ${isOwner ? 'Tenha o histórico permanente e certificado de todos os seus carros.' : 'Emita laudos e certificações oficiais Nível 4 na rede DNA AUTO.'}
+                </p>
+            </div>
+
+            ${isOwner ? `
+                <form id="register-client-form" onsubmit="LoginView.handleRegisterClient(event)">
+                    <div class="auth-input-group">
+                        <input type="text" id="reg-client-name" class="auth-input" required placeholder="Nome Completo *" />
+                    </div>
+                    <div class="auth-input-group">
+                        <input type="email" id="reg-client-email" class="auth-input" required placeholder="Seu E-mail *" />
+                    </div>
+                    <div class="auth-input-row">
+                        <div class="auth-input-group">
+                            <input type="text" id="reg-client-phone" class="auth-input" required placeholder="WhatsApp *" />
                         </div>
-                        <div class="login-field-group">
-                            <label class="login-field-label">WhatsApp *</label>
-                            <input type="text" id="reg-ws-phone" class="login-field-input" required placeholder="(11) 98888-7777" />
-                        </div>
-                    </div>
-
-                    <div class="login-field-group">
-                        <label class="login-field-label">Responsável Técnico *</label>
-                        <input type="text" id="reg-ws-technician" class="login-field-input" required placeholder="Nome do mecânico chefe" />
-                    </div>
-
-                    <div class="login-field-group">
-                        <label class="login-field-label">E-mail Comercial *</label>
-                        <input type="email" id="reg-ws-email" class="login-field-input" required placeholder="contato@minhaoficina.com.br" />
-                    </div>
-
-                    <div class="login-field-row">
-                        <div class="login-field-group">
-                            <label class="login-field-label">Cidade *</label>
-                            <input type="text" id="reg-ws-city" class="login-field-input" required placeholder="São Paulo" value="São Paulo" />
-                        </div>
-                        <div class="login-field-group" style="max-width:100px;">
-                            <label class="login-field-label">UF *</label>
-                            <input type="text" id="reg-ws-state" class="login-field-input" required placeholder="SP" value="SP" maxlength="2" style="text-transform:uppercase;" />
+                        <div class="auth-input-group">
+                            <input type="text" id="reg-client-cpf" class="auth-input" placeholder="CPF (opcional)" />
                         </div>
                     </div>
-
-                    <div class="login-field-row">
-                        <div class="login-field-group">
-                            <label class="login-field-label">Criar Senha *</label>
-                            <input type="password" id="reg-ws-password" class="login-field-input" required placeholder="Mín. 6 dígitos" minlength="6" />
+                    <div class="auth-input-row">
+                        <div class="auth-input-group">
+                            <input type="password" id="reg-client-password" class="auth-input" required placeholder="Senha *" minlength="6" />
                         </div>
-                        <div class="login-field-group">
-                            <label class="login-field-label">Confirmar *</label>
-                            <input type="password" id="reg-ws-confirm" class="login-field-input" required placeholder="Repita a senha" minlength="6" />
+                        <div class="auth-input-group">
+                            <input type="password" id="reg-client-confirm" class="auth-input" required placeholder="Confirmar Senha *" minlength="6" />
                         </div>
                     </div>
-
-                    <button type="submit" class="login-submit-btn login-submit-green">
-                        🏭  CREDENCIAR OFICINA & ENTRAR
+                    <button type="submit" class="auth-btn-primary" style="margin-top:10px;">
+                        <span>Finalizar Cadastro & Acessar</span>
                     </button>
                 </form>
-            `;
-        }
-
-        // CADASTRO CLIENTE
-        return `
-            <form id="register-client-form" onsubmit="LoginView.handleRegisterClient(event)">
-                <div class="login-field-group">
-                    <label class="login-field-label">Seu Nome Completo *</label>
-                    <input type="text" id="reg-client-name" class="login-field-input" required placeholder="Ex: Roberto Carlos de Abreu" />
-                </div>
-
-                <div class="login-field-row">
-                    <div class="login-field-group">
-                        <label class="login-field-label">CPF (Opcional)</label>
-                        <input type="text" id="reg-client-cpf" class="login-field-input" placeholder="000.000.000-00" />
+            ` : `
+                <form id="register-ws-form" onsubmit="LoginView.handleRegisterWorkshop(event)">
+                    <div class="auth-input-group">
+                        <input type="text" id="reg-ws-trade" class="auth-input" required placeholder="Nome Fantasia da Oficina *" />
                     </div>
-                    <div class="login-field-group">
-                        <label class="login-field-label">WhatsApp *</label>
-                        <input type="text" id="reg-client-phone" class="login-field-input" required placeholder="(11) 97777-6666" />
+                    <div class="auth-input-row">
+                        <div class="auth-input-group">
+                            <input type="text" id="reg-ws-cnpj" class="auth-input" required placeholder="CNPJ *" />
+                        </div>
+                        <div class="auth-input-group">
+                            <input type="text" id="reg-ws-phone" class="auth-input" required placeholder="WhatsApp Comercial *" />
+                        </div>
                     </div>
-                </div>
-
-                <div class="login-field-group">
-                    <label class="login-field-label">Seu E-mail *</label>
-                    <input type="email" id="reg-client-email" class="login-field-input" required placeholder="seuemail@provedor.com" />
-                </div>
-
-                <div class="login-field-row">
-                    <div class="login-field-group">
-                        <label class="login-field-label">Criar Senha *</label>
-                        <input type="password" id="reg-client-password" class="login-field-input" required placeholder="Mín. 6 dígitos" minlength="6" />
+                    <div class="auth-input-group">
+                        <input type="text" id="reg-ws-technician" class="auth-input" required placeholder="Responsável Técnico *" />
                     </div>
-                    <div class="login-field-group">
-                        <label class="login-field-label">Confirmar *</label>
-                        <input type="password" id="reg-client-confirm" class="login-field-input" required placeholder="Repita a senha" minlength="6" />
+                    <div class="auth-input-group">
+                        <input type="email" id="reg-ws-email" class="auth-input" required placeholder="E-mail Comercial *" />
                     </div>
-                </div>
+                    <div class="auth-input-row">
+                        <div class="auth-input-group">
+                            <input type="password" id="reg-ws-password" class="auth-input" required placeholder="Criar Senha *" minlength="6" />
+                        </div>
+                        <div class="auth-input-group">
+                            <input type="password" id="reg-ws-confirm" class="auth-input" required placeholder="Confirmar *" minlength="6" />
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-btn-primary" style="margin-top:10px;">
+                        <span>Credenciar Oficina & Entrar</span>
+                    </button>
+                </form>
+            `}
 
-                <button type="submit" class="login-submit-btn">
-                    🚗  CRIAR CONTA & ACESSAR GARAGEM
-                </button>
-            </form>
+            <div style="text-align:center; margin-top:18px;">
+                <a href="javascript:void(0)" onclick="LoginView.switchMode('LOGIN')" style="color:#94a3b8; font-size:13px; text-decoration:none;">
+                    ← Voltar para a tela de Login
+                </a>
+            </div>
         `;
     },
 
-    // ── Ações ──
+    renderAdminLogin(container) {
+        container.innerHTML = `
+            <div class="auth-fullscreen-container admin-governance-mode">
+                <div class="auth-status-bar">
+                    <span class="auth-time" style="color:#FFD21C;">TERMINAL DE GOVERNANÇA</span>
+                    <div class="auth-status-icons">
+                        <span style="font-size:10px; font-weight:700; color:#10b981; border:1px solid #10b981; padding:2px 6px; border-radius:4px;">SSL SECURE</span>
+                    </div>
+                </div>
 
-    switchRoleTab(role) {
-        this.selectedRoleTab = role;
+                <div class="auth-content-box" style="max-width: 420px;">
+                    <div class="auth-brand-header">
+                        <div class="auth-emblem-wrapper" style="filter: drop-shadow(0 0 20px rgba(255, 210, 28, 0.4));">
+                            <svg viewBox="0 0 24 24" width="60" height="60" fill="none" stroke="#FFD21C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            </svg>
+                        </div>
+                        <h1 class="auth-title">DNA <span class="text-gold">CENTRAL</span></h1>
+                        <p class="auth-subtitle" style="color:#FFD21C;">PAINEL DE GOVERNANÇA & AUDITORIA</p>
+                        <p class="auth-motto">Acesso restrito à Diretoria e Administradores da Rede.</p>
+                    </div>
+
+                    <div class="auth-card-body">
+                        <form id="admin-login-form" onsubmit="LoginView.handleAdminLogin(event)">
+                            <div class="auth-input-group">
+                                <div class="auth-input-icon">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                </div>
+                                <input type="email" id="admin-login-email" class="auth-input" required
+                                       placeholder="admin@dnaauto.com.br" value="admin@dnaauto.com.br" autocomplete="email" />
+                            </div>
+
+                            <div class="auth-input-group">
+                                <div class="auth-input-icon">
+                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                </div>
+                                <input type="password" id="admin-login-password" class="auth-input" required
+                                       placeholder="••••••••" value="admin123" autocomplete="current-password" />
+                                <button type="button" class="auth-eye-btn" onclick="LoginView.togglePasswordVisibility()">
+                                    <svg id="password-eye-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                </button>
+                            </div>
+
+                            <button type="submit" class="auth-btn-primary" id="admin-submit-btn" style="margin-top:8px;">
+                                <span class="auth-btn-arrow">🛡️</span>
+                                <span>Autenticar Terminal Master</span>
+                            </button>
+                        </form>
+
+                        <div style="text-align:center; margin-top:20px;">
+                            <a href="javascript:void(0)" onclick="LoginView.isAdminMode=false; LoginView.render()" style="color:#94a3b8; font-size:12px; text-decoration:none;">
+                                ← Retornar ao Portal DNA AUTO
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        if (!document.getElementById('login-automotive-luxury-css')) {
+            this.injectCSS();
+        }
+    },
+
+    // ── Métodos de Interação ──
+
+    toggleRole() {
+        this.selectedRoleTab = this.selectedRoleTab === 'OWNER' ? 'WORKSHOP' : 'OWNER';
         this.render();
     },
 
@@ -349,13 +374,34 @@ const LoginView = {
         this.render();
     },
 
+    togglePasswordVisibility() {
+        const input = document.getElementById('login-password') || document.getElementById('admin-login-password');
+        const eyeIcon = document.getElementById('password-eye-icon');
+        if (!input) return;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (eyeIcon) {
+                eyeIcon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`;
+            }
+        } else {
+            input.type = 'password';
+            if (eyeIcon) {
+                eyeIcon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
+            }
+        }
+    },
+
     async handleSubmit(e) {
         e.preventDefault();
         const email = document.getElementById('login-email').value.trim();
         const password = document.getElementById('login-password').value.trim();
         const btn = document.getElementById('login-submit-btn');
 
-        if (btn) { btn.disabled = true; btn.textContent = 'Autenticando...'; }
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="auth-spinner"></span> <span>Validando DNA...</span>`;
+        }
 
         try {
             const res = await API.login(email, password);
@@ -366,8 +412,11 @@ const LoginView = {
             App.loginAs(res.user.role_code, res.user);
         } catch (err) {
             console.error('Falha no login:', err);
-            if (btn) { btn.disabled = false; btn.textContent = 'ENTRAR'; }
-            alert('❌ E-mail ou senha inválidos. Verifique suas credenciais.');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<span class="auth-btn-arrow">→</span> <span>Entrar</span>`;
+            }
+            alert('❌ E-mail ou senha inválidos. Verifique os dados ou utilize o Acesso Demo abaixo.');
         }
     },
 
@@ -377,13 +426,19 @@ const LoginView = {
         const password = document.getElementById('admin-login-password').value.trim();
         const btn = document.getElementById('admin-submit-btn');
 
-        if (btn) { btn.disabled = true; btn.textContent = 'Autenticando...'; }
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="auth-spinner"></span> <span>Autenticando Master...</span>`;
+        }
 
         try {
             const res = await API.login(email, password);
             if (res.user.role_code !== 'ADMIN') {
-                alert('⛔ Esta conta não possui permissão de Administrador.');
-                if (btn) { btn.disabled = false; btn.textContent = 'ACESSAR PAINEL ADMIN'; }
+                alert('⛔ Esta conta não possui credencial de Administrador Master.');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<span class="auth-btn-arrow">🛡️</span> <span>Autenticar Terminal Master</span>`;
+                }
                 return;
             }
             API.setToken(res.token);
@@ -394,8 +449,11 @@ const LoginView = {
             App.loginAs('ADMIN', res.user);
         } catch (err) {
             console.error('Falha no login admin:', err);
-            if (btn) { btn.disabled = false; btn.textContent = 'ACESSAR PAINEL ADMIN'; }
-            alert('❌ Credenciais administrativas inválidas.');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<span class="auth-btn-arrow">🛡️</span> <span>Autenticar Terminal Master</span>`;
+            }
+            alert('❌ Credencial administrativa incorreta.');
         }
     },
 
@@ -410,7 +468,6 @@ const LoginView = {
             this.restoreLayout();
             App.loginAs(res.user.role_code, res.user);
         } catch (err) {
-            // Fallback offline
             if (role === 'OWNER') {
                 API.setDemoUser('usr_owner_carlos');
                 this.restoreLayout();
@@ -436,14 +493,14 @@ const LoginView = {
         const password = document.getElementById('reg-client-password').value;
         const confirm = document.getElementById('reg-client-confirm').value;
 
-        if (password !== confirm) { alert('As senhas não coincidem.'); return; }
+        if (password !== confirm) { alert('As senhas digitadas não coincidem.'); return; }
 
         try {
             const res = await API.registerClient({ name, email, password, phone, cpf });
             API.setToken(res.token);
             API.setDemoUser(res.user.id);
             localStorage.setItem('dna_token', res.token);
-            alert(`🎉 Bem-vindo ao DNA AUTO, ${res.user.name}!`);
+            alert(`🎉 Bem-vindo ao DNA AUTO, ${res.user.name}! Sua Garagem Digital foi criada.`);
             this.restoreLayout();
             App.loginAs('OWNER', res.user);
         } catch (err) {
@@ -458,19 +515,17 @@ const LoginView = {
         const phone = document.getElementById('reg-ws-phone').value.trim();
         const technicianName = document.getElementById('reg-ws-technician').value.trim();
         const email = document.getElementById('reg-ws-email').value.trim();
-        const city = document.getElementById('reg-ws-city').value.trim();
-        const state = document.getElementById('reg-ws-state').value.trim();
         const password = document.getElementById('reg-ws-password').value;
         const confirm = document.getElementById('reg-ws-confirm').value;
 
-        if (password !== confirm) { alert('As senhas não coincidem.'); return; }
+        if (password !== confirm) { alert('As senhas digitadas não coincidem.'); return; }
 
         try {
-            const res = await API.registerWorkshop({ tradeName, cnpj, phone, technicianName, email, city, state, password });
+            const res = await API.registerWorkshop({ tradeName, cnpj, phone, technicianName, email, city: 'São Paulo', state: 'SP', password });
             API.setToken(res.token);
             API.setDemoUser(res.user.id);
             localStorage.setItem('dna_token', res.token);
-            alert(`🏢 Oficina credenciada com sucesso!`);
+            alert(`🏢 Oficina parceira credenciada com sucesso!`);
             this.isAdminMode = false;
             this.restoreLayout();
             App.loginAs('WORKSHOP_OWNER', res.user);
@@ -479,7 +534,6 @@ const LoginView = {
         }
     },
 
-    // Restaura sidebar e header após login
     restoreLayout() {
         const sidebar = document.querySelector('.sidebar');
         const topbar = document.querySelector('.top-navbar');
@@ -489,332 +543,432 @@ const LoginView = {
         if (backdrop) backdrop.style.display = '';
     },
 
-    // ── CSS Premium Injection ──
+    // ── CSS Oficial do Design da Referência ──
     injectCSS() {
         const style = document.createElement('style');
-        style.id = 'login-premium-css';
+        style.id = 'login-automotive-luxury-css';
         style.textContent = `
-            /* ===== TELA DE LOGIN FULLSCREEN PREMIUM ===== */
-            .login-fullscreen {
+            /* CONTAINER FULLSCREEN COM BACKDROP AUTOMOTIVO DE LUXO */
+            .auth-fullscreen-container {
                 position: fixed;
                 inset: 0;
-                z-index: 9999;
-                background: #050816;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                overflow-y: auto;
-                font-family: var(--font-sans);
-            }
-            .login-admin-bg { background: #070a12; }
-
-            /* Partículas flutuantes */
-            .login-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
-            .particle {
-                position: absolute;
-                border-radius: 50%;
-                opacity: 0.3;
-                animation: floatParticle 20s infinite ease-in-out;
-            }
-            .p1 { width:300px; height:300px; background:radial-gradient(circle, rgba(0,136,255,0.15), transparent 70%); top:-5%; left:10%; animation-delay:0s; }
-            .p2 { width:200px; height:200px; background:radial-gradient(circle, rgba(0,212,255,0.1), transparent 70%); top:60%; right:5%; animation-delay:-5s; }
-            .p3 { width:250px; height:250px; background:radial-gradient(circle, rgba(16,185,129,0.1), transparent 70%); bottom:10%; left:30%; animation-delay:-10s; }
-            .p4 { width:150px; height:150px; background:radial-gradient(circle, rgba(2,132,199,0.1), transparent 70%); top:20%; right:20%; animation-delay:-3s; }
-            .p5 { width:180px; height:180px; background:radial-gradient(circle, rgba(0,136,255,0.08), transparent 70%); bottom:30%; left:5%; animation-delay:-7s; }
-            .p6 { width:120px; height:120px; background:radial-gradient(circle, rgba(0,212,255,0.08), transparent 70%); top:40%; left:60%; animation-delay:-12s; }
-
-            @keyframes floatParticle {
-                0%, 100% { transform: translate(0, 0) scale(1); }
-                25% { transform: translate(30px, -40px) scale(1.1); }
-                50% { transform: translate(-20px, 30px) scale(0.95); }
-                75% { transform: translate(40px, 20px) scale(1.05); }
-            }
-
-            .login-glow-bg {
-                position: absolute;
-                inset: 0;
-                background: radial-gradient(ellipse at center top, rgba(0,136,255,0.08) 0%, transparent 60%);
-                pointer-events: none;
-            }
-
-            .login-center-wrapper {
-                position: relative;
-                z-index: 2;
-                width: 100%;
-                max-width: 440px;
-                padding: 30px 20px;
-            }
-
-            /* HERO HEADER */
-            .login-hero-header { text-align: center; margin-bottom: 28px; }
-            .login-logo-circle {
-                width: 70px; height: 70px;
-                margin: 0 auto 16px;
-                background: linear-gradient(135deg, #0088ff, #00d4ff);
-                border-radius: 18px;
-                display: flex; align-items: center; justify-content: center;
-                box-shadow: 0 0 40px rgba(0,136,255,0.4), 0 0 80px rgba(0,212,255,0.15);
-                animation: logoPulse 3s ease-in-out infinite;
-            }
-            @keyframes logoPulse {
-                0%, 100% { box-shadow: 0 0 40px rgba(0,136,255,0.4), 0 0 80px rgba(0,212,255,0.15); }
-                50% { box-shadow: 0 0 60px rgba(0,136,255,0.6), 0 0 100px rgba(0,212,255,0.25); }
-            }
-            .login-title {
-                font-size: 32px;
-                font-weight: 800;
-                color: #fff;
-                letter-spacing: 2px;
-                margin: 0 0 4px;
-            }
-            .login-subtitle {
-                font-size: 13px;
-                color: #00d4ff;
-                font-weight: 600;
-                text-transform: uppercase;
-                letter-spacing: 1.5px;
-                margin: 0;
-            }
-
-            /* CARD PRINCIPAL */
-            .login-card {
-                background: linear-gradient(180deg, rgba(17,24,39,0.95), rgba(11,15,25,0.98));
-                border: 1px solid rgba(255,255,255,0.08);
-                border-radius: 20px;
-                padding: 0 28px 28px;
-                position: relative;
-                overflow: hidden;
-                backdrop-filter: blur(20px);
-                box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
-            }
-            .login-card-topline {
-                height: 3px;
-                background: linear-gradient(90deg, #0088ff, #00d4ff, #10b981);
-                margin: 0 -28px;
-            }
-
-            /* SELETOR DE PERFIL */
-            .login-role-selector {
-                display: flex;
-                gap: 10px;
-                padding: 20px 0 14px;
-            }
-            .login-role-btn {
-                flex: 1;
+                z-index: 99999;
+                background: linear-gradient(180deg, rgba(5, 8, 13, 0.78) 0%, rgba(5, 8, 13, 0.88) 45%, rgba(5, 8, 13, 0.98) 100%),
+                            url('/img/login-car-bg.jpg') center center / cover no-repeat fixed;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                gap: 6px;
-                padding: 14px 8px;
-                background: rgba(255,255,255,0.03);
-                border: 2px solid rgba(255,255,255,0.08);
-                border-radius: 14px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                color: #94a3b8;
+                justify-content: flex-start;
+                overflow-y: auto;
+                font-family: var(--font-sans);
+                padding: 16px 20px 40px;
+                box-sizing: border-box;
             }
-            .login-role-btn:hover {
-                background: rgba(255,255,255,0.06);
-                border-color: rgba(255,255,255,0.15);
-                transform: translateY(-2px);
-            }
-            .login-role-btn.owner-active {
-                background: rgba(0,136,255,0.08);
-                border-color: rgba(0,136,255,0.5);
-                color: #38bdf8;
-                box-shadow: 0 0 25px rgba(0,136,255,0.15);
-            }
-            .login-role-btn.workshop-active {
-                background: rgba(16,185,129,0.08);
-                border-color: rgba(16,185,129,0.5);
-                color: #34d399;
-                box-shadow: 0 0 25px rgba(16,185,129,0.15);
-            }
-            .login-role-icon { font-size: 26px; }
-            .login-role-label { font-size: 12px; font-weight: 700; letter-spacing: 0.3px; }
 
-            /* TABS ENTRAR / CADASTRAR */
-            .login-mode-tabs {
+            /* BARRA SUPERIOR MOBILE ELEGANTE */
+            .auth-status-bar {
+                width: 100%;
+                max-width: 420px;
                 display: flex;
-                position: relative;
-                background: rgba(0,0,0,0.3);
-                border-radius: 10px;
-                padding: 3px;
-                margin-bottom: 22px;
+                justify-content: space-between;
+                align-items: center;
+                padding: 4px 10px 18px;
+                color: #ffffff;
+                font-size: 14px;
+                font-weight: 600;
+                letter-spacing: -0.2px;
+                opacity: 0.9;
             }
-            .login-mode-tab {
-                flex: 1;
-                padding: 10px;
+            .auth-status-icons {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            /* CAIXA CENTRAL */
+            .auth-content-box {
+                width: 100%;
+                max-width: 380px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                animation: authFadeIn 0.35s ease-out;
+            }
+
+            @keyframes authFadeIn {
+                from { opacity: 0; transform: translateY(12px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+
+            /* HEADER & IDENTIDADE */
+            .auth-brand-header {
+                text-align: center;
+                margin-bottom: 24px;
+                width: 100%;
+            }
+
+            .auth-emblem-wrapper {
+                margin: 0 auto 12px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                filter: drop-shadow(0 0 16px rgba(255, 210, 28, 0.3));
+                transition: transform 0.2s ease;
+            }
+            .auth-emblem-wrapper:hover {
+                transform: scale(1.03);
+            }
+
+            .auth-title {
+                font-size: 34px;
+                font-weight: 900;
+                color: #ffffff;
+                letter-spacing: 1.5px;
+                margin: 0 0 2px;
+                line-height: 1.1;
+                font-family: var(--font-sans);
+            }
+            .text-gold {
+                color: #FFD21C;
+            }
+
+            .auth-subtitle {
+                font-size: 11px;
+                font-weight: 800;
+                color: #ffffff;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                margin: 0 0 10px;
+                opacity: 0.95;
+            }
+
+            .auth-motto {
+                font-size: 13px;
+                color: #94a3b8;
+                font-weight: 400;
+                line-height: 1.4;
+                margin: 0 auto;
+                max-width: 290px;
+            }
+
+            /* FORMULÁRIO */
+            .auth-card-body {
+                width: 100%;
+            }
+
+            /* INPUTS COM ÍCONES */
+            .auth-input-group {
+                position: relative;
+                width: 100%;
+                margin-bottom: 14px;
+            }
+
+            .auth-input-icon {
+                position: absolute;
+                left: 16px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #94a3b8;
+                pointer-events: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .auth-input {
+                width: 100%;
+                height: 52px;
+                background: rgba(12, 18, 28, 0.85);
+                border: 1px solid #1E2B3D;
+                border-radius: 12px;
+                padding: 0 46px 0 48px;
+                color: #ffffff;
+                font-size: 15px;
+                font-family: var(--font-sans);
+                transition: all 0.2s ease;
+                box-sizing: border-box;
+                backdrop-filter: blur(8px);
+            }
+            .auth-input::placeholder {
+                color: #64748b;
+                font-size: 14px;
+            }
+            .auth-input:focus {
+                outline: none;
+                border-color: #FFD21C;
+                box-shadow: 0 0 0 3px rgba(255, 210, 28, 0.18);
+                background: rgba(14, 22, 34, 0.95);
+            }
+
+            .auth-eye-btn {
+                position: absolute;
+                right: 14px;
+                top: 50%;
+                transform: translateY(-50%);
                 background: transparent;
                 border: none;
-                color: #64748b;
-                font-size: 13px;
-                font-weight: 700;
+                color: #94a3b8;
                 cursor: pointer;
-                z-index: 2;
-                transition: color 0.3s ease;
-                border-radius: 8px;
+                padding: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: color 0.15s ease;
             }
-            .login-mode-tab.active { color: #fff; }
-            .login-mode-indicator {
-                position: absolute;
-                top: 3px;
-                left: 3px;
-                width: calc(50% - 3px);
-                height: calc(100% - 6px);
-                background: rgba(0,136,255,0.2);
-                border: 1px solid rgba(0,136,255,0.35);
-                border-radius: 8px;
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                z-index: 1;
+            .auth-eye-btn:hover {
+                color: #ffffff;
             }
 
-            /* CAMPOS DO FORMULÁRIO */
-            .login-form-area { animation: fadeInUp 0.3s ease; }
-            @keyframes fadeInUp {
-                from { opacity:0; transform:translateY(10px); }
-                to { opacity:1; transform:translateY(0); }
-            }
-
-            .login-field-group { margin-bottom: 14px; }
-            .login-field-label {
-                display: block;
-                font-size: 11px;
-                font-weight: 700;
-                color: #64748b;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                margin-bottom: 6px;
-            }
-            .login-field-input {
-                width: 100%;
-                padding: 11px 14px;
-                background: rgba(0,0,0,0.35);
-                border: 1px solid rgba(255,255,255,0.1);
-                border-radius: 10px;
-                color: #f8fafc;
-                font-size: 14px;
-                font-family: var(--font-sans);
-                transition: all 0.25s ease;
-                box-sizing: border-box;
-                outline: none;
-            }
-            .login-field-input::placeholder { color: #475569; }
-            .login-field-input:focus {
-                border-color: #00d4ff;
-                box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
-                background: rgba(0,0,0,0.5);
-            }
-            .login-field-row {
+            .auth-input-row {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 12px;
+                gap: 10px;
+            }
+            .auth-input-row .auth-input {
+                padding-left: 16px;
             }
 
-            /* BOTÃO SUBMETER */
-            .login-submit-btn {
+            /* LEMBRAR DE MIM & ESQUECI MINHA SENHA */
+            .auth-options-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin: 16px 0 20px;
+                font-size: 13px;
+            }
+
+            .auth-checkbox-label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+                user-select: none;
+            }
+
+            .auth-custom-checkbox {
+                display: none;
+            }
+
+            .auth-checkbox-custom {
+                width: 18px;
+                height: 18px;
+                border-radius: 4px;
+                background: #111923;
+                border: 1.5px solid #28384B;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.15s ease;
+            }
+
+            .auth-custom-checkbox:checked + .auth-checkbox-custom {
+                background: #FFD21C;
+                border-color: #FFD21C;
+            }
+            .auth-custom-checkbox:checked + .auth-checkbox-custom::after {
+                content: '✓';
+                color: #05080D;
+                font-size: 12px;
+                font-weight: 900;
+            }
+
+            .auth-remember-text {
+                color: #cbd5e1;
+                font-weight: 500;
+            }
+
+            .auth-forgot-link {
+                color: #FFD21C;
+                text-decoration: none;
+                font-weight: 600;
+                transition: opacity 0.15s ease;
+            }
+            .auth-forgot-link:hover {
+                opacity: 0.85;
+                text-decoration: underline;
+            }
+
+            /* BOTÃO PRIMÁRIO (AMARELO OFICIAL) */
+            .auth-btn-primary {
                 width: 100%;
-                padding: 13px;
-                background: linear-gradient(135deg, #0088ff, #00b4ff);
+                height: 52px;
+                background: #FFD21C;
+                color: #05080D;
                 border: none;
                 border-radius: 12px;
-                color: #fff;
-                font-size: 14px;
+                font-size: 16px;
                 font-weight: 800;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
                 cursor: pointer;
-                transition: all 0.3s ease;
-                letter-spacing: 0.5px;
-                margin-top: 6px;
-                box-shadow: 0 4px 15px rgba(0,136,255,0.3);
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 4px 18px rgba(255, 210, 28, 0.3);
             }
-            .login-submit-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 8px 25px rgba(0,136,255,0.4);
+            .auth-btn-primary:hover {
+                background: #FFE052;
+                transform: translateY(-1px);
+                box-shadow: 0 8px 26px rgba(255, 210, 28, 0.42);
             }
-            .login-submit-btn:active { transform: translateY(0); }
-            .login-submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-            .login-submit-green {
-                background: linear-gradient(135deg, #059669, #10b981);
-                box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+            .auth-btn-primary:active {
+                transform: translateY(0);
             }
-            .login-submit-green:hover { box-shadow: 0 8px 25px rgba(16,185,129,0.4); }
+            .auth-btn-arrow {
+                font-size: 18px;
+                font-weight: 900;
+            }
 
-            /* DEMO BOX */
-            .login-demo-box {
-                margin-top: 18px;
-                padding: 14px;
-                background: rgba(0,212,255,0.04);
-                border: 1px solid rgba(0,212,255,0.15);
-                border-radius: 12px;
-            }
-            .login-demo-header {
+            /* DIVISOR */
+            .auth-divider {
                 display: flex;
-                justify-content: space-between;
                 align-items: center;
-                font-size: 11px;
-                color: #00d4ff;
-                font-weight: 700;
-                margin-bottom: 8px;
-            }
-            .login-demo-badge {
-                font-size: 9px;
-                background: rgba(0,212,255,0.15);
-                padding: 2px 8px;
-                border-radius: 4px;
-                letter-spacing: 0.5px;
-            }
-            .login-demo-credentials {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                background: rgba(0,0,0,0.3);
-                padding: 8px 12px;
-                border-radius: 8px;
-                font-size: 12px;
-                color: #94a3b8;
-                margin-bottom: 10px;
-            }
-            .login-demo-btn {
+                gap: 16px;
+                margin: 22px 0;
                 width: 100%;
-                padding: 9px;
-                background: rgba(0,212,255,0.08);
-                border: 1px solid rgba(0,212,255,0.25);
-                border-radius: 8px;
-                color: #00d4ff;
-                font-size: 12px;
+            }
+            .auth-divider-line {
+                flex: 1;
+                height: 1px;
+                background: rgba(255, 255, 255, 0.12);
+            }
+            .auth-divider-text {
+                color: #64748b;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            /* BOTÃO SECUNDÁRIO (OFICINA) */
+            .auth-btn-secondary {
+                width: 100%;
+                height: 50px;
+                background: rgba(10, 15, 22, 0.6);
+                border: 1.5px solid rgba(255, 255, 255, 0.22);
+                border-radius: 12px;
+                color: #ffffff;
+                font-size: 14px;
                 font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
                 cursor: pointer;
                 transition: all 0.2s ease;
+                backdrop-filter: blur(8px);
             }
-            .login-demo-btn:hover {
-                background: rgba(0,212,255,0.15);
-                border-color: rgba(0,212,255,0.4);
+            .auth-btn-secondary:hover {
+                border-color: #FFD21C;
+                color: #FFD21C;
+                background: rgba(255, 210, 28, 0.05);
+                transform: translateY(-1px);
+            }
+            .auth-secondary-icon {
+                display: flex;
+                align-items: center;
             }
 
-            /* FOOTER */
-            .login-footer-links {
+            /* RODAPÉ PROMPT */
+            .auth-footer-prompt {
                 text-align: center;
-                margin-top: 22px;
+                margin-top: 24px;
+                font-size: 13px;
+                color: #94a3b8;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
             }
-            .login-footer-copy {
-                font-size: 11px;
-                color: #334155;
-                margin: 0;
+            .auth-link-gold {
+                color: #FFD21C;
+                font-weight: 700;
+                text-decoration: underline;
+                cursor: pointer;
+            }
+            .auth-link-gold:hover {
+                color: #FFE052;
             }
 
-            /* RESPONSIVE */
-            @media (max-width: 480px) {
-                .login-center-wrapper { padding: 20px 14px; max-width: 100%; }
-                .login-card { padding: 0 18px 22px; border-radius: 16px; }
-                .login-card-topline { margin: 0 -18px; }
-                .login-title { font-size: 26px; }
-                .login-logo-circle { width: 60px; height: 60px; border-radius: 16px; }
-                .login-logo-circle svg { width: 30px; height: 30px; }
-                .login-role-btn { padding: 12px 6px; }
-                .login-role-icon { font-size: 22px; }
-                .login-role-label { font-size: 11px; }
-                .login-field-row { grid-template-columns: 1fr; gap: 0; }
-                .login-submit-btn { font-size: 13px; padding: 12px; }
+            /* DEMO RÁPIDO DISCRETO */
+            .auth-demo-bar {
+                margin-top: 28px;
+                padding-top: 18px;
+                border-top: 1px solid rgba(255, 255, 255, 0.08);
+                width: 100%;
+                text-align: center;
+            }
+            .auth-demo-label {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                color: #64748b;
+                margin-bottom: 10px;
+            }
+            .auth-demo-buttons {
+                display: flex;
+                justify-content: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+            .auth-demo-pill {
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                color: #cbd5e1;
+                font-size: 11px;
+                font-weight: 600;
+                padding: 6px 12px;
+                border-radius: 20px;
+                cursor: pointer;
+                transition: all 0.15s ease;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+            }
+            .auth-demo-pill:hover {
+                background: rgba(255, 210, 28, 0.12);
+                border-color: #FFD21C;
+                color: #FFD21C;
+            }
+            .auth-demo-pill.active {
+                border-color: #FFD21C;
+                color: #FFD21C;
+                background: rgba(255, 210, 28, 0.08);
+            }
+            .admin-pill {
+                border-color: rgba(255, 210, 28, 0.3);
+                color: #FFD21C;
+            }
+
+            .auth-spinner {
+                width: 18px;
+                height: 18px;
+                border: 2px solid rgba(0,0,0,0.2);
+                border-top-color: #05080D;
+                border-radius: 50%;
+                display: inline-block;
+                animation: spin 0.7s linear infinite;
+            }
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+
+            @media (max-width: 440px) {
+                .auth-fullscreen-container {
+                    padding: 10px 16px 30px;
+                }
+                .auth-title {
+                    font-size: 30px;
+                }
+                .auth-subtitle {
+                    font-size: 10px;
+                }
+                .auth-input {
+                    height: 48px;
+                    font-size: 14px;
+                }
+                .auth-btn-primary {
+                    height: 48px;
+                    font-size: 15px;
+                }
             }
         `;
         document.head.appendChild(style);
