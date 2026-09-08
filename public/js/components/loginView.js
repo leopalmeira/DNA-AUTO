@@ -134,55 +134,55 @@ const LoginView = {
                     <div class="particle p2"></div>
                     <div class="particle p3"></div>
                 </div>
-                <div class="login-glow-bg" style="background: radial-gradient(ellipse at center, rgba(168,85,247,0.12) 0%, transparent 65%);"></div>
+                <div class="login-glow-bg" style="background: radial-gradient(ellipse at center, rgba(245,158,11,0.1) 0%, transparent 65%);"></div>
 
                 <div class="login-center-wrapper">
                     <div class="login-hero-header">
-                        <div class="login-logo-circle" style="background: linear-gradient(135deg, #7c3aed, #a855f7); box-shadow: 0 0 40px rgba(168,85,247,0.5);">
-                            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <div class="login-logo-circle" style="background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 0 35px rgba(245,158,11,0.35);">
+                            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#0b0f19" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                             </svg>
                         </div>
-                        <h1 class="login-title">DNA AUTO ADMIN</h1>
-                        <p class="login-subtitle" style="color:#c084fc;">Painel de Governança — Acesso Restrito</p>
+                        <h1 class="login-title">DNA CENTRAL</h1>
+                        <p class="login-subtitle" style="color:#f59e0b; letter-spacing:2px;">Governança Matriz — Acesso Restrito</p>
                     </div>
 
-                    <div class="login-card" style="border-color: rgba(168,85,247,0.25);">
-                        <div class="login-card-topline" style="background: linear-gradient(90deg, #7c3aed, #a855f7, #c084fc);"></div>
+                    <div class="login-card" style="border-color: rgba(245,158,11,0.3);">
+                        <div class="login-card-topline" style="background: linear-gradient(90deg, #d97706, #f59e0b, #fbbf24);"></div>
                         
                         <div style="padding: 6px 0 16px; text-align: center;">
-                            <span style="display:inline-flex; align-items:center; gap:8px; background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); padding:8px 18px; border-radius:20px; font-size:12px; font-weight:700; color:#c084fc;">
-                                🛡️ Acesso Administrativo
+                            <span style="display:inline-flex; align-items:center; gap:8px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); padding:6px 16px; border-radius:var(--radius-sm); font-size:11px; font-weight:700; color:#fbbf24; text-transform:uppercase; letter-spacing:0.8px;">
+                                🛡️ Terminal de Gestão Governança
                             </span>
                         </div>
 
                         <form id="admin-login-form" onsubmit="LoginView.handleAdminLogin(event)">
                             <div class="login-field-group">
-                                <label class="login-field-label">E-mail Administrativo</label>
+                                <label class="login-field-label">E-mail Corporativo</label>
                                 <input type="email" id="admin-login-email" class="login-field-input" required
                                        placeholder="admin@dnaauto.com.br" autocomplete="email" />
                             </div>
                             <div class="login-field-group">
-                                <label class="login-field-label">Senha Master</label>
+                                <label class="login-field-label">Chave Master de Acesso</label>
                                 <input type="password" id="admin-login-password" class="login-field-input" required
                                        placeholder="••••••••" autocomplete="current-password" />
                             </div>
-                            <button type="submit" class="login-submit-btn" id="admin-submit-btn" style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
-                                ACESSAR PAINEL ADMIN
+                            <button type="submit" class="login-submit-btn" id="admin-submit-btn" style="background: linear-gradient(135deg, #d97706, #f59e0b); color:#0b0f19; font-weight:800; box-shadow: 0 4px 15px rgba(245,158,11,0.3);">
+                                ACESSAR PAINEL ADMINISTRATIVO
                             </button>
                         </form>
 
                         <div style="text-align:center; margin-top:18px;">
-                            <a href="javascript:void(0)" onclick="LoginView.isAdminMode=false; LoginView.render()" style="color:#94a3b8; font-size:12px; text-decoration:none;">
-                                ← Voltar ao Login Normal
+                            <a href="javascript:void(0)" onclick="LoginView.isAdminMode=false; LoginView.render()" style="color:#94a3b8; font-size:12px; text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+                                ← Voltar ao Portal Geral
                             </a>
                         </div>
 
                         <!-- Demo rápido admin -->
-                        <div style="margin-top:14px; padding:12px; background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.2); border-radius:10px; text-align:center;">
-                            <span style="font-size:11px; color:#94a3b8;">Demo: admin@dnaauto.com.br / admin123</span>
-                            <button type="button" onclick="LoginView.quickLogin('ADMIN')" style="display:block; margin:8px auto 0; padding:6px 20px; background:rgba(168,85,247,0.15); border:1px solid rgba(168,85,247,0.35); color:#c084fc; border-radius:6px; cursor:pointer; font-size:11px; font-weight:700;">
-                                ⚡ Entrar como Admin Demo
+                        <div style="margin-top:16px; padding:12px; background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.2); border-radius:var(--radius-sm); text-align:center;">
+                            <span style="font-size:11px; color:#94a3b8; font-family:var(--font-mono);">Credencial: admin@dnaauto.com.br / admin123</span>
+                            <button type="button" onclick="LoginView.quickLogin('ADMIN')" style="display:block; margin:8px auto 0; padding:6px 20px; background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.35); color:#fbbf24; border-radius:var(--radius-sm); cursor:pointer; font-size:11px; font-weight:700;">
+                                ⚡ Autenticar Demo Master
                             </button>
                         </div>
                     </div>
@@ -506,7 +506,7 @@ const LoginView = {
                 overflow-y: auto;
                 font-family: var(--font-sans);
             }
-            .login-admin-bg { background: #0a0618; }
+            .login-admin-bg { background: #070a12; }
 
             /* Partículas flutuantes */
             .login-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
@@ -519,7 +519,7 @@ const LoginView = {
             .p1 { width:300px; height:300px; background:radial-gradient(circle, rgba(0,136,255,0.15), transparent 70%); top:-5%; left:10%; animation-delay:0s; }
             .p2 { width:200px; height:200px; background:radial-gradient(circle, rgba(0,212,255,0.1), transparent 70%); top:60%; right:5%; animation-delay:-5s; }
             .p3 { width:250px; height:250px; background:radial-gradient(circle, rgba(16,185,129,0.1), transparent 70%); bottom:10%; left:30%; animation-delay:-10s; }
-            .p4 { width:150px; height:150px; background:radial-gradient(circle, rgba(139,92,246,0.1), transparent 70%); top:20%; right:20%; animation-delay:-3s; }
+            .p4 { width:150px; height:150px; background:radial-gradient(circle, rgba(2,132,199,0.1), transparent 70%); top:20%; right:20%; animation-delay:-3s; }
             .p5 { width:180px; height:180px; background:radial-gradient(circle, rgba(0,136,255,0.08), transparent 70%); bottom:30%; left:5%; animation-delay:-7s; }
             .p6 { width:120px; height:120px; background:radial-gradient(circle, rgba(0,212,255,0.08), transparent 70%); top:40%; left:60%; animation-delay:-12s; }
 

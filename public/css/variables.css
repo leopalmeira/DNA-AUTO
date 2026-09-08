@@ -31,15 +31,15 @@
     --proof-level-3-bg: rgba(14, 165, 233, 0.12);
     --proof-level-3-border: rgba(14, 165, 233, 0.35);
 
-    --proof-level-2: #8b5cf6; /* Nível 2: 📄 DOCUMENTADO (Roxo Suave) */
-    --proof-level-2-bg: rgba(139, 92, 246, 0.12);
-    --proof-level-2-border: rgba(139, 92, 246, 0.35);
+    --proof-level-2: #0284c7; /* Nível 2: 📄 DOCUMENTADO (Azul Cobalto Técnico) */
+    --proof-level-2-bg: rgba(2, 132, 199, 0.12);
+    --proof-level-2-border: rgba(2, 132, 199, 0.35);
 
-    --proof-level-1: #f59e0b; /* Nível 1: ⚠️ DECLARADO (Âmbar) */
+    --proof-level-1: #f59e0b; /* Nível 1: ⚠️ DECLARADO (Âmbar Técnico) */
     --proof-level-1-bg: rgba(245, 158, 11, 0.12);
     --proof-level-1-border: rgba(245, 158, 11, 0.35);
 
-    --status-rejected: #ef4444; /* Rejeitado / Débito (Vermelho) */
+    --status-rejected: #ef4444; /* Rejeitado / Débito (Vermelho Técnico) */
     --status-rejected-bg: rgba(239, 68, 68, 0.12);
 
     /* Tipografia */
@@ -62,9 +62,9 @@
     --transition-fast: 0.15s ease;
     --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Layout */
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 16px;
+    /* Layout / Geometria de Precisão Automotiva */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
     --radius-full: 9999px;
 }
