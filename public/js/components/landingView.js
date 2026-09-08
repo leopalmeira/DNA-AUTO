@@ -16,6 +16,21 @@ const LandingView = {
         if (topbar) topbar.style.display = 'none';
         if (backdrop) backdrop.style.display = 'none';
 
+        const isLogged = !!App.currentRole && !!App.currentUser;
+        let panelTarget = 'owner';
+        let panelLabel = 'Ir para Meu Painel →';
+        if (App.currentRole === 'ADMIN') {
+            panelTarget = 'admin';
+            panelLabel = 'Painel Admin Matriz →';
+        } else if (App.currentRole === 'WORKSHOP') {
+            panelTarget = 'workshop';
+            panelLabel = 'Painel da Oficina →';
+        }
+
+        const navAuthButton = isLogged
+            ? `<button class="landing-btn-ghost" onclick="App.switchView('${panelTarget}')" style="border-color:#FFD21C; color:#FFD21C; font-weight:700;">${panelLabel}</button>`
+            : `<button class="landing-btn-ghost" onclick="App.switchView('login')">Entrar</button>`;
+
         const container = document.getElementById('view-content');
         container.innerHTML = `
             <div class="landing-page-root">
@@ -46,9 +61,7 @@ const LandingView = {
                         </nav>
 
                         <div class="landing-nav-actions">
-                            <button class="landing-btn-ghost" onclick="App.switchView('login')">
-                                Entrar
-                            </button>
+                            ${navAuthButton}
                             <button class="landing-btn-gold" onclick="LandingView.goToRegister()">
                                 Garantir DNA (R$ 59,90)
                             </button>

@@ -13,8 +13,10 @@
 
 ## 🌐 Acesso Rápido ao Sistema
 
-* **🚀 Aplicação em Produção:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/)
+* **🌟 Landing Page Oficial (R$ 59,90):** [https://dna-auto.onrender.com/landing](https://dna-auto.onrender.com/landing) *(ou na raiz [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/))*
+* **🚀 Aplicação / Sistema Web:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/)
 * **🛡️ Painel Administrativo:** [https://dna-auto.onrender.com/admin](https://dna-auto.onrender.com/admin)
+* **🚗 Dossiê Demonstrativo (Honda Civic):** [https://dna-auto.onrender.com/#dossier](https://dna-auto.onrender.com/#dossier)
 * **📂 Repositório Oficial:** [https://github.com/leopalmeira/DNA-AUTO](https://github.com/leopalmeira/DNA-AUTO)
 * **📓 Diário de Bordo Completo:** Consulte [DIARIO_DE_BORDO.md](file:///c:/Users/User/Desktop/DNA-AUTO/DIARIO_DE_BORDO.md) para detalhes de engenharia e decisões arquiteturais.
 
@@ -69,7 +71,8 @@ O DNA AUTO adota uma régua rigorosa de 4 níveis de auditoria para cada registr
 ## 🖥️ Módulos e Funcionalidades do Sistema
 
 ### 1. 🌟 Landing Page Oficial de Alta Conversão (R$ 59,90)
-- **Localização:** Tela inicial padrão para visitantes deslogados (`/`).
+- **Link Direto:** [https://dna-auto.onrender.com/landing](https://dna-auto.onrender.com/landing) *(e na raiz para visitantes não logados)*
+- **Ambiente Local:** [http://localhost:3000/landing](http://localhost:3000/landing)
 - **Oferta em Destaque:** Apresentação da ativação do DNA por **R$ 59,90** com design automotivo escuro e detalhes em ouro `#FFD21C`.
 - **Atividades Monitoradas:** Cards visuais cobrindo:
   - 🛢️ Trocas de óleo de motor e filtros.

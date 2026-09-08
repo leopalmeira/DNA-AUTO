@@ -12,18 +12,28 @@ const App = {
         console.log('🚀 Inicializando DNA AUTO Platform...');
         this.setupModals();
 
-        // Verificar se URL é /admin (link dedicado para administrador)
+        // Verificar rotas explícitas
+        const isLandingRoute = window.location.pathname === '/landing' ||
+                               window.location.pathname === '/home' ||
+                               window.location.hash === '#landing';
         const isAdminRoute = window.location.pathname === '/admin' ||
                              window.location.pathname === '/dnaveiculo/admin' ||
                              window.location.hash === '#admin';
         const isLoginRoute = window.location.pathname === '/login' ||
                              window.location.hash === '#login';
 
-        // 1. Verificar se há sessão ativa salva
+        // 1. Se a rota for explicitamente a Landing Page, exibe a Landing Page imediatamente
+        if (isLandingRoute) {
+            console.log('🌐 Rota /landing solicitada. Exibindo Landing Page oficial (R$ 59,90)...');
+            this.switchView('landing');
+            return;
+        }
+
+        // 2. Verificar se há sessão ativa salva
         const savedUser = this.getLoggedUser();
         const savedToken = localStorage.getItem('dna_token');
 
-        if (savedUser && savedUser.role_code && savedToken) {
+        if (savedUser && savedUser.role_code && savedToken && !isLoginRoute) {
             console.log('👤 Restaurando sessão ativa:', savedUser.name, `[${savedUser.role_code}]`);
             API.setToken(savedToken);
             this.loginAs(savedUser.role_code, savedUser, false);
