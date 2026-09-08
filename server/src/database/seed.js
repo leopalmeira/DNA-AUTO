@@ -1,7 +1,7 @@
-const db = require('./db');
 const bcrypt = require('bcryptjs');
 
-function runSeed() {
+function runSeed(dbInstance) {
+    const db = dbInstance || require('./db');
     console.log('🌱 Iniciando Seed do DNA AUTO...');
 
     // Limpar tabelas existentes para reset limpo e idempotente

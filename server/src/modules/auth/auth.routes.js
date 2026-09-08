@@ -14,13 +14,30 @@ router.post('/login', (req, res) => {
             return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
         }
 
-        const user = db.prepare(`
+        let user = db.prepare(`
             SELECT u.id, u.name, u.email, u.password_hash, u.phone, u.role_id, u.status,
                    r.code as role_code, r.name as role_name
             FROM users u
             JOIN roles r ON u.role_id = r.id
             WHERE LOWER(u.email) = LOWER(?)
         `).get(email);
+
+        // Se o usuário não for encontrado e o banco estiver vazio (novo deploy), executa o seed sob demanda
+        if (!user) {
+            const count = db.prepare('SELECT COUNT(*) as c FROM users').get().c;
+            if (count === 0) {
+                console.log('🌱 Banco vazio detectado na tentativa de login. Populando banco sob demanda...');
+                const runSeed = require('../../database/seed');
+                runSeed(db);
+                user = db.prepare(`
+                    SELECT u.id, u.name, u.email, u.password_hash, u.phone, u.role_id, u.status,
+                           r.code as role_code, r.name as role_name
+                    FROM users u
+                    JOIN roles r ON u.role_id = r.id
+                    WHERE LOWER(u.email) = LOWER(?)
+                `).get(email);
+            }
+        }
 
         if (!user) {
             return res.status(401).json({ error: 'Credenciais inválidas.' });
@@ -102,7 +119,7 @@ router.get('/me', authenticateToken, (req, res) => {
 // Usuários DEMO para troca rápida no seletor de perfil da interface
 router.get('/demo-users', (req, res) => {
     try {
-        const users = db.prepare(`
+        let users = db.prepare(`
             SELECT u.id, u.name, u.email, r.code as role_code, r.name as role_name,
                    w.trade_name as workshop_name, wu.position_title
             FROM users u
@@ -113,11 +130,40 @@ router.get('/demo-users', (req, res) => {
             ORDER BY u.id ASC
         `).all();
 
+        if (!users || users.length === 0) {
+            console.log('🌱 Banco vazio ao consultar demo-users. Executando seed sob demanda...');
+            const runSeed = require('../../database/seed');
+            runSeed(db);
+            users = db.prepare(`
+                SELECT u.id, u.name, u.email, r.code as role_code, r.name as role_name,
+                       w.trade_name as workshop_name, wu.position_title
+                FROM users u
+                JOIN roles r ON u.role_id = r.id
+                LEFT JOIN workshop_users wu ON wu.user_id = u.id
+                LEFT JOIN workshops w ON wu.workshop_id = w.id
+                WHERE u.is_demo = 1
+                ORDER BY u.id ASC
+            `).all();
+        }
+
         res.json({ users });
     } catch (err) {
         res.status(500).json({ error: 'Erro ao carregar usuários demo.' });
     }
 });
+
+// Endpoint de inicialização manual/recuperação do banco (Seed sob demanda)
+router.post('/seed', (req, res) => {
+    try {
+        const runSeed = require('../../database/seed');
+        runSeed(db);
+        res.json({ success: true, message: 'Banco de dados populado com sucesso com dados DEMO!' });
+    } catch (err) {
+        console.error('Erro ao executar seed via endpoint:', err);
+        res.status(500).json({ error: 'Erro ao executar seed: ' + err.message });
+    }
+});
+
 
 // Cadastro de Novo Cliente (Proprietário)
 router.post('/register-client', (req, res) => {

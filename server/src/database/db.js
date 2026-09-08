@@ -35,6 +35,8 @@ function initializeDatabase() {
 
 // Inicializa o banco imediatamente
 initializeDatabase();
+// Exporta o banco imediatamente para que módulos dependentes (como seed) acessem a instância
+module.exports = db;
 
 // Executa seed automático caso o banco esteja vazio (essencial em novos deploys como Render)
 try {
@@ -42,10 +44,9 @@ try {
     if (!userCount || userCount.count === 0) {
         console.log('🌱 Banco vazio detectado. Executando seed inicial automatizado...');
         const runSeed = require('./seed');
-        runSeed();
+        runSeed(db);
     }
 } catch (e) {
     console.warn('Verificação de seed ignorada:', e.message);
 }
 
-module.exports = db;
