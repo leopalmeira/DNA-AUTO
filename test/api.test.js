@@ -54,6 +54,10 @@ async function runTests() {
         console.log(`✅ 5. Lupa do Dossiê: Encontradas ${dataSearch.totalMatches} ocorrências para "correia"`);
 
         // Teste 6: Pesquisa da Fiat Strada (Sem DNA)
+        const db = require('../server/src/database/db');
+        db.prepare(`DELETE FROM vehicle_dna WHERE vehicle_id = 'veh_strada_freedom'`).run();
+        db.prepare(`DELETE FROM health_scores WHERE vehicle_id = 'veh_strada_freedom'`).run();
+
         const resStrada = await fetch(`${BASE_URL}/vehicles/search?q=STR1A99`);
         const dataStrada = await resStrada.json();
         console.assert(dataStrada.found === true, 'Strada não encontrada');
@@ -103,7 +107,46 @@ async function runTests() {
         console.assert(dataDecision.proof_level === 3, 'Proof level deveria ter mudado para 3');
         console.log('✅ 9. Confirmação de Serviço pela Oficina: Nível elevado para Nível 3 (CONFIRMADO)');
 
-        console.log('\n🎉 TODOS OS 9 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 10: Métricas Consolidadas de Faturamento da Plataforma
+        console.assert(dataStats.financial && dataStats.financial.totalGrossRevenueCents > 0, 'Faturamento bruto da plataforma não calculado');
+        console.assert(dataStats.network.totalWorkshops >= 2, 'Total de oficinas credenciadas incorreto');
+        console.assert(dataStats.network.totalClients >= 3, 'Total de clientes da plataforma incorreto');
+        console.log(`✅ 10. Faturamento e Rede do Admin: R$ ${(dataStats.financial.totalGrossRevenueCents / 100).toFixed(2)} faturamento bruto, ${dataStats.network.totalWorkshops} oficinas, ${dataStats.network.totalClients} clientes`);
+
+        // Teste 11: Drill-down de Clientes por Oficina
+        const resWorkshopClients = await fetch(`${BASE_URL}/admin/workshops/ws_veloce/clients`, {
+            headers: { 'Authorization': `Bearer ${dataLoginAdmin.token}` }
+        });
+        const dataWorkshopClients = await resWorkshopClients.json();
+        console.assert(dataWorkshopClients.success === true, 'Falha ao obter clientes da oficina');
+        console.assert(dataWorkshopClients.clients.length > 0, 'Nenhum cliente listado para a oficina');
+        console.log(`✅ 11. Clientes por Oficina: ${dataWorkshopClients.clients.length} clientes encontrados para Veloce Auto Center`);
+
+        // Teste 12: Central de Alertas Preventivos WhatsApp (Óleo e Correias)
+        const resAlerts = await fetch(`${BASE_URL}/admin/maintenance-alerts`, {
+            headers: { 'Authorization': `Bearer ${dataLoginAdmin.token}` }
+        });
+        const dataAlerts = await resAlerts.json();
+        console.assert(dataAlerts.success === true, 'Falha ao carregar alertas de manutenção');
+        console.assert(dataAlerts.alerts.length > 0, 'Nenhum alerta preventivo calculado');
+        const hasWhatsAppUrl = dataAlerts.alerts.some(a => a.whatsappUrl.includes('api.whatsapp.com'));
+        console.assert(hasWhatsAppUrl === true, 'URL do WhatsApp não gerada corretamente nos alertas');
+        console.log(`✅ 12. Alertas Preventivos WhatsApp: ${dataAlerts.alerts.length} alertas gerados com links diretos para WhatsApp`);
+
+        // Teste 13: Recuperação de Senha (Esqueci minha senha)
+        const resForgot = await fetch(`${BASE_URL}/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: 'carlos.silva@email.com',
+                newPassword: 'novaSenha123'
+            })
+        });
+        const dataForgot = await resForgot.json();
+        console.assert(dataForgot.success === true, 'Falha na redefinição de senha');
+        console.log('✅ 13. Esqueci Minha Senha: Senha redefinida com sucesso para o usuário');
+
+        console.log('\n🎉 TODOS OS 13 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

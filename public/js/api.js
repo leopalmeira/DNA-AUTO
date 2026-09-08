@@ -161,6 +161,12 @@ const API = {
     getNetworkStats() {
         return this.request('/admin/network-stats');
     },
+    getWorkshopClients(workshopId) {
+        return this.request(`/admin/workshops/${encodeURIComponent(workshopId)}/clients`);
+    },
+    getMaintenanceAlerts() {
+        return this.request('/admin/maintenance-alerts');
+    },
     getAuditLogs(params = {}) {
         const query = new URLSearchParams(params).toString();
         return this.request(`/admin/audit-logs?${query}`);

@@ -517,6 +517,17 @@ const LoginView = {
         }
     },
 
+    restoreLayout() {
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
+        const sidebar = document.querySelector('.sidebar');
+        const topbar = document.querySelector('.top-navbar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        if (sidebar) sidebar.style.display = '';
+        if (topbar) topbar.style.display = '';
+        if (backdrop) backdrop.style.display = '';
+    },
+
     openForgotPasswordModal() {
         const existingEmail = (document.getElementById('auth-login-email')?.value || '').trim();
         

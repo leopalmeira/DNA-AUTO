@@ -19,7 +19,7 @@
         <header class="top-navbar">
             <div style="display:flex; align-items:center; gap:16px;">
                 <button id="mobile-menu-toggle" class="mobile-menu-btn" title="Menu">☰</button>
-                <div class="brand-wrapper" onclick="App.switchView('dossier', null)">
+                <div class="brand-wrapper" onclick="App.onBrandClick()" style="cursor:pointer;">
                     <div class="brand-logo-icon">
                         <svg viewBox="0 0 120 120" width="24" height="24" fill="none" stroke="#FFD21C" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M 54 62 C 51 55 51 46 57 41 C 62 36 67 40 65 50 C 63 56 64 64 64 64" stroke-width="7" />
@@ -503,6 +503,7 @@
     <script src="/js/components/ownerView.js?v=8.3"></script>
     <script src="/js/components/adminView.js?v=8.3"></script>
     <script src="/js/components/loginView.js?v=8.3"></script>
+    <script src="/js/components/landingView.js?v=8.3"></script>
     <script src="/js/components/salesPageView.js?v=8.3"></script>
     <script src="/js/components/posterGenerator.js?v=8.3"></script>
     <script src="/js/components/saleReportModal.js?v=8.3"></script>

@@ -127,7 +127,7 @@ router.post('/activate-dna', authenticateToken, (req, res) => {
 
             // 4. Inicializar Score de Saúde do Histórico
             db.prepare(`
-                INSERT INTO health_scores (
+                INSERT OR REPLACE INTO health_scores (
                     id, vehicle_id, overall_score, documented_percentage, proven_services_count,
                     invoices_count, verified_workshops_count, mileage_records_count, continuity_status, score_rationale
                 ) VALUES (?, ?, 60, 50, 0, 0, 1, 0, 'REGULAR', 'DNA recém-ativado na rede DNA AUTO. Histórico em fase de alimentação documental.')

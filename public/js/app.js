@@ -16,6 +16,8 @@ const App = {
         const isAdminRoute = window.location.pathname === '/admin' ||
                              window.location.pathname === '/dnaveiculo/admin' ||
                              window.location.hash === '#admin';
+        const isLoginRoute = window.location.pathname === '/login' ||
+                             window.location.hash === '#login';
 
         // 1. Verificar se há sessão ativa salva
         const savedUser = this.getLoggedUser();
@@ -29,10 +31,13 @@ const App = {
             // Rota de admin sem sessão: mostra login de admin
             console.log('🛡️ Acesso Admin detectado. Abrindo login administrativo...');
             this.switchView('login-admin');
-        } else {
-            // Sem sessão: tela de login obrigatória
-            console.log('🔒 Nenhuma sessão ativa. Abrindo Tela de Login...');
+        } else if (isLoginRoute) {
+            console.log('🔒 Tela de Login solicitada...');
             this.switchView('login');
+        } else {
+            // Sem sessão na raiz: exibe Landing Page oficial de alta conversão (R$ 59,90)
+            console.log('🌐 Exibindo Landing Page oficial (R$ 59,90)...');
+            this.switchView('landing');
         }
     },
 
@@ -50,6 +55,18 @@ const App = {
         } else {
             localStorage.removeItem('dna_logged_user');
             localStorage.removeItem('dna_token');
+        }
+    },
+
+    onBrandClick() {
+        if (!this.currentRole) {
+            this.switchView('landing');
+        } else if (this.currentRole === 'ADMIN') {
+            this.switchView('admin');
+        } else if (this.currentRole === 'WORKSHOP') {
+            this.switchView('workshop');
+        } else {
+            this.switchView('owner');
         }
     },
 
@@ -86,13 +103,16 @@ const App = {
 
     // ── Alternador Central de Telas com Bloqueio RBAC ──
     switchView(viewName, param = null) {
-        // Se não logado, só permite login
-        if (!this.currentRole && viewName !== 'login' && viewName !== 'login-admin' && viewName !== 'sales') {
-            LoginView.render();
+        // Views públicas acessíveis sem autenticação
+        const publicViews = ['landing', 'login', 'login-admin', 'sales', 'dossier'];
+
+        // Se não logado e tentando acessar área restrita, redireciona para a landing page ou login
+        if (!this.currentRole && !publicViews.includes(viewName)) {
+            this.switchView('landing');
             return;
         }
 
-        // RBAC: Isolamento estrito
+        // RBAC: Isolamento estrito para áreas autenticadas
         if (viewName === 'owner' && this.currentRole !== 'OWNER') {
             alert('⛔ Acesso restrito a Clientes Proprietários.');
             return;
@@ -104,6 +124,13 @@ const App = {
         if (viewName === 'admin' && this.currentRole !== 'ADMIN') {
             alert('⛔ Acesso restrito à Administração.');
             return;
+        }
+
+        // Se estiver saindo da landing page ou login para uma tela do sistema interno, restaura layout
+        if (viewName !== 'landing' && viewName !== 'login' && viewName !== 'login-admin') {
+            if (typeof LoginView !== 'undefined' && LoginView.restoreLayout) {
+                LoginView.restoreLayout();
+            }
         }
 
         this.currentView = viewName;
@@ -120,7 +147,9 @@ const App = {
         if (backdrop) backdrop.classList.remove('active');
 
         // Renderização dos Módulos
-        if (viewName === 'login-admin') {
+        if (viewName === 'landing') {
+            LandingView.render();
+        } else if (viewName === 'login-admin') {
             LoginView.render(true);
         } else if (viewName === 'login') {
             LoginView.render();
@@ -135,7 +164,7 @@ const App = {
         } else if (viewName === 'dossier') {
             DossierView.render(param);
         } else {
-            LoginView.render();
+            LandingView.render();
         }
     },
 

@@ -205,14 +205,15 @@ function runSeed(dbInstance) {
         insertPlan.run({
             id: 'plan_normal',
             code: 'PLAN_NORMAL',
-            title: 'Ativação DNA Padrão',
-            description: 'Preço de tabela para proprietário final avulso',
-            price_cents: 14900,
-            workshop_price_cents: 9900,
+            title: 'Passaporte Digital DNA AUTO (Vitalício)',
+            description: 'Histórico completo de manutenções, trocas de peças e atividades do veículo',
+            price_cents: 5990,
+            workshop_price_cents: 3990,
             discount_percentage: 0,
             is_courtesy: 0,
-            commission_percentage: 20
+            commission_percentage: 25
         });
+
 
         insertPlan.run({
             id: 'plan_workshop_promo',
