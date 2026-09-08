@@ -383,7 +383,7 @@ const DossierView = {
     renderTabResumo(data) {
         const h = data.health;
         return `
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px;">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap:20px;">
                 <div class="panel-box">
                     <div class="panel-title">❤️ Índice de Saúde do Histórico</div>
                     <div style="margin-bottom:14px; font-size:13px; color:var(--text-muted); line-height:1.6;">
@@ -397,7 +397,7 @@ const DossierView = {
                         <div style="width:100%; height:8px; background:var(--border-subtle); border-radius:var(--radius-full); overflow:hidden;">
                             <div style="width:${h.documentedPercentage}%; height:100%; background:linear-gradient(90deg, var(--brand-primary), var(--brand-cyan));"></div>
                         </div>
-                        <div style="margin-top:14px; display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:11px; color:var(--text-muted);">
+                        <div style="margin-top:14px; display:grid; grid-template-columns:repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap:10px; font-size:11px; color:var(--text-muted);">
                             <div>✓ Serviços Comprovados: <strong>${h.provenServicesCount}</strong></div>
                             <div>✓ Notas Fiscais Anexadas: <strong>${h.invoicesCount}</strong></div>
                             <div>✓ Oficinas Verificadas: <strong>${h.verifiedWorkshopsCount}</strong></div>
@@ -680,7 +680,7 @@ const DossierView = {
         return `
             <div class="panel-box">
                 <div class="panel-title">🏭 Rede de Oficinas que já Atenderam o Veículo</div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap:16px;">
                     ${workshops.map(w => `
                         <div style="background:var(--bg-surface-elevated); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:16px;">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -703,20 +703,22 @@ const DossierView = {
     // Aba Documentos e Débitos
     renderTabDocumentos(data) {
         return `
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap:20px;">
                 <div class="panel-box">
                     <div class="panel-title">IPVA e Tributos (Sefaz)</div>
-                    <table class="erp-table">
-                        <tbody>
-                            ${data.taxes.map(t => `
-                                <tr>
-                                    <td>IPVA ${t.reference_year}</td>
-                                    <td class="mono">R$ ${(t.amount_cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
-                                    <td><span class="badge-proof badge-proven">${t.status}</span></td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="erp-table" style="min-width:0; width:100%;">
+                            <tbody>
+                                ${data.taxes.map(t => `
+                                    <tr>
+                                        <td>IPVA ${t.reference_year}</td>
+                                        <td class="mono">R$ ${(t.amount_cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                                        <td><span class="badge-proof badge-proven">${t.status}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="panel-box">
@@ -738,7 +740,7 @@ const DossierView = {
         const market = data.market;
 
         return `
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap:20px;">
                 <div class="panel-box">
                     <div class="panel-title">📊 Cotação Oficial Tabela FIPE</div>
                     <div style="font-size:32px; font-weight:800; color:var(--text-highlight); font-family:var(--font-mono); margin:12px 0;">

@@ -79,11 +79,11 @@ const SaleReportModal = {
     },
     infoGrid(items) {
         return `
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;font-size:12px;color:#374151;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(140px,100%),1fr));gap:8px;font-size:12px;color:#374151;">
                 ${items.map(([label, value]) => `
-                    <div style="background:#f9fafb;padding:8px 12px;border-radius:6px;border:1px solid #e5e7eb;">
+                    <div style="background:#f9fafb;padding:8px 12px;border-radius:6px;border:1px solid #e5e7eb;overflow:hidden;">
                         <div style="font-size:10px;color:#6b7280;text-transform:uppercase;font-weight:600;margin-bottom:2px;">${label}</div>
-                        <div style="font-weight:700;color:#111827;word-break:break-word;">${value || 'N/D'}</div>
+                        <div style="font-weight:700;color:#111827;word-break:break-word;overflow-wrap:anywhere;">${value || 'N/D'}</div>
                     </div>
                 `).join('')}
             </div>
@@ -211,11 +211,11 @@ const SaleReportModal = {
         return `
             ${this.sectionTitle('💚', 'Índice de Saúde e Integridade do Histórico', 3)}
             <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-                <div style="background:${scoreBg};border:2px solid ${scoreColor};border-radius:12px;padding:16px 24px;text-align:center;min-width:120px;">
+                <div style="background:${scoreBg};border:2px solid ${scoreColor};border-radius:12px;padding:16px 24px;text-align:center;min-width:0;flex-shrink:0;">
                     <div style="font-size:36px;font-weight:900;color:${scoreColor};">${h.overallScore}<span style="font-size:18px;">/100</span></div>
                     <div style="font-size:10px;font-weight:700;color:${scoreColor};text-transform:uppercase;">Saúde do Histórico</div>
                 </div>
-                <div style="flex:1;font-size:12px;color:#374151;line-height:1.7;">
+                <div style="flex:1;min-width:0;font-size:12px;color:#374151;line-height:1.7;">
                     <div><strong>Documentação:</strong> ${h.documentedPercentage}% dos registros possuem comprovação</div>
                     <div><strong>Continuidade:</strong> ${h.continuityStatus}</div>
                     <div><strong>Consistência do Odômetro:</strong> ${h.mileageConsistency === 'CONSISTENTE' ? '✅ Nenhuma anomalia detectada' : '⚠️ Possível inconsistência'}</div>
@@ -246,9 +246,9 @@ const SaleReportModal = {
         ];
         return `
             ${this.sectionTitle('📊', 'Resumo Quantitativo do Dossiê', 4)}
-            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:8px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(120px,100%),1fr));gap:10px;margin-bottom:8px;">
                 ${cards.map(c => `
-                    <div style="background:${c.bg};border:1px solid ${c.border};padding:10px;border-radius:8px;text-align:center;">
+                    <div style="background:${c.bg};border:1px solid ${c.border};padding:10px;border-radius:8px;text-align:center;overflow:hidden;">
                         <div style="font-size:22px;font-weight:800;color:${c.color};">${c.value}</div>
                         <div style="font-size:9px;font-weight:700;color:${c.color};text-transform:uppercase;">${c.label}</div>
                     </div>
@@ -320,15 +320,15 @@ const SaleReportModal = {
         const f = r.financials;
         return `
             ${this.sectionTitle('📈', 'Cotação FIPE e Valor de Mercado', 7)}
-            <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap;">
-                <div style="flex:1;min-width:200px;background:#f0fdf4;border:2px solid #86efac;border-radius:10px;padding:16px;text-align:center;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(220px,100%),1fr));gap:16px;margin-bottom:12px;">
+                <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:10px;padding:16px;text-align:center;">
                     <div style="font-size:11px;color:#065f46;font-weight:700;text-transform:uppercase;">Cotação FIPE Atual</div>
-                    <div style="font-size:28px;font-weight:900;color:#065f46;margin:4px 0;">${f.fipePrice ? this.fmt(f.fipePrice) : 'N/D'}</div>
-                    <div style="font-size:10px;color:#4b5563;">Código FIPE: ${f.fipeCode || 'N/D'} • Referência: ${f.fipeReference || 'N/D'}</div>
+                    <div style="font-size:28px;font-weight:900;color:#065f46;margin:4px 0;word-break:break-word;">${f.fipePrice ? this.fmt(f.fipePrice) : 'N/D'}</div>
+                    <div style="font-size:10px;color:#4b5563;word-break:break-word;">Código FIPE: ${f.fipeCode || 'N/D'} • Referência: ${f.fipeReference || 'N/D'}</div>
                 </div>
-                <div style="flex:1;min-width:200px;background:#eff6ff;border:2px solid #93c5fd;border-radius:10px;padding:16px;text-align:center;">
+                <div style="background:#eff6ff;border:2px solid #93c5fd;border-radius:10px;padding:16px;text-align:center;">
                     <div style="font-size:11px;color:#1e40af;font-weight:700;text-transform:uppercase;">Total Investido em Manutenção</div>
-                    <div style="font-size:28px;font-weight:900;color:#1e40af;margin:4px 0;">${this.fmt(f.totalInvestedCents)}</div>
+                    <div style="font-size:28px;font-weight:900;color:#1e40af;margin:4px 0;word-break:break-word;">${this.fmt(f.totalInvestedCents)}</div>
                     <div style="font-size:10px;color:#4b5563;">Valor que agrega na negociação</div>
                 </div>
             </div>
@@ -815,28 +815,30 @@ const SaleReportModal = {
                 ['Próximas', m.upcoming]
             ])}
             ${m.items.length > 0 ? `
-                <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;">
-                    <thead>
-                        <tr style="background:#f3f4f6;">
-                            <th style="padding:6px 8px;text-align:left;border:1px solid #e5e7eb;">Manutenção</th>
-                            <th style="padding:6px 8px;text-align:left;border:1px solid #e5e7eb;">Categoria</th>
-                            <th style="padding:6px 8px;text-align:right;border:1px solid #e5e7eb;">KM Recomendado</th>
-                            <th style="padding:6px 8px;text-align:left;border:1px solid #e5e7eb;">Data Recomendada</th>
-                            <th style="padding:6px 8px;text-align:center;border:1px solid #e5e7eb;">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${m.items.map(item => `
-                            <tr>
-                                <td style="padding:5px 8px;border:1px solid #e5e7eb;font-weight:600;">${item.title}</td>
-                                <td style="padding:5px 8px;border:1px solid #e5e7eb;">${item.category}</td>
-                                <td style="padding:5px 8px;border:1px solid #e5e7eb;text-align:right;font-family:monospace;">${item.recommendedKm ? this.fmtKm(item.recommendedKm) : '-'}</td>
-                                <td style="padding:5px 8px;border:1px solid #e5e7eb;">${this.fmtDate(item.recommendedDate)}</td>
-                                <td style="padding:5px 8px;border:1px solid #e5e7eb;text-align:center;">${this.statusBadge(item.status)}</td>
+                <div class="report-table-scroll">
+                    <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:8px;">
+                        <thead>
+                            <tr style="background:#f3f4f6;">
+                                <th style="padding:6px 8px;text-align:left;border:1px solid #e5e7eb;">Manutenção</th>
+                                <th style="padding:6px 8px;text-align:left;border:1px solid #e5e7eb;">Categoria</th>
+                                <th style="padding:6px 8px;text-align:right;border:1px solid #e5e7eb;">KM Recomendado</th>
+                                <th style="padding:6px 8px;text-align:left;border:1px solid #e5e7eb;">Data Recomendada</th>
+                                <th style="padding:6px 8px;text-align:center;border:1px solid #e5e7eb;">Status</th>
                             </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            ${m.items.map(item => `
+                                <tr>
+                                    <td style="padding:5px 8px;border:1px solid #e5e7eb;font-weight:600;">${item.title}</td>
+                                    <td style="padding:5px 8px;border:1px solid #e5e7eb;">${item.category}</td>
+                                    <td style="padding:5px 8px;border:1px solid #e5e7eb;text-align:right;font-family:monospace;">${item.recommendedKm ? this.fmtKm(item.recommendedKm) : '-'}</td>
+                                    <td style="padding:5px 8px;border:1px solid #e5e7eb;">${this.fmtDate(item.recommendedDate)}</td>
+                                    <td style="padding:5px 8px;border:1px solid #e5e7eb;text-align:center;">${this.statusBadge(item.status)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
             ` : ''}
         `;
     },
@@ -880,6 +882,13 @@ const SaleReportModal = {
     },
 
     printReport() {
+        document.body.classList.add('printing-sale-report');
+        const cleanup = () => {
+            document.body.classList.remove('printing-sale-report');
+            window.removeEventListener('afterprint', cleanup);
+        };
+        window.addEventListener('afterprint', cleanup);
         window.print();
+        setTimeout(cleanup, 2000);
     }
 };

@@ -327,7 +327,7 @@ const WorkshopView = {
                             Equipe Técnica e Usuários Autorizados (${data.staff.length})
                         </span>
                     </div>
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:16px;">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap:16px;">
                         ${data.staff.map(m => `
                             <div style="background:var(--bg-surface-elevated); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-subtle); display:flex; gap:14px; align-items:flex-start;">
                                 <div style="width:40px; height:40px; border-radius:8px; background:rgba(0, 212, 255, 0.1); border:1px solid rgba(0, 212, 255, 0.25); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
@@ -495,7 +495,7 @@ const WorkshopView = {
                         <button class="btn btn-sm btn-secondary" onclick="document.getElementById('ws-plate-lookup-result').style.display='none'">Fechar</button>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:16px;">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap:12px; margin-bottom:16px;">
                         <!-- Dados do Veículo -->
                         <div style="background:var(--bg-surface); padding:12px; border-radius:8px; border:1px solid var(--border-subtle);">
                             <div style="font-size:10px; font-weight:700; color:var(--brand-cyan); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">Identificação do Veículo</div>

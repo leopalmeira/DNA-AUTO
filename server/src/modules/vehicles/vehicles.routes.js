@@ -195,9 +195,11 @@ router.post('/register', authenticateToken, (req, res) => {
                 photo_url || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80'
             );
 
+            let generatedDnaCode = null;
             // Se solicitado ativar DNA imediatamente
             if (activate_dna_now) {
                 const dnaCode = generateDnaCode();
+                generatedDnaCode = dnaCode;
                 const dnaId = 'dna_' + Date.now();
                 const certificateHash = crypto.createHash('sha256').update(dnaCode + cleanChassis).digest('hex');
                 const effectiveWorkshopId = req.user.workshop ? req.user.workshop.workshop_id : null;
@@ -229,6 +231,7 @@ router.post('/register', authenticateToken, (req, res) => {
         res.status(201).json({
             success: true,
             vehicle_id: vehicleId,
+            dna_code: generatedDnaCode,
             message: 'Veículo cadastrado com sucesso!'
         });
     } catch (err) {

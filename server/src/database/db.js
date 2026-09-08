@@ -36,4 +36,16 @@ function initializeDatabase() {
 // Inicializa o banco imediatamente
 initializeDatabase();
 
+// Executa seed automático caso o banco esteja vazio (essencial em novos deploys como Render)
+try {
+    const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
+    if (!userCount || userCount.count === 0) {
+        console.log('🌱 Banco vazio detectado. Executando seed inicial automatizado...');
+        const runSeed = require('./seed');
+        runSeed();
+    }
+} catch (e) {
+    console.warn('Verificação de seed ignorada:', e.message);
+}
+
 module.exports = db;

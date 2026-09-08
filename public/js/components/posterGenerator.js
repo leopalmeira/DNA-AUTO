@@ -68,6 +68,13 @@ const PosterGenerator = {
     },
 
     printPoster() {
+        document.body.classList.add('printing-poster');
+        const cleanup = () => {
+            document.body.classList.remove('printing-poster');
+            window.removeEventListener('afterprint', cleanup);
+        };
+        window.addEventListener('afterprint', cleanup);
         window.print();
+        setTimeout(cleanup, 2000);
     }
 };

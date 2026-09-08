@@ -6,12 +6,12 @@
     <title>DNA AUTO — Identidade e Histórico Digital Permanente de Veículos</title>
     <meta name="description" content="Cada veículo possui um DNA permanente. Toda a história do carro acompanha o veículo durante toda a sua vida útil.">
 
-    <!-- CSS do Sistema (v=7.0) -->
-    <link rel="stylesheet" href="/css/variables.css?v=7.0">
-    <link rel="stylesheet" href="/css/base.css?v=7.0">
-    <link rel="stylesheet" href="/css/components.css?v=7.0">
-    <link rel="stylesheet" href="/css/dossier.css?v=7.0">
-    <link rel="stylesheet" href="/css/print.css?v=7.0">
+    <!-- CSS do Sistema (v=8.1) -->
+    <link rel="stylesheet" href="/css/variables.css?v=8.1">
+    <link rel="stylesheet" href="/css/base.css?v=8.1">
+    <link rel="stylesheet" href="/css/components.css?v=8.1">
+    <link rel="stylesheet" href="/css/dossier.css?v=8.1">
+    <link rel="stylesheet" href="/css/print.css?v=8.1">
 </head>
 <body>
     <div id="app-container">
@@ -463,12 +463,12 @@
                             <button type="button" class="btn btn-sm btn-cyan" onclick="OwnerView.addPartRow()">+ Adicionar Peça</button>
                         </div>
                         <div id="owner-parts-container">
-                            <div class="part-row" style="display:grid; grid-template-columns:2fr 1fr 1fr 1fr 30px; gap:8px; margin-bottom:8px; align-items:center;">
+                            <div class="part-row">
                                 <input type="text" class="form-control part-name" placeholder="Nome da Peça (Ex: Amortecedor Dianteiro)" value="Amortecedor Dianteiro Direito Cofap" required />
                                 <input type="text" class="form-control part-mfr" placeholder="Marca (Ex: Cofap)" value="Cofap TurboGás" />
                                 <input type="text" class="form-control part-num" placeholder="Part Number" value="GP32948" />
                                 <input type="number" class="form-control part-qty" placeholder="Qtd" value="1" min="1" />
-                                <button type="button" style="background:transparent; border:none; color:var(--status-rejected); cursor:pointer; font-weight:700; font-size:16px;" onclick="this.closest('.part-row').remove()">&times;</button>
+                                <button type="button" class="part-delete-btn" onclick="this.closest('.part-row').remove()">&times;</button>
                             </div>
                         </div>
                     </div>
@@ -495,17 +495,17 @@
         </div>
     </div>
 
-    <!-- Scripts da Aplicação (v=7.0) -->
-    <script src="/js/components/qrcode.js?v=7.0"></script>
-    <script src="/js/api.js?v=7.0"></script>
-    <script src="/js/components/dossierView.js?v=7.0"></script>
-    <script src="/js/components/workshopView.js?v=7.0"></script>
-    <script src="/js/components/ownerView.js?v=7.0"></script>
-    <script src="/js/components/adminView.js?v=7.0"></script>
-    <script src="/js/components/loginView.js?v=7.0"></script>
-    <script src="/js/components/salesPageView.js?v=7.0"></script>
-    <script src="/js/components/posterGenerator.js?v=7.0"></script>
-    <script src="/js/components/saleReportModal.js?v=7.0"></script>
-    <script src="/js/app.js?v=7.0"></script>
+    <!-- Scripts da Aplicação (v=8.3) -->
+    <script src="/js/components/qrcode.js?v=8.3"></script>
+    <script src="/js/api.js?v=8.3"></script>
+    <script src="/js/components/dossierView.js?v=8.3"></script>
+    <script src="/js/components/workshopView.js?v=8.3"></script>
+    <script src="/js/components/ownerView.js?v=8.3"></script>
+    <script src="/js/components/adminView.js?v=8.3"></script>
+    <script src="/js/components/loginView.js?v=8.3"></script>
+    <script src="/js/components/salesPageView.js?v=8.3"></script>
+    <script src="/js/components/posterGenerator.js?v=8.3"></script>
+    <script src="/js/components/saleReportModal.js?v=8.3"></script>
+    <script src="/js/app.js?v=8.3"></script>
 </body>
 </html>

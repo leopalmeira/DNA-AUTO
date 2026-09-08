@@ -447,6 +447,18 @@
     max-width: 900px;
     margin: 0 auto;
     box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.sale-report-document * {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.sale-report-document table {
+    max-width: none;
 }
 
 .report-header-flex {
@@ -590,6 +602,38 @@
     margin-bottom: 14px;
 }
 
+.part-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 34px;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.part-delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--status-rejected);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    transition: background 0.15s ease;
+}
+
+.part-delete-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
 /* ==============================================================================
    RESPONSIVIDADE GERAL DE COMPONENTES NO MOBILE (MAX-WIDTH: 768PX)
    ============================================================================== */
@@ -650,11 +694,23 @@
 
     .part-row {
         grid-template-columns: 1fr 1fr !important;
-        gap: 6px !important;
+        gap: 8px !important;
+        background: var(--bg-surface-elevated) !important;
+        padding: 10px !important;
+        border-radius: var(--radius-sm) !important;
+        border: 1px solid var(--border-subtle) !important;
     }
 
     .part-row .part-name {
-        grid-column: 1 / -1;
+        grid-column: 1 / -1 !important;
+    }
+
+    .part-row .part-delete-btn {
+        grid-column: 1 / -1 !important;
+        width: 100% !important;
+        justify-content: flex-end !important;
+        height: auto !important;
+        padding-top: 4px !important;
     }
 
     .panel-box {
@@ -764,4 +820,180 @@
         gap: 10px !important;
     }
 }
+
+/* ==============================================================================
+   FICHA DE CADASTRO DE VEÍCULO (TELA CENTRALIZADA COM BUSCA DE PLACA & API)
+   ============================================================================== */
+.owner-empty-garage-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 140px);
+    padding: 20px 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.owner-plate-register-card {
+    background: linear-gradient(180deg, rgba(17, 24, 39, 0.95), rgba(11, 15, 25, 0.98));
+    border: 1px solid var(--border-highlight);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 660px;
+    padding: 32px 28px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+}
+
+.owner-plate-register-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--brand-primary), var(--brand-cyan));
+}
+
+.owner-plate-header {
+    text-align: center;
+    margin-bottom: 22px;
+}
+
+.owner-plate-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 210, 28, 0.12);
+    border: 1px solid rgba(255, 210, 28, 0.35);
+    color: var(--brand-primary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+.owner-plate-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 6px;
+    letter-spacing: -0.4px;
+}
+
+.owner-plate-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Banner de Integração de API Pronta */
+.plate-api-ready-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: rgba(0, 212, 255, 0.07);
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    margin-bottom: 22px;
+    font-size: 12px;
+    color: #cbd5e1;
+    line-height: 1.5;
+}
+
+.plate-api-ready-banner strong {
+    color: var(--brand-cyan);
+}
+
+/* Card Visual de Placa Mercosul Centralizado */
+.mercosul-plate-box {
+    max-width: 360px;
+    margin: 0 auto 16px;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 3px solid #1e293b;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+}
+
+.mercosul-header-stripe {
+    background: #003399;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 3px 12px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    font-family: var(--font-sans);
+}
+
+.mercosul-input-row {
+    padding: 4px 12px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mercosul-input-field {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #05080D;
+    text-transform: uppercase;
+}
+
+.mercosul-input-field::placeholder {
+    color: #94a3b8;
+    letter-spacing: 3px;
+    font-weight: 700;
+}
+
+/* Ficha de Cadastro Revelada */
+.plate-dossier-form {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-subtle);
+    animation: authFadeIn 0.3s ease-out;
+}
+
+.plate-found-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #34d399;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+    .owner-plate-register-card {
+        padding: 20px 14px;
+    }
+    .mercosul-input-field {
+        font-size: 26px;
+        letter-spacing: 2px;
+    }
+}
+
 

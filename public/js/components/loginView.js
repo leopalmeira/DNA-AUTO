@@ -83,22 +83,6 @@ const LoginView = {
                     <div class="auth-card-body">
                         ${this.activeMode === 'LOGIN' ? this.renderLoginForm() : this.renderRegisterForm()}
                     </div>
-
-                    <!-- ACESSO DEMO RÁPIDO (COMPACTO & DISCRETO) -->
-                    <div class="auth-demo-bar">
-                        <div class="auth-demo-label">⚡ Acesso Rápido para Avaliação:</div>
-                        <div class="auth-demo-buttons">
-                            <button type="button" class="auth-demo-pill ${isOwner ? 'active' : ''}" onclick="LoginView.quickLogin('OWNER')">
-                                🚗 Cliente (Carlos)
-                            </button>
-                            <button type="button" class="auth-demo-pill ${!isOwner ? 'active' : ''}" onclick="LoginView.quickLogin('WORKSHOP')">
-                                🔧 Oficina (Veloce)
-                            </button>
-                            <a href="/admin" class="auth-demo-pill admin-pill">
-                                🛡️ Admin Governança
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
         `;
@@ -396,6 +380,11 @@ const LoginView = {
             API.setToken(res.token);
             API.setDemoUser(res.user.id);
             localStorage.setItem('dna_token', res.token);
+            if (typeof OwnerView !== 'undefined') {
+                OwnerView.currentVehicleDna = null;
+                OwnerView.isRegisteringVehicle = false;
+                OwnerView.searchedVehicleData = null;
+            }
             this.restoreLayout();
             App.loginAs(res.user.role_code, res.user);
         } catch (err) {
@@ -488,6 +477,12 @@ const LoginView = {
             API.setToken(res.token);
             API.setDemoUser(res.user.id);
             localStorage.setItem('dna_token', res.token);
+            localStorage.removeItem('dna_active_vehicle_' + res.user.id);
+            if (typeof OwnerView !== 'undefined') {
+                OwnerView.currentVehicleDna = null;
+                OwnerView.isRegisteringVehicle = false;
+                OwnerView.searchedVehicleData = null;
+            }
             alert(`🎉 Bem-vindo ao DNA AUTO, ${res.user.name}! Sua Garagem Digital foi criada.`);
             this.restoreLayout();
             App.loginAs('OWNER', res.user);

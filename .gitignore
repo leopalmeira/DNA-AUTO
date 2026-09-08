@@ -3,6 +3,8 @@ server/data/
 server/uploads/
 *.db
 *.db-journal
+*.db-shm
+*.db-wal
 .env
 .DS_Store
 Thumbs.db
