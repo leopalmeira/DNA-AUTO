@@ -34,47 +34,50 @@ const OwnerView = {
                         <p>Gestão completa da vida do seu carro, histórico comprovado, alertas preventivos e laudo oficial de valorização para venda.</p>
                     </div>
                     <div class="owner-header-actions">
-                        <button class="btn btn-primary" onclick="OwnerView.openDeclareModal('${v.id}')" style="background:var(--proof-level-4); border-color:var(--proof-level-4); color:#000; font-weight:700;">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-                            DECLARAR SERVIÇO COM PEÇAS & NF
+                        <button class="btn btn-primary btn-owner-declare" onclick="OwnerView.openDeclareModal('${v.id}')">
+                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:6px;"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                            <span>DECLARAR SERVIÇO COM PEÇAS & NF</span>
                         </button>
-                        <button class="btn btn-cyan" onclick="SaleReportModal.open('${v.id}')">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                            EMITIR RELATÓRIO PARA VENDA
-                        </button>
-                        <button class="btn btn-secondary" onclick="OwnerView.openTransferModal('${v.id}')">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
-                            TRANSFERIR VEÍCULO
-                        </button>
+                        <div class="owner-action-subgrid">
+                            <button class="btn btn-cyan btn-owner-report" onclick="SaleReportModal.open('${v.id}')">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                <span>EMITIR RELATÓRIO</span>
+                            </button>
+                            <button class="btn btn-secondary btn-owner-transfer" onclick="OwnerView.openTransferModal('${v.id}')">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:5px;"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+                                <span>TRANSFERIR</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Card de Apresentação Hero do Veículo -->
-                <div class="panel-box owner-hero-panel" style="background:linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(11, 15, 25, 0.95)); border-color:var(--brand-cyan);">
-                    <div class="owner-hero-row" style="display:flex; flex-wrap:wrap; gap:20px; align-items:center;">
+                <div class="panel-box owner-hero-panel">
+                    <div class="owner-hero-row">
                         <div class="vehicle-thumb-box owner-hero-thumb">
-                            <img src="${v.photo_url || '/img/car-silhouette.svg'}" alt="${v.model}" onerror="this.onerror=null; this.src='/img/car-silhouette.svg';" style="width:100%; height:100%; object-fit:cover;" />
+                            <img src="${v.photo_url || '/img/car-silhouette.svg'}" alt="${v.model}" onerror="this.onerror=null; this.src='/img/car-silhouette.svg';" />
                         </div>
-                        <div style="flex:1; min-width:260px;">
-                            <div class="dossier-dna-badge-hero" style="margin-bottom:8px; display:inline-flex;">
+                        <div class="owner-hero-info">
+                            <div class="dossier-dna-badge-hero">
                                 <span class="dna-label">PASSAPORTE DIGITAL PERMANENTE</span>
                                 <span class="dna-code-highlight">${v.dna_code}</span>
                             </div>
-                            <h3 style="font-size:22px; font-weight:800; color:#fff;">${v.brand} ${v.model} ${v.version_label || ''}</h3>
-                            <div class="owner-specs-grid" style="display:flex; gap:10px; margin-top:8px; font-size:12px; color:var(--text-muted); flex-wrap:wrap;">
+                            <h3 class="owner-vehicle-title">${v.brand} ${v.model} ${v.version_label || ''}</h3>
+                            <div class="owner-specs-grid">
                                 <span>Placa: <strong style="color:#fff; font-family:var(--font-mono);">${v.license_plate}</strong></span>
                                 <span>Ano: <strong style="color:#fff;">${v.manufacture_year}/${v.model_year}</strong></span>
-                                <span>Km Atual: <strong style="color:#fff; font-family:var(--font-mono);">${Number(v.current_mileage).toLocaleString('pt-BR')} km</strong></span>
+                                <span>Km: <strong style="color:#fff; font-family:var(--font-mono);">${Number(v.current_mileage).toLocaleString('pt-BR')} km</strong></span>
                                 <span>Câmbio: <strong style="color:#fff;">${v.transmission_type || 'Automático'}</strong></span>
                                 <span>Combustível: <strong style="color:#fff;">${v.fuel_type}</strong></span>
                             </div>
                         </div>
                         <!-- Score Card -->
-                        <div class="owner-score-card" style="background:var(--bg-surface); padding:16px 20px; border-radius:var(--radius-md); text-align:center; border:1px solid var(--border-subtle); min-width:160px;">
-                            <div style="font-size:10px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px;">Saúde Documental</div>
-                            <div style="font-size:34px; font-weight:800; color:var(--proof-level-4); font-family:var(--font-mono);">${h.overallScore}/100</div>
-                            <div style="font-size:11px; color:var(--brand-cyan); font-weight:600;">${h.documentedPercentage}% Documentado</div>
-                            <div style="font-size:10px; color:var(--text-dim); margin-top:2px;">Auditoria Blockchain</div>
+                        <div class="owner-score-card">
+                            <div>
+                                <div class="owner-score-label">Saúde Documental</div>
+                                <div class="owner-score-meta">${h.documentedPercentage}% Documentado • Blockchain</div>
+                            </div>
+                            <div class="owner-score-number">${h.overallScore}/100</div>
                         </div>
                     </div>
                 </div>

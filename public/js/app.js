@@ -255,35 +255,39 @@ const App = {
 
         if (!this.currentRole || !this.currentUser) {
             topActions.innerHTML = `
-                <button class="btn btn-sm btn-cyan" onclick="App.switchView('login')" title="Entrar ou Criar Conta" style="padding:7px 16px; font-weight:700; font-size:12px; display:inline-flex; align-items:center; gap:6px;">
+                <button class="btn btn-sm btn-cyan top-login-trigger" onclick="App.switchView('login')" title="Entrar ou Criar Conta" style="padding:6px 14px; font-weight:700; font-size:12px; display:inline-flex; align-items:center; gap:6px;">
                     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-                    <span>Fazer Login</span>
+                    <span>Entrar</span>
                 </button>
             `;
         } else {
-            let badgeStyle = 'background:rgba(56, 189, 248, 0.1); border:1px solid rgba(56, 189, 248, 0.3); color:#38bdf8;';
+            let badgeStyle = 'background:rgba(255, 210, 28, 0.12); border:1px solid rgba(255, 210, 28, 0.35); color:#FFD21C;';
             let roleIcon = '🚗';
             let roleTitle = 'Cliente';
 
             if (this.currentRole === 'WORKSHOP') {
-                badgeStyle = 'background:rgba(16, 185, 129, 0.1); border:1px solid rgba(16, 185, 129, 0.3); color:#10b981;';
+                badgeStyle = 'background:rgba(16, 185, 129, 0.12); border:1px solid rgba(16, 185, 129, 0.35); color:#10b981;';
                 roleIcon = '🔧';
                 roleTitle = 'Oficina';
             } else if (this.currentRole === 'ADMIN') {
-                badgeStyle = 'background:rgba(168, 85, 247, 0.1); border:1px solid rgba(168, 85, 247, 0.3); color:#c084fc;';
+                badgeStyle = 'background:rgba(255, 210, 28, 0.18); border:1px solid rgba(255, 210, 28, 0.5); color:#FFD21C;';
                 roleIcon = '🛡️';
                 roleTitle = 'Admin';
             }
 
+            const fullName = this.currentUser.name || 'Usuário';
+            const firstName = fullName.split(' ')[0];
+
             topActions.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <div style="display:inline-flex; align-items:center; gap:8px; padding:5px 12px; border-radius:var(--radius-full); font-size:12px; font-weight:600; ${badgeStyle}">
-                        <span>${roleIcon}</span>
-                        <span><strong>${this.currentUser.name}</strong> (${roleTitle})</span>
+                <div class="top-user-session-bar">
+                    <div class="top-user-badge" style="${badgeStyle}" title="${fullName} (${roleTitle})">
+                        <span class="top-user-icon">${roleIcon}</span>
+                        <span class="top-user-fullname"><strong>${fullName}</strong> <span class="top-user-role-label">(${roleTitle})</span></span>
+                        <span class="top-user-shortname"><strong>${firstName}</strong></span>
                     </div>
-                    <button class="btn btn-sm" onclick="App.logout()" title="Encerrar Sessão" style="background:rgba(239, 68, 68, 0.12); border:1px solid rgba(239, 68, 68, 0.35); color:#fca5a5; padding:6px 12px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer; border-radius:var(--radius-sm); transition:all 0.2s ease;">
+                    <button class="btn btn-sm top-logout-btn" onclick="App.logout()" title="Encerrar Sessão">
                         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                        <span>Sair</span>
+                        <span class="top-logout-label">Sair</span>
                     </button>
                 </div>
             `;

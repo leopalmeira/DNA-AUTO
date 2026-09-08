@@ -155,7 +155,52 @@ input, select, textarea {
 .nav-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.top-user-session-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.top-user-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.top-user-shortname {
+    display: none;
+}
+
+.top-logout-btn {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.top-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
+    color: #ffffff;
+    border-color: #ef4444;
 }
 
 .profile-quick-bar {
@@ -485,22 +530,48 @@ input, select, textarea {
 
 @media (max-width: 900px) {
     .top-navbar {
-        height: 56px;
-        padding: 0 12px;
+        height: 52px;
+        padding: 0 10px;
+        gap: 6px;
+    }
+
+    .brand-wrapper {
+        gap: 8px;
     }
 
     .brand-logo-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 15px;
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
     }
 
     .brand-text-block h1 {
-        font-size: 15px;
+        font-size: 14px;
+        letter-spacing: 0.3px;
     }
 
     .brand-text-block p {
         display: none !important;
+    }
+
+    .top-user-fullname {
+        display: none !important;
+    }
+
+    .top-user-shortname {
+        display: inline !important;
+        font-size: 11px;
+    }
+
+    .top-user-badge {
+        padding: 4px 8px;
+        font-size: 11px;
+        gap: 4px;
+    }
+
+    .top-logout-btn {
+        padding: 5px 8px;
+        font-size: 10.5px;
     }
 
     /* Oculta os botões de perfil do topo no celular para não esmagar a tela */
@@ -516,12 +587,15 @@ input, select, textarea {
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
     }
 
     .sidebar {
         position: fixed;
         left: -290px;
-        top: 56px;
+        top: 52px;
         bottom: 0;
         width: 280px;
         z-index: 999;
@@ -535,7 +609,7 @@ input, select, textarea {
     }
 
     .content-viewport {
-        padding: 12px 10px 40px;
+        padding: 12px 10px 115px !important;
         width: 100%;
         max-width: 100vw;
         box-sizing: border-box;
@@ -546,14 +620,38 @@ input, select, textarea {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
     }
 
     .view-header-title h2 {
-        font-size: 19px;
+        font-size: 18px;
+        line-height: 1.25;
     }
 
     .view-header-title p {
-        font-size: 12px;
+        font-size: 11.5px;
+        line-height: 1.4;
+    }
+}
+
+@media (max-width: 480px) {
+    .top-navbar {
+        padding: 0 8px;
+    }
+
+    .top-user-shortname {
+        display: none !important;
+    }
+
+    .top-user-badge {
+        padding: 4px 6px;
+    }
+
+    .top-logout-label {
+        display: none !important;
+    }
+
+    .top-logout-btn {
+        padding: 5px 6px;
     }
 }

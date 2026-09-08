@@ -31,6 +31,10 @@ const LoginView = {
         const container = document.getElementById('view-content');
         if (!container) return;
 
+        // Bloqueia scroll do body e html enquanto na tela de login
+        document.body.style.overflow = 'hidden';
+        document.documentElement.style.overflow = 'hidden';
+
         // Esconde sidebar e header quando na tela de login
         const sidebar = document.querySelector('.sidebar');
         const topbar = document.querySelector('.top-navbar');
@@ -49,32 +53,22 @@ const LoginView = {
 
         container.innerHTML = `
             <div class="auth-fullscreen-container">
-                <!-- Barra de Status Mobile Elegante -->
-                <div class="auth-status-bar">
-                    <span class="auth-time">9:41</span>
-                    <div class="auth-status-icons">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.58 10.57 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4z"/></svg>
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17 5v14h4V5h-4zm-6 4v10h4V9h-4zm-6 5v5h4v-5H5z"/></svg>
-                    </div>
-                </div>
-
                 <div class="auth-content-box">
-                    <!-- LOGO & IDENTIDADE VISUAL CONFORME A REFERÊNCIA -->
+                    <!-- LOGO & IDENTIDADE VISUAL OFICIAL DNA AUTO -->
                     <div class="auth-brand-header">
                         <div class="auth-emblem-wrapper">
                             <!-- Ícone de Impressão Digital Automotiva Exata da Referência -->
-                            <svg class="auth-fingerprint-svg" viewBox="0 0 120 120" width="80" height="80" fill="none" stroke="#FFD21C" stroke-linecap="round" stroke-linejoin="round">
+                            <svg class="auth-fingerprint-svg" viewBox="0 0 120 120" width="48" height="48" fill="none" stroke="#FFD21C" stroke-linecap="round" stroke-linejoin="round">
                                 <!-- Núcleo central da digital -->
-                                <path d="M 54 62 C 51 55 51 46 57 41 C 62 36 67 40 65 50 C 63 56 64 64 64 64" stroke-width="4.5" />
+                                <path d="M 54 62 C 51 55 51 46 57 41 C 62 36 67 40 65 50 C 63 56 64 64 64 64" stroke-width="5" />
                                 <!-- Anel concêntrico interno -->
-                                <path d="M 45 66 C 41 53 41 39 50 30 C 58 21 68 21 75 30 C 82 40 82 55 77 66" stroke-width="5" />
+                                <path d="M 45 66 C 41 53 41 39 50 30 C 58 21 68 21 75 30 C 82 40 82 55 77 66" stroke-width="5.5" />
                                 <!-- Anel concêntrico intermediário -->
-                                <path d="M 36 68 C 30 52 31 32 43 20 C 54 9 72 9 83 20 C 93 32 94 52 88 68" stroke-width="5" />
+                                <path d="M 36 68 C 30 52 31 32 43 20 C 54 9 72 9 83 20 C 93 32 94 52 88 68" stroke-width="5.5" />
                                 <!-- Anel concêntrico externo -->
-                                <path d="M 28 70 C 21 52 23 27 36 14 C 50 1 78 1 91 14 C 103 27 105 52 98 70" stroke-width="5" />
+                                <path d="M 28 70 C 21 52 23 27 36 14 C 50 1 78 1 91 14 C 103 27 105 52 98 70" stroke-width="5.5" />
                                 <!-- Base / Grade aerodinâmica automotiva com faróis -->
-                                <path d="M 22 84 L 32 84 C 36 78 42 75 48 75 L 72 75 C 78 75 84 78 88 84 L 98 84" stroke-width="5.5" />
+                                <path d="M 22 84 L 32 84 C 36 78 42 75 48 75 L 72 75 C 78 75 84 78 88 84 L 98 84" stroke-width="6" />
                                 <circle cx="34" cy="85" r="2.5" fill="#FFD21C" stroke="none" />
                                 <circle cx="86" cy="85" r="2.5" fill="#FFD21C" stroke="none" />
                             </svg>
@@ -90,7 +84,7 @@ const LoginView = {
                         ${this.activeMode === 'LOGIN' ? this.renderLoginForm() : this.renderRegisterForm()}
                     </div>
 
-                    <!-- ACESSO DEMO RÁPIDO (PRÁTICO & DISCRETO) -->
+                    <!-- ACESSO DEMO RÁPIDO (COMPACTO & DISCRETO) -->
                     <div class="auth-demo-bar">
                         <div class="auth-demo-label">⚡ Acesso Rápido para Avaliação:</div>
                         <div class="auth-demo-buttons">
@@ -301,30 +295,24 @@ const LoginView = {
     renderAdminLogin(container) {
         container.innerHTML = `
             <div class="auth-fullscreen-container admin-governance-mode">
-                <div class="auth-status-bar">
-                    <span class="auth-time" style="color:#FFD21C;">TERMINAL DE GOVERNANÇA</span>
-                    <div class="auth-status-icons">
-                        <span style="font-size:10px; font-weight:700; color:#10b981; border:1px solid #10b981; padding:2px 6px; border-radius:4px;">SSL SECURE</span>
-                    </div>
-                </div>
-
-                <div class="auth-content-box" style="max-width: 420px;">
-                    <div class="auth-brand-header">
-                        <div class="auth-emblem-wrapper" style="filter: drop-shadow(0 0 20px rgba(255, 210, 28, 0.4));">
-                            <svg viewBox="0 0 24 24" width="60" height="60" fill="none" stroke="#FFD21C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="auth-content-box" style="max-width: 360px;">
+                    <div class="auth-brand-header" style="margin-bottom: 12px;">
+                        <div class="auth-emblem-wrapper" style="filter: drop-shadow(0 0 16px rgba(255, 210, 28, 0.4)); margin: 0 auto 6px;">
+                            <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="#FFD21C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                             </svg>
                         </div>
                         <h1 class="auth-title">DNA <span class="text-gold">CENTRAL</span></h1>
-                        <p class="auth-subtitle" style="color:#FFD21C;">PAINEL DE GOVERNANÇA & AUDITORIA</p>
-                        <p class="auth-motto">Acesso restrito à Diretoria e Administradores da Rede.</p>
+                        <p class="auth-subtitle" style="color:#FFD21C; margin: 2px 0 4px;">PAINEL DE GOVERNANÇA & AUDITORIA</p>
+                        <p class="auth-motto" style="font-size:11.5px; margin: 0 auto 6px;">Acesso restrito à Diretoria e Administradores da Rede.</p>
+                        <div style="display:inline-block; font-size:9.5px; font-weight:700; color:#10b981; border:1px solid #10b981; padding:2px 8px; border-radius:4px; letter-spacing:0.5px;">SSL 256-BIT SECURE TERMINAL</div>
                     </div>
 
                     <div class="auth-card-body">
                         <form id="admin-login-form" onsubmit="LoginView.handleAdminLogin(event)">
                             <div class="auth-input-group">
                                 <div class="auth-input-icon">
-                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                                 </div>
                                 <input type="email" id="admin-login-email" class="auth-input" required
                                        placeholder="admin@dnaauto.com.br" value="admin@dnaauto.com.br" autocomplete="email" />
@@ -332,23 +320,23 @@ const LoginView = {
 
                             <div class="auth-input-group">
                                 <div class="auth-input-icon">
-                                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                                 </div>
                                 <input type="password" id="admin-login-password" class="auth-input" required
                                        placeholder="••••••••" value="admin123" autocomplete="current-password" />
                                 <button type="button" class="auth-eye-btn" onclick="LoginView.togglePasswordVisibility()">
-                                    <svg id="password-eye-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                    <svg id="password-eye-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                 </button>
                             </div>
 
-                            <button type="submit" class="auth-btn-primary" id="admin-submit-btn" style="margin-top:8px;">
+                            <button type="submit" class="auth-btn-primary" id="admin-submit-btn" style="margin-top:6px;">
                                 <span class="auth-btn-arrow">🛡️</span>
                                 <span>Autenticar Terminal Master</span>
                             </button>
                         </form>
 
-                        <div style="text-align:center; margin-top:20px;">
-                            <a href="javascript:void(0)" onclick="LoginView.isAdminMode=false; LoginView.render()" style="color:#94a3b8; font-size:12px; text-decoration:none;">
+                        <div style="text-align:center; margin-top:12px;">
+                            <a href="javascript:void(0)" onclick="LoginView.isAdminMode=false; LoginView.render()" style="color:#94a3b8; font-size:11.5px; text-decoration:none;">
                                 ← Retornar ao Portal DNA AUTO
                             </a>
                         </div>
@@ -535,6 +523,8 @@ const LoginView = {
     },
 
     restoreLayout() {
+        document.body.style.overflow = '';
+        document.documentElement.style.overflow = '';
         const sidebar = document.querySelector('.sidebar');
         const topbar = document.querySelector('.top-navbar');
         const backdrop = document.getElementById('sidebar-backdrop');
@@ -543,88 +533,75 @@ const LoginView = {
         if (backdrop) backdrop.style.display = '';
     },
 
-    // ── CSS Oficial do Design da Referência ──
+    // ── CSS Oficial do Design da Referência (Zero Scroll & Alta Fidelidade) ──
     injectCSS() {
         const style = document.createElement('style');
         style.id = 'login-automotive-luxury-css';
         style.textContent = `
-            /* CONTAINER FULLSCREEN COM BACKDROP AUTOMOTIVO DE LUXO */
+            /* CONTAINER FULLSCREEN COM ZERO SCROLL GARANTIDO (100DVH) */
             .auth-fullscreen-container {
                 position: fixed;
                 inset: 0;
+                width: 100vw;
+                height: 100dvh;
+                max-height: 100dvh;
+                overflow: hidden !important;
+                overscroll-behavior: none !important;
+                touch-action: none;
                 z-index: 99999;
-                background: linear-gradient(180deg, rgba(5, 8, 13, 0.78) 0%, rgba(5, 8, 13, 0.88) 45%, rgba(5, 8, 13, 0.98) 100%),
+                background: linear-gradient(180deg, rgba(5, 8, 13, 0.82) 0%, rgba(5, 8, 13, 0.90) 45%, rgba(5, 8, 13, 0.98) 100%),
                             url('/img/login-car-bg.jpg') center center / cover no-repeat fixed;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                justify-content: flex-start;
-                overflow-y: auto;
+                justify-content: center;
                 font-family: var(--font-sans);
-                padding: 16px 20px 40px;
+                padding: 10px 16px;
                 box-sizing: border-box;
-            }
-
-            /* BARRA SUPERIOR MOBILE ELEGANTE */
-            .auth-status-bar {
-                width: 100%;
-                max-width: 420px;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 4px 10px 18px;
-                color: #ffffff;
-                font-size: 14px;
-                font-weight: 600;
-                letter-spacing: -0.2px;
-                opacity: 0.9;
-            }
-            .auth-status-icons {
-                display: flex;
-                align-items: center;
-                gap: 8px;
             }
 
             /* CAIXA CENTRAL */
             .auth-content-box {
                 width: 100%;
-                max-width: 380px;
+                max-width: 360px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                animation: authFadeIn 0.35s ease-out;
+                justify-content: center;
+                animation: authFadeIn 0.3s ease-out;
+                box-sizing: border-box;
             }
 
             @keyframes authFadeIn {
-                from { opacity: 0; transform: translateY(12px); }
+                from { opacity: 0; transform: translateY(8px); }
                 to { opacity: 1; transform: translateY(0); }
             }
 
             /* HEADER & IDENTIDADE */
             .auth-brand-header {
                 text-align: center;
-                margin-bottom: 24px;
+                margin-bottom: 12px;
                 width: 100%;
             }
 
             .auth-emblem-wrapper {
-                margin: 0 auto 12px;
+                margin: 0 auto 6px;
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                filter: drop-shadow(0 0 16px rgba(255, 210, 28, 0.3));
+                filter: drop-shadow(0 0 14px rgba(255, 210, 28, 0.35));
                 transition: transform 0.2s ease;
             }
             .auth-emblem-wrapper:hover {
-                transform: scale(1.03);
+                transform: scale(1.04);
             }
 
             .auth-title {
-                font-size: 34px;
+                font-size: 24px;
                 font-weight: 900;
                 color: #ffffff;
-                letter-spacing: 1.5px;
-                margin: 0 0 2px;
+                letter-spacing: 1px;
+                margin: 0;
                 line-height: 1.1;
                 font-family: var(--font-sans);
             }
@@ -633,22 +610,22 @@ const LoginView = {
             }
 
             .auth-subtitle {
-                font-size: 11px;
+                font-size: 9.5px;
                 font-weight: 800;
                 color: #ffffff;
-                letter-spacing: 2px;
+                letter-spacing: 1.6px;
                 text-transform: uppercase;
-                margin: 0 0 10px;
+                margin: 2px 0 4px;
                 opacity: 0.95;
             }
 
             .auth-motto {
-                font-size: 13px;
+                font-size: 11.5px;
                 color: #94a3b8;
                 font-weight: 400;
-                line-height: 1.4;
+                line-height: 1.3;
                 margin: 0 auto;
-                max-width: 290px;
+                max-width: 280px;
             }
 
             /* FORMULÁRIO */
@@ -660,12 +637,12 @@ const LoginView = {
             .auth-input-group {
                 position: relative;
                 width: 100%;
-                margin-bottom: 14px;
+                margin-bottom: 8px;
             }
 
             .auth-input-icon {
                 position: absolute;
-                left: 16px;
+                left: 14px;
                 top: 50%;
                 transform: translateY(-50%);
                 color: #94a3b8;
@@ -677,13 +654,13 @@ const LoginView = {
 
             .auth-input {
                 width: 100%;
-                height: 52px;
-                background: rgba(12, 18, 28, 0.85);
+                height: 40px;
+                background: rgba(12, 18, 28, 0.88);
                 border: 1px solid #1E2B3D;
-                border-radius: 12px;
-                padding: 0 46px 0 48px;
+                border-radius: 9px;
+                padding: 0 40px 0 42px;
                 color: #ffffff;
-                font-size: 15px;
+                font-size: 13.5px;
                 font-family: var(--font-sans);
                 transition: all 0.2s ease;
                 box-sizing: border-box;
@@ -691,25 +668,25 @@ const LoginView = {
             }
             .auth-input::placeholder {
                 color: #64748b;
-                font-size: 14px;
+                font-size: 13px;
             }
             .auth-input:focus {
                 outline: none;
                 border-color: #FFD21C;
-                box-shadow: 0 0 0 3px rgba(255, 210, 28, 0.18);
-                background: rgba(14, 22, 34, 0.95);
+                box-shadow: 0 0 0 2.5px rgba(255, 210, 28, 0.18);
+                background: rgba(14, 22, 34, 0.98);
             }
 
             .auth-eye-btn {
                 position: absolute;
-                right: 14px;
+                right: 10px;
                 top: 50%;
                 transform: translateY(-50%);
                 background: transparent;
                 border: none;
                 color: #94a3b8;
                 cursor: pointer;
-                padding: 6px;
+                padding: 4px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -722,10 +699,10 @@ const LoginView = {
             .auth-input-row {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 10px;
+                gap: 8px;
             }
             .auth-input-row .auth-input {
-                padding-left: 16px;
+                padding-left: 12px;
             }
 
             /* LEMBRAR DE MIM & ESQUECI MINHA SENHA */
@@ -733,14 +710,14 @@ const LoginView = {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                margin: 16px 0 20px;
-                font-size: 13px;
+                margin: 6px 0 10px;
+                font-size: 12px;
             }
 
             .auth-checkbox-label {
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: 6px;
                 cursor: pointer;
                 user-select: none;
             }
@@ -750,8 +727,8 @@ const LoginView = {
             }
 
             .auth-checkbox-custom {
-                width: 18px;
-                height: 18px;
+                width: 16px;
+                height: 16px;
                 border-radius: 4px;
                 background: #111923;
                 border: 1.5px solid #28384B;
@@ -768,7 +745,7 @@ const LoginView = {
             .auth-custom-checkbox:checked + .auth-checkbox-custom::after {
                 content: '✓';
                 color: #05080D;
-                font-size: 12px;
+                font-size: 11px;
                 font-weight: 900;
             }
 
@@ -791,31 +768,31 @@ const LoginView = {
             /* BOTÃO PRIMÁRIO (AMARELO OFICIAL) */
             .auth-btn-primary {
                 width: 100%;
-                height: 52px;
+                height: 40px;
                 background: #FFD21C;
                 color: #05080D;
                 border: none;
-                border-radius: 12px;
-                font-size: 16px;
+                border-radius: 9px;
+                font-size: 14px;
                 font-weight: 800;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 10px;
+                gap: 8px;
                 cursor: pointer;
-                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-                box-shadow: 0 4px 18px rgba(255, 210, 28, 0.3);
+                transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 3px 14px rgba(255, 210, 28, 0.28);
             }
             .auth-btn-primary:hover {
                 background: #FFE052;
                 transform: translateY(-1px);
-                box-shadow: 0 8px 26px rgba(255, 210, 28, 0.42);
+                box-shadow: 0 5px 18px rgba(255, 210, 28, 0.38);
             }
             .auth-btn-primary:active {
                 transform: translateY(0);
             }
             .auth-btn-arrow {
-                font-size: 18px;
+                font-size: 16px;
                 font-weight: 900;
             }
 
@@ -823,44 +800,43 @@ const LoginView = {
             .auth-divider {
                 display: flex;
                 align-items: center;
-                gap: 16px;
-                margin: 22px 0;
+                gap: 12px;
+                margin: 8px 0;
                 width: 100%;
             }
             .auth-divider-line {
                 flex: 1;
                 height: 1px;
-                background: rgba(255, 255, 255, 0.12);
+                background: rgba(255, 255, 255, 0.1);
             }
             .auth-divider-text {
                 color: #64748b;
-                font-size: 13px;
+                font-size: 11.5px;
                 font-weight: 500;
             }
 
             /* BOTÃO SECUNDÁRIO (OFICINA) */
             .auth-btn-secondary {
                 width: 100%;
-                height: 50px;
-                background: rgba(10, 15, 22, 0.6);
-                border: 1.5px solid rgba(255, 255, 255, 0.22);
-                border-radius: 12px;
+                height: 36px;
+                background: rgba(10, 15, 22, 0.65);
+                border: 1.2px solid rgba(255, 255, 255, 0.18);
+                border-radius: 9px;
                 color: #ffffff;
-                font-size: 14px;
+                font-size: 12.5px;
                 font-weight: 700;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                gap: 10px;
+                gap: 8px;
                 cursor: pointer;
-                transition: all 0.2s ease;
+                transition: all 0.18s ease;
                 backdrop-filter: blur(8px);
             }
             .auth-btn-secondary:hover {
                 border-color: #FFD21C;
                 color: #FFD21C;
-                background: rgba(255, 210, 28, 0.05);
-                transform: translateY(-1px);
+                background: rgba(255, 210, 28, 0.06);
             }
             .auth-secondary-icon {
                 display: flex;
@@ -870,12 +846,12 @@ const LoginView = {
             /* RODAPÉ PROMPT */
             .auth-footer-prompt {
                 text-align: center;
-                margin-top: 24px;
-                font-size: 13px;
+                margin-top: 8px;
+                font-size: 11.5px;
                 color: #94a3b8;
                 display: flex;
-                flex-direction: column;
-                gap: 4px;
+                justify-content: center;
+                gap: 5px;
             }
             .auth-link-gold {
                 color: #FFD21C;
@@ -887,36 +863,36 @@ const LoginView = {
                 color: #FFE052;
             }
 
-            /* DEMO RÁPIDO DISCRETO */
+            /* DEMO RÁPIDO DISCRETO & COMPACTO */
             .auth-demo-bar {
-                margin-top: 28px;
-                padding-top: 18px;
-                border-top: 1px solid rgba(255, 255, 255, 0.08);
+                margin-top: 8px;
+                padding-top: 6px;
+                border-top: 1px solid rgba(255, 255, 255, 0.07);
                 width: 100%;
                 text-align: center;
             }
             .auth-demo-label {
-                font-size: 11px;
+                font-size: 9.5px;
                 font-weight: 700;
                 text-transform: uppercase;
-                letter-spacing: 0.6px;
+                letter-spacing: 0.5px;
                 color: #64748b;
-                margin-bottom: 10px;
+                margin-bottom: 5px;
             }
             .auth-demo-buttons {
                 display: flex;
                 justify-content: center;
-                gap: 8px;
+                gap: 6px;
                 flex-wrap: wrap;
             }
             .auth-demo-pill {
                 background: rgba(255, 255, 255, 0.05);
                 border: 1px solid rgba(255, 255, 255, 0.12);
                 color: #cbd5e1;
-                font-size: 11px;
+                font-size: 10.5px;
                 font-weight: 600;
-                padding: 6px 12px;
-                border-radius: 20px;
+                padding: 4px 10px;
+                border-radius: 16px;
                 cursor: pointer;
                 transition: all 0.15s ease;
                 text-decoration: none;
@@ -939,8 +915,8 @@ const LoginView = {
             }
 
             .auth-spinner {
-                width: 18px;
-                height: 18px;
+                width: 16px;
+                height: 16px;
                 border: 2px solid rgba(0,0,0,0.2);
                 border-top-color: #05080D;
                 border-radius: 50%;
@@ -951,23 +927,54 @@ const LoginView = {
                 to { transform: rotate(360deg); }
             }
 
-            @media (max-width: 440px) {
+            /* Scroll interno seguro APENAS quando no modo cadastro */
+            .auth-register-header {
+                text-align: center;
+                margin-bottom: 10px;
+            }
+
+            /* TELAS PEQUENAS / ULTRA COMPACTO */
+            @media (max-height: 640px) {
                 .auth-fullscreen-container {
-                    padding: 10px 16px 30px;
+                    padding: 6px 12px;
+                }
+                .auth-brand-header {
+                    margin-bottom: 6px;
+                }
+                .auth-emblem-wrapper {
+                    margin-bottom: 2px;
                 }
                 .auth-title {
-                    font-size: 30px;
+                    font-size: 20px;
                 }
                 .auth-subtitle {
-                    font-size: 10px;
+                    font-size: 8.5px;
+                    margin-bottom: 2px;
+                }
+                .auth-motto {
+                    display: none;
+                }
+                .auth-input-group {
+                    margin-bottom: 5px;
                 }
                 .auth-input {
-                    height: 48px;
-                    font-size: 14px;
+                    height: 36px;
+                    font-size: 12.5px;
                 }
                 .auth-btn-primary {
-                    height: 48px;
-                    font-size: 15px;
+                    height: 36px;
+                    font-size: 13px;
+                }
+                .auth-btn-secondary {
+                    height: 32px;
+                    font-size: 11.5px;
+                }
+                .auth-divider {
+                    margin: 5px 0;
+                }
+                .auth-demo-bar {
+                    margin-top: 5px;
+                    padding-top: 4px;
                 }
             }
         `;

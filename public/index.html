@@ -6,12 +6,12 @@
     <title>DNA AUTO — Identidade e Histórico Digital Permanente de Veículos</title>
     <meta name="description" content="Cada veículo possui um DNA permanente. Toda a história do carro acompanha o veículo durante toda a sua vida útil.">
 
-    <!-- CSS do Sistema (v=6.0) -->
-    <link rel="stylesheet" href="/css/variables.css?v=6.0">
-    <link rel="stylesheet" href="/css/base.css?v=6.0">
-    <link rel="stylesheet" href="/css/components.css?v=6.0">
-    <link rel="stylesheet" href="/css/dossier.css?v=6.0">
-    <link rel="stylesheet" href="/css/print.css?v=6.0">
+    <!-- CSS do Sistema (v=7.0) -->
+    <link rel="stylesheet" href="/css/variables.css?v=7.0">
+    <link rel="stylesheet" href="/css/base.css?v=7.0">
+    <link rel="stylesheet" href="/css/components.css?v=7.0">
+    <link rel="stylesheet" href="/css/dossier.css?v=7.0">
+    <link rel="stylesheet" href="/css/print.css?v=7.0">
 </head>
 <body>
     <div id="app-container">
@@ -422,7 +422,7 @@
                 <form id="owner-declare-form" onsubmit="OwnerView.submitDeclaredService(event)">
                     <input type="hidden" id="owner-declare-vehicle-id" name="vehicle_id" value="veh_civic_touring" />
                     
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+                    <div class="form-grid-2">
                         <div class="form-group">
                             <label style="display:block; margin-bottom:4px; font-weight:600;">CNPJ da Oficina / Mecânica Responsável *</label>
                             <input type="text" id="owner-declare-cnpj" name="workshop_cnpj" class="form-control" required placeholder="Ex: 12.345.678/0001-90" value="12.345.678/0001-90" />
@@ -436,7 +436,7 @@
                         </div>
                     </div>
 
-                    <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:14px; margin-bottom:14px;">
+                    <div class="form-grid-3">
                         <div class="form-group">
                             <label style="display:block; margin-bottom:4px; font-weight:600;">Título do Serviço *</label>
                             <input type="text" name="service_title" class="form-control" required placeholder="Ex: Troca de Amortecedores e Coxins" value="Revisão de Amortecedores e Alinhamento 3D" />
@@ -474,7 +474,7 @@
                     </div>
 
                     <!-- Anexo da Foto da Nota Fiscal -->
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:20px;">
+                    <div class="form-grid-2">
                         <div class="form-group">
                             <label style="display:block; margin-bottom:4px; font-weight:600;">Foto / PDF da Nota Fiscal (DANFE / NFS-e)</label>
                             <input type="file" name="invoice" class="form-control" accept="image/*,.pdf" />
@@ -495,17 +495,17 @@
         </div>
     </div>
 
-    <!-- Scripts da Aplicação (v=6.0) -->
-    <script src="/js/components/qrcode.js?v=6.0"></script>
-    <script src="/js/api.js?v=6.0"></script>
-    <script src="/js/components/dossierView.js?v=6.0"></script>
-    <script src="/js/components/workshopView.js?v=6.0"></script>
-    <script src="/js/components/ownerView.js?v=6.0"></script>
-    <script src="/js/components/adminView.js?v=6.0"></script>
-    <script src="/js/components/loginView.js?v=6.0"></script>
-    <script src="/js/components/salesPageView.js?v=6.0"></script>
-    <script src="/js/components/posterGenerator.js?v=6.0"></script>
-    <script src="/js/components/saleReportModal.js?v=6.0"></script>
-    <script src="/js/app.js?v=6.0"></script>
+    <!-- Scripts da Aplicação (v=7.0) -->
+    <script src="/js/components/qrcode.js?v=7.0"></script>
+    <script src="/js/api.js?v=7.0"></script>
+    <script src="/js/components/dossierView.js?v=7.0"></script>
+    <script src="/js/components/workshopView.js?v=7.0"></script>
+    <script src="/js/components/ownerView.js?v=7.0"></script>
+    <script src="/js/components/adminView.js?v=7.0"></script>
+    <script src="/js/components/loginView.js?v=7.0"></script>
+    <script src="/js/components/salesPageView.js?v=7.0"></script>
+    <script src="/js/components/posterGenerator.js?v=7.0"></script>
+    <script src="/js/components/saleReportModal.js?v=7.0"></script>
+    <script src="/js/app.js?v=7.0"></script>
 </body>
 </html>

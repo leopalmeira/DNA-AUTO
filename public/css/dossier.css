@@ -526,6 +526,117 @@
     color: var(--text-dim);
 }
 
+/* Componentes da Área do Cliente / Garagem Digital (Desktop) */
+.owner-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-owner-declare {
+    background: var(--brand-primary);
+    border-color: var(--brand-primary);
+    color: #05080D;
+    font-weight: 800;
+}
+
+.owner-action-subgrid {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.owner-hero-panel {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(11, 15, 25, 0.95));
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.owner-hero-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+}
+
+.owner-hero-thumb {
+    width: 220px;
+    height: 130px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: #0A0F16;
+    border: 1px solid rgba(255, 210, 28, 0.2);
+    flex-shrink: 0;
+}
+
+.owner-hero-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.owner-hero-info {
+    flex: 1;
+    min-width: 240px;
+}
+
+.owner-vehicle-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 4px 0 8px;
+}
+
+.owner-specs-grid {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.owner-specs-grid span {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-subtle);
+    padding: 5px 10px;
+    border-radius: 6px;
+}
+
+.owner-score-card {
+    background: var(--bg-surface);
+    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    min-width: 160px;
+    text-align: center;
+}
+
+.owner-score-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.owner-score-number {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--proof-level-4);
+    font-family: var(--font-mono);
+    line-height: 1.1;
+    margin: 4px 0;
+}
+
+.owner-score-meta {
+    font-size: 10.5px;
+    color: var(--brand-cyan);
+    font-weight: 600;
+}
+
 /* ==============================================================================
    RESPONSIVIDADE MOBILE (TELAS DE CELULAR / IPHONE / ANDROID)
    ============================================================================== */
@@ -700,54 +811,96 @@
         display: flex !important;
         flex-direction: column !important;
         width: 100% !important;
-        gap: 8px !important;
-        margin-top: 10px;
+        gap: 6px !important;
+        margin-top: 8px;
     }
 
-    .owner-header-actions .btn {
+    .btn-owner-declare {
         width: 100% !important;
-        height: 44px !important;
-        font-size: 12px !important;
+        height: 38px !important;
+        font-size: 11.5px !important;
+        font-weight: 800 !important;
+        background: var(--brand-primary) !important;
+        border-color: var(--brand-primary) !important;
+        color: #05080D !important;
+        justify-content: center !important;
+        display: flex !important;
+        align-items: center !important;
+        border-radius: var(--radius-sm);
+        box-shadow: 0 2px 8px rgba(255, 210, 28, 0.2);
+    }
+
+    .owner-action-subgrid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+        width: 100% !important;
+    }
+
+    .btn-owner-report, .btn-owner-transfer {
+        width: 100% !important;
+        height: 34px !important;
+        font-size: 11px !important;
         font-weight: 700 !important;
         justify-content: center !important;
         display: flex !important;
         align-items: center !important;
+        padding: 0 8px !important;
+        border-radius: var(--radius-sm);
     }
 
     .owner-hero-panel {
-        padding: 14px !important;
+        padding: 12px !important;
+        margin-bottom: 12px !important;
     }
 
     .owner-hero-row {
         flex-direction: column !important;
         align-items: stretch !important;
-        gap: 14px !important;
+        gap: 10px !important;
     }
 
     .owner-hero-thumb {
         width: 100% !important;
-        height: 180px !important;
-        border-radius: var(--radius-md);
+        height: 110px !important;
+        max-height: 115px !important;
+        border-radius: var(--radius-sm);
+    }
+
+    .owner-vehicle-title {
+        font-size: 17px !important;
+        margin: 2px 0 6px !important;
     }
 
     .owner-specs-grid {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 6px !important;
-        margin-top: 10px !important;
+        gap: 4px !important;
+        margin-top: 6px !important;
     }
 
     .owner-specs-grid span {
         background: rgba(255, 255, 255, 0.04);
-        padding: 6px 8px;
+        padding: 5px 6px;
         border-radius: 4px;
-        font-size: 11px;
+        font-size: 10.5px;
     }
 
     .owner-score-card {
         width: 100% !important;
-        margin-top: 10px;
+        margin-top: 6px;
+        padding: 8px 12px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        text-align: left !important;
         box-sizing: border-box;
+    }
+
+    .owner-score-number {
+        font-size: 24px !important;
+        margin: 0 !important;
     }
 
     .counter-chip {

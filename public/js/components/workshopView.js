@@ -104,16 +104,18 @@ const WorkshopView = {
                     <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">
                         Digite a <strong>Placa</strong>, o <strong>Chassi</strong> ou o <strong>DNA</strong> do veículo. O sistema carrega o histórico 360° ou oferece o fluxo imediato de ativação de DNA.
                     </p>
-                    <div style="display:flex; gap:12px; margin-bottom:12px;">
-                        <input type="text" id="ws-vehicle-search" class="form-control" style="font-size:16px; font-weight:700; text-transform:uppercase; letter-spacing:1px;"
+                    <div class="ws-search-toolbar">
+                        <input type="text" id="ws-vehicle-search" class="form-control ws-search-input"
                                placeholder="Ex: BRA2E19, STR1A99 ou DNA-BR-..." value="BRA2E19" />
-                        <button class="btn btn-cyan" style="padding:0 24px; font-weight:700;" onclick="WorkshopView.handleSearchVehicle()">
-                            CONSULTAR HISTÓRICO
-                        </button>
-                        <button class="btn btn-primary" style="padding:0 20px; font-weight:700; background:var(--proof-level-4); border-color:var(--proof-level-4); color:#000;" onclick="WorkshopView.lookupPlateData()">
-                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:5px;"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9m-9 9a9 9 0 0 1 9-9"/></svg>
-                            PUXAR DADOS DA PLACA (API)
-                        </button>
+                        <div class="ws-search-actions">
+                            <button class="btn btn-cyan ws-btn-search" onclick="WorkshopView.handleSearchVehicle()">
+                                CONSULTAR
+                            </button>
+                            <button class="btn btn-primary ws-btn-api" onclick="WorkshopView.lookupPlateData()">
+                                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" style="margin-right:4px;"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9m-9 9a9 9 0 0 1 9-9"/></svg>
+                                PUXAR DADOS (API)
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Card de resultado da consulta de placa API -->
