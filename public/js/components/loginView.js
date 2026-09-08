@@ -139,7 +139,7 @@ const LoginView = {
                         <span class="auth-checkbox-custom"></span>
                         <span class="auth-remember-text">Lembrar de mim</span>
                     </label>
-                    <a href="javascript:void(0)" onclick="alert('Recuperação de Acesso: Instruções de segurança foram simuladas para seu e-mail cadastrado.')" class="auth-forgot-link">
+                    <a href="javascript:void(0)" onclick="LoginView.openForgotPasswordModal()" class="auth-forgot-link">
                         Esqueci minha senha
                     </a>
                 </div>
@@ -514,6 +514,121 @@ const LoginView = {
             App.loginAs('WORKSHOP_OWNER', res.user);
         } catch (err) {
             alert('Erro no credenciamento: ' + err.message);
+        }
+    },
+
+    openForgotPasswordModal() {
+        const existingEmail = (document.getElementById('auth-login-email')?.value || '').trim();
+        
+        let modal = document.getElementById('forgot-password-modal');
+        if (modal) modal.remove();
+
+        modal = document.createElement('div');
+        modal.id = 'forgot-password-modal';
+        modal.className = 'auth-modal-overlay';
+        modal.innerHTML = `
+            <div class="auth-modal-card">
+                <div class="auth-modal-header">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <span style="font-size:22px;">🔑</span>
+                        <div>
+                            <h3 style="margin:0; font-size:16px; color:#ffffff; font-weight:700;">Recuperar Acesso</h3>
+                            <p style="margin:0; font-size:11.5px; color:#94a3b8;">Redefina a sua senha do DNA AUTO</p>
+                        </div>
+                    </div>
+                    <button type="button" class="auth-modal-close" onclick="LoginView.closeForgotPasswordModal()">✕</button>
+                </div>
+
+                <form id="forgot-password-form" onsubmit="LoginView.handleResetPassword(event)">
+                    <div class="auth-input-group" style="margin-bottom:12px;">
+                        <label style="font-size:11px; color:#cbd5e1; display:block; margin-bottom:4px; font-weight:600;">E-mail Cadastrado *</label>
+                        <input type="email" id="reset-email" class="auth-input" required placeholder="ex: seu.email@exemplo.com" value="${existingEmail}" />
+                    </div>
+
+                    <div class="auth-input-group" style="margin-bottom:12px;">
+                        <label style="font-size:11px; color:#cbd5e1; display:block; margin-bottom:4px; font-weight:600;">Nova Senha * (mínimo 6 dígitos)</label>
+                        <input type="password" id="reset-new-password" class="auth-input" required placeholder="••••••••" minlength="6" />
+                    </div>
+
+                    <div class="auth-input-group" style="margin-bottom:16px;">
+                        <label style="font-size:11px; color:#cbd5e1; display:block; margin-bottom:4px; font-weight:600;">Confirmar Nova Senha *</label>
+                        <input type="password" id="reset-confirm-password" class="auth-input" required placeholder="••••••••" minlength="6" />
+                    </div>
+
+                    <div id="reset-feedback" style="display:none; font-size:12px; margin-bottom:14px; padding:10px 14px; border-radius:6px;"></div>
+
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" class="auth-btn-secondary" style="flex:1;" onclick="LoginView.closeForgotPasswordModal()">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="auth-btn-primary" id="reset-submit-btn" style="flex:2;">
+                            <span>Salvar Nova Senha</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        setTimeout(() => document.getElementById(existingEmail ? 'reset-new-password' : 'reset-email')?.focus(), 100);
+    },
+
+    closeForgotPasswordModal() {
+        const modal = document.getElementById('forgot-password-modal');
+        if (modal) modal.remove();
+    },
+
+    async handleResetPassword(e) {
+        e.preventDefault();
+        const email = document.getElementById('reset-email').value.trim();
+        const newPassword = document.getElementById('reset-new-password').value;
+        const confirmPassword = document.getElementById('reset-confirm-password').value;
+        const feedback = document.getElementById('reset-feedback');
+        const btn = document.getElementById('reset-submit-btn');
+
+        if (newPassword !== confirmPassword) {
+            feedback.style.display = 'block';
+            feedback.style.background = 'rgba(239, 68, 68, 0.15)';
+            feedback.style.color = '#ef4444';
+            feedback.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            feedback.textContent = '❌ As senhas não coincidem. Verifique a digitação.';
+            return;
+        }
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="auth-spinner"></span> <span>Salvando...</span>`;
+        }
+
+        try {
+            const res = await API.resetPassword(email, newPassword);
+            feedback.style.display = 'block';
+            feedback.style.background = 'rgba(16, 185, 129, 0.15)';
+            feedback.style.color = '#10b981';
+            feedback.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+            feedback.textContent = `✅ ${res.message || 'Senha redefinida com sucesso!'}`;
+
+            // Preenche o formulário de login com as novas credenciais
+            const loginEmail = document.getElementById('auth-login-email');
+            const loginPass = document.getElementById('auth-login-password');
+            if (loginEmail) loginEmail.value = email;
+            if (loginPass) loginPass.value = newPassword;
+
+            setTimeout(() => {
+                this.closeForgotPasswordModal();
+                alert(`✅ Senha redefinida com sucesso! Você já pode entrar com sua nova senha.`);
+                const loginBtn = document.getElementById('login-submit-btn');
+                if (loginBtn) loginBtn.focus();
+            }, 1200);
+        } catch (err) {
+            feedback.style.display = 'block';
+            feedback.style.background = 'rgba(239, 68, 68, 0.15)';
+            feedback.style.color = '#ef4444';
+            feedback.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+            feedback.textContent = `❌ ${err.message || 'Falha ao redefinir senha.'}`;
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<span>Salvar Nova Senha</span>`;
+            }
         }
     },
 
@@ -971,6 +1086,59 @@ const LoginView = {
                     margin-top: 5px;
                     padding-top: 4px;
                 }
+            }
+
+            /* MODAL DE RECUPERAÇÃO DE SENHA LUXO */
+            .auth-modal-overlay {
+                position: fixed;
+                inset: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(5, 8, 13, 0.88);
+                backdrop-filter: blur(10px);
+                z-index: 100000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 16px;
+                box-sizing: border-box;
+                animation: authFadeIn 0.2s ease-out;
+            }
+            .auth-modal-card {
+                background: #0d121d;
+                border: 1px solid rgba(255, 210, 28, 0.35);
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 210, 28, 0.12);
+                border-radius: 12px;
+                width: 100%;
+                max-width: 390px;
+                padding: 22px;
+                box-sizing: border-box;
+            }
+            .auth-modal-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 18px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+                padding-bottom: 12px;
+            }
+            .auth-modal-close {
+                background: none;
+                border: none;
+                color: #94a3b8;
+                font-size: 18px;
+                cursor: pointer;
+                padding: 4px 8px;
+                border-radius: 4px;
+                transition: all 0.2s;
+            }
+            .auth-modal-close:hover {
+                color: #ffffff;
+                background: rgba(255, 255, 255, 0.1);
+            }
+            @keyframes authFadeIn {
+                from { opacity: 0; transform: scale(0.95); }
+                to { opacity: 1; transform: scale(1); }
             }
         `;
         document.head.appendChild(style);

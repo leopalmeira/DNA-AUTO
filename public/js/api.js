@@ -65,6 +65,12 @@ const API = {
             body: JSON.stringify(data)
         });
     },
+    resetPassword(email, newPassword) {
+        return this.request('/auth/forgot-password', {
+            method: 'POST',
+            body: JSON.stringify({ email, newPassword })
+        });
+    },
     getMe() {
         return this.request('/auth/me');
     },

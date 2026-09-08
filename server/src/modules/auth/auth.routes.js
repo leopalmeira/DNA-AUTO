@@ -227,6 +227,47 @@ router.post('/register-client', (req, res) => {
     }
 });
 
+// Redefinição / Recuperação de Senha ("Esqueci minha senha")
+router.post('/forgot-password', (req, res) => {
+    try {
+        const { email, newPassword } = req.body;
+        if (!email) {
+            return res.status(400).json({ error: 'Informe o e-mail cadastrado.' });
+        }
+
+        const cleanEmail = email.trim().toLowerCase();
+        const user = db.prepare('SELECT id, name, email FROM users WHERE LOWER(email) = ?').get(cleanEmail);
+
+        if (!user) {
+            return res.status(404).json({ error: 'Nenhuma conta encontrada com este e-mail no DNA AUTO.' });
+        }
+
+        if (!newPassword || newPassword.length < 6) {
+            return res.status(400).json({ error: 'A nova senha deve conter no mínimo 6 caracteres.' });
+        }
+
+        const passwordHash = bcrypt.hashSync(newPassword, 10);
+        db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(passwordHash, user.id);
+
+        logAudit({
+            user: { id: user.id, name: user.name, role_code: 'USER' },
+            action: 'RESET_PASSWORD',
+            entityType: 'USER',
+            entityId: user.id,
+            ipAddress: req.ip || req.connection.remoteAddress,
+            userAgent: req.headers['user-agent']
+        });
+
+        res.json({
+            success: true,
+            message: `Senha de ${user.name} redefinida com sucesso! Você já pode entrar com sua nova senha.`
+        });
+    } catch (err) {
+        console.error('Erro ao redefinir senha:', err);
+        res.status(500).json({ error: 'Erro interno ao redefinir senha: ' + err.message });
+    }
+});
+
 // Cadastro de Nova Oficina Parceira / Empresa Credenciada
 router.post('/register-workshop', (req, res) => {
     try {
@@ -243,57 +284,113 @@ router.post('/register-workshop', (req, res) => {
         const cleanEmail = email.trim().toLowerCase();
         const cleanCnpj = cnpj.trim().replace(/\D/g, '');
 
-        const existingUser = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanEmail);
-        if (existingUser) {
-            return res.status(400).json({ error: 'Este e-mail já está cadastrado como usuário.' });
+        if (cleanCnpj.length < 11) {
+            return res.status(400).json({ error: 'Documento CNPJ/CPF inválido. Mínimo de 11 dígitos.' });
         }
 
-        const existingWorkshop = db.prepare('SELECT id FROM workshops WHERE cnpj = ? OR cnpj = ?').get(cnpj.trim(), cleanCnpj);
+        // Garantir que a role exista no banco
+        db.prepare(`
+            INSERT OR IGNORE INTO roles (id, code, name, description)
+            VALUES ('role_workshop_owner', 'WORKSHOP_OWNER', 'Dono da Oficina', 'Gerenciamento da oficina e equipe')
+        `).run();
+
+        const existingWorkshop = db.prepare('SELECT id, trade_name FROM workshops WHERE cnpj = ? OR cnpj = ?').get(cnpj.trim(), cleanCnpj);
         if (existingWorkshop) {
-            return res.status(400).json({ error: 'Já existe uma oficina cadastrada com este CNPJ.' });
+            return res.status(400).json({ error: `Já existe uma oficina cadastrada com este CNPJ (${existingWorkshop.trade_name}).` });
         }
 
+        const existingUser = db.prepare('SELECT id, name, email, password_hash, role_id FROM users WHERE LOWER(email) = ?').get(cleanEmail);
+        
+        let userId;
+        let adminName = technicianName ? technicianName.trim() : tradeName.trim();
         const workshopId = `ws_${Date.now()}`;
-        const userId = `usr_ws_${Date.now()}`;
-        const passwordHash = bcrypt.hashSync(password, 10);
-        const adminName = technicianName ? technicianName.trim() : tradeName.trim();
 
-        db.transaction(() => {
-            // Criar a oficina
-            db.prepare(`
-                INSERT INTO workshops (
-                    id, company_name, trade_name, cnpj, phone, email,
-                    address_street, address_number, address_complement, address_neighborhood,
-                    city, state, zip_code, status, verified_badge
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'APPROVED', 1)
-            `).run(
-                workshopId,
-                companyName ? companyName.trim() : tradeName.trim(),
-                tradeName.trim(),
-                cnpj.trim(),
-                phone ? phone.trim() : '(11) 99999-0000',
-                cleanEmail,
-                addressStreet ? addressStreet.trim() : 'Av. Principal',
-                addressNumber ? addressNumber.trim() : '100',
-                null,
-                addressNeighborhood ? addressNeighborhood.trim() : 'Centro',
-                city ? city.trim() : 'São Paulo',
-                state ? state.trim().toUpperCase() : 'SP',
-                zipCode ? zipCode.trim() : '01000-000'
-            );
+        if (existingUser) {
+            // Usuário já existe: valida a senha para associar a nova oficina à conta existente
+            const passwordMatch = bcrypt.compareSync(password, existingUser.password_hash);
+            if (!passwordMatch) {
+                return res.status(400).json({
+                    error: 'Este e-mail já possui cadastro no DNA AUTO. Digite a sua senha atual ou redefina-a em "Esqueci minha senha" para vincular esta oficina.'
+                });
+            }
+            userId = existingUser.id;
+            adminName = existingUser.name || adminName;
 
-            // Criar o usuário gestor da oficina
-            db.prepare(`
-                INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
-                VALUES (?, ?, ?, ?, ?, 'role_workshop_owner', 'ACTIVE', 0)
-            `).run(userId, adminName, cleanEmail, passwordHash, phone ? phone.trim() : null);
+            db.transaction(() => {
+                // Atualiza perfil para dono de oficina caso seja proprietário comum
+                db.prepare("UPDATE users SET role_id = 'role_workshop_owner', updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(userId);
 
-            // Associar à equipe da oficina
-            db.prepare(`
-                INSERT INTO workshop_users (id, workshop_id, user_id, position_title, can_activate_dna, can_prove_services)
-                VALUES (?, ?, ?, 'Proprietário / Responsável Técnico', 1, 1)
-            `).run(`wu_${Date.now()}`, workshopId, userId);
-        })();
+                // Criar a oficina
+                db.prepare(`
+                    INSERT INTO workshops (
+                        id, company_name, trade_name, cnpj, phone, email,
+                        address_street, address_number, address_complement, address_neighborhood,
+                        city, state, zip_code, status, verified_badge
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'APPROVED', 1)
+                `).run(
+                    workshopId,
+                    companyName ? companyName.trim() : tradeName.trim(),
+                    tradeName.trim(),
+                    cleanCnpj,
+                    phone ? phone.trim() : '(11) 99999-0000',
+                    cleanEmail,
+                    addressStreet ? addressStreet.trim() : 'Av. Principal',
+                    addressNumber ? addressNumber.trim() : '100',
+                    null,
+                    addressNeighborhood ? addressNeighborhood.trim() : 'Centro',
+                    city ? city.trim() : 'São Paulo',
+                    state ? state.trim().toUpperCase() : 'SP',
+                    zipCode ? zipCode.trim() : '01000-000'
+                );
+
+                // Associar à equipe da oficina
+                db.prepare(`
+                    INSERT INTO workshop_users (id, workshop_id, user_id, position_title, can_activate_dna, can_prove_services)
+                    VALUES (?, ?, ?, 'Proprietário / Responsável Técnico', 1, 1)
+                `).run(`wu_${Date.now()}`, workshopId, userId);
+            })();
+        } else {
+            // Novo usuário + nova oficina
+            userId = `usr_ws_${Date.now()}`;
+            const passwordHash = bcrypt.hashSync(password, 10);
+
+            db.transaction(() => {
+                // Criar a oficina
+                db.prepare(`
+                    INSERT INTO workshops (
+                        id, company_name, trade_name, cnpj, phone, email,
+                        address_street, address_number, address_complement, address_neighborhood,
+                        city, state, zip_code, status, verified_badge
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'APPROVED', 1)
+                `).run(
+                    workshopId,
+                    companyName ? companyName.trim() : tradeName.trim(),
+                    tradeName.trim(),
+                    cleanCnpj,
+                    phone ? phone.trim() : '(11) 99999-0000',
+                    cleanEmail,
+                    addressStreet ? addressStreet.trim() : 'Av. Principal',
+                    addressNumber ? addressNumber.trim() : '100',
+                    null,
+                    addressNeighborhood ? addressNeighborhood.trim() : 'Centro',
+                    city ? city.trim() : 'São Paulo',
+                    state ? state.trim().toUpperCase() : 'SP',
+                    zipCode ? zipCode.trim() : '01000-000'
+                );
+
+                // Criar o usuário gestor da oficina
+                db.prepare(`
+                    INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
+                    VALUES (?, ?, ?, ?, ?, 'role_workshop_owner', 'ACTIVE', 0)
+                `).run(userId, adminName, cleanEmail, passwordHash, phone ? phone.trim() : null);
+
+                // Associar à equipe da oficina
+                db.prepare(`
+                    INSERT INTO workshop_users (id, workshop_id, user_id, position_title, can_activate_dna, can_prove_services)
+                    VALUES (?, ?, ?, 'Proprietário / Responsável Técnico', 1, 1)
+                `).run(`wu_${Date.now()}`, workshopId, userId);
+            })();
+        }
 
         const token = jwt.sign(
             { id: userId, email: cleanEmail, role_code: 'WORKSHOP_OWNER' },
@@ -322,7 +419,7 @@ router.post('/register-workshop', (req, res) => {
                 workshop: {
                     workshop_id: workshopId,
                     workshop_name: tradeName.trim(),
-                    workshop_cnpj: cnpj.trim(),
+                    workshop_cnpj: cleanCnpj,
                     position_title: 'Proprietário / Responsável Técnico',
                     can_activate_dna: 1,
                     can_prove_services: 1,
@@ -332,8 +429,9 @@ router.post('/register-workshop', (req, res) => {
         });
     } catch (err) {
         console.error('Erro ao cadastrar oficina:', err);
-        res.status(500).json({ error: 'Erro interno ao credenciar oficina.' });
+        res.status(500).json({ error: 'Erro ao credenciar oficina: ' + err.message });
     }
 });
+
 
 module.exports = router;
