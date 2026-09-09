@@ -1353,3 +1353,843 @@
 .ws-alert-row-warning {
     background: rgba(245, 158, 11, 0.04);
 }
+
+/* ==============================================================================
+   DNA AUTO ERP — PAINEL OPERACIONAL DA OFICINA & AUTO CENTER (ALTO PADRÃO)
+   ============================================================================== */
+
+/* 1. Isolamento de Tela Cheia do Painel ERP */
+body.is-workshop-erp {
+    overflow: hidden !important;
+}
+
+body.is-workshop-erp #app-container {
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
+}
+
+body.is-workshop-erp #app-container > .top-navbar,
+body.is-workshop-erp #app-container > .main-layout > .sidebar,
+body.is-workshop-erp #app-container > .main-layout > #sidebar-backdrop {
+    display: none !important;
+}
+
+body.is-workshop-erp #app-container > .main-layout {
+    height: 100% !important;
+    min-height: 100% !important;
+}
+
+body.is-workshop-erp #app-container > .main-layout > #view-content {
+    padding: 0 !important;
+    overflow: hidden !important;
+    height: 100% !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+}
+
+/* 2. Container Root do ERP da Oficina */
+.ws-erp-viewport {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    width: 100%;
+    max-width: 100vw;
+    background: #080c14;
+    color: #e2e8f0;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box;
+}
+
+/* 3. Header Corporativo Superior */
+.ws-erp-header-bar {
+    height: 58px;
+    min-height: 58px;
+    background: #0d131f;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    gap: 12px;
+    z-index: 100;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100vw;
+}
+
+.ws-erp-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.ws-erp-hamburger-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    color: #FFD21C;
+    font-size: 20px;
+    cursor: pointer;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: all 0.15s ease;
+}
+
+.ws-erp-hamburger-btn:hover {
+    background: rgba(255, 210, 28, 0.12);
+    border-color: #FFD21C;
+}
+
+.ws-erp-brand-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.ws-erp-brand-block h1 {
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.ws-erp-brand-block p {
+    font-size: 9.5px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin: 0;
+    font-weight: 600;
+}
+
+.ws-erp-network-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.ws-erp-network-status .dot-live {
+    width: 7px;
+    height: 7px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #10b981;
+    animation: wsPulseBadge 2s infinite;
+}
+
+.ws-erp-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.ws-erp-ws-title {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-right: 4px;
+}
+
+.ws-erp-ws-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f8fafc;
+    white-space: nowrap;
+}
+
+.ws-erp-ws-sub {
+    font-size: 10.5px;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+/* Botão de Notificações */
+.ws-erp-bell-btn {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.ws-erp-bell-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    border-color: rgba(255, 210, 28, 0.3);
+}
+
+.ws-erp-bell-counter {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: #ffffff;
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 10px;
+    border: 2px solid #0d131f;
+    line-height: 1.2;
+}
+
+/* Popover de Notificações */
+.ws-notifications-dropdown {
+    position: absolute;
+    top: 54px;
+    right: 18px;
+    width: 320px;
+    max-width: calc(100vw - 28px);
+    background: #0f172a;
+    border: 1px solid rgba(255, 210, 28, 0.3);
+    border-radius: 10px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    overflow: hidden;
+    animation: wsFadeIn 0.15s ease-out;
+}
+
+.ws-notif-header {
+    padding: 12px 14px;
+    background: #1e293b;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ws-notif-item {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.ws-notif-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* Usuário e Logout */
+.ws-erp-user-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+}
+
+.ws-erp-user-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ffd21c, #f59e0b);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.ws-erp-logout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+
+.ws-erp-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
+    color: #ffffff;
+    border-color: #ef4444;
+}
+
+/* 4. Corpo Principal com Sidebar e Conteúdo */
+.ws-erp-main-body {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    min-height: 0;
+    position: relative;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+}
+
+/* 5. Sidebar Desktop & Drawer Mobile */
+.ws-erp-sidebar {
+    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+    background: #090e18;
+    border-right: 1px solid rgba(255, 255, 255, 0.07);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    user-select: none;
+    flex-shrink: 0;
+    z-index: 90;
+    box-sizing: border-box;
+}
+
+.ws-erp-sidebar-header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.ws-erp-sidebar-header .title-main {
+    font-size: 13px;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+.ws-erp-sidebar-header .title-sub {
+    font-size: 9.5px;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 2px;
+}
+
+/* Accordion de Módulos */
+.ws-erp-nav-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 20px;
+}
+
+.ws-erp-accordion-group {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.ws-erp-group-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 14px;
+    font-size: 11px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.ws-erp-group-header:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: #f1f5f9;
+}
+
+.ws-erp-group-header .group-title-left {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.ws-erp-group-header .arrow-icon {
+    font-size: 10px;
+    color: #64748b;
+    transition: transform 0.2s ease;
+}
+
+.ws-erp-accordion-group.open .arrow-icon {
+    transform: rotate(180deg);
+    color: #FFD21C;
+}
+
+.ws-erp-accordion-items {
+    display: none;
+    list-style: none;
+    margin: 0;
+    padding: 2px 0 6px;
+}
+
+.ws-erp-accordion-group.open .ws-erp-accordion-items {
+    display: block;
+}
+
+.ws-erp-menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 14px 7px 22px;
+    font-size: 12.5px;
+    color: #cbd5e1;
+    cursor: pointer;
+    border-left: 2px solid transparent;
+    transition: all 0.12s ease;
+}
+
+.ws-erp-menu-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+    color: #ffffff;
+}
+
+.ws-erp-menu-item.active {
+    background: rgba(255, 210, 28, 0.1);
+    color: #FFD21C;
+    border-left-color: #FFD21C;
+    font-weight: 700;
+}
+
+.ws-erp-menu-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.ws-erp-menu-left span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 6. Área de Conteúdo Central */
+.ws-erp-content-viewport {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px 24px 70px;
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+}
+
+/* 7. Banner do Dashboard */
+.ws-erp-dashboard-banner {
+    background: linear-gradient(135deg, rgba(255, 210, 28, 0.08), rgba(15, 23, 42, 0.85));
+    border: 1px solid rgba(255, 210, 28, 0.3);
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.ws-erp-greeting-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+    margin: 0 0 4px;
+}
+
+.ws-erp-greeting-sub {
+    font-size: 13px;
+    color: #94a3b8;
+    margin: 0;
+}
+
+/* 8. Resumo de Hoje (Cards de KPIs) */
+.ws-erp-section-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ws-erp-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+    gap: 12px;
+    margin-bottom: 22px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.ws-erp-kpi-box {
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+}
+
+.ws-erp-kpi-box:hover {
+    border-color: rgba(255, 210, 28, 0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.ws-erp-kpi-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.ws-erp-kpi-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.ws-erp-kpi-num {
+    font-size: 24px;
+    font-weight: 900;
+    font-family: var(--font-mono);
+    color: #ffffff;
+    line-height: 1.1;
+}
+
+.ws-erp-kpi-foot {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+/* 9. Ações Rápidas */
+.ws-erp-quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.ws-erp-quick-btn {
+    background: #141e30;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #f1f5f9;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.ws-erp-quick-btn:hover {
+    background: rgba(255, 210, 28, 0.12);
+    border-color: #FFD21C;
+    color: #FFD21C;
+    transform: translateY(-1px);
+}
+
+.ws-erp-quick-btn.primary-highlight {
+    background: linear-gradient(135deg, rgba(255, 210, 28, 0.2), rgba(245, 158, 11, 0.1));
+    border-color: #FFD21C;
+    color: #FFD21C;
+}
+
+/* 10. Agendamento em 3 Datas Futuras */
+.ws-dates-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    gap: 12px;
+    margin: 16px 0;
+    box-sizing: border-box;
+}
+
+.ws-date-card {
+    background: #101827;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 14px;
+    box-sizing: border-box;
+    transition: all 0.15s;
+}
+
+.ws-date-card.selected {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.ws-date-card-header {
+    font-size: 13px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    justify-content: space-between;
+}
+
+.ws-slots-group {
+    margin-bottom: 10px;
+}
+
+.ws-slots-group-title {
+    font-size: 10.5px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.ws-slot-pill {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 11.5px;
+    font-family: var(--font-mono);
+    cursor: pointer;
+    margin: 2px 4px 2px 0;
+    transition: all 0.15s;
+}
+
+.ws-slot-pill:hover {
+    background: rgba(255, 210, 28, 0.15);
+    border-color: #FFD21C;
+    color: #FFD21C;
+}
+
+.ws-slot-pill.active {
+    background: #10b981;
+    color: #000000;
+    font-weight: 800;
+    border-color: #10b981;
+}
+
+.ws-slot-pill.busy {
+    opacity: 0.35;
+    cursor: not-allowed;
+    text-decoration: line-through;
+    background: transparent;
+}
+
+/* 11. Cards de Peças no Mobile / Tabela no Desktop */
+.ws-parts-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
+}
+
+.ws-parts-cards-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+.ws-part-card-box {
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+/* 12. Modais Responsivos do ERP */
+.ws-erp-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.modal-container,
+.ws-erp-modal-window {
+    background: #0e1524;
+    border: 1px solid rgba(255, 210, 28, 0.35);
+    border-radius: 10px;
+    width: 100%;
+    max-width: min(680px, calc(100vw - 24px)) !important;
+    max-height: calc(100dvh - 24px) !important;
+    overflow-y: auto !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95);
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 600px) {
+    .modal-container,
+    .ws-erp-modal-window {
+        width: calc(100% - 24px) !important;
+        max-width: calc(100vw - 24px) !important;
+        margin: 0 auto;
+    }
+}
+
+.ws-erp-modal-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: #141d2e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ws-erp-modal-body {
+    padding: 18px;
+    box-sizing: border-box;
+}
+
+/* 13. Responsividade Estrita (320px a 992px) */
+.ws-erp-drawer-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(3px);
+    z-index: 998;
+}
+
+.ws-erp-drawer-backdrop.active {
+    display: block;
+}
+
+@media (max-width: 992px) {
+    .ws-erp-hamburger-btn {
+        display: inline-flex;
+    }
+
+    .ws-erp-network-status {
+        display: none !important;
+    }
+
+    .ws-erp-ws-sub {
+        display: none !important;
+    }
+
+    .ws-erp-sidebar {
+        position: fixed;
+        left: -290px;
+        top: 0;
+        bottom: 0;
+        width: 280px;
+        max-width: 85vw;
+        z-index: 999;
+        transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: none;
+    }
+
+    .ws-erp-sidebar.open {
+        left: 0;
+        box-shadow: 14px 0 45px rgba(0, 0, 0, 0.95);
+    }
+
+    .ws-erp-content-viewport {
+        padding: 14px 12px 60px;
+    }
+
+    .ws-parts-table-wrap {
+        display: none;
+    }
+
+    .ws-parts-cards-grid {
+        display: grid;
+    }
+}
+
+@media (max-width: 580px) {
+    .ws-erp-header-bar {
+        padding: 0 10px;
+    }
+
+    .ws-erp-ws-title {
+        display: none !important;
+    }
+
+    .ws-erp-user-pill span {
+        display: none !important;
+    }
+
+    .ws-erp-user-pill {
+        padding: 4px;
+        border: none;
+        background: transparent;
+    }
+
+    .ws-erp-logout-btn span {
+        display: none !important;
+    }
+
+    .ws-erp-logout-btn {
+        padding: 6px;
+    }
+
+    .ws-erp-kpi-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ws-erp-quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@keyframes wsFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}

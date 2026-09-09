@@ -229,5 +229,22 @@ const API = {
                 activate_dna_now: activateDnaNow
             })
         });
+    },
+
+    // Agendamentos e Agenda da Oficina
+    getWorkshopAppointments(workshopId) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/appointments`);
+    },
+    createWorkshopAppointment(workshopId, data) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/appointments`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    updateAppointmentStatus(workshopId, appointmentId, status) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/appointments/${encodeURIComponent(appointmentId)}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status })
+        });
     }
 };

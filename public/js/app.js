@@ -157,6 +157,13 @@ const App = {
         if (sidebar) sidebar.classList.remove('open');
         if (backdrop) backdrop.classList.remove('active');
 
+        // Isolamento de Tela Cheia para o ERP da Oficina
+        if (viewName === 'workshop') {
+            document.body.classList.add('is-workshop-erp');
+        } else {
+            document.body.classList.remove('is-workshop-erp');
+        }
+
         // Renderização dos Módulos
         if (viewName === 'landing') {
             LandingView.render();
@@ -218,6 +225,7 @@ const App = {
 
     // ── Logout Seguro ──
     logout() {
+        document.body.classList.remove('is-workshop-erp');
         this.setLoggedUser(null);
         this.currentUser = null;
         this.currentRole = null;

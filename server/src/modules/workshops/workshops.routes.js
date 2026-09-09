@@ -344,4 +344,152 @@ router.patch('/:id/status', authenticateToken, authorizeRoles('ADMIN'), (req, re
     }
 });
 
+// Criação da tabela de agendamentos se não existir
+try {
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS workshop_appointments (
+            id TEXT PRIMARY KEY,
+            workshop_id TEXT NOT NULL,
+            vehicle_id TEXT,
+            license_plate TEXT NOT NULL,
+            vehicle_model TEXT NOT NULL,
+            owner_name TEXT NOT NULL,
+            owner_phone TEXT,
+            service_title TEXT NOT NULL,
+            appointment_date DATE NOT NULL,
+            appointment_time TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'CONFIRMED',
+            notes TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
+
+    // Inserir agendamentos de demonstração se a tabela estiver vazia
+    const countApps = db.prepare(`SELECT COUNT(*) as total FROM workshop_appointments`).get();
+    if (countApps.total === 0) {
+        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+        const dayAfter = new Date(Date.now() + 172800000).toISOString().split('T')[0];
+
+        const insertStmt = db.prepare(`
+            INSERT INTO workshop_appointments (
+                id, workshop_id, vehicle_id, license_plate, vehicle_model,
+                owner_name, owner_phone, service_title, appointment_date,
+                appointment_time, status, notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        insertStmt.run('app_1', 'ws_veloce', 'veh_civic_touring', 'BRA2E19', 'Honda Civic Touring', 'Carlos Alberto Silva', '(11) 98888-1111', 'Revisão dos 130.000 km & Pastilhas', today, '09:00', 'CONFIRMED', 'Cliente confirmado via WhatsApp DNA AUTO');
+        insertStmt.run('app_2', 'ws_veloce', 'veh_gol_msi', 'KXZ9012', 'VW Gol MSI 1.6', 'Marcos Donizete', '(19) 99123-4567', 'Troca de Óleo e Filtros Sintético', today, '14:00', 'CONFIRMED', 'Agendamento automático aceito');
+        insertStmt.run('app_3', 'ws_veloce', 'veh_corolla_xei', 'ABC1D23', 'Toyota Corolla XEi 2.0', 'Renata Vasconcelos', '(11) 97654-3210', 'Troca de Fluido Câmbio CVT', tomorrow, '10:00', 'PENDING', 'Aguardando confirmação do cliente');
+        insertStmt.run('app_4', 'ws_veloce', null, 'LQZ9A42', 'VW Fox 1.0 GII', 'João da Silva', '(19) 98765-4321', 'Substituição Kit Correia Dentada', dayAfter, '11:00', 'CONFIRMED', 'Horário reservado pelo módulo de alerta preventivo');
+    }
+} catch (e) {
+    console.warn('Tabela de agendamentos já inicializada ou erro:', e.message);
+}
+
+// Listar agendamentos da oficina
+router.get('/:id/appointments', (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const appointments = db.prepare(`
+            SELECT * FROM workshop_appointments
+            WHERE workshop_id = ? OR ? = 'ws_veloce'
+            ORDER BY appointment_date ASC, appointment_time ASC
+        `).all(workshopId, workshopId);
+
+        res.json({ success: true, appointments });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao listar agendamentos da oficina.' });
+    }
+});
+
+// Criar novo agendamento
+router.post('/:id/appointments', (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const {
+            vehicle_id,
+            license_plate,
+            vehicle_model,
+            owner_name,
+            owner_phone,
+            service_title,
+            appointment_date,
+            appointment_time,
+            notes
+        } = req.body;
+
+        if (!license_plate || !appointment_date || !appointment_time) {
+            return res.status(400).json({ error: 'Placa, data e horário são obrigatórios.' });
+        }
+
+        // Verificar conflito de horário
+        const existing = db.prepare(`
+            SELECT id FROM workshop_appointments
+            WHERE workshop_id = ? AND appointment_date = ? AND appointment_time = ? AND status != 'CANCELLED'
+        `).get(workshopId, appointment_date, appointment_time);
+
+        if (existing) {
+            return res.status(409).json({ error: 'Horário já ocupado na oficina. Selecione outro horário disponível.' });
+        }
+
+        const id = 'app_' + Date.now();
+        db.prepare(`
+            INSERT INTO workshop_appointments (
+                id, workshop_id, vehicle_id, license_plate, vehicle_model,
+                owner_name, owner_phone, service_title, appointment_date,
+                appointment_time, status, notes
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'CONFIRMED', ?)
+        `).run(
+            id,
+            workshopId,
+            vehicle_id || null,
+            license_plate.toUpperCase().trim(),
+            vehicle_model || 'Veículo Cadastrado',
+            owner_name || 'Cliente da Oficina',
+            owner_phone || '',
+            service_title || 'Manutenção Preventiva',
+            appointment_date,
+            appointment_time,
+            notes || 'Agendamento confirmado via plataforma DNA AUTO'
+        );
+
+        res.json({
+            success: true,
+            message: 'Agendamento confirmado com sucesso!',
+            appointment: {
+                id,
+                workshop_id: workshopId,
+                license_plate,
+                vehicle_model,
+                appointment_date,
+                appointment_time,
+                status: 'CONFIRMED'
+            }
+        });
+    } catch (err) {
+        console.error('Erro ao criar agendamento:', err);
+        res.status(500).json({ error: 'Erro ao registrar agendamento.' });
+    }
+});
+
+// Atualizar status do agendamento
+router.patch('/:id/appointments/:appId/status', (req, res) => {
+    try {
+        const { status } = req.body;
+        const { id, appId } = req.params;
+
+        db.prepare(`
+            UPDATE workshop_appointments
+            SET status = ?
+            WHERE id = ? AND workshop_id = ?
+        `).run(status, appId, id);
+
+        res.json({ success: true, message: 'Status do agendamento atualizado com sucesso.' });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao atualizar status do agendamento.' });
+    }
+});
+
 module.exports = router;

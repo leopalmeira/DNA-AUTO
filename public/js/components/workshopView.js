@@ -1,17 +1,40 @@
 // ==============================================================================
-// DNA AUTO — PAINEL OPERACIONAL DA OFICINA CREDENCIADA (ESTILO TOTVS ERP)
-// Plataforma Integrada de Gestão, Recepção, Lançamento de OS e Telemetria OBD2
+// DNA AUTO — PAINEL OPERACIONAL DA OFICINA & AUTO CENTER (ESTILO TOTVS ERP)
+// Sistema Corporativo de Gestão, Recepção, Ficha Digital, OBD2 e WhatsApp
 // ==============================================================================
 
 const WorkshopView = {
     currentWorkshopId: 'ws_veloce',
     dashboardData: null,
-    alertsData: null,
-    currentTab: 'dashboard', // 'dashboard' | 'recepcao' | 'servicos' | 'alertas' | 'equipe'
+    alertsData: [],
+    appointmentsData: [],
+    currentSection: 'dashboard', // Módulo / Sub-view ativa
+    activeAccordions: {
+        'veiculos': true,
+        'recepcao': false,
+        'servicos': false,
+        'manutencao': true,
+        'clientes': false,
+        'agenda': false,
+        'whatsapp': false,
+        'pecas': false,
+        'relatorios': false,
+        'configuracoes': false
+    },
+    mobileDrawerOpen: false,
+    notificationsOpen: false,
     lastSearchedPlate: '',
+    searchCriteria: 'placa', // 'placa' | 'proprietario' | 'telefone' | 'documento' | 'dna' | 'chassi'
+    activeAlertTab: 'todos', // 'todos' | 'atrasadas' | 'proximas' | 'emdia'
+    activeAgendaView: 'hoje', // 'hoje' | 'semana' | 'mes'
+    activeWhatsAppTab: 'pendentes', // 'pendentes' | 'enviadas' | 'confirmadas' | 'recusadas' | 'sem_resposta'
+    selectedSlotDate: null,
+    selectedSlotTime: null,
+    officialPhone: '(19) 3245-6789',
+    officialWorkshopName: 'Veloce Auto Center Premium',
 
     getEffectiveWorkshopId() {
-        if (App.currentUser) {
+        if (typeof App !== 'undefined' && App.currentUser) {
             if (App.currentUser.workshop && (App.currentUser.workshop.id || App.currentUser.workshop.workshop_id)) {
                 return App.currentUser.workshop.id || App.currentUser.workshop.workshop_id;
             }
@@ -22,618 +45,791 @@ const WorkshopView = {
         return this.currentWorkshopId || 'ws_veloce';
     },
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // INICIALIZAÇÃO E CARREGAMENTO GERAL
+    // ──────────────────────────────────────────────────────────────────────────
     async render() {
         const container = document.getElementById('view-content');
+        if (!container) return;
+
         const activeWorkshopId = this.getEffectiveWorkshopId();
         this.currentWorkshopId = activeWorkshopId;
 
+        // Ativa classe de isolamento de tela cheia para o painel ERP
+        document.body.classList.add('is-workshop-erp');
+
         container.innerHTML = `
-            <div style="padding:40px; text-align:center; color:var(--text-muted);">
-                <div class="pulse-dot" style="margin:0 auto 16px;"></div>
-                Carregando Plataforma ERP da Oficina Credenciada...
+            <div style="padding:60px 20px; text-align:center; color:var(--text-muted); background:#080c14; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div class="pulse-dot" style="margin:0 auto 16px; width:12px; height:12px;"></div>
+                <strong style="color:#ffffff; font-size:16px; display:block; margin-bottom:6px;">Carregando ERP DNA AUTO...</strong>
+                <span style="font-size:12px; color:var(--text-dim);">Sincronizando odômetro OBD2, serviços e agenda operacional</span>
             </div>
         `;
 
         try {
+            // 1. Dashboard data
             const data = await API.getWorkshopDashboard(activeWorkshopId);
             this.dashboardData = data;
+            if (data.workshop && data.workshop.trade_name) {
+                this.officialWorkshopName = data.workshop.trade_name;
+            }
 
-            // Busca alertas de manutenção preditiva (OBD2 + KM)
+            // 2. Alertas preditivos (OBD2 + KM)
             try {
                 const alertsRes = await API.getMaintenanceAlertsForWorkshop(activeWorkshopId);
                 this.alertsData = alertsRes && alertsRes.alerts ? alertsRes.alerts : [];
             } catch (e) {
-                console.warn('Alertas de manutenção não puderam ser carregados:', e.message);
+                console.warn('Alertas não carregados:', e.message);
                 this.alertsData = [];
+            }
+
+            // 3. Agendamentos da Oficina
+            try {
+                const appsRes = await API.getWorkshopAppointments(activeWorkshopId);
+                this.appointmentsData = appsRes && appsRes.appointments ? appsRes.appointments : [];
+            } catch (e) {
+                console.warn('Agendamentos não carregados da API, usando dados locais:', e.message);
+                this.appointmentsData = this.getDefaultAppointments();
             }
 
             this.renderMainLayout();
         } catch (err) {
             console.error('Erro ao renderizar painel da oficina:', err);
             container.innerHTML = `
-                <div class="panel-box" style="padding:30px; text-align:center;">
-                    <div style="color:var(--status-rejected); font-size:16px; font-weight:700; margin-bottom:8px;">
-                        Erro ao carregar dados da oficina
+                <div class="panel-box" style="padding:40px; text-align:center; max-width:500px; margin:40px auto; background:#0f172a; border-color:var(--status-rejected);">
+                    <div style="color:var(--status-rejected); font-size:16px; font-weight:800; margin-bottom:8px;">
+                        Erro ao conectar à plataforma da oficina
                     </div>
-                    <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">${err.message || 'Verifique sua conexão.'}</p>
-                    <button class="btn btn-secondary" onclick="WorkshopView.render()">Tentar Novamente</button>
+                    <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">${err.message || 'Verifique se o servidor está ativo.'}</p>
+                    <button class="btn btn-primary" onclick="WorkshopView.render()">Tentar Novamente</button>
                 </div>
             `;
         }
     },
 
+    getDefaultAppointments() {
+        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+        return [
+            { id: 'app_1', license_plate: 'BRA2E19', vehicle_model: 'Honda Civic Touring', owner_name: 'Carlos Alberto Silva', owner_phone: '(11) 98888-1111', service_title: 'Pastilhas de Freio Dianteiras', appointment_date: today, appointment_time: '09:00', status: 'CONFIRMED' },
+            { id: 'app_2', license_plate: 'KXZ9012', vehicle_model: 'VW Gol MSI 1.6', owner_name: 'Marcos Donizete', owner_phone: '(19) 99123-4567', service_title: 'Troca de Óleo e Filtros Sintético', appointment_date: today, appointment_time: '14:00', status: 'CONFIRMED' },
+            { id: 'app_3', license_plate: 'ABC1D23', vehicle_model: 'Toyota Corolla XEi', owner_name: 'Renata Vasconcelos', owner_phone: '(11) 97654-3210', service_title: 'Troca de Fluido Câmbio CVT', appointment_date: tomorrow, appointment_time: '10:00', status: 'PENDING' },
+            { id: 'app_4', license_plate: 'LQZ9A42', vehicle_model: 'VW Fox 1.0 GII', owner_name: 'João da Silva', owner_phone: '(19) 98765-4321', service_title: 'Substituição Kit Correia Dentada', appointment_date: tomorrow, appointment_time: '15:00', status: 'CONFIRMED' }
+        ];
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // LAYOUT PRINCIPAL DO ERP (HEADER + SIDEBAR ACCORDION + VIEWPORT)
+    // ──────────────────────────────────────────────────────────────────────────
     renderMainLayout() {
         const container = document.getElementById('view-content');
-        const data = this.dashboardData;
-        const ws = data.workshop;
-        const pendingCount = (data.pendingConfirmations || []).length;
-        const criticalAlertsCount = (this.alertsData || []).filter(a => a.urgency === 'CRITICAL').length;
-        const totalAlertsCount = (this.alertsData || []).length;
+        const data = this.dashboardData || {};
+        const ws = data.workshop || { trade_name: 'Veloce Auto Center Premium', cnpj: '12.345.678/0001-90', id: 'ws_veloce' };
+        const userName = (App.currentUser && App.currentUser.name) || 'Marcos Silveira';
+
+        // Métricas de Notificações
+        const criticalAlerts = (this.alertsData || []).filter(a => a.urgency === 'CRITICAL').length;
+        const upcomingAlerts = (this.alertsData || []).filter(a => a.urgency === 'WARNING').length;
+        const todayApps = this.getTodayAppointmentsCount();
+        const pendingWpp = 3;
+        const totalNotif = criticalAlerts + upcomingAlerts + todayApps;
 
         container.innerHTML = `
-            <div class="ws-erp-container">
-                <!-- ========================================== -->
-                <!-- CABEÇALHO EXECUTIVO COMPACTO TOTVS ERP      -->
-                <!-- ========================================== -->
-                <div class="ws-erp-header">
-                    <div class="ws-erp-header-title">
-                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap;">
-                            <span class="badge-proof badge-proven" style="font-size:10px; padding:3px 8px; font-weight:700;">
-                                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:middle; margin-right:3px;"><polyline points="20 6 9 17 4 12"/></svg>
-                                OFICINA HOMOLOGADA NÍVEL 4
-                            </span>
-                            <span style="font-size:11px; color:var(--brand-cyan); font-family:var(--font-mono); font-weight:600;">ID: ${ws.id}</span>
-                            <span style="font-size:11px; color:var(--text-dim);">• Sistema Conectado ao OBD2</span>
+            <div class="ws-erp-viewport">
+                <!-- ======================================================== -->
+                <!-- HEADER ERP SUPERIOR                                      -->
+                <!-- ======================================================== -->
+                <header class="ws-erp-header-bar">
+                    <div class="ws-erp-header-left">
+                        <!-- Botão Sanduíche Mobile -->
+                        <button class="ws-erp-hamburger-btn" onclick="WorkshopView.toggleMobileDrawer()" title="Abrir Menu">
+                            ☰
+                        </button>
+
+                        <!-- Brand Block DNA AUTO -->
+                        <div class="ws-erp-brand-block" onclick="WorkshopView.switchSection('dashboard')">
+                            <div style="width:30px; height:30px; border-radius:6px; background:#0a0f16; border:1px solid rgba(255,210,28,0.45); display:flex; align-items:center; justify-content:center;">
+                                <svg viewBox="0 0 120 120" width="18" height="18" fill="none" stroke="#FFD21C" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M 54 62 C 51 55 51 46 57 41 C 62 36 67 40 65 50 C 63 56 64 64 64 64" stroke-width="8" />
+                                    <path d="M 45 66 C 41 53 41 39 50 30 C 58 21 68 21 75 30 C 82 40 82 55 77 66" stroke-width="9" />
+                                    <path d="M 36 68 C 30 52 31 32 43 20 C 54 9 72 9 83 20 C 93 32 94 52 88 68" stroke-width="9" />
+                                    <path d="M 22 84 L 32 84 C 36 78 42 75 48 75 L 72 75 C 78 75 84 78 88 84 L 98 84" stroke-width="10" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h1>DNA <span style="color:#FFD21C;">AUTO</span></h1>
+                                <p>Certificação de Registros Veiculares</p>
+                            </div>
                         </div>
-                        <h2>${ws.trade_name}</h2>
-                        <p>${ws.company_name} • CNPJ: ${ws.cnpj} • ${ws.address_street}, ${ws.address_number} - ${ws.city}/${ws.state}</p>
+
+                        <!-- Status da Rede DNA AUTO -->
+                        <div class="ws-erp-network-status">
+                            <span class="dot-live"></span>
+                            <span>REDE DNA AUTO ONLINE</span>
+                        </div>
                     </div>
 
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal()" style="font-weight:700; display:inline-flex; align-items:center; gap:6px;">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                            LANÇAR SERVIÇO & PEÇAS
-                        </button>
-                        <button class="btn btn-sm btn-secondary" onclick="PosterGenerator.open('${ws.id}')" style="display:inline-flex; align-items:center; gap:6px;">
-                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                            CARTAZ QR CODE
+                    <div class="ws-erp-header-right">
+                        <!-- Identificação da Oficina -->
+                        <div class="ws-erp-ws-title">
+                            <span class="ws-erp-ws-name">${ws.trade_name}</span>
+                            <span class="ws-erp-ws-sub">ID: ${ws.id} • Nível 4 Homologada</span>
+                        </div>
+
+                        <!-- Botão de Notificações com Dropdown -->
+                        <div style="position:relative;">
+                            <button class="ws-erp-bell-btn" onclick="WorkshopView.toggleNotificationsPopover()" title="Central de Notificações">
+                                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                                ${totalNotif > 0 ? `<span class="ws-erp-bell-counter">${totalNotif}</span>` : ''}
+                            </button>
+
+                            <!-- Dropdown de Notificações Popover -->
+                            <div id="ws-notifications-popover" class="ws-notifications-dropdown" style="display:none;">
+                                <div class="ws-notif-header">
+                                    <strong style="font-size:12.5px; color:#ffffff;">Notificações Operacionais</strong>
+                                    <span style="font-size:10.5px; color:var(--text-dim);">${totalNotif} pendências</span>
+                                </div>
+                                <div class="ws-notif-item" onclick="WorkshopView.switchSection('manutencao-atrasadas'); WorkshopView.toggleNotificationsPopover();">
+                                    <span style="font-size:14px;">🔴</span>
+                                    <div>
+                                        <strong style="color:#f87171; display:block;">${criticalAlerts} manutenções atrasadas</strong>
+                                        <span style="color:#94a3b8; font-size:11px;">Veículos com limite de KM excedido</span>
+                                    </div>
+                                </div>
+                                <div class="ws-notif-item" onclick="WorkshopView.switchSection('manutencao-proximas'); WorkshopView.toggleNotificationsPopover();">
+                                    <span style="font-size:14px;">🟡</span>
+                                    <div>
+                                        <strong style="color:#fbbf24; display:block;">${upcomingAlerts} manutenções próximas</strong>
+                                        <span style="color:#94a3b8; font-size:11px;">Faltando menos de 3.000 km</span>
+                                    </div>
+                                </div>
+                                <div class="ws-notif-item" onclick="WorkshopView.switchSection('agenda-oficina'); WorkshopView.toggleNotificationsPopover();">
+                                    <span style="font-size:14px;">📅</span>
+                                    <div>
+                                        <strong style="color:#10b981; display:block;">${todayApps} agendamentos para hoje</strong>
+                                        <span style="color:#94a3b8; font-size:11px;">Consulte horários na agenda</span>
+                                    </div>
+                                </div>
+                                <div class="ws-notif-item" onclick="WorkshopView.switchSection('whatsapp-central'); WorkshopView.toggleNotificationsPopover();">
+                                    <span style="font-size:14px;">💬</span>
+                                    <div>
+                                        <strong style="color:#00d4ff; display:block;">${pendingWpp} clientes aguardando resposta</strong>
+                                        <span style="color:#94a3b8; font-size:11px;">WhatsApp automáticos enviados</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Perfil do Usuário -->
+                        <div class="ws-erp-user-pill">
+                            <div class="ws-erp-user-avatar">${userName.charAt(0).toUpperCase()}</div>
+                            <span style="font-size:12px; font-weight:700; color:#f8fafc;">${userName}</span>
+                        </div>
+
+                        <!-- Botão Sair -->
+                        <button class="ws-erp-logout-btn" onclick="App.logout()" title="Encerrar Sessão">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                            <span>Sair</span>
                         </button>
                     </div>
-                </div>
+                </header>
 
-                <!-- ========================================== -->
-                <!-- ESTRUTURA ERP: MENU LATERAL + CONTEÚDO     -->
-                <!-- ========================================== -->
-                <div class="ws-erp-body">
-                    <!-- Menu Lateral Interno Estilo TOTVS -->
-                    <nav class="ws-erp-sidebar">
-                        <div class="ws-erp-nav-item ${this.currentTab === 'dashboard' ? 'active' : ''}" onclick="WorkshopView.switchTab('dashboard')">
-                            <div class="ws-erp-nav-left">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>
-                                <span>Dashboard</span>
+                <!-- ======================================================== -->
+                <!-- CORPO PRINCIPAL COM SIDEBAR ACCORDION + CONTEÚDO        -->
+                <!-- ======================================================== -->
+                <div class="ws-erp-main-body">
+                    <!-- Backdrop Mobile -->
+                    <div id="ws-erp-backdrop" class="ws-erp-drawer-backdrop" onclick="WorkshopView.closeMobileDrawer()"></div>
+
+                    <!-- SIDEBAR DESKTOP & DRAWER MOBILE -->
+                    <aside id="ws-erp-sidebar-el" class="ws-erp-sidebar">
+                        <div class="ws-erp-sidebar-header">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div class="title-main">DNA AUTO</div>
+                                    <div class="title-sub">Certificação de Registros</div>
+                                </div>
+                                <button class="btn btn-sm" onclick="WorkshopView.closeMobileDrawer()" style="display:none; padding:2px 8px;" id="ws-drawer-close-btn">✕</button>
                             </div>
                         </div>
 
-                        <div class="ws-erp-nav-item ${this.currentTab === 'recepcao' ? 'active' : ''}" onclick="WorkshopView.switchTab('recepcao')">
-                            <div class="ws-erp-nav-left">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                <span>Recepção & Entrada</span>
+                        <!-- Navegação Accordion Modular -->
+                        <nav class="ws-erp-nav-scroll">
+                            <!-- 1. VISÃO GERAL -->
+                            <div class="ws-erp-accordion-group">
+                                <div class="ws-erp-menu-item ${this.currentSection === 'dashboard' ? 'active' : ''}" onclick="WorkshopView.switchSection('dashboard')">
+                                    <div class="ws-erp-menu-left">
+                                        <span>🏠</span>
+                                        <span>Dashboard</span>
+                                    </div>
+                                </div>
                             </div>
-                            <span class="ws-erp-badge">Check-in</span>
-                        </div>
 
-                        <div class="ws-erp-nav-item ${this.currentTab === 'servicos' ? 'active' : ''}" onclick="WorkshopView.switchTab('servicos')">
-                            <div class="ws-erp-nav-left">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                                <span>Serviços & Peças</span>
+                            <!-- 2. VEÍCULOS -->
+                            <div class="ws-erp-accordion-group ${this.activeAccordions['veiculos'] ? 'open' : ''}" id="group-veiculos">
+                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('veiculos')">
+                                    <div class="group-title-left">
+                                        <span>🚗</span>
+                                        <span>Veículos</span>
+                                    </div>
+                                    <span class="arrow-icon">▼</span>
+                                </div>
+                                <ul class="ws-erp-accordion-items">
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'veiculos-pesquisa' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-pesquisa')">
+                                        <div class="ws-erp-menu-left"><span>🔎</span> <span>Pesquisar Veículo</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'veiculos-cadastrar' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-cadastrar')">
+                                        <div class="ws-erp-menu-left"><span>🚗</span> <span>Cadastrar Veículo</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'veiculos-cadastrados' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
+                                        <div class="ws-erp-menu-left"><span>📋</span> <span>Veículos Cadastrados</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'veiculos-historico' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-historico')">
+                                        <div class="ws-erp-menu-left"><span>📜</span> <span>Histórico dos Veículos</span></div>
+                                    </li>
+                                </ul>
                             </div>
-                            ${pendingCount > 0 ? `<span class="ws-erp-badge alert-pulse">${pendingCount} pend.</span>` : ''}
-                        </div>
 
-                        <div class="ws-erp-nav-item ${this.currentTab === 'alertas' ? 'active' : ''}" onclick="WorkshopView.switchTab('alertas')">
-                            <div class="ws-erp-nav-left">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                                <span>Alertas de Manutenção</span>
+                            <!-- 3. RECEPÇÃO -->
+                            <div class="ws-erp-accordion-group ${this.activeAccordions['recepcao'] ? 'open' : ''}" id="group-recepcao">
+                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('recepcao')">
+                                    <div class="group-title-left">
+                                        <span>🚘</span>
+                                        <span>Recepção</span>
+                                    </div>
+                                    <span class="arrow-icon">▼</span>
+                                </div>
+                                <ul class="ws-erp-accordion-items">
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'recepcao-checkin' ? 'active' : ''}" onclick="WorkshopView.switchSection('recepcao-checkin')">
+                                        <div class="ws-erp-menu-left"><span>🚘</span> <span>Recepção / Check-In</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'recepcao-novo' ? 'active' : ''}" onclick="WorkshopView.switchSection('recepcao-novo')">
+                                        <div class="ws-erp-menu-left"><span>➕</span> <span>Novo Atendimento</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'recepcao-andamento' ? 'active' : ''}" onclick="WorkshopView.switchSection('recepcao-andamento')">
+                                        <div class="ws-erp-menu-left"><span>📋</span> <span>Atendimentos em Andamento</span></div>
+                                    </li>
+                                </ul>
                             </div>
-                            ${totalAlertsCount > 0 ? `<span class="ws-erp-badge alert-pulse">${criticalAlertsCount > 0 ? criticalAlertsCount + ' críticos' : totalAlertsCount}</span>` : ''}
-                        </div>
 
-                        <div class="ws-erp-nav-item ${this.currentTab === 'equipe' ? 'active' : ''}" onclick="WorkshopView.switchTab('equipe')">
-                            <div class="ws-erp-nav-left">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                                <span>Equipe Técnica</span>
+                            <!-- 4. SERVIÇOS -->
+                            <div class="ws-erp-accordion-group ${this.activeAccordions['servicos'] ? 'open' : ''}" id="group-servicos">
+                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('servicos')">
+                                    <div class="group-title-left">
+                                        <span>🔧</span>
+                                        <span>Serviços</span>
+                                    </div>
+                                    <span class="arrow-icon">▼</span>
+                                </div>
+                                <ul class="ws-erp-accordion-items">
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'servicos-os' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-os')">
+                                        <div class="ws-erp-menu-left"><span>🔧</span> <span>Ordens de Serviço</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'servicos-novo' ? 'active' : ''}" onclick="WorkshopView.openNewServiceModal()">
+                                        <div class="ws-erp-menu-left"><span>➕</span> <span>Novo Serviço</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'servicos-andamento' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-andamento')">
+                                        <div class="ws-erp-menu-left"><span>⏳</span> <span>Serviços em Andamento</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'servicos-concluidos' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-concluidos')">
+                                        <div class="ws-erp-menu-left"><span>✅</span> <span>Serviços Concluídos</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'servicos-comprovados' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-comprovados')">
+                                        <div class="ws-erp-menu-left"><span>📋</span> <span>Serviços Comprovados</span></div>
+                                    </li>
+                                </ul>
                             </div>
-                            <span class="ws-erp-badge">${(data.staff || []).length}</span>
-                        </div>
-                    </nav>
 
-                    <!-- Área de Conteúdo da Sub-View Ativa -->
-                    <main class="ws-erp-content" id="ws-erp-active-content">
-                        ${this.renderCurrentTabContent()}
+                            <!-- 5. MANUTENÇÃO -->
+                            <div class="ws-erp-accordion-group ${this.activeAccordions['manutencao'] ? 'open' : ''}" id="group-manutencao">
+                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('manutencao')">
+                                    <div class="group-title-left">
+                                        <span>⚠️</span>
+                                        <span>Manutenção</span>
+                                    </div>
+                                    <span class="arrow-icon">▼</span>
+                                </div>
+                                <ul class="ws-erp-accordion-items">
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'manutencao-alertas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-alertas')">
+                                        <div class="ws-erp-menu-left"><span>⚠️</span> <span>Alertas de Manutenção</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'manutencao-atrasadas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-atrasadas')">
+                                        <div class="ws-erp-menu-left"><span>🔴</span> <span>Manutenções Atrasadas</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'manutencao-proximas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-proximas')">
+                                        <div class="ws-erp-menu-left"><span>🟡</span> <span>Próximas Manutenções</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'manutencao-historico' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-historico')">
+                                        <div class="ws-erp-menu-left"><span>📅</span> <span>Histórico de Manutenção</span></div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- 6. CLIENTES -->
+                            <div class="ws-erp-accordion-group ${this.activeAccordions['clientes'] ? 'open' : ''}" id="group-clientes">
+                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('clientes')">
+                                    <div class="group-title-left">
+                                        <span>👤</span>
+                                        <span>Clientes</span>
+                                    </div>
+                                    <span class="arrow-icon">▼</span>
+                                </div>
+                                <ul class="ws-erp-accordion-items">
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'clientes-lista' ? 'active' : ''}" onclick="WorkshopView.switchSection('clientes-lista')">
+                                        <div class="ws-erp-menu-left"><span>👤</span> <span>Clientes</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'clientes-whatsapp' ? 'active' : ''}" onclick="WorkshopView.switchSection('clientes-whatsapp')">
+                                        <div class="ws-erp-menu-left"><span>📱</span> <span>WhatsApp dos Clientes</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'clientes-historico' ? 'active' : ''}" onclick="WorkshopView.switchSection('clientes-historico')">
+                                        <div class="ws-erp-menu-left"><span>📋</span> <span>Histórico de Atendimentos</span></div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- 7. AGENDA -->
+                            <div class="ws-erp-accordion-group ${this.activeAccordions['agenda'] ? 'open' : ''}" id="group-agenda">
+                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('agenda')">
+                                    <div class="group-title-left">
+                                        <span>📅</span>
+                                        <span>Agenda</span>
+                                    </div>
+                                    <span class="arrow-icon">▼</span>
+                                </div>
+                                <ul class="ws-erp-accordion-items">
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'agenda-oficina' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-oficina')">
+                                        <div class="ws-erp-menu-left"><span>📅</span> <span>Agenda da Oficina</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'agenda-horarios' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-horarios')">
+                                        <div class="ws-erp-menu-left"><span>🕐</span> <span>Horários</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'agenda-agendamentos' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-agendamentos')">
+                                        <div class="ws-erp-menu-left"><span>✅</span> <span>Agendamentos</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'agenda-confirmacao' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-confirmacao')">
+                                        <div class="ws-erp-menu-left"><span>⏳</span> <span>Aguardando Confirmação</span></div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- 8. WHATSAPP -->
+                            <div class="ws-erp-accordion-group ${this.activeAccordions['whatsapp'] ? 'open' : ''}" id="group-whatsapp">
+                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('whatsapp')">
+                                    <div class="group-title-left">
+                                        <span>💬</span>
+                                        <span>WhatsApp</span>
+                                    </div>
+                                    <span class="arrow-icon">▼</span>
+                                </div>
+                                <ul class="ws-erp-accordion-items">
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'whatsapp-central' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-central')">
+                                        <div class="ws-erp-menu-left"><span>💬</span> <span>Central WhatsApp</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'whatsapp-automaticas' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-automaticas')">
+                                        <div class="ws-erp-menu-left"><span>📨</span> <span>Mensagens Automáticas</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'whatsapp-avisar' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-avisar')">
+                                        <div class="ws-erp-menu-left"><span>⚠️</span> <span>Manutenções para Avisar</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'whatsapp-enviadas' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-enviadas')">
+                                        <div class="ws-erp-menu-left"><span>📤</span> <span>Mensagens Enviadas</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'whatsapp-confirmados' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-confirmados')">
+                                        <div class="ws-erp-menu-left"><span>✅</span> <span>Clientes Confirmados</span></div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- 9. PEÇAS / ESTOQUE -->
+                            <div class="ws-erp-accordion-group ${this.activeAccordions['pecas'] ? 'open' : ''}" id="group-pecas">
+                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('pecas')">
+                                    <div class="group-title-left">
+                                        <span>📦</span>
+                                        <span>Peças / Estoque</span>
+                                    </div>
+                                    <span class="arrow-icon">▼</span>
+                                </div>
+                                <ul class="ws-erp-accordion-items">
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'pecas-lista' ? 'active' : ''}" onclick="WorkshopView.switchSection('pecas-lista')">
+                                        <div class="ws-erp-menu-left"><span>📦</span> <span>Peças</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'pecas-estoque' ? 'active' : ''}" onclick="WorkshopView.switchSection('pecas-estoque')">
+                                        <div class="ws-erp-menu-left"><span>📋</span> <span>Estoque</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'pecas-utilizadas' ? 'active' : ''}" onclick="WorkshopView.switchSection('pecas-utilizadas')">
+                                        <div class="ws-erp-menu-left"><span>🔧</span> <span>Peças Utilizadas</span></div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- 10. RELATÓRIOS -->
+                            <div class="ws-erp-accordion-group ${this.activeAccordions['relatorios'] ? 'open' : ''}" id="group-relatorios">
+                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('relatorios')">
+                                    <div class="group-title-left">
+                                        <span>📊</span>
+                                        <span>Relatórios</span>
+                                    </div>
+                                    <span class="arrow-icon">▼</span>
+                                </div>
+                                <ul class="ws-erp-accordion-items">
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'relatorios-geral' ? 'active' : ''}" onclick="WorkshopView.switchSection('relatorios-geral')">
+                                        <div class="ws-erp-menu-left"><span>📊</span> <span>Relatórios Gerais</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'relatorios-veiculos' ? 'active' : ''}" onclick="WorkshopView.switchSection('relatorios-veiculos')">
+                                        <div class="ws-erp-menu-left"><span>🚗</span> <span>Veículos Atendidos</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'relatorios-servicos' ? 'active' : ''}" onclick="WorkshopView.switchSection('relatorios-servicos')">
+                                        <div class="ws-erp-menu-left"><span>🔧</span> <span>Serviços & Faturamento</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'relatorios-manutencao' ? 'active' : ''}" onclick="WorkshopView.switchSection('relatorios-manutencao')">
+                                        <div class="ws-erp-menu-left"><span>⚠️</span> <span>Manutenções Convertidas</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'relatorios-clientes' ? 'active' : ''}" onclick="WorkshopView.switchSection('relatorios-clientes')">
+                                        <div class="ws-erp-menu-left"><span>👥</span> <span>Retenção de Clientes</span></div>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- 11. CONFIGURAÇÕES -->
+                            <div class="ws-erp-accordion-group ${this.activeAccordions['configuracoes'] ? 'open' : ''}" id="group-configuracoes">
+                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('configuracoes')">
+                                    <div class="group-title-left">
+                                        <span>⚙</span>
+                                        <span>Configurações</span>
+                                    </div>
+                                    <span class="arrow-icon">▼</span>
+                                </div>
+                                <ul class="ws-erp-accordion-items">
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'configuracoes-dados' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-dados')">
+                                        <div class="ws-erp-menu-left"><span>⚙</span> <span>Dados da Oficina</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'configuracoes-usuarios' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-usuarios')">
+                                        <div class="ws-erp-menu-left"><span>👥</span> <span>Usuários & Equipe</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'configuracoes-permissoes' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-permissoes')">
+                                        <div class="ws-erp-menu-left"><span>🔐</span> <span>Permissões</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'configuracoes-whatsapp' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-whatsapp')">
+                                        <div class="ws-erp-menu-left"><span>💬</span> <span>Número WhatsApp</span></div>
+                                    </li>
+                                    <li class="ws-erp-menu-item ${this.currentSection === 'configuracoes-notificacoes' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-notificacoes')">
+                                        <div class="ws-erp-menu-left"><span>🔔</span> <span>Notificações</span></div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </nav>
+                    </aside>
+
+                    <!-- ÁREA PRINCIPAL DE CONTEÚDO (SUB-VIEWS) -->
+                    <main class="ws-erp-content-viewport" id="ws-erp-active-viewport">
+                        ${this.renderActiveSection()}
                     </main>
                 </div>
             </div>
+
+            <!-- CONTAINER PARA MODAIS DO ERP -->
+            <div id="ws-erp-modal-root"></div>
         `;
     },
 
-    switchTab(tabName) {
-        this.currentTab = tabName;
-        const navItems = document.querySelectorAll('.ws-erp-nav-item');
-        navItems.forEach(item => item.classList.remove('active'));
+    // ──────────────────────────────────────────────────────────────────────────
+    // CONTROLES DE INTERFACE (DRAWER, ACCORDION, NOTIFICAÇÕES)
+    // ──────────────────────────────────────────────────────────────────────────
+    toggleMobileDrawer() {
+        this.mobileDrawerOpen = !this.mobileDrawerOpen;
+        const sidebar = document.getElementById('ws-erp-sidebar-el');
+        const backdrop = document.getElementById('ws-erp-backdrop');
+        const closeBtn = document.getElementById('ws-drawer-close-btn');
 
-        const targetContent = document.getElementById('ws-erp-active-content');
-        if (targetContent) {
-            targetContent.innerHTML = this.renderCurrentTabContent();
+        if (sidebar) sidebar.classList.toggle('open', this.mobileDrawerOpen);
+        if (backdrop) backdrop.classList.toggle('active', this.mobileDrawerOpen);
+        if (closeBtn) closeBtn.style.display = this.mobileDrawerOpen ? 'block' : 'none';
+    },
+
+    closeMobileDrawer() {
+        this.mobileDrawerOpen = false;
+        const sidebar = document.getElementById('ws-erp-sidebar-el');
+        const backdrop = document.getElementById('ws-erp-backdrop');
+        const closeBtn = document.getElementById('ws-drawer-close-btn');
+
+        if (sidebar) sidebar.classList.remove('open');
+        if (backdrop) backdrop.classList.remove('active');
+        if (closeBtn) closeBtn.style.display = 'none';
+    },
+
+    toggleAccordion(groupKey) {
+        this.activeAccordions[groupKey] = !this.activeAccordions[groupKey];
+        const groupEl = document.getElementById(`group-${groupKey}`);
+        if (groupEl) {
+            groupEl.classList.toggle('open', this.activeAccordions[groupKey]);
+        }
+    },
+
+    toggleNotificationsPopover() {
+        const popover = document.getElementById('ws-notifications-popover');
+        if (!popover) return;
+        this.notificationsOpen = !this.notificationsOpen;
+        popover.style.display = this.notificationsOpen ? 'block' : 'none';
+    },
+
+    switchSection(sectionId) {
+        this.currentSection = sectionId;
+        this.closeMobileDrawer();
+
+        if (this.notificationsOpen) {
+            this.toggleNotificationsPopover();
+        }
+
+        // Atualiza item ativo na sidebar
+        const allItems = document.querySelectorAll('.ws-erp-menu-item');
+        allItems.forEach(item => item.classList.remove('active'));
+
+        const viewport = document.getElementById('ws-erp-active-viewport');
+        if (viewport) {
+            viewport.innerHTML = this.renderActiveSection();
+            // Scroll to top suavemente
+            viewport.scrollTop = 0;
         } else {
             this.renderMainLayout();
         }
-
-        // Re-atualiza o active na sidebar
-        const tabs = ['dashboard', 'recepcao', 'servicos', 'alertas', 'equipe'];
-        const index = tabs.indexOf(tabName);
-        if (index >= 0 && navItems[index]) {
-            navItems[index].classList.add('active');
-        }
     },
 
-    renderCurrentTabContent() {
-        switch (this.currentTab) {
-            case 'recepcao':
-                return this.renderRecepcao();
-            case 'servicos':
-                return this.renderServicos();
-            case 'alertas':
-                return this.renderAlertas();
-            case 'equipe':
-                return this.renderEquipe();
+    getTodayAppointmentsCount() {
+        const today = new Date().toISOString().split('T')[0];
+        return (this.appointmentsData || []).filter(a => a.appointment_date === today).length;
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // ROTEADOR DE SEÇÕES DO ERP
+    // ──────────────────────────────────────────────────────────────────────────
+    renderActiveSection() {
+        switch (this.currentSection) {
+            // Módulo 1: Visão Geral
             case 'dashboard':
+                return this.renderDashboardView();
+
+            // Módulo 2: Veículos
+            case 'veiculos-pesquisa':
+            case 'veiculos-cadastrar':
+                return this.renderVehicleSearchView();
+            case 'veiculos-cadastrados':
+                return this.renderRegisteredVehiclesView();
+            case 'veiculos-historico':
+                return this.renderVehicleHistoryView();
+
+            // Módulo 3: Recepção
+            case 'recepcao-checkin':
+            case 'recepcao-novo':
+                return this.renderRecepcaoCheckinView();
+            case 'recepcao-andamento':
+                return this.renderServicesInProgressView();
+
+            // Módulo 4: Serviços
+            case 'servicos-os':
+            case 'servicos-andamento':
+                return this.renderServiceOrdersView();
+            case 'servicos-concluidos':
+            case 'servicos-comprovados':
+                return this.renderProvenServicesView();
+
+            // Módulo 5: Manutenção
+            case 'manutencao-alertas':
+            case 'manutencao-atrasadas':
+            case 'manutencao-proximas':
+            case 'manutencao-historico':
+                return this.renderMaintenanceCenterView();
+
+            // Módulo 6: Clientes
+            case 'clientes-lista':
+            case 'clientes-whatsapp':
+            case 'clientes-historico':
+                return this.renderClientsView();
+
+            // Módulo 7: Agenda
+            case 'agenda-oficina':
+            case 'agenda-horarios':
+            case 'agenda-agendamentos':
+            case 'agenda-confirmacao':
+                return this.renderAgendaView();
+
+            // Módulo 8: WhatsApp
+            case 'whatsapp-central':
+            case 'whatsapp-automaticas':
+            case 'whatsapp-avisar':
+            case 'whatsapp-enviadas':
+            case 'whatsapp-confirmados':
+                return this.renderWhatsAppCenterView();
+
+            // Módulo 9: Peças / Estoque
+            case 'pecas-lista':
+            case 'pecas-estoque':
+            case 'pecas-utilizadas':
+                return this.renderPartsAndStockView();
+
+            // Módulo 10: Relatórios
+            case 'relatorios-geral':
+            case 'relatorios-veiculos':
+            case 'relatorios-servicos':
+            case 'relatorios-manutencao':
+            case 'relatorios-clientes':
+                return this.renderReportsView();
+
+            // Módulo 11: Configurações
+            case 'configuracoes-dados':
+            case 'configuracoes-usuarios':
+            case 'configuracoes-permissoes':
+            case 'configuracoes-whatsapp':
+            case 'configuracoes-notificacoes':
+                return this.renderConfigurationsView();
+
             default:
-                return this.renderDashboard();
+                return this.renderDashboardView();
         }
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TAB 1: DASHBOARD OPERACIONAL
+    // SEÇÃO 1: DASHBOARD EXECUTIVO
     // ──────────────────────────────────────────────────────────────────────────
-    renderDashboard() {
-        const data = this.dashboardData;
-        const stats = data.stats;
-        const criticalCount = (this.alertsData || []).filter(a => a.urgency === 'CRITICAL').length;
+    renderDashboardView() {
+        const data = this.dashboardData || {};
+        const stats = data.stats || {};
+        const ws = data.workshop || {};
+        const userName = (App.currentUser && App.currentUser.name) || 'Marcos Silveira';
+
+        const criticalAlerts = (this.alertsData || []).filter(a => a.urgency === 'CRITICAL').length;
+        const upcomingAlerts = (this.alertsData || []).filter(a => a.urgency === 'WARNING').length;
+        const todayApps = this.getTodayAppointmentsCount();
+        const pendingServices = (data.pendingConfirmations || []).length;
+        const attendedVehicles = Number(stats.attended_vehicles || 4);
+        const pendingWhatsApp = 3;
 
         return `
-            <!-- KPIs Operacionais -->
-            <div class="grid-kpi" style="margin-bottom:0;">
-                <div class="kpi-card accent-primary">
-                    <div class="kpi-header">
-                        <span class="kpi-title">Veículos Atendidos</span>
-                        <span class="kpi-icon">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L1.4 12c-.2.4-.4.9-.4 1.4V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
-                        </span>
-                    </div>
-                    <div class="kpi-value">${stats.attended_vehicles}</div>
-                    <div class="kpi-footer">Passagens registradas na oficina</div>
-                </div>
-
-                <div class="kpi-card accent-cyan">
-                    <div class="kpi-header">
-                        <span class="kpi-title">DNAs Ativados</span>
-                        <span class="kpi-icon">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        </span>
-                    </div>
-                    <div class="kpi-value">${stats.dnas_activated}</div>
-                    <div class="kpi-footer">Veículos na rede DNA AUTO</div>
-                </div>
-
-                <div class="kpi-card accent-success">
-                    <div class="kpi-header">
-                        <span class="kpi-title">Serviços Comprovados</span>
-                        <span class="kpi-icon">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
-                        </span>
-                    </div>
-                    <div class="kpi-value">${stats.proven_services}</div>
-                    <div class="kpi-footer">Nível 4 com peças e notas fiscais</div>
-                </div>
-
-                <div class="kpi-card accent-warning" onclick="WorkshopView.switchTab('alertas')" style="cursor:pointer;">
-                    <div class="kpi-header">
-                        <span class="kpi-title">Alertas Preventivos (OBD2)</span>
-                        <span class="kpi-icon">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
-                        </span>
-                    </div>
-                    <div class="kpi-value" style="color:${criticalCount > 0 ? 'var(--status-rejected)' : 'var(--proof-level-1)'};">${(this.alertsData || []).length}</div>
-                    <div class="kpi-footer">${criticalCount > 0 ? `${criticalCount} trocas críticas imediatas` : 'Monitoramento por KM ativo'}</div>
-                </div>
-            </div>
-
-            <!-- Card de Acesso Rápido de Recepção -->
-            <div class="panel-box" style="background:linear-gradient(135deg, rgba(255, 210, 28, 0.05), rgba(15, 23, 42, 0.7)); border-color:rgba(255, 210, 28, 0.3);">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                    <div>
-                        <strong style="font-size:15px; color:#fff; display:block;">Recepção Rápida de Veículos</strong>
-                        <p style="font-size:12.5px; color:var(--text-muted); margin:4px 0 0;">Dê entrada por placa ou cadastre carros na plataforma com dados da API oficial ou formulário instantâneo.</p>
-                    </div>
-                    <button class="btn btn-primary" onclick="WorkshopView.switchTab('recepcao')" style="font-weight:700;">
-                        Ir para Recepção / Check-In →
-                    </button>
-                </div>
-            </div>
-
-            <!-- Resumo das Pendências e Fila de Análise -->
-            <div class="panel-box">
-                <div class="panel-title">
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--brand-cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        Atividades Recentes & Pendências da Oficina
-                    </span>
-                    <button class="btn btn-sm btn-secondary" onclick="WorkshopView.switchTab('servicos')">Ver Todos os Serviços</button>
-                </div>
-
-                ${(data.pendingConfirmations || []).length === 0 ? `
-                    <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12.5px;">
-                        Nenhum serviço declarado por cliente aguardando análise no momento.
-                    </div>
-                ` : `
-                    <div class="table-responsive">
-                        <table class="erp-table">
-                            <thead>
-                                <tr>
-                                    <th>Veículo</th>
-                                    <th>Cliente</th>
-                                    <th>Serviço Declarado</th>
-                                    <th>Km</th>
-                                    <th>Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${data.pendingConfirmations.slice(0, 3).map(s => `
-                                    <tr>
-                                        <td><strong>${s.brand} ${s.model}</strong> <span class="mono" style="color:var(--brand-cyan); font-size:11px;">(${s.license_plate})</span></td>
-                                        <td>${s.declared_by_owner_name || 'Cliente Cadastrado'}</td>
-                                        <td>${s.service_title}</td>
-                                        <td class="mono">${Number(s.mileage).toLocaleString('pt-BR')} km</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-success" style="font-size:11px;" onclick="WorkshopView.switchTab('servicos')">Analisar</button>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
-            </div>
-        `;
-    },
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // TAB 2: RECEPÇÃO & ENTRADA DE VEÍCULOS (2 BOTÕES NA PARTE DE PESQUISA)
-    // ──────────────────────────────────────────────────────────────────────────
-    renderRecepcao() {
-        return `
-            <div class="panel-box" style="background:linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(15, 23, 42, 0.6)); border-color:var(--brand-cyan);">
-                <div class="panel-title">
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--brand-cyan)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        Recepção / Check-In: Identificar ou Cadastrar Veículo na Entrada
-                    </span>
-                </div>
-                <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:14px;">
-                    Digite a <strong>Placa</strong> do veículo. O sistema carrega o histórico 360°, verifica o alerta preventivo de correia/óleo pelo odômetro OBD2 ou permite cadastrar o carro imediatamente na base oficial.
-                </p>
-
-                <!-- Barra de Pesquisa com os DOIS BOTÕES solicitados -->
-                <div class="ws-search-toolbar">
-                    <input type="text" id="ws-vehicle-search" class="form-control ws-search-input"
-                           placeholder="Digite a placa (Ex: LQZ9A42, BRA2E19, STR1A99)..."
-                           value="${this.lastSearchedPlate || 'LQZ9A42'}"
-                           onkeydown="if(event.key==='Enter') WorkshopView.handleSearchVehicle()" />
-                    <div class="ws-search-dual-actions">
-                        <!-- BOTÃO 1: CONSULTAR / ENTRADA -->
-                        <button class="btn btn-cyan ws-btn-search" onclick="WorkshopView.handleSearchVehicle()" style="font-weight:700; display:inline-flex; align-items:center; gap:6px;">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                            CONSULTAR / ENTRADA
-                        </button>
-
-                        <!-- BOTÃO 2: CADASTRAR CARRO -->
-                        <button class="ws-btn-cadastrar-carro" onclick="WorkshopView.handleCadastrarCarroBtn()">
-                            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L1.4 12c-.2.4-.4.9-.4 1.4V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
-                            CADASTRAR CARRO
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Container do Resultado da Busca / Entrada -->
-                <div id="ws-plate-lookup-result" style="display:none; margin-top:16px;"></div>
-
-                <!-- Atalhos rápidos para demonstração -->
-                <div style="margin-top:16px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:11.5px; color:var(--text-dim);">
-                    <span>Atalhos rápidos para teste de placas:</span>
-                    <button class="btn btn-sm btn-secondary" style="font-family:var(--font-mono); font-size:11px;" onclick="WorkshopView.quickTestVehicle('LQZ9A42')">
-                        LQZ9A42 (VW Fox GII 1.0)
-                    </button>
-                    <button class="btn btn-sm btn-secondary" style="font-family:var(--font-mono); font-size:11px;" onclick="WorkshopView.quickTestVehicle('BRA2E19')">
-                        BRA2E19 (Civic Touring 360°)
-                    </button>
-                    <button class="btn btn-sm btn-secondary" style="font-family:var(--font-mono); font-size:11px;" onclick="WorkshopView.quickTestVehicle('STR1A99')">
-                        STR1A99 (Strada Endurance)
-                    </button>
-                    <button class="btn btn-sm btn-secondary" style="font-family:var(--font-mono); font-size:11px;" onclick="WorkshopView.quickTestVehicle('ABC1D23')">
-                        ABC1D23 (Corolla Altis)
-                    </button>
-                    <button class="btn btn-sm btn-secondary" style="font-family:var(--font-mono); font-size:11px;" onclick="WorkshopView.quickTestVehicle('KXZ9012')">
-                        KXZ9012 (Gol MSI)
-                    </button>
-                </div>
-            </div>
-
-            <!-- Modal / Formulário de Cadastro Manual Direto (se necessário) -->
-            <div id="ws-manual-register-modal" class="modal-overlay">
-                <div class="modal-content" style="max-width:540px;">
-                    <div class="modal-header">
-                        <h3 style="font-size:16px; font-weight:800; color:#fff;">Cadastrar Novo Veículo na Oficina</h3>
-                        <button class="modal-close" onclick="WorkshopView.closeManualVehicleModal()">&times;</button>
-                    </div>
-                    <form id="ws-manual-register-form" onsubmit="WorkshopView.submitManualRegister(event)" style="padding:16px 20px;">
-                        <div class="form-grid-2">
-                            <div class="form-group">
-                                <label class="form-label">Placa do Veículo *</label>
-                                <input type="text" id="manual-veh-plate" class="form-control" maxlength="8" style="text-transform:uppercase; font-weight:700; font-family:var(--font-mono);" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Marca / Montadora *</label>
-                                <input type="text" id="manual-veh-brand" class="form-control" placeholder="Ex: VW, Honda, Fiat, Toyota" required />
-                            </div>
-                        </div>
-
-                        <div class="form-grid-2">
-                            <div class="form-group">
-                                <label class="form-label">Modelo do Carro *</label>
-                                <input type="text" id="manual-veh-model" class="form-control" placeholder="Ex: Fox 1.0 GII, Civic, Strada" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Versão / Motor</label>
-                                <input type="text" id="manual-veh-version" class="form-control" placeholder="Ex: 1.0 Total Flex, 1.5 Turbo" />
-                            </div>
-                        </div>
-
-                        <div class="form-grid-3">
-                            <div class="form-group">
-                                <label class="form-label">Ano Fab/Mod *</label>
-                                <input type="number" id="manual-veh-year" class="form-control" value="2018" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Cor</label>
-                                <input type="text" id="manual-veh-color" class="form-control" placeholder="Ex: Prata, Vermelho" />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Km Atual</label>
-                                <input type="number" id="manual-veh-km" class="form-control" placeholder="Ex: 85000" />
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="margin-top:14px; padding:12px; background:rgba(255,210,28,0.06); border-radius:6px; border:1px solid rgba(255,210,28,0.2);">
-                            <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#fff; cursor:pointer;">
-                                <input type="checkbox" id="manual-veh-activate-dna" checked />
-                                <span>Ativar Passaporte DNA Digital Imediato para este veículo</span>
-                            </label>
-                        </div>
-
-                        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
-                            <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeManualVehicleModal()">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" style="font-weight:700;">Salvar e Dar Entrada</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        `;
-    },
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // TAB 3: LANÇAR SERVIÇOS & PEÇAS (NÍVEL 4)
-    // ──────────────────────────────────────────────────────────────────────────
-    renderServicos() {
-        const data = this.dashboardData;
-
-        return `
-            <!-- Botão de Ação Direta -->
-            <div class="panel-box" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <!-- Banner de Saudação do Painel -->
+            <div class="ws-erp-dashboard-banner">
                 <div>
-                    <h3 style="font-size:16px; font-weight:800; color:#fff; margin:0 0 4px;">Lançar e Comprovar Serviços com Peças</h3>
-                    <p style="font-size:12.5px; color:var(--text-muted); margin:0;">
-                        Registre ordens de serviço executadas, anexe notas fiscais e informe os códigos das peças originais para certificação Nível 4.
-                    </p>
+                    <h2 class="ws-erp-greeting-title">BOM DIA, ${userName.toUpperCase()}!</h2>
+                    <p class="ws-erp-greeting-sub">${ws.trade_name || 'Veloce Auto Center Premium'} • Operação Diária DNA AUTO</p>
                 </div>
-                <button class="btn btn-primary" onclick="WorkshopView.openNewServiceModal()" style="font-weight:700;">
-                    + LANÇAR NOVO SERVIÇO NÍVEL 4
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="ws-erp-network-status" style="display:inline-flex !important;">
+                        <span class="dot-live"></span>
+                        <span>STATUS DA REDE: 🟢 REDE DNA AUTO ONLINE</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- RESUMO DE HOJE (6 CARDS SOLICITADOS) -->
+            <div class="ws-erp-section-title">
+                <span>📊 Resumo de Hoje</span>
+            </div>
+
+            <div class="ws-erp-kpi-grid">
+                <!-- 1. Veículos Atendidos -->
+                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
+                    <div class="ws-erp-kpi-top">
+                        <span class="ws-erp-kpi-label">Veículos Atendidos</span>
+                        <span>🚗</span>
+                    </div>
+                    <div class="ws-erp-kpi-num">${attendedVehicles}</div>
+                    <div class="ws-erp-kpi-foot">Passagens registradas</div>
+                </div>
+
+                <!-- 2. Serviços em Andamento -->
+                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('servicos-os')">
+                    <div class="ws-erp-kpi-top">
+                        <span class="ws-erp-kpi-label">Serviços em Andamento</span>
+                        <span>🔧</span>
+                    </div>
+                    <div class="ws-erp-kpi-num" style="color:#00d4ff;">${pendingServices > 0 ? pendingServices : 2}</div>
+                    <div class="ws-erp-kpi-foot">${pendingServices} aguardando análise</div>
+                </div>
+
+                <!-- 3. Manutenções Próximas -->
+                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('manutencao-proximas')">
+                    <div class="ws-erp-kpi-top">
+                        <span class="ws-erp-kpi-label">Manutenções Próximas</span>
+                        <span>⚠️</span>
+                    </div>
+                    <div class="ws-erp-kpi-num" style="color:#fbbf24;">${upcomingAlerts}</div>
+                    <div class="ws-erp-kpi-foot">Faltando menos de 3.000 km</div>
+                </div>
+
+                <!-- 4. Manutenções Atrasadas -->
+                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('manutencao-atrasadas')">
+                    <div class="ws-erp-kpi-top">
+                        <span class="ws-erp-kpi-label">Manutenções Atrasadas</span>
+                        <span>🔴</span>
+                    </div>
+                    <div class="ws-erp-kpi-num" style="color:#ef4444;">${criticalAlerts}</div>
+                    <div class="ws-erp-kpi-foot">KM limite excedido</div>
+                </div>
+
+                <!-- 5. Agendamentos Hoje -->
+                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('agenda-oficina')">
+                    <div class="ws-erp-kpi-top">
+                        <span class="ws-erp-kpi-label">Agendamentos Hoje</span>
+                        <span>📅</span>
+                    </div>
+                    <div class="ws-erp-kpi-num" style="color:#10b981;">${todayApps}</div>
+                    <div class="ws-erp-kpi-foot">Horários reservados</div>
+                </div>
+
+                <!-- 6. WhatsApp Pendentes -->
+                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('whatsapp-central')">
+                    <div class="ws-erp-kpi-top">
+                        <span class="ws-erp-kpi-label">WhatsApp Pendentes</span>
+                        <span>💬</span>
+                    </div>
+                    <div class="ws-erp-kpi-num" style="color:#FFD21C;">${pendingWhatsApp}</div>
+                    <div class="ws-erp-kpi-foot">Aguardando resposta do cliente</div>
+                </div>
+            </div>
+
+            <!-- AÇÕES RÁPIDAS (6 BOTÕES SOLICITADOS) -->
+            <div class="ws-erp-section-title">
+                <span>⚡ Ações Rápidas</span>
+            </div>
+
+            <div class="ws-erp-quick-actions-grid">
+                <button class="ws-erp-quick-btn primary-highlight" onclick="WorkshopView.switchSection('veiculos-pesquisa')">
+                    <span style="font-size:16px;">🔎</span>
+                    <span>PESQUISAR CARRO</span>
+                </button>
+                <button class="ws-erp-quick-btn" onclick="WorkshopView.openManualVehicleModal()">
+                    <span style="font-size:16px;">🚗</span>
+                    <span>CADASTRAR CARRO</span>
+                </button>
+                <button class="ws-erp-quick-btn" onclick="WorkshopView.switchSection('recepcao-checkin')">
+                    <span style="font-size:16px;">🚘</span>
+                    <span>NOVA RECEPÇÃO</span>
+                </button>
+                <button class="ws-erp-quick-btn" onclick="WorkshopView.openNewServiceModal()">
+                    <span style="font-size:16px;">🔧</span>
+                    <span>NOVO SERVIÇO</span>
+                </button>
+                <button class="ws-erp-quick-btn" onclick="WorkshopView.openSmartScheduleModal()">
+                    <span style="font-size:16px;">📅</span>
+                    <span>NOVO AGENDAMENTO</span>
+                </button>
+                <button class="ws-erp-quick-btn" onclick="WorkshopView.switchSection('whatsapp-central')">
+                    <span style="font-size:16px;">💬</span>
+                    <span>WHATSAPP</span>
                 </button>
             </div>
 
-            <!-- Fila de Análise: Serviços Declarados por Clientes -->
-            <div class="panel-box">
+            <!-- FILA DE ATIVIDADES E PENDÊNCIAS DA OFICINA -->
+            <div class="panel-box" style="margin-bottom:16px;">
                 <div class="panel-title">
                     <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--proof-level-1)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                        Fila de Análise: Serviços Declarados por Clientes (${(data.pendingConfirmations || []).length} pendentes)
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--brand-cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        Ordens de Serviço Recentes & Declarações de Clientes
                     </span>
+                    <button class="btn btn-sm btn-secondary" onclick="WorkshopView.switchSection('servicos-os')">Ver Todas</button>
                 </div>
 
                 ${(data.pendingConfirmations || []).length === 0 ? `
-                    <div style="padding:20px; text-align:center; color:var(--text-muted); font-size:12.5px;">
-                        Nenhum serviço declarado por cliente aguardando análise no momento.
-                    </div>
-                ` : `
-                    <div class="table-responsive">
-                        <table class="erp-table">
-                            <thead>
-                                <tr>
-                                    <th>Veículo</th>
-                                    <th>Proprietário</th>
-                                    <th>Data Declarada</th>
-                                    <th>Km</th>
-                                    <th>Serviço & Peças</th>
-                                    <th>Ações Técnicas</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${data.pendingConfirmations.map(s => `
-                                    <tr>
-                                        <td>
-                                            <strong style="color:#fff;">${s.brand} ${s.model}</strong>
-                                            <div class="mono" style="font-size:11px; color:var(--brand-cyan);">${s.license_plate}</div>
-                                        </td>
-                                        <td>
-                                            <div style="font-weight:600; color:var(--text-main); font-size:12px;">${s.declared_by_owner_name || 'Proprietário'}</div>
-                                            <div style="font-size:11px; color:var(--text-dim);">Via App Mobile</div>
-                                        </td>
-                                        <td>${s.service_date}</td>
-                                        <td class="mono">${Number(s.mileage).toLocaleString('pt-BR')} km</td>
-                                        <td>
-                                            <strong>${s.service_title}</strong>
-                                            <div style="font-size:11px; color:var(--text-dim);">${s.description || ''}</div>
-                                        </td>
-                                        <td>
-                                            <div style="display:flex; gap:6px;">
-                                                <button class="btn btn-sm btn-success" style="font-size:11px; font-weight:700;" onclick="WorkshopView.submitConfirmation('${s.id}', 'CONFIRMAR')">
-                                                    HOMOLOGAR NÍVEL 3
-                                                </button>
-                                                <button class="btn btn-sm btn-secondary" style="font-size:11px; color:var(--status-rejected);" onclick="WorkshopView.submitConfirmation('${s.id}', 'NAO_RECONHECO')">
-                                                    NÃO RECONHEÇO
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
-            </div>
-
-            <!-- Histórico de Ordens de Serviço Executadas na Oficina -->
-            <div class="panel-box">
-                <div class="panel-title">
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--proof-level-4)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                        Histórico de Ordens de Serviço Comprovadas (Nível 4)
-                    </span>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="erp-table">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Veículo / Placa</th>
-                                <th>Km</th>
-                                <th>Serviço Realizado</th>
-                                <th>Peças Aplicadas</th>
-                                <th>Certificação</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>2024-11-04</td>
-                                <td>
-                                    <strong>Honda Civic Touring</strong>
-                                    <div class="mono" style="font-size:11px; color:var(--brand-cyan);">BRA2E19</div>
-                                </td>
-                                <td class="mono">120.450 km</td>
-                                <td>
-                                    <strong>Revisão dos 120.000 km</strong>
-                                    <div style="font-size:11px; color:var(--text-dim);">Velas de irídio e filtro combustível</div>
-                                </td>
-                                <td><span class="badge-proof badge-confirmed" style="font-size:10px;">NGK Laser Iridium + Filtro Honda</span></td>
-                                <td><span class="badge-proof badge-proven">NÍVEL 4 COMPROVADO</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-8F72-29A4-X91')">Dossiê</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>2025-05-18</td>
-                                <td>
-                                    <strong>Honda Civic Touring</strong>
-                                    <div class="mono" style="font-size:11px; color:var(--brand-cyan);">BRA2E19</div>
-                                </td>
-                                <td class="mono">125.200 km</td>
-                                <td>
-                                    <strong>Substituição Pastilhas Dianteiras e Traseiras</strong>
-                                    <div style="font-size:11px; color:var(--text-dim);">Fluido de freio DOT 5.1</div>
-                                </td>
-                                <td><span class="badge-proof badge-confirmed" style="font-size:10px;">Brembo Ceramic P28026N</span></td>
-                                <td><span class="badge-proof badge-proven">NÍVEL 4 COMPROVADO</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-8F72-29A4-X91')">Dossiê</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>2025-11-10</td>
-                                <td>
-                                    <strong>VW Gol Trendline 1.6</strong>
-                                    <div class="mono" style="font-size:11px; color:var(--brand-cyan);">KXZ9012</div>
-                                </td>
-                                <td class="mono">88.500 km</td>
-                                <td>
-                                    <strong>Troca de Óleo e Filtros + Ativação DNA</strong>
-                                    <div style="font-size:11px; color:var(--text-dim);">Óleo 5W-40 502.00 sintético e filtro Fram</div>
-                                </td>
-                                <td><span class="badge-proof badge-confirmed" style="font-size:10px;">Castrol Magnatec + PH5548</span></td>
-                                <td><span class="badge-proof badge-proven">NÍVEL 4 COMPROVADO</span></td>
-                                <td>
-                                    <button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-1A90-55E8-K12')">Dossiê</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-    },
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // TAB 4: ALERTAS DE MANUTENÇÃO PREDITIVA (OBD2 + KM RODADOS)
-    // ──────────────────────────────────────────────────────────────────────────
-    renderAlertas() {
-        const alerts = this.alertsData || [];
-        const criticalList = alerts.filter(a => a.urgency === 'CRITICAL');
-        const warningList = alerts.filter(a => a.urgency === 'WARNING');
-
-        return `
-            <!-- Painel Explicativo da Telemetria OBD2 -->
-            <div class="panel-box" style="background:linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(15, 23, 42, 0.7)); border-color:rgba(245, 158, 11, 0.3);">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap;">
-                    <div style="max-width:720px;">
-                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-                            <span class="totvs-pulse-green"></span>
-                            <strong style="font-size:15px; color:#fff;">Monitoramento Preditivo por KM & Telemetria OBD2</strong>
-                            <span class="totvs-badge-tag cyan" style="font-size:10px; padding:2px 8px;">Módulo de Faturamento B2B</span>
-                        </div>
-                        <p style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin:0;">
-                            O aplicativo DNA AUTO instalado no smartphone do proprietário pareia via Bluetooth com o scanner OBD2 do veículo, transmitindo continuamente a quilometragem real e status dos sensores. O algoritmo calcula o desgaste de cada componente e alerta a oficina quando a troca preventiva está no momento exato, <strong>gerando aumento de mais de 35% no faturamento da oficina</strong>.
-                        </p>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="font-size:22px; font-weight:800; color:#FFD21C; font-family:var(--font-mono);">${alerts.length} Alertas</div>
-                        <div style="font-size:11px; color:var(--text-dim);">${criticalList.length} críticos • ${warningList.length} preventivos</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tabela dos Itens Monitorados (Correia Dentada, Óleo Câmbio AT, Pastilhas, Óleo Motor) -->
-            <div class="panel-box">
-                <div class="panel-title">
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--proof-level-1)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
-                        Veículos com Manutenções Próximas do Vencimento
-                    </span>
-                    <span style="font-size:11px; color:var(--text-dim);">Disparo de WhatsApp em 1 Toque</span>
-                </div>
-
-                ${alerts.length === 0 ? `
-                    <div style="padding:24px; text-align:center; color:var(--text-muted); font-size:12.5px;">
-                        Nenhum veículo com alertas de manutenção no momento. Todos os veículos cadastrados estão em dia com a quilometragem!
+                    <div style="padding:22px; text-align:center; color:var(--text-muted); font-size:12.5px;">
+                        Nenhum serviço declarado por cliente pendente de análise no momento.
                     </div>
                 ` : `
                     <div class="table-responsive">
@@ -641,50 +837,393 @@ const WorkshopView = {
                             <thead>
                                 <tr>
                                     <th>Veículo / Placa</th>
-                                    <th>Proprietário</th>
-                                    <th>KM Atual (OBD2)</th>
-                                    <th>Item Monitorado</th>
-                                    <th>Próxima Troca</th>
-                                    <th>Status de Desgaste</th>
-                                    <th>Ação de Faturamento</th>
+                                    <th>Cliente</th>
+                                    <th>Serviço Declarado</th>
+                                    <th>Odômetro</th>
+                                    <th>Ação Técnica</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                ${alerts.map(a => {
-                                    const isCritical = a.urgency === 'CRITICAL';
+                                ${data.pendingConfirmations.slice(0, 4).map(s => `
+                                    <tr>
+                                        <td><strong>${s.brand} ${s.model}</strong> <span class="mono" style="color:var(--brand-cyan); font-size:11px;">(${s.license_plate})</span></td>
+                                        <td>${s.declared_by_owner_name || 'Cliente Cadastrado'}</td>
+                                        <td>${s.service_title}</td>
+                                        <td class="mono">${Number(s.mileage).toLocaleString('pt-BR')} km</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success" style="font-size:11px; font-weight:700;" onclick="WorkshopView.submitConfirmation('${s.id}', 'CONFIRMAR')">Homologar Nível 3</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `}
+            </div>
+        `;
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // SEÇÃO 2: PESQUISAR VEÍCULO & RESULTADO (SEÇÕES 11 E 12)
+    // ──────────────────────────────────────────────────────────────────────────
+    renderVehicleSearchView() {
+        return `
+            <div class="panel-box" style="border-color:var(--brand-cyan); background:linear-gradient(135deg, rgba(0,212,255,0.04), rgba(15,23,42,0.7));">
+                <div class="panel-title">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--brand-cyan)" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        Pesquisar Veículo no DNA AUTO
+                    </span>
+                    <span style="font-size:11px; color:var(--text-dim);">Consulta por Placa, Proprietário, Telefone, CPF/CNPJ, DNA ou Chassi</span>
+                </div>
+
+                <!-- Seletor do Critério de Busca -->
+                <div style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;">
+                    <button class="btn btn-sm ${this.searchCriteria === 'placa' ? 'btn-cyan' : 'btn-secondary'}" onclick="WorkshopView.setSearchCriteria('placa')">Placa</button>
+                    <button class="btn btn-sm ${this.searchCriteria === 'proprietario' ? 'btn-cyan' : 'btn-secondary'}" onclick="WorkshopView.setSearchCriteria('proprietario')">Proprietário</button>
+                    <button class="btn btn-sm ${this.searchCriteria === 'telefone' ? 'btn-cyan' : 'btn-secondary'}" onclick="WorkshopView.setSearchCriteria('telefone')">Telefone</button>
+                    <button class="btn btn-sm ${this.searchCriteria === 'documento' ? 'btn-cyan' : 'btn-secondary'}" onclick="WorkshopView.setSearchCriteria('documento')">CPF / CNPJ</button>
+                    <button class="btn btn-sm ${this.searchCriteria === 'dna' ? 'btn-cyan' : 'btn-secondary'}" onclick="WorkshopView.setSearchCriteria('dna')">Código DNA</button>
+                    <button class="btn btn-sm ${this.searchCriteria === 'chassi' ? 'btn-cyan' : 'btn-secondary'}" onclick="WorkshopView.setSearchCriteria('chassi')">Chassi</button>
+                </div>
+
+                <!-- Barra de Pesquisa com os DOIS BOTÕES -->
+                <div class="ws-search-toolbar">
+                    <input type="text" id="ws-vehicle-search" class="form-control ws-search-input"
+                           placeholder="Digite a placa (Ex: LQZ9A42, BRA2E19, STR1A99)..."
+                           value="${this.lastSearchedPlate || 'PWL4I85'}"
+                           onkeydown="if(event.key==='Enter') WorkshopView.handleSearchVehicle()" />
+                    <div class="ws-search-dual-actions">
+                        <button class="btn btn-cyan ws-btn-search" onclick="WorkshopView.handleSearchVehicle()" style="font-weight:800; display:inline-flex; align-items:center; gap:6px;">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            🔎 PESQUISAR
+                        </button>
+                        <button class="ws-btn-cadastrar-carro" onclick="WorkshopView.handleCadastrarCarroBtn()">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L1.4 12c-.2.4-.4.9-.4 1.4V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+                            🚗 CADASTRAR CARRO
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Atalhos rápidos de teste -->
+                <div style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:11.5px; color:var(--text-dim);">
+                    <span>Atalhos rápidos:</span>
+                    <button class="btn btn-sm btn-secondary" style="font-family:var(--font-mono); font-size:11px;" onclick="WorkshopView.quickTestVehicle('PWL4I85')">PWL4I85 (VW Fox 1.0)</button>
+                    <button class="btn btn-sm btn-secondary" style="font-family:var(--font-mono); font-size:11px;" onclick="WorkshopView.quickTestVehicle('BRA2E19')">BRA2E19 (Civic 360°)</button>
+                    <button class="btn btn-sm btn-secondary" style="font-family:var(--font-mono); font-size:11px;" onclick="WorkshopView.quickTestVehicle('STR1A99')">STR1A99 (Strada)</button>
+                    <button class="btn btn-sm btn-secondary" style="font-family:var(--font-mono); font-size:11px;" onclick="WorkshopView.quickTestVehicle('ABC1D23')">ABC1D23 (Corolla)</button>
+                    <button class="btn btn-sm btn-secondary" style="font-family:var(--font-mono); font-size:11px;" onclick="WorkshopView.quickTestVehicle('KXZ9012')">KXZ9012 (Gol MSI)</button>
+                </div>
+
+                <!-- Container do Resultado da Pesquisa -->
+                <div id="ws-plate-lookup-result" style="display:none; margin-top:16px;"></div>
+            </div>
+        `;
+    },
+
+    setSearchCriteria(criteria) {
+        this.searchCriteria = criteria;
+        const input = document.getElementById('ws-vehicle-search');
+        if (!input) return;
+
+        const placeholders = {
+            placa: 'Digite a placa (Ex: PWL4I85, BRA2E19)...',
+            proprietario: 'Digite o nome do cliente (Ex: João da Silva, Carlos Silva)...',
+            telefone: 'Digite o telefone/WhatsApp (Ex: 11988881111, 19987654321)...',
+            documento: 'Digite o CPF ou CNPJ do proprietário...',
+            dna: 'Digite o código DNA AUTO (Ex: DNA-BR-8F72-29A4-X91)...',
+            chassi: 'Digite os dígitos do Chassi do veículo...'
+        };
+        input.placeholder = placeholders[criteria] || 'Digite o termo de busca...';
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // RESULTADO DA PESQUISA DO VEÍCULO (SEÇÃO 12)
+    // ──────────────────────────────────────────────────────────────────────────
+    renderFoundVehicleCard(v, hasDna = true) {
+        const resultDiv = document.getElementById('ws-plate-lookup-result');
+        if (!resultDiv) return;
+
+        const km = Number(v.latest_mileage || v.mileage || 85430);
+        const ownerName = v.owner_name || 'João da Silva';
+        const ownerPhone = v.owner_phone || '(19) 98765-4321';
+        const lastServiceDate = v.last_service_date || '10/08/2026';
+        const nextMaintenanceDate = v.next_maintenance_date || '10/11/2026';
+
+        // Alertas associados ao carro
+        const alertsForCar = (this.alertsData || []).filter(a => a.licensePlate === v.license_plate || a.vehicleId === v.id);
+        const isCritical = alertsForCar.some(a => a.urgency === 'CRITICAL');
+        const statusLabel = isCritical ? '🔴 MANUTENÇÃO ATRASADA' : '🟡 MANUTENÇÃO PRÓXIMA';
+        const statusColor = isCritical ? '#ef4444' : '#fbbf24';
+
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `
+            <div style="background:#0d1524; border:1px solid ${statusColor}; border-radius:10px; padding:18px; box-shadow:0 10px 30px rgba(0,0,0,0.6);">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px;">
+                    <div>
+                        <div style="display:inline-flex; align-items:center; gap:6px; background:${isCritical ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.15)'}; color:${statusColor}; font-size:11px; font-weight:800; padding:3px 8px; border-radius:4px; margin-bottom:4px;">
+                            ${statusLabel}
+                        </div>
+                        <h3 style="font-size:18px; color:#ffffff; margin:0 0 2px; font-weight:800;">
+                            ${v.brand || 'VW'} ${v.model || 'FOX 1.0'} ${v.version_label ? '• ' + v.version_label : ''}
+                        </h3>
+                        <div style="font-size:12px; color:var(--text-dim);">
+                            Placa: <strong class="mono" style="color:var(--brand-cyan); font-size:13px;">${v.license_plate || 'PWL4I85'}</strong>
+                            • Ano: <strong>${v.manufacture_year || '2016'}/${v.model_year || '2017'}</strong>
+                            • Chassi: <strong class="mono">${v.chassis_vin_masked || v.chassis_vin || '9BW...4810'}</strong>
+                        </div>
+                    </div>
+                    <button class="btn btn-sm btn-secondary" onclick="document.getElementById('ws-plate-lookup-result').style.display='none'">Fechar</button>
+                </div>
+
+                <!-- Detalhes do Veículo e Proprietário -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap:10px; margin-bottom:16px;">
+                    <div style="background:#090e18; padding:10px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                        <span style="font-size:10px; color:#94a3b8; text-transform:uppercase; font-weight:700; display:block;">Proprietário</span>
+                        <strong style="font-size:13px; color:#ffffff;">${ownerName}</strong>
+                        <div style="font-size:11px; color:var(--brand-cyan);">${ownerPhone}</div>
+                    </div>
+
+                    <div style="background:#090e18; padding:10px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                        <span style="font-size:10px; color:#94a3b8; text-transform:uppercase; font-weight:700; display:block;">Quilometragem</span>
+                        <strong style="font-size:14px; color:#ffffff; font-family:var(--font-mono);">${km.toLocaleString('pt-BR')} km</strong>
+                        <div style="font-size:10.5px; color:#10b981;">Telemetria OBD2 Conectada</div>
+                    </div>
+
+                    <div style="background:#090e18; padding:10px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                        <span style="font-size:10px; color:#94a3b8; text-transform:uppercase; font-weight:700; display:block;">Último Serviço</span>
+                        <strong style="font-size:12.5px; color:#ffffff;">${lastServiceDate}</strong>
+                        <div style="font-size:10.5px; color:var(--text-dim);">Troca de óleo & filtros</div>
+                    </div>
+
+                    <div style="background:#090e18; padding:10px 12px; border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                        <span style="font-size:10px; color:#94a3b8; text-transform:uppercase; font-weight:700; display:block;">Próxima Manutenção</span>
+                        <strong style="font-size:12.5px; color:${statusColor}; font-weight:800;">${nextMaintenanceDate}</strong>
+                        <div style="font-size:10.5px; color:${statusColor}; font-weight:600;">Kit Correia & Pastilhas</div>
+                    </div>
+                </div>
+
+                <!-- Alerta Preventivo de Desgaste -->
+                ${alertsForCar.length > 0 ? `
+                    <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.3); border-radius:6px; padding:10px 14px; margin-bottom:14px; font-size:12px;">
+                        <strong style="color:#fbbf24;">⚠️ Itens para Revisar Imediatamente:</strong>
+                        <ul style="margin:4px 0 0 16px; padding:0; color:#cbd5e1;">
+                            ${alertsForCar.map(a => `<li><strong>${a.component}:</strong> ${a.statusText}</li>`).join('')}
+                        </ul>
+                    </div>
+                ` : ''}
+
+                <!-- OS 4 BOTÕES OBRIGATÓRIOS DO ITEM 12 -->
+                <div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+                    <!-- BOTÃO 1: ABRIR FICHA -->
+                    <button class="btn btn-secondary" onclick="WorkshopView.openDigitalVehicleSheet('${v.id || 'veh_fox'}', '${v.license_plate || 'PWL4I85'}')" style="font-weight:700;">
+                        📋 ABRIR FICHA
+                    </button>
+
+                    <!-- BOTÃO 2: NOVO SERVIÇO -->
+                    <button class="btn btn-primary" onclick="WorkshopView.openNewServiceModal('${v.id || 'veh_fox'}')" style="font-weight:700;">
+                        🔧 NOVO SERVIÇO
+                    </button>
+
+                    <!-- BOTÃO 3: AGENDAR (FLUXO 3 DATAS) -->
+                    <button class="btn btn-cyan" onclick="WorkshopView.openSmartScheduleModal('${v.id || 'veh_fox'}', '${v.license_plate || 'PWL4I85'}', '${v.brand || 'VW'} ${v.model || 'Fox'}', '${ownerName}')" style="font-weight:700;">
+                        📅 AGENDAR
+                    </button>
+
+                    <!-- BOTÃO 4: WHATSAPP -->
+                    <button class="btn" onclick="WorkshopView.openWhatsAppModal('${ownerName}', '${ownerPhone}', '${v.brand || 'VW'} ${v.model || 'Fox'}', '${v.license_plate || 'PWL4I85'}', 'Kit Correia Dentada & Óleo')" style="background:#25D366; color:#000; font-weight:800; display:inline-flex; align-items:center; gap:5px;">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.072.043.419-.101.824z"/></svg>
+                        💬 WHATSAPP
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // FICHA DIGITAL DO VEÍCULO (SEÇÃO 13)
+    // ──────────────────────────────────────────────────────────────────────────
+    openDigitalVehicleSheet(vehicleId, plate) {
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (!modalRoot) return;
+
+        modalRoot.innerHTML = `
+            <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
+                <div class="ws-erp-modal-window" style="max-width:720px;">
+                    <div class="ws-erp-modal-header">
+                        <div>
+                            <span style="font-size:10px; font-weight:800; color:var(--brand-cyan); text-transform:uppercase; letter-spacing:0.8px;">DNA AUTO • Registro Oficial</span>
+                            <h3 style="font-size:17px; color:#ffffff; margin:2px 0 0; font-weight:900;">FICHA DIGITAL DO VEÍCULO</h3>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
+                    </div>
+                    <div class="ws-erp-modal-body">
+                        <!-- IDENTIFICAÇÃO -->
+                        <div style="background:#0a0f18; padding:14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); margin-bottom:14px;">
+                            <div style="font-size:11px; font-weight:800; color:#FFD21C; text-transform:uppercase; margin-bottom:8px;">🚗 Identificação do Veículo</div>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap:10px; font-size:12px;">
+                                <div><span style="color:#64748b;">Marca:</span> <strong style="color:#ffffff;">Volkswagen</strong></div>
+                                <div><span style="color:#64748b;">Modelo:</span> <strong style="color:#ffffff;">Fox 1.0 GII</strong></div>
+                                <div><span style="color:#64748b;">Ano Fab/Mod:</span> <strong style="color:#ffffff;">2016 / 2017</strong></div>
+                                <div><span style="color:#64748b;">Placa:</span> <strong class="mono" style="color:var(--brand-cyan);">${plate}</strong></div>
+                                <div><span style="color:#64748b;">Chassi:</span> <strong class="mono" style="color:#ffffff;">9BW...48109</strong></div>
+                                <div><span style="color:#64748b;">Quilometragem:</span> <strong class="mono" style="color:#ffffff;">85.430 km</strong></div>
+                            </div>
+                        </div>
+
+                        <!-- PROPRIETÁRIO -->
+                        <div style="background:#0a0f18; padding:14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); margin-bottom:14px;">
+                            <div style="font-size:11px; font-weight:800; color:#FFD21C; text-transform:uppercase; margin-bottom:8px;">👤 Dados do Proprietário</div>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(160px, 100%), 1fr)); gap:10px; font-size:12px;">
+                                <div><span style="color:#64748b;">Nome:</span> <strong style="color:#ffffff;">João da Silva</strong></div>
+                                <div><span style="color:#64748b;">Telefone:</span> <strong style="color:#ffffff;">(19) 98765-4321</strong></div>
+                                <div><span style="color:#64748b;">WhatsApp:</span> <strong style="color:#10b981;">(19) 98765-4321</strong></div>
+                            </div>
+                        </div>
+
+                        <!-- HISTÓRICO COMPLETO 360° -->
+                        <div style="background:#0a0f18; padding:14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
+                            <div style="font-size:11px; font-weight:800; color:#FFD21C; text-transform:uppercase; margin-bottom:10px;">📜 Histórico de Serviços Comprovados</div>
+
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <div style="padding:10px; background:#0f172a; border-radius:6px; border-left:3px solid #10b981; font-size:12px;">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                                        <strong style="color:#ffffff;">🔧 Troca de óleo do motor e filtros</strong>
+                                        <span class="mono" style="color:#94a3b8;">10/08/2026</span>
+                                    </div>
+                                    <div style="color:var(--brand-cyan); font-size:11px; font-family:var(--font-mono);">Odômetro: 85.430 km • Nível 4 Comprovado</div>
+                                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Óleo 5W-40 Sintético 502.00 + Filtros Fram</div>
+                                </div>
+
+                                <div style="padding:10px; background:#0f172a; border-radius:6px; border-left:3px solid #10b981; font-size:12px;">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                                        <strong style="color:#ffffff;">🔧 Substituição das pastilhas de freio dianteiras</strong>
+                                        <span class="mono" style="color:#94a3b8;">02/06/2026</span>
+                                    </div>
+                                    <div style="color:var(--brand-cyan); font-size:11px; font-family:var(--font-mono);">Odômetro: 82.100 km • Nível 4 Comprovado</div>
+                                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Pastilhas cerâmica Ferodo + Fluido DOT 4</div>
+                                </div>
+
+                                <div style="padding:10px; background:#0f172a; border-radius:6px; border-left:3px solid #10b981; font-size:12px;">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+                                        <strong style="color:#ffffff;">🔧 Alinhamento 3D e balanceamento</strong>
+                                        <span class="mono" style="color:#94a3b8;">15/03/2026</span>
+                                    </div>
+                                    <div style="color:var(--brand-cyan); font-size:11px; font-family:var(--font-mono);">Odômetro: 79.500 km • Nível 4 Comprovado</div>
+                                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Geometria de suspensão dianteira e traseira</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                            <button class="btn btn-secondary" onclick="WorkshopView.closeModal()">Fechar</button>
+                            <button class="btn btn-primary" onclick="WorkshopView.closeModal(); WorkshopView.openNewServiceModal('${vehicleId}')" style="font-weight:700;">+ Novo Serviço para este Carro</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    closeModal() {
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (modalRoot) modalRoot.innerHTML = '';
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // CENTRAL DE MANUTENÇÃO PREDITIVA (SEÇÕES 14 E 15)
+    // ──────────────────────────────────────────────────────────────────────────
+    renderMaintenanceCenterView() {
+        const alerts = this.alertsData || [];
+        const critical = alerts.filter(a => a.urgency === 'CRITICAL');
+        const upcoming = alerts.filter(a => a.urgency === 'WARNING');
+
+        let filteredList = alerts;
+        if (this.currentSection === 'manutencao-atrasadas') filteredList = critical;
+        else if (this.currentSection === 'manutencao-proximas') filteredList = upcoming;
+
+        return `
+            <div class="panel-box" style="border-color:rgba(245,158,11,0.3); background:linear-gradient(135deg, rgba(245,158,11,0.04), rgba(15,23,42,0.7));">
+                <div class="panel-title">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        Central de Manutenção Preventiva & Telemetria OBD2
+                    </span>
+                    <span style="font-size:11px; color:var(--text-dim);">Automatização baseada no KM real do veículo</span>
+                </div>
+
+                <!-- Categorias: ATRASADAS, PRÓXIMAS, EM DIA -->
+                <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+                    <button class="btn btn-sm ${this.currentSection === 'manutencao-alertas' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.switchSection('manutencao-alertas')">
+                        Todas (${alerts.length})
+                    </button>
+                    <button class="btn btn-sm ${this.currentSection === 'manutencao-atrasadas' ? 'btn-danger' : 'btn-secondary'}" onclick="WorkshopView.switchSection('manutencao-atrasadas')" style="${this.currentSection === 'manutencao-atrasadas' ? 'background:#ef4444; color:#fff;' : ''}">
+                        🔴 Atrasadas (${critical.length})
+                    </button>
+                    <button class="btn btn-sm ${this.currentSection === 'manutencao-proximas' ? 'btn-warning' : 'btn-secondary'}" onclick="WorkshopView.switchSection('manutencao-proximas')" style="${this.currentSection === 'manutencao-proximas' ? 'background:#f59e0b; color:#000;' : ''}">
+                        🟡 Próximas (${upcoming.length})
+                    </button>
+                    <button class="btn btn-sm ${this.currentSection === 'manutencao-historico' ? 'btn-success' : 'btn-secondary'}" onclick="WorkshopView.switchSection('manutencao-historico')">
+                        🟢 Em Dia (4)
+                    </button>
+                </div>
+
+                <!-- Tabela de Alertas de Manutenção -->
+                ${filteredList.length === 0 ? `
+                    <div style="padding:28px; text-align:center; color:var(--text-muted); font-size:13px;">
+                        Nenhuma manutenção pendente nesta categoria.
+                    </div>
+                ` : `
+                    <div class="ws-parts-table-wrap">
+                        <table class="erp-table">
+                            <thead>
+                                <tr>
+                                    <th>Status</th>
+                                    <th>Cliente</th>
+                                    <th>Veículo / Placa</th>
+                                    <th>Manutenção</th>
+                                    <th>KM Atual</th>
+                                    <th>KM Previsto</th>
+                                    <th>Ações Operacionais</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${filteredList.map(a => {
+                                    const isCrit = a.urgency === 'CRITICAL';
                                     return `
-                                        <tr class="${isCritical ? 'ws-alert-row-critical' : 'ws-alert-row-warning'}">
+                                        <tr class="${isCrit ? 'ws-alert-row-critical' : 'ws-alert-row-warning'}">
                                             <td>
-                                                <strong style="color:#fff;">${a.vehicleModel}</strong>
-                                                <div class="mono" style="font-size:11px; color:var(--brand-cyan);">${a.licensePlate}</div>
-                                            </td>
-                                            <td>
-                                                <div style="font-weight:600; font-size:12px; color:var(--text-main);">${a.ownerName}</div>
-                                                <div class="mono" style="font-size:11px; color:var(--text-dim);">${a.ownerPhone}</div>
-                                            </td>
-                                            <td class="mono" style="font-weight:700; color:#fff;">
-                                                ${Number(a.currentKm).toLocaleString('pt-BR')} km
-                                                <div style="font-size:10px; color:var(--proof-level-4);">Sincronizado</div>
-                                            </td>
-                                            <td>
-                                                <strong style="color:${isCritical ? '#f87171' : '#f59e0b'}; font-size:12.5px;">
-                                                    ${a.component}
-                                                </strong>
-                                                <div style="font-size:10.5px; color:var(--text-dim);">Intervalo: a cada ${Number(a.intervalKm).toLocaleString('pt-BR')} km</div>
-                                            </td>
-                                            <td class="mono" style="font-size:11.5px;">
-                                                ${Number(a.nextServiceKm).toLocaleString('pt-BR')} km
-                                            </td>
-                                            <td>
-                                                <span class="badge-proof ${isCritical ? 'badge-rejected' : 'badge-pending'}" style="font-size:10.5px; padding:3px 8px;">
-                                                    ${a.statusText}
+                                                <span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:10.5px; font-weight:800; background:${isCrit ? '#ef4444' : '#f59e0b'}; color:${isCrit ? '#ffffff' : '#000000'};">
+                                                    ${isCrit ? 'ATRASADA' : 'PRÓXIMA'}
                                                 </span>
                                             </td>
                                             <td>
-                                                <a href="${a.whatsappUrl}" target="_blank" class="btn btn-sm btn-primary" style="background:#25D366; color:#000; border:none; font-weight:700; display:inline-flex; align-items:center; gap:5px; font-size:11px; padding:6px 12px; text-decoration:none;">
-                                                    <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.072.043.419-.101.824z"/></svg>
-                                                    AVISAR NO WHATSAPP
-                                                </a>
+                                                <strong style="color:#ffffff;">${a.ownerName}</strong>
+                                                <div style="font-size:11px; color:#94a3b8;">${a.ownerPhone}</div>
+                                            </td>
+                                            <td>
+                                                <strong style="color:#ffffff;">${a.vehicleModel}</strong>
+                                                <div class="mono" style="font-size:11px; color:var(--brand-cyan);">${a.licensePlate}</div>
+                                            </td>
+                                            <td>
+                                                <strong style="color:${isCrit ? '#f87171' : '#fbbf24'}; font-size:12px;">${a.component}</strong>
+                                                <div style="font-size:10px; color:#64748b;">Intervalo: ${Number(a.intervalKm).toLocaleString('pt-BR')} km</div>
+                                            </td>
+                                            <td class="mono" style="font-weight:700; color:#ffffff;">
+                                                ${Number(a.currentKm).toLocaleString('pt-BR')} km
+                                            </td>
+                                            <td class="mono" style="font-weight:700; color:${isCrit ? '#f87171' : '#fbbf24'};">
+                                                ${Number(a.nextServiceKm).toLocaleString('pt-BR')} km
+                                            </td>
+                                            <td>
+                                                <div style="display:flex; gap:6px;">
+                                                    <button class="btn btn-sm btn-cyan" onclick="WorkshopView.openSmartScheduleModal('${a.vehicleId}', '${a.licensePlate}', '${a.vehicleModel}', '${a.ownerName}', '${a.component}')" style="font-size:11px; font-weight:700;">
+                                                        📅 Agendar
+                                                    </button>
+                                                    <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('${a.ownerName}', '${a.ownerPhone}', '${a.vehicleModel}', '${a.licensePlate}', '${a.component}')" style="background:#25D366; color:#000; font-size:11px; font-weight:800;">
+                                                        💬 WhatsApp
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     `;
@@ -698,35 +1237,659 @@ const WorkshopView = {
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TAB 5: EQUIPE TÉCNICA
+    // SEÇÃO 8: CENTRAL DE WHATSAPP & MODELOS DE MENSAGEM (SEÇÕES 16, 17, 18, 24)
     // ──────────────────────────────────────────────────────────────────────────
-    renderEquipe() {
-        const data = this.dashboardData;
-        const staff = data.staff || [];
+    renderWhatsAppCenterView() {
+        return `
+            <div class="panel-box" style="border-color:#25D366; background:linear-gradient(135deg, rgba(37,211,102,0.05), rgba(15,23,42,0.7));">
+                <div class="panel-title">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" color="#25D366"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.771-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.275.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.072.043.419-.101.824z"/></svg>
+                        Central Oficial de Comunicação WhatsApp DNA AUTO
+                    </span>
+                    <span style="font-size:11px; color:#10b981;">Disparo em 1 Toque • Respostas Rápidas com 3 Datas</span>
+                </div>
+
+                <!-- Configuração de Número Oficial da Oficina (Item 16) -->
+                <div style="background:#0a0f18; padding:14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div>
+                        <strong style="color:#ffffff; font-size:13px; display:block;">Número Oficial de Disparo: ${this.officialPhone}</strong>
+                        <span style="font-size:11px; color:#94a3b8;">Remetente cadastrado: <strong>${this.officialWorkshopName}</strong></span>
+                    </div>
+                    <button class="btn btn-sm btn-secondary" onclick="WorkshopView.switchSection('configuracoes-whatsapp')">Editar Número Oficial</button>
+                </div>
+
+                <!-- Abas de Status das Mensagens (Item 24) -->
+                <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+                    <button class="btn btn-sm ${this.activeWhatsAppTab === 'pendentes' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setWhatsAppTab('pendentes')">
+                        Mensagens Pendentes (3)
+                    </button>
+                    <button class="btn btn-sm ${this.activeWhatsAppTab === 'enviadas' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setWhatsAppTab('enviadas')">
+                        Enviadas (12)
+                    </button>
+                    <button class="btn btn-sm ${this.activeWhatsAppTab === 'confirmadas' ? 'btn-success' : 'btn-secondary'}" onclick="WorkshopView.setWhatsAppTab('confirmadas')">
+                        Confirmadas (8)
+                    </button>
+                    <button class="btn btn-sm ${this.activeWhatsAppTab === 'recusadas' ? 'btn-secondary' : 'btn-secondary'}" onclick="WorkshopView.setWhatsAppTab('recusadas')">
+                        Recusadas (1)
+                    </button>
+                    <button class="btn btn-sm ${this.activeWhatsAppTab === 'sem_resposta' ? 'btn-secondary' : 'btn-secondary'}" onclick="WorkshopView.setWhatsAppTab('sem_resposta')">
+                        Sem Resposta (3)
+                    </button>
+                </div>
+
+                <!-- Exemplos de Clientes e Status de Comunicação (Item 24) -->
+                <div class="table-responsive">
+                    <table class="erp-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Veículo / Placa</th>
+                                <th>Serviço Proposto</th>
+                                <th>Status da Comunicação</th>
+                                <th>Ação Direta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>João da Silva</strong><div style="font-size:11px; color:#64748b;">(19) 98765-4321</div></td>
+                                <td>VW Fox 1.0 <span class="mono" style="color:var(--brand-cyan); font-size:11px;">(PWL4I85)</span></td>
+                                <td>Troca do Kit Correia Dentada</td>
+                                <td><span class="badge-proof badge-proven" style="font-size:10px;">🟢 CONFIRMADO</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-cyan" onclick="WorkshopView.switchSection('agenda-oficina')">Ver na Agenda</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Maria Souza</strong><div style="font-size:11px; color:#64748b;">(11) 97777-2222</div></td>
+                                <td>Honda Civic Touring <span class="mono" style="color:var(--brand-cyan); font-size:11px;">(BRA2E19)</span></td>
+                                <td>Óleo do Câmbio CVT & Pastilhas</td>
+                                <td><span class="badge-proof badge-pending" style="font-size:10px;">🟡 AGUARDANDO RESPOSTA</span></td>
+                                <td>
+                                    <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Maria Souza', '(11) 97777-2222', 'Honda Civic Touring', 'BRA2E19', 'Óleo do Câmbio CVT')" style="background:#25D366; color:#000; font-size:11px; font-weight:700;">Reenviar</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Carlos Alberto</strong><div style="font-size:11px; color:#64748b;">(11) 98888-1111</div></td>
+                                <td>Fiat Strada Endurance <span class="mono" style="color:var(--brand-cyan); font-size:11px;">(STR1A99)</span></td>
+                                <td>Pastilhas e Discos de Freio</td>
+                                <td><span class="badge-proof badge-rejected" style="font-size:10px;">🔴 NÃO RESPONDEU</span></td>
+                                <td>
+                                    <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Carlos Alberto', '(11) 98888-1111', 'Fiat Strada', 'STR1A99', 'Pastilhas de Freio')" style="background:#25D366; color:#000; font-size:11px; font-weight:700;">Ligar / Mensagem</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    },
+
+    setWhatsAppTab(tab) {
+        this.activeWhatsAppTab = tab;
+        const viewport = document.getElementById('ws-erp-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderWhatsAppCenterView();
+    },
+
+    // Modal de Envio e Edição de Mensagem WhatsApp (Itens 17 e 18)
+    openWhatsAppModal(clientName, clientPhone, vehicleName, plate, serviceName) {
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (!modalRoot) return;
+
+        const defaultText = `Olá, ${clientName}!
+
+O DNA AUTO identificou que o seu veículo ${vehicleName} (Placa: ${plate}) está próximo da manutenção preventiva recomendada (${serviceName}).
+
+Para manter seu veículo em perfeitas condições de segurança e preservar o passaporte de valorização, gostaríamos de convidá-lo para realizar esta revisão em nossa oficina ${this.officialWorkshopName}.
+
+Deseja agendar um horário rápido?
+
+[ ✅ QUERO AGENDAR ]
+[ ❌ AGORA NÃO ]`;
+
+        modalRoot.innerHTML = `
+            <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
+                <div class="ws-erp-modal-window" style="max-width:580px;">
+                    <div class="ws-erp-modal-header">
+                        <strong style="color:#ffffff; font-size:15px;">Disparo de WhatsApp para ${clientName}</strong>
+                        <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
+                    </div>
+                    <div class="ws-erp-modal-body">
+                        <div style="font-size:12px; color:#94a3b8; margin-bottom:12px;">
+                            Mensagem gerada automaticamente com dados do veículo. O texto é editável:
+                        </div>
+                        <textarea id="ws-whatsapp-message-text" class="form-control" rows="9" style="font-family:sans-serif; font-size:13px; line-height:1.5; padding:12px; background:#080c14; border-color:rgba(37,211,102,0.4);">${defaultText}</textarea>
+
+                        <div style="margin-top:14px; background:#0a0f18; padding:12px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); font-size:11.5px;">
+                            <strong style="color:#10b981; display:block; margin-bottom:4px;">Fluxo Automatizado de Confirmação:</strong>
+                            Ao clicar em <strong>[ ✅ QUERO AGENDAR ]</strong>, o cliente acessa instantaneamente a tela de escolha das <strong>3 DATAS FUTURAS DISPONÍVEIS</strong> na oficina.
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; flex-wrap:wrap; gap:8px;">
+                            <button class="btn btn-cyan btn-sm" onclick="WorkshopView.closeModal(); WorkshopView.openSmartScheduleModal('veh_demo', '${plate}', '${vehicleName}', '${clientName}', '${serviceName}')">
+                                Simular Escolha do Cliente (3 Datas) →
+                            </button>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn btn-secondary btn-sm" onclick="WorkshopView.closeModal()">Cancelar</button>
+                                <button class="btn btn-sm" style="background:#25D366; color:#000; font-weight:800;" onclick="WorkshopView.dispatchWhatsApp('${clientPhone}')">
+                                    Disparar Mensagem no WhatsApp
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    dispatchWhatsApp(phone) {
+        const text = document.getElementById('ws-whatsapp-message-text')?.value || '';
+        const cleanPhone = String(phone).replace(/\D/g, '');
+        const target = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+        const url = `https://api.whatsapp.com/send?phone=${target}&text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+        this.closeModal();
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // FLUXO DE AGENDAMENTO INTELIGENTE (3 DATAS FUTURAS - ITENS 19, 20, 21, 22, 23)
+    // ──────────────────────────────────────────────────────────────────────────
+    openSmartScheduleModal(vehicleId = 'veh_demo', plate = 'PWL4I85', vehicleName = 'VW Fox 1.0', clientName = 'João da Silva', serviceName = 'Troca de Óleo & Kit Correia') {
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (!modalRoot) return;
+
+        // Calcula as 3 próximas datas úteis a partir de hoje
+        const dates = this.calculateNext3AvailableDates();
+
+        modalRoot.innerHTML = `
+            <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
+                <div class="ws-erp-modal-window" style="max-width:680px;">
+                    <div class="ws-erp-modal-header">
+                        <div>
+                            <span style="font-size:10px; font-weight:800; color:#10b981; text-transform:uppercase;">DNA AUTO • Agendamento Inteligente</span>
+                            <h3 style="font-size:16px; color:#ffffff; margin:2px 0 0; font-weight:900;">ESCOLHA O MELHOR DIA E HORÁRIO</h3>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
+                    </div>
+                    <div class="ws-erp-modal-body">
+                        <div style="background:#0a0f18; padding:12px; border-radius:6px; border:1px solid rgba(255,255,255,0.08); margin-bottom:14px; font-size:12px;">
+                            Cliente: <strong style="color:#ffffff;">${clientName}</strong> • Veículo: <strong style="color:#ffffff;">${vehicleName}</strong> (<span class="mono" style="color:var(--brand-cyan);">${plate}</span>) • Serviço: <strong style="color:#fbbf24;">${serviceName}</strong>
+                        </div>
+
+                        <p style="font-size:12px; color:#94a3b8; margin:0 0 10px;">
+                            O sistema calculou automaticamente as <strong>3 DATAS FUTURAS DISPONÍVEIS</strong> considerando a capacidade real da oficina e bloqueando conflitos:
+                        </p>
+
+                        <!-- Grade de 3 Datas com Horários de Manhã e Tarde -->
+                        <div class="ws-dates-picker-grid">
+                            ${dates.map((d, idx) => `
+                                <div class="ws-date-card ${idx === 0 ? 'selected' : ''}" id="date-card-${idx}">
+                                    <div class="ws-date-card-header">
+                                        <span>${d.labelDay} — ${d.formattedDate}</span>
+                                        <span style="font-size:10px; color:#10b981;">Disponível</span>
+                                    </div>
+
+                                    <div class="ws-slots-group">
+                                        <div class="ws-slots-group-title">🌅 Manhã</div>
+                                        <div>
+                                            <span class="ws-slot-pill ${d.occupiedSlots.includes('09:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '09:00', this)">09:00</span>
+                                            <span class="ws-slot-pill ${d.occupiedSlots.includes('10:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '10:00', this)">10:00</span>
+                                            <span class="ws-slot-pill ${d.occupiedSlots.includes('11:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '11:00', this)">11:00</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="ws-slots-group">
+                                        <div class="ws-slots-group-title">☀️ Tarde</div>
+                                        <div>
+                                            <span class="ws-slot-pill ${d.occupiedSlots.includes('14:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '14:00', this)">14:00</span>
+                                            <span class="ws-slot-pill ${d.occupiedSlots.includes('15:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '15:00', this)">15:00</span>
+                                            <span class="ws-slot-pill ${d.occupiedSlots.includes('16:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '16:00', this)">16:00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <!-- Resumo da Seleção Atual -->
+                        <div id="ws-slot-selection-summary" style="background:#0f172a; padding:12px; border-radius:6px; border:1px solid rgba(255,210,28,0.3); font-size:12px; margin-top:12px;">
+                            Selecione um horário acima para confirmar o agendamento.
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                            <button class="btn btn-secondary btn-sm" onclick="WorkshopView.closeModal()">Cancelar</button>
+                            <button id="ws-btn-confirm-booking" class="btn btn-success btn-sm" disabled onclick="WorkshopView.submitConfirmedAppointment('${vehicleId}', '${plate}', '${vehicleName}', '${clientName}', '${serviceName}')" style="font-weight:800;">
+                                ✅ CONFIRMAR AGENDAMENTO
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Auto-seleciona primeiro horário livre
+        const firstDate = dates[0];
+        const freeTime = ['09:00', '10:00', '11:00', '14:00', '15:00'].find(t => !firstDate.occupiedSlots.includes(t)) || '10:00';
+        this.selectSlot(firstDate.isoDate, freeTime);
+    },
+
+    calculateNext3AvailableDates() {
+        const result = [];
+        let curr = new Date();
+        const daysMap = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+
+        while (result.length < 3) {
+            curr.setDate(curr.getDate() + 1);
+            const dayOfWeek = curr.getDay();
+            // Pula domingo (0) e sábado (6)
+            if (dayOfWeek === 0 || dayOfWeek === 6) continue;
+
+            const isoDate = curr.toISOString().split('T')[0];
+            const dd = String(curr.getDate()).padStart(2, '0');
+            const mm = String(curr.getMonth() + 1).padStart(2, '0');
+
+            // Verifica horários ocupados para este dia
+            const occupied = (this.appointmentsData || [])
+                .filter(a => a.appointment_date === isoDate && a.status !== 'CANCELLED')
+                .map(a => a.appointment_time);
+
+            result.push({
+                isoDate,
+                formattedDate: `${dd}/${mm}`,
+                labelDay: daysMap[dayOfWeek],
+                occupiedSlots: occupied
+            });
+        }
+        return result;
+    },
+
+    selectSlot(isoDate, time, el = null) {
+        this.selectedSlotDate = isoDate;
+        this.selectedSlotTime = time;
+
+        document.querySelectorAll('.ws-slot-pill').forEach(pill => pill.classList.remove('active'));
+        if (el) {
+            el.classList.add('active');
+        } else {
+            // Seleciona o primeiro elemento compatível
+            const match = Array.from(document.querySelectorAll('.ws-slot-pill')).find(p => p.textContent.trim() === time);
+            if (match) match.classList.add('active');
+        }
+
+        const summaryBox = document.getElementById('ws-slot-selection-summary');
+        const confirmBtn = document.getElementById('ws-btn-confirm-booking');
+
+        if (summaryBox) {
+            const [y, m, d] = isoDate.split('-');
+            summaryBox.innerHTML = `
+                <div style="color:#10b981; font-weight:800; font-size:13px; margin-bottom:4px;">✓ Horário Selecionado para Confirmação:</div>
+                <div>Data: <strong>${d}/${m}/${y}</strong> às <strong>${time}</strong> na oficina <strong>${this.officialWorkshopName}</strong>.</div>
+            `;
+        }
+
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+        }
+    },
+
+    async submitConfirmedAppointment(vehicleId, plate, vehicleModel, clientName, serviceTitle) {
+        if (!this.selectedSlotDate || !this.selectedSlotTime) {
+            alert('Selecione uma data e horário.');
+            return;
+        }
+
+        try {
+            const newApp = {
+                vehicle_id: vehicleId,
+                license_plate: plate,
+                vehicle_model: vehicleModel,
+                owner_name: clientName,
+                owner_phone: '(19) 98765-4321',
+                service_title: serviceTitle,
+                appointment_date: this.selectedSlotDate,
+                appointment_time: this.selectedSlotTime,
+                notes: 'Agendamento confirmado via WhatsApp DNA AUTO'
+            };
+
+            await API.createWorkshopAppointment(this.currentWorkshopId, newApp);
+
+            // Atualiza lista local
+            this.appointmentsData.push({
+                ...newApp,
+                id: 'app_' + Date.now(),
+                status: 'CONFIRMED'
+            });
+
+            this.closeModal();
+            alert(`🟢 AGENDAMENTO CONFIRMADO!\n\nCliente: ${clientName}\nVeículo: ${vehicleModel} (${plate})\nServiço: ${serviceTitle}\nData: ${this.selectedSlotDate} às ${this.selectedSlotTime}\n\nO evento foi inserido na Agenda da Oficina com sucesso!`);
+
+            // Redireciona para a agenda
+            this.switchSection('agenda-oficina');
+        } catch (err) {
+            alert('Erro ao confirmar agendamento: ' + err.message);
+        }
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // SEÇÃO 7: AGENDA DA OFICINA (SEÇÃO 25)
+    // ──────────────────────────────────────────────────────────────────────────
+    renderAgendaView() {
+        const apps = this.appointmentsData || [];
+        const today = new Date().toISOString().split('T')[0];
+
+        let displayApps = apps;
+        if (this.activeAgendaView === 'hoje') {
+            displayApps = apps.filter(a => a.appointment_date === today);
+            if (displayApps.length === 0) displayApps = apps.slice(0, 3); // Demo fallback
+        }
 
         return `
             <div class="panel-box">
                 <div class="panel-title">
                     <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
-                        Equipe Técnica e Usuários Autorizados (${staff.length})
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#10b981" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        Agenda Operacional da Oficina (${apps.length} agendamentos)
                     </span>
+                    <button class="btn btn-sm btn-primary" onclick="WorkshopView.openSmartScheduleModal()">+ Novo Agendamento</button>
                 </div>
 
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(280px, 100%), 1fr)); gap:16px;">
-                    ${staff.map(m => `
-                        <div style="background:var(--bg-surface-elevated); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-subtle); display:flex; gap:14px; align-items:flex-start;">
-                            <div style="width:40px; height:40px; border-radius:8px; background:rgba(0, 212, 255, 0.1); border:1px solid rgba(0, 212, 255, 0.25); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--brand-cyan)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <!-- Visualizações: HOJE, SEMANA, MÊS (Item 25) -->
+                <div style="display:flex; gap:8px; margin-bottom:16px;">
+                    <button class="btn btn-sm ${this.activeAgendaView === 'hoje' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setAgendaView('hoje')">Hoje</button>
+                    <button class="btn btn-sm ${this.activeAgendaView === 'semana' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setAgendaView('semana')">Semana</button>
+                    <button class="btn btn-sm ${this.activeAgendaView === 'mes' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setAgendaView('mes')">Mês</button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="erp-table">
+                        <thead>
+                            <tr>
+                                <th>Data / Horário</th>
+                                <th>Cliente</th>
+                                <th>Veículo / Placa</th>
+                                <th>Serviço Solicitado</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${displayApps.map(a => `
+                                <tr>
+                                    <td>
+                                        <strong style="color:#ffffff; font-family:var(--font-mono);">${a.appointment_date}</strong>
+                                        <div style="color:#10b981; font-weight:800; font-size:12.5px; font-family:var(--font-mono);">${a.appointment_time}</div>
+                                    </td>
+                                    <td>
+                                        <strong style="color:#ffffff;">${a.owner_name}</strong>
+                                        <div style="font-size:11px; color:#94a3b8;">${a.owner_phone || ''}</div>
+                                    </td>
+                                    <td>
+                                        <strong>${a.vehicle_model}</strong>
+                                        <div class="mono" style="font-size:11px; color:var(--brand-cyan);">${a.license_plate}</div>
+                                    </td>
+                                    <td>
+                                        <strong style="color:#fbbf24;">${a.service_title}</strong>
+                                        <div style="font-size:10.5px; color:#64748b;">${a.notes || ''}</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge-proof ${a.status === 'CONFIRMED' ? 'badge-proven' : 'badge-pending'}" style="font-size:10px;">
+                                            ${a.status === 'CONFIRMED' ? '🟢 CONFIRMADO' : '🟡 AGUARDANDO'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="display:flex; gap:6px;">
+                                            <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal('${a.vehicle_id || ''}')" style="font-size:11px;">Iniciar OS</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    },
+
+    setAgendaView(view) {
+        this.activeAgendaView = view;
+        const viewport = document.getElementById('ws-erp-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderAgendaView();
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // SEÇÃO 3: RECEPÇÃO / CHECK-IN (SEÇÃO 26)
+    // ──────────────────────────────────────────────────────────────────────────
+    renderRecepcaoCheckinView() {
+        return `
+            <div class="panel-box" style="border-color:var(--brand-cyan);">
+                <div class="panel-title">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--brand-cyan)" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        Recepção & Check-In de Veículos
+                    </span>
+                </div>
+                <div style="background:#0a0f18; padding:12px 16px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); margin-bottom:14px; font-size:12.5px; color:#94a3b8;">
+                    <strong>Fluxo Padronizado:</strong> PESQUISAR PLACA → VEÍCULO ENCONTRADO → ABRIR FICHA → VER HISTÓRICO → VER ALERTAS → INICIAR ATENDIMENTO.
+                </div>
+
+                <!-- Reutiliza a barra de pesquisa profissional -->
+                ${this.renderVehicleSearchView()}
+            </div>
+        `;
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // SEÇÃO 4: ORDENS DE SERVIÇO (SEÇÃO 27)
+    // ──────────────────────────────────────────────────────────────────────────
+    renderServiceOrdersView() {
+        return `
+            <div class="panel-box">
+                <div class="panel-title">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FFD21C" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                        Ordens de Serviço da Oficina
+                    </span>
+                    <button class="btn btn-primary btn-sm" onclick="WorkshopView.openNewServiceModal()">+ Novo Serviço</button>
+                </div>
+
+                <!-- Status dos Serviços (Item 27): Aguardando, Em Análise, Em Execução, Concluído, Cancelado -->
+                <div class="table-responsive">
+                    <table class="erp-table">
+                        <thead>
+                            <tr>
+                                <th>OS Nº</th>
+                                <th>Cliente</th>
+                                <th>Veículo / Placa</th>
+                                <th>KM</th>
+                                <th>Serviço Realizado</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="mono">#OS-8921</td>
+                                <td>Carlos Alberto Silva</td>
+                                <td>Honda Civic Touring <span class="mono" style="color:var(--brand-cyan);">(BRA2E19)</span></td>
+                                <td class="mono">128.500 km</td>
+                                <td>Substituição Pastilhas & Fluido DOT 5.1</td>
+                                <td><span class="badge-proof badge-pending" style="font-size:10px;">🟠 EM EXECUÇÃO</span></td>
+                                <td><button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-8F72-29A4-X91')">Dossiê</button></td>
+                            </tr>
+                            <tr>
+                                <td class="mono">#OS-8919</td>
+                                <td>Renata Vasconcelos</td>
+                                <td>Toyota Corolla XEi <span class="mono" style="color:var(--brand-cyan);">(ABC1D23)</span></td>
+                                <td class="mono">92.300 km</td>
+                                <td>Troca de Fluido Câmbio CVT</td>
+                                <td><span class="badge-proof badge-proven" style="font-size:10px;">🟢 CONCLUÍDO</span></td>
+                                <td><button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-COROLLA-XEI')">Dossiê</button></td>
+                            </tr>
+                            <tr>
+                                <td class="mono">#OS-8915</td>
+                                <td>Marcos Donizete</td>
+                                <td>VW Gol Trendline 1.6 <span class="mono" style="color:var(--brand-cyan);">(KXZ9012)</span></td>
+                                <td class="mono">88.500 km</td>
+                                <td>Troca de Óleo e Filtros Sintético</td>
+                                <td><span class="badge-proof badge-proven" style="font-size:10px;">🟢 CONCLUÍDO</span></td>
+                                <td><button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-1A90-55E8-K12')">Dossiê</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    },
+
+    renderServicesInProgressView() {
+        return this.renderServiceOrdersView();
+    },
+
+    renderProvenServicesView() {
+        return `
+            <div class="panel-box">
+                <div class="panel-title">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--proof-level-4)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        Serviços Comprovados com Nota Fiscal & Peças (Nível 4)
+                    </span>
+                </div>
+                <p style="font-size:12.5px; color:#94a3b8; margin-bottom:14px;">
+                    Todos os serviços abaixo possuem comprovação técnica direta da oficina credenciada, código de rastreabilidade de peças originais e nota fiscal anexada.
+                </p>
+                ${this.renderServiceOrdersView()}
+            </div>
+        `;
+    },
+
+    renderRegisteredVehiclesView() {
+        return `
+            <div class="panel-box">
+                <div class="panel-title">
+                    <span>Veículos Atendidos na Oficina (${(this.dashboardData?.stats?.attended_vehicles) || 4})</span>
+                    <button class="btn btn-sm btn-primary" onclick="WorkshopView.openManualVehicleModal()">+ Cadastrar Novo</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="erp-table">
+                        <thead>
+                            <tr>
+                                <th>Veículo</th>
+                                <th>Placa</th>
+                                <th>Ano</th>
+                                <th>DNA AUTO</th>
+                                <th>Odômetro</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Honda Civic Touring</strong></td>
+                                <td class="mono" style="color:var(--brand-cyan);">BRA2E19</td>
+                                <td>2018/2019</td>
+                                <td><span class="badge-proof badge-proven" style="font-size:10px;">ATIVO (Nível 4)</span></td>
+                                <td class="mono">128.500 km</td>
+                                <td><button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-8F72-29A4-X91')">Ver Dossiê</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Toyota Corolla XEi</strong></td>
+                                <td class="mono" style="color:var(--brand-cyan);">ABC1D23</td>
+                                <td>2020/2021</td>
+                                <td><span class="badge-proof badge-proven" style="font-size:10px;">ATIVO (Nível 4)</span></td>
+                                <td class="mono">92.300 km</td>
+                                <td><button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-COROLLA-XEI')">Ver Dossiê</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>VW Gol Trendline 1.6</strong></td>
+                                <td class="mono" style="color:var(--brand-cyan);">KXZ9012</td>
+                                <td>2017/2018</td>
+                                <td><span class="badge-proof badge-proven" style="font-size:10px;">ATIVO (Nível 4)</span></td>
+                                <td class="mono">88.500 km</td>
+                                <td><button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-1A90-55E8-K12')">Ver Dossiê</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>VW Fox 1.0 GII</strong></td>
+                                <td class="mono" style="color:var(--brand-cyan);">PWL4I85</td>
+                                <td>2016/2017</td>
+                                <td><span class="badge-proof badge-pending" style="font-size:10px;">DISPONÍVEL</span></td>
+                                <td class="mono">85.430 km</td>
+                                <td><button class="btn btn-sm btn-primary" onclick="WorkshopView.openDnaOfferModal('veh_fox', 'PWL4I85', 'VW Fox 1.0')">Ativar DNA</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    },
+
+    renderVehicleHistoryView() {
+        return this.renderRegisteredVehiclesView();
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // SEÇÃO 9: PEÇAS & ESTOQUE (SEÇÃO 28: DESKTOP TABELA, MOBILE CARDS)
+    // ──────────────────────────────────────────────────────────────────────────
+    renderPartsAndStockView() {
+        const parts = [
+            { code: 'PC-8821', name: 'Kit Correia Dentada + Tensor', brand: 'Gates / Continental', app: 'VW Fox / Gol 1.0 / 1.6', stock: 6, cost: 'R$ 180,00', price: 'R$ 290,00' },
+            { code: 'PC-9102', name: 'Óleo Motor 5W-40 Sintético 502.00', brand: 'Castrol Magnatec', app: 'VW, Audi, GM, Fiat', stock: 32, cost: 'R$ 38,00', price: 'R$ 65,00' },
+            { code: 'PC-7734', name: 'Pastilhas de Freio Dianteiras Cerâmica', brand: 'Brembo / Ferodo', app: 'Civic G10 1.5 Turbo', stock: 4, cost: 'R$ 240,00', price: 'R$ 390,00' },
+            { code: 'PC-6512', name: 'Fluido de Transmissão Automática CVT', brand: 'Motul Multi CVTF', app: 'Corolla, Civic, Sentra', stock: 18, cost: 'R$ 85,00', price: 'R$ 145,00' },
+            { code: 'PC-4419', name: 'Filtro de Óleo Blindado', brand: 'Fram / Mann', app: 'Linha Geral Leve', stock: 45, cost: 'R$ 22,00', price: 'R$ 42,00' }
+        ];
+
+        return `
+            <div class="panel-box">
+                <div class="panel-title">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FFD21C" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                        Catálogo de Peças & Gestão de Estoque
+                    </span>
+                    <button class="btn btn-sm btn-primary">+ Cadastrar Peça</button>
+                </div>
+
+                <!-- Tabela Desktop -->
+                <div class="ws-parts-table-wrap">
+                    <table class="erp-table">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Descrição da Peça</th>
+                                <th>Fabricante</th>
+                                <th>Aplicação</th>
+                                <th>Estoque</th>
+                                <th>Custo</th>
+                                <th>Venda</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${parts.map(p => `
+                                <tr>
+                                    <td class="mono" style="color:var(--brand-cyan);">${p.code}</td>
+                                    <td><strong style="color:#ffffff;">${p.name}</strong></td>
+                                    <td>${p.brand}</td>
+                                    <td>${p.app}</td>
+                                    <td class="mono" style="font-weight:700; color:#10b981;">${p.stock} un</td>
+                                    <td class="mono">${p.cost}</td>
+                                    <td class="mono" style="color:#FFD21C; font-weight:700;">${p.price}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Cards Mobile (Item 28) -->
+                <div class="ws-parts-cards-grid">
+                    ${parts.map(p => `
+                        <div class="ws-part-card-box">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                <span class="mono" style="color:var(--brand-cyan); font-size:11px;">${p.code}</span>
+                                <span style="color:#10b981; font-weight:800; font-size:12px;">${p.stock} em estoque</span>
                             </div>
-                            <div style="flex:1;">
-                                <strong style="font-size:14px; color:#fff;">${m.name}</strong>
-                                <div style="font-size:12px; color:var(--brand-cyan); margin-top:2px; font-weight:600;">${m.position_title}</div>
-                                <div style="font-size:11px; color:var(--text-muted); margin-top:6px;">${m.email} • ${m.phone || ''}</div>
-                                <div style="margin-top:10px; font-size:11px; color:var(--proof-level-4); display:flex; align-items:center; gap:4px; font-weight:600;">
-                                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                    Autorizado a comprovar serviços & emitir Nível 4
-                                </div>
+                            <strong style="color:#ffffff; font-size:13px; display:block;">${p.name}</strong>
+                            <div style="font-size:11.5px; color:#94a3b8; margin:2px 0;">Marca: ${p.brand}</div>
+                            <div style="font-size:11px; color:#64748b;">Aplicação: ${p.app}</div>
+                            <div style="display:flex; justify-content:space-between; margin-top:8px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.06); font-size:12px;">
+                                <span>Custo: ${p.cost}</span>
+                                <span style="color:#FFD21C; font-weight:800;">Venda: ${p.price}</span>
                             </div>
                         </div>
                     `).join('')}
@@ -736,7 +1899,138 @@ const WorkshopView = {
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // AÇÕES DE BUSCA, ENTRADA E CADASTRO
+    // SEÇÃO 6: CLIENTES
+    // ──────────────────────────────────────────────────────────────────────────
+    renderClientsView() {
+        return `
+            <div class="panel-box">
+                <div class="panel-title">
+                    <span>Carteira de Clientes da Oficina</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="erp-table">
+                        <thead>
+                            <tr>
+                                <th>Nome do Cliente</th>
+                                <th>Telefone / WhatsApp</th>
+                                <th>Veículo Vinculado</th>
+                                <th>Último Atendimento</th>
+                                <th>Ação Direta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>João da Silva</strong></td>
+                                <td class="mono">(19) 98765-4321</td>
+                                <td>VW Fox 1.0 (PWL4I85)</td>
+                                <td>10/08/2026</td>
+                                <td><button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('João da Silva', '(19) 98765-4321', 'VW Fox', 'PWL4I85', 'Revisão Preventiva')" style="background:#25D366; color:#000; font-weight:700;">WhatsApp</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Carlos Alberto Silva</strong></td>
+                                <td class="mono">(11) 98888-1111</td>
+                                <td>Honda Civic Touring (BRA2E19)</td>
+                                <td>18/05/2025</td>
+                                <td><button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Carlos Silva', '(11) 98888-1111', 'Civic', 'BRA2E19', 'Revisão Geral')" style="background:#25D366; color:#000; font-weight:700;">WhatsApp</button></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Renata Vasconcelos</strong></td>
+                                <td class="mono">(11) 97654-3210</td>
+                                <td>Toyota Corolla XEi (ABC1D23)</td>
+                                <td>12/04/2025</td>
+                                <td><button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Renata', '(11) 97654-3210', 'Corolla', 'ABC1D23', 'Fluido CVT')" style="background:#25D366; color:#000; font-weight:700;">WhatsApp</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // SEÇÃO 10: RELATÓRIOS
+    // ──────────────────────────────────────────────────────────────────────────
+    renderReportsView() {
+        return `
+            <div class="panel-box">
+                <div class="panel-title">
+                    <span>📊 Relatórios Gerenciais da Oficina</span>
+                </div>
+                <div class="ws-erp-kpi-grid" style="margin-bottom:18px;">
+                    <div class="ws-erp-kpi-box">
+                        <span class="ws-erp-kpi-label">Faturamento Total em OS</span>
+                        <div class="ws-erp-kpi-num" style="color:#10b981;">R$ 14.850</div>
+                        <div class="ws-erp-kpi-foot">Mês Corrente</div>
+                    </div>
+                    <div class="ws-erp-kpi-box">
+                        <span class="ws-erp-kpi-label">Aumento via OBD2</span>
+                        <div class="ws-erp-kpi-num" style="color:#FFD21C;">+ 38.4%</div>
+                        <div class="ws-erp-kpi-foot">Alertas Preventivos Convertidos</div>
+                    </div>
+                    <div class="ws-erp-kpi-box">
+                        <span class="ws-erp-kpi-label">Taxa de Homologação</span>
+                        <div class="ws-erp-kpi-num" style="color:#00d4ff;">100%</div>
+                        <div class="ws-erp-kpi-foot">Nível 4 Comprovado</div>
+                    </div>
+                </div>
+                <p style="font-size:12.5px; color:#94a3b8;">
+                    O sistema gera relatórios consolidados em PDF e exportação para contabilidade de todas as ordens de serviço, peças aplicadas e notas fiscais homologadas na rede DNA AUTO.
+                </p>
+            </div>
+        `;
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // SEÇÃO 11: CONFIGURAÇÕES
+    // ──────────────────────────────────────────────────────────────────────────
+    renderConfigurationsView() {
+        const ws = this.dashboardData?.workshop || {};
+        return `
+            <div class="panel-box">
+                <div class="panel-title">
+                    <span>⚙ Configurações da Oficina & Auto Center</span>
+                </div>
+
+                <form onsubmit="event.preventDefault(); alert('✅ Configurações salvas com sucesso!');" style="display:flex; flex-direction:column; gap:14px; max-width:620px;">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Nome Comercial da Oficina</label>
+                            <input type="text" class="form-control" value="${ws.trade_name || this.officialWorkshopName}" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CNPJ Oficial</label>
+                            <input type="text" class="form-control" value="${ws.cnpj || '12.345.678/0001-90'}" required />
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label class="form-label">WhatsApp Oficial para Disparo</label>
+                            <input type="text" class="form-control" value="${this.officialPhone}" required />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Horário de Atendimento</label>
+                            <input type="text" class="form-control" value="08:00 às 18:00 (Segunda a Sexta)" />
+                        </div>
+                    </div>
+
+                    <div style="background:#0a0f18; padding:12px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); font-size:12px;">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" checked />
+                            <span>Enviar alerta automático de WhatsApp aos clientes quando odômetro OBD2 atingir limite preventivo</span>
+                        </label>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end;">
+                        <button type="submit" class="btn btn-primary" style="font-weight:700;">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        `;
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // HANDLERS E INTEGRAÇÕES DE BUSCA E ENTRADA EXISTENTES PRESERVADOS
     // ──────────────────────────────────────────────────────────────────────────
     quickTestVehicle(plate) {
         const input = document.getElementById('ws-vehicle-search');
@@ -746,26 +2040,22 @@ const WorkshopView = {
         }
     },
 
-    // Ação do Botão CADASTRAR CARRO na barra de pesquisa
     handleCadastrarCarroBtn() {
         const input = document.getElementById('ws-vehicle-search');
         const plate = (input?.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
         if (plate && plate.length === 7) {
-            // Se já tem placa digitada, consulta na API de placas para preenchimento automático
             this.lookupPlateData(plate);
         } else {
-            // Se vazio ou incompleto, abre o modal de cadastro manual direto
             this.openManualVehicleModal(plate);
         }
     },
 
-    // Ação do Botão CONSULTAR / ENTRADA
     async handleSearchVehicle() {
         const input = document.getElementById('ws-vehicle-search');
         const term = (input?.value || '').trim();
         if (!term) {
-            alert('Digite a placa para consultar ou dar entrada no veículo.');
+            alert('Digite a placa ou termo de busca.');
             return;
         }
 
@@ -781,260 +2071,165 @@ const WorkshopView = {
         if (resultDiv) {
             resultDiv.style.display = 'block';
             resultDiv.innerHTML = `
-                <div style="padding:20px; text-align:center; color:var(--text-muted); background:var(--bg-surface); border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+                <div style="padding:20px; text-align:center; color:var(--text-muted); background:#0d1524; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
                     <div class="pulse-dot" style="margin:0 auto 10px;"></div>
-                    <strong style="color:#fff; font-size:14px; display:block; margin-bottom:4px;">Localizando Veículo ${clean}...</strong>
-                    <span style="font-size:12px; color:var(--text-dim);">Verificando base DNA AUTO e conectores oficiais</span>
+                    <strong style="color:#ffffff; font-size:14px; display:block; margin-bottom:4px;">Localizando Veículo ${term}...</strong>
+                    <span style="font-size:12px; color:var(--text-dim);">Consultando base DNA AUTO e conectores oficiais</span>
                 </div>
             `;
         }
 
         try {
-            // 1. Busca primeiro se o veículo já está registrado na plataforma
-            const res = await API.searchVehicle(clean);
+            // 1. Busca local
+            const res = await API.searchVehicle(clean.length >= 3 ? clean : term);
 
             if (res && res.found && res.vehicle) {
-                this.renderEntryVehicleCard(res.vehicle, res.hasDna);
+                this.renderFoundVehicleCard(res.vehicle, res.hasDna);
                 return;
             }
 
-            // 2. Se não encontrado localmente e for formato de 7 caracteres, busca na API de placas oficial
+            // 2. Se formato de placa de 7 caracteres, busca na API de placas
             if (clean.length === 7) {
                 await this.lookupPlateData(clean);
             } else {
-                this.showPlateNotFoundCard(clean, 'Informe uma placa de 7 caracteres (Ex: LQZ9A42 ou BRA2E19).');
+                this.showPlateNotFoundCard(term, 'Veículo não localizado na base local.');
             }
         } catch (err) {
-            console.warn('Busca local falhou, tentando API de placas:', err.message);
             if (clean.length === 7) {
                 await this.lookupPlateData(clean);
             } else {
-                this.showPlateNotFoundCard(clean, err.message);
+                this.showPlateNotFoundCard(term, err.message);
             }
         }
     },
 
-    // Exibe Card de Entrada Imediata para Carro Já Cadastrado na Plataforma
-    renderEntryVehicleCard(v, hasDna) {
-        const resultDiv = document.getElementById('ws-plate-lookup-result');
-        if (!resultDiv) return;
-
-        const km = Number(v.latest_mileage || 85000);
-        // Verifica se há alertas para este veículo
-        const alertsForThisCar = (this.alertsData || []).filter(a => a.licensePlate === v.license_plate || a.vehicleId === v.id);
-
-        let predictiveAlertHtml = '';
-        if (alertsForThisCar.length > 0) {
-            predictiveAlertHtml = `
-                <div class="ws-entry-alert-box">
-                    <div class="ws-entry-alert-header">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path></svg>
-                        ALERTA PREDITIVO DE ENTRADA (TELEMETRIA OBD2)
-                    </div>
-                    <div class="ws-entry-alert-body">
-                        ${alertsForThisCar.map(a => `
-                            <div>• <strong>${a.component}:</strong> ${a.statusText}. Ofereça este serviço na abertura da OS para aumentar o ticket!</div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        resultDiv.innerHTML = `
-            <div style="background:linear-gradient(135deg, rgba(16,185,129,0.06), rgba(15,23,42,0.85)); border:1px solid rgba(16,185,129,0.4); border-radius:var(--radius-md); padding:18px;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:10px;">
-                    <div>
-                        <span class="badge-proof badge-proven" style="font-size:10.5px; font-weight:700;">VEÍCULO NA REDE DNA AUTO</span>
-                        <h3 style="font-size:17px; color:#fff; margin:4px 0 2px;">${v.brand} ${v.model} ${v.version_label ? '• ' + v.version_label : ''}</h3>
-                        <div style="font-size:11.5px; color:var(--text-dim);">Placa: <strong class="mono" style="color:var(--brand-cyan);">${v.license_plate}</strong> • Ano: ${v.manufacture_year}/${v.model_year} • Odômetro: <strong class="mono" style="color:#fff;">${km.toLocaleString('pt-BR')} km</strong></div>
-                    </div>
-                    <button class="btn btn-sm btn-secondary" onclick="document.getElementById('ws-plate-lookup-result').style.display='none'">Fechar</button>
-                </div>
-
-                ${predictiveAlertHtml}
-
-                <div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; margin-top:12px;">
-                    <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal('${v.id}')" style="font-weight:700;">
-                        📝 ABRIR ORDEM DE SERVIÇO
-                    </button>
-                    ${hasDna && v.dna_code ? `
-                        <button class="btn btn-sm btn-cyan" onclick="DossierView.render('${v.dna_code}')">
-                            🔎 VER HISTÓRICO COMPLETO 360° (${v.dna_code})
-                        </button>
-                    ` : `
-                        <button class="btn btn-sm btn-gold" onclick="WorkshopView.openDnaOfferModal('${v.id}', '${v.license_plate}', '${v.brand} ${v.model}')" style="background:#FFD21C; color:#000; font-weight:800;">
-                            ✨ ATIVAR PASSAPORTE DNA
-                        </button>
-                    `}
-                </div>
-            </div>
-        `;
-    },
-
-    // Consulta de dados do veículo via API de placas (WDAPI2)
     async lookupPlateData(plateParam) {
         const input = document.getElementById('ws-vehicle-search');
         const plate = (plateParam || input?.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
         const resultDiv = document.getElementById('ws-plate-lookup-result');
         if (!resultDiv) return;
 
-        if (!plate || plate.length !== 7) {
-            alert('Informe uma placa válida no formato brasileiro (7 caracteres, Ex: LQZ9A42 ou BRA2E19).');
-            return;
-        }
-
         resultDiv.style.display = 'block';
         resultDiv.innerHTML = `
-            <div style="padding:20px; text-align:center; color:var(--text-muted); background:var(--bg-surface); border-radius:var(--radius-md); border:1px solid var(--border-subtle);">
+            <div style="padding:20px; text-align:center; color:var(--text-muted); background:#0d1524; border-radius:8px; border:1px solid rgba(0,212,255,0.3);">
                 <div class="pulse-dot" style="margin:0 auto 10px;"></div>
-                <strong style="color:#fff; font-size:14px; display:block; margin-bottom:4px;">Consultando Dados Oficiais da Placa ${plate}...</strong>
-                <span style="font-size:12px; color:var(--text-dim);">Buscando Senatran Nacional, Detran Estadual e Tabela FIPE</span>
+                <strong style="color:#ffffff; font-size:14px; display:block; margin-bottom:4px;">Consultando Dados Oficiais da Placa ${plate}...</strong>
+                <span style="font-size:12px; color:var(--text-dim);">Conectando à API Senatran, Detran e Tabela FIPE</span>
             </div>
         `;
 
         try {
             const data = await API.lookupPlate(plate);
-
             if (!data || !data.found || !data.vehicle) {
                 this.showPlateNotFoundCard(plate, data?.message);
                 return;
             }
 
             const v = data.vehicle;
-            const fipe = v.fipe || {};
-            const legal = v.legal_status || {};
-            const origin = v.origin || {};
-
-            resultDiv.innerHTML = `
-                <div style="background:linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(15, 23, 42, 0.85)); border:1px solid var(--brand-cyan); border-radius:var(--radius-md); padding:18px; box-shadow:0 8px 30px rgba(0,0,0,0.4);">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:10px;">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            ${v.logo ? `
-                                <img src="${v.logo}" alt="${v.brand}" style="height:38px; max-width:60px; object-fit:contain; background:#fff; border-radius:6px; padding:3px;" />
-                            ` : `
-                                <div style="width:36px; height:36px; border-radius:6px; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; border:1px solid rgba(16,185,129,0.3);">
-                                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--proof-level-4)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                </div>
-                            `}
-                            <div>
-                                <strong style="font-size:16px; color:#fff; display:block;">${v.brand || ''} ${v.model || ''} ${v.version ? '• ' + v.version : ''}</strong>
-                                <div style="font-size:11px; color:var(--text-dim);">${data.source || 'Base Oficial Homologada'}${fipe.score ? ` • Precisão FIPE: ${fipe.score} pts` : ''}</div>
-                            </div>
-                        </div>
-                        <button class="btn btn-sm btn-secondary" onclick="document.getElementById('ws-plate-lookup-result').style.display='none'">Fechar</button>
-                    </div>
-
-                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(200px, 100%), 1fr)); gap:10px; margin-bottom:14px;">
-                        <!-- Identificação -->
-                        <div style="background:var(--bg-surface); padding:10px; border-radius:6px; border:1px solid var(--border-subtle); font-size:11.5px; line-height:1.7;">
-                            <div style="font-size:10px; font-weight:700; color:var(--brand-cyan); text-transform:uppercase; margin-bottom:4px;">Identificação</div>
-                            <div>Placa: <strong class="mono" style="color:#fff;">${v.license_plate}</strong></div>
-                            <div>Ano: <strong style="color:#fff;">${v.manufacture_year || '—'}/${v.model_year || '—'}</strong></div>
-                            <div>Cor: <strong style="color:#fff;">${v.color || '—'}</strong></div>
-                            <div>Chassi: <strong class="mono" style="color:#fff;">${v.chassis_vin_masked || v.chassis_vin || '—'}</strong></div>
-                        </div>
-
-                        <!-- FIPE -->
-                        <div style="background:var(--bg-surface); padding:10px; border-radius:6px; border:1px solid var(--border-subtle); font-size:11.5px; line-height:1.7;">
-                            <div style="font-size:10px; font-weight:700; color:var(--proof-level-4); text-transform:uppercase; margin-bottom:4px;">Tabela FIPE Oficial</div>
-                            <div>Código: <strong class="mono" style="color:#fff;">${fipe.fipe_code || '—'}</strong></div>
-                            <div style="font-size:14px; font-weight:800; color:var(--proof-level-4); font-family:var(--font-mono); margin:2px 0;">${fipe.market_value_formatted || 'R$ —'}</div>
-                            <div>Mês: <strong style="color:#fff;">${fipe.reference_month || '—'}</strong></div>
-                        </div>
-
-                        <!-- Situação Legal -->
-                        <div style="background:var(--bg-surface); padding:10px; border-radius:6px; border:1px solid var(--border-subtle); font-size:11.5px; line-height:1.7;">
-                            <div style="font-size:10px; font-weight:700; color:var(--proof-level-1); text-transform:uppercase; margin-bottom:4px;">Detran & Tributos</div>
-                            <div>Status: <strong style="color:var(--proof-level-4);">${legal.detran_status || 'REGULAR'}</strong></div>
-                            <div>IPVA: <strong style="color:#fff;">${legal.ipva_status || 'QUITADO'}</strong></div>
-                            <div>Jurisdição: <strong style="color:#fff;">${origin.city || ''}/${origin.state || 'BR'}</strong></div>
-                        </div>
-                    </div>
-
-                    <!-- Botão de Cadastro Direto -->
-                    <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid rgba(255,255,255,0.08); padding-top:12px;">
-                        <button class="btn btn-primary" id="btn-register-from-lookup" onclick="WorkshopView.registerVehicleFromLookup('${v.license_plate}')" style="background:linear-gradient(135deg, #ffd21c, #f59e0b); color:#000; font-weight:800; padding:8px 18px; font-size:12.5px; display:inline-flex; align-items:center; gap:6px;">
-                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                            SALVAR E CADASTRAR VEÍCULO NA PLATAFORMA
-                        </button>
-                    </div>
-                </div>
-            `;
+            this.renderFoundVehicleCard({
+                ...v,
+                license_plate: plate,
+                latest_mileage: 85430,
+                owner_name: 'Proprietário a Cadastrar',
+                owner_phone: '(19) 98765-4321'
+            }, false);
         } catch (err) {
             this.showPlateNotFoundCard(plate, err.message);
         }
     },
 
-    // Card amigável exibido quando a API não localiza a placa, dando opção de cadastrar manualmente sem erro
-    showPlateNotFoundCard(plate, message) {
+    showPlateNotFoundCard(plate, msg) {
         const resultDiv = document.getElementById('ws-plate-lookup-result');
         if (!resultDiv) return;
 
         resultDiv.innerHTML = `
-            <div style="background:rgba(245, 158, 11, 0.08); border:1px solid rgba(245, 158, 11, 0.35); border-radius:var(--radius-md); padding:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.35); border-radius:8px; padding:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                 <div>
                     <div style="font-weight:700; color:#fbbf24; font-size:13.5px; margin-bottom:4px;">
-                        ⚠️ Veículo ${plate} não localizado automaticamente na consulta externa
+                        ⚠️ Veículo ${plate} não localizado na consulta externa
                     </div>
                     <div style="font-size:12px; color:var(--text-muted);">
-                        ${message || 'O veículo pode ser novo ou ainda não constar na base pública.'} Você pode cadastrá-lo manualmente agora para dar entrada e lançar os serviços.
+                        ${msg || 'Você pode cadastrá-lo manualmente agora para iniciar o atendimento e lançar os serviços.'}
                     </div>
                 </div>
                 <div style="display:flex; gap:8px;">
                     <button class="btn btn-sm btn-secondary" onclick="document.getElementById('ws-plate-lookup-result').style.display='none'">Fechar</button>
-                    <button class="btn btn-sm btn-primary" onclick="WorkshopView.openManualVehicleModal('${plate}')" style="background:#10b981; border:none; font-weight:700; display:inline-flex; align-items:center; gap:5px;">
-                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        CADASTRAR MANUALMENTE ESTA PLACA
+                    <button class="btn btn-sm btn-primary" onclick="WorkshopView.openManualVehicleModal('${plate}')" style="background:#10b981; border:none; font-weight:700;">
+                        CADASTRAR MANUALMENTE
                     </button>
                 </div>
             </div>
         `;
     },
 
-    // Cadastrar Veículo na Plataforma a partir do retorno da API
-    async registerVehicleFromLookup(plate) {
-        const btn = document.getElementById('btn-register-from-lookup');
-        if (btn) {
-            btn.disabled = true;
-            btn.innerHTML = 'Salvando na plataforma...';
-        }
-
-        try {
-            const res = await API.registerVehicleFromApi(plate);
-            alert(`🎉 ${res.message}`);
-
-            // Atualiza a visualização com sucesso
-            await this.render();
-            // Mantém na aba de recepção
-            this.switchTab('recepcao');
-        } catch (err) {
-            alert('Erro ao cadastrar veículo: ' + err.message);
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = 'SALVAR E CADASTRAR VEÍCULO NA PLATAFORMA';
-            }
-        }
-    },
-
-    // ──────────────────────────────────────────────────────────────────────────
-    // MODAL DE CADASTRO MANUAL DE VEÍCULO
-    // ──────────────────────────────────────────────────────────────────────────
+    // Modal de Cadastro Manual de Veículo
     openManualVehicleModal(defaultPlate = '') {
-        const modal = document.getElementById('ws-manual-register-modal');
-        if (!modal) return;
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (!modalRoot) return;
 
-        const plateInput = document.getElementById('manual-veh-plate');
-        if (plateInput) plateInput.value = defaultPlate || '';
+        modalRoot.innerHTML = `
+            <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
+                <div class="ws-erp-modal-window" style="max-width:540px;">
+                    <div class="ws-erp-modal-header">
+                        <strong style="color:#ffffff; font-size:15px;">Cadastrar Veículo na Oficina</strong>
+                        <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
+                    </div>
+                    <form onsubmit="WorkshopView.submitManualRegisterForm(event)" style="padding:16px 20px;">
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Placa do Veículo *</label>
+                                <input type="text" id="manual-veh-plate" class="form-control" value="${defaultPlate}" maxlength="8" style="text-transform:uppercase; font-weight:700; font-family:var(--font-mono);" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Marca / Montadora *</label>
+                                <input type="text" id="manual-veh-brand" class="form-control" placeholder="Ex: VW, Honda, Fiat" required />
+                            </div>
+                        </div>
 
-        modal.classList.add('active');
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Modelo do Carro *</label>
+                                <input type="text" id="manual-veh-model" class="form-control" placeholder="Ex: Fox 1.0, Civic, Strada" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Versão / Motor</label>
+                                <input type="text" id="manual-veh-version" class="form-control" placeholder="Ex: 1.0 Total Flex, 1.5 Turbo" />
+                            </div>
+                        </div>
+
+                        <div class="form-grid-3">
+                            <div class="form-group">
+                                <label class="form-label">Ano *</label>
+                                <input type="number" id="manual-veh-year" class="form-control" value="2018" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cor</label>
+                                <input type="text" id="manual-veh-color" class="form-control" placeholder="Ex: Prata" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">KM Odômetro</label>
+                                <input type="number" id="manual-veh-km" class="form-control" placeholder="Ex: 85430" />
+                            </div>
+                        </div>
+
+                        <div style="margin-top:14px; padding:12px; background:rgba(255,210,28,0.06); border-radius:6px; border:1px solid rgba(255,210,28,0.2);">
+                            <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#ffffff; cursor:pointer;">
+                                <input type="checkbox" id="manual-veh-activate-dna" checked />
+                                <span>Ativar Passaporte DNA Digital Permanente para este carro</span>
+                            </label>
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                            <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" style="font-weight:700;">Salvar e Dar Entrada</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
     },
 
-    closeManualVehicleModal() {
-        const modal = document.getElementById('ws-manual-register-modal');
-        if (modal) modal.classList.remove('active');
-    },
-
-    async submitManualRegister(e) {
+    async submitManualRegisterForm(e) {
         e.preventDefault();
         const plate = document.getElementById('manual-veh-plate').value.trim().toUpperCase();
         const brand = document.getElementById('manual-veh-brand').value.trim();
@@ -1046,7 +2241,7 @@ const WorkshopView = {
         const activateDna = document.getElementById('manual-veh-activate-dna').checked;
 
         try {
-            const res = await API.registerVehicle({
+            await API.registerVehicle({
                 license_plate: plate,
                 brand,
                 model,
@@ -1057,13 +2252,11 @@ const WorkshopView = {
                 activate_dna_now: activateDna
             });
 
-            this.closeManualVehicleModal();
+            this.closeModal();
             alert(`✅ Veículo ${brand} ${model} (${plate}) cadastrado com sucesso!`);
-
             await this.render();
-            this.switchTab('recepcao');
+            this.switchSection('veiculos-pesquisa');
 
-            // Exibe o check-in do veículo recém-cadastrado
             const input = document.getElementById('ws-vehicle-search');
             if (input) input.value = plate;
             this.handleSearchVehicle();
@@ -1072,35 +2265,15 @@ const WorkshopView = {
         }
     },
 
-    // ──────────────────────────────────────────────────────────────────────────
-    // MODAL DE NOVO SERVIÇO & ATIVAÇÃO DNA (MÉTODOS EXISTENTES PRESERVADOS)
-    // ──────────────────────────────────────────────────────────────────────────
+    // Modal de Novo Serviço Nível 4 (Preservado)
     openNewServiceModal(vehicleId = '') {
         const modal = document.getElementById('new-service-modal');
         if (!modal) return;
-
         if (vehicleId) {
             const sel = document.getElementById('srv-vehicle-id');
             if (sel) sel.value = vehicleId;
         }
         modal.classList.add('active');
-    },
-
-    async submitNewService(e) {
-        e.preventDefault();
-        const form = document.getElementById('new-service-form');
-        const formData = new FormData(form);
-        formData.append('workshop_id', this.currentWorkshopId);
-
-        try {
-            const res = await API.registerWorkshopService(formData);
-            document.getElementById('new-service-modal').classList.remove('active');
-            alert(`✅ ${res.message}`);
-            form.reset();
-            this.render();
-        } catch (err) {
-            alert('Erro ao registrar serviço: ' + err.message);
-        }
     },
 
     openDnaOfferModal(vehicleId, plate, modelName = 'Veículo') {
@@ -1133,10 +2306,30 @@ const WorkshopView = {
         }
     },
 
+    async submitNewService(e) {
+        e.preventDefault();
+        const form = document.getElementById('new-service-form');
+        if (!form) return;
+        const formData = new FormData(form);
+        formData.append('workshop_id', this.currentWorkshopId);
+
+        try {
+            const res = await API.registerWorkshopService(formData);
+            const modal = document.getElementById('new-service-modal');
+            if (modal) modal.classList.remove('active');
+            alert(`✅ ${res.message || 'Serviço registrado como Nível 4 Comprovado!'}`);
+            form.reset();
+            await this.render();
+            this.switchSection('servicos-os');
+        } catch (err) {
+            alert('Erro ao registrar serviço: ' + err.message);
+        }
+    },
+
     async submitConfirmation(serviceId, decision) {
         const notes = prompt(
             decision === 'CONFIRMAR'
-                ? 'Observações técnicas da confirmação (opcional):'
+                ? 'Observações técnicas da homologação Nível 3 (opcional):'
                 : 'Motivo do não reconhecimento (será registrado em auditoria):'
         );
 
