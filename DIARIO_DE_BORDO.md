@@ -263,6 +263,45 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 
 ---
 
+### 🏭 Ciclo 15: Reformulação Profissional do Painel da Oficina / Auto Center em ERP Moderno (Padrão TOTVS + Identidade DNA AUTO)
+- **Contexto e Requisitos do Usuário:**
+  1. Transformação completa do painel interno da oficina mecânica / auto center em um sistema corporativo de gestão (ERP moderno), inspirado na organização e usabilidade de sistemas empresariais como TOTVS, mas mantendo a identidade visual DNA AUTO (Dark Enterprise, Ouro `#FFD21C`, Ciano `#38bdf8` e Esmeralda `#10b981`).
+  2. Experiência de software profissional, confiável e pronto para uso diário contínuo por recepcionistas, mecânicos, consultores técnicos e donos de oficinas.
+  3. Menu lateral corporativo com 10 módulos organizados em acordeom expansível e gaveta móvel com botão `☰` e fechamento automático.
+  4. Entrada de veículos com duplo fluxo na recepção: busca instantânea por placa/chassi/cliente com exibição de Ficha Digital completa e botão direto para cadastro de novo veículo.
+  5. Radar preditivo baseado em telemetria OBD2 pareado com o app do proprietário: monitoramento em tempo real de quilometragem e semáforo de desgaste de peças críticas (óleo do motor, óleo do câmbio automático ATF/CVT, correia dentada e tensores, pastilhas de freio, fluido DOT4 e velas).
+  6. Central de agendamentos com envio de 3 opções de datas futuras para o cliente no WhatsApp, confirmação de slot e prevenção de colisão de horários.
+  7. Garantia estrita de **zero estouro horizontal** (`overflow-x: hidden`, sem scroll horizontal na janela).
+- **Implementações Técnicas:**
+  - **Arquitetura de Isolamento CSS (`public/css/components.css`):**
+    - Criação do escopo `body.is-workshop-erp` que remove o layout da landing page pública e estabelece um contêiner ERP com altura total da viewport (`height: 100vh; overflow: hidden; display: flex; flex-direction: column;`).
+    - Sidebar corporativa fixa (`.ws-erp-sidebar`) com 260px de largura no desktop, navegação com 10 módulos (`.ws-erp-nav-item`) e gaveta retrátil com overlay translúcido no mobile.
+    - Barra de status de rede com indicador pulsante `🟢 REDE DNA AUTO ONLINE`, botão de notificações rápidas `🔔` com popover dinâmico (contabilizando alertas críticos, preventivos, agendamentos e mensagens não lidas).
+  - **Componente Central da Oficina (`public/js/components/workshopView.js`):**
+    - 6 Cards de KPIs com variação diária/mensal: Faturamento do Mês, Ordens de Serviço Ativas, Carros no Box, Alertas Preditivos OBD2, Ativações DNA e Comissões a Receber.
+    - 6 Ações Rápidas de Balcão: *Nova Entrada (Check-in)*, *Lançar Peça / Serviço*, *Nova Ordem de Serviço*, *Alerta Preditivo*, *Agendar Manutenção* e *Cadastrar Carro*.
+    - Módulo de Recepção com busca multi-critério (placa, chassi, modelo ou cliente), exibição em tempo real do cartão técnico do carro com logo da montadora, FIPE e botão para abertura do modal *Ficha Digital do Veículo*.
+    - Radar Preditivo OBD2 com semáforos visuais:
+      - 🔴 **VENCIDO / URGENTE:** Troca de correia dentada e tensores (vencido há 4.200 km) ou óleo de câmbio automático.
+      - 🟡 **ATENÇÃO / PRÓXIMO:** Pastilhas de freio ou óleo do motor (restam < 1.200 km).
+      - 🟢 **EM DIA / OK:** Velas de ignição e fluidos revisados.
+    - Disparo direto para WhatsApp do cliente com templates corporativos pré-formatados com os dados do veículo, quilometragem exata e riscos de quebra.
+    - Modal de Agendamento Inteligente: sugestão de 3 datas/horários futuros úteis, seleção de serviço preventivo e integração com o backend.
+  - **Persistência de Dados e API REST (`server/src/modules/workshops/workshops.routes.js`):**
+    - Criação da tabela relacional SQLite `workshop_appointments` com colunas para oficina, veículo, cliente, serviço, data/hora agendada, status e notas.
+    - Implementação dos endpoints REST:
+      - `GET /api/v1/workshops/:id/appointments`: listagem filtrada por status.
+      - `POST /api/v1/workshops/:id/appointments`: inserção com validação de colisão de horários (retorna `HTTP 409 Conflict` se o horário já estiver ocupado).
+      - `PATCH /api/v1/workshops/:id/appointments/:appointmentId/status`: transição de estado (`PENDING`, `CONFIRMED`, `IN_SERVICE`, `COMPLETED`, `CANCELLED`).
+  - **Controle de Ciclo de Vida no Frontend (`public/js/app.js`):**
+    - Aplicação dinâmica da classe `is-workshop-erp` no elemento `<body>` ao entrar na visualização `workshop` e remoção no `logout` ou troca para outras visualizações.
+- **Validação e Qualidade:**
+  - 20/20 testes automatizados de integração aprovados com 100% de sucesso em `test/api.test.js`.
+  - Validação estrita de sintaxe JavaScript com `node -c` em todos os módulos alterados.
+  - Zero estouro horizontal verificado em todas as resoluções de tela.
+
+---
+
 ## 🏛️ 3. Tabela de Decisões Arquiteturais (ADRs)
 
 | ID | Decisão | Contexto / Motivação | Consequência / Benefício |
@@ -272,6 +311,7 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 | **ADR-03** | **Preço Fixo de R$ 59,90** | Oferecer preço de entrada irresistível para proprietários com pagamento único, sem atrito de assinatura recorrente. | Alta conversão na landing page e incentivo para oficinas credenciarem frotas. |
 | **ADR-04** | **WhatsApp Universal Links** | Evitar dependência e custos de gateways de SMS/WhatsApp corporativo (Twilio, Z-API) para MVP e fase inicial. | Disparo imediato, compatível com qualquer dispositivo, sem custo operacional por mensagem. |
 | **ADR-05** | **Isolamento de Admin via Rota `/admin`** | Não poluir a tela inicial de clientes e oficinas com botões de administrador. | Maior segurança por obscuridade e navegação limpa para usuários comuns. |
+| **ADR-06** | **ERP de Oficina em Escopo Isolado (`is-workshop-erp`)** | Transformar a interface da oficina em um sistema de gestão corporativo moderno (estilo TOTVS) sem conflitar com as regras de CSS da Landing Page. | Viewport 100vh estável, sem scroll da página principal, zero estouro horizontal e foco operacional em balcão, box e agendamentos. |
 
 ---
 
@@ -283,17 +323,17 @@ DNA-AUTO/
 │   ├── css/                     # Sistema de Design Tokens
 │   │   ├── variables.css        # Paleta (Amarelo #FFD21C, Obsidiana, Cinzas)
 │   │   ├── base.css             # Tipografia e resets
-│   │   ├── components.css       # Botões, cards, modais, formulários
+│   │   ├── components.css       # Botões, cards, modais, formulários e .ws-erp-*
 │   │   ├── dossier.css          # Estilos do Dossiê 360° e Score
 │   │   └── print.css            # Layout de impressão para laudos
 │   ├── js/                      # Lógica de negócio no cliente
-│   │   ├── api.js               # Cliente HTTP centralizado
-│   │   ├── app.js               # Orquestrador de rotas, RBAC e sessão
+│   │   ├── api.js               # Cliente HTTP centralizado (appointments + placas)
+│   │   ├── app.js               # Orquestrador de rotas, RBAC, sessão e escopo ERP
 │   │   └── components/          # Módulos de tela
 │   │       ├── landingView.js   # Landing Page Oficial (R$ 59,90)
 │   │       ├── loginView.js     # Login, Cadastro e Esqueci Minha Senha
 │   │       ├── adminView.js     # Painel Admin (Faturamento, Clientes, WhatsApp)
-│   │       ├── workshopView.js  # Painel da Oficina Credenciada
+│   │       ├── workshopView.js  # Painel ERP da Oficina Credenciada (10 módulos)
 │   │       ├── ownerView.js     # Painel do Proprietário
 │   │       ├── dossierView.js   # Visualização 360° do Histórico
 │   │       ├── posterGenerator.js # Cartaz de Venda para Vidro do Carro
@@ -304,7 +344,7 @@ DNA-AUTO/
 │   └── src/
 │       ├── database/
 │       │   ├── db.js            # Conexão e inicialização do SQLite
-│       │   ├── schema.sql       # DDL das tabelas relacionais
+│       │   ├── schema.sql       # DDL das tabelas relacionais (+ workshop_appointments)
 │       │   ├── seed.js          # Dados demonstrativos e veículos prévios
 │       │   └── dna_auto.db      # Arquivo SQLite local (persistido)
 │       ├── middlewares/
@@ -316,17 +356,21 @@ DNA-AUTO/
 │       │   ├── vehicles/        # busca, ativação de DNA, cadastro
 │       │   ├── dossier/         # dossiê 360°, busca de peças, timeline
 │       │   ├── services/        # lançamento e validação de ordens de serviço
-│       │   ├── workshops/       # gestão da oficina parceira
+│       │   ├── workshops/       # gestão da oficina parceira e agendamentos
 │       │   ├── reports/         # emissão e autenticação de laudos de venda
 │       │   └── transfers/       # transferência de propriedade de veículo
+│       ├── services/            # Serviços de integração externa
+│       │   ├── apiPlacas.service.js # Integração oficial WDAPI2
+│       │   └── keepAlive.service.js # Ping anti-sleep no Render
 │       └── server.js            # Aplicação Express e montagem das rotas
 ├── test/
-│   └── api.test.js              # Bateria com 16 testes automatizados
+│   └── api.test.js              # Bateria com 20 testes automatizados
 ├── index.js                     # Entrypoint raiz para deploys em nuvem
 ├── src/index.js                 # Entrypoint secundário para Render Cloud
 ├── package.json                 # Manifesto de dependências e scripts
 ├── README.md                    # Manual completo do projeto
-└── DIARIO_DE_BORDO.md           # Este documento de histórico de engenharia
+├── DIARIO_DE_BORDO.md           # Diário de bordo detalhado de engenharia
+└── diario de bordo.md           # Diário de bordo complementar e registro de entregas
 ```
 
 ---

@@ -3,7 +3,7 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-16%2F16%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-20%2F20%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
@@ -109,11 +109,45 @@ A plataforma opera em arquitetura **Multi-Tenant** com controle de acesso rigoro
   - Botão verde oficial do WhatsApp disparando mensagem pré-formatada:
     > *"Olá [Nome do Dono]! Aqui é da equipe técnica do DNA AUTO / [Oficina]. Notamos que o seu [Carro] (Placa: [Placa]) está com [KM] km rodados. Conforme o manual do fabricante, é fundamental realizar a Troca Preventiva para evitar quebras no motor. Deseja agendar sua revisão gratuita na oficina?"*
 
-### 4. 🔧 Painel da Oficina Credenciada (Service Desk)
-- **Bancada Operacional:** Gestão de ordens de serviço pendentes de confirmação.
-- **Registro de Serviços:** Lançamento de manutenções com seleção de categoria, quilometragem, peças utilizadas com part number e fotos.
-- **Validação de Documentos:** Análise da foto/PDF da nota fiscal enviada pelo proprietário para elevação para Nível 3 ou 4.
-- **Credenciamento de Novos Carros:** Emissão e ativação de novos códigos DNA diretamente na oficina.
+### 4. 🏭 Painel da Oficina / Auto Center — ERP Corporativo (Padrão TOTVS + Identidade DNA AUTO)
+O ambiente operacional interno da oficina foi transformado em um sistema ERP moderno, confiável e otimizado para o trabalho diário de recepcionistas, consultores técnicos, mecânicos e proprietários de oficinas:
+
+- **Arquitetura de Navegação Corporativa:**
+  - **Sidebar Lateral Fixa (260px)** com 10 módulos de gestão integrados e acordeom expansível:
+    1. 📊 *Visão Geral (Cockpit Executivo)*
+    2. 📥 *Recepção & Check-in (Entrada de Veículos e Ficha Digital)*
+    3. 📋 *Ordens de Serviço (Abertas, Em Execução e Finalizadas)*
+    4. 📦 *Peças & Estoque (Catálogo, Part Numbers e Aplicações)*
+    5. 🔔 *Alertas & Manutenção Preditiva (Telemetria OBD2)*
+    6. 📅 *Agendamentos & Box (Agenda de Serviços com Prevenção de Conflitos)*
+    7. 🚗 *Frota de Clientes (Carteira de Veículos Atendidos)*
+    8. 💰 *Financeiro & Comissões (Faturamento e Repasses DNA)*
+    9. 🔌 *Conectividade OBD2 (Status de Pareamento com App do Cliente)*
+    10. ⚙️ *Configurações da Oficina (Dados Cadastrais, Logo e Usuários)*
+  - **Menu Mobile com Gaveta Retrátil:** Acesso rápido via botão `☰`, com fechamento automático e overlay translúcido.
+  - **Barra de Status de Rede:** Indicador pulsante `🟢 REDE DNA AUTO ONLINE` e popover de notificações rápidas `🔔` consolidando alertas críticos, agendamentos e mensagens.
+
+- **Painel Executivo e KPIs em Tempo Real:**
+  - 6 Cards Corporativos com métricas operacionais atualizadas: *Faturamento do Mês (R$)*, *Ordens de Serviço Ativas*, *Carros no Box*, *Alertas Preditivos OBD2*, *Ativações DNA do Mês* e *Comissões a Receber*.
+  - 6 Atalhos Rápidos de Balcão: *Nova Entrada (Check-in)*, *Lançar Peça / Serviço*, *Nova Ordem de Serviço*, *Alerta Preditivo*, *Agendar Manutenção* e *Cadastrar Carro*.
+
+- **Módulo de Recepção com Duplo Fluxo Operacional:**
+  - **Pesquisa Instantânea Multi-Critério:** Localização de veículos cadastrados por placa, chassi, modelo ou nome do cliente.
+  - **Cartão do Veículo com Ficha Digital:** Exibição imediata com logotipo oficial da montadora, ano/modelo, motorização, odômetro verificado e botão para abrir a **Ficha Digital do Veículo** (modal com histórico completo, dados do proprietário e lista de revisões).
+  - **Botão Direto de Cadastro:** Fluxo desimpedido para cadastrar um novo carro na rede sem perda de tempo na recepção.
+
+- **Radar Preditivo OBD2 (Telemetria Integrada ao App do Cliente):**
+  - Monitoramento da quilometragem real transmitida pelo adaptador OBD2 pareado ao smartphone do cliente.
+  - **Semáforos de Desgaste de Componentes Críticos:**
+    - 🔴 **VENCIDO / URGENTE:** Correia dentada/tensores (vencido por KM) ou troca de óleo de câmbio automático ATF/CVT.
+    - 🟡 **ATENÇÃO / PRÓXIMO:** Pastilhas de freio ou óleo do motor (< 1.200 km para o limite).
+    - 🟢 **EM DIA / OK:** Velas de ignição, fluidos e filtros inspecionados.
+  - **Disparo Direto para WhatsApp:** Mensagens corporativas pré-montadas com placa, quilometragem, risco mecânico e convite para agendamento.
+
+- **Central de Agendamento Inteligente com 3 Datas:**
+  - Sugestão automática de 3 opções de datas e horários úteis para envio direto ao cliente no WhatsApp.
+  - Prevenção automática de colisão de horários no banco de dados SQLite (`HTTP 409 Conflict`).
+  - Gestão de estados de agendamento: `PENDING`, `CONFIRMED`, `IN_SERVICE`, `COMPLETED` e `CANCELLED`.
 
 ### 5. 🚗 Painel do Proprietário & Dossiê 360°
 - **Dossiê 360° Completo:** Visualização em linha do tempo com filtros e Score de Saúde (0 a 100).
@@ -206,7 +240,7 @@ O banco de dados de desenvolvimento vem pré-configurado com os seguintes usuár
 
 ## 🧪 Bateria de Testes Automatizados
 
-O projeto possui uma suite de **16 testes automatizados de integração ponta a ponta** cobrindo todos os módulos do sistema.
+O projeto possui uma suite de **20 testes automatizados de integração ponta a ponta** cobrindo todos os módulos do sistema.
 
 Para executar os testes:
 ```bash
@@ -239,8 +273,12 @@ node test/api.test.js
 ✅ 14. Frota por Oficina Multi-Tenant: 4 veículos catalogados com oficina vinculada
 ✅ 15. Carteira de Clientes: 2 proprietários vinculados à oficina de atendimento
 ✅ 16. Homologação Multi-Tenant: Status da oficina verificado e aprovado com sucesso
+✅ 17. Saldo da API Placas: Saldo verificado com sucesso via WDAPI2
+✅ 18. Consulta de Placa via API Oficial: Veículo consultado em tempo real com sucesso
+✅ 19. Criação de Agendamento na Oficina: Agendamento criado com sucesso
+✅ 20. Prevenção de Conflito de Agendamento: Conflito detectado com HTTP 409 Conflict
 
-🎉 TODOS OS 16 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!
+🎉 TODOS OS 20 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!
 ```
 
 ---
@@ -271,12 +309,17 @@ A aplicação está configurada para deploy contínuo no [Render](https://render
 | `POST` | `/api/v1/auth/login` | Pública | Autenticação de usuário e retorno do token JWT. |
 | `POST` | `/api/v1/auth/register-workshop` | Pública | Credenciamento de novas oficinas com CNPJ/CPF. |
 | `POST` | `/api/v1/auth/forgot-password` | Pública | Redefinição de senha de usuários cadastrados. |
-| `GET` | `/api/v1/vehicles/search?q={placa}` | Pública | Pesquisa rápida de veículo e status do DNA. |
+| `GET` | `/api/v1/vehicles/search?q={placa}` | Pública | Pesquisa rápida de veículo (local e API Placas). |
 | `POST` | `/api/v1/vehicles/activate-dna` | JWT | Ativação do código de DNA vitalício para o carro. |
 | `GET` | `/api/v1/dossier/:dna_code` | Pública | Retorna o Dossiê 360°, Score de Saúde e histórico. |
 | `GET` | `/api/v1/dossier/:dna_code/search?q={termo}` | Pública | Lupa investigativa de peças e serviços do veículo. |
 | `POST` | `/api/v1/services` | JWT | Lançamento de nova ordem de serviço com peças. |
 | `POST` | `/api/v1/services/:id/confirm-decision` | JWT Oficina | Confirmação ou rejeição técnica de serviço. |
+| `GET` | `/api/v1/workshops/:id/appointments` | JWT Oficina/Admin | Listagem de agendamentos da oficina com filtro por status. |
+| `POST` | `/api/v1/workshops/:id/appointments` | JWT Oficina/Admin | Criação de novo agendamento com prevenção de colisão de horários. |
+| `PATCH` | `/api/v1/workshops/:id/appointments/:aptId/status` | JWT Oficina/Admin | Atualização do status operacional do agendamento. |
+| `GET` | `/api/v1/integrations/plate-lookup/:plate` | Pública/JWT | Consulta unificada de dados do veículo pela API Placas (WDAPI2). |
+| `GET` | `/api/v1/integrations/plate-balance` | JWT Admin | Consulta em tempo real do saldo de créditos da API Placas. |
 | `GET` | `/api/v1/admin/network-stats` | JWT Admin | Faturamento bruto (R$), estatísticas e oficinas. |
 | `GET` | `/api/v1/admin/workshops/:id/clients` | JWT Admin | Drill-down de clientes e carros atendidos pela oficina. |
 | `GET` | `/api/v1/admin/maintenance-alerts` | JWT Admin | Lista de alertas preditivos para WhatsApp (óleo/correia). |
