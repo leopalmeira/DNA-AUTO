@@ -48,6 +48,20 @@ const App = {
             console.log('🌐 Exibindo Landing Page oficial (R$ 59,90)...');
             this.switchView('landing');
         }
+
+        // 3. Ouvinte reativo para navegação por hash (#owner, #workshop, #landing)
+        window.addEventListener('hashchange', () => {
+            const h = window.location.hash;
+            if (h === '#owner') {
+                this.switchView('owner');
+            } else if (h === '#workshop') {
+                this.switchView('workshop');
+            } else if (h === '#admin') {
+                this.switchView('admin');
+            } else if (h === '#landing' || h === '') {
+                this.switchView('landing');
+            }
+        });
     },
 
     // ── Gestão de Sessão Local ──
@@ -113,27 +127,23 @@ const App = {
 
     // ── Alternador Central de Telas com Bloqueio RBAC ──
     switchView(viewName, param = null) {
-        // Views públicas acessíveis sem autenticação
-        const publicViews = ['landing', 'login', 'login-admin', 'sales', 'dossier'];
+        // Views públicas acessíveis diretamente (incluindo App do Cliente e ERP da Oficina)
+        const publicViews = ['landing', 'login', 'login-admin', 'sales', 'dossier', 'owner', 'workshop'];
 
-        // Se não logado e tentando acessar área restrita, redireciona para a landing page ou login
-        if (!this.currentRole && !publicViews.includes(viewName)) {
-            this.switchView('landing');
-            return;
-        }
-
-        // RBAC: Isolamento estrito para áreas autenticadas
-        if (viewName === 'owner' && this.currentRole !== 'OWNER') {
-            alert('⛔ Acesso restrito a Clientes Proprietários.');
-            return;
-        }
-        if (viewName === 'workshop' && this.currentRole !== 'WORKSHOP') {
-            alert('⛔ Acesso restrito a Oficinas Credenciadas.');
-            return;
-        }
+        // Se não logado e tentando acessar área restrita da matriz administrativa
         if (viewName === 'admin' && this.currentRole !== 'ADMIN') {
-            alert('⛔ Acesso restrito à Administração.');
+            this.switchView('login-admin');
             return;
+        }
+
+        // Se estiver acessando o app do cliente sem login prévio, define perfil padrão para visualização
+        if (viewName === 'owner' && !this.currentRole) {
+            this.currentRole = 'OWNER';
+        }
+
+        // Se estiver acessando a oficina sem login prévio, define perfil de demonstração
+        if (viewName === 'workshop' && !this.currentRole) {
+            this.currentRole = 'WORKSHOP';
         }
 
         // Se estiver saindo da landing page ou login para uma tela do sistema interno, restaura layout

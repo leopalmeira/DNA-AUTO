@@ -63,8 +63,11 @@ app.get('/api/v1/health', (req, res) => {
 
 // Fallback para SPA no Frontend
 app.use((req, res) => {
-    // Se a requisição não for de API, entrega o index.html
+    // Se a requisição não for de API, entrega o index.html com anti-cache
     if (!req.path.startsWith('/api/')) {
+        res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.set('Pragma', 'no-cache');
+        res.set('Expires', '0');
         res.sendFile(path.join(__dirname, '..', '..', 'public', 'index.html'));
     } else {
         res.status(404).json({ error: 'Endpoint da API não encontrado.' });
