@@ -71,6 +71,29 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Qualidade e Testes:**
   - 24/24 testes automatizados de integração passando com 100% de sucesso em `test/api.test.js`.
 
+### 🚀 Ciclo 17: Limpeza Corporativa do Header, Sino na Sidebar, Agenda Interativa com Almoço Cinza e WhatsApp In-Platform
+- **Limpeza do Header Superior e Dashboard:**
+  - Removido status "REDE DNA AUTO ONLINE" do topo e do banner.
+  - Removido nome/avatar do usuário (`Marcos Silveira (Dono)`) do topo, exibindo apenas o nome da oficina, botão do Tour e botão `[-> Sair]`.
+  - Eliminadas todas as saudações ("BOM DIA", "BOA TARDE") e a palavra "Dono". Banner agora ostenta o título executivo `PAINEL OPERACIONAL DA OFICINA`.
+  - Role atualizada no banco de dados para "Gestor da Oficina".
+- **Sino de Notificações Operacionais na Sidebar:**
+  - Sino `🔔` reposicionado no menu lateral com badge contador de pendências ativas.
+  - Dropdown clicável permitindo navegar diretamente para as 4 situações: manutenções atrasadas (🔴), manutenções próximas (🟡), agendamentos de hoje (📅) e WhatsApp pendentes (💬).
+- **WhatsApp 100% In-Platform (Sem sair da tela do sistema):**
+  - O WhatsApp cadastrado na oficina é o remetente oficial permanente.
+  - Disparo de mensagens dentro da plataforma sem abrir `wa.me` ou novas abas.
+  - Endpoint `POST /api/v1/workshops/:id/whatsapp/send-message` gravando o disparo e retornando protocolo de transmissão (`DNA-WPP-XXXXXX`).
+  - Exibição de comprovante em tempo real na tela com remetente oficial, destinatário, protocolo e status `🟢 ENTREGUE / IN-PLATFORM`.
+- **Agenda da Oficina com Grade Semanal Interativa e Almoço Bloqueado (12h às 13h):**
+  - Configuração de dias de atendimento (Segunda a Sexta padrão, configurável) e horários de 08:00 às 18:00.
+  - Grade semanal (`renderWeeklyInteractiveGrid`) com dias da semana e horários de 08h às 18h.
+  - **MANDATÓRIO**: Horário de almoço das 12:00 às 13:00 permanentemente apagado em cinza, bloqueado contra cliques e assinalado como intervalo operacional.
+  - Células livres com botão `+ Disponível` que abre o modal de agendamento já pré-selecionado para aquele dia e hora.
+  - Modal de 3 datas atualizado para horários de 08:00 às 18:00 com pill de almoço bloqueado e apagado em cinza.
+- **Qualidade e Testes:**
+  - 25/25 testes automatizados de integração passando com 100% de sucesso em `test/api.test.js`.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

@@ -275,7 +275,25 @@ async function runTests() {
         console.assert(dataBatch.dispatched_count >= 1, 'Lote deveria conter ao menos 1 veículo para revisão preventiva');
         console.log(`✅ 24. Automação WhatsApp OBD2 em Lote: ${dataBatch.dispatched_count} alertas disparados com sucesso`);
 
-        console.log('\n🎉 TODOS OS 24 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 25: Envio de WhatsApp In-Platform pela Oficina (Sem sair da tela)
+        const resSingleWpp = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/send-message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                recipient_phone: '(11) 98888-1111',
+                recipient_name: 'Carlos Alberto Silva',
+                message: 'Olá Carlos! Seu Honda Civic está no período ideal para revisão preventiva de pastilhas de freio.',
+                vehicle_info: 'Honda Civic Touring (BRA2E19)',
+                service_type: 'Pastilhas de Freio'
+            })
+        });
+        const dataSingleWpp = await resSingleWpp.json();
+        console.assert(resSingleWpp.status === 200, 'Falha no envio de WhatsApp in-platform');
+        console.assert(dataSingleWpp.status === 'DELIVERED_IN_PLATFORM', 'Status do envio deve ser DELIVERED_IN_PLATFORM');
+        console.assert(dataSingleWpp.protocol && dataSingleWpp.protocol.startsWith('DNA-WPP-'), 'Protocolo único de transmissão não gerado');
+        console.log(`✅ 25. WhatsApp In-Platform da Oficina: Mensagem transmitida sem sair do sistema (Protocolo: ${dataSingleWpp.protocol})`);
+
+        console.log('\n🎉 TODOS OS 25 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

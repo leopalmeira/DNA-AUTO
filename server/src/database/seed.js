@@ -46,7 +46,7 @@ function runSeed(dbInstance) {
 
         const roles = [
             { id: 'role_admin', code: 'ADMIN', name: 'Administrador DNA AUTO', description: 'Gestão completa da plataforma' },
-            { id: 'role_workshop_owner', code: 'WORKSHOP_OWNER', name: 'Dono da Oficina', description: 'Gerenciamento da oficina e equipe' },
+            { id: 'role_workshop_owner', code: 'WORKSHOP_OWNER', name: 'Gestor da Oficina', description: 'Gerenciamento da oficina e equipe' },
             { id: 'role_workshop_manager', code: 'WORKSHOP_MANAGER', name: 'Gerente da Oficina', description: 'Operação e confirmação de serviços' },
             { id: 'role_workshop_mechanic', code: 'WORKSHOP_MECHANIC', name: 'Mecânico Chefe', description: 'Registro técnico de serviços e peças' },
             { id: 'role_owner', code: 'OWNER', name: 'Proprietário de Veículo', description: 'Acompanhamento do DNA e transferências' }
@@ -74,7 +74,7 @@ function runSeed(dbInstance) {
 
         insertUser.run({
             id: 'usr_workshop_marcos',
-            name: 'Marcos Silveira (Dono)',
+            name: 'Marcos Silveira',
             email: 'marcos@veloce.com.br',
             password_hash: passwordHash,
             phone: '(19) 98888-1111',

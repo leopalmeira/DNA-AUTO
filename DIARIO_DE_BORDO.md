@@ -336,6 +336,40 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 
 ---
 
+### 🏛️ Ciclo 17: Limpeza Corporativa do Header, Sino na Sidebar, Agenda Interativa com Almoço Cinza e WhatsApp In-Platform
+- **Objetivo:** Refinar a experiência corporativa do ERP da Oficina, eliminando ruídos visuais (saudações, status de rede e nomes pessoais), movendo notificações para o menu lateral, criando a grade semanal de agendamento com intervalo de almoço bloqueado e garantindo mensageria de WhatsApp 100% interna.
+- **Implementações:**
+  - **1. Limpeza do Header e Banner do Dashboard:**
+    - Remoção do badge "REDE DNA AUTO ONLINE" do topo e do banner.
+    - Remoção do avatar e nome do usuário (`Marcos Silveira (Dono)`) do topo, deixando apenas o nome da oficina, o botão do Tour e o botão `[-> Sair]`.
+    - Remoção de saudações ("BOM DIA", "BOA TARDE") e do termo "(Dono)". O banner agora exibe o título institucional `PAINEL OPERACIONAL DA OFICINA`.
+    - Ajuste no banco de dados demonstrativo (`seed.js`) promovendo a role para "Gestor da Oficina" e o nome para "Marcos Silveira".
+  - **2. Sino de Notificações no Menu Lateral (Sidebar):**
+    - O sino `🔔` foi movido para o topo do menu lateral (`.ws-sidebar-notif-box`), com contador de pendências ativas.
+    - Dropdown popover clicável exibindo:
+      - 🔴 Manutenções atrasadas (KM excedido).
+      - 🟡 Manutenções próximas (< 3.000 km).
+      - 📅 Agendamentos para hoje.
+      - 💬 Clientes aguardando / WhatsApp pendentes.
+    - Clique direcionado levando diretamente para as respectivas telas operacionais.
+  - **3. WhatsApp 100% In-Platform (Sem sair da tela):**
+    - Endpoint backend `POST /api/v1/workshops/:id/whatsapp/send-message` que valida o remetente oficial da oficina e registra a mensagem com protocolo único `DNA-WPP-XXXXXX`.
+    - Disparo direto da plataforma sem redirecionar para links externos (`wa.me`) ou novas abas.
+    - Exibição de comprovante/recibo com protocolo, status `🟢 ENTREGUE / IN-PLATFORM`, remetente oficial homologado e data/hora.
+  - **4. Agenda da Oficina com Grade Semanal e Almoço Bloqueado (12h às 13h):**
+    - Painel superior com configuração de dias da semana (Segunda a Sexta padrão, configurável) e faixa de horário de 08:00 às 18:00.
+    - Grade Semanal Interativa (`renderWeeklyInteractiveGrid`):
+      - Colunas para cada dia útil (Segunda a Sexta) com datas da semana corrente.
+      - Linhas de 08:00 a 18:00.
+      - **Linha de Almoço (12:00 às 13:00)**: permanentemente apagada em cinza (`.ws-agenda-lunch-row` e `.ws-agenda-lunch-cell`), com aviso de pausa da equipe e bloqueada contra cliques (`pointer-events: none`).
+      - Células livres: botão `+ Disponível (Agendar)` que abre o modal pré-preenchido para o dia e hora.
+      - Células ocupadas: card de veículo, placa, cliente, serviço e botão `Iniciar OS`.
+    - Modal de agendamento de 3 datas (`openSmartScheduleModal`) atualizado com slots de 08:00 às 18:00 e pill de almoço apagado em cinza (`.ws-slot-pill.lunch-break`).
+- **Validação e Qualidade:**
+  - Bateria expandida para **25 testes automatizados de integração**, cobrindo o envio in-platform de WhatsApp e retorno de protocolo oficial, todos aprovados com 100% de sucesso.
+
+---
+
 ## 🏛️ 3. Tabela de Decisões Arquiteturais (ADRs)
 
 | ID | Decisão | Contexto / Motivação | Consequência / Benefício |

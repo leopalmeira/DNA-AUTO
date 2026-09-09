@@ -26,12 +26,20 @@ const WorkshopView = {
     lastSearchedPlate: '',
     searchCriteria: 'placa', // 'placa' | 'proprietario' | 'telefone' | 'documento' | 'dna' | 'chassi'
     activeAlertTab: 'todos', // 'todos' | 'atrasadas' | 'proximas' | 'emdia'
-    activeAgendaView: 'hoje', // 'hoje' | 'semana' | 'mes'
+    activeAgendaView: 'semana', // 'semana' | 'hoje' | 'mes'
     activeWhatsAppTab: 'pendentes', // 'pendentes' | 'enviadas' | 'confirmadas' | 'recusadas' | 'sem_resposta'
     selectedSlotDate: null,
     selectedSlotTime: null,
     officialPhone: '(19) 3245-6789',
     officialWorkshopName: 'Veloce Auto Center Premium',
+    agendaConfig: {
+        days: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'],
+        startHour: 8,
+        endHour: 18,
+        lunchStartHour: 12,
+        lunchEndHour: 13,
+        disabledSlots: {} // { 'YYYY-MM-DD_HH:MM': true }
+    },
     tourCurrentStep: 0,
     tourActive: false,
     pendingVerificationCode: null,
@@ -39,8 +47,8 @@ const WorkshopView = {
     tourSteps: [
         {
             targetId: 'tour-step-greeting',
-            title: '1. Cockpit da Sua Oficina',
-            desc: 'Bem-vindo ao ERP DNA AUTO! Aqui no topo você acompanha a saudação diária, status da rede conectada e atalhos rápidos do dia a dia.'
+            title: '1. Cockpit Operacional da Oficina',
+            desc: 'Bem-vindo ao ERP DNA AUTO! Aqui você acompanha a visão geral da sua oficina e atalhos de alta produtividade do dia a dia.'
         },
         {
             targetId: 'tour-step-kpis',
@@ -200,12 +208,6 @@ const WorkshopView = {
                                 <p>Certificação de Registros Veiculares</p>
                             </div>
                         </div>
-
-                        <!-- Status da Rede DNA AUTO -->
-                        <div class="ws-erp-network-status">
-                            <span class="dot-live"></span>
-                            <span>REDE DNA AUTO ONLINE</span>
-                        </div>
                     </div>
 
                     <div class="ws-erp-header-right">
@@ -220,56 +222,6 @@ const WorkshopView = {
                             <span>🎓</span>
                             <span>Tour do Sistema</span>
                         </button>
-
-                        <!-- Botão de Notificações com Dropdown -->
-                        <div style="position:relative;">
-                            <button class="ws-erp-bell-btn" onclick="WorkshopView.toggleNotificationsPopover()" title="Central de Notificações">
-                                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                                ${totalNotif > 0 ? `<span class="ws-erp-bell-counter">${totalNotif}</span>` : ''}
-                            </button>
-
-                            <!-- Dropdown de Notificações Popover -->
-                            <div id="ws-notifications-popover" class="ws-notifications-dropdown" style="display:none;">
-                                <div class="ws-notif-header">
-                                    <strong style="font-size:12.5px; color:#ffffff;">Notificações Operacionais</strong>
-                                    <span style="font-size:10.5px; color:var(--text-dim);">${totalNotif} pendências</span>
-                                </div>
-                                <div class="ws-notif-item" onclick="WorkshopView.switchSection('manutencao-atrasadas'); WorkshopView.toggleNotificationsPopover();">
-                                    <span style="font-size:14px;">🔴</span>
-                                    <div>
-                                        <strong style="color:#f87171; display:block;">${criticalAlerts} manutenções atrasadas</strong>
-                                        <span style="color:#94a3b8; font-size:11px;">Veículos com limite de KM excedido</span>
-                                    </div>
-                                </div>
-                                <div class="ws-notif-item" onclick="WorkshopView.switchSection('manutencao-proximas'); WorkshopView.toggleNotificationsPopover();">
-                                    <span style="font-size:14px;">🟡</span>
-                                    <div>
-                                        <strong style="color:#fbbf24; display:block;">${upcomingAlerts} manutenções próximas</strong>
-                                        <span style="color:#94a3b8; font-size:11px;">Faltando menos de 3.000 km</span>
-                                    </div>
-                                </div>
-                                <div class="ws-notif-item" onclick="WorkshopView.switchSection('agenda-oficina'); WorkshopView.toggleNotificationsPopover();">
-                                    <span style="font-size:14px;">📅</span>
-                                    <div>
-                                        <strong style="color:#10b981; display:block;">${todayApps} agendamentos para hoje</strong>
-                                        <span style="color:#94a3b8; font-size:11px;">Consulte horários na agenda</span>
-                                    </div>
-                                </div>
-                                <div class="ws-notif-item" onclick="WorkshopView.switchSection('whatsapp-central'); WorkshopView.toggleNotificationsPopover();">
-                                    <span style="font-size:14px;">💬</span>
-                                    <div>
-                                        <strong style="color:#00d4ff; display:block;">${pendingWpp} clientes aguardando resposta</strong>
-                                        <span style="color:#94a3b8; font-size:11px;">WhatsApp automáticos enviados</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Perfil do Usuário -->
-                        <div class="ws-erp-user-pill">
-                            <div class="ws-erp-user-avatar">${userName.charAt(0).toUpperCase()}</div>
-                            <span style="font-size:12px; font-weight:700; color:#f8fafc;">${userName}</span>
-                        </div>
 
                         <!-- Botão Sair -->
                         <button class="ws-erp-logout-btn" onclick="App.logout()" title="Encerrar Sessão">
@@ -295,6 +247,56 @@ const WorkshopView = {
                                     <div class="title-sub">Gestão Empresarial & ERP</div>
                                 </div>
                                 <button class="btn btn-sm" onclick="WorkshopView.closeMobileDrawer()" style="display:none; padding:2px 8px;" id="ws-drawer-close-btn">✕</button>
+                            </div>
+                        </div>
+
+                        <!-- Sino de Notificações Operacionais no Menu Lateral -->
+                        <div class="ws-sidebar-notif-box" id="ws-sidebar-notif-box">
+                            <button type="button" class="ws-sidebar-notif-btn" onclick="WorkshopView.toggleNotificationsPopover()" title="Central de Notificações da Oficina">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:16px;">🔔</span>
+                                    <span style="font-size:12px; font-weight:700; color:#f8fafc;">Notificações</span>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    ${totalNotif > 0 ? `<span class="ws-sidebar-bell-badge">${totalNotif}</span>` : ''}
+                                    <span style="font-size:10px; color:#64748b;">▼</span>
+                                </div>
+                            </button>
+
+                            <!-- Dropdown Clicável das Situações da Oficina -->
+                            <div id="ws-notifications-popover" class="ws-sidebar-notif-dropdown" style="display:none;">
+                                <div style="padding:8px 12px 6px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; justify-content:space-between; align-items:center;">
+                                    <strong style="font-size:11.5px; color:#ffffff;">Situações do Sistema</strong>
+                                    <span style="font-size:10px; color:var(--text-dim);">${totalNotif} pendências</span>
+                                </div>
+                                <div class="ws-notif-item" onclick="WorkshopView.switchSection('manutencao-atrasadas'); WorkshopView.toggleNotificationsPopover();" style="padding:8px 12px; display:flex; gap:10px; align-items:center; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.04);">
+                                    <span style="font-size:14px;">🔴</span>
+                                    <div style="flex:1;">
+                                        <strong style="color:#f87171; display:block; font-size:11.5px;">${criticalAlerts} manutenções atrasadas</strong>
+                                        <span style="color:#94a3b8; font-size:10.5px;">Veículos com limite de KM excedido</span>
+                                    </div>
+                                </div>
+                                <div class="ws-notif-item" onclick="WorkshopView.switchSection('manutencao-proximas'); WorkshopView.toggleNotificationsPopover();" style="padding:8px 12px; display:flex; gap:10px; align-items:center; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.04);">
+                                    <span style="font-size:14px;">🟡</span>
+                                    <div style="flex:1;">
+                                        <strong style="color:#fbbf24; display:block; font-size:11.5px;">${upcomingAlerts} manutenções próximas</strong>
+                                        <span style="color:#94a3b8; font-size:10.5px;">Faltando menos de 3.000 km</span>
+                                    </div>
+                                </div>
+                                <div class="ws-notif-item" onclick="WorkshopView.switchSection('agenda-oficina'); WorkshopView.toggleNotificationsPopover();" style="padding:8px 12px; display:flex; gap:10px; align-items:center; cursor:pointer; border-bottom:1px solid rgba(255,255,255,0.04);">
+                                    <span style="font-size:14px;">📅</span>
+                                    <div style="flex:1;">
+                                        <strong style="color:#10b981; display:block; font-size:11.5px;">${todayApps} agendamentos para hoje</strong>
+                                        <span style="color:#94a3b8; font-size:10.5px;">Consulte horários na agenda</span>
+                                    </div>
+                                </div>
+                                <div class="ws-notif-item" onclick="WorkshopView.switchSection('whatsapp-central'); WorkshopView.toggleNotificationsPopover();" style="padding:8px 12px; display:flex; gap:10px; align-items:center; cursor:pointer;">
+                                    <span style="font-size:14px;">💬</span>
+                                    <div style="flex:1;">
+                                        <strong style="color:#00d4ff; display:block; font-size:11.5px;">${pendingWpp} WhatsApp pendentes</strong>
+                                        <span style="color:#94a3b8; font-size:10.5px;">Disparos automáticos pendentes</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -600,17 +602,16 @@ const WorkshopView = {
         const pendingWhatsApp = 3;
 
         return `
-            <!-- Banner de Saudação do Painel -->
+            <!-- Cabeçalho Operacional do Painel -->
             <div class="ws-erp-dashboard-banner" id="tour-step-greeting">
                 <div>
-                    <h2 class="ws-erp-greeting-title">BOM DIA, ${userName.toUpperCase()}!</h2>
-                    <p class="ws-erp-greeting-sub">${ws.trade_name || 'Veloce Auto Center Premium'} • Operação Diária DNA AUTO</p>
+                    <h2 class="ws-erp-greeting-title">PAINEL OPERACIONAL DA OFICINA</h2>
+                    <p class="ws-erp-greeting-sub">${ws.trade_name || 'Veloce Auto Center Premium'} • Gestão de Pátio & Manutenção Preventiva</p>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px;">
-                    <span class="ws-erp-network-status" style="display:inline-flex !important;">
-                        <span class="dot-live"></span>
-                        <span>STATUS DA REDE: 🟢 REDE DNA AUTO ONLINE</span>
-                    </span>
+                    <button class="btn btn-sm" onclick="WorkshopView.switchSection('agenda-oficina')" style="background:rgba(255,210,28,0.12); color:#FFD21C; border:1px solid rgba(255,210,28,0.3); font-weight:700; font-size:11.5px; padding:6px 14px; border-radius:6px; cursor:pointer;">
+                        📅 Ver Grade Semanal da Oficina
+                    </button>
                 </div>
             </div>
 
@@ -1227,48 +1228,55 @@ const WorkshopView = {
         if (viewport) viewport.innerHTML = this.renderWhatsAppCenterView();
     },
 
-    // Modal de Envio e Edição de Mensagem WhatsApp (Itens 17 e 18)
+    // Modal de Envio e Edição de Mensagem WhatsApp In-Platform (Sem sair da tela da oficina)
     openWhatsAppModal(clientName, clientPhone, vehicleName, plate, serviceName) {
         const modalRoot = document.getElementById('ws-erp-modal-root');
         if (!modalRoot) return;
 
         const defaultText = `Olá, ${clientName}!
 
-O DNA AUTO identificou que o seu veículo ${vehicleName} (Placa: ${plate}) está próximo da manutenção preventiva recomendada (${serviceName}).
+O DNA AUTO identificou que o seu veículo ${vehicleName} (Placa: ${plate}) está no período recomendado para a manutenção preventiva (${serviceName}).
 
-Para manter seu veículo em perfeitas condições de segurança e preservar o passaporte de valorização, gostaríamos de convidá-lo para realizar esta revisão em nossa oficina ${this.officialWorkshopName}.
+Para manter a segurança do veículo e valorizar seu passaporte histórico digital, gostaríamos de convidá-lo para esta revisão na oficina ${this.officialWorkshopName}.
 
-Deseja agendar um horário rápido?
+Podemos confirmar o agendamento?
 
 [ ✅ QUERO AGENDAR ]
 [ ❌ AGORA NÃO ]`;
 
         modalRoot.innerHTML = `
             <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
-                <div class="ws-erp-modal-window" style="max-width:580px;">
+                <div class="ws-erp-modal-window" style="max-width:590px;">
                     <div class="ws-erp-modal-header">
-                        <strong style="color:#ffffff; font-size:15px;">Disparo de WhatsApp para ${clientName}</strong>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:16px;">💬</span>
+                            <div>
+                                <strong style="color:#ffffff; font-size:14.5px;">WhatsApp Oficial da Oficina — Transmissão Interna</strong>
+                                <div style="font-size:11px; color:#10b981;">Remetente: ${this.officialPhone} (${this.officialWorkshopName})</div>
+                            </div>
+                        </div>
                         <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
                     </div>
-                    <div class="ws-erp-modal-body">
-                        <div style="font-size:12px; color:#94a3b8; margin-bottom:12px;">
-                            Mensagem gerada automaticamente com dados do veículo. O texto é editável:
+                    <div class="ws-erp-modal-body" id="ws-whatsapp-modal-body">
+                        <div style="font-size:12px; color:#94a3b8; margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                            <span>Mensagem formatada com dados oficiais do veículo:</span>
+                            <span class="badge-proof badge-proven" style="font-size:10px;">🔒 CANAL OFICIAL HOMOLOGADO</span>
                         </div>
-                        <textarea id="ws-whatsapp-message-text" class="form-control" rows="9" style="font-family:sans-serif; font-size:13px; line-height:1.5; padding:12px; background:#080c14; border-color:rgba(37,211,102,0.4);">${defaultText}</textarea>
+                        <textarea id="ws-whatsapp-message-text" class="form-control" rows="8" style="font-family:sans-serif; font-size:13px; line-height:1.5; padding:12px; background:#080c14; border-color:rgba(37,211,102,0.4);">${defaultText}</textarea>
 
-                        <div style="margin-top:14px; background:#0a0f18; padding:12px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); font-size:11.5px;">
-                            <strong style="color:#10b981; display:block; margin-bottom:4px;">Fluxo Automatizado de Confirmação:</strong>
-                            Ao clicar em <strong>[ ✅ QUERO AGENDAR ]</strong>, o cliente acessa instantaneamente a tela de escolha das <strong>3 DATAS FUTURAS DISPONÍVEIS</strong> na oficina.
+                        <div style="margin-top:12px; background:#0a0f18; padding:12px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); font-size:11.5px;">
+                            <strong style="color:#10b981; display:block; margin-bottom:4px;">Disparo 100% Dentro da Plataforma:</strong>
+                            A mensagem é transmitida diretamente pelo servidor de mensageria da oficina, sem redirecionar para navegadores externos.
                         </div>
 
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; flex-wrap:wrap; gap:8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; flex-wrap:wrap; gap:8px;" id="ws-whatsapp-modal-actions">
                             <button class="btn btn-cyan btn-sm" onclick="WorkshopView.closeModal(); WorkshopView.openSmartScheduleModal('veh_demo', '${plate}', '${vehicleName}', '${clientName}', '${serviceName}')">
                                 Simular Escolha do Cliente (3 Datas) →
                             </button>
                             <div style="display:flex; gap:8px;">
                                 <button class="btn btn-secondary btn-sm" onclick="WorkshopView.closeModal()">Cancelar</button>
-                                <button class="btn btn-sm" style="background:#25D366; color:#000; font-weight:800;" onclick="WorkshopView.dispatchWhatsApp('${clientPhone}')">
-                                    Disparar Mensagem no WhatsApp
+                                <button class="btn btn-sm" style="background:#25D366; color:#000; font-weight:800;" onclick="WorkshopView.sendWhatsAppInPlatform('${clientName}', '${clientPhone}', '${vehicleName}', '${plate}', '${serviceName}')">
+                                    Enviar Mensagem via WhatsApp
                                 </button>
                             </div>
                         </div>
@@ -1278,17 +1286,85 @@ Deseja agendar um horário rápido?
         `;
     },
 
-    dispatchWhatsApp(phone) {
+    // Envio de WhatsApp 100% In-Platform (Não sai da tela nem abre wa.me)
+    async sendWhatsAppInPlatform(clientName, clientPhone, vehicleName, plate, serviceName) {
         const text = document.getElementById('ws-whatsapp-message-text')?.value || '';
-        const cleanPhone = String(phone).replace(/\D/g, '');
-        const target = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-        const url = `https://api.whatsapp.com/send?phone=${target}&text=${encodeURIComponent(text)}`;
-        window.open(url, '_blank');
-        this.closeModal();
+        const bodyEl = document.getElementById('ws-whatsapp-modal-body');
+        if (!text) {
+            alert('Por favor, informe a mensagem.');
+            return;
+        }
+
+        if (bodyEl) {
+            bodyEl.innerHTML = `
+                <div style="text-align:center; padding:30px 10px;">
+                    <div style="font-size:28px; margin-bottom:12px; animation: pulse 1.5s infinite;">📡</div>
+                    <h4 style="color:#ffffff; margin:0 0 6px;">Transmitindo Mensagem...</h4>
+                    <p style="color:#94a3b8; font-size:12px; margin:0;">Enviando via WhatsApp Oficial da Oficina (${this.officialPhone}) para ${clientName}</p>
+                </div>
+            `;
+        }
+
+        try {
+            const res = await fetch(`/api/workshops/${this.currentWorkshopId}/whatsapp/send-message`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    recipient_phone: clientPhone,
+                    recipient_name: clientName,
+                    message: text,
+                    vehicle_info: `${vehicleName} (${plate})`,
+                    service_type: serviceName
+                })
+            });
+
+            const data = await res.json();
+            if (!res.ok || !data.success) {
+                throw new Error(data.error || 'Erro ao transmitir mensagem');
+            }
+
+            if (bodyEl) {
+                bodyEl.innerHTML = `
+                    <div class="ws-whatsapp-receipt-box">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                            <span style="font-size:24px;">✅</span>
+                            <div>
+                                <strong style="color:#ffffff; font-size:14px; display:block;">Mensagem Entregue com Sucesso na Plataforma!</strong>
+                                <span style="color:#10b981; font-size:11px; font-weight:700;">Protocolo de Envio: ${data.protocol}</span>
+                            </div>
+                        </div>
+
+                        <div style="background:#0b111c; border-radius:6px; padding:12px; font-size:12px; line-height:1.6; border:1px solid rgba(255,255,255,0.06); margin-bottom:14px;">
+                            <div><strong>Remetente Oficial:</strong> ${this.officialPhone} (${this.officialWorkshopName})</div>
+                            <div><strong>Destinatário:</strong> ${clientName} (${clientPhone})</div>
+                            <div><strong>Veículo Vinculado:</strong> ${vehicleName} • Placa <span class="mono" style="color:var(--brand-cyan);">${plate}</span></div>
+                            <div><strong>Horário de Envio:</strong> ${new Date(data.sent_at).toLocaleTimeString('pt-BR')} — ${new Date(data.sent_at).toLocaleDateString('pt-BR')}</div>
+                            <div><strong>Status da Mensageria:</strong> <span class="badge-proof badge-proven" style="font-size:10px;">🟢 ENTREGUE / IN-PLATFORM</span></div>
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:8px;">
+                            <button class="btn btn-secondary btn-sm" onclick="WorkshopView.closeModal()">Fechar</button>
+                            <button class="btn btn-cyan btn-sm" onclick="WorkshopView.closeModal(); WorkshopView.switchSection('agenda-oficina');">Ver Agenda da Oficina</button>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (err) {
+            if (bodyEl) {
+                bodyEl.innerHTML = `
+                    <div style="text-align:center; padding:20px 10px;">
+                        <span style="font-size:24px;">⚠️</span>
+                        <h4 style="color:#ef4444; margin:8px 0 4px;">Falha no Disparo Interno</h4>
+                        <p style="color:#94a3b8; font-size:12px;">${err.message}</p>
+                        <button class="btn btn-secondary btn-sm" onclick="WorkshopView.closeModal()" style="margin-top:12px;">Fechar</button>
+                    </div>
+                `;
+            }
+        }
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // FLUXO DE AGENDAMENTO INTELIGENTE (3 DATAS FUTURAS - ITENS 19, 20, 21, 22, 23)
+    // FLUXO DE AGENDAMENTO INTELIGENTE (3 DATAS FUTURAS - 08H ÀS 18H COM ALMOÇO CINZA)
     // ──────────────────────────────────────────────────────────────────────────
     openSmartScheduleModal(vehicleId = 'veh_demo', plate = 'PWL4I85', vehicleName = 'VW Fox 1.0', clientName = 'João da Silva', serviceName = 'Troca de Óleo & Kit Correia') {
         const modalRoot = document.getElementById('ws-erp-modal-root');
@@ -1299,10 +1375,10 @@ Deseja agendar um horário rápido?
 
         modalRoot.innerHTML = `
             <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
-                <div class="ws-erp-modal-window" style="max-width:680px;">
+                <div class="ws-erp-modal-window" style="max-width:700px;">
                     <div class="ws-erp-modal-header">
                         <div>
-                            <span style="font-size:10px; font-weight:800; color:#10b981; text-transform:uppercase;">DNA AUTO • Agendamento Inteligente</span>
+                            <span style="font-size:10px; font-weight:800; color:#10b981; text-transform:uppercase;">DNA AUTO • Agendamento Operacional da Oficina</span>
                             <h3 style="font-size:16px; color:#ffffff; margin:2px 0 0; font-weight:900;">ESCOLHA O MELHOR DIA E HORÁRIO</h3>
                         </div>
                         <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
@@ -1313,10 +1389,10 @@ Deseja agendar um horário rápido?
                         </div>
 
                         <p style="font-size:12px; color:#94a3b8; margin:0 0 10px;">
-                            O sistema calculou automaticamente as <strong>3 DATAS FUTURAS DISPONÍVEIS</strong> considerando a capacidade real da oficina e bloqueando conflitos:
+                            Horários disponíveis das <strong>08:00 às 18:00</strong>. Horário de almoço (12h às 13h) bloqueado:
                         </p>
 
-                        <!-- Grade de 3 Datas com Horários de Manhã e Tarde -->
+                        <!-- Grade de 3 Datas com Horários de Manhã, Almoço Bloqueado e Tarde -->
                         <div class="ws-dates-picker-grid">
                             ${dates.map((d, idx) => `
                                 <div class="ws-date-card ${idx === 0 ? 'selected' : ''}" id="date-card-${idx}">
@@ -1325,21 +1401,37 @@ Deseja agendar um horário rápido?
                                         <span style="font-size:10px; color:#10b981;">Disponível</span>
                                     </div>
 
+                                    <!-- Manhã (08:00 às 12:00) -->
                                     <div class="ws-slots-group">
-                                        <div class="ws-slots-group-title">🌅 Manhã</div>
-                                        <div>
+                                        <div class="ws-slots-group-title">🌅 Manhã (08:00 - 12:00)</div>
+                                        <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                                            <span class="ws-slot-pill ${d.occupiedSlots.includes('08:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '08:00', this)">08:00</span>
                                             <span class="ws-slot-pill ${d.occupiedSlots.includes('09:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '09:00', this)">09:00</span>
                                             <span class="ws-slot-pill ${d.occupiedSlots.includes('10:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '10:00', this)">10:00</span>
                                             <span class="ws-slot-pill ${d.occupiedSlots.includes('11:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '11:00', this)">11:00</span>
                                         </div>
                                     </div>
 
+                                    <!-- Intervalo de Almoço 12:00 às 13:00 (Obrigatório apagado em cinza) -->
                                     <div class="ws-slots-group">
-                                        <div class="ws-slots-group-title">☀️ Tarde</div>
+                                        <div class="ws-slots-group-title">🍽️ Intervalo Operacional</div>
                                         <div>
+                                            <span class="ws-slot-pill lunch-break" style="background:#18202f; color:#64748b; border:1px dashed #475569; opacity:0.5; pointer-events:none; cursor:not-allowed; display:inline-flex; align-items:center; gap:4px; font-size:11px;" title="Intervalo de Almoço da Equipe (Bloqueado)">
+                                                🍽️ 12h às 13h (Almoço)
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tarde (13:00 às 18:00) -->
+                                    <div class="ws-slots-group">
+                                        <div class="ws-slots-group-title">☀️ Tarde (13:00 - 18:00)</div>
+                                        <div style="display:flex; flex-wrap:wrap; gap:4px;">
+                                            <span class="ws-slot-pill ${d.occupiedSlots.includes('13:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '13:00', this)">13:00</span>
                                             <span class="ws-slot-pill ${d.occupiedSlots.includes('14:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '14:00', this)">14:00</span>
                                             <span class="ws-slot-pill ${d.occupiedSlots.includes('15:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '15:00', this)">15:00</span>
                                             <span class="ws-slot-pill ${d.occupiedSlots.includes('16:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '16:00', this)">16:00</span>
+                                            <span class="ws-slot-pill ${d.occupiedSlots.includes('17:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '17:00', this)">17:00</span>
+                                            <span class="ws-slot-pill ${d.occupiedSlots.includes('18:00') ? 'busy' : ''}" onclick="WorkshopView.selectSlot('${d.isoDate}', '18:00', this)">18:00</span>
                                         </div>
                                     </div>
                                 </div>
@@ -1364,7 +1456,7 @@ Deseja agendar um horário rápido?
 
         // Auto-seleciona primeiro horário livre
         const firstDate = dates[0];
-        const freeTime = ['09:00', '10:00', '11:00', '14:00', '15:00'].find(t => !firstDate.occupiedSlots.includes(t)) || '10:00';
+        const freeTime = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'].find(t => !firstDate.occupiedSlots.includes(t)) || '09:00';
         this.selectSlot(firstDate.isoDate, freeTime);
     },
 
@@ -1466,83 +1558,291 @@ Deseja agendar um horário rápido?
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // SEÇÃO 7: AGENDA DA OFICINA (SEÇÃO 25)
+    // SEÇÃO 7: AGENDA DA OFICINA COM GRADE SEMANAL & ALMOÇO CINZA (12H-13H)
     // ──────────────────────────────────────────────────────────────────────────
     renderAgendaView() {
+        const apps = this.appointmentsData || [];
+        const today = new Date().toISOString().split('T')[0];
+
+        return `
+            <div class="panel-box">
+                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#10b981" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        Agenda & Grade Operacional da Oficina (${apps.length} agendamentos)
+                    </span>
+                    <button class="btn btn-sm btn-primary" onclick="WorkshopView.openSmartScheduleModal()" style="font-weight:800;">+ Novo Agendamento</button>
+                </div>
+
+                <!-- Painel de Configuração Operacional de Dias e Horários da Oficina -->
+                <div style="background:#0a0f18; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px 14px; margin-bottom:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+                        <div>
+                            <strong style="color:#ffffff; font-size:12.5px; display:block;">⚙️ Configuração da Grade de Atendimento</strong>
+                            <span style="font-size:11px; color:#94a3b8;">Defina os dias da semana e a faixa de disponibilidade operacional da oficina:</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:11px; color:#64748b;">Faixa padrão:</span>
+                            <span class="mono" style="background:#111827; border:1px solid rgba(255,210,28,0.3); color:#FFD21C; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700;">08:00 às 18:00</span>
+                            <span class="mono" style="background:#1e293b; border:1px dashed #475569; color:#94a3b8; padding:3px 8px; border-radius:4px; font-size:11px;">🍽️ 12h-13h Almoço (Bloqueado)</span>
+                        </div>
+                    </div>
+
+                    <!-- Seletor Rápido de Dias da Semana -->
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <span style="font-size:11px; color:#cbd5e1; font-weight:700; margin-right:4px;">Dias de Atendimento:</span>
+                        ${['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'].map(d => {
+                            const active = this.agendaConfig.days.includes(d);
+                            return `
+                                <button type="button" class="btn btn-xs ${active ? 'btn-success' : 'btn-secondary'}" onclick="WorkshopView.toggleConfigDay('${d}')" style="font-size:11px; padding:3px 8px; border-radius:4px; font-weight:700;">
+                                    ${active ? '✓ ' : ''}${d.slice(0, 3)}
+                                </button>
+                            `;
+                        }).join('')}
+                        <span style="font-size:10.5px; color:#64748b; margin-left:8px;">(Clique nos dias para ativar ou desativar na grade)</span>
+                    </div>
+                </div>
+
+                <!-- Botões de Alternância de Visão da Agenda -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-sm ${this.activeAgendaView === 'semana' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setAgendaView('semana')" style="font-weight:700;">
+                            📅 Semana (Grade Interativa)
+                        </button>
+                        <button class="btn btn-sm ${this.activeAgendaView === 'hoje' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setAgendaView('hoje')">
+                            Hoje (${apps.filter(a => a.appointment_date === today).length})
+                        </button>
+                        <button class="btn btn-sm ${this.activeAgendaView === 'mes' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setAgendaView('mes')">
+                            Mês Completo (${apps.length})
+                        </button>
+                    </div>
+
+                    <div style="font-size:11px; color:#94a3b8;">
+                        💡 <em>Clique em qualquer horário vago para disponibilizar ou agendar um carro diretamente.</em>
+                    </div>
+                </div>
+
+                <!-- Conteúdo da Agenda de Acordo com a Visualização -->
+                ${this.activeAgendaView === 'semana' ? this.renderWeeklyInteractiveGrid() : this.renderAgendaTableView()}
+            </div>
+        `;
+    },
+
+    // Grade Semanal Interativa com Horários de 08:00 às 18:00 e Almoço 12:00-13:00 Cinza
+    renderWeeklyInteractiveGrid() {
+        const weekDays = this.getWeekDays();
+        const hours = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'];
+        const apps = this.appointmentsData || [];
+
+        return `
+            <div class="ws-agenda-grid-container">
+                <table class="ws-agenda-grid-table">
+                    <thead>
+                        <tr>
+                            <th style="width:90px; text-align:center;">Horário</th>
+                            ${weekDays.map(d => `
+                                <th class="${d.isToday ? 'active-day' : ''}">
+                                    <div>${d.name}</div>
+                                    <div style="font-size:10px; opacity:0.8; font-family:var(--font-mono);">${d.dateStr}</div>
+                                </th>
+                            `).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${hours.map(h => {
+                            // Se for horário de almoço (12:00 às 13:00), renderiza linha apagada em cinza obrigatória
+                            if (h === '12:00') {
+                                return `
+                                    <tr class="ws-agenda-lunch-row">
+                                        <td class="ws-agenda-hour-cell" style="background:#111722; color:#64748b;">12:00 - 13:00</td>
+                                        <td colspan="${weekDays.length}" class="ws-agenda-lunch-cell">
+                                            🍽️ 12:00 às 13:00 — Intervalo de Almoço da Oficina (Horário Bloqueado / Apagado em Cinza)
+                                        </td>
+                                    </tr>
+                                `;
+                            }
+
+                            // Linhas regulares (08h, 09h, 10h, 11h, 13h, 14h, 15h, 16h, 17h, 18h)
+                            return `
+                                <tr>
+                                    <td class="ws-agenda-hour-cell">${h}</td>
+                                    ${weekDays.map(d => {
+                                        // Verifica se tem agendamento para este dia e horário
+                                        const booked = apps.find(a => a.appointment_date === d.isoDate && a.appointment_time && a.appointment_time.startsWith(h.slice(0, 2)));
+                                        const slotKey = `${d.isoDate}_${h}`;
+                                        const isDisabledByWs = !!this.agendaConfig.disabledSlots[slotKey];
+
+                                        if (booked) {
+                                            return `
+                                                <td>
+                                                    <div class="ws-agenda-slot-booked">
+                                                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                                                            <strong style="color:#ffffff; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${booked.vehicle_model}</strong>
+                                                            <span class="mono" style="color:var(--brand-cyan); font-size:10px; font-weight:800;">${booked.license_plate}</span>
+                                                        </div>
+                                                        <div style="font-size:10px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:2px 0;">
+                                                            👤 ${booked.owner_name} • ${booked.service_title}
+                                                        </div>
+                                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:3px;">
+                                                            <span class="badge-proof ${booked.status === 'CONFIRMED' ? 'badge-proven' : 'badge-pending'}" style="font-size:9px; padding:1px 5px;">
+                                                                ${booked.status === 'CONFIRMED' ? '🟢 CONFIRMADO' : '🟡 AGUARDANDO'}
+                                                            </span>
+                                                            <button class="btn btn-xs btn-primary" onclick="WorkshopView.openNewServiceModal('${booked.vehicle_id || ''}')" style="font-size:9.5px; padding:2px 6px;">
+                                                                Iniciar OS
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            `;
+                                        }
+
+                                        if (isDisabledByWs) {
+                                            return `
+                                                <td>
+                                                    <div class="ws-agenda-slot-disabled" onclick="WorkshopView.toggleSlotDisabled('${slotKey}')" title="Horário fechado pela oficina. Clique para liberar.">
+                                                        <span>🔒 Indisponível</span>
+                                                    </div>
+                                                </td>
+                                            `;
+                                        }
+
+                                        // Slot livre e disponível para agendamento
+                                        return `
+                                            <td>
+                                                <div class="ws-agenda-slot-btn" onclick="WorkshopView.openSlotBooking('${d.isoDate}', '${h}')" title="Clique para agendar um carro neste horário">
+                                                    <span>+ Disponível</span>
+                                                </div>
+                                            </td>
+                                        `;
+                                    }).join('')}
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    },
+
+    // Visualização da Agenda em Tabela Lista
+    renderAgendaTableView() {
         const apps = this.appointmentsData || [];
         const today = new Date().toISOString().split('T')[0];
 
         let displayApps = apps;
         if (this.activeAgendaView === 'hoje') {
             displayApps = apps.filter(a => a.appointment_date === today);
-            if (displayApps.length === 0) displayApps = apps.slice(0, 3); // Demo fallback
+            if (displayApps.length === 0) displayApps = apps.slice(0, 3);
         }
 
         return `
-            <div class="panel-box">
-                <div class="panel-title">
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#10b981" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        Agenda Operacional da Oficina (${apps.length} agendamentos)
-                    </span>
-                    <button class="btn btn-sm btn-primary" onclick="WorkshopView.openSmartScheduleModal()">+ Novo Agendamento</button>
-                </div>
-
-                <!-- Visualizações: HOJE, SEMANA, MÊS (Item 25) -->
-                <div style="display:flex; gap:8px; margin-bottom:16px;">
-                    <button class="btn btn-sm ${this.activeAgendaView === 'hoje' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setAgendaView('hoje')">Hoje</button>
-                    <button class="btn btn-sm ${this.activeAgendaView === 'semana' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setAgendaView('semana')">Semana</button>
-                    <button class="btn btn-sm ${this.activeAgendaView === 'mes' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setAgendaView('mes')">Mês</button>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="erp-table">
-                        <thead>
+            <div class="table-responsive">
+                <table class="erp-table">
+                    <thead>
+                        <tr>
+                            <th>Data / Horário</th>
+                            <th>Cliente</th>
+                            <th>Veículo / Placa</th>
+                            <th>Serviço Solicitado</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${displayApps.map(a => `
                             <tr>
-                                <th>Data / Horário</th>
-                                <th>Cliente</th>
-                                <th>Veículo / Placa</th>
-                                <th>Serviço Solicitado</th>
-                                <th>Status</th>
-                                <th>Ações</th>
+                                <td>
+                                    <strong style="color:#ffffff; font-family:var(--font-mono);">${a.appointment_date}</strong>
+                                    <div style="color:#10b981; font-weight:800; font-size:12.5px; font-family:var(--font-mono);">${a.appointment_time}</div>
+                                </td>
+                                <td>
+                                    <strong style="color:#ffffff;">${a.owner_name}</strong>
+                                    <div style="font-size:11px; color:#94a3b8;">${a.owner_phone || ''}</div>
+                                </td>
+                                <td>
+                                    <strong>${a.vehicle_model}</strong>
+                                    <div class="mono" style="font-size:11px; color:var(--brand-cyan);">${a.license_plate}</div>
+                                </td>
+                                <td>
+                                    <strong style="color:#fbbf24;">${a.service_title}</strong>
+                                    <div style="font-size:10.5px; color:#64748b;">${a.notes || ''}</div>
+                                </td>
+                                <td>
+                                    <span class="badge-proof ${a.status === 'CONFIRMED' ? 'badge-proven' : 'badge-pending'}" style="font-size:10px;">
+                                        ${a.status === 'CONFIRMED' ? '🟢 CONFIRMADO' : '🟡 AGUARDANDO'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="display:flex; gap:6px;">
+                                        <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal('${a.vehicle_id || ''}')" style="font-size:11px;">Iniciar OS</button>
+                                    </div>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            ${displayApps.map(a => `
-                                <tr>
-                                    <td>
-                                        <strong style="color:#ffffff; font-family:var(--font-mono);">${a.appointment_date}</strong>
-                                        <div style="color:#10b981; font-weight:800; font-size:12.5px; font-family:var(--font-mono);">${a.appointment_time}</div>
-                                    </td>
-                                    <td>
-                                        <strong style="color:#ffffff;">${a.owner_name}</strong>
-                                        <div style="font-size:11px; color:#94a3b8;">${a.owner_phone || ''}</div>
-                                    </td>
-                                    <td>
-                                        <strong>${a.vehicle_model}</strong>
-                                        <div class="mono" style="font-size:11px; color:var(--brand-cyan);">${a.license_plate}</div>
-                                    </td>
-                                    <td>
-                                        <strong style="color:#fbbf24;">${a.service_title}</strong>
-                                        <div style="font-size:10.5px; color:#64748b;">${a.notes || ''}</div>
-                                    </td>
-                                    <td>
-                                        <span class="badge-proof ${a.status === 'CONFIRMED' ? 'badge-proven' : 'badge-pending'}" style="font-size:10px;">
-                                            ${a.status === 'CONFIRMED' ? '🟢 CONFIRMADO' : '🟡 AGUARDANDO'}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div style="display:flex; gap:6px;">
-                                            <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal('${a.vehicle_id || ''}')" style="font-size:11px;">Iniciar OS</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
+                        `).join('')}
+                    </tbody>
+                </table>
             </div>
         `;
+    },
+
+    // Calcula os 5 dias úteis da semana corrente
+    getWeekDays() {
+        const curr = new Date();
+        const todayIso = curr.toISOString().split('T')[0];
+        const dayOfWeek = curr.getDay(); // 0 = Domingo, 1 = Segunda ...
+        const diffToMonday = curr.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+        const monday = new Date(curr.setDate(diffToMonday));
+
+        const result = [];
+        const names = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
+
+        for (let i = 0; i < 5; i++) {
+            const d = new Date(monday);
+            d.setDate(monday.getDate() + i);
+            const iso = d.toISOString().split('T')[0];
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            result.push({
+                name: names[i],
+                dateStr: `${dd}/${mm}`,
+                isoDate: iso,
+                isToday: iso === todayIso
+            });
+        }
+        return result;
+    },
+
+    // Abrir agendamento direto para um slot da grade
+    openSlotBooking(isoDate, time) {
+        this.selectedSlotDate = isoDate;
+        this.selectedSlotTime = time;
+        this.openSmartScheduleModal('veh_demo', 'PWL4I85', 'VW Fox 1.0', 'Cliente da Oficina', 'Revisão Agendada');
+        setTimeout(() => {
+            this.selectSlot(isoDate, time);
+        }, 50);
+    },
+
+    // Alternar dia de atendimento da oficina
+    toggleConfigDay(dayName) {
+        const idx = this.agendaConfig.days.indexOf(dayName);
+        if (idx >= 0) {
+            if (this.agendaConfig.days.length <= 1) {
+                alert('A oficina precisa ter ao menos um dia de atendimento configurado.');
+                return;
+            }
+            this.agendaConfig.days.splice(idx, 1);
+        } else {
+            this.agendaConfig.days.push(dayName);
+        }
+        const viewport = document.getElementById('ws-erp-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderAgendaView();
+    },
+
+    // Alternar disponibilidade de um slot específico
+    toggleSlotDisabled(slotKey) {
+        this.agendaConfig.disabledSlots[slotKey] = !this.agendaConfig.disabledSlots[slotKey];
+        const viewport = document.getElementById('ws-erp-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderAgendaView();
     },
 
     setAgendaView(view) {

@@ -3,7 +3,7 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-24%2F24%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-25%2F25%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
@@ -122,16 +122,20 @@ O ambiente operacional interno da oficina foi transformado em um sistema ERP mod
     4. 👥 **CLIENTES & CONTATO:** *Agenda da Oficina & Box*, *Carteira de Clientes*, *Central WhatsApp* e *Automação OBD2 em Lote*.
     5. ⚙️ **GESTÃO & SISTEMA:** *Financeiro & Comissões*, *Relatórios BI Avançados [Em breve]*, *Configurações da Oficina* e *Tour do Sistema*.
   - **Menu Mobile com Gaveta Retrátil:** Acesso rápido via botão `☰`, com fechamento automático e overlay translúcido.
-  - **Barra de Status de Rede:** Indicador pulsante `🟢 REDE DNA AUTO ONLINE` e popover de notificações rápidas `🔔` consolidando alertas críticos, agendamentos e mensagens.
+  - **Header Corporativo Limpo & Sem Ruído:** Topo despoluído sem mensagens de saudação ("Bom dia/Boa tarde"), sem exibição de status de rede e sem nomes pessoais/Dono, mantendo apenas a identificação da oficina, botão do Tour e botão `[-> Sair]`.
+  - **Sino de Notificações no Menu Lateral (🔔):** Reposicionado para a barra lateral com badge de pendências e dropdown clicável exibindo manutenções atrasadas (🔴), manutenções próximas (🟡), agendamentos de hoje (📅) e WhatsApp pendentes (💬).
   - **Tour Guiado Interativo (🎓):** Onboarding passo a passo explicando cada componente do sistema para novos lojistas, com botão *Pular Tour* permanente.
 
-- **Ativação Automática de DNA Permanente (Auto-DNA):**
-  - Todo carro cadastrado na oficina ou via API externa recebe na hora o código perpétuo `DNA-BR-XXXX-XXXX-XXX` e o score de saúde inicial ativo, figurando imediatamente no sistema sem necessidade de ativação posterior.
+- **WhatsApp 100% In-Platform (Sem Sair da Tela do Sistema):**
+  - O número cadastrado na oficina atua como remetente oficial permanente.
+  - Disparos efetuados dentro da plataforma sem abrir abas externas ou links `wa.me`, emitindo protocolo de transmissão auditável (`DNA-WPP-XXXXXX`) e recibo em tempo real.
+  - Compatibilidade com drivers abertos **@whiskeysockets/baileys** e **Evolution API**.
 
-- **Validação de WhatsApp Oficial via OTP & Disparo em Lote:**
-  - Canal oficial de mensageria validado por código seguro de 6 dígitos (OTP).
-  - Motor de disparo em lote que pesquisa veículos com óleo ou correia vencidos por quilometragem e despacha avisos preventivos.
-  - Compatibilidade e documentação técnica para integração com motores open-source **@whiskeysockets/baileys** e **Evolution API**.
+- **Grade Semanal da Agenda & Intervalo de Almoço Bloqueado (12h às 13h):**
+  - Configuração de dias de atendimento (Segunda a Sexta padrão, configurável) e faixa de horários de 08:00 às 18:00.
+  - Grade semanal interativa com colunas por dia e linhas horárias.
+  - **Horário de Almoço (12:00 às 13:00) Apagado em Cinza:** Bloqueado permanentemente na grade e no modal de agendamento, impedindo marcações indevidas.
+  - Clique direto em horários livres para disponibilização e agendamento instantâneo de veículos.
 
 - **Painel Executivo e KPIs em Tempo Real:**
   - 6 Cards Corporativos com métricas operacionais atualizadas: *Faturamento do Mês (R$)*, *Ordens de Serviço Ativas*, *Carros no Box*, *Alertas Preditivos OBD2*, *Ativações DNA do Mês* e *Comissões a Receber*.
