@@ -1,7 +1,7 @@
 // ==============================================================================
-// DNA AUTO — APLICATIVO MOBILE DO CLIENTE / PROPRIETÁRIO (PADRÃO APPLE & TOTVS)
-// Fidelidade visual 100% à referência: Dark Obsidian, Neon Blue, Glassmorphism
-// Zero popups nativos (alert) — Navegação interna SPA fluida e Enterprise
+// DNA AUTO — APLICATIVO MOBILE DO CLIENTE / PROPRIETÁRIO (PADRÃO TOTVS & APPLE)
+// Interface Corporativa de Alta Precisão: Letras Claras, Dados Reais do Backend,
+// Zero Popups (Alert) e Botão de Logout / Sair da Conta
 // ==============================================================================
 
 const OwnerView = {
@@ -10,9 +10,12 @@ const OwnerView = {
     activeTab: 'home', // 'home' | 'vehicle' | 'certification' | 'documents' | 'more'
     selectedDoc: null,
     isObdScanning: false,
+    userVehicles: [],
+    selectedVehicleId: null,
 
-    // Dados Oficiais do Veículo de Referência
+    // Dados Oficiais do Veículo Padrão (Fallback Seguro e Base de Exibição)
     vehicleData: {
+        id: 'veh_default',
         brand: 'Volkswagen',
         model: 'Gol 1.0',
         full_title: 'Volkswagen Gol 1.0',
@@ -35,7 +38,7 @@ const OwnerView = {
         status_subtext: '(Sem pendências)',
         photo_url: '/img/vw-gol-app.jpg',
         user_name: 'João Silva',
-        user_role: 'Cliente >',
+        user_role: 'Cliente Proprietário',
         notifications_count: 3,
         timeline: [
             { id: 1, title: 'Revisão Periódica', date: '15/08/2026', km: '85.200 km', dotColor: '#00E676', workshop: 'Veloce Auto Center Premium', details: 'Troca de fluidos, velas de ignição e inspeção geral de suspensão.' },
@@ -45,7 +48,7 @@ const OwnerView = {
         ]
     },
 
-    // Dados do Módulo de Documentos Oficiais
+    // Dados da Carteira Digital de Documentos
     documentsData: [
         {
             id: 'doc_crlv_2026',
@@ -145,11 +148,23 @@ const OwnerView = {
             dtc_count: 0,
             ecu_name: 'Bosch Motronic ME17.5.24',
             system_health: '100% OPERACIONAL',
-            last_scan: 'Hoje às 18:18'
+            last_scan: 'Hoje às 18:20'
         }
     },
 
-    // Alternar o Menu Lateral Aberto / Fechado
+    // ── Botão de Sair / Logout Oficial ──
+    logout() {
+        if (typeof App !== 'undefined' && App.logout) {
+            App.logout();
+        } else {
+            localStorage.removeItem('dna_logged_user');
+            localStorage.removeItem('dna_token');
+            localStorage.removeItem('dna_current_view');
+            window.location.href = '/';
+        }
+    },
+
+    // Alternar Menu Lateral (Drawer)
     toggleDrawer(forceState) {
         if (typeof forceState === 'boolean') {
             this.isDrawerOpen = forceState;
@@ -171,11 +186,10 @@ const OwnerView = {
         }
     },
 
-    // Navegação Interna SPA Fluida (Sem Popups e Sem Alerts!)
+    // Navegação Interna SPA Fluida (Sem Popups)
     navigateTo(screen) {
         this.currentScreen = screen;
         
-        // Sincroniza aba inferior se aplicável
         if (['home', 'vehicle', 'certification', 'documents'].includes(screen)) {
             this.activeTab = screen;
         } else {
@@ -186,7 +200,7 @@ const OwnerView = {
         this.render();
     },
 
-    // Troca de Abas da Bottom Navigation Bar
+    // Troca de Abas da Barra Inferior
     switchTab(tab) {
         if (tab === 'more') {
             this.toggleDrawer(true);
@@ -210,20 +224,19 @@ const OwnerView = {
         this.render();
     },
 
-    // Download Simulado do Documento
+    // Download Simulado do Documento com Toast Nativo
     downloadDocument(docId) {
         const doc = this.documentsData.find(d => d.id === docId);
         if (!doc) return;
 
-        // Feedback toast nativo suave dentro do app
         const toast = document.createElement('div');
         toast.style.cssText = `
             position: absolute;
             bottom: 80px;
             left: 20px;
             right: 20px;
-            background: rgba(0, 230, 118, 0.95);
-            color: #050B14;
+            background: #10B981;
+            color: #FFFFFF;
             padding: 10px 14px;
             border-radius: 10px;
             font-size: 11.5px;
@@ -253,7 +266,6 @@ const OwnerView = {
         this.render();
 
         try {
-            // Tenta consultar API oficial se disponível
             const res = await fetch(`/api/v1/vehicles/${this.vehicleData.license_plate}/obd`);
             if (res.ok) {
                 const data = await res.json();
@@ -261,18 +273,75 @@ const OwnerView = {
                     this.obdData = data;
                 }
             }
-        } catch (_) {
-            // Mantém telemetria local de alta precisão
-        }
+        } catch (_) {}
 
         setTimeout(() => {
-            // Micro-variação de leitura em tempo real da injeção
             this.obdData.telemetry.rpm = Math.floor(830 + Math.random() * 25);
             this.obdData.telemetry.battery_voltage = (14.2 + (Math.random() * 0.1 - 0.05)).toFixed(1);
             this.obdData.diagnostics.last_scan = 'Agora mesmo (' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ')';
             this.isObdScanning = false;
             this.render();
-        }, 800);
+        }, 700);
+    },
+
+    // Sincronizar Veículos Reais do Backend SQLite
+    async syncBackendVehicles() {
+        if (this._backendSynced) return;
+        this._backendSynced = true;
+
+        try {
+            const res = await fetch('/api/v1/vehicles');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success && Array.isArray(data.vehicles) && data.vehicles.length > 0) {
+                    this.userVehicles = data.vehicles;
+                    
+                    // Se houver veículo cadastrado pelo usuário/oficina, usa ele
+                    const realVeh = data.vehicles[0];
+                    this.vehicleData.id = realVeh.id;
+                    this.vehicleData.brand = realVeh.brand || this.vehicleData.brand;
+                    this.vehicleData.model = realVeh.model || this.vehicleData.model;
+                    this.vehicleData.full_title = `${realVeh.brand} ${realVeh.model}`.trim();
+                    this.vehicleData.version_label = realVeh.version_label || this.vehicleData.version_label;
+                    this.vehicleData.license_plate = realVeh.license_plate || this.vehicleData.license_plate;
+                    this.vehicleData.manufacture_year = realVeh.manufacture_year || this.vehicleData.manufacture_year;
+                    this.vehicleData.model_year = realVeh.model_year || this.vehicleData.model_year;
+                    this.vehicleData.color = realVeh.color || this.vehicleData.color;
+                    this.vehicleData.chassis_vin = realVeh.chassis_vin || this.vehicleData.chassis_vin;
+                    this.vehicleData.renavam = realVeh.renavam || this.vehicleData.renavam;
+                    this.vehicleData.photo_url = realVeh.photo_url || this.vehicleData.photo_url;
+                    if (realVeh.dna_code) this.vehicleData.dna_code = realVeh.dna_code;
+                    if (realVeh.current_mileage) this.vehicleData.current_mileage = realVeh.current_mileage;
+                    if (realVeh.owner_name) this.vehicleData.user_name = realVeh.owner_name;
+
+                    // Busca telemetria e docs específicos do veículo real
+                    this.fetchVehicleExtras(this.vehicleData.license_plate);
+                }
+            }
+        } catch (_) {}
+    },
+
+    // Buscar Documentos e OBD2 para o Veículo Ativo
+    async fetchVehicleExtras(plate) {
+        try {
+            const [rDocs, rObd] = await Promise.all([
+                fetch(`/api/v1/vehicles/${plate}/documents`),
+                fetch(`/api/v1/vehicles/${plate}/obd`)
+            ]);
+            if (rDocs.ok) {
+                const dDocs = await rDocs.json();
+                if (dDocs.success && Array.isArray(dDocs.documents)) {
+                    this.documentsData = dDocs.documents;
+                }
+            }
+            if (rObd.ok) {
+                const dObd = await rObd.json();
+                if (dObd.success && dObd.telemetry) {
+                    this.obdData = dObd;
+                }
+            }
+            this.render();
+        } catch (_) {}
     },
 
     // Renderização do App
@@ -284,21 +353,11 @@ const OwnerView = {
         document.body.classList.add('is-owner-app');
         document.body.classList.remove('is-workshop-erp');
 
+        // Sincroniza dados com o backend
+        this.syncBackendVehicles();
+
         const v = this.vehicleData;
         const activeDrawerClass = this.isDrawerOpen ? 'active' : '';
-
-        // Carrega documentos do backend se ainda não carregados
-        if (!this._docsLoaded) {
-            this._docsLoaded = true;
-            fetch(`/api/v1/vehicles/${v.license_plate}/documents`)
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success && data.documents && data.documents.length) {
-                        this.documentsData = data.documents;
-                    }
-                })
-                .catch(() => {});
-        }
 
         container.innerHTML = `
             <div class="dna-app-viewport">
@@ -316,7 +375,7 @@ const OwnerView = {
                         </div>
                     </div>
 
-                    <!-- 2. Header do App: Inteligente (Home vs Sub-tela) -->
+                    <!-- 2. Header do App com BOTÃO DE SAIR VISÍVEL -->
                     <header class="dna-app-header">
                         ${this.currentScreen === 'home' ? `
                             <div class="dna-brand-left" onclick="OwnerView.toggleDrawer()">
@@ -341,16 +400,29 @@ const OwnerView = {
                             </div>
 
                             <div class="dna-header-right">
+                                <!-- Botão de Notificações com badge -->
                                 <div class="dna-notification-btn" onclick="OwnerView.navigateTo('notifications')" title="Notificações">
-                                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                                         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                                     </svg>
                                     <span class="dna-badge-counter">${v.notifications_count}</span>
                                 </div>
+
+                                <!-- Avatar do Usuário com Trava de Tamanho -->
                                 <div class="dna-user-avatar" onclick="OwnerView.toggleDrawer()" title="Perfil">
                                     <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" onerror="this.src='/img/car-silhouette.svg'" />
                                 </div>
+
+                                <!-- BOTÃO DE SAIR / LOGOUT (SOLICITAÇÃO DO CLIENTE) -->
+                                <button class="dna-logout-header-btn" onclick="OwnerView.logout()" title="Encerrar Sessão e Sair">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                        <polyline points="16 17 21 12 16 7"/>
+                                        <line x1="21" y1="12" x2="9" y2="12"/>
+                                    </svg>
+                                    <span>Sair</span>
+                                </button>
                             </div>
                         ` : `
                             <div class="dna-brand-left" onclick="OwnerView.navigateTo('home')">
@@ -364,9 +436,11 @@ const OwnerView = {
                             </div>
 
                             <div class="dna-header-right">
-                                <div class="dna-user-avatar" onclick="OwnerView.toggleDrawer()" title="Perfil">
-                                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" onerror="this.src='/img/car-silhouette.svg'" />
-                                </div>
+                                <!-- BOTÃO DE SAIR / LOGOUT NAS SUB-TELAS -->
+                                <button class="dna-logout-header-btn" onclick="OwnerView.logout()" title="Encerrar Sessão e Sair">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                    <span>Sair</span>
+                                </button>
                             </div>
                         `}
                     </header>
@@ -439,7 +513,7 @@ const OwnerView = {
                     <!-- 6. Backdrop Escurecido do Menu Lateral -->
                     <div id="dna-drawer-backdrop" class="dna-drawer-backdrop ${activeDrawerClass}" onclick="OwnerView.toggleDrawer(false)"></div>
 
-                    <!-- 7. Menu Lateral Aberto (9 Itens com Navegação Interna Real) -->
+                    <!-- 7. Menu Lateral Aberto (Drawer com Logout) -->
                     <aside id="dna-owner-drawer" class="dna-app-drawer ${activeDrawerClass}">
                         <div class="dna-drawer-header">
                             <button class="dna-drawer-close-btn" onclick="OwnerView.toggleDrawer(false)" title="Fechar Menu">
@@ -453,7 +527,7 @@ const OwnerView = {
                             </div>
                             <div class="dna-profile-info">
                                 <h3 class="dna-profile-name">${v.user_name}</h3>
-                                <a href="javascript:void(0)" class="dna-profile-role" onclick="OwnerView.navigateTo('settings')">${v.user_role}</a>
+                                <span style="font-size: 11.5px; color: #38BDF8; font-weight: 700;">${v.user_role}</span>
                             </div>
                         </div>
 
@@ -556,20 +630,29 @@ const OwnerView = {
                                 </div>
                                 <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                             </div>
+
+                            <!-- BOTÃO DE SAIR NO MENU LATERAL (LOGOUT) -->
+                            <div class="dna-drawer-logout-item" onclick="OwnerView.logout()" title="Sair do aplicativo">
+                                <div class="dna-menu-item-left">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                                    <span>Sair da Conta (Logout)</span>
+                                </div>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                            </div>
                         </div>
 
                         <div class="dna-drawer-footer">
                             <div class="dna-footer-shield-box">
                                 <div class="dna-footer-shield-icon">
-                                    <svg viewBox="0 0 120 120" width="32" height="32" fill="none" stroke="#00D4FF" stroke-width="7">
+                                    <svg viewBox="0 0 120 120" width="28" height="28" fill="none" stroke="#00D4FF" stroke-width="7">
                                         <path d="M 54 62 C 51 55 51 46 57 41 C 62 36 67 40 65 50 C 63 56 64 64 64 64"/>
                                         <path d="M 45 66 C 41 53 41 39 50 30 C 58 21 68 21 75 30 C 82 40 82 55 77 66"/>
                                         <path d="M 36 68 C 30 52 31 32 43 20 C 54 9 72 9 83 20 C 93 32 94 52 88 68"/>
                                     </svg>
                                 </div>
                                 <h4>DNA AUTO</h4>
-                                <p class="dna-footer-slogan">Tecnologia e Segurança Veicular</p>
-                                <p class="dna-footer-sub">Todos os dados criptografados e validados</p>
+                                <p class="dna-footer-slogan">Padrão TOTVS Enterprise</p>
+                                <p class="dna-footer-sub">Dados do motor e histórico oficial com validade jurídica</p>
                             </div>
                         </div>
                     </aside>
@@ -621,18 +704,32 @@ const OwnerView = {
         }
     },
 
-    // ── 1. TELA INICIAL (HOME) ──
+    // ── 1. TELA INICIAL (HOME) — PADRÃO TOTVS ENTERPRISE ──
     renderHomeScreen() {
         const v = this.vehicleData;
         return `
+            <!-- Seletor de Carros do Proprietário se tiver mais de um no backend -->
+            ${this.userVehicles && this.userVehicles.length > 1 ? `
+                <div class="dna-vehicle-selector-bar">
+                    <span style="font-size:11px; font-weight:700; color:#CBD5E1;">Meus Veículos (${this.userVehicles.length}):</span>
+                    <select class="dna-vehicle-select-dropdown" onchange="OwnerView.selectVehicleById(this.value)">
+                        ${this.userVehicles.map(u => `
+                            <option value="${u.id}" ${u.license_plate === v.license_plate ? 'selected' : ''}>
+                                ${u.brand} ${u.model} (${u.license_plate})
+                            </option>
+                        `).join('')}
+                    </select>
+                </div>
+            ` : ''}
+
             <!-- Card Principal do Veículo -->
             <div class="dna-vehicle-card">
                 
-                <!-- Topo do Card -->
+                <!-- Topo do Card com Placa Oficial Mercosul e Status -->
                 <div class="dna-vehicle-header">
                     <div class="dna-mfr-block">
                         <div class="dna-brand-symbol">
-                            <svg viewBox="0 0 100 100" width="26" height="26">
+                            <svg viewBox="0 0 100 100" width="24" height="24">
                                 <circle cx="50" cy="50" r="46" stroke="#00D4FF" stroke-width="6" fill="none"/>
                                 <circle cx="50" cy="50" r="41" stroke="#FFFFFF" stroke-width="2" fill="none"/>
                                 <path d="M 28 34 L 50 78 L 72 34 M 40 34 L 50 56 L 60 34" stroke="#FFFFFF" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
@@ -640,22 +737,27 @@ const OwnerView = {
                         </div>
                         <div>
                             <h2 class="dna-vehicle-name">${v.full_title}</h2>
-                            <div class="dna-plate-year">${v.license_plate} • ${v.manufacture_year}/${v.model_year}</div>
+                            <div style="font-size: 11.5px; color: #CBD5E1; font-weight: 600;">${v.version_label} • ${v.manufacture_year}/${v.model_year}</div>
                         </div>
                     </div>
-                    <div class="dna-registered-tag" onclick="OwnerView.navigateTo('vehicle')" style="cursor:pointer;" title="Ver detalhes do veículo">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                        <span>Cadastrado &gt;</span>
+
+                    <!-- Placa Oficial Mercosul Estilizada -->
+                    <div class="dna-mercosul-plate" onclick="OwnerView.navigateTo('vehicle')" style="cursor:pointer;" title="Ver detalhes do veículo">
+                        <div class="dna-mercosul-plate-header">
+                            <span>BRASIL</span>
+                            <span style="color:#FFCC00; font-size:6px;">★</span>
+                        </div>
+                        <div class="dna-mercosul-plate-code">${v.license_plate}</div>
                     </div>
                 </div>
 
-                <!-- Imagem do Carro com Reflexo Neon Azul -->
-                <div class="dna-car-stage" onclick="OwnerView.navigateTo('vehicle')" style="cursor:pointer;">
+                <!-- Foto do Carro Limpa com Reflexo Profissional -->
+                <div class="dna-car-stage" onclick="OwnerView.navigateTo('vehicle')" style="cursor:pointer;" title="Clique para ficha técnica completa">
                     <div class="dna-car-neon-glow"></div>
                     <img class="dna-car-image" src="${v.photo_url}" alt="${v.full_title}" onerror="this.onerror=null; this.src='/img/car-silhouette.svg';" />
                 </div>
 
-                <!-- Círculo de Status de Saúde (EM DIA) -->
+                <!-- Status de Saúde Operacional do Carro -->
                 <div class="dna-status-orb-container" onclick="OwnerView.navigateTo('obd')" style="cursor:pointer;" title="Abrir Telemetria OBD2">
                     <div class="dna-status-orb">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00E676" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
@@ -668,12 +770,12 @@ const OwnerView = {
                     </div>
                 </div>
 
-                <!-- 3 Medidores Rápidos em Grade -->
+                <!-- 3 Medidores em Grade com Letras Claras TOTVS -->
                 <div class="dna-metrics-grid">
-                    <div class="dna-metric-box" onclick="OwnerView.navigateTo('obd')" style="cursor:pointer;">
+                    <div class="dna-metric-box" onclick="OwnerView.navigateTo('obd')" style="cursor:pointer;" title="Ver odômetro da ECU">
                         <div class="dna-metric-label">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                            Quilometragem
+                            Odômetro
                         </div>
                         <div class="dna-metric-value">${Number(v.current_mileage).toLocaleString('pt-BR')} km</div>
                     </div>
@@ -695,7 +797,7 @@ const OwnerView = {
                 </div>
             </div>
 
-            <!-- Card de Certificação DNA AUTO -->
+            <!-- Card de Certificação DNA AUTO Oficial -->
             <div class="dna-cert-card">
                 <div class="dna-cert-left">
                     <div class="dna-cert-badge-row">
@@ -717,7 +819,7 @@ const OwnerView = {
                     <div class="dna-cert-date">Última validação: ${v.certification_date}</div>
                     
                     <button class="dna-cert-action-btn" onclick="OwnerView.navigateTo('certification')">
-                        <span>Ver certificação completa</span>
+                        <span>Ver laudo completo</span>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                     </button>
                 </div>
@@ -746,10 +848,10 @@ const OwnerView = {
                 </div>
             </div>
 
-            <!-- Seção Últimos Registros (Timeline Horizontal Conectada) -->
+            <!-- Seção Últimos Registros (Timeline Conectada) -->
             <div class="dna-timeline-section">
                 <div class="dna-timeline-header">
-                    <span class="dna-timeline-title">ÚLTIMOS REGISTROS</span>
+                    <span class="dna-timeline-title">ÚLTIMOS REGISTROS HOMOLOGADOS</span>
                     <a href="javascript:void(0)" class="dna-timeline-more-link" onclick="OwnerView.navigateTo('history')">
                         Ver histórico completo &gt;
                     </a>
@@ -789,19 +891,42 @@ const OwnerView = {
         `;
     },
 
-    // ── 2. TELA DE DOCUMENTOS DIGITAIS (DENTRO DO APP, ZERO POPUPS!) ──
+    // Selecionar Veículo do Proprietário
+    selectVehicleById(vehId) {
+        const found = this.userVehicles.find(v => v.id === vehId);
+        if (found) {
+            this.vehicleData.id = found.id;
+            this.vehicleData.brand = found.brand;
+            this.vehicleData.model = found.model;
+            this.vehicleData.full_title = `${found.brand} ${found.model}`.trim();
+            this.vehicleData.version_label = found.version_label || 'Versão Homologada';
+            this.vehicleData.license_plate = found.license_plate;
+            this.vehicleData.manufacture_year = found.manufacture_year;
+            this.vehicleData.model_year = found.model_year;
+            this.vehicleData.color = found.color || 'Não informada';
+            this.vehicleData.chassis_vin = found.chassis_vin;
+            this.vehicleData.renavam = found.renavam || '00539182741';
+            this.vehicleData.photo_url = found.photo_url || '/img/vw-gol-app.jpg';
+            if (found.dna_code) this.vehicleData.dna_code = found.dna_code;
+            if (found.current_mileage) this.vehicleData.current_mileage = found.current_mileage;
+
+            this.fetchVehicleExtras(found.license_plate);
+        }
+    },
+
+    // ── 2. TELA DE DOCUMENTOS (100% NATIVA DENTRO DO SMARTPHONE) ──
     renderDocumentsScreen() {
         return `
             <div class="dna-documents-container">
                 <!-- Cabeçalho Informativo TOTVS Enterprise -->
-                <div style="background: rgba(0, 102, 255, 0.08); border: 1px solid rgba(0, 102, 255, 0.25); border-radius: 14px; padding: 12px 14px; margin-bottom: 6px;">
+                <div style="background: rgba(8, 16, 32, 0.9); border: 1px solid rgba(0, 102, 255, 0.25); border-radius: 14px; padding: 12px 14px; margin-bottom: 6px;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <h3 style="font-size: 13px; font-weight: 800; color: #FFFFFF; margin: 0;">Carteira Digital Veicular</h3>
+                        <h3 style="font-size: 13.5px; font-weight: 800; color: #FFFFFF; margin: 0;">Carteira Digital Veicular</h3>
                         <span style="background: rgba(0, 230, 118, 0.15); border: 1px solid #00E676; color: #00E676; font-size: 9.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">
                             ${this.documentsData.length} DOCUMENTOS ATIVOS
                         </span>
                     </div>
-                    <p style="font-size: 10.5px; color: #94A3B8; margin: 0; line-height: 1.3;">
+                    <p style="font-size: 11px; color: #CBD5E1; margin: 0; line-height: 1.4;">
                         Documentos oficiais homologados com assinatura digital, regularidade fiscal e laudos de integridade veicular.
                     </p>
                 </div>
@@ -862,7 +987,7 @@ const OwnerView = {
         `;
     },
 
-    // ── 3. VISUALIZADOR INTERNO DE DOCUMENTO (SHEET NATIVO NO SMARTPHONE) ──
+    // ── 3. VISUALIZADOR INTERNO DE DOCUMENTO (MODAL SHEET NATIVO) ──
     renderDocumentViewerModal() {
         const doc = this.selectedDoc;
         const v = this.vehicleData;
@@ -881,27 +1006,27 @@ const OwnerView = {
                         </button>
                     </div>
 
-                    <!-- Papel Digital do Documento -->
+                    <!-- Papel Digital do Documento com Letras Claras TOTVS -->
                     <div class="dna-doc-paper-preview">
                         <span class="dna-doc-paper-badge">${doc.badge}</span>
                         
                         <div class="dna-doc-paper-header">
                             <h4>REPÚBLICA FEDERATIVA DO BRASIL</h4>
-                            <p>${doc.issuer}</p>
-                            <p style="font-size: 9px; color: #64748B; margin-top: 2px;">DOCUMENTO DIGITAL COM VALIDADE JURÍDICA NACIONAL</p>
+                            <p style="font-size:11px; color:#E2E8F0; font-weight:700;">${doc.issuer}</p>
+                            <p style="font-size: 9.5px; color: #94A3B8; margin-top: 2px;">DOCUMENTO DIGITAL COM VALIDADE JURÍDICA NACIONAL</p>
                         </div>
 
                         <!-- Tabela de Dados Oficiais -->
                         <table class="dna-doc-data-table">
                             <tr><td class="label">Veículo:</td><td class="val">${v.brand} ${v.model}</td></tr>
-                            <tr><td class="label">Placa:</td><td class="val">${v.license_plate}</td></tr>
+                            <tr><td class="label">Placa Oficial:</td><td class="val">${v.license_plate}</td></tr>
                             <tr><td class="label">Chassi / VIN:</td><td class="val">${v.chassis_vin}</td></tr>
                             <tr><td class="label">Renavam:</td><td class="val">${v.renavam}</td></tr>
                             <tr><td class="label">Exercício:</td><td class="val">${v.model_year} (Licenciado 2026)</td></tr>
                             <tr><td class="label">Proprietário:</td><td class="val">${v.user_name}</td></tr>
                             <tr><td class="label">N° do Registro:</td><td class="val">${doc.doc_number}</td></tr>
                             <tr><td class="label">Data Emissão:</td><td class="val">${doc.issue_date}</td></tr>
-                            <tr><td class="label">Situação Legal:</td><td class="val" style="color:#00E676;">Sem Débitos / Regular</td></tr>
+                            <tr><td class="label">Situação Legal:</td><td class="val" style="color:#00E676;">Sem Débitos / Regularizado</td></tr>
                         </table>
 
                         <!-- Selo e QR Code Oficial de Validação -->
@@ -920,8 +1045,8 @@ const OwnerView = {
                             </svg>
                             <div class="dna-stamp-info">
                                 <strong>AUTENTICAÇÃO DIGITAL VIO / SERPRO</strong>
-                                <span>Hash: ${doc.hash}</span>
-                                <span style="display:block; margin-top:2px; font-size:8.5px; color:#64748B;">Documento assinado digitalmente conforme MP 2.200-2/2001.</span>
+                                <span style="color:#CBD5E1;">Hash: ${doc.hash}</span>
+                                <span style="display:block; margin-top:2px; font-size:8.5px; color:#94A3B8;">Documento assinado digitalmente conforme MP 2.200-2/2001.</span>
                             </div>
                         </div>
                     </div>
@@ -936,7 +1061,7 @@ const OwnerView = {
         `;
     },
 
-    // ── 4. TELA DE DIAGNÓSTICO MINI OBD2 (INSTRUMENTAÇÃO EM TEMPO REAL) ──
+    // ── 4. TELA DE TELEMETRIA MINI OBD2 (TEMPO REAL) ──
     renderObdScreen() {
         const o = this.obdData;
         const scanningText = this.isObdScanning ? 'Lendo sensores da central ECU...' : 'Escanear Central ECU Novamente';
@@ -956,10 +1081,10 @@ const OwnerView = {
                     <span class="dna-obd-latency-pill">CONECTADO</span>
                 </div>
 
-                <!-- 4 Gauges Digitais de Instrumentação em Tempo Real -->
+                <!-- 4 Gauges Digitais de Instrumentação -->
                 <div class="dna-obd-gauges-grid">
                     
-                    <!-- 1. RPM (Rotações por Minuto) -->
+                    <!-- 1. RPM -->
                     <div class="dna-obd-gauge-card">
                         <div class="dna-obd-gauge-icon" style="background: rgba(0, 212, 255, 0.15); color: #00D4FF;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 10"/></svg>
@@ -972,7 +1097,7 @@ const OwnerView = {
                         <span class="dna-obd-gauge-status" style="color:#00E676;">Marcha Lenta Estável</span>
                     </div>
 
-                    <!-- 2. Temperatura da Água / Arrefecimento -->
+                    <!-- 2. Temperatura -->
                     <div class="dna-obd-gauge-card">
                         <div class="dna-obd-gauge-icon" style="background: rgba(0, 230, 118, 0.15); color: #00E676;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
@@ -982,7 +1107,7 @@ const OwnerView = {
                         <span class="dna-obd-gauge-status" style="color:#00E676;">Ideal (85°C - 98°C)</span>
                     </div>
 
-                    <!-- 3. Tensão da Bateria / Alternador -->
+                    <!-- 3. Bateria / Alternador -->
                     <div class="dna-obd-gauge-card">
                         <div class="dna-obd-gauge-icon" style="background: rgba(0, 102, 255, 0.15); color: #0066FF;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="13" rx="2"/><line x1="6" y1="11" x2="10" y2="11"/><line x1="14" y1="11" x2="18" y2="11"/><line x1="16" y1="9" x2="16" y2="13"/></svg>
@@ -992,7 +1117,7 @@ const OwnerView = {
                         <span class="dna-obd-gauge-status" style="color:#00D4FF;">Carga Plena (14.2V)</span>
                     </div>
 
-                    <!-- 4. Odômetro Sincronizado via ECU -->
+                    <!-- 4. Odômetro ECU -->
                     <div class="dna-obd-gauge-card">
                         <div class="dna-obd-gauge-icon" style="background: rgba(255, 210, 28, 0.15); color: #FFD21C;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="12" x2="16" y2="8"/></svg>
@@ -1010,8 +1135,8 @@ const OwnerView = {
                     </div>
                     <div class="dna-obd-dtc-info">
                         <h4>Zero Falhas Detectadas (0 DTC)</h4>
-                        <p>Central de Injeção <strong>${o.diagnostics.ecu_name}</strong> sem códigos de avaria ativos. Luz de injeção apagada.</p>
-                        <span style="font-size: 9.5px; color: #38BDF8; display: block; margin-top: 4px;">Última verificação: ${o.diagnostics.last_scan}</span>
+                        <p style="color:#CBD5E1;">Central de Injeção <strong>${o.diagnostics.ecu_name}</strong> sem códigos de avaria ativos. Luz de injeção apagada.</p>
+                        <span style="font-size: 10px; color: #38BDF8; display: block; margin-top: 4px; font-weight: 700;">Última verificação: ${o.diagnostics.last_scan}</span>
                     </div>
                 </div>
 
@@ -1019,7 +1144,7 @@ const OwnerView = {
                 <div class="dna-obd-sensors-table">
                     <div class="dna-obd-table-header">
                         <h4>Telemetria dos Sensores do Motor</h4>
-                        <span style="font-size: 9.5px; color: #00D4FF; font-weight: 700;">CAN BUS 500 KBPS</span>
+                        <span style="font-size: 10px; color: #00D4FF; font-weight: 700;">CAN BUS 500 KBPS</span>
                     </div>
                     <div class="dna-obd-sensor-row">
                         <span class="dna-sensor-name">Sonda Lambda (Mistura Ar/Combustível)</span>
@@ -1054,7 +1179,7 @@ const OwnerView = {
         `;
     },
 
-    // ── 5. SUB-TELA: MEU VEÍCULO (FICHA TÉCNICA) ──
+    // ── 5. SUB-TELA: MEU VEÍCULO (FICHA TÉCNICA TOTVS) ──
     renderVehicleScreen() {
         const v = this.vehicleData;
         return `
@@ -1065,7 +1190,7 @@ const OwnerView = {
                         <img class="dna-car-image" src="${v.photo_url}" alt="${v.full_title}" onerror="this.src='/img/car-silhouette.svg';" />
                     </div>
                     <h3 style="font-size: 16px; font-weight: 800; color: #FFFFFF; text-align: center; margin: 4px 0 2px;">${v.full_title}</h3>
-                    <p style="font-size: 11px; color: #94A3B8; text-align: center; margin: 0 0 10px;">${v.version_label} • Placa: ${v.license_plate}</p>
+                    <p style="font-size: 11.5px; color: #CBD5E1; text-align: center; margin: 0 0 10px;">${v.version_label} • Placa: ${v.license_plate}</p>
                 </div>
 
                 <div class="dna-vehicle-specs-grid">
@@ -1097,8 +1222,8 @@ const OwnerView = {
 
                 <div style="background: rgba(8, 16, 32, 0.88); border: 1.5px solid rgba(0, 102, 255, 0.25); border-radius: 14px; padding: 14px;">
                     <h4 style="font-size: 12px; font-weight: 800; color: #FFFFFF; margin: 0 0 8px; text-transform: uppercase;">Proprietário Cadastrado</h4>
-                    <p style="font-size: 11.5px; color: #E2E8F0; margin: 0 0 2px;"><strong>${v.user_name}</strong></p>
-                    <p style="font-size: 10.5px; color: #94A3B8; margin: 0;">Registro ativo na plataforma DNA AUTO com certificação de procedência válida.</p>
+                    <p style="font-size: 12px; color: #FFFFFF; margin: 0 0 4px;"><strong>${v.user_name}</strong></p>
+                    <p style="font-size: 11px; color: #CBD5E1; margin: 0;">Registro ativo na plataforma DNA AUTO com certificação de procedência válida.</p>
                 </div>
 
                 <button class="dna-obd-rescan-btn" onclick="OwnerView.navigateTo('documents')">
@@ -1124,9 +1249,9 @@ const OwnerView = {
                     </div>
                     <span style="background: rgba(0, 230, 118, 0.15); border: 1px solid #00E676; color: #00E676; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px;">CERTIFICAÇÃO OFICIAL VÁLIDA</span>
                     <h3 style="font-size: 18px; font-weight: 900; color: #FFFFFF; margin: 10px 0 4px; letter-spacing: 0.5px;">${v.dna_code}</h3>
-                    <p style="font-size: 11px; color: #94A3B8; margin: 0 0 14px;">Emitida e homologada em ${v.certification_date}</p>
+                    <p style="font-size: 11px; color: #CBD5E1; margin: 0 0 14px;">Emitida e homologada em ${v.certification_date}</p>
 
-                    <div style="background: #050B14; border: 1px solid rgba(0, 102, 255, 0.3); border-radius: 12px; padding: 12px; text-align: left; font-size: 11px; line-height: 1.5; color: #CBD5E1; margin-bottom: 14px;">
+                    <div style="background: #050B14; border: 1px solid rgba(0, 102, 255, 0.3); border-radius: 12px; padding: 12px; text-align: left; font-size: 11.5px; line-height: 1.5; color: #E2E8F0; margin-bottom: 14px;">
                         <p style="margin:0 0 6px;">• <strong>Autenticidade:</strong> Registrado na rede distribuída DNA AUTO.</p>
                         <p style="margin:0 0 6px;">• <strong>Quilometragem:</strong> ${Number(v.current_mileage).toLocaleString('pt-BR')} km verificados via ECU e ordens de serviço.</p>
                         <p style="margin:0;">• <strong>Hash SHA-256:</strong> <code style="font-size:9.5px; color:#00D4FF;">8f72a94bc7210e309bb2f1c8402a715e</code></p>
@@ -1141,14 +1266,14 @@ const OwnerView = {
         `;
     },
 
-    // ── 7. SUB-TELA: HISTÓRICO COMPLETO DE SERVIÇOS ──
+    // ── 7. SUB-TELA: HISTÓRICO COMPLETO ──
     renderHistoryScreen() {
         const v = this.vehicleData;
         return `
             <div style="display:flex; flex-direction:column; gap:10px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <span style="font-size: 11px; font-weight: 800; color: #94A3B8; text-transform: uppercase;">Linha do Tempo de Intervenções</span>
-                    <span style="font-size: 10px; color: #00D4FF; font-weight: 700;">4 Registros Homologados</span>
+                    <span style="font-size: 11.5px; font-weight: 800; color: #FFFFFF; text-transform: uppercase;">Linha do Tempo de Intervenções</span>
+                    <span style="font-size: 10.5px; color: #00D4FF; font-weight: 700;">${v.timeline.length} Registros Homologados</span>
                 </div>
 
                 <div class="dna-history-list">
@@ -1232,24 +1357,31 @@ const OwnerView = {
         `;
     },
 
-    // ── 10. SUB-TELA: CONFIGURAÇÕES ──
+    // ── 10. SUB-TELA: CONFIGURAÇÕES COM BOTÃO DE SAIR ──
     renderSettingsScreen() {
+        const v = this.vehicleData;
         return `
-            <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; flex-direction:column; gap:12px;">
                 <div class="dna-history-item-card">
                     <h4 class="dna-history-title" style="margin-bottom:6px;">Perfil do Usuário</h4>
-                    <p class="dna-history-details">Proprietário: João Silva<br>E-mail: joao.silva@exemplo.com.br<br>Status: Cliente Verificado</p>
+                    <p class="dna-history-details">Proprietário: <strong>${v.user_name}</strong><br>Status: ${v.user_role}</p>
                 </div>
 
                 <div class="dna-history-item-card">
                     <h4 class="dna-history-title" style="margin-bottom:6px;">Pareamento Mini OBD2</h4>
-                    <p class="dna-history-details">Dispositivo: Mini OBD2 ELM327 BLE 5.2<br>Sincronização: Automática ao ligar a ignição<br>Frequência: Leituras a cada 2 segundos</p>
+                    <p class="dna-history-details">Dispositivo: Mini OBD2 ELM327 BLE 5.2<br>Sincronização: Automática com a ignição<br>Frequência: Leituras a cada 2 segundos</p>
                 </div>
 
                 <div class="dna-history-item-card">
                     <h4 class="dna-history-title" style="margin-bottom:6px;">Padrão Visual</h4>
                     <p class="dna-history-details">Tema: Dark Obsidian & Neon Blue (Padrão TOTVS Enterprise & Apple)</p>
                 </div>
+
+                <!-- Botão de Sair com Destaque -->
+                <button class="dna-drawer-logout-btn" onclick="OwnerView.logout()" style="margin-top:8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    <span>Sair da Garagem Digital (Logout)</span>
+                </button>
             </div>
         `;
     },
@@ -1258,22 +1390,27 @@ const OwnerView = {
     renderNotificationsScreen() {
         return `
             <div style="display:flex; flex-direction:column; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <span style="font-size:11.5px; font-weight:800; color:#FFFFFF; text-transform:uppercase;">Central de Avisos</span>
+                    <span style="font-size:10px; color:#00E676; font-weight:700;">3 Notificações</span>
+                </div>
+
                 <div class="dna-history-item-card" style="border-left: 4px solid #00E676;">
                     <h4 class="dna-history-title">Certificação Homologada</h4>
                     <p class="dna-history-details">O certificado digital #DNA-2026-000184 do seu Volkswagen Gol foi revalidado pela rede com sucesso.</p>
-                    <span style="font-size:9px; color:#64748B;">Há 2 horas</span>
+                    <span style="font-size:9.5px; color:#94A3B8;">Hoje às 14:32</span>
                 </div>
 
                 <div class="dna-history-item-card" style="border-left: 4px solid #00D4FF;">
                     <h4 class="dna-history-title">CRLV-e 2026 Disponível</h4>
                     <p class="dna-history-details">Seu documento de licenciamento digital 2026 está pronto para visualização na aba de documentos.</p>
-                    <span style="font-size:9px; color:#64748B;">Hoje</span>
+                    <span style="font-size:9.5px; color:#94A3B8;">Hoje</span>
                 </div>
 
                 <div class="dna-history-item-card" style="border-left: 4px solid #38BDF8;">
                     <h4 class="dna-history-title">Telemetria Mini OBD2 Ativa</h4>
                     <p class="dna-history-details">Dongle conectado via Bluetooth Low Energy. Zero falhas detectadas na central do motor.</p>
-                    <span style="font-size:9px; color:#64748B;">Agora</span>
+                    <span style="font-size:9.5px; color:#94A3B8;">Agora</span>
                 </div>
             </div>
         `;

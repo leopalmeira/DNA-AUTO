@@ -161,6 +161,21 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - Testes 32 e 33 adicionados ao `test/api.test.js`.
   - **33 testes automatizados aprovados com 100% de sucesso**.
 
+### 🚪 Ciclo 22: Botão de Sair / Logout, Padrão TOTVS com Letras Claras e Sincronização Dinâmica do Backend
+- **Objetivo e Solicitação do Usuário (Áudio):**
+  1. *"O botão de sair não tem, né? Que eu tô percebendo aqui, ele não tem."*: Disponibilizar de forma evidente e acessível a opção de Sair / Encerrar Sessão (Logout) tanto no Header quanto no Drawer Lateral e nas Configurações, garantindo que o usuário retorne à Landing Page e limpe seus tokens de sessão.
+  2. *"O app não tá com a cara de algo profissional como os apps normais, parecendo que é inteligência artificial. Deveria tá no padrão da TOTVS, letras claras, bem definidas, pegando os dados do back-end em relação ao que é permitido ao dono do veículo."*:
+     - Eliminar sombras difusas excessivas e textos escurecidos com aspecto fictício ou gerado por IA.
+     - Padrão **TOTVS Enterprise Automotivo**: letras claras e bem definidas (alto contraste `#FFFFFF` para valores e títulos, `#CBD5E1` para textos informativos e `#94A3B8` para legendas técnicas).
+     - Placa veicular oficial padrão Mercosul BRASIL com tipografia preta nítida sobre fundo branco e cabeçalho azul regulamentado.
+     - Barra de seleção de veículos (`.dna-vehicle-selector-bar`) permitindo alternar de forma intuitiva entre os carros do proprietário.
+     - Sincronização dinâmica com os veículos cadastrados no backend SQLite (`GET /api/v1/vehicles`, `/api/v1/vehicles/:plate/obd`, `/api/v1/vehicles/:plate/documents`), carregando placa, chassi, renavam, cor, odômetro e proprietário reais.
+- **Implementações Técnicas:**
+  - `public/css/owner-app.css`: Botões `.dna-logout-header-btn`, `.dna-drawer-logout-item`, placa `.dna-mercosul-plate`, tipografia limpa de alto contraste sem névoas borradas.
+  - `public/js/components/ownerView.js`: Método `logout()` integrando `App.logout()`, sincronização via `syncBackendVehicles()`, `fetchVehicleExtras(plate)` e rendering corporativo TOTVS.
+- **Qualidade & Testes:**
+  - **33 testes automatizados aprovados com 100% de sucesso** em `test/api.test.js`.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

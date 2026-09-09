@@ -1622,3 +1622,114 @@
     font-size: 9.5px;
     color: var(--dna-text-dim);
 }
+
+/* ==============================================================================
+   REFINAMENTOS PADRÃO TOTVS ENTERPRISE — BOTÕES DE SAIR & PLACA MERCOSUL
+   ============================================================================== */
+
+/* Botão de Sair no Header Superior */
+.dna-logout-header-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #FCA5A5;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dna-logout-header-btn:hover {
+    background: rgba(239, 68, 68, 0.25);
+    color: #FFFFFF;
+    border-color: #EF4444;
+}
+
+/* Botão de Sair no Menu Lateral (Drawer) */
+.dna-drawer-logout-item {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #FCA5A5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: 12.5px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.dna-drawer-logout-item:hover {
+    background: #EF4444;
+    color: #FFFFFF;
+    border-color: #EF4444;
+}
+
+/* Placa Veicular no Padrão Oficial Mercosul */
+.dna-mercosul-plate {
+    display: inline-flex;
+    flex-direction: column;
+    background: #FFFFFF;
+    border: 1.5px solid #1E293B;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    min-width: 96px;
+    margin: 4px 0;
+}
+
+.dna-mercosul-plate-header {
+    background: #003399;
+    color: #FFFFFF;
+    font-size: 6.5px;
+    font-weight: 900;
+    letter-spacing: 1.2px;
+    padding: 1.5px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dna-mercosul-plate-code {
+    color: #000000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', monospace;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-align: center;
+    padding: 2px 6px;
+    background: #FFFFFF;
+}
+
+/* Seletor Rápido de Veículo do Cliente (Multi-Carro) */
+.dna-vehicle-selector-bar {
+    background: rgba(8, 16, 32, 0.9);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    border-radius: 12px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dna-vehicle-select-dropdown {
+    background: #050B14;
+    border: 1px solid rgba(0, 212, 255, 0.35);
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+}
+

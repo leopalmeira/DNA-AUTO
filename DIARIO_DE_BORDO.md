@@ -450,6 +450,34 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 
 ---
 
+### 🚪 Ciclo 21: Botão de Sair / Logout, Padrão Visual TOTVS Enterprise de Alto Contraste e Sincronização Dinâmica com Backend
+- **Objetivo e Solicitação do Usuário (Áudio):**
+  1. *"O botão de sair não tem, né? Que eu tô percebendo aqui, ele não tem."*: Disponibilizar de forma clara e acessível a opção de Sair / Encerrar Sessão (Logout) tanto no Header quanto no Drawer Lateral e nas Configurações, retornando o usuário à tela de início com limpeza de credenciais.
+  2. *"O app não tá com a cara de algo profissional como os apps normais, parecendo que é inteligência artificial. Deveria tá no padrão da TOTVS, letras claras, bem definidas, pegando os dados do back-end em relação ao que é permitido ao dono do veículo."*:
+     - Eliminar efeitos visuais de ficção científica / gamer / gerados por IA (sombras difusas excessivas, filtros escurecidos que prejudicavam a legibilidade).
+     - Aplicar padrão **TOTVS Enterprise Automotivo**: letras claras e bem definidas (alto contraste `#FFFFFF` para valores/títulos e `#CBD5E1` para descrições, sobre fundos slate estruturados `#0B132B` e `#1C2541`).
+     - Criar a placa veicular oficial padrão Mercosul BRASIL com tipografia nítida e proporções regulamentadas.
+     - Implementar sincronização dinâmica e reativa com o backend SQLite (`GET /api/v1/vehicles`, `/api/v1/vehicles/:plate/obd`, `/api/v1/vehicles/:plate/documents`), permitindo ao proprietário alternar entre seus veículos reais cadastrados.
+- **Implementações Técnicas:**
+  - **1. Botões de Logout Integrados (`OwnerView.logout`):**
+    - Header do App: adicionado `.dna-logout-header-btn` com ícone de porta/saída e legenda "Sair", presente tanto na Home quanto nas sub-telas.
+    - Drawer Lateral: adicionado item `.dna-drawer-logout-item` em destaque no rodapé do menu lateral, com acionamento com 1 toque.
+    - Tela de Configurações: botão corporativo de encerramento seguro de sessão.
+    - Método `OwnerView.logout()`: invoca `App.logout()`, remove dados locais e hashes de rota e redireciona para a Landing Page.
+  - **2. Padrão TOTVS Enterprise & Letras Claras (`public/css/owner-app.css`):**
+    - Placa Mercosul com faixa azul oficial `BRASIL`, brasão e texto preto nítido sobre fundo branco.
+    - Ajuste de contraste tipográfico: textos e títulos em `#FFFFFF`, dados secundários em `#CBD5E1` e legendas técnicas em `#94A3B8`.
+    - Eliminação de névoas neon e sombras borradas, adotando bordas elegantes de 1px com tons slate corporativos (`rgba(255, 255, 255, 0.08)`).
+    - Barra seletora de veículos (`.dna-vehicle-selector-bar`) com chips de fácil toque para alternar entre carros do cliente ou cadastrar um novo.
+  - **3. Integração em Tempo Real com Backend SQLite (`public/js/components/ownerView.js`):**
+    - Método `syncBackendVehicles()`: consulta `GET /api/v1/vehicles` ao montar a tela. Se houver veículos cadastrados no banco de dados, preenche a lista do cliente dinamicamente com dados reais (placa, chassi, renavam, cor, odômetro e proprietário).
+    - Método `fetchVehicleExtras(plate)`: obtém simultaneamente telemetria Mini OBD2 e carteira digital de documentos para a placa ativa.
+- **Validação e Qualidade:**
+  - Bateria com **33 testes automatizados aprovados com 100% de sucesso** em `test/api.test.js`.
+  - Zero erros de sintaxe JavaScript (`node -c`).
+
+---
+
 ## 🏛️ 3. Tabela de Decisões Arquiteturais (ADRs)
 
 | ID | Decisão | Contexto / Motivação | Consequência / Benefício |
