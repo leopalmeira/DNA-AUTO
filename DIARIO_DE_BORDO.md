@@ -452,18 +452,21 @@ DNA-AUTO/
 │       │   ├── vehicles/        # busca, ativação de DNA, cadastro
 │       │   ├── dossier/         # dossiê 360°, busca de peças, timeline
 │       │   ├── services/        # lançamento e validação de ordens de serviço
-│       │   ├── workshops/       # gestão da oficina parceira e agendamentos
+│       │   ├── workshops/       # gestão da oficina parceira, agenda e Baileys
+│       │   │   ├── baileys.service.js # Motor Baileys WhatsApp isolado multi-tenant
+│       │   │   └── workshops.routes.js # Rotas de oficina, agenda e mensageria
 │       │   ├── reports/         # emissão e autenticação de laudos de venda
 │       │   └── transfers/       # transferência de propriedade de veículo
 │       ├── services/            # Serviços de integração externa
 │       │   ├── apiPlacas.service.js # Integração oficial WDAPI2
 │       │   └── keepAlive.service.js # Ping anti-sleep no Render
 │       └── server.js            # Aplicação Express e montagem das rotas
+├── server/sessions/             # Sessões persistidas de WhatsApp por oficina (ws_*)
 ├── test/
-│   └── api.test.js              # Bateria com 24 testes automatizados
+│   └── api.test.js              # Bateria com 31 testes automatizados (100% sucesso)
 ├── index.js                     # Entrypoint raiz para deploys em nuvem
 ├── src/index.js                 # Entrypoint secundário para Render Cloud
-├── package.json                 # Manifesto de dependências e scripts
+├── package.json                 # Manifesto de dependências (@whiskeysockets/baileys, qrcode, pino)
 ├── README.md                    # Manual completo do projeto
 ├── DIARIO_DE_BORDO.md           # Diário de bordo detalhado de engenharia
 └── diario de bordo.md           # Diário de bordo complementar e registro de entregas

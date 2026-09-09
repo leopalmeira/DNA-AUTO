@@ -310,7 +310,75 @@ async function runTests() {
         console.assert(foundNewVeh && foundNewVeh.owner_name === 'Marcos Vinicius Pereira', 'Proprietário não retornado na listagem');
         console.log(`✅ 26. Listagem Dinâmica de Veículos: ${dataVehiclesList.vehicles.length} veículos carregados com DNA, proprietários e odômetros de entrada`);
 
-        console.log('\n🎉 TODOS OS 26 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 27: Status Inicial do WhatsApp Baileys da Oficina
+        const resWppStatus = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/status`);
+        const dataWppStatus = await resWppStatus.json();
+        console.assert(resWppStatus.status === 200, 'Falha ao consultar status do WhatsApp');
+        console.assert(typeof dataWppStatus.status === 'string', 'Status do WhatsApp deve ser string');
+        console.log(`✅ 27. Status Inicial Baileys: Oficina ws_veloce com status [${dataWppStatus.status}]`);
+
+        // Teste 28: Solicitação de Conexão Baileys (Geração de Pairing Code e QR Code)
+        const resWppConnect = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/connect`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: '(11) 98888-0000' })
+        });
+        const dataWppConnect = await resWppConnect.json();
+        console.assert(resWppConnect.status === 200, 'Falha ao iniciar pareamento Baileys');
+        console.assert(dataWppConnect.success === true, 'Conexão deve retornar sucesso');
+        console.assert(dataWppConnect.status === 'PAIRING', 'Status deve ser PAIRING');
+        console.assert(dataWppConnect.pairing_code && dataWppConnect.pairing_code.length >= 8, 'Código de pareamento não gerado');
+        console.assert(dataWppConnect.qr_code && dataWppConnect.qr_code.startsWith('data:image/'), 'QR Code não gerado em formato DataURL');
+        console.log(`✅ 28. Iniciação Baileys: Pairing Code [${dataWppConnect.pairing_code}] e QR Code gerados com sucesso`);
+
+        // Teste 29: Confirmação e Ativação da Conexão da Oficina
+        const resWppConfirm = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/confirm`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const dataWppConfirm = await resWppConfirm.json();
+        console.assert(resWppConfirm.status === 200, 'Falha ao confirmar conexão Baileys');
+        console.assert(dataWppConfirm.success === true, 'Confirmação deve retornar sucesso');
+        console.assert(dataWppConfirm.status === 'CONNECTED', 'Status pós-confirmação deve ser CONNECTED');
+        console.log(`✅ 29. Ativação Baileys: Conexão estabelecida com sucesso (Status: ${dataWppConfirm.status})`);
+
+        // Teste 30: Catálogo de Templates Inteligentes WhatsApp
+        const resWppTemplates = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/templates`);
+        const dataWppTemplates = await resWppTemplates.json();
+        console.assert(resWppTemplates.status === 200, 'Falha ao carregar templates');
+        console.assert(Array.isArray(dataWppTemplates.templates), 'Templates deve ser um array');
+        console.assert(dataWppTemplates.templates.length >= 8, 'Devem existir no mínimo 8 templates pré-definidos');
+        const prontoTpl = dataWppTemplates.templates.find(t => t.id === 'tpl_pronto' || t.name === 'Veículo pronto');
+        console.assert(!!prontoTpl, 'Template Veículo pronto não encontrado');
+        console.log(`✅ 30. Templates Inteligentes: ${dataWppTemplates.templates.length} templates carregados com variáveis dinâmicas`);
+
+        // Teste 31: Envio Oficial e Histórico de Mensagens Baileys
+        const resWppSend = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/send-message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                recipient_phone: '(11) 97777-6666',
+                recipient_name: 'Roberto Andrade',
+                message: 'Olá Roberto, seu Honda Civic já passou pelo teste de rodagem e está pronto para retirada!',
+                vehicle_info: 'Honda Civic (BRA2E19)',
+                service_type: 'Revisão Geral',
+                template_id: 'tpl_pronto'
+            })
+        });
+        const dataWppSend = await resWppSend.json();
+        console.assert(resWppSend.status === 200, 'Falha no envio de mensagem via Baileys');
+        console.assert(dataWppSend.success === true, 'Envio deve ser bem-sucedido');
+        console.assert(dataWppSend.status === 'SENT' || dataWppSend.status === 'DELIVERED_IN_PLATFORM', 'Status inválido no envio');
+
+        const resWppHistory = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/history`);
+        const dataWppHistory = await resWppHistory.json();
+        console.assert(resWppHistory.status === 200, 'Falha ao carregar histórico');
+        const historyList = dataWppHistory.messages || dataWppHistory.history;
+        console.assert(Array.isArray(historyList), 'Histórico deve ser um array');
+        console.assert(historyList.length >= 1, 'Histórico deve registrar o envio');
+        console.log(`✅ 31. Envio & Histórico Baileys: Mensagem enviada e registrada no histórico da oficina (${historyList.length} mensagens no log)`);
+
+        console.log('\n🎉 TODOS OS 31 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

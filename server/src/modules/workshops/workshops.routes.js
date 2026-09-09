@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../../database/db');
 const { authenticateToken, authorizeRoles } = require('../../middlewares/auth');
 const { logAudit } = require('../../middlewares/audit');
+const baileysService = require('./baileys.service');
 
 // Listagem de oficinas com métricas consolidadas
 router.get('/', (req, res) => {
@@ -585,27 +586,60 @@ router.put('/:id/settings', (req, res) => {
     }
 });
 
-// Confirmar Código OTP do WhatsApp Oficial
-router.post('/:id/whatsapp/confirm', (req, res) => {
+// ==============================================================================
+// MÓDULO OFICIAL WHATSAPP BAILEYS (MULTI-TENANT POR OFICINA)
+// ==============================================================================
+
+// 1. Status da Sessão WhatsApp da Oficina
+router.get('/:id/whatsapp/status', async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const statusData = await baileysService.getSessionStatus(workshopId);
+        res.json({ success: true, ...statusData });
+    } catch (err) {
+        console.error('Erro ao consultar status do WhatsApp:', err);
+        res.status(500).json({ error: 'Erro ao consultar status da conexão WhatsApp.' });
+    }
+});
+
+// 2. Conectar WhatsApp da Oficina (Inicia Baileys + Pairing Code + QR Code)
+router.post('/:id/whatsapp/connect', async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const phone_number = req.body.phone_number || req.body.phone || req.body.whatsapp;
+
+        if (!phone_number) {
+            return res.status(400).json({ error: 'Número de WhatsApp da oficina é obrigatório.' });
+        }
+
+        const connectResult = await baileysService.connectWorkshop(workshopId, phone_number);
+        res.json(connectResult);
+    } catch (err) {
+        console.error('Erro ao iniciar conexão WhatsApp Baileys:', err);
+        res.status(400).json({ error: err.message || 'Erro ao conectar WhatsApp da oficina.' });
+    }
+});
+
+// 3. Confirmar Conexão do WhatsApp (Handshake / Ativação)
+router.post('/:id/whatsapp/confirm', async (req, res) => {
     try {
         const workshopId = req.params.id;
         const { code } = req.body;
-
-        if (!code) {
-            return res.status(400).json({ error: 'Código de confirmação obrigatório.' });
-        }
 
         const workshop = db.prepare(`SELECT * FROM workshops WHERE id = ?`).get(workshopId);
         if (!workshop) {
             return res.status(404).json({ error: 'Oficina não encontrada.' });
         }
 
-        const cleanCode = code.toString().trim();
-        const isValid = cleanCode === workshop.whatsapp_code || cleanCode === '123456';
-
-        if (!isValid) {
-            return res.status(400).json({ error: 'Código de confirmação inválido ou expirado.' });
+        if (code) {
+            const cleanCode = code.toString().trim();
+            const isValid = cleanCode === workshop.whatsapp_code || cleanCode === '123456';
+            if (!isValid) {
+                return res.status(400).json({ error: 'Código de confirmação inválido ou expirado.' });
+            }
         }
+
+        const confirmResult = await baileysService.confirmConnection(workshopId);
 
         db.prepare(`
             UPDATE workshops
@@ -617,8 +651,10 @@ router.post('/:id/whatsapp/confirm', (req, res) => {
 
         res.json({
             success: true,
-            message: 'WhatsApp oficial da oficina confirmado e ativado com sucesso! As mensagens automáticas estão liberadas.',
-            whatsapp_status: 'VERIFIED'
+            message: '🟢 WhatsApp oficial da oficina conectado com sucesso!',
+            whatsapp_status: 'VERIFIED',
+            status: confirmResult.status || 'CONNECTED',
+            session: confirmResult
         });
     } catch (err) {
         console.error('Erro ao confirmar WhatsApp da oficina:', err);
@@ -626,8 +662,127 @@ router.post('/:id/whatsapp/confirm', (req, res) => {
     }
 });
 
-// Disparo Automático Preditivo de Mensagens WhatsApp (Mecanismo OBD2)
-// Compatível com conectores abertos (Baileys / Evolution API)
+// 4. Desconectar WhatsApp da Oficina
+router.post('/:id/whatsapp/disconnect', async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const disconnectResult = await baileysService.disconnectWorkshop(workshopId);
+        res.json(disconnectResult);
+    } catch (err) {
+        console.error('Erro ao desconectar WhatsApp da oficina:', err);
+        res.status(500).json({ error: 'Erro ao desconectar WhatsApp.' });
+    }
+});
+
+// 5. Listar Templates Pré-Configurados com Variáveis Dinâmicas
+router.get('/:id/whatsapp/templates', (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const templates = baileysService.getTemplates(workshopId);
+        res.json({
+            success: true,
+            templates,
+            available_variables: [
+                '{cliente}', '{veiculo}', '{marca}', '{modelo}', '{placa}',
+                '{oficina}', '{servico}', '{valor}', '{data}', '{link}'
+            ]
+        });
+    } catch (err) {
+        console.error('Erro ao listar templates do WhatsApp:', err);
+        res.status(500).json({ error: 'Erro ao carregar templates de mensagens.' });
+    }
+});
+
+// 6. Histórico de Mensagens Transmitidas
+router.get('/:id/whatsapp/history', (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const statusFilter = req.query.status;
+        const history = baileysService.getMessageHistory(workshopId, statusFilter);
+        res.json({ success: true, history, messages: history, total: history.length });
+    } catch (err) {
+        console.error('Erro ao buscar histórico do WhatsApp:', err);
+        res.status(500).json({ error: 'Erro ao carregar histórico de mensagens.' });
+    }
+});
+
+// 7. Envio de Mensagem Individual ou por Template (In-Platform)
+router.post('/:id/whatsapp/send-message', async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const {
+            recipient_phone,
+            recipient_name,
+            message,
+            vehicle_info,
+            vehicle_id,
+            client_id,
+            service_type
+        } = req.body;
+
+        if (!recipient_phone || !message) {
+            return res.status(400).json({ error: 'Telefone do destinatário e mensagem são obrigatórios.' });
+        }
+
+        const workshop = db.prepare(`SELECT * FROM workshops WHERE id = ?`).get(workshopId);
+        if (!workshop) {
+            return res.status(404).json({ error: 'Oficina não encontrada.' });
+        }
+
+        const senderPhone = workshop.whatsapp_official || workshop.phone || '(19) 3245-6789';
+        const protocol = `DNA-WPP-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
+
+        const queueRes = await baileysService.enqueueMessage({
+            workshopId,
+            recipientPhone: recipient_phone,
+            recipientName: recipient_name,
+            message,
+            vehicleId: vehicle_id,
+            clientId: client_id,
+            serviceType: service_type || 'Atendimento Oficina'
+        });
+
+        const sentPayload = {
+            id: queueRes.message_id,
+            protocol,
+            workshop_id: workshopId,
+            sender_whatsapp: senderPhone,
+            sender_name: workshop.trade_name,
+            recipient_whatsapp: recipient_phone,
+            recipient_name: recipient_name || 'Cliente',
+            message_text: message,
+            vehicle_info: vehicle_info || null,
+            service_type: service_type || 'Comunicação Oficial',
+            channel: 'BAILEYS_OFFICIAL_SOCKET',
+            status: 'DELIVERED_IN_PLATFORM',
+            sent_at: new Date().toISOString()
+        };
+
+        res.json({
+            success: true,
+            message: 'Mensagem transmitida pelo WhatsApp Oficial da Oficina com sucesso!',
+            protocol,
+            status: 'DELIVERED_IN_PLATFORM',
+            message_id: queueRes.message_id,
+            sender: {
+                name: workshop.trade_name,
+                phone: senderPhone,
+                status: workshop.whatsapp_status || 'VERIFIED'
+            },
+            recipient: {
+                name: recipient_name || 'Cliente',
+                phone: recipient_phone
+            },
+            sent_at: sentPayload.sent_at,
+            receipt: sentPayload
+        });
+    } catch (err) {
+        console.error('Erro no envio de WhatsApp in-platform:', err);
+        res.status(500).json({ error: err.message || 'Erro ao processar envio do WhatsApp.' });
+    }
+});
+
+// 8. Disparo Automático Preditivo de Mensagens WhatsApp (Mecanismo OBD2)
 router.post('/:id/whatsapp/dispatch-batch', (req, res) => {
     try {
         const workshopId = req.params.id;
@@ -636,7 +791,6 @@ router.post('/:id/whatsapp/dispatch-batch', (req, res) => {
             return res.status(404).json({ error: 'Oficina não encontrada.' });
         }
 
-        // Buscar veículos da oficina com manutenções pendentes/críticas
         const vehicles = db.prepare(`
             SELECT DISTINCT v.id, v.license_plate, v.brand, v.model,
                    vd.dna_code,
@@ -695,65 +849,6 @@ router.post('/:id/whatsapp/dispatch-batch', (req, res) => {
     } catch (err) {
         console.error('Erro ao processar lote de WhatsApp:', err);
         res.status(500).json({ error: 'Erro ao disparar mensagens automáticas.' });
-    }
-});
-
-// Envio de Mensagem Individual de WhatsApp In-Platform (Sem sair da tela da oficina)
-router.post('/:id/whatsapp/send-message', (req, res) => {
-    try {
-        const workshopId = req.params.id;
-        const { recipient_phone, recipient_name, message, vehicle_info, service_type } = req.body;
-
-        if (!recipient_phone || !message) {
-            return res.status(400).json({ error: 'Telefone do destinatário e texto da mensagem são obrigatórios.' });
-        }
-
-        const workshop = db.prepare(`SELECT * FROM workshops WHERE id = ?`).get(workshopId);
-        if (!workshop) {
-            return res.status(404).json({ error: 'Oficina não encontrada.' });
-        }
-
-        const senderPhone = workshop.whatsapp_official || workshop.phone || '(19) 3245-6789';
-        const cleanSender = String(senderPhone).replace(/\D/g, '');
-        const cleanRecipient = String(recipient_phone).replace(/\D/g, '');
-        const protocol = `DNA-WPP-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
-
-        const sentPayload = {
-            id: 'msg_' + Math.random().toString(36).substring(2, 9),
-            protocol,
-            workshop_id: workshopId,
-            sender_whatsapp: cleanSender.startsWith('55') ? cleanSender : `55${cleanSender}`,
-            sender_name: workshop.trade_name,
-            recipient_whatsapp: cleanRecipient.startsWith('55') ? cleanRecipient : `55${cleanRecipient}`,
-            recipient_name: recipient_name || 'Cliente',
-            message_text: message,
-            vehicle_info: vehicle_info || null,
-            service_type: service_type || 'Revisão Preventiva',
-            channel: 'IN_PLATFORM_WHATSAPP_SERVER',
-            status: 'DELIVERED_IN_PLATFORM',
-            sent_at: new Date().toISOString()
-        };
-
-        res.json({
-            success: true,
-            message: 'Mensagem transmitida pelo WhatsApp Oficial da Oficina com sucesso!',
-            protocol,
-            status: 'DELIVERED_IN_PLATFORM',
-            sender: {
-                name: workshop.trade_name,
-                phone: senderPhone,
-                status: workshop.whatsapp_status || 'VERIFIED'
-            },
-            recipient: {
-                name: recipient_name || 'Cliente',
-                phone: recipient_phone
-            },
-            sent_at: sentPayload.sent_at,
-            receipt: sentPayload
-        });
-    } catch (err) {
-        console.error('Erro no envio de WhatsApp in-platform:', err);
-        res.status(500).json({ error: 'Erro ao processar envio do WhatsApp dentro da plataforma.' });
     }
 });
 

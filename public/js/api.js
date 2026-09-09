@@ -268,5 +268,34 @@ const API = {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/dispatch-batch`, {
             method: 'POST'
         });
+    },
+
+    // Módulo Oficial WhatsApp Baileys
+    getWhatsAppStatus(workshopId) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/status`);
+    },
+    connectWhatsApp(workshopId, phoneNumber) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/connect`, {
+            method: 'POST',
+            body: JSON.stringify({ phone_number: phoneNumber })
+        });
+    },
+    disconnectWhatsApp(workshopId) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/disconnect`, {
+            method: 'POST'
+        });
+    },
+    getWhatsAppTemplates(workshopId) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/templates`);
+    },
+    getWhatsAppHistory(workshopId, status = '') {
+        const query = status ? `?status=${encodeURIComponent(status)}` : '';
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/history${query}`);
+    },
+    sendWhatsAppMessage(workshopId, payload) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/send-message`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
     }
 };

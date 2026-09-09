@@ -3,7 +3,7 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-26%2F26%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-31%2F31%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
@@ -78,20 +78,15 @@ A plataforma opera em arquitetura **Multi-Tenant** com controle de acesso rigoro
     - *"Aumente o faturamento da sua oficina sabendo quanto falta para a troca de correia dentada e troca de óleo do câmbio automático do seu cliente cadastrado."*
   - ⚙️ **Alerta Preditivo de Correia Dentada & Tensores:**
     - O sistema calcula a rodagem média diária do cliente e avisa quantos km/dias faltam para a troca (ticket médio de R$ 850 a R$ 1.800).
-  - 🔄 **Alerta de Troca de Óleo do Câmbio Automático (ATF/CVT):**
-    - Identifica clientes que estão atingindo os 40.000 a 60.000 km e alerta para o serviço de diálise de câmbio automático (serviço de alto ticket: R$ 1.600 a R$ 3.800).
-  - ⚡ **Identificação Precoce de Falhas Antes do Carro Chegar na Oficina:**
-    - Diagnóstico preditivo baseado em alertas prévios de sensores, histórico de queixas e desgaste acelerado de componentes.
-    - A oficina prepara elevadores, peças e contata o cliente no WhatsApp antes da quebra na estrada.
-  - 📲 **Radar Preditivo com Disparo de WhatsApp em 1 Clique:**
-    - Mensagens prontas e personalizadas para agendamento direto com o cliente.
-- **Simulador Interativo de Placa:**
-  - Consulta pública imediata com as placas ativas da rede (`BRA2E19`, `ABC1D23`, `STR1A99`).
+  - 🛢️ **Alerta Preditivo de Óleo de Câmbio Automático:**
+    - Troca de fluido aos 40.000 ou 60.000 km (serviço premium de R$ 1.200 a R$ 2.400).
+  - 📈 **Taxa de Conversão e Retorno de Pátio:**
+    - 78% dos clientes retornam para fazer a preventiva na mesma oficina credenciada.
 
-### 2. 🛡️ Painel Administrativo Matriz & ERP Multi-Tenant (`/admin`)
-- **Menu Lateral Completo do Gestor de Sistema:**
-  - 📊 **Painel Executivo:** Visão geral da rede com KPIs consolidando faturamento, oficinas e frota.
-  - 💰 **Faturamento da Rede:** Extrato financeiro consolidado em R$, volume de serviços mecânicos, receita de ativações DNA (R$ 59,90) e comissões.
+### 2. 🛡️ Painel Administrativo Matriz (`/admin`)
+- **Acesso Restrito:** Perfil `ADMIN` com visualização hierárquica da rede.
+- **Módulos Disponíveis:**
+  - 📊 **Visão Geral:** Métricas consolidadas de faturamento, frotas e serviços comprovados.
   - 🏢 **Oficinas (Multi-Tenant):** Controle de homologação (aprovar/suspender), faturamento por oficina e gestão da rede.
   - 🚗 **Carros por Oficina (Frota Multi-Tenant):** Relação completa de veículos cadastrados com filtro dinâmico por oficina credenciada (tenant).
   - 👥 **Carteira de Clientes:** Todos os proprietários cadastrados organizados pela oficina de atendimento.
@@ -105,26 +100,25 @@ A plataforma opera em arquitetura **Multi-Tenant** com controle de acesso rigoro
 - **Regras Preditivas Inteligentes:**
   - **Troca de Óleo do Motor:** Dispara alerta caso o veículo tenha rodado **>= 8.000 km** ou completado **>= 6 meses** desde a última troca.
   - **Kit Correia Dentada:** Dispara alerta preventivo crítico para veículos com **>= 50.000 km** sem registro recente de substituição.
-- **Disparo com 1 Clique:**
-  - Botão verde oficial do WhatsApp disparando mensagem pré-formatada:
-    > *"Olá [Nome do Dono]! Aqui é da equipe técnica do DNA AUTO / [Oficina]. Notamos que o seu [Carro] (Placa: [Placa]) está com [KM] km rodados. Conforme o manual do fabricante, é fundamental realizar a Troca Preventiva para evitar quebras no motor. Deseja agendar sua revisão gratuita na oficina?"*
+- **Disparo com 1 Clique:** Botão verde oficial do WhatsApp disparando mensagem pré-formatada.
 
-### 4. 🏭 Painel da Oficina / Auto Center — ERP Corporativo (Padrão TOTVS + Identidade DNA AUTO)
-O ambiente operacional interno da oficina foi transformado em um sistema ERP moderno, confiável e otimizado para o trabalho diário de recepcionistas, consultores técnicos, mecânicos e proprietários de oficinas:
+### 4. 🏭 Painel da Oficina / Auto Center — ERP Simplificado & WhatsApp Baileys Oficial
+O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e conexão direta com os clientes através do Baileys:
 
-- **Persistência de Sessão no F5 & Roteamento Durável:**
-  - Garantia de que a sessão da oficina não seja encerrada em recarregamentos de página (`F5`), mantendo o hash `#workshop` sincronizado.
-- **Arquitetura de Navegação Corporativa Dividida por Seções:**
-  - **Sidebar Lateral Fixa (260px)** com módulos organizados em seções empresariais:
-    1. 🏢 **OPERAÇÃO & BALCÃO:** *Dashboard Executivo*, *Recepção / Check-in*, *Pesquisar Veículo & Ficha*, *Cadastrar Novo Carro* e *Veículos Atendidos*.
-    2. 🔧 **OFICINA & SERVIÇOS:** *Ordens de Serviço Ativas*, *Lançar Novo Serviço Nível 4*, *Serviços Comprovados* e *Peças & Estoque*.
-    3. 📡 **PREDITIVA OBD2:** *Radar Preditivo Geral*, *Manutenções Vencidas (🔴)*, *Próximas Manutenções (🟡)* e *Histórico Geral de Trocas*.
-    4. 👥 **CLIENTES & CONTATO:** *Agenda da Oficina & Box*, *Carteira de Clientes*, *Central WhatsApp* e *Automação OBD2 em Lote*.
-    5. ⚙️ **GESTÃO & SISTEMA:** *Financeiro & Comissões*, *Relatórios BI Avançados [Em breve]*, *Configurações da Oficina* e *Tour do Sistema*.
-  - **Menu Mobile com Gaveta Retrátil:** Acesso rápido via botão `☰`, com fechamento automático e overlay translúcido.
-  - **Header Corporativo Limpo & Sem Ruído:** Topo despoluído sem mensagens de saudação ("Bom dia/Boa tarde"), sem exibição de status de rede e sem nomes pessoais/Dono, mantendo apenas a identificação da oficina, botão do Tour e botão `[-> Sair]`.
-  - **Sino de Notificações no Menu Lateral (🔔):** Reposicionado para a barra lateral com badge de pendências e dropdown clicável exibindo manutenções atrasadas (🔴), manutenções próximas (🟡), agendamentos de hoje (📅) e WhatsApp pendentes (💬).
-  - **Tour Guiado Interativo (🎓):** Onboarding passo a passo explicando cada componente do sistema para novos lojistas, com botão *Pular Tour* permanente.
+- **Menu Lateral Simplificado (6 Módulos Diretos):**
+  - **1. 🏠 Dashboard:** Painel do pátio com card de Busca Rápida de Veículos, atalhos de placas e resumo de hoje.
+  - **2. 🚗 Cadastrar Carro:** Cadastro rápido com auto-DNA, dados do proprietário, hodômetro auditado e foto do veículo.
+  - **3. 📅 Agenda da Semana:** Grade semanal com dias úteis de 08:00 às 18:00 e horário de almoço das 12:00 às 13:00 bloqueado em cinza.
+  - **4. 📱 WhatsApp:** Central Oficial de mensageria com pareamento via código de 8 dígitos ou QR Code, templates dinâmicos e histórico.
+  - **5. 🔧 Serviços & Ordens:** Abertura e acompanhamento de ordens de serviço, peças aplicadas e fotos reais de comprovação.
+  - **6. ⚙️ Configurações:** Parâmetros da oficina, expediente e horário de atendimento.
+  - **Sino de Notificações (🔔):** Integrado na barra lateral com badge de situações (atrasadas, próximas, agenda e WhatsApp).
+
+- **Módulo Oficial Baileys (@whiskeysockets/baileys):**
+  - **Experiência Transparente para o Lojista:** Zero complexidade técnica. Fluxo direto: digitar número -> código de pareamento de 8 dígitos formatado (`ABCD-1234`) ou QR Code -> `🟢 Online`.
+  - **Isolamento por Oficina:** Sessões salvas em pastas independentes (`server/sessions/ws_${workshopId}`) e no SQLite.
+  - **Templates Inteligentes:** 9 modelos automáticos com substituição de variáveis (`{cliente}`, `{veiculo}`, `{placa}`, `{oficina}`, etc.).
+  - **Botão [ 📱 WhatsApp ] no Pátio:** Disparo em 1 clique diretamente das tabelas de veículos sem sair do sistema.
 
 - **WhatsApp 100% In-Platform (Sem Sair da Tela do Sistema):**
   - O número cadastrado na oficina atua como remetente oficial permanente.

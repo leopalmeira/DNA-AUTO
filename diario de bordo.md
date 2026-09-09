@@ -112,7 +112,34 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Tabela Dinâmica de Veículos do Pátio:**
   - A seção de veículos cadastrados agora renderiza em tempo real a lista de veículos com miniatura de foto, dados técnicos, cliente com WhatsApp e botão direto `🔧 Novo Serviço`.
 - **Qualidade e Testes:**
-  - 26/26 testes automatizados de integração passando com 100% de sucesso em `test/api.test.js`.
+  ### 🚀 Ciclo 19: Simplificação Radical do Menu da Oficina e Módulo Oficial WhatsApp Baileys (@whiskeysockets/baileys)
+- **Menu Lateral Enxuto e Focado em Produtividade:**
+  - Redução de redundâncias na barra lateral, concentrando a operação em apenas 6 itens essenciais:
+    1. `🏠 Dashboard`: Visão executiva de pátio com card de Busca Rápida de Veículos em destaque e atalhos de placas (`BRA2E19`, `ABC1D23`, `KXZ9012`, `PWL4I85`).
+    2. `🚗 Cadastrar Carro`: Abertura instantânea do modal de cadastro com auto-DNA, dados do proprietário, hodômetro de entrada e foto do veículo.
+    3. `📅 Agenda da Semana`: Grade semanal interativa com dias úteis e horários de 08:00 às 18:00 com horário de almoço das 12:00 às 13:00 apagado em cinza e bloqueado.
+    4. `📱 WhatsApp`: Central de mensageria oficial baseada no motor Baileys com badge visual de status.
+    5. `🔧 Serviços & Ordens`: Gestão de ordens de serviço, lançamento de peças, comprovantes e fotos reais.
+    6. `⚙️ Configurações`: Dados cadastrais da oficina, expediente e preferências.
+  - O sino de notificações operacionais `🔔` permanece acessível no menu lateral com contadores dinâmicos de atrasos, agendamentos e mensagens.
+- **Módulo Oficial WhatsApp Baseado no Baileys (`@whiskeysockets/baileys`):**
+  - **Experiência Amigável e Sem Jargões Técnicos para o Lojista:**
+    - Zero termos técnicos como WebSocket, portas, tokens ou logs de baixo nível.
+    - **Fluxo 1 (Desconectado):** Card limpo com campo de número telefônico `+55 (__) _____-____` e botão `[ CONTINUAR → ]`.
+    - **Fluxo 2 (Pareamento):** Código de pareamento de 8 dígitos formatado (`ABCD-1234`) com botão de cópia de 1 clique + QR Code alternativo para leitura com a câmera do celular + indicador pulsante *"Estamos aguardando a confirmação..."*.
+    - **Fluxo 3 (Conectado):** Status `🟢 Online`, exibição do número conectado, data e hora da última conexão e botões `[ ENVIAR MENSAGEM ]` e `[ ⚙️ Desconectar ]`.
+  - **Multi-Tenant e Persistência no SQLite:**
+    - Cada oficina tem sua sessão persistida de forma isolada na pasta `server/sessions/ws_${workshopId}`.
+    - Tabelas criadas no banco de dados: `whatsapp_sessions` (controle de sessão e status), `whatsapp_messages` (histórico de mensagens) e `whatsapp_templates` (modelos com variáveis).
+  - **Catálogo de 9 Templates Inteligentes com Variáveis Dinâmicas:**
+    - Substituição automática de `{cliente}`, `{veiculo}`, `{marca}`, `{modelo}`, `{placa}`, `{oficina}`, `{servico}`, `{valor}`, `{data}` e `{link}`.
+    - Templates incluídos: Veículo pronto, Orçamento disponível, Orçamento aprovado, Manutenção preventiva, Revisão, Veículo recebido, Veículo entregue, Certificação DNA AUTO e Lembrete de manutenção.
+  - **Histórico Completo de Mensagens:**
+    - Filtros por status: `🟢 Enviada`, `🟡 Aguardando`, `🔴 Falhou`.
+  - **Botão de Ação Rápida no Pátio:**
+    - Botão `[ 📱 WhatsApp ]` adicionado na listagem de veículos atendidos, permitindo disparar mensagens com template pré-selecionado sem sair do sistema.
+- **Qualidade & Testes Automatizados:**
+  - Bateria de testes expandida para **31 testes automatizados** passando com 100% de sucesso (`npm test`), cobrindo status, pareamento, confirmação, templates e envio de mensagens via Baileys.
 
 ---
 

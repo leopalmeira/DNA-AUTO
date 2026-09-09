@@ -441,6 +441,44 @@ CREATE TABLE IF NOT EXISTS integrations (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 33. Sessões do WhatsApp das Oficinas (Baileys Multi-Tenant)
+CREATE TABLE IF NOT EXISTS whatsapp_sessions (
+    id TEXT PRIMARY KEY,
+    workshop_id TEXT NOT NULL UNIQUE REFERENCES workshops(id) ON DELETE CASCADE,
+    phone_number TEXT,
+    status TEXT NOT NULL DEFAULT 'DISCONNECTED', -- 'DISCONNECTED', 'PAIRING', 'CONNECTED', 'ERROR'
+    session_data TEXT,
+    last_connected_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 34. Mensagens e Fila do WhatsApp
+CREATE TABLE IF NOT EXISTS whatsapp_messages (
+    id TEXT PRIMARY KEY,
+    workshop_id TEXT NOT NULL REFERENCES workshops(id) ON DELETE CASCADE,
+    client_id TEXT REFERENCES owners(id) ON DELETE SET NULL,
+    vehicle_id TEXT REFERENCES vehicles(id) ON DELETE SET NULL,
+    phone_number TEXT NOT NULL,
+    message TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'PENDING', -- 'PENDING', 'PROCESSING', 'SENT', 'FAILED'
+    error TEXT,
+    sent_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 35. Templates de Mensagens do WhatsApp
+CREATE TABLE IF NOT EXISTS whatsapp_templates (
+    id TEXT PRIMARY KEY,
+    workshop_id TEXT REFERENCES workshops(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'GERAL',
+    content TEXT NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Índices Estratégicos de Alta Performance
 CREATE INDEX IF NOT EXISTS idx_vehicle_dna_code ON vehicle_dna(dna_code);
 CREATE INDEX IF NOT EXISTS idx_vehicles_license_plate ON vehicles(license_plate);
@@ -454,3 +492,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_vehicle_dna ON audit_logs(vehicle_dna_code)
 CREATE INDEX IF NOT EXISTS idx_audit_action ON audit_logs(action);
 CREATE INDEX IF NOT EXISTS idx_audit_created_at ON audit_logs(created_at);
 CREATE INDEX IF NOT EXISTS idx_transfers_vehicle ON ownership_transfers(vehicle_id);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_sessions_ws ON whatsapp_sessions(workshop_id);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_ws ON whatsapp_messages(workshop_id);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_messages_status ON whatsapp_messages(status);
+CREATE INDEX IF NOT EXISTS idx_whatsapp_templates_ws ON whatsapp_templates(workshop_id);
