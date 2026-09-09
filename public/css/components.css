@@ -1149,5 +1149,207 @@
     border-bottom: none;
 }
 
+/* ============================================================================== */
+/* PLATAFORMA ERP OFICINA (ESTILO TOTVS CORPORATIVO)                              */
+/* ============================================================================== */
+.ws-erp-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+}
 
+.ws-erp-header {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
 
+.ws-erp-header-title h2 {
+    font-size: 19px;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 4px 0 2px;
+    letter-spacing: -0.3px;
+}
+
+.ws-erp-header-title p {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+.ws-erp-body {
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+@media (max-width: 960px) {
+    .ws-erp-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Sub-Menu Lateral da Oficina */
+.ws-erp-sidebar {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+@media (max-width: 960px) {
+    .ws-erp-sidebar {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 6px;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+.ws-erp-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 12px;
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+    user-select: none;
+}
+
+.ws-erp-nav-item:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.ws-erp-nav-item.active {
+    color: #05080d;
+    background: #FFD21C;
+    font-weight: 800;
+    box-shadow: 0 2px 8px rgba(255, 210, 28, 0.25);
+}
+
+.ws-erp-nav-item.active svg {
+    stroke: #05080d;
+}
+
+.ws-erp-nav-left {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.ws-erp-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-dim);
+    font-weight: 700;
+}
+
+.ws-erp-nav-item.active .ws-erp-badge {
+    background: rgba(0, 0, 0, 0.2);
+    color: #05080d;
+}
+
+.ws-erp-badge.alert-pulse {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    animation: wsPulseBadge 2s infinite;
+}
+
+.ws-erp-nav-item.active .ws-erp-badge.alert-pulse {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+@keyframes wsPulseBadge {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.ws-erp-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+/* Barra de Pesquisa com 2 Botões */
+.ws-search-dual-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.ws-btn-cadastrar-carro {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    padding: 0 16px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: filter 0.15s ease;
+}
+
+.ws-btn-cadastrar-carro:hover {
+    filter: brightness(1.1);
+}
+
+/* Alerta de Entrada Imediata OBD2 */
+.ws-entry-alert-box {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(15, 23, 42, 0.8));
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-bottom: 14px;
+}
+
+.ws-entry-alert-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #f87171;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.ws-entry-alert-body {
+    font-size: 12.5px;
+    color: var(--text-main);
+    line-height: 1.5;
+}
+
+/* Tabela de Alertas de Manutenção Preventiva */
+.ws-alert-row-critical {
+    background: rgba(239, 68, 68, 0.04);
+}
+.ws-alert-row-warning {
+    background: rgba(245, 158, 11, 0.04);
+}

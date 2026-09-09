@@ -5,6 +5,9 @@ const path = require('path');
 // Inicialização do Banco
 require('./database/db');
 
+// Serviço Anti-Sleep / Keep-Alive (Render Free Tier)
+const { startKeepAlive } = require('./services/keepAlive.service');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -70,10 +73,12 @@ app.use((req, res) => {
 
 // Função para iniciar o servidor
 function startServer() {
-    return app.listen(PORT, '0.0.0.0', () => {
+    const server = app.listen(PORT, '0.0.0.0', () => {
         console.log(`🚀 DNA AUTO Server rodando na porta ${PORT}`);
         console.log(`🌐 Frontend disponível em http://0.0.0.0:${PORT}`);
+        startKeepAlive();
     });
+    return server;
 }
 
 // Iniciar Servidor automaticamente se executado diretamente

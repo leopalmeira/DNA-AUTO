@@ -11,3 +11,7 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: SERVER_URL
+        value: https://dna-auto.onrender.com
+      - key: WDAPI_TOKEN
+        value: be14254e5b6a32f36acabc0542e822dd

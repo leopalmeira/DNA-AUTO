@@ -34,7 +34,7 @@ const LandingView = {
 
         const navAuthButton = isLogged
             ? `<button class="totvs-btn-ghost" onclick="App.switchView('${panelTarget}')" style="border-color:#FFD21C; color:#FFD21C; font-weight:700;">${panelLabel}</button>`
-            : `<button class="totvs-btn-ghost" onclick="App.switchView('login')">Entrar na Plataforma</button>`;
+            : `<button class="totvs-btn-ghost" onclick="App.switchView('login')"><span class="desktop-only">Entrar na Plataforma</span><span class="mobile-only">Entrar</span></button>`;
 
         const container = document.getElementById('view-content');
         container.innerHTML = `
@@ -56,24 +56,19 @@ const LandingView = {
                             </div>
                             <div class="totvs-brand-title">
                                 <span>DNA <strong style="color:#FFD21C;">AUTO</strong></span>
-                                <small>Plataforma Integrada de Gestão & Certificação Veicular</small>
                             </div>
                         </div>
 
-                        <nav class="totvs-nav-links">
-                            <a href="#gastos-6-meses" class="totvs-nav-link">Gastos 6 Meses</a>
-                            <a href="#relatorio-completo" class="totvs-nav-link">Relatório do Carro</a>
-                            <a href="#para-oficinas" class="totvs-nav-link highlight-b2b">
-                                <span class="totvs-pulse-mini"></span> Para Oficinas (B2B)
-                            </a>
-                            <a href="#consulta-placa" class="totvs-nav-link">Consultar Placa</a>
-                            <a href="#faq-section" class="totvs-nav-link">Dúvidas</a>
+                        <nav class="totvs-nav-links" id="totvs-nav-links">
+                            ${this.renderNavLinks()}
                         </nav>
 
-                        <div class="totvs-nav-actions">
+                        <div class="totvs-nav-actions" id="totvs-nav-actions">
                             ${navAuthButton}
-                            <button class="totvs-btn-gold" onclick="LandingView.goToRegister()">
-                                Garantir DNA (R$ 59,90)
+                            <button class="totvs-btn-gold" id="totvs-nav-main-cta" onclick="${this.activeAudienceTab === 'WORKSHOP' ? 'LandingView.goToRegisterWorkshop()' : 'LandingView.goToRegister()'}">
+                                ${this.activeAudienceTab === 'WORKSHOP' 
+                                    ? '<span class="desktop-only">Credenciar Oficina (Grátis)</span><span class="mobile-only">Credenciar Grátis</span>' 
+                                    : '<span class="desktop-only">Garantir DNA (R$ 59,90)</span><span class="mobile-only">Garantir DNA</span>'}
                             </button>
                         </div>
                     </div>
@@ -88,10 +83,10 @@ const LandingView = {
                         <!-- Switcher de Perfil Rápido -->
                         <div class="totvs-audience-switcher">
                             <button class="totvs-audience-btn ${this.activeAudienceTab === 'OWNER' ? 'active' : ''}" onclick="LandingView.switchAudience('OWNER')">
-                                <span>🚗 Sou Dono de Carro</span>
+                                <span>🚗 <span class="desktop-only">Sou </span>Dono de Carro</span>
                             </button>
                             <button class="totvs-audience-btn ${this.activeAudienceTab === 'WORKSHOP' ? 'active' : ''}" onclick="LandingView.switchAudience('WORKSHOP')">
-                                <span>🔧 Sou Dono de Oficina Mecânica</span>
+                                <span>🔧 <span class="desktop-only">Sou </span>Dono de Oficina</span>
                             </button>
                         </div>
 
@@ -100,538 +95,79 @@ const LandingView = {
                             ${this.renderHeroDynamicContent()}
                         </div>
 
-                        <!-- Faixa de KPIs Corporativos da Rede -->
-                        <div class="totvs-kpi-bar">
-                            <div class="totvs-kpi-item">
-                                <span class="totvs-kpi-val">100%</span>
-                                <span class="totvs-kpi-lbl">Transparência Financeira dos Últimos 6 Meses</span>
-                            </div>
-                            <div class="totvs-kpi-sep"></div>
-                            <div class="totvs-kpi-item">
-                                <span class="totvs-kpi-val">R$ 59,90</span>
-                                <span class="totvs-kpi-lbl">Pagamento Único Vitalício por Veículo</span>
-                            </div>
-                            <div class="totvs-kpi-sep"></div>
-                            <div class="totvs-kpi-item">
-                                <span class="totvs-kpi-val">+35%</span>
-                                <span class="totvs-kpi-lbl">Faturamento Recorrente para Oficinas Parceiras</span>
-                            </div>
-                            <div class="totvs-kpi-sep"></div>
-                            <div class="totvs-kpi-item">
-                                <span class="totvs-kpi-val">0 km</span>
-                                <span class="totvs-kpi-lbl">Previsão Exata de Correia & Câmbio Automático</span>
-                            </div>
+                        <!-- Faixa Dinâmica de KPIs Corporativos da Rede -->
+                        <div class="totvs-kpi-bar" id="totvs-kpi-bar-block">
+                            ${this.renderKpiBar()}
                         </div>
                     </div>
                 </section>
 
                 <!-- ========================================== -->
-                <!-- SEÇÃO 1: CONTROLE DE GASTOS DOS ÚLTIMOS 6 MESES (DONO) -->
+                <!-- SEÇÕES DINÂMICAS: DONO DO CARRO VS OFICINA -->
                 <!-- ========================================== -->
-                <section class="totvs-section" id="gastos-6-meses">
-                    <div class="totvs-container">
-                        <div class="totvs-section-header">
-                            <span class="totvs-badge-tag cyan">GESTÃO FINANCEIRA DO VEÍCULO</span>
-                            <h2>Você Sabe Exatamente Quanto Gastou no Carro nos Últimos 6 Meses?</h2>
-                            <p>
-                                O DNA AUTO revoluciona a relação do motorista com seu patrimônio. Tenha um raio-x financeiro semestral detalhado, centavo por centavo, separando peças trocadas, mão de obra, filtros e economias geradas.
-                            </p>
-                        </div>
-
-                        <!-- Card de Demonstração Financeira Semestral Estilo TOTVS -->
-                        <div class="totvs-financial-dashboard-card">
-                            <div class="totvs-fin-header">
-                                <div class="totvs-fin-car-badge">
-                                    <div class="totvs-car-avatar">🚗</div>
-                                    <div>
-                                        <strong>Honda Civic Touring 1.5 Turbo 2021</strong>
-                                        <small>Placa: BRA2E19 • Odômetro: 125.200 km • DNA Ativo</small>
-                                    </div>
-                                </div>
-                                <div class="totvs-fin-period">
-                                    <span class="totvs-period-pill">Últimos 6 Meses (Outubro a Março)</span>
-                                </div>
-                            </div>
-
-                            <!-- Resumo das Métricas Financeiras -->
-                            <div class="totvs-fin-metrics-grid">
-                                <div class="totvs-fin-metric-card primary">
-                                    <span class="metric-label">Investimento Total nos Últimos 6 Meses</span>
-                                    <span class="metric-value">R$ 1.840,00</span>
-                                    <span class="metric-footnote">Em 3 intervenções preventivas auditadas</span>
-                                </div>
-                                <div class="totvs-fin-metric-card">
-                                    <span class="metric-label">Peças Genuínas & Originais</span>
-                                    <span class="metric-value" style="color:#38bdf8;">R$ 1.120,00</span>
-                                    <span class="metric-footnote">60,8% do investimento (com fotos e NFs)</span>
-                                </div>
-                                <div class="totvs-fin-metric-card">
-                                    <span class="metric-label">Mão de Obra Especializada</span>
-                                    <span class="metric-value" style="color:#a855f7;">R$ 540,00</span>
-                                    <span class="metric-footnote">Oficina Credenciada Veloce Auto Center</span>
-                                </div>
-                                <div class="totvs-fin-metric-card success">
-                                    <span class="metric-label">Economia Preventiva Estimada</span>
-                                    <span class="metric-value" style="color:#10b981;">R$ 4.200,00</span>
-                                    <span class="metric-footnote">Ao evitar a quebra da correia e contaminação</span>
-                                </div>
-                            </div>
-
-                            <!-- Gráfico Semestral Interativo de Gastos -->
-                            <div class="totvs-fin-chart-section">
-                                <div class="totvs-chart-title">
-                                    <span>Evolução de Gastos Mês a Mês</span>
-                                    <small>Clique nas barras para inspecionar os serviços de cada mês</small>
-                                </div>
-                                
-                                <div class="totvs-chart-bars">
-                                    <div class="totvs-bar-col ${this.selectedMonthIndex === 0 ? 'selected' : ''}" onclick="LandingView.selectMonth(0)">
-                                        <div class="totvs-bar-val">R$ 420</div>
-                                        <div class="totvs-bar-fill" style="height: 35%;"></div>
-                                        <div class="totvs-bar-lbl">Outubro</div>
-                                    </div>
-                                    <div class="totvs-bar-col ${this.selectedMonthIndex === 1 ? 'selected' : ''}" onclick="LandingView.selectMonth(1)">
-                                        <div class="totvs-bar-val">R$ 0</div>
-                                        <div class="totvs-bar-fill zero" style="height: 4%;"></div>
-                                        <div class="totvs-bar-lbl">Novembro</div>
-                                    </div>
-                                    <div class="totvs-bar-col ${this.selectedMonthIndex === 2 ? 'selected' : ''}" onclick="LandingView.selectMonth(2)">
-                                        <div class="totvs-bar-val" style="color:#FFD21C;">R$ 1.150</div>
-                                        <div class="totvs-bar-fill peak" style="height: 90%;"></div>
-                                        <div class="totvs-bar-lbl font-bold">Dezembro</div>
-                                    </div>
-                                    <div class="totvs-bar-col ${this.selectedMonthIndex === 3 ? 'selected' : ''}" onclick="LandingView.selectMonth(3)">
-                                        <div class="totvs-bar-val">R$ 0</div>
-                                        <div class="totvs-bar-fill zero" style="height: 4%;"></div>
-                                        <div class="totvs-bar-lbl">Janeiro</div>
-                                    </div>
-                                    <div class="totvs-bar-col ${this.selectedMonthIndex === 4 ? 'selected' : ''}" onclick="LandingView.selectMonth(4)">
-                                        <div class="totvs-bar-val">R$ 270</div>
-                                        <div class="totvs-bar-fill" style="height: 25%;"></div>
-                                        <div class="totvs-bar-lbl">Fevereiro</div>
-                                    </div>
-                                    <div class="totvs-bar-col ${this.selectedMonthIndex === 5 ? 'selected' : ''}" onclick="LandingView.selectMonth(5)">
-                                        <div class="totvs-bar-val">R$ 0</div>
-                                        <div class="totvs-bar-fill zero" style="height: 4%;"></div>
-                                        <div class="totvs-bar-lbl">Março</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Detalhamento do Mês Selecionado -->
-                            <div class="totvs-fin-month-detail" id="totvs-month-detail-box">
-                                ${this.renderMonthDetail(this.selectedMonthIndex)}
-                            </div>
-                        </div>
-                    </div>
-                </section>
+                <div id="totvs-audience-sections-block">
+                    ${this.renderAudienceSections()}
+                </div>
 
                 <!-- ========================================== -->
-                <!-- SEÇÃO 2: RELATÓRIO COMPLETO DO QUE FOI FEITO NO CARRO -->
-                <!-- ========================================== -->
-                <section class="totvs-section" id="relatorio-completo" style="background:#070c14; border-top:1px solid rgba(255,210,28,0.15); border-bottom:1px solid rgba(255,210,28,0.15);">
-                    <div class="totvs-container">
-                        <div class="totvs-section-header">
-                            <span class="totvs-badge-tag gold">AUDITORIA INDELÉVEL</span>
-                            <h2>Relatório Completo de Tudo o que Aconteceu no Carro</h2>
-                            <p>
-                                Chega de notas fiscais perdidas no porta-luvas ou registros esquecidos no WhatsApp. O DNA AUTO compila toda a vida técnica do veículo em um laudo digital vitalício com comprovação Nível 4.
-                            </p>
-                        </div>
-
-                        <div class="totvs-report-pillars">
-                            <div class="totvs-pillar-card">
-                                <div class="totvs-pillar-icon">📸</div>
-                                <h3>Fotos Reais Antes & Depois</h3>
-                                <p>A oficina credenciada fotografa a peça gasta retirada do veículo e a nova peça que foi instalada, com carimbo de data e odômetro.</p>
-                                <span class="totvs-pillar-tag">Prova Nível 4</span>
-                            </div>
-
-                            <div class="totvs-pillar-card">
-                                <div class="totvs-pillar-icon">🧾</div>
-                                <h3>Notas Fiscais & Part Numbers</h3>
-                                <p>Código original de cada item substituído (ex: pastilha de cerâmica Brembo P28035N), lote de lubrificante e chave de NF-e.</p>
-                                <span class="totvs-pillar-tag">Rastreabilidade Total</span>
-                            </div>
-
-                            <div class="totvs-pillar-card">
-                                <div class="totvs-pillar-icon">🔒</div>
-                                <h3>Quilometragem Imutável</h3>
-                                <p>Cada registro audita a quilometragem e impede adulterações de odômetro, eliminando o maior golpe do mercado de usados.</p>
-                                <span class="totvs-pillar-tag">Proteção Anti-Golpe</span>
-                            </div>
-
-                            <div class="totvs-pillar-card">
-                                <div class="totvs-pillar-icon">📈</div>
-                                <h3>Valorização de até 15% na Venda</h3>
-                                <p>Compradores pagam mais caro e compram até 3x mais rápido de quem apresenta um Dossiê DNA AUTO com QR Code autenticado.</p>
-                                <span class="totvs-pillar-tag">Mais Dinheiro no Bolso</span>
-                            </div>
-                        </div>
-
-                        <!-- Exemplo do Laudo em Linha do Tempo -->
-                        <div class="totvs-timeline-preview-box">
-                            <div class="totvs-timeline-header">
-                                <div>
-                                    <strong style="color:#ffffff; font-size:16px;">Exemplo de Linha do Tempo Auditada no Dossiê</strong>
-                                    <p style="color:#94a3b8; font-size:12px; margin:2px 0 0;">Dados reais sincronizados da oficina credenciada</p>
-                                </div>
-                                <button class="totvs-btn-outline-gold" onclick="DossierView.render('DNA-BR-8F72-29A4-X91')">
-                                    Abrir Dossiê 360° Completo (Demo) →
-                                </button>
-                            </div>
-
-                            <div class="totvs-timeline-items">
-                                <div class="totvs-tl-item">
-                                    <div class="totvs-tl-dot gold"></div>
-                                    <div class="totvs-tl-body">
-                                        <div class="totvs-tl-top">
-                                            <strong>Troca Preventiva de Discos & Pastilhas Dianteiras</strong>
-                                            <span class="totvs-tl-date">15/12/2025 • 122.400 km</span>
-                                        </div>
-                                        <p>Substituição por pastilhas de cerâmica Brembo + sangria e troca de fluido DOT 5.1. NF-e #49281 anexada.</p>
-                                        <div class="totvs-tl-photos">
-                                            <span class="totvs-photo-tag">📷 Foto das Pastilhas Velhas vs Novas anexada</span>
-                                            <span class="totvs-photo-tag">✅ Laudo de Frenagem Ok</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="totvs-tl-item">
-                                    <div class="totvs-tl-dot cyan"></div>
-                                    <div class="totvs-tl-body">
-                                        <div class="totvs-tl-top">
-                                            <strong>Revisão de Lubrificação & Filtros Sintéticos</strong>
-                                            <span class="totvs-tl-date">28/10/2025 • 118.900 km</span>
-                                        </div>
-                                        <p>Óleo 0W-20 API SP 100% Sintético (4.2L) + filtro de óleo Mann W610 + filtro de ar do motor e cabine com higienização de ozônio.</p>
-                                        <div class="totvs-tl-photos">
-                                            <span class="totvs-photo-tag">🛢️ Lote de Óleo Homologado</span>
-                                            <span class="totvs-photo-tag">📲 Alerta de Próxima Troca Agendado</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ========================================== -->
-                <!-- SEÇÃO 3: PARA OFICINAS MECÂNICAS (B2B ENGINE) -->
-                <!-- ========================================== -->
-                <section class="totvs-section totvs-b2b-highlight" id="para-oficinas">
-                    <div class="totvs-container">
-                        <div class="totvs-section-header">
-                            <span class="totvs-badge-tag b2b">MÓDULO B2B • CENTROS AUTOMOTIVOS & OFICINAS</span>
-                            <h2>Aumente o Faturamento de sua Oficina com Gestão Preditiva de Clientes</h2>
-                            <p>
-                                Transforme clientes casuais em receita previsível e recorrente. O DNA AUTO avisa a sua oficina e ao seu cliente exatamente no momento certo de intervir, antes que ele procure o concorrente ou sofra uma quebra na estrada.
-                            </p>
-                        </div>
-
-                        <!-- 3 Pilares Chave Solicitados pelo Usuário -->
-                        <div class="totvs-workshop-features-grid">
-                            <!-- 1. CORREIA DENTADA -->
-                            <div class="totvs-workshop-card">
-                                <div class="totvs-ws-icon red">⚙️</div>
-                                <h3>Previsão Exata da Troca de Correia Dentada</h3>
-                                <p class="totvs-ws-desc">
-                                    O sistema calcula a rodagem do cliente cadastrado e avisa <strong>quanto falta para a troca da correia dentada e tensores</strong>. Você programa o agendamento preventivo e salva o cliente de um prejuízo de R$ 8.000 a R$ 20.000 de motor batido.
-                                </p>
-                                <div class="totvs-ws-stat">
-                                    <span>Ticket Médio do Serviço:</span>
-                                    <strong>R$ 850 a R$ 1.800</strong>
-                                </div>
-                                <div class="totvs-ws-benefit">
-                                    ✅ Alerta automático no WhatsApp da sua oficina e do dono do veículo.
-                                </div>
-                            </div>
-
-                            <!-- 2. TROCA DE ÓLEO DO CÂMBIO AUTOMÁTICO -->
-                            <div class="totvs-workshop-card featured">
-                                <div class="totvs-ws-badge-top">SERVIÇO DE ALTO TICKET</div>
-                                <div class="totvs-ws-icon gold">🔄</div>
-                                <h3>Alerta de Troca de Óleo do Câmbio Automático</h3>
-                                <p class="totvs-ws-desc">
-                                    A grande maioria dos motoristas nem sabe que o câmbio automático precisa trocar óleo e filtro. O DNA AUTO monitora os 40.000 a 60.000 km e alerta o cliente que a sua oficina está pronta para fazer o serviço com máquina de diálise.
-                                </p>
-                                <div class="totvs-ws-stat">
-                                    <span>Ticket Médio do Serviço:</span>
-                                    <strong style="color:#FFD21C;">R$ 1.600 a R$ 3.800</strong>
-                                </div>
-                                <div class="totvs-ws-benefit">
-                                    ✅ Recupere serviços de alto lucro que hoje fogem para concessionárias.
-                                </div>
-                            </div>
-
-                            <!-- 3. IDENTIFICAÇÃO DE FALHAS ANTECIPADA -->
-                            <div class="totvs-workshop-card">
-                                <div class="totvs-ws-icon cyan">⚡</div>
-                                <h3>Identificação de Falhas Antes do Carro Chegar</h3>
-                                <p class="totvs-ws-desc">
-                                    Algoritmos de telemetria preditiva, histórico de sintomas prévios e checklist inteligente identificam <strong>anomalias mecânicas e elétricas antes mesmo do carro chegar na oficina</strong>. Você já prepara as peças e o elevador com antecedência.
-                                </p>
-                                <div class="totvs-ws-stat">
-                                    <span>Ganho de Produtividade:</span>
-                                    <strong>+40% no Giro de Box</strong>
-                                </div>
-                                <div class="totvs-ws-benefit">
-                                    ✅ Diagnóstico preventivo que encanta o cliente e zera tempo ocioso.
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Painel de Demonstração do Radar da Oficina -->
-                        <div class="totvs-radar-demo-card">
-                            <div class="totvs-radar-top">
-                                <div>
-                                    <span class="totvs-radar-title">RADAR PREDITIVO DE SERVIÇOS — VISÃO DA OFICINA</span>
-                                    <small style="display:block; color:#94a3b8; font-size:12px;">Clientes cadastrados com manutenções de alto ticket próximas do vencimento</small>
-                                </div>
-                                <div class="totvs-radar-badge">
-                                    <span class="totvs-pulse-green"></span> 3 Revisões Críticas neste Mês
-                                </div>
-                            </div>
-
-                            <div class="totvs-radar-table-responsive">
-                                <table class="totvs-radar-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Cliente & Veículo</th>
-                                            <th>Manutenção Crítica</th>
-                                            <th>Quanto Falta?</th>
-                                            <th>Ticket Estimado</th>
-                                            <th>Ação Recomendada</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <strong>Carlos Silva</strong>
-                                                <small>Civic Touring 1.5 • BRA2E19</small>
-                                            </td>
-                                            <td>
-                                                <span class="radar-tag red">Troca Correia Dentada & Tensores</span>
-                                            </td>
-                                            <td>
-                                                <strong style="color:#ef4444;">Faltam 1.200 km (aprox. 18 dias)</strong>
-                                            </td>
-                                            <td>R$ 1.450,00</td>
-                                            <td>
-                                                <button class="totvs-btn-wa-action" onclick="LandingView.simulateWhatsApp('Carlos Silva', 'BRA2E19', 'Correia Dentada')">
-                                                    <span>📲 Disparar WhatsApp</span>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Mariana Souza</strong>
-                                                <small>Corolla Altis Hybrid • ABC1D23</small>
-                                            </td>
-                                            <td>
-                                                <span class="radar-tag gold">Troca de Óleo Câmbio Automático (CVT)</span>
-                                            </td>
-                                            <td>
-                                                <strong style="color:#FFD21C;">Faltam 2.800 km (aprox. 35 dias)</strong>
-                                            </td>
-                                            <td>R$ 2.100,00</td>
-                                            <td>
-                                                <button class="totvs-btn-wa-action" onclick="LandingView.simulateWhatsApp('Mariana Souza', 'ABC1D23', 'Óleo de Câmbio Automático')">
-                                                    <span>📲 Disparar WhatsApp</span>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <strong>Roberto Mendes</strong>
-                                                <small>Compass Longitude • JHG4B88</small>
-                                            </td>
-                                            <td>
-                                                <span class="radar-tag cyan">Falha Antecipada: Bobina / Pressão Turbo</span>
-                                            </td>
-                                            <td>
-                                                <strong style="color:#38bdf8;">Alerta Preventivo Detectado</strong>
-                                            </td>
-                                            <td>R$ 1.890,00</td>
-                                            <td>
-                                                <button class="totvs-btn-wa-action" onclick="LandingView.simulateWhatsApp('Roberto Mendes', 'JHG4B88', 'Diagnóstico Preventivo Turbo')">
-                                                    <span>📲 Disparar WhatsApp</span>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <!-- CTA B2B da Oficina -->
-                            <div class="totvs-radar-cta-row">
-                                <div class="totvs-radar-cta-text">
-                                    <strong>Credencie sua oficina gratuitamente hoje mesmo.</strong>
-                                    <span>Sem mensalidade básica. Ganhe comissões por cada cliente que ativar o DNA e multiplique o ticket de retorno.</span>
-                                </div>
-                                <button class="totvs-btn-gold" style="padding:14px 28px; font-size:15px;" onclick="LandingView.goToRegisterWorkshop()">
-                                    🔧 Quero Credenciar Minha Oficina Agora
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ========================================== -->
-                <!-- SEÇÃO 4: CONSULTA RÁPIDA DE PLACA (INTERATIVA) -->
-                <!-- ========================================== -->
-                <section class="totvs-section" id="consulta-placa" style="background:#090e18;">
-                    <div class="totvs-container">
-                        <div class="totvs-section-header">
-                            <span class="totvs-badge-tag cyan">SIMULADOR AO VIVO</span>
-                            <h2>Consulte o DNA de um Veículo Agora</h2>
-                            <p>Digite a placa de qualquer carro cadastrado para ver como o histórico digital e o extrato de manutenções são exibidos.</p>
-                        </div>
-
-                        <div class="totvs-search-card">
-                            <form onsubmit="LandingView.handleSearchPlate(event)" class="totvs-search-form">
-                                <div class="totvs-plate-input-wrapper">
-                                    <div class="totvs-plate-flag">
-                                        <span>BRASIL • MERCOSUL</span>
-                                    </div>
-                                    <input type="text" id="landing-plate-input" placeholder="Ex: BRA2E19" maxlength="8" class="totvs-plate-input" />
-                                </div>
-                                <button type="submit" class="totvs-search-submit">
-                                    <span>Verificar Dossiê</span>
-                                    <span style="font-size:16px;">🔍</span>
-                                </button>
-                            </form>
-
-                            <div class="totvs-search-examples">
-                                <span>Placas de demonstração ativas na rede:</span>
-                                <button type="button" class="totvs-example-tag" onclick="LandingView.fillPlate('BRA2E19')">
-                                    BRA2E19 (Civic Touring • Nível 4)
-                                </button>
-                                <button type="button" class="totvs-example-tag" onclick="LandingView.fillPlate('ABC1D23')">
-                                    ABC1D23 (Corolla Altis)
-                                </button>
-                                <button type="button" class="totvs-example-tag" onclick="LandingView.fillPlate('STR1A99')">
-                                    STR1A99 (Strada • Sem DNA)
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ========================================== -->
-                <!-- SEÇÃO 5: COMPARATIVO CARRO COM DNA vs SEM DNA -->
-                <!-- ========================================== -->
-                <section class="totvs-section" style="background:linear-gradient(180deg, #070b13 0%, #0c1424 100%);">
-                    <div class="totvs-container">
-                        <div class="totvs-compare-box">
-                            <div class="totvs-compare-col red">
-                                <div class="totvs-compare-badge red">❌ Carro Tradicional Sem DNA</div>
-                                <ul class="totvs-compare-list">
-                                    <li>❌ O dono não faz ideia de quanto gastou nos últimos 6 meses</li>
-                                    <li>❌ Nenhuma comprovação de troca de correia dentada ou óleo de câmbio</li>
-                                    <li>❌ Comprador desconfia de adulteração no odômetro</li>
-                                    <li>❌ Oficina perde o cliente para outro mecânico sem saber</li>
-                                    <li>❌ Carro desvaloriza de 10% a 20% abaixo da tabela FIPE na venda</li>
-                                </ul>
-                            </div>
-
-                            <div class="totvs-compare-divider">
-                                <span>VS</span>
-                            </div>
-
-                            <div class="totvs-compare-col gold">
-                                <div class="totvs-compare-badge gold">✅ Carro Certificado com DNA AUTO</div>
-                                <ul class="totvs-compare-list">
-                                    <li>✅ <strong>Extrato completo de gastos dos últimos 6 meses sempre visível</strong></li>
-                                    <li>✅ <strong>Relatório oficial de todas as peças e serviços com fotos Nível 4</strong></li>
-                                    <li>✅ <strong>Quilometragem auditada e imutável gravada no passaporte</strong></li>
-                                    <li>✅ <strong>Oficina avisa o momento cirúrgico de trocar correias e óleo de câmbio</strong></li>
-                                    <li>✅ <strong>Venda até 3x mais rápida com valorização de até 15% acima da FIPE</strong></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ========================================== -->
-                <!-- SEÇÃO 6: OFERTA CANÔNICA DE R$ 59,90       -->
-                <!-- ========================================== -->
-                <section class="totvs-section" style="text-align:center; padding:80px 20px;">
-                    <div class="totvs-container" style="max-width:740px;">
-                        <span class="totvs-badge-tag gold" style="font-size:12px; padding:6px 16px;">
-                            PAGAMENTO ÚNICO • ACESSO VITALÍCIO
-                        </span>
-                        <h2 style="font-size:40px; color:#ffffff; font-weight:800; margin:20px 0 12px; letter-spacing:-0.5px;">
-                            Garanta Agora o Passaporte Digital do Seu Carro
-                        </h2>
-                        <div style="font-size:54px; color:#FFD21C; font-weight:900; margin:10px 0; text-shadow:0 0 30px rgba(255,210,28,0.4);">
-                            R$ 59,90
-                        </div>
-                        <p style="font-size:16px; color:#94a3b8; line-height:1.6; margin-bottom:32px;">
-                            Sem mensalidades recorrentes para o motorista. O DNA pertence ao veículo e acompanha o histórico da placa para sempre, mesmo em futuras transferências.
-                        </p>
-
-                        <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
-                            <button class="totvs-btn-primary-hero" onclick="LandingView.goToRegister()">
-                                <span>⭐ Ativar DNA do Meu Veículo (R$ 59,90)</span>
-                                <span class="landing-cta-arrow">→</span>
-                            </button>
-                            <button class="totvs-btn-outline-gold" onclick="LandingView.goToRegisterWorkshop()">
-                                <span>🔧 Credenciar Oficina Gratuitamente</span>
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ========================================== -->
-                <!-- SEÇÃO 7: PERGUNTAS FREQUENTES (FAQ)        -->
+                <!-- SEÇÃO FAQ: DÚVIDAS FREQUENTES              -->
                 <!-- ========================================== -->
                 <section class="totvs-section" id="faq-section" style="background:#060a12; border-top:1px solid rgba(255,255,255,0.06);">
                     <div class="totvs-container" style="max-width:840px;">
                         <div class="totvs-section-header">
                             <span class="totvs-badge-tag cyan">PERGUNTAS FREQUENTES</span>
                             <h2>Tire Suas Dúvidas sobre o DNA AUTO</h2>
-                            <p>Tudo o que você precisa saber sobre a gestão financeira, o relatório de manutenções e o credenciamento de oficinas.</p>
+                            <p>Tudo o que você precisa saber sobre a gestão financeira do veículo, o radar preditivo e o credenciamento de oficinas.</p>
                         </div>
 
                         <div class="totvs-faq-accordion">
                             <div class="totvs-faq-item">
                                 <div class="totvs-faq-q" onclick="LandingView.toggleFaq(this)">
-                                    <span>Como funciona o controle de gastos dos últimos 6 meses?</span>
+                                    <span>Como a oficina mecânica sabe quando trocar a correia dentada do cliente?</span>
                                     <span class="totvs-faq-icon">+</span>
                                 </div>
                                 <div class="totvs-faq-a">
-                                    <p>Sempre que uma oficina credenciada realiza uma intervenção ou você registra uma manutenção no sistema, os valores de peças e serviços são computados automaticamente. O painel compila os custos mês a mês dos últimos 6 meses, permitindo que você saiba com exatidão onde cada centavo foi investido e qual economia preventiva foi gerada.</p>
+                                    <p>O algoritmo inteligente do DNA AUTO cruza o histórico do veículo, a data da última troca e a quilometragem média percorrida pelo condutor. Quando a correia dentada, tensores ou óleos atingem a faixa crítica (próximo aos 40.000 ou 50.000 km), o próprio sistema gera o alerta preventivo e cria o botão de WhatsApp já pronto para envio em 1 clique.</p>
                                 </div>
                             </div>
 
                             <div class="totvs-faq-item">
                                 <div class="totvs-faq-q" onclick="LandingView.toggleFaq(this)">
-                                    <span>Como a oficina descobre quanto falta para a correia dentada e óleo do câmbio?</span>
+                                    <span>O sistema realmente faz o trabalho de avisar o cliente pela oficina?</span>
                                     <span class="totvs-faq-icon">+</span>
                                 </div>
                                 <div class="totvs-faq-a">
-                                    <p>O algoritmo inteligente do DNA AUTO cruza o histórico do veículo, a quilometragem média diária percorrida pelo condutor e a especificação técnica da montadora para cada modelo. Quando a correia dentada ou o fluido do câmbio automático atingem 85% do limite seguro de rodagem, o sistema emite um alerta prioritário para a oficina e dispara uma mensagem preventiva pelo WhatsApp para o cliente agendar o serviço.</p>
+                                    <p>Sim! A oficina não precisa mais conferir cadernos nem pranchetas manuais. O sistema monitora a frota de todos os clientes cadastrados e monta a mensagem personalizada com nome, placa e o serviço necessário com base no desgaste e odômetro. O mecânico só clica e envia no WhatsApp.</p>
                                 </div>
                             </div>
 
                             <div class="totvs-faq-item">
                                 <div class="totvs-faq-q" onclick="LandingView.toggleFaq(this)">
-                                    <span>Como o sistema identifica uma falha antes do carro chegar na oficina?</span>
+                                    <span>Como isso gera aumento no faturamento da oficina?</span>
                                     <span class="totvs-faq-icon">+</span>
                                 </div>
                                 <div class="totvs-faq-a">
-                                    <p>O sistema conta com um módulo de pré-diagnóstico preditivo. Ao registrar revisões anteriores, sintomas relatados pelo condutor ou anomalias registradas em ordens de serviço anteriores, a oficina recebe relatórios de risco (ex: desgaste anormal de pastilhas indicando empenamento de disco, oscilação de bobina ou queda de pressão do fluido). Isso permite intervir antes que a falha provoque a parada total do veículo.</p>
+                                    <p>A oficina para de depender de carros que quebram na rua e passa a ter fluxo contínuo de revisões programadas de alto ticket (kit correia dentada, óleo de câmbio automático, pastilhas e bomba d'água). Sabendo o que cada carro precisa antes dele chegar, a oficina elimina tempo ocioso e aumenta o faturamento médio em mais de 35%.</p>
                                 </div>
                             </div>
 
                             <div class="totvs-faq-item">
                                 <div class="totvs-faq-q" onclick="LandingView.toggleFaq(this)">
-                                    <span>O pagamento de R$ 59,90 tem alguma mensalidade oculta?</span>
+                                    <span>Como funciona o controle de gastos dos últimos 6 meses para donos de carro?</span>
                                     <span class="totvs-faq-icon">+</span>
                                 </div>
                                 <div class="totvs-faq-a">
-                                    <p>Absolutamente nenhuma. O valor de R$ 59,90 é taxa única para emissão do Passaporte Digital vitalício daquele veículo. O proprietário acessa o painel, consulta gastos, gera o laudo para revenda e recebe alertas no WhatsApp para sempre.</p>
+                                    <p>Cada manutenção registrada gera um extrato contábil transparente. O proprietário vê exatamente quanto investiu em peças originais, mão de obra e fluidos mês a mês nos últimos 6 meses, com notas fiscais e fotos comprovando cada intervenção com certificação Nível 4.</p>
+                                </div>
+                            </div>
+
+                            <div class="totvs-faq-item">
+                                <div class="totvs-faq-q" onclick="LandingView.toggleFaq(this)">
+                                    <span>O valor de R$ 59,90 tem alguma mensalidade?</span>
+                                    <span class="totvs-faq-icon">+</span>
+                                </div>
+                                <div class="totvs-faq-a">
+                                    <p>Não. Para o dono do veículo é taxa única de emissão do Passaporte Digital vitalício. O carro fica certificado para sempre e o histórico valoriza o veículo na hora da revenda.</p>
                                 </div>
                             </div>
                         </div>
@@ -639,7 +175,7 @@ const LandingView = {
                 </section>
 
                 <!-- ========================================== -->
-                <!-- FOOTER CORPORATIVO PADRÃO TOTVS            -->
+                <!-- FOOTER CORPORATIVO                         -->
                 <!-- ========================================== -->
                 <footer class="totvs-footer">
                     <div class="totvs-container totvs-footer-grid">
@@ -664,9 +200,9 @@ const LandingView = {
                         <div class="totvs-footer-col">
                             <h4>Para Você (Motorista)</h4>
                             <ul>
-                                <li><a href="#gastos-6-meses">Gastos dos Últimos 6 Meses</a></li>
-                                <li><a href="#relatorio-completo">Relatório Completo de Peças</a></li>
-                                <li><a href="#consulta-placa">Consultar Minha Placa</a></li>
+                                <li><a href="javascript:void(0)" onclick="LandingView.switchAudience('OWNER')">Gastos dos Últimos 6 Meses</a></li>
+                                <li><a href="javascript:void(0)" onclick="LandingView.switchAudience('OWNER')">Relatório Completo de Peças</a></li>
+                                <li><a href="javascript:void(0)" onclick="LandingView.switchAudience('OWNER')">Vantagens do Passaporte</a></li>
                                 <li><a href="javascript:void(0)" onclick="LandingView.goToRegister()">Ativar DNA (R$ 59,90)</a></li>
                             </ul>
                         </div>
@@ -674,9 +210,9 @@ const LandingView = {
                         <div class="totvs-footer-col">
                             <h4>Para Oficinas (B2B)</h4>
                             <ul>
-                                <li><a href="#para-oficinas">Alerta de Correia Dentada</a></li>
-                                <li><a href="#para-oficinas">Óleo de Câmbio Automático</a></li>
-                                <li><a href="#para-oficinas">Identificação Precoce de Falhas</a></li>
+                                <li><a href="javascript:void(0)" onclick="LandingView.switchAudience('WORKSHOP')">Alerta de Correia Dentada</a></li>
+                                <li><a href="javascript:void(0)" onclick="LandingView.switchAudience('WORKSHOP')">Monitoramento de Clientes</a></li>
+                                <li><a href="javascript:void(0)" onclick="LandingView.switchAudience('WORKSHOP')">Radar Preditivo em Tempo Real</a></li>
                                 <li><a href="javascript:void(0)" onclick="LandingView.goToRegisterWorkshop()">Credenciar Minha Oficina</a></li>
                             </ul>
                         </div>
@@ -704,30 +240,64 @@ const LandingView = {
         this.injectCSS();
     },
 
-    // ── Renderiza dinamicamente o Hero conforme a aba ativa (Proprietário ou Oficina) ──
+    // ── Renderiza Links de Navegação conforme público ──
+    renderNavLinks() {
+        if (this.activeAudienceTab === 'WORKSHOP') {
+            return `
+                <a href="#monitoramento-oficina" class="totvs-nav-link highlight-b2b">
+                    <span class="totvs-pulse-mini"></span> Monitoramento & Correia
+                </a>
+                <a href="#radar-oficina" class="totvs-nav-link">Radar Preditivo</a>
+                <a href="#beneficios-oficina" class="totvs-nav-link">Vantagens da Oficina</a>
+                <a href="#credenciar-oficina" class="totvs-nav-link">Credenciamento</a>
+                <a href="#faq-section" class="totvs-nav-link">Dúvidas</a>
+            `;
+        }
+        return `
+            <a href="#gastos-6-meses" class="totvs-nav-link">Gastos & Extrato</a>
+            <a href="#relatorio-completo" class="totvs-nav-link">Relatório do Carro</a>
+            <a href="#comparativo-dna" class="totvs-nav-link">Vantagens do DNA</a>
+            <a href="#faq-section" class="totvs-nav-link">Dúvidas</a>
+        `;
+    },
+
+    // ── Atualiza Botão Principal do Topo ──
+    updateNavCtaButton() {
+        const btn = document.getElementById('totvs-nav-main-cta');
+        if (!btn) return;
+        if (this.activeAudienceTab === 'WORKSHOP') {
+            btn.innerHTML = `<span class="desktop-only">Credenciar Oficina (Grátis)</span><span class="mobile-only">Credenciar Grátis</span>`;
+            btn.onclick = () => LandingView.goToRegisterWorkshop();
+        } else {
+            btn.innerHTML = `<span class="desktop-only">Garantir DNA (R$ 59,90)</span><span class="mobile-only">Garantir DNA</span>`;
+            btn.onclick = () => LandingView.goToRegister();
+        }
+    },
+
+    // ── Renderiza Dinamicamente o Hero Conforme Aba ──
     renderHeroDynamicContent() {
         if (this.activeAudienceTab === 'WORKSHOP') {
             return `
                 <div class="totvs-hero-audience-card workshop animate-fade-in">
                     <div class="totvs-badge-pill b2b">
                         <span class="totvs-pulse-green"></span>
-                        <span>MÓDULO DE EXPANSÃO B2B PARA OFICINAS MECÂNICAS & CENTROS AUTOMOTIVOS</span>
+                        <span>MÓDULO B2B • MONITORAMENTO AUTOMÁTICO DE CLIENTES & RADAR DE CORREIA</span>
                     </div>
 
                     <h1 class="totvs-hero-title">
-                        Aumente o Faturamento da Sua Oficina Sabendo <span class="totvs-gold-highlight">Quando Trocar a Correia Dentada</span> e o <span style="color:#38bdf8;">Óleo de Câmbio</span> dos Seus Clientes
+                        Aumente o Faturamento da Sua Oficina: Saiba Antes Quando <span class="totvs-gold-highlight">Trocar a Correia Dentada</span> e Peças pelo <span style="color:#38bdf8;">Desgaste e KM</span>
                     </h1>
 
                     <p class="totvs-hero-subtitle">
-                        Identifique falhas no carro do cliente <strong>antes mesmo dele chegar na oficina</strong>. O DNA AUTO calcula a rodagem, alerta sobre manutenções de alto ticket no WhatsApp e garante que seu cliente nunca mais vá para o concorrente.
+                        Chega de esperar o cliente quebrar na rua para ter movimento na oficina. O DNA AUTO monitora a quilometragem e o desgaste dos veículos dos seus clientes e avisa automaticamente quando está na hora de trocar correia dentada, filtros e fluidos. <strong>O próprio sistema gera o alerta e a mensagem pronta para o WhatsApp</strong> — você só clica para enviar e lota sua agenda de serviços preventivos de alto ticket.
                     </p>
 
                     <div class="totvs-hero-cta-row">
-                        <button class="totvs-btn-primary-hero" onclick="LandingView.goToRegisterWorkshop()">
+                        <button class="totvs-btn-primary-hero" onclick="LandingView.goToRegisterWorkshop()" style="background:linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow:0 6px 25px rgba(16,185,129,0.35);">
                             <span>🔧 Credenciar Minha Oficina Gratuitamente</span>
                             <span class="landing-cta-arrow">→</span>
                         </button>
-                        <a href="#para-oficinas" class="totvs-btn-secondary-hero">
+                        <a href="#radar-oficina" class="totvs-btn-secondary-hero">
                             <span>📊 Ver Demonstração do Radar Preditivo</span>
                         </a>
                     </div>
@@ -735,7 +305,6 @@ const LandingView = {
             `;
         }
 
-        // Default: OWNER
         return `
             <div class="totvs-hero-audience-card owner animate-fade-in">
                 <div class="totvs-badge-pill">
@@ -757,10 +326,520 @@ const LandingView = {
                         <span class="landing-cta-arrow">→</span>
                     </button>
                     <button class="totvs-btn-secondary-hero" onclick="DossierView.render('DNA-BR-8F72-29A4-X91')">
-                        <span>🔎 Ver Dossiê Completo Demo (Civic Touring)</span>
+                        <span>🔎 Ver Dossiê Completo Demo (Civic)</span>
                     </button>
                 </div>
             </div>
+        `;
+    },
+
+    // ── Renderiza Faixa Dinâmica de KPIs ──
+    renderKpiBar() {
+        if (this.activeAudienceTab === 'WORKSHOP') {
+            return `
+                <div class="totvs-kpi-item">
+                    <span class="totvs-kpi-val" style="color:#10b981;">+35%</span>
+                    <span class="totvs-kpi-lbl">Aumento Médio no Faturamento</span>
+                </div>
+                <div class="totvs-kpi-sep"></div>
+                <div class="totvs-kpi-item">
+                    <span class="totvs-kpi-val">100%</span>
+                    <span class="totvs-kpi-lbl">Monitoramento Automático da Carteira</span>
+                </div>
+                <div class="totvs-kpi-sep"></div>
+                <div class="totvs-kpi-item">
+                    <span class="totvs-kpi-val">0 km</span>
+                    <span class="totvs-kpi-lbl">Previsão Exata por Desgaste & Odômetro</span>
+                </div>
+                <div class="totvs-kpi-sep"></div>
+                <div class="totvs-kpi-item">
+                    <span class="totvs-kpi-val" style="color:#FFD21C;">1 Toque</span>
+                    <span class="totvs-kpi-lbl">Disparo de Lembrete no WhatsApp</span>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="totvs-kpi-item">
+                <span class="totvs-kpi-val">100%</span>
+                <span class="totvs-kpi-lbl">Transparência Financeira dos Últimos 6 Meses</span>
+            </div>
+            <div class="totvs-kpi-sep"></div>
+            <div class="totvs-kpi-item">
+                <span class="totvs-kpi-val">R$ 59,90</span>
+                <span class="totvs-kpi-lbl">Pagamento Único Vitalício por Veículo</span>
+            </div>
+            <div class="totvs-kpi-sep"></div>
+            <div class="totvs-kpi-item">
+                <span class="totvs-kpi-val">+15%</span>
+                <span class="totvs-kpi-lbl">Valorização Comprovada na Revenda</span>
+            </div>
+            <div class="totvs-kpi-sep"></div>
+            <div class="totvs-kpi-item">
+                <span class="totvs-kpi-val">Nível 4</span>
+                <span class="totvs-kpi-lbl">Comprovação Máxima com Fotos das Peças</span>
+            </div>
+        `;
+    },
+
+    // ── Renderiza Seções Principais Conforme Público ──
+    renderAudienceSections() {
+        if (this.activeAudienceTab === 'WORKSHOP') {
+            return this.renderWorkshopSections();
+        }
+        return this.renderOwnerSections();
+    },
+
+    // ── Seções Específicas do Dono do Carro ──
+    renderOwnerSections() {
+        return `
+            <!-- SEÇÃO 1: CONTROLE DE GASTOS DOS ÚLTIMOS 6 MESES -->
+            <section class="totvs-section" id="gastos-6-meses">
+                <div class="totvs-container">
+                    <div class="totvs-section-header">
+                        <span class="totvs-badge-tag cyan">GESTÃO FINANCEIRA DO VEÍCULO</span>
+                        <h2>Você Sabe Exatamente Quanto Gastou no Carro nos Últimos 6 Meses?</h2>
+                        <p>
+                            O DNA AUTO revoluciona a relação do motorista com seu patrimônio. Tenha um raio-x financeiro semestral detalhado, centavo por centavo, separando peças trocadas, mão de obra, filtros e economias geradas.
+                        </p>
+                    </div>
+
+                    <!-- Card de Demonstração Financeira Semestral Estilo TOTVS -->
+                    <div class="totvs-financial-dashboard-card">
+                        <div class="totvs-fin-header">
+                            <div class="totvs-fin-car-badge">
+                                <div class="totvs-car-avatar">🚗</div>
+                                <div>
+                                    <strong>Honda Civic Touring 1.5 Turbo 2021</strong>
+                                    <small>Placa: BRA2E19 • Odômetro: 125.200 km • DNA Ativo</small>
+                                </div>
+                            </div>
+                            <div class="totvs-fin-period">
+                                <span class="totvs-period-pill">Últimos 6 Meses (Outubro a Março)</span>
+                            </div>
+                        </div>
+
+                        <!-- Resumo das Métricas Financeiras -->
+                        <div class="totvs-fin-metrics-grid">
+                            <div class="totvs-fin-metric-card primary">
+                                <span class="metric-label">Investimento Total nos Últimos 6 Meses</span>
+                                <span class="metric-value">R$ 1.840,00</span>
+                                <span class="metric-footnote">Em 3 intervenções preventivas auditadas</span>
+                            </div>
+                            <div class="totvs-fin-metric-card">
+                                <span class="metric-label">Peças Genuínas & Originais</span>
+                                <span class="metric-value" style="color:#38bdf8;">R$ 1.120,00</span>
+                                <span class="metric-footnote">60,8% do investimento (com fotos e NFs)</span>
+                            </div>
+                            <div class="totvs-fin-metric-card">
+                                <span class="metric-label">Mão de Obra Especializada</span>
+                                <span class="metric-value" style="color:#a855f7;">R$ 540,00</span>
+                                <span class="metric-footnote">Oficina Credenciada Veloce Auto Center</span>
+                            </div>
+                            <div class="totvs-fin-metric-card success">
+                                <span class="metric-label">Economia Preventiva Estimada</span>
+                                <span class="metric-value" style="color:#10b981;">R$ 4.200,00</span>
+                                <span class="metric-footnote">Ao evitar a quebra da correia e contaminação</span>
+                            </div>
+                        </div>
+
+                        <!-- Gráfico Semestral Interativo de Gastos -->
+                        <div class="totvs-fin-chart-section">
+                            <div class="totvs-chart-title">
+                                <span>Evolução de Gastos Mês a Mês</span>
+                                <small>Clique nas barras para inspecionar os serviços de cada mês</small>
+                            </div>
+                            
+                            <div class="totvs-chart-bars">
+                                <div class="totvs-bar-col ${this.selectedMonthIndex === 0 ? 'selected' : ''}" onclick="LandingView.selectMonth(0)">
+                                    <div class="totvs-bar-val">R$ 420</div>
+                                    <div class="totvs-bar-fill" style="height: 35%;"></div>
+                                    <div class="totvs-bar-lbl">Outubro</div>
+                                </div>
+                                <div class="totvs-bar-col ${this.selectedMonthIndex === 1 ? 'selected' : ''}" onclick="LandingView.selectMonth(1)">
+                                    <div class="totvs-bar-val">R$ 0</div>
+                                    <div class="totvs-bar-fill zero" style="height: 4%;"></div>
+                                    <div class="totvs-bar-lbl">Novembro</div>
+                                </div>
+                                <div class="totvs-bar-col ${this.selectedMonthIndex === 2 ? 'selected' : ''}" onclick="LandingView.selectMonth(2)">
+                                    <div class="totvs-bar-val" style="color:#FFD21C;">R$ 1.150</div>
+                                    <div class="totvs-bar-fill peak" style="height: 90%;"></div>
+                                    <div class="totvs-bar-lbl font-bold">Dezembro</div>
+                                </div>
+                                <div class="totvs-bar-col ${this.selectedMonthIndex === 3 ? 'selected' : ''}" onclick="LandingView.selectMonth(3)">
+                                    <div class="totvs-bar-val">R$ 0</div>
+                                    <div class="totvs-bar-fill zero" style="height: 4%;"></div>
+                                    <div class="totvs-bar-lbl">Janeiro</div>
+                                </div>
+                                <div class="totvs-bar-col ${this.selectedMonthIndex === 4 ? 'selected' : ''}" onclick="LandingView.selectMonth(4)">
+                                    <div class="totvs-bar-val">R$ 270</div>
+                                    <div class="totvs-bar-fill" style="height: 25%;"></div>
+                                    <div class="totvs-bar-lbl">Fevereiro</div>
+                                </div>
+                                <div class="totvs-bar-col ${this.selectedMonthIndex === 5 ? 'selected' : ''}" onclick="LandingView.selectMonth(5)">
+                                    <div class="totvs-bar-val">R$ 0</div>
+                                    <div class="totvs-bar-fill zero" style="height: 4%;"></div>
+                                    <div class="totvs-bar-lbl">Março</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detalhamento do Mês Selecionado -->
+                        <div class="totvs-fin-month-detail" id="totvs-month-detail-box">
+                            ${this.renderMonthDetail(this.selectedMonthIndex)}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SEÇÃO 2: RELATÓRIO COMPLETO DO CARRO -->
+            <section class="totvs-section" id="relatorio-completo" style="background:#070c14; border-top:1px solid rgba(255,210,28,0.15); border-bottom:1px solid rgba(255,210,28,0.15);">
+                <div class="totvs-container">
+                    <div class="totvs-section-header">
+                        <span class="totvs-badge-tag gold">AUDITORIA INDELÉVEL</span>
+                        <h2>Relatório Completo de Tudo o que Aconteceu no Carro</h2>
+                        <p>
+                            Chega de notas fiscais perdidas no porta-luvas ou registros esquecidos no WhatsApp. O DNA AUTO compila toda a vida técnica do veículo em um laudo digital vitalício com comprovação Nível 4.
+                        </p>
+                    </div>
+
+                    <div class="totvs-report-pillars">
+                        <div class="totvs-pillar-card">
+                            <div class="totvs-pillar-icon">📸</div>
+                            <h3>Fotos Reais Antes & Depois</h3>
+                            <p>A oficina credenciada fotografa a peça gasta retirada do veículo e a nova peça que foi instalada, com carimbo de data e odômetro.</p>
+                            <span class="totvs-pillar-tag">Prova Nível 4</span>
+                        </div>
+
+                        <div class="totvs-pillar-card">
+                            <div class="totvs-pillar-icon">📄</div>
+                            <h3>Notas Fiscais & Lotes Anexados</h3>
+                            <p>Extratos de peças originais com número de lote de óleo, marca das pastilhas e garantia do fabricante gravados sem risco de perda.</p>
+                            <span class="totvs-pillar-tag">Comprovante Fiscal</span>
+                        </div>
+
+                        <div class="totvs-pillar-card">
+                            <div class="totvs-pillar-icon">🔒</div>
+                            <h3>Hash Criptográfico Imutável</h3>
+                            <p>Cada intervenção gera um bloco criptográfico único. Ninguém pode forjar histórico, apagar sinistro ou retroceder quilometragem.</p>
+                            <span class="totvs-pillar-tag">Anti-Fraude</span>
+                        </div>
+
+                        <div class="totvs-pillar-card">
+                            <div class="totvs-pillar-icon">📈</div>
+                            <h3>Valorização de Até 15% na Venda</h3>
+                            <p>Compradores pagam mais caro e à vista por um carro com histórico 100% comprovado. Venda seu veículo em dias, não meses.</p>
+                            <span class="totvs-pillar-tag">Revenda Ágil</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SEÇÃO 3: COMPARATIVO CARRO COM DNA VS SEM DNA -->
+            <section class="totvs-section" id="comparativo-dna" style="background:linear-gradient(180deg, #070b13 0%, #0c1424 100%);">
+                <div class="totvs-container">
+                    <div class="totvs-compare-box">
+                        <div class="totvs-compare-col red">
+                            <div class="totvs-compare-badge red">❌ Carro Tradicional Sem DNA</div>
+                            <ul class="totvs-compare-list">
+                                <li>❌ O dono não faz ideia de quanto gastou nos últimos 6 meses</li>
+                                <li>❌ Nenhuma comprovação de troca de correia dentada ou óleo de câmbio</li>
+                                <li>❌ Comprador desconfia de adulteração no odômetro</li>
+                                <li>❌ Oficina perde o cliente para outro mecânico sem saber</li>
+                                <li>❌ Carro desvaloriza de 10% a 20% abaixo da tabela FIPE na venda</li>
+                            </ul>
+                        </div>
+
+                        <div class="totvs-compare-divider">
+                            <span>VS</span>
+                        </div>
+
+                        <div class="totvs-compare-col gold">
+                            <div class="totvs-compare-badge gold">✅ Carro Certificado com DNA AUTO</div>
+                            <ul class="totvs-compare-list">
+                                <li>✅ <strong>Extrato completo de gastos dos últimos 6 meses sempre visível</strong></li>
+                                <li>✅ <strong>Relatório oficial de todas as peças e serviços com fotos Nível 4</strong></li>
+                                <li>✅ <strong>Quilometragem auditada e imutável gravada no passaporte</strong></li>
+                                <li>✅ <strong>Oficina avisa o momento cirúrgico de trocar correias e óleo de câmbio</strong></li>
+                                <li>✅ <strong>Venda até 3x mais rápida com valorização de até 15% acima da FIPE</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SEÇÃO 5: OFERTA CANÔNICA DE R$ 59,90 -->
+            <section class="totvs-section" style="text-align:center; padding:70px 20px;">
+                <div class="totvs-container" style="max-width:740px;">
+                    <span class="totvs-badge-tag gold" style="font-size:12px; padding:6px 16px;">
+                        PAGAMENTO ÚNICO • ACESSO VITALÍCIO
+                    </span>
+                    <h2 style="font-size:36px; color:#ffffff; font-weight:800; margin:18px 0 12px; letter-spacing:-0.5px;">
+                        Garanta Agora o Passaporte Digital do Seu Carro
+                    </h2>
+                    <div style="font-size:50px; color:#FFD21C; font-weight:900; margin:10px 0; text-shadow:0 0 30px rgba(255,210,28,0.4);">
+                        R$ 59,90
+                    </div>
+                    <p style="font-size:15.5px; color:#94a3b8; line-height:1.6; margin-bottom:28px;">
+                        Sem mensalidades recorrentes para o motorista. O DNA pertence ao veículo e acompanha o histórico da placa para sempre.
+                    </p>
+
+                    <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+                        <button class="totvs-btn-primary-hero" onclick="LandingView.goToRegister()">
+                            <span>⭐ Ativar DNA do Meu Veículo (R$ 59,90)</span>
+                            <span class="landing-cta-arrow">→</span>
+                        </button>
+                        <button class="totvs-btn-outline-gold" onclick="LandingView.switchAudience('WORKSHOP')">
+                            <span>🔧 Sou Mecânico / Ver Modo Oficina</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        `;
+    },
+
+    // ── Seções Específicas do Dono de Oficina Mecânica ──
+    renderWorkshopSections() {
+        return `
+            <!-- SEÇÃO 1: MONITORAMENTO AUTOMÁTICO DE CLIENTES & CORREIA DENTADA -->
+            <section class="totvs-section" id="monitoramento-oficina" style="background:#070c14; border-top:1px solid rgba(16,185,129,0.2);">
+                <div class="totvs-container">
+                    <div class="totvs-section-header">
+                        <span class="totvs-badge-tag b2b">MONITORAMENTO INTELIGENTE DA CARTEIRA</span>
+                        <h2>O Sistema Monitora Seus Clientes e Trabalha no Piloto Automático Pela Sua Oficina</h2>
+                        <p>
+                            Você não precisa mais conferir pranchetas, cadernos de revisão ou planilhas de Excel. O DNA AUTO analisa os km percorridos e o tempo de uso de cada componente de forma 100% autônoma, avisando antes da correia quebrar.
+                        </p>
+                    </div>
+
+                    <div class="totvs-workshop-features-grid">
+                        <!-- 1. CORREIA DENTADA -->
+                        <div class="totvs-workshop-card featured" style="border-color: rgba(239, 68, 68, 0.4);">
+                            <div class="totvs-ws-badge-top" style="background:linear-gradient(135deg, #ef4444, #b91c1c); color:#fff;">PROTEÇÃO CONTRA QUEBRA DE MOTOR</div>
+                            <div class="totvs-ws-icon red">⚙️</div>
+                            <h3>Previsão Automática da Troca de Correia Dentada</h3>
+                            <p class="totvs-ws-desc">
+                                O sistema cruza o histórico do carro cadastrado com a rodagem média diária estimada. Ao atingir a faixa de <strong>40.000 a 50.000 km ou prazo de anos</strong>, o sistema acende o sinal vermelho no painel da sua oficina: <em>"Faltam 1.200 km para o limite seguro"</em>. Você age antes do cliente quebrar na rua e sofrer um prejuízo de R$ 8.000 a R$ 20.000 de motor batido.
+                            </p>
+                            <div class="totvs-ws-stat">
+                                <span>Ticket Médio Deste Serviço:</span>
+                                <strong style="color:#ef4444;">R$ 850 a R$ 1.800</strong>
+                            </div>
+                            <div class="totvs-ws-benefit">
+                                ✅ O cliente agradece pelo aviso técnico e fecha a troca com você sem questionar.
+                            </div>
+                        </div>
+
+                        <!-- 2. O PRÓPRIO SISTEMA FAZ POR VOCÊ -->
+                        <div class="totvs-workshop-card featured" style="border-color: rgba(16, 185, 129, 0.4);">
+                            <div class="totvs-ws-badge-top" style="background:linear-gradient(135deg, #10b981, #059669); color:#fff;">AUTOMAÇÃO EM 1 CLIQUE</div>
+                            <div class="totvs-ws-icon green">🤖</div>
+                            <h3>O Próprio Sistema Faz Tudo Por Você (Disparo WhatsApp)</h3>
+                            <p class="totvs-ws-desc">
+                                Chega de trabalho braçal. O DNA AUTO identifica quais carros da sua carteira estão perto da quilometragem de revisão e <strong>já monta o lembrete personalizado</strong> com o nome do cliente, a placa e o serviço necessário. Com apenas 1 toque no botão, a conversa abre no WhatsApp pronta para envio.
+                            </p>
+                            <div class="totvs-ws-stat">
+                                <span>Tempo Gasto pela Oficina:</span>
+                                <strong style="color:#10b981;">Apenas 5 segundos por cliente</strong>
+                            </div>
+                            <div class="totvs-ws-benefit">
+                                ✅ Sem planilhas manuais. Notificações diretas com link oficial do passaporte.
+                            </div>
+                        </div>
+
+                        <!-- 3. AUMENTO DE FATURAMENTO POR DESGASTE & KM -->
+                        <div class="totvs-workshop-card featured" style="border-color: rgba(255, 210, 28, 0.4);">
+                            <div class="totvs-ws-badge-top" style="background:linear-gradient(135deg, #FFD21C, #f59e0b); color:#05080D;">RECEITA RECORRENTE PREVISÍVEL</div>
+                            <div class="totvs-ws-icon gold">📈</div>
+                            <h3>Aumento Imediato de Faturamento por Desgaste & KM</h3>
+                            <p class="totvs-ws-desc">
+                                Acabe com o tempo ocioso nos elevadores. Sabendo com antecedência o que precisa ser trocado (kit correia dentada, bomba d'água, óleo de câmbio automático CVT, fluidos e pastilhas), você programa a semana, compra peças no melhor preço e <strong>aumenta o faturamento em mais de +35%</strong> com serviços preventivos de alto valor agregado.
+                            </p>
+                            <div class="totvs-ws-stat">
+                                <span>Impacto no Faturamento:</span>
+                                <strong style="color:#FFD21C;">+35% de Lucro Recorrente</strong>
+                            </div>
+                            <div class="totvs-ws-benefit">
+                                ✅ Seus mecânicos 100% ocupados com serviços preventivos programados.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SEÇÃO 2: RADAR PREDITIVO AO VIVO DA OFICINA -->
+            <section class="totvs-section" id="radar-oficina">
+                <div class="totvs-container">
+                    <div class="totvs-section-header">
+                        <span class="totvs-badge-tag cyan">PAINEL AO VIVO DA OFICINA</span>
+                        <h2>Veja o Radar Preditivo em Ação: Seus Clientes Monitorados em Tempo Real</h2>
+                        <p>
+                            Este é o painel que sua oficina terá na palma da mão. O sistema lista os clientes cadastrados cujos veículos estão próximos do limite de quilometragem da correia e de outros componentes críticos.
+                        </p>
+                    </div>
+
+                    <div class="totvs-radar-demo-card">
+                        <div class="totvs-radar-top">
+                            <div>
+                                <span class="totvs-radar-title">RADAR PREDITIVO DE REVISÕES — OFICINA VELOCE AUTO CENTER</span>
+                                <small style="display:block; color:#94a3b8; font-size:12px;">Alertas automáticos calculados com base no odômetro e desgaste estimado</small>
+                            </div>
+                            <div class="totvs-radar-badge">
+                                <span class="totvs-pulse-green"></span> 3 Revisões de Alto Ticket Próximas
+                            </div>
+                        </div>
+
+                        <div class="totvs-radar-table-responsive">
+                            <table class="totvs-radar-table">
+                                <thead>
+                                    <tr>
+                                        <th>Cliente & Veículo</th>
+                                        <th>Manutenção Preditiva</th>
+                                        <th>Desgaste / KM Restante</th>
+                                        <th>Ticket Estimado</th>
+                                        <th>Ação Automática</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <strong>Carlos Silva</strong>
+                                            <small>Civic Touring 1.5 • BRA2E19</small>
+                                        </td>
+                                        <td>
+                                            <span class="radar-tag red">Troca da Correia Dentada & Tensores</span>
+                                        </td>
+                                        <td>
+                                            <strong style="color:#ef4444;">Faltam 1.200 km (aprox. 18 dias)</strong>
+                                        </td>
+                                        <td>R$ 1.450,00</td>
+                                        <td>
+                                            <button class="totvs-btn-wa-action" onclick="LandingView.simulateWhatsApp('Carlos Silva', 'BRA2E19', 'Correia Dentada e Tensores')">
+                                                <span>📲 Disparar WhatsApp</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Mariana Souza</strong>
+                                            <small>Corolla Altis Hybrid • ABC1D23</small>
+                                        </td>
+                                        <td>
+                                            <span class="radar-tag gold">Troca de Fluido Câmbio Automático (CVT)</span>
+                                        </td>
+                                        <td>
+                                            <strong style="color:#FFD21C;">Faltam 2.800 km (aprox. 35 dias)</strong>
+                                        </td>
+                                        <td>R$ 2.100,00</td>
+                                        <td>
+                                            <button class="totvs-btn-wa-action" onclick="LandingView.simulateWhatsApp('Mariana Souza', 'ABC1D23', 'Óleo de Câmbio Automático CVT')">
+                                                <span>📲 Disparar WhatsApp</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <strong>Roberto Mendes</strong>
+                                            <small>Compass Longitude • JHG4B88</small>
+                                        </td>
+                                        <td>
+                                            <span class="radar-tag cyan">Revisão de Velas de Iridium & Bobinas</span>
+                                        </td>
+                                        <td>
+                                            <strong style="color:#38bdf8;">Faltam 850 km (Limite Crítico)</strong>
+                                        </td>
+                                        <td>R$ 980,00</td>
+                                        <td>
+                                            <button class="totvs-btn-wa-action" onclick="LandingView.simulateWhatsApp('Roberto Mendes', 'JHG4B88', 'Velas de Iridium e Bobinas')">
+                                                <span>📲 Disparar WhatsApp</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="totvs-radar-cta-row">
+                            <div class="totvs-radar-cta-text">
+                                <strong>Clique no botão de WhatsApp acima para testar a automação.</strong>
+                                <span>O sistema abre a mensagem formatada no seu WhatsApp com todos os dados técnicos prontos para o cliente confirmar o agendamento!</span>
+                            </div>
+                            <button class="totvs-btn-gold" style="padding:14px 28px; font-size:15px;" onclick="LandingView.goToRegisterWorkshop()">
+                                🔧 Credenciar Minha Oficina Gratuitamente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SEÇÃO 3: DIFERENCIAIS EXCLUSIVOS PARA OFICINAS -->
+            <section class="totvs-section" id="beneficios-oficina" style="background:#090e18;">
+                <div class="totvs-container">
+                    <div class="totvs-section-header">
+                        <span class="totvs-badge-tag gold">DIFERENCIAIS EXCLUSIVOS B2B</span>
+                        <h2>Por Que as Melhores Oficinas Estão Migrando para o DNA AUTO?</h2>
+                        <p>Uma plataforma feita para valorizar o trabalho técnico e honesto da sua equipe, eliminando a desconfiança do cliente e gerando lucro sustentável.</p>
+                    </div>
+
+                    <div class="totvs-workshop-features-grid">
+                        <div class="totvs-workshop-card">
+                            <div class="totvs-ws-icon gold">📸</div>
+                            <h3>Comprovação com Fotos Nível 4</h3>
+                            <p class="totvs-ws-desc">
+                                Fotografe a peça gasta que foi removida e a nova peça que você instalou. O cliente recebe as fotos no Dossiê Digital e nunca mais duvida da necessidade do serviço.
+                            </p>
+                            <div class="totvs-ws-benefit">
+                                ✅ Fim da desconfiança de orçamento. 100% de transparência técnica.
+                            </div>
+                        </div>
+
+                        <div class="totvs-workshop-card">
+                            <div class="totvs-ws-icon cyan">🔒</div>
+                            <h3>Fidelização Absoluta da Carteira</h3>
+                            <p class="totvs-ws-desc">
+                                O cliente sabe que o Passaporte Digital do carro dele está vinculado à sua oficina de confiança. Ele não troca sua oficina por qualquer concorrente de esquina.
+                            </p>
+                            <div class="totvs-ws-benefit">
+                                ✅ Taxa de retenção de clientes acima de 92% ao longo do ano.
+                            </div>
+                        </div>
+
+                        <div class="totvs-workshop-card">
+                            <div class="totvs-ws-icon green">💰</div>
+                            <h3>Sem Mensalidade de Adesão</h3>
+                            <p class="totvs-ws-desc">
+                                Cadastre sua oficina hoje sem custo fixo ou taxa inicial. Você só tem a ganhar trazendo previsibilidade, faturamento e clientes recorrentes para o seu negócio.
+                            </p>
+                            <div class="totvs-ws-benefit">
+                                ✅ Comece a usar agora mesmo e lucre já na primeira semana.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SEÇÃO 4: CREDENCIAMENTO RÁPIDO DA OFICINA -->
+            <section class="totvs-section" id="credenciar-oficina" style="text-align:center; padding:70px 20px; background:linear-gradient(180deg, #070c14 0%, #0c1828 100%); border-top:1px solid rgba(16,185,129,0.2);">
+                <div class="totvs-container" style="max-width:760px;">
+                    <span class="totvs-badge-tag b2b" style="font-size:12px; padding:6px 16px;">CREDENCIAMENTO GRATUITO • SEM MENSALIDADE</span>
+                    <h2 style="font-size:36px; color:#ffffff; font-weight:800; margin:18px 0 12px; letter-spacing:-0.5px;">
+                        Comece a Monitorar Seus Clientes e Fature Mais com Revisões Preventivas
+                    </h2>
+                    <p style="font-size:16px; color:#94a3b8; line-height:1.6; margin-bottom:30px;">
+                        Junte-se à rede de oficinas e centros automotivos credenciados DNA AUTO. Cadastre sua oficina em menos de 2 minutos e ative o Radar Preditivo da sua carteira.
+                    </p>
+
+                    <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+                        <button class="totvs-btn-primary-hero" onclick="LandingView.goToRegisterWorkshop()" style="background:linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow:0 6px 25px rgba(16,185,129,0.4);">
+                            <span>🔧 Credenciar Minha Oficina Gratuitamente</span>
+                            <span class="landing-cta-arrow">→</span>
+                        </button>
+                        <button class="totvs-btn-secondary-hero" onclick="LandingView.switchAudience('OWNER')">
+                            <span>🚗 Ver Modo Dono de Carro</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
         `;
     },
 
@@ -868,15 +947,44 @@ const LandingView = {
     // ── Alternância de Perfil Dono / Oficina ──
     switchAudience(role) {
         this.activeAudienceTab = role;
-        const block = document.getElementById('totvs-hero-dynamic-block');
-        if (block) {
-            block.innerHTML = this.renderHeroDynamicContent();
-        }
 
-        // Atualiza botões
+        // Atualiza botões do switcher
         document.querySelectorAll('.totvs-audience-btn').forEach(btn => {
             btn.classList.toggle('active', btn.innerText.includes(role === 'OWNER' ? 'Dono de Carro' : 'Dono de Oficina'));
         });
+
+        // Re-renderiza o conteúdo dinâmico do Hero
+        const heroBlock = document.getElementById('totvs-hero-dynamic-block');
+        if (heroBlock) {
+            heroBlock.innerHTML = this.renderHeroDynamicContent();
+        }
+
+        // Re-renderiza a faixa de KPIs
+        const kpiBlock = document.getElementById('totvs-kpi-bar-block');
+        if (kpiBlock) {
+            kpiBlock.innerHTML = this.renderKpiBar();
+        }
+
+        // Re-renderiza os links de navegação do topo
+        const navLinks = document.getElementById('totvs-nav-links');
+        if (navLinks) {
+            navLinks.innerHTML = this.renderNavLinks();
+        }
+
+        // Atualiza o botão principal (CTA) do topo
+        this.updateNavCtaButton();
+
+        // Re-renderiza as seções de conteúdo (o bloco principal)
+        const sectionsBlock = document.getElementById('totvs-audience-sections-block');
+        if (sectionsBlock) {
+            sectionsBlock.innerHTML = this.renderAudienceSections();
+        }
+
+        // Scroll suave ao topo do hero
+        const hero = document.querySelector('.totvs-hero');
+        if (hero) {
+            hero.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     },
 
     // ── Seleção de Mês no Gráfico Interativo ──
@@ -945,8 +1053,7 @@ const LandingView = {
             if (res.found && res.hasDna && res.vehicle.dna_code) {
                 DossierView.render(res.vehicle.dna_code);
             } else if (res.found && !res.hasDna) {
-                alert(`⚠️ Veículo ${res.vehicle.brand} ${res.vehicle.model} (${res.vehicle.license_plate}) localizado!\n\nEste carro ainda NÃO possui Passaporte Digital DNA ativo.\n\nVocê pode ativá-lo agora por apenas R$ 59,90 com histórico completo e controle de gastos!`);
-                this.goToRegister();
+                this.showVehicleModal(res.vehicle);
             } else {
                 alert(`🔍 Placa ${plate} não localizada na rede.\n\nCadastre seu veículo e ative o DNA Permanente por R$ 59,90.`);
                 this.goToRegister();
@@ -954,6 +1061,112 @@ const LandingView = {
         } catch (err) {
             alert('Erro na consulta de placa: ' + err.message);
         }
+    },
+
+    // ── Modal de Exibição do Veículo Localizado via API Oficial ──
+    showVehicleModal(v) {
+        this.closeVehicleModal();
+
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'landing-vehicle-modal';
+        modalDiv.style.cssText = `
+            position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center; z-index: 99999; padding: 20px;
+        `;
+
+        const fipe = v.fipe || {};
+        const legal = v.legal_status || {};
+        const origin = v.origin || {};
+
+        modalDiv.innerHTML = `
+            <div style="background: #0b111a; border: 1px solid rgba(255, 210, 28, 0.4); border-radius: 16px; max-width: 580px; width: 100%; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,0.8); position: relative; animation: fadeIn 0.25s ease-out;">
+                <!-- Header com Logo da Montadora -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        ${v.logo ? `
+                            <img src="${v.logo}" alt="${v.brand}" style="height: 44px; max-width: 70px; object-fit: contain; background: #fff; border-radius: 8px; padding: 4px; border: 1px solid rgba(255,255,255,0.15);" />
+                        ` : `
+                            <div style="width: 44px; height: 44px; border-radius: 8px; background: rgba(255, 210, 28, 0.15); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255, 210, 28, 0.3); color: #ffd21c; font-weight: 800; font-size: 18px;">
+                                ${v.brand ? v.brand.substring(0, 2).toUpperCase() : 'VE'}
+                            </div>
+                        `}
+                        <div>
+                            <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 4px; font-size: 10px; font-weight: 700; padding: 2px 8px; text-transform: uppercase; letter-spacing: 0.8px;">
+                                Base Nacional Oficial • Senatran / FIPE
+                            </span>
+                            <h3 style="margin: 6px 0 2px; color: #fff; font-size: 20px; font-weight: 800;">
+                                ${v.brand || ''} ${v.model || ''}
+                            </h3>
+                            <div style="font-size: 12px; color: #94a3b8;">
+                                ${v.version || 'Versão Homologada de Fábrica'}
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="LandingView.closeVehicleModal()" style="background: none; border: none; color: #64748b; font-size: 24px; cursor: pointer; padding: 0 4px; line-height: 1;">&times;</button>
+                </div>
+
+                <!-- Grid de Dados Cadastrais -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #ffd21c; text-transform: uppercase;">Placa Oficial</div>
+                        <div style="font-size: 15px; font-weight: 800; color: #fff; font-family: monospace; margin-top: 2px;">
+                            ${v.license_plate} ${origin.state ? `(${origin.city || ''}/${origin.state})` : ''}
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #ffd21c; text-transform: uppercase;">Ano Fab / Mod</div>
+                        <div style="font-size: 15px; font-weight: 700; color: #fff; margin-top: 2px;">
+                            ${v.manufacture_year || '—'} / ${v.model_year || '—'}
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #ffd21c; text-transform: uppercase;">Cor & Combustível</div>
+                        <div style="font-size: 13px; font-weight: 600; color: #cbd5e1; margin-top: 2px;">
+                            ${v.color || 'Não inf.'} • ${v.fuel_type || 'Flex'}
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px;">
+                        <div style="font-size: 10px; font-weight: 700; color: #10b981; text-transform: uppercase;">Tabela FIPE Oficial</div>
+                        <div style="font-size: 15px; font-weight: 800; color: #10b981; margin-top: 2px;">
+                            ${fipe.market_value_formatted || 'Consulte'}
+                        </div>
+                        ${fipe.score ? `<div style="font-size: 10px; color: #64748b;">Precisão: ${fipe.score} pts</div>` : ''}
+                    </div>
+                </div>
+
+                <!-- Alerta de Ativação do Passaporte DNA -->
+                <div style="background: rgba(255, 210, 28, 0.08); border: 1px solid rgba(255, 210, 28, 0.25); border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <span style="font-size: 20px;">🛡️</span>
+                        <div>
+                            <strong style="color: #ffd21c; font-size: 13px; display: block; margin-bottom: 4px;">
+                                Passaporte Digital DNA Ainda Não Ativo
+                            </strong>
+                            <p style="margin: 0; color: #94a3b8; font-size: 12px; line-height: 1.5;">
+                                Este veículo foi identificado na base nacional de trânsito, mas ainda não possui o passaporte blindado do DNA AUTO. Ative agora para registrar revisões, prever trocas de correia/óleo e valorizar o carro na revenda!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação -->
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="LandingView.closeVehicleModal()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                        Fechar
+                    </button>
+                    <button onclick="LandingView.closeVehicleModal(); LandingView.goToRegister();" style="background: linear-gradient(135deg, #ffd21c 0%, #f59e0b 100%); border: none; color: #000; padding: 10px 22px; border-radius: 8px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(255, 210, 28, 0.35);">
+                        🚀 ATIVAR PASSAPORTE DNA POR R$ 59,90
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modalDiv);
+    },
+
+    closeVehicleModal() {
+        const existing = document.getElementById('landing-vehicle-modal');
+        if (existing) existing.remove();
     },
 
     // ── Injeção de Estilos CSS Padrão TOTVS / Dark Enterprise de Alto Padrão ──
@@ -2130,26 +2343,215 @@ const LandingView = {
                 color: #64748b;
             }
 
+            /* REGRAS RESPONSIVAS AUXILIARES */
+            @media (min-width: 769px) {
+                .mobile-only {
+                    display: none !important;
+                }
+            }
+
             @media (max-width: 900px) {
                 .totvs-footer-grid {
                     grid-template-columns: 1fr 1fr;
                 }
             }
+
             @media (max-width: 768px) {
+                .desktop-only {
+                    display: none !important;
+                }
+
+                /* ============================================== */
+                /* TOPO / NAVBAR ULTRA ELEGANTE & HARMONIOSO     */
+                /* ============================================== */
+                .totvs-navbar {
+                    padding: 0;
+                }
+                .totvs-nav-container {
+                    padding: 8px 14px !important;
+                    gap: 8px !important;
+                }
+                .totvs-brand {
+                    gap: 8px !important;
+                    flex-shrink: 0;
+                }
+                .totvs-brand-logo {
+                    width: 32px !important;
+                    height: 32px !important;
+                    border-radius: 7px !important;
+                }
+                .totvs-brand-logo svg {
+                    width: 18px !important;
+                    height: 18px !important;
+                }
+                .totvs-brand-title span {
+                    font-size: 16.5px !important;
+                    line-height: 1 !important;
+                    letter-spacing: -0.2px !important;
+                    white-space: nowrap !important;
+                }
+                /* Remove totalmente subtítulo longo que quebrava o topo */
+                .totvs-brand-title small {
+                    display: none !important;
+                }
                 .totvs-nav-links {
-                    display: none;
+                    display: none !important;
+                }
+                .totvs-nav-actions {
+                    gap: 6px !important;
+                    flex-shrink: 0;
+                    align-items: center;
+                }
+                .totvs-btn-ghost {
+                    padding: 6px 11px !important;
+                    font-size: 11.5px !important;
+                    border-radius: 6px !important;
+                    white-space: nowrap !important;
+                    line-height: 1.2 !important;
+                }
+                .totvs-btn-gold {
+                    padding: 7px 12px !important;
+                    font-size: 11.5px !important;
+                    border-radius: 6px !important;
+                    white-space: nowrap !important;
+                    font-weight: 700 !important;
+                    line-height: 1.2 !important;
+                }
+
+                /* ============================================== */
+                /* SWITCHER DE AUDIÊNCIA (DONO VS OFICINA)       */
+                /* ============================================== */
+                .totvs-audience-switcher {
+                    width: 100% !important;
+                    max-width: 360px !important;
+                    margin: 0 auto 16px !important;
+                    display: grid !important;
+                    grid-template-columns: 1fr 1fr !important;
+                    gap: 4px !important;
+                    padding: 4px !important;
+                    border-radius: 26px !important;
+                    box-sizing: border-box;
+                    background: rgba(255, 255, 255, 0.08) !important;
+                }
+                .totvs-audience-btn {
+                    padding: 9px 4px !important;
+                    font-size: 11.5px !important;
+                    white-space: nowrap !important;
+                    text-align: center !important;
+                    justify-content: center !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    border-radius: 20px !important;
+                }
+
+                /* ============================================== */
+                /* HERO E ELEMENTOS CENTRAIS NO CELULAR          */
+                /* ============================================== */
+                .totvs-hero {
+                    padding: 22px 14px 40px !important;
+                    min-height: auto !important;
                 }
                 .totvs-hero-title {
-                    font-size: 30px;
+                    font-size: 22px !important;
+                    line-height: 1.25 !important;
+                    margin: 0 0 12px !important;
                 }
                 .totvs-hero-subtitle {
-                    font-size: 15px;
+                    font-size: 13.5px !important;
+                    line-height: 1.5 !important;
+                    margin: 0 auto 20px !important;
+                }
+                .totvs-badge-pill {
+                    font-size: 9.5px !important;
+                    padding: 4px 10px !important;
+                    line-height: 1.3 !important;
+                    margin-bottom: 12px !important;
+                    white-space: normal !important;
+                    text-align: center !important;
+                }
+                .totvs-hero-cta-row {
+                    flex-direction: column !important;
+                    width: 100% !important;
+                    gap: 10px !important;
+                    margin-bottom: 24px !important;
+                }
+                .totvs-btn-primary-hero,
+                .totvs-btn-secondary-hero {
+                    width: 100% !important;
+                    justify-content: center !important;
+                    font-size: 13.5px !important;
+                    padding: 12px 14px !important;
+                    box-sizing: border-box !important;
+                }
+
+                /* ============================================== */
+                /* BARRA DE KPIS RESPONSIVA NO CELULAR           */
+                /* ============================================== */
+                .totvs-kpi-bar {
+                    display: grid !important;
+                    grid-template-columns: 1fr 1fr !important;
+                    gap: 12px !important;
+                    padding: 14px 8px !important;
+                }
+                .totvs-kpi-sep {
+                    display: none !important;
+                }
+                .totvs-kpi-val {
+                    font-size: 19px !important;
+                }
+                .totvs-kpi-lbl {
+                    font-size: 10.5px !important;
+                }
+
+                /* ============================================== */
+                /* SEÇÕES E CARDS ADAPTADOS PARA CELULAR          */
+                /* ============================================== */
+                .totvs-section {
+                    padding: 40px 12px !important;
+                }
+                .totvs-section-header h2 {
+                    font-size: 21px !important;
+                    line-height: 1.25 !important;
+                }
+                .totvs-section-header p {
+                    font-size: 13px !important;
+                }
+                .totvs-workshop-features-grid {
+                    grid-template-columns: 1fr !important;
+                    gap: 14px !important;
+                }
+                .totvs-fin-metrics-grid {
+                    grid-template-columns: 1fr !important;
+                    gap: 10px !important;
+                }
+                .totvs-report-pillars {
+                    grid-template-columns: 1fr !important;
+                    gap: 12px !important;
+                }
+                .totvs-radar-table-responsive {
+                    width: 100% !important;
+                    overflow-x: auto !important;
+                    -webkit-overflow-scrolling: touch !important;
+                }
+                .totvs-radar-table th,
+                .totvs-radar-table td {
+                    padding: 10px 12px !important;
+                    font-size: 12px !important;
+                    white-space: nowrap !important;
+                }
+                .totvs-radar-cta-row {
+                    flex-direction: column !important;
+                    gap: 14px !important;
+                    text-align: center !important;
+                }
+                .totvs-radar-cta-row button {
+                    width: 100% !important;
                 }
                 .totvs-compare-divider {
-                    width: 100%;
+                    width: 100% !important;
                 }
                 .totvs-footer-grid {
-                    grid-template-columns: 1fr;
+                    grid-template-columns: 1fr !important;
                 }
             }
         `;

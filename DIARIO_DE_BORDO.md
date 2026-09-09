@@ -13,7 +13,6 @@
 O **DNA AUTO** nasceu para solucionar uma das maiores assimetrias de informação do mercado de veículos usados no Brasil: a falta de comprovação técnica, contínua e imutável das manutenções preventivas e corretivas efetuadas em um veículo ao longo de sua vida útil.
 
 Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" no momento da vistoria (checando chassi, sinistros graves e leilão), o DNA AUTO atua como o **passaporte digital perpétuo do automóvel**, gravando cada troca de óleo, correia dentada, discos de freio, amortecedores, acompanhados de quilometragem auditada, fotos de peças instaladas e notas fiscais (NFS-e/DANFE) validadas por oficinas credenciadas.
-
 ---
 
 ## 📅 2. Linha do Tempo e Evolução dos Ciclos de Desenvolvimento
@@ -226,6 +225,41 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 - **Validação:**
   - 16/16 testes automatizados passaram com 100% de sucesso.
   - Validação de sintaxe JS (`node -c`) com zero erros.
+
+---
+
+### 🛡️ Ciclo 13: Keep-Alive Anti-Sleep, Responsividade Mobile & Modo Oficina Aprofundado
+- **Requisitos do Usuário:**
+  1. Impedir que o servidor no Render entre em modo de suspensão (*spin-down*) através de ping periódico.
+  2. Harmonizar o topo/navbar em smartphones (layout limpo, sem quebra de múltiplas linhas e botões compactos).
+  3. Quando alternado para "Sou Dono de Oficina Mecânica", a landing page deve ser 100% direcionada a assuntos de oficina: monitoramento de clientes, previsão de troca de correia dentada perto do vencimento automatizada pelo sistema e aumento de faturamento (+35%) pelo desgaste e quilometragem.
+- **Implementações:**
+  - Serviço de [keepAlive.service.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/services/keepAlive.service.js) com disparo periódico a cada 10 minutos para manter o processo ativo.
+  - Refatoração responsiva da navbar e do switcher de perfis no [landingView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingView.js).
+  - Seções completas B2B: cards de monitoramento, aviso de correia dentada próxima do vencimento, radar preditivo com botão WhatsApp de 1 toque e calculadora de faturamento.
+
+---
+
+### 🚗 Ciclo 14: Integração da API Placas Paga Oficial (WDAPI2) e Reconhecimento Nacional de Veículos
+- **Requisito do Usuário:** Integrar a documentação oficial da API Placas paga contratada (token `be14254e5b6a32f36acabc0542e822dd`), permitindo consultas em tempo real de qualquer veículo emplacado no Brasil com seleção da FIPE por maior score e consulta de saldo de créditos.
+- **Implementações:**
+  - Criação do serviço centralizado [apiPlacas.service.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/services/apiPlacas.service.js):
+    - Conexão autenticada via token oficial com chave de contingência padrão e suporte à variável de ambiente `WDAPI_TOKEN`.
+    - Consulta cadastral completa em `https://wdapi2.com.br/consulta/{placa}/{token}` com normalização e sanitização de placas de 7 caracteres.
+    - Algoritmo de desempate e precisão da Tabela FIPE: seleção automática do registro com maior `score` entre os modelos retornados.
+    - Leitura defensiva do bloco `extra` para extração de dados técnicos (cilindradas, combustível, chassi e município).
+    - Endpoint e método dedicado de consulta de saldo de créditos contratados (`/saldo/{token}`).
+  - Atualização do módulo de integrações em [integrations.routes.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/modules/integrations/integrations.routes.js):
+    - Rota `/api/v1/integrations/plate-lookup/:plate`: consulta unificada que prioriza o histórico local ou consome a API Placas oficial.
+    - Rota `/api/v1/integrations/plate-balance`: expõe o saldo de créditos restantes do token para monitoramento administrativo.
+    - Registro do conector `API_PLACAS` com status conectado no painel de integrações.
+  - Atualização do módulo de veículos em [vehicles.routes.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/modules/vehicles/vehicles.routes.js):
+    - A rota de pesquisa `/api/v1/vehicles/search?q={placa}` agora consulta a API Placas em caso de veículos ainda não cadastrados na base local, retornando os dados enriquecidos com a flag `fromExternalApi: true`.
+  - Experiência do Usuário (Frontend):
+    - Modal corporativo de alto padrão na Landing Page ([landingView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingView.js)) exibindo dados do carro, logotipo oficial da montadora, FIPE oficial e chamada de ativação do Passaporte DNA por R$ 59,90.
+    - Visualização enriquecida no painel da oficina mecânica ([workshopView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/workshopView.js)) exibindo logo oficial, dados técnicos e pontuação de precisão da FIPE.
+  - Bateria de Testes Automatizados ([api.test.js](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)):
+    - Expansão para **20 testes automatizados** com 100% de sucesso, incluindo testes ao vivo de saldo do token e consulta do VW Crossfox (`INT8C36`).
 
 ---
 

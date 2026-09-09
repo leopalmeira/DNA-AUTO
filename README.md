@@ -284,6 +284,15 @@ A aplicação está configurada para deploy contínuo no [Render](https://render
 
 ---
 
+## ⚡ Sistema Anti-Sleep (Render Free Tier)
+
+Para evitar que o servidor no plano gratuito do Render entre em modo de suspensão (spin-down após 15 minutos sem tráfego), o DNA AUTO conta com um serviço nativo de **Keep-Alive**:
+- **Ping Automático**: Dispara uma requisição HTTP periódica (a cada 10 minutos) para a rota `/api/v1/health`.
+- **Detecção Inteligente**: Reconhece automaticamente a variável `RENDER_EXTERNAL_URL` ou `SERVER_URL`.
+- **Zero Overhead**: Executado em segundo plano com timeout de segurança e sem bloquear o encerramento do processo.
+
+---
+
 ## 📄 Licença e Direitos
 
 Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os direitos reservados à marca **DNA AUTO**.

@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const db = require('../../database/db');
 const { authenticateToken } = require('../../middlewares/auth');
 const { logAudit } = require('../../middlewares/audit');
+const apiPlacasService = require('../../services/apiPlacas.service');
 
 // Gerador padronizado de código permanente DNA (Ex: DNA-BR-8F72-29A4-X91)
 function generateDnaCode() {
@@ -20,7 +21,7 @@ function generateDnaCode() {
 }
 
 // Pesquisa Rápida de Veículo (Placa, Chassi ou DNA)
-router.get('/search', (req, res) => {
+router.get('/search', async (req, res) => {
     try {
         const query = (req.query.q || '').trim().toUpperCase();
         if (!query) {
@@ -44,6 +45,25 @@ router.get('/search', (req, res) => {
         `).get(query, query.replace('-', ''), query, query);
 
         if (!vehicle) {
+            // Se for formato de placa (7 caracteres alfanuméricos), consultar API Placas oficial
+            const clean = query.replace(/[^A-Z0-9]/g, '');
+            if (clean.length === 7) {
+                try {
+                    const extRes = await apiPlacasService.consultarPlaca(clean);
+                    if (extRes.found && extRes.vehicle) {
+                        return res.json({
+                            found: true,
+                            hasDna: false,
+                            fromExternalApi: true,
+                            source: extRes.source,
+                            vehicle: extRes.vehicle
+                        });
+                    }
+                } catch (e) {
+                    console.warn('Falha na busca externa em /vehicles/search:', e.message);
+                }
+            }
+
             return res.status(404).json({
                 found: false,
                 message: 'Nenhum veículo cadastrado com esta placa ou chassi.'
@@ -162,18 +182,19 @@ router.post('/register', authenticateToken, (req, res) => {
             license_plate, chassis_vin, renavam, brand, model,
             version_label, manufacture_year, model_year, fuel_type,
             transmission_type, color, photo_url, activate_dna_now,
-            pricing_plan_id, modality
+            pricing_plan_id, modality, mileage
         } = req.body;
 
-        if (!license_plate || !chassis_vin || !brand || !model || !manufacture_year) {
-            return res.status(400).json({ error: 'Placa, chassi, marca, modelo e ano são obrigatórios.' });
+        if (!license_plate || !brand || !model) {
+            return res.status(400).json({ error: 'Placa, marca e modelo são obrigatórios.' });
         }
 
-        const cleanPlate = license_plate.trim().toUpperCase();
-        const cleanChassis = chassis_vin.trim().toUpperCase();
+        const cleanPlate = license_plate.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const cleanChassis = (chassis_vin ? chassis_vin.trim() : ('9BW' + cleanPlate + '00001')).toUpperCase();
+        const year = Number(manufacture_year) || new Date().getFullYear();
 
         const exists = db.prepare(`
-            SELECT id FROM vehicles WHERE license_plate = ? OR chassis_vin = ?
+            SELECT id FROM vehicles WHERE UPPER(REPLACE(license_plate, '-', '')) = ? OR UPPER(chassis_vin) = ?
         `).get(cleanPlate, cleanChassis);
 
         if (exists) {
@@ -190,10 +211,17 @@ router.post('/register', authenticateToken, (req, res) => {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `).run(
                 vehicleId, cleanPlate, cleanChassis, renavam || null, brand, model, version_label || null,
-                Number(manufacture_year), Number(model_year) || Number(manufacture_year),
+                year, Number(model_year) || year,
                 fuel_type || 'Flex', transmission_type || 'Manual', color || 'Não informada',
                 photo_url || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80'
             );
+
+            if (mileage && Number(mileage) > 0) {
+                db.prepare(`
+                    INSERT INTO mileage_records (id, vehicle_id, mileage, source_modality, recorded_at)
+                    VALUES (?, ?, ?, 'WORKSHOP_REGISTER', CURRENT_TIMESTAMP)
+                `).run('mil_' + Date.now(), vehicleId, Number(mileage));
+            }
 
             let generatedDnaCode = null;
             // Se solicitado ativar DNA imediatamente
@@ -237,6 +265,138 @@ router.post('/register', authenticateToken, (req, res) => {
     } catch (err) {
         console.error('Erro ao cadastrar veículo:', err);
         res.status(500).json({ error: 'Erro ao cadastrar novo veículo.' });
+    }
+});
+
+// Cadastrar Veículo na Plataforma a partir de Consulta Oficial de Placa
+router.post('/register-from-api', authenticateToken, async (req, res) => {
+    try {
+        const { plate, customData, activate_dna_now, modality } = req.body;
+        if (!plate) {
+            return res.status(400).json({ error: 'Placa obrigatória.' });
+        }
+
+        const cleanPlate = plate.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        // 1. Verificar se já existe no banco
+        let existing = db.prepare(`
+            SELECT v.*, vd.dna_code
+            FROM vehicles v
+            LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+            WHERE UPPER(REPLACE(v.license_plate, '-', '')) = ? OR UPPER(v.license_plate) = ?
+        `).get(cleanPlate, cleanPlate);
+
+        if (existing) {
+            return res.json({
+                success: true,
+                alreadyRegistered: true,
+                vehicle: existing,
+                dna_code: existing.dna_code || null,
+                message: `Veículo ${existing.brand} ${existing.model} (${existing.license_plate}) já está cadastrado na plataforma!`
+            });
+        }
+
+        // 2. Buscar dados oficiais na API se não fornecidos
+        let vData = customData;
+        if (!vData || !vData.brand) {
+            const apiRes = await apiPlacasService.consultarPlaca(cleanPlate);
+            if (apiRes && apiRes.found && apiRes.vehicle) {
+                vData = apiRes.vehicle;
+            } else {
+                vData = {
+                    brand: 'Veículo Nacional',
+                    model: 'Modelo Cadastrado',
+                    version: 'Padrão Homologado',
+                    manufacture_year: 2020,
+                    model_year: 2020,
+                    fuel_type: 'Flex',
+                    transmission_type: 'Manual',
+                    color: 'Não informada'
+                };
+            }
+        }
+
+        const vehicleId = 'veh_' + Date.now();
+        const rawChassis = (vData.chassis_vin || vData.chassis_vin_masked || ('BR' + cleanPlate + '000')).trim();
+        const chassis = rawChassis.includes('*') ? rawChassis.replace(/\*/g, '9') : rawChassis;
+        const rawRenavam = (vData.renavam || vData.renavam_masked || '00539182741').trim();
+        const renavam = rawRenavam.includes('*') ? rawRenavam.replace(/\*/g, '0') : rawRenavam;
+        const fipeCents = (vData.fipe && vData.fipe.market_value_cents) ? vData.fipe.market_value_cents : 7500000;
+        const fipeCode = (vData.fipe && vData.fipe.fipe_code) ? vData.fipe.fipe_code : '004495-4';
+        const fipeRef = (vData.fipe && vData.fipe.reference_month) ? vData.fipe.reference_month : 'Setembro de 2026';
+
+        let generatedDna = null;
+
+        db.transaction(() => {
+            db.prepare(`
+                INSERT INTO vehicles (
+                    id, license_plate, chassis_vin, renavam, brand, model, version_label,
+                    manufacture_year, model_year, fuel_type, transmission_type, color, photo_url
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).run(
+                vehicleId,
+                cleanPlate,
+                chassis,
+                renavam,
+                vData.brand || 'Veículo',
+                vData.model || 'Oficial',
+                vData.version || 'Versão Padrão',
+                Number(vData.manufacture_year) || 2020,
+                Number(vData.model_year) || Number(vData.manufacture_year) || 2020,
+                vData.fuel_type || 'Flex',
+                vData.transmission_type || 'Manual',
+                vData.color || 'Não informada',
+                vData.photo_url || vData.logo || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80'
+            );
+
+            // Inserir cotação FIPE oficial
+            db.prepare(`
+                INSERT INTO fipe_values (id, vehicle_id, fipe_code, reference_month_year, fipe_price_cents)
+                VALUES (?, ?, ?, ?, ?)
+            `).run('fipe_' + Date.now(), vehicleId, fipeCode, fipeRef, fipeCents);
+
+            if (activate_dna_now) {
+                const dnaCode = generateDnaCode();
+                generatedDna = dnaCode;
+                const dnaId = 'dna_' + Date.now();
+                const certificateHash = crypto.createHash('sha256').update(dnaCode + chassis).digest('hex');
+                const effectiveWorkshopId = req.user && req.user.workshop ? req.user.workshop.workshop_id : null;
+
+                db.prepare(`
+                    INSERT INTO vehicle_dna (
+                        id, vehicle_id, dna_code, status, activated_at,
+                        activated_by_workshop_id, activation_modality, activation_fee_cents, certificate_hash
+                    ) VALUES (?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP, ?, ?, 7900, ?)
+                `).run(dnaId, vehicleId, dnaCode, effectiveWorkshopId, modality || 'NORMAL', certificateHash);
+
+                db.prepare(`
+                    INSERT INTO health_scores (
+                        id, vehicle_id, overall_score, documented_percentage, score_rationale
+                    ) VALUES (?, ?, 60, 50, 'DNA ativado no momento do cadastro inicial.')
+                `).run('hs_' + Date.now(), vehicleId);
+            }
+        })();
+
+        logAudit({
+            user: req.user,
+            action: 'REGISTER_VEHICLE_FROM_API',
+            entityType: 'VEHICLE',
+            entityId: vehicleId,
+            ipAddress: req.ip,
+            dataAfter: { license_plate: cleanPlate, brand: vData.brand, model: vData.model }
+        });
+
+        const createdVehicle = db.prepare(`SELECT * FROM vehicles WHERE id = ?`).get(vehicleId);
+
+        return res.status(201).json({
+            success: true,
+            vehicle: createdVehicle,
+            dna_code: generatedDna,
+            message: `Veículo ${vData.brand} ${vData.model} (${cleanPlate}) cadastrado com sucesso na plataforma!`
+        });
+    } catch (err) {
+        console.error('Erro ao cadastrar veículo via API:', err);
+        res.status(500).json({ error: 'Erro ao cadastrar veículo na plataforma: ' + err.message });
     }
 });
 

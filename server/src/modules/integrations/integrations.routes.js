@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../database/db');
 const { logAudit } = require('../../middlewares/audit');
+const apiPlacasService = require('../../services/apiPlacas.service');
 
 // Listagem de Conectores e Status das Integrações
 router.get('/status', (req, res) => {
@@ -83,8 +84,11 @@ router.get('/plate-lookup/:plate', async (req, res) => {
                     fuel_type: existingVehicle.fuel_type,
                     transmission_type: existingVehicle.transmission_type || 'Automático',
                     photo_url: existingVehicle.photo_url,
+                    logo: existingVehicle.photo_url,
                     origin: getPlateOriginState(cleanPlate),
+                    chassis_vin: existingVehicle.chassis_vin,
                     chassis_vin_masked: maskedChassis,
+                    renavam: existingVehicle.renavam || maskedRenavam,
                     renavam_masked: maskedRenavam,
                     hasDna: !!existingVehicle.dna_code,
                     dna_code: existingVehicle.dna_code || null,
@@ -106,30 +110,10 @@ router.get('/plate-lookup/:plate', async (req, res) => {
             });
         }
 
-        // 2. Veículo não cadastrado na base local: identificar DETRAN estadual de origem pela faixa Senatran
+        // 2. Veículo não cadastrado na base local: consultar API Placas oficial (WDAPI2)
         const origin = getPlateOriginState(cleanPlate);
         const detranName = `DETRAN-${origin.state}`;
-
-        // Tentativa de consulta via Gateway Externo se token configurado no ambiente
-        let externalVehicle = null;
-        const apiToken = process.env.APIBRASIL_TOKEN || process.env.WDAPI_TOKEN || process.env.CONSULTAR_PLACA_TOKEN;
-
-        if (apiToken) {
-            try {
-                const extUrl = process.env.WDAPI_TOKEN
-                    ? `https://wdapi2.com.br/consulta/${cleanPlate}/${process.env.WDAPI_TOKEN}`
-                    : `https://api.consultarplaca.com.br/v2/consultarPlaca?placa=${cleanPlate}`;
-                const extRes = await fetch(extUrl, { headers: { 'User-Agent': 'DNA-AUTO-ERP/1.0' }, signal: AbortSignal.timeout(4000) });
-                if (extRes.ok) {
-                    const extData = await extRes.json();
-                    if (extData && (extData.marca || extData.MARCA)) {
-                        externalVehicle = extData;
-                    }
-                }
-            } catch (e) {
-                console.warn('Gateway externo indisponível:', e.message);
-            }
-        }
+        const external = await apiPlacasService.consultarPlaca(cleanPlate);
 
         logAudit({
             user: req.user || { name: 'Consulta API de Placas' },
@@ -137,57 +121,18 @@ router.get('/plate-lookup/:plate', async (req, res) => {
             entityType: 'PLATE_QUERY',
             entityId: cleanPlate,
             ipAddress: req.ip,
-            dataAfter: { plate: cleanPlate, detran: detranName, hasExternal: !!externalVehicle }
+            dataAfter: { plate: cleanPlate, found: external.found, provider: 'WDAPI2' }
         });
 
-        if (externalVehicle) {
-            const brand = externalVehicle.marca || externalVehicle.MARCA || 'Veículo Homologado';
-            const model = externalVehicle.modelo || externalVehicle.MODELO || '';
-            const year = externalVehicle.ano || externalVehicle.anoModelo || 2022;
-            const color = externalVehicle.cor || 'Não informada';
-            const chassis = externalVehicle.chassi ? (externalVehicle.chassi.substring(0, 8) + '******' + externalVehicle.chassi.slice(-3)) : 'Não informado';
-            const renavam = externalVehicle.renavam ? (externalVehicle.renavam.substring(0, 6) + '*****') : 'Sob sigilo';
-
+        if (external.found && external.vehicle) {
             return res.json({
                 found: true,
-                source: `Gateway Oficial ${detranName} / Senatran Integrado`,
-                vehicle: {
-                    id: null,
-                    license_plate: cleanPlate,
-                    brand,
-                    model,
-                    version: externalVehicle.versao || externalVehicle.VERSAO || 'Versão Homologada',
-                    manufacture_year: externalVehicle.ano || year,
-                    model_year: externalVehicle.anoModelo || year,
-                    color,
-                    fuel_type: externalVehicle.combustivel || 'Flex',
-                    transmission_type: 'Manual/Automático',
-                    photo_url: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=800&auto=format&fit=crop&q=80',
-                    origin,
-                    chassis_vin_masked: chassis,
-                    renavam_masked: renavam,
-                    hasDna: false,
-                    dna_code: null,
-                    fipe: {
-                        fipe_code: externalVehicle.fipe_codigo || '004495-4',
-                        reference_month: 'Março de 2026',
-                        market_value_formatted: externalVehicle.fipe_valor || 'R$ 75.000,00',
-                        market_value_cents: 7500000
-                    },
-                    legal_status: {
-                        detran_status: `REGULAR (${detranName})`,
-                        ipva_status: 'QUITADO',
-                        ipva_estimated_amount: 'R$ 3.000,00',
-                        fines_count: 0,
-                        has_judicial_restrictions: false,
-                        auction_record: false
-                    }
-                }
+                source: external.source || 'API Placas Oficial (Senatran / FIPE)',
+                vehicle: external.vehicle
             });
         }
 
-        // Se o veículo ainda não consta na base local nem na API com chave ativa:
-        // Retorna a identificação oficial do DETRAN estadual correspondente à placa sem mock inventado
+        // Se a API externa não localizou ou placa não encontrada na base nacional:
         return res.json({
             found: false,
             needsRegistration: true,
@@ -199,11 +144,23 @@ router.get('/plate-lookup/:plate', async (req, res) => {
                 ? 'https://www.detran.rj.gov.br/consultas/consultas-drv/cadastro-de-veiculo.html'
                 : `https://www.detran.${origin.state.toLowerCase()}.gov.br/`,
             ipva_rate: origin.state === 'RJ' || origin.state === 'SP' || origin.state === 'MG' ? '4%' : '3%',
-            message: `Placa registrada sob jurisdição do ${detranName} (${origin.city}/${origin.state}). Veículo novo na rede DNA AUTO: confirme os dados do documento para entrada imediata.`
+            message: external.message || `Placa registrada sob jurisdição do ${detranName} (${origin.city}/${origin.state}). Veículo novo na rede DNA AUTO: confirme os dados do documento para entrada imediata.`
         });
     } catch (err) {
         console.error('Erro na consulta de placa:', err);
         res.status(500).json({ error: 'Erro ao consultar dados do veículo pela placa.' });
+    }
+});
+
+// ==============================================================================
+// 0.1 CONSULTA DE SALDO DE CRÉDITOS DA API PLACAS
+// ==============================================================================
+router.get('/plate-balance', async (req, res) => {
+    try {
+        const balance = await apiPlacasService.consultarSaldo();
+        res.json(balance);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao consultar saldo da API de placas.' });
     }
 });
 

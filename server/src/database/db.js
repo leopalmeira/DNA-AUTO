@@ -50,3 +50,14 @@ try {
     console.warn('Verificação de seed ignorada:', e.message);
 }
 
+// Garantir presença do conector oficial da API Placas
+try {
+    const hasPlacas = db.prepare(`SELECT id FROM integrations WHERE service_code = 'API_PLACAS'`).get();
+    if (!hasPlacas) {
+        db.prepare(`
+            INSERT INTO integrations (id, service_code, service_name, is_enabled, is_connected, endpoint_url, api_key_masked, status_message)
+            VALUES ('int_placas', 'API_PLACAS', 'API Placas Nacional (WDAPI2)', 1, 1, 'https://wdapi2.com.br', 'be1425****22dd', 'Conexão ativa com 1.000 consultas contratadas e FIPE oficial por score')
+        `).run();
+    }
+} catch (_) {}
+

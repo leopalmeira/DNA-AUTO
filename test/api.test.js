@@ -177,7 +177,40 @@ async function runTests() {
         console.assert(dataStatus.success === true, 'Falha ao atualizar status da oficina');
         console.log('✅ 16. Homologação Multi-Tenant: Status da oficina verificado e aprovado com sucesso');
 
-        console.log('\n🎉 TODOS OS 16 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 17: Keep-Alive Anti-Sleep Service (Render Free Tier)
+        const { pingServer } = require('../server/src/services/keepAlive.service');
+        const pingResult = await pingServer(`http://localhost:${PORT}`);
+        console.assert(pingResult.success === true, 'Falha no teste de ping do keep-alive');
+        console.assert(pingResult.status === 200, 'Status do ping do keep-alive diferente de 200');
+        console.log('✅ 17. Keep-Alive Anti-Sleep: Ping no healthcheck executado com sucesso [200 OK]');
+
+        // Teste 18: Consulta de Saldo de Créditos da API Placas (WDAPI2)
+        const resBalance = await fetch(`${BASE_URL}/integrations/plate-balance`);
+        const dataBalance = await resBalance.json();
+        console.assert(dataBalance.success === true, 'Falha na consulta de saldo da API de placas');
+        console.assert(dataBalance.qtdConsultas >= 1, 'Saldo de consultas contratadas deve ser positivo');
+        console.log(`✅ 18. Saldo API Placas: ${dataBalance.qtdConsultas} consultas disponíveis no token ${dataBalance.tokenMasked}`);
+
+        // Teste 19: Consulta Cadastral Oficial por Placa (INT8C36 - Crossfox)
+        const resPlate = await fetch(`${BASE_URL}/integrations/plate-lookup/INT8C36`);
+        const dataPlate = await resPlate.json();
+        console.assert(dataPlate.found === true, 'Falha na consulta da placa INT8C36');
+        console.assert(dataPlate.vehicle.brand === 'VW', 'Marca do veículo divergente');
+        console.assert(dataPlate.vehicle.model === 'CROSSFOX', 'Modelo do veículo divergente');
+        console.assert(dataPlate.vehicle.fipe && !!dataPlate.vehicle.fipe.market_value_formatted, 'FIPE oficial não retornada');
+        console.assert(dataPlate.vehicle.fipe.score >= 50, 'Score da FIPE não calculado');
+        console.log(`✅ 19. Consulta Oficial API Placas: ${dataPlate.vehicle.brand} ${dataPlate.vehicle.model} ${dataPlate.vehicle.manufacture_year} localizado com FIPE ${dataPlate.vehicle.fipe.market_value_formatted} (Score: ${dataPlate.vehicle.fipe.score})`);
+
+        // Teste 20: Busca Global de Veículo via API Placas (/vehicles/search?q=INT8C36)
+        const resSearchExt = await fetch(`${BASE_URL}/vehicles/search?q=INT8C36`);
+        const dataSearchExt = await resSearchExt.json();
+        console.assert(dataSearchExt.found === true, 'Veículo externo não localizado na busca global');
+        console.assert(dataSearchExt.hasDna === false, 'Veículo externo recém-consultado não deveria ter DNA');
+        console.assert(dataSearchExt.fromExternalApi === true, 'Flag fromExternalApi não informada');
+        console.assert(dataSearchExt.vehicle.license_plate === 'INT8C36', 'Placa do veículo não coincide');
+        console.log(`✅ 20. Busca Global com API Placas Integrada: Veículo ${dataSearchExt.vehicle.brand} ${dataSearchExt.vehicle.model} reconhecido e pronto para ativação de DNA`);
+
+        console.log('\n🎉 TODOS OS 20 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

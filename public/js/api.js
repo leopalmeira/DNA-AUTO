@@ -102,6 +102,12 @@ const API = {
             body: JSON.stringify(data)
         });
     },
+    registerVehicleFromApi(plate, customData, activateDnaNow = false) {
+        return this.request('/vehicles/register-from-api', {
+            method: 'POST',
+            body: JSON.stringify({ plate, customData, activate_dna_now: activateDnaNow })
+        });
+    },
 
     // Oficinas
     getWorkshops() {
@@ -112,6 +118,9 @@ const API = {
     },
     getWorkshopDashboard(workshopId) {
         return this.request(`/workshops/${workshopId}/dashboard`);
+    },
+    getMaintenanceAlertsForWorkshop(workshopId) {
+        return this.request(`/workshops/${workshopId}/maintenance-alerts`);
     },
     updateWorkshopStatus(workshopId, status) {
         return this.request(`/workshops/${workshopId}/status`, {
@@ -210,5 +219,15 @@ const API = {
     },
     lookupPlate(plate) {
         return this.request(`/integrations/plate-lookup/${encodeURIComponent(plate)}`);
+    },
+    registerVehicleFromApi(plate, customData = null, activateDnaNow = false) {
+        return this.request('/vehicles/register-from-api', {
+            method: 'POST',
+            body: JSON.stringify({
+                plate,
+                customData,
+                activate_dna_now: activateDnaNow
+            })
+        });
     }
 };
