@@ -33,8 +33,12 @@ const App = {
             return;
         }
 
-        // 2. Rotas não autenticadas
-        if (isExplicitAdmin) {
+        // 2. Rotas diretas via URL / Hash
+        if (window.location.hash === '#owner') {
+            this.switchView('owner');
+        } else if (window.location.hash === '#workshop') {
+            this.switchView('workshop');
+        } else if (isExplicitAdmin) {
             console.log('🛡️ Acesso Admin detectado. Abrindo login administrativo...');
             this.switchView('login-admin');
         } else if (isExplicitLogin) {
@@ -156,15 +160,21 @@ const App = {
         // Isolamento de Tela Cheia e Roteamento SPA
         if (viewName === 'workshop') {
             document.body.classList.add('is-workshop-erp');
+            document.body.classList.remove('is-owner-app');
             if (window.location.hash !== '#workshop') {
                 try { history.replaceState(null, '', '#workshop'); } catch (_) { window.location.hash = '#workshop'; }
             }
+        } else if (viewName === 'owner') {
+            document.body.classList.remove('is-workshop-erp');
+            document.body.classList.add('is-owner-app');
+            if (window.location.hash !== '#owner') {
+                try { history.replaceState(null, '', '#owner'); } catch (_) { window.location.hash = '#owner'; }
+            }
         } else {
             document.body.classList.remove('is-workshop-erp');
+            document.body.classList.remove('is-owner-app');
             if (viewName === 'admin' && window.location.hash !== '#admin') {
                 try { history.replaceState(null, '', '#admin'); } catch (_) { window.location.hash = '#admin'; }
-            } else if (viewName === 'owner' && window.location.hash !== '#owner') {
-                try { history.replaceState(null, '', '#owner'); } catch (_) { window.location.hash = '#owner'; }
             } else if (viewName === 'landing' && window.location.hash !== '#landing') {
                 try { history.replaceState(null, '', '#landing'); } catch (_) { window.location.hash = '#landing'; }
             }
@@ -237,6 +247,7 @@ const App = {
     // ── Logout Seguro ──
     logout() {
         document.body.classList.remove('is-workshop-erp');
+        document.body.classList.remove('is-owner-app');
         localStorage.removeItem('dna_current_view');
         this.setLoggedUser(null);
         this.currentUser = null;

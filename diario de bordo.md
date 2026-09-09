@@ -160,8 +160,12 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
       - Bottom Navigation Bar com 5 abas (`Início`, `Veículo`, `Certificação`, `Documentos`, `Mais`).
     - **Tela com Menu Aberto (Drawer Lateral)**:
       - Gaveta deslizante com botão de fechar `✕`, perfil do usuário (`João Silva • Cliente >`), 9 itens de menu com ícones e setas `>` e rodapé com escudo de segurança.
-    - **Simulador Interativo**:
-      - Controles no topo para alternar instantaneamente entre *"📱 Sem menu aberto"* e *"📱 Com menu aberto"*, e entre o *"🚗 Modelo Gol 1.0"* e *"➕ Meu Carro Real"*.
+- **Refinamento Arquitetural de Isolamento (`is-owner-app`) & DESIGN.md:**
+  - Aplicação da mesma regra de arquitetura isolada do ERP da oficina (`is-workshop-erp`): o App do Cliente agora roda sob escopo exclusivo `body.is-owner-app`, eliminando completamente a top-navbar antiga e a sidebar do portal.
+  - Eliminação total de botões soltos de simulação (`Sem menu aberto`, `Com menu aberto`, etc.) que poluíam a tela.
+  - O menu lateral drawer agora abre suavemente através do botão `☰` no header ou pela aba `Mais`, e fecha no `✕` ou no backdrop.
+  - Correção estrita de dimensões do avatar circular (`36px` travado com `overflow: hidden; object-fit: cover;`) impedindo qualquer distorção visual.
+  - Criação do documento canônico [DESIGN.md](file:///c:/Users/User/Desktop/DNA-AUTO/DESIGN.md) na raiz com especificação completa de design tokens (cores, tipografia, cantos arredondados e componentes).
 
 ---
 

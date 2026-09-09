@@ -422,6 +422,9 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
   - `public/js/components/workshopView.js`: Limpeza de listas mock estáticas nas telas de veículos cadastrados, estoque de peças e carteira de clientes, substituídas por estados vazios profissionais com botões de ação para o primeiro cadastro.
   - `server/src/database/seed.js`: Modularização do seed em `seedBase(db)` (criação apenas da estrutura básica, papéis, oficina e planos, deixando 0 veículos mock) e `seedDemoCars(db)` (inserção opcional para testes).
   - `test/api.test.js`: Ajuste da suíte de 31 testes para instanciar `seedDemoCars()` no setup e restaurar `seedBase()` no bloco `finally`, garantindo 31/31 testes verdes (100%) e base operacional com 0 carros de teste.
+  - **Refinamento Arquitetural de Isolamento (`is-owner-app`) & DESIGN.md:**
+    - Ocultação da top-navbar e sidebar do portal para que o App do Cliente assuma a tela toda com seu próprio Header, Drawer lateral e Bottom Bar.
+    - Remoção dos botões soltos de teste, fixação das dimensões do avatar circular (36px travado) e criação do [DESIGN.md](file:///c:/Users/User/Desktop/DNA-AUTO/DESIGN.md) na raiz.
 - **Validação:**
   - 31/31 testes aprovados com 100% de sucesso.
   - Contagem de veículos no banco após os testes: 0 veículos (`SELECT count(*) FROM vehicles` = 0).
@@ -438,6 +441,7 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 | **ADR-04** | **WhatsApp Universal Links** | Evitar dependência e custos de gateways de SMS/WhatsApp corporativo (Twilio, Z-API) para MVP e fase inicial. | Disparo imediato, compatível com qualquer dispositivo, sem custo operacional por mensagem. |
 | **ADR-05** | **Isolamento de Admin via Rota `/admin`** | Não poluir a tela inicial de clientes e oficinas com botões de administrador. | Maior segurança por obscuridade e navegação limpa para usuários comuns. |
 | **ADR-06** | **ERP de Oficina em Escopo Isolado (`is-workshop-erp`)** | Transformar a interface da oficina em um sistema de gestão corporativo moderno (estilo TOTVS) sem conflitar com as regras de CSS da Landing Page. | Viewport 100vh estável, sem scroll da página principal, zero estouro horizontal e foco operacional em balcão, box e agendamentos. |
+| **ADR-07** | **App do Cliente em Escopo Isolado (`is-owner-app`)** | Eliminar cabeçalhos e sidebars residuais da web para entregar a experiência mobile-first idêntica ao design de aplicativo do cliente. | Interface limpa, responsiva, sem botões de mock, com drawer nativo e dimensões travadas. |
 
 ---
 
