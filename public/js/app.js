@@ -94,8 +94,9 @@ const App = {
         document.querySelectorAll('.nav-item[data-view]').forEach(item => {
             item.addEventListener('click', () => {
                 const view = item.dataset.view;
+                const tab = item.dataset.adminTab || null;
                 closeMobileSidebar();
-                this.switchView(view);
+                this.switchView(view, tab);
             });
         });
 
@@ -164,7 +165,7 @@ const App = {
         } else if (viewName === 'login') {
             LoginView.render();
         } else if (viewName === 'admin') {
-            AdminView.render();
+            AdminView.render(param);
         } else if (viewName === 'workshop') {
             WorkshopView.render();
         } else if (viewName === 'owner') {

@@ -146,7 +146,38 @@ async function runTests() {
         console.assert(dataForgot.success === true, 'Falha na redefinição de senha');
         console.log('✅ 13. Esqueci Minha Senha: Senha redefinida com sucesso para o usuário');
 
-        console.log('\n🎉 TODOS OS 13 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 14: Frota de Carros por Oficina (Multi-Tenant)
+        const resFleet = await fetch(`${BASE_URL}/admin/fleet`, {
+            headers: { 'Authorization': `Bearer ${dataLoginAdmin.token}` }
+        });
+        const dataFleet = await resFleet.json();
+        console.assert(dataFleet.success === true, 'Falha ao consultar frota da rede');
+        console.assert(dataFleet.vehicles.length >= 4, 'Total de veículos da frota incorreto');
+        console.log(`✅ 14. Frota por Oficina Multi-Tenant: ${dataFleet.vehicles.length} veículos catalogados com oficina vinculada`);
+
+        // Teste 15: Carteira Geral de Clientes por Oficina
+        const resAllClients = await fetch(`${BASE_URL}/admin/clients-all`, {
+            headers: { 'Authorization': `Bearer ${dataLoginAdmin.token}` }
+        });
+        const dataAllClients = await resAllClients.json();
+        console.assert(dataAllClients.success === true, 'Falha ao consultar clientes da rede');
+        console.assert(dataAllClients.clients.length >= 2, 'Total de clientes da rede incorreto');
+        console.log(`✅ 15. Carteira de Clientes: ${dataAllClients.clients.length} proprietários vinculados à oficina de atendimento`);
+
+        // Teste 16: Gestão de Homologação de Oficina
+        const resStatus = await fetch(`${BASE_URL}/admin/workshops/ws_veloce/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${dataLoginAdmin.token}`
+            },
+            body: JSON.stringify({ status: 'APPROVED' })
+        });
+        const dataStatus = await resStatus.json();
+        console.assert(dataStatus.success === true, 'Falha ao atualizar status da oficina');
+        console.log('✅ 16. Homologação Multi-Tenant: Status da oficina verificado e aprovado com sucesso');
+
+        console.log('\n🎉 TODOS OS 16 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

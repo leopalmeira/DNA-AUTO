@@ -6,17 +6,32 @@ const WorkshopView = {
     currentWorkshopId: 'ws_veloce',
     dashboardData: null,
 
+    getEffectiveWorkshopId() {
+        if (App.currentUser) {
+            if (App.currentUser.workshop && (App.currentUser.workshop.id || App.currentUser.workshop.workshop_id)) {
+                return App.currentUser.workshop.id || App.currentUser.workshop.workshop_id;
+            }
+            if (App.currentUser.workshop_id) {
+                return App.currentUser.workshop_id;
+            }
+        }
+        return this.currentWorkshopId || 'ws_veloce';
+    },
+
     async render() {
         const container = document.getElementById('view-content');
+        const activeWorkshopId = this.getEffectiveWorkshopId();
+        this.currentWorkshopId = activeWorkshopId;
+
         container.innerHTML = `
             <div style="padding:40px; text-align:center; color:var(--text-muted);">
                 <div class="pulse-dot" style="margin:0 auto 16px;"></div>
-                Carregando Módulo da Oficina Credenciada (Veloce Auto Center)...
+                Carregando Módulo da Oficina Credenciada...
             </div>
         `;
 
         try {
-            const data = await API.getWorkshopDashboard(this.currentWorkshopId);
+            const data = await API.getWorkshopDashboard(activeWorkshopId);
             this.dashboardData = data;
             const stats = data.stats;
 

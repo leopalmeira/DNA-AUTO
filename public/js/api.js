@@ -164,6 +164,18 @@ const API = {
     getWorkshopClients(workshopId) {
         return this.request(`/admin/workshops/${encodeURIComponent(workshopId)}/clients`);
     },
+    getFleet(workshopId = 'all') {
+        return this.request(`/admin/fleet?workshop_id=${encodeURIComponent(workshopId)}`);
+    },
+    getAllClients(workshopId = 'all') {
+        return this.request(`/admin/clients-all?workshop_id=${encodeURIComponent(workshopId)}`);
+    },
+    setWorkshopStatus(workshopId, status) {
+        return this.request(`/admin/workshops/${encodeURIComponent(workshopId)}/status`, {
+            method: 'POST',
+            body: JSON.stringify({ status })
+        });
+    },
     getMaintenanceAlerts() {
         return this.request('/admin/maintenance-alerts');
     },

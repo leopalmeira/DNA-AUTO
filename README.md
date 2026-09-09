@@ -3,7 +3,7 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-13%2F13%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-16%2F16%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
@@ -15,7 +15,7 @@
 
 * **🌟 Landing Page Oficial (R$ 59,90):** [https://dna-auto.onrender.com/landing](https://dna-auto.onrender.com/landing) *(ou na raiz [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/))*
 * **🚀 Aplicação / Sistema Web:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/)
-* **🛡️ Painel Administrativo:** [https://dna-auto.onrender.com/admin](https://dna-auto.onrender.com/admin)
+* **🛡️ Painel Administrativo Matriz:** [https://dna-auto.onrender.com/admin](https://dna-auto.onrender.com/admin)
 * **🚗 Dossiê Demonstrativo (Honda Civic):** [https://dna-auto.onrender.com/#dossier](https://dna-auto.onrender.com/#dossier)
 * **📂 Repositório Oficial:** [https://github.com/leopalmeira/DNA-AUTO](https://github.com/leopalmeira/DNA-AUTO)
 * **📓 Diário de Bordo Completo:** Consulte [DIARIO_DE_BORDO.md](file:///c:/Users/User/Desktop/DNA-AUTO/DIARIO_DE_BORDO.md) para detalhes de engenharia e decisões arquiteturais.
@@ -40,31 +40,16 @@ O **DNA AUTO** cria uma identidade digital única para o veículo (`DNA-BR-XXXX-
 
 ---
 
-## 💰 Modelo de Negócio
+## 🏢 Arquitetura Multi-Tenant com Isolamento Estrito
 
-| Pilar | Detalhe Comercial | Benefício |
-|---|---|---|
-| **Ativação DNA do Carro** | **R$ 59,90** (taxa única vitalícia por veículo) | Histórico protegido para sempre; valoriza o carro em até 15% na revenda. |
-| **Oficinas Credenciadas** | Cadastro gratuito e comissionamento por DNA emitido | Fidelização de clientes, gestão de ordens de serviço e reputação técnica auditada. |
-| **Alertas Preventivos WhatsApp** | Disparos automáticos gratuitos para o cliente final | Traz o cliente de volta à oficina na hora exata de trocar óleo, filtros e correias. |
-| **Relatórios de Venda / Cartazes** | Inclusos no passaporte do veículo | Gera credibilidade imediata em anúncios na WebMotors, OLX, iCarros e lojas físicas. |
-
----
-
-## 🛡️ Níveis de Confiabilidade Probatória
-
-O DNA AUTO adota uma régua rigorosa de 4 níveis de auditoria para cada registro de serviço:
-
-```
-[ Nível 1: DECLARADO ] ────────► Informado pelo proprietário sem anexo documental.
-          │
-[ Nível 2: COMPROVADO ] ───────► Anexada Nota Fiscal (NFS-e / DANFE) ou recibo legível.
-          │
-[ Nível 3: CONFIRMADO ] ───────► Oficina mecânica credenciada conferiu e chancelou o serviço.
-          │
-[ Nível 4: PADRÃO OURO ] ──────► Ordem de serviço oficial da oficina, chave de acesso da NFS-e
-                                 e fotos em alta resolução das peças novas instaladas.
-```
+A plataforma opera em arquitetura **Multi-Tenant** com controle de acesso rigoroso:
+1. **Isolamento entre Oficinas (Tenants):**
+   - Uma oficina parceira **NUNCA visualiza os clientes, veículos, faturamento ou ordens de serviço de outra oficina**.
+   - Cada oficina acessa estritamente seu próprio workspace operacional, seus serviços executados e suas comissões por DNA emitido.
+2. **Visibilidade Focada do Cliente (Proprietário):**
+   - O proprietário do veículo visualiza o dossiê com o histórico completo do seu carro, mas **identificando com clareza o nome, CNPJ e cidade da oficina específica que realizou cada manutenção**.
+3. **Governança Geral da Matriz (Admin):**
+   - O Administrador do Sistema possui visão consolidada da rede e pode inspecionar a frota e os clientes de cada oficina de forma segmentada (drill-down por tenant).
 
 ---
 
@@ -74,27 +59,20 @@ O DNA AUTO adota uma régua rigorosa de 4 níveis de auditoria para cada registr
 - **Link Direto:** [https://dna-auto.onrender.com/landing](https://dna-auto.onrender.com/landing) *(e na raiz para visitantes não logados)*
 - **Ambiente Local:** [http://localhost:3000/landing](http://localhost:3000/landing)
 - **Oferta em Destaque:** Apresentação da ativação do DNA por **R$ 59,90** com design automotivo escuro e detalhes em ouro `#FFD21C`.
-- **Atividades Monitoradas:** Cards visuais cobrindo:
-  - 🛢️ Trocas de óleo de motor e filtros.
-  - ⚙️ Kit de correia dentada, tensores e bomba d'água.
-  - 🛑 Sistema de freios (discos, pastilhas e sangria de fluido).
-  - 🔩 Suspensão, amortecedores e alinhamento computadorizado.
-  - 📷 Fotos das peças substituídas para comprovação física.
-  - 🧾 Anexo de Notas Fiscais eletrônicas de peças e serviços.
-- **Consulta Interativa de Placa:** Qualquer pessoa pode digitar a placa de um veículo para checar se ele possui o selo e histórico do DNA AUTO antes de comprar.
-- **Comparativo de Mercado:** Tabela comparando um carro com DNA contra veículos comuns sem histórico.
+- **Atividades Monitoradas:** Cards visuais cobrindo trocas de óleo, correias, freios, suspensão, fotos de peças e notas fiscais.
+- **Consulta Interativa de Placa:** Verificação pública instantânea se um veículo possui o histórico certificado.
 
-### 2. 🛡️ Painel Administrativo Matriz (`/admin`)
-- **Acesso Dedicado:** Endpoint exclusivo `/admin` (não exposto na interface pública).
-- **Indicadores Executivos em Tempo Real (KPIs):**
-  - **Faturamento Bruto Consolidado (R$):** Total gerado por ativações de DNA + volume de serviços movimentados nas oficinas parceiras.
-  - **Total de Carros:** Veículos registrados na base com contagem de DNAs ativos.
-  - **Oficinas Credenciadas:** Listagem de centros automotivos parceiros, status de homologação e volume financeiro gerado.
-  - **Clientes Ativos:** Quantidade de proprietários na plataforma.
-- **Drill-down: Clientes e Carros por Oficina:**
-  - Botão **`👥 Ver Clientes & Carros`** na linha de cada oficina.
-  - Modal com detalhamento de todos os proprietários atendidos, placas, modelos, data do último serviço, quilometragem e gastos acumulados.
-- **Trilha de Auditoria Criptográfica:** Logs imutáveis registrando todas as ações de usuários, data, hora, IP e estado anterior/posterior.
+### 2. 🛡️ Painel Administrativo Matriz & ERP Multi-Tenant (`/admin`)
+- **Menu Lateral Completo do Gestor de Sistema:**
+  - 📊 **Painel Executivo:** Visão geral da rede com KPIs consolidando faturamento, oficinas e frota.
+  - 💰 **Faturamento da Rede:** Extrato financeiro consolidado em R$, volume de serviços mecânicos, receita de ativações DNA (R$ 59,90) e comissões.
+  - 🏢 **Oficinas (Multi-Tenant):** Controle de homologação (aprovar/suspender), faturamento por oficina e gestão da rede.
+  - 🚗 **Carros por Oficina (Frota Multi-Tenant):** Relação completa de veículos cadastrados com filtro dinâmico por oficina credenciada (tenant).
+  - 👥 **Carteira de Clientes:** Todos os proprietários cadastrados organizados pela oficina de atendimento.
+  - 📲 **Alertas WhatsApp:** Central dedicada para monitoramento de óleo e correias dentadas.
+  - 🛡️ **Trilha de Auditoria:** Logs imutáveis com IP, usuário, timestamp e diff de dados.
+- **Drill-down: Clientes & Carros por Oficina:**
+  - Botão **`👥 Ver Clientes & Carros`** para inspecionar a base de atendimento de qualquer oficina da rede.
 
 ### 3. 📲 Central de Alertas Preventivos via WhatsApp
 - **Localização:** Integrada ao Painel Administrativo.
@@ -202,7 +180,7 @@ O banco de dados de desenvolvimento vem pré-configurado com os seguintes usuár
 
 ## 🧪 Bateria de Testes Automatizados
 
-O projeto possui uma suite de **13 testes automatizados de integração ponta a ponta** cobrindo todos os módulos do sistema.
+O projeto possui uma suite de **16 testes automatizados de integração ponta a ponta** cobrindo todos os módulos do sistema.
 
 Para executar os testes:
 ```bash
@@ -228,12 +206,15 @@ node test/api.test.js
 ✅ 7. Ativação de DNA: Gerado código permanente DNA-BR-XXXX-XXXX-XXX
 ✅ 8. Relatório DNA para Venda: Emitido com código de autenticação
 ✅ 9. Confirmação de Serviço pela Oficina: Nível elevado para Nível 3 (CONFIRMADO)
-✅ 10. Faturamento e Rede do Admin: R$ 7.128,00 faturamento bruto, 3 oficinas, 3 clientes
+✅ 10. Faturamento e Rede do Admin: R$ 7.207,00 faturamento bruto, 3 oficinas, 3 clientes
 ✅ 11. Clientes por Oficina: 4 clientes encontrados para Veloce Auto Center
 ✅ 12. Alertas Preventivos WhatsApp: 8 alertas gerados com links diretos para WhatsApp
 ✅ 13. Esqueci Minha Senha: Senha redefinida com sucesso para o usuário
+✅ 14. Frota por Oficina Multi-Tenant: 4 veículos catalogados com oficina vinculada
+✅ 15. Carteira de Clientes: 2 proprietários vinculados à oficina de atendimento
+✅ 16. Homologação Multi-Tenant: Status da oficina verificado e aprovado com sucesso
 
-🎉 TODOS OS 13 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!
+🎉 TODOS OS 16 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!
 ```
 
 ---

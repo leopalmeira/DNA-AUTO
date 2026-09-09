@@ -270,6 +270,114 @@ router.get('/maintenance-alerts', (req, res) => {
     }
 });
 
+// Frota Completa de Veículos por Oficina (Multi-Tenant)
+router.get('/fleet', (req, res) => {
+    try {
+        const { workshop_id } = req.query;
+        let query = `
+            SELECT 
+                v.id as vehicle_id,
+                v.license_plate,
+                v.brand,
+                v.model,
+                v.version_label,
+                v.model_year,
+                v.manufacture_year,
+                v.color,
+                v.photo_url,
+                vd.dna_code,
+                vd.status as dna_status,
+                vd.activated_at as dna_activated_at,
+                COALESCE(w_act.trade_name, w_srv.trade_name, 'Sem Oficina Vinculada') as workshop_name,
+                COALESCE(w_act.id, w_srv.id, 'none') as workshop_id,
+                COALESCE(w_act.city, w_srv.city, '-') as workshop_city,
+                COALESCE(o.name, u.name, 'Proprietário Particular') as owner_name,
+                COALESCE(o.phone, u.phone, '(11) 98888-0000') as owner_phone,
+                (SELECT MAX(mileage) FROM mileage_records mr WHERE mr.vehicle_id = v.id) as current_mileage,
+                (SELECT COUNT(*) FROM service_records sr WHERE sr.vehicle_id = v.id) as services_count,
+                (SELECT COALESCE(SUM(total_cost_cents), 0) FROM service_records sr WHERE sr.vehicle_id = v.id) as total_maintenance_cents
+            FROM vehicles v
+            LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+            LEFT JOIN workshops w_act ON vd.activated_by_workshop_id = w_act.id
+            LEFT JOIN (
+                SELECT vehicle_id, workshop_id FROM service_records ORDER BY service_date DESC LIMIT 1
+            ) last_srv ON last_srv.vehicle_id = v.id
+            LEFT JOIN workshops w_srv ON last_srv.workshop_id = w_srv.id
+            LEFT JOIN ownership_transfers ot ON ot.vehicle_id = v.id AND ot.status = 'COMPLETED'
+            LEFT JOIN owners o ON o.id = ot.new_owner_id
+            LEFT JOIN users u ON u.id = o.user_id
+            WHERE 1=1
+        `;
+        const params = [];
+        if (workshop_id && workshop_id !== 'all') {
+            query += ` AND (w_act.id = ? OR w_srv.id = ?)`;
+            params.push(workshop_id, workshop_id);
+        }
+        query += ` ORDER BY v.brand ASC, v.model ASC`;
+
+        const vehicles = db.prepare(query).all(...params);
+        res.json({ success: true, count: vehicles.length, vehicles });
+    } catch (err) {
+        console.error('Erro ao listar frota da rede:', err);
+        res.status(500).json({ error: 'Erro ao consultar veículos da rede.' });
+    }
+});
+
+// Carteira Completa de Clientes por Oficina (Multi-Tenant)
+router.get('/clients-all', (req, res) => {
+    try {
+        const { workshop_id } = req.query;
+        let query = `
+            SELECT 
+                u.id as user_id,
+                u.name,
+                u.email,
+                u.phone,
+                u.created_at,
+                COUNT(DISTINCT v.id) as vehicles_count,
+                COUNT(DISTINCT sr.id) as services_count,
+                COALESCE(SUM(sr.total_cost_cents), 0) as total_spent_cents,
+                COALESCE(w.trade_name, 'Oficina Parceira') as preferred_workshop_name,
+                COALESCE(w.id, 'ws_veloce') as workshop_id
+            FROM users u
+            JOIN owners o ON o.user_id = u.id
+            LEFT JOIN ownership_transfers ot ON ot.new_owner_id = o.id AND ot.status = 'COMPLETED'
+            LEFT JOIN vehicles v ON v.id = ot.vehicle_id
+            LEFT JOIN service_records sr ON sr.vehicle_id = v.id
+            LEFT JOIN workshops w ON w.id = sr.workshop_id
+            WHERE 1=1
+        `;
+        const params = [];
+        if (workshop_id && workshop_id !== 'all') {
+            query += ` AND w.id = ?`;
+            params.push(workshop_id);
+        }
+        query += ` GROUP BY u.id ORDER BY total_spent_cents DESC`;
+
+        const clients = db.prepare(query).all(...params);
+        res.json({ success: true, count: clients.length, clients });
+    } catch (err) {
+        console.error('Erro ao listar clientes da rede:', err);
+        res.status(500).json({ error: 'Erro ao consultar clientes da rede.' });
+    }
+});
+
+// Alternar Status de Homologação da Oficina (Aprovar / Suspender)
+router.post('/workshops/:id/status', (req, res) => {
+    try {
+        const { status } = req.body;
+        const workshopId = req.params.id;
+        if (!['APPROVED', 'PENDING', 'SUSPENDED'].includes(status)) {
+            return res.status(400).json({ error: 'Status inválido. Use APPROVED, PENDING ou SUSPENDED.' });
+        }
+        db.prepare(`UPDATE workshops SET status = ? WHERE id = ?`).run(status, workshopId);
+        res.json({ success: true, message: `Status da oficina atualizado para ${status}.`, workshopId, status });
+    } catch (err) {
+        console.error('Erro ao atualizar status da oficina:', err);
+        res.status(500).json({ error: 'Erro ao atualizar oficina.' });
+    }
+});
+
 // Logs de Auditoria Globais com Filtros
 router.get('/audit-logs', (req, res) => {
     try {

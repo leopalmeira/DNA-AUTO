@@ -146,7 +146,7 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 
 ---
 
-### 🧪 Ciclo 9: Suite de Testes Automatizados (13 Testes E2E/API)
+### 🧪 Ciclo 9: Suite de Testes Automatizados (16 Testes E2E/API)
 - **Objetivo:** Garantir regressão zero em todas as funcionalidades críticas do sistema.
 - **Arquivo de Testes:** [test/api.test.js](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 - **Cobertura Completa:**
@@ -163,7 +163,24 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
   11. Consulta de clientes e veículos atendidos por oficina (drill-down).
   12. Central de Alertas Preventivos WhatsApp (geração de links de óleo e correias).
   13. Recuperação de acesso via Esqueci Minha Senha (`/auth/forgot-password`).
-- **Resultado:** **100% dos 13 testes aprovados com sucesso.**
+  14. Frota completa de veículos por oficina credenciada (`/admin/fleet`).
+  15. Carteira de clientes distribuída por oficina (`/admin/clients-all`).
+  16. Gestão de homologação de oficinas pelo administrador (`/admin/workshops/:id/status`).
+- **Resultado:** **100% dos 16 testes aprovados com sucesso.**
+
+---
+
+### 🏢 Ciclo 10: Menu Expandido do Gestor Multi-Tenant e Isolamento Estrito
+- **Requisito do Usuário:** O menu admin deve ser completo para o gestor do sistema, mostrando faturamento consolidado, frota de carros por oficina e governança multi-tenant (onde oficinas não enxergam dados de outras oficinas e o cliente identifica a oficina que realizou cada serviço).
+- **Implementações:**
+  - **Sidebar do Admin no [index.html](file:///c:/Users/User/Desktop/DNA-AUTO/public/index.html):** Menu completo com Painel Executivo, Faturamento da Rede, Oficinas (Multi-Tenant), Carros por Oficina, Carteira de Clientes, Alertas WhatsApp, Trilha de Auditoria e link para a Landing Page (R$ 59,90).
+  - **Sistema de Abas Dinâmicas no [adminView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/adminView.js):** Sincronização em tempo real entre sidebar e abas no cabeçalho com filtros reativos por oficina (`fleetFilterWorkshopId` e `clientsFilterWorkshopId`).
+  - **Novos Endpoints Multi-Tenant no [admin.routes.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/modules/admin/admin.routes.js):**
+    - `GET /api/v1/admin/fleet`: Relação consolidada de veículos com filtro por oficina (tenant).
+    - `GET /api/v1/admin/clients-all`: Carteira de proprietários vinculados à oficina de atendimento.
+    - `POST /api/v1/admin/workshops/:id/status`: Homologação/suspensão de oficinas pelo gestor.
+  - **Blindagem Multi-Tenant no [workshopView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/workshopView.js):** Uso de `getEffectiveWorkshopId()` para carregar estritamente a oficina autenticada, impedindo acesso a dados de concorrentes.
+  - **Validação de 16 Testes Automatizados:** 100% dos testes aprovados com regressão zero.
 
 ---
 
@@ -225,7 +242,7 @@ DNA-AUTO/
 │       │   └── transfers/       # transferência de propriedade de veículo
 │       └── server.js            # Aplicação Express e montagem das rotas
 ├── test/
-│   └── api.test.js              # Bateria com 13 testes automatizados
+│   └── api.test.js              # Bateria com 16 testes automatizados
 ├── index.js                     # Entrypoint raiz para deploys em nuvem
 ├── src/index.js                 # Entrypoint secundário para Render Cloud
 ├── package.json                 # Manifesto de dependências e scripts
