@@ -478,6 +478,38 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 
 ---
 
+### 📷 Ciclo 22: Foto Oficial do Modelo no Cadastro, Troca pelo Dono, Placa Corrigida & Ajustes de Interface
+- **Objetivo e Solicitação do Usuário (Áudio & Texto):**
+  1. *"Aonde está a foto do carro também pode ser trocado pelo dono, na verdade quando cadastra o carro o sistema da plataforma pega uma foto do mesmo modelo do carro e coloca lá até o dono do carro colocar outra"*:
+     - No momento do cadastro do carro (manual ou via API Placas), o sistema detecta a marca e modelo (Gol, Polo, Golf, Civic, Corolla, HB20, Onix, Renegade, Compass, Toro, Strada, etc.) e associa automaticamente uma fotografia oficial de alta resolução do modelo específico (`vehiclePhoto.service.js`).
+     - Essa foto do modelo permanece ativa até que o proprietário faça o upload de sua própria foto.
+     - Disponibilizado botão flutuante `📷 Trocar Foto` sobre o veículo na Home e na tela "Meu Veículo", abrindo modal nativo que permite:
+       - Upload do celular ou computador via `FileReader` gerando Base64 otimizado.
+       - Inserção de link direto de imagem.
+       - Botão para reverter a qualquer momento para a foto oficial do modelo (`photo_url: 'default'`).
+  2. *"O negócio da placa tá mostrando no lugar errado"*:
+     - Corrigido o posicionamento da placa veicular: em vez de ficar como um badge solto espremido no canto, a placa fica posicionada no subtítulo junto com o ano `${v.license_plate} • ${v.manufacture_year}/${v.model_year}` (ex: `ABC1D23 • 2021/2022`), enquanto o canto superior direito exibe a tag oficial `☑ Veículo cadastrado`.
+  3. *"O qrcode mais a baixo não deve existir também"*:
+     - Removido o QR Code redundante que aparecia no Card de Certificação DNA AUTO na Home (`.dna-cert-qr-container`). O card passa a ocupar toda a largura com descrição limpa, código e botão `Ver certificação >`.
+  4. *"Na página principal do app não precisa ter a foto da pessoa"*:
+     - Removido o avatar/foto circular da pessoa (`.dna-user-avatar`) do Header da Home, mantendo apenas o menu hambúrguer `☰`, logotipo `DNA AUTO`, sino de notificações `🔔` e o botão corporativo de `Sair`.
+  5. *"Em documentos não precisa existir isso"*:
+     - Removida a Certificação DNA da lista de documentos (pois certificação possui sua aba e tela dedicadas no app).
+     - A carteira de documentos exibe estritamente a documentação oficial veicular: CRLV-e Digital 2026, Laudo Cautelar Aprovado 100%, Apólice de Seguro Vigente e Termo de Garantia Mecânica / Revisões.
+- **Implementações Técnicas:**
+  - `server/src/services/vehiclePhoto.service.js`: Criação do catálogo oficial de modelos veiculares do Brasil e detector de fotos customizadas.
+  - `server/src/modules/vehicles/vehicles.routes.js`:
+    - Atualização dos endpoints de cadastro `/register` e `/register-from-api` para aplicar `finalPhoto` caso nenhuma foto seja fornecida.
+    - Endpoints `PATCH /:identifier/photo` (troca de foto ou reversão para o modelo) e `GET /:identifier/photo`.
+    - Atualização de `GET /:identifier/documents` sem duplicação de certificação.
+  - `public/css/owner-app.css`: Estilos de `.dna-car-change-photo-btn` e do modal completo `.dna-photo-modal-overlay` e `.dna-photo-modal-sheet`.
+  - `public/js/components/ownerView.js`: Integração do modal de foto, remoção do avatar e QR code, ajuste da placa veicular e aba de documentos.
+  - `test/api.test.js`: Adição do **Teste 34** validando a foto padrão de modelo, atualização e reversão.
+- **Validação e Qualidade:**
+  - Bateria com **34 testes automatizados aprovados com 100% de sucesso**.
+
+---
+
 ## 🏛️ 3. Tabela de Decisões Arquiteturais (ADRs)
 
 | ID | Decisão | Contexto / Motivação | Consequência / Benefício |
@@ -490,6 +522,7 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 | **ADR-06** | **ERP de Oficina em Escopo Isolado (`is-workshop-erp`)** | Transformar a interface da oficina em um sistema de gestão corporativo moderno (estilo TOTVS) sem conflitar com as regras de CSS da Landing Page. | Viewport 100vh estável, sem scroll da página principal, zero estouro horizontal e foco operacional em balcão, box e agendamentos. |
 | **ADR-07** | **App do Cliente em Escopo Isolado (`is-owner-app`)** | Eliminar cabeçalhos e sidebars residuais da web para entregar a experiência mobile-first idêntica ao design de aplicativo do cliente. | Interface limpa, responsiva, sem botões de mock, com drawer nativo e dimensões travadas. |
 | **ADR-08** | **Navegação SPA Interna e Telemetria Mini OBD2** | Eliminar popups do navegador e centralizar documentos e telemetria veicular em tempo real dentro do frame do aplicativo. | Experiência de aplicativo nativo de padrão corporativo TOTVS, sem saídas da tela, com leitura de ECU e documentos com validade jurídica. |
+| **ADR-09** | **Fotos Veiculares por Modelo & Troca pelo Proprietário** | Garantir que nenhum veículo cadastrado fique sem foto, exibindo uma fotografia oficial do modelo exato até que o proprietário faça upload de sua própria foto. | Experiência visual rica e consistente desde o primeiro segundo, flexibilidade total para o dono personalizar e reversibilidade garantida. |
 
 ---
 
@@ -502,6 +535,7 @@ DNA-AUTO/
 │   │   ├── variables.css        # Paleta (Amarelo #FFD21C, Obsidiana, Cinzas)
 │   │   ├── base.css             # Tipografia e resets
 │   │   ├── components.css       # Botões, cards, modais, formulários e .ws-erp-*
+│   │   ├── owner-app.css        # App Mobile do Cliente (Padrão TOTVS Enterprise)
 │   │   ├── dossier.css          # Estilos do Dossiê 360° e Score
 │   │   └── print.css            # Layout de impressão para laudos
 │   ├── js/                      # Lógica de negócio no cliente
@@ -512,7 +546,7 @@ DNA-AUTO/
 │   │       ├── loginView.js     # Login, Cadastro e Esqueci Minha Senha
 │   │       ├── adminView.js     # Painel Admin (Faturamento, Clientes, WhatsApp)
 │   │       ├── workshopView.js  # Painel ERP da Oficina Credenciada (10 módulos)
-│   │       ├── ownerView.js     # Painel do Proprietário
+│   │       ├── ownerView.js     # App Mobile do Proprietário (Navegação SPA interna)
 │   │       ├── dossierView.js   # Visualização 360° do Histórico
 │   │       ├── posterGenerator.js # Cartaz de Venda para Vidro do Carro
 │   │       ├── saleReportModal.js # Modal de Emissão do Laudo de Venda
@@ -523,7 +557,7 @@ DNA-AUTO/
 │       ├── database/
 │       │   ├── db.js            # Conexão e inicialização do SQLite
 │       │   ├── schema.sql       # DDL das tabelas relacionais (+ workshop_appointments)
-│       │   ├── seed.js          # Dados demonstrativos e veículos prévios
+│       │   ├── seed.js          # Estrutura limpa (seedBase) e dados demo (seedDemoCars)
 │       │   └── dna_auto.db      # Arquivo SQLite local (persistido)
 │       ├── middlewares/
 │       │   ├── auth.js          # Validação de JWT e RBAC
@@ -531,7 +565,7 @@ DNA-AUTO/
 │       ├── modules/             # Rotas organizadas por domínio
 │       │   ├── admin/           # network-stats, clientes por oficina, WhatsApp
 │       │   ├── auth/            # login, register-workshop, forgot-password
-│       │   ├── vehicles/        # busca, ativação de DNA, cadastro
+│       │   ├── vehicles/        # busca, ativação de DNA, cadastro, foto, obd e docs
 │       │   ├── dossier/         # dossiê 360°, busca de peças, timeline
 │       │   ├── services/        # lançamento e validação de ordens de serviço
 │       │   ├── workshops/       # gestão da oficina parceira, agenda e Baileys
@@ -541,11 +575,12 @@ DNA-AUTO/
 │       │   └── transfers/       # transferência de propriedade de veículo
 │       ├── services/            # Serviços de integração externa
 │       │   ├── apiPlacas.service.js # Integração oficial WDAPI2
+│       │   ├── vehiclePhoto.service.js # Catálogo oficial de fotos em alta resolução por modelo
 │       │   └── keepAlive.service.js # Ping anti-sleep no Render
 │       └── server.js            # Aplicação Express e montagem das rotas
 ├── server/sessions/             # Sessões persistidas de WhatsApp por oficina (ws_*)
 ├── test/
-│   └── api.test.js              # Bateria com 31 testes automatizados (100% sucesso)
+│   └── api.test.js              # Bateria com 34 testes automatizados (100% sucesso)
 ├── index.js                     # Entrypoint raiz para deploys em nuvem
 ├── src/index.js                 # Entrypoint secundário para Render Cloud
 ├── package.json                 # Manifesto de dependências (@whiskeysockets/baileys, qrcode, pino)

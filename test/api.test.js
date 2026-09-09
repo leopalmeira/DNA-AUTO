@@ -405,7 +405,37 @@ async function runTests() {
         console.assert(crlvDoc.badge === 'LICENCIADO 2026', 'Status do licenciamento 2026 incorreto');
         console.log(`✅ 33. Documentos Digitais Autenticados: ${dataDocs.documents.length} documentos carregados (incluindo ${crlvDoc.title} com status "${crlvDoc.badge}")`);
 
-        console.log('\n🎉 TODOS OS 33 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 34: Gestão de Foto do Veículo (Foto Oficial do Modelo e Troca pelo Dono)
+        const resPhotoQuery = await fetch(`${BASE_URL}/vehicles/BRA2E19/photo`);
+        const dataPhotoQuery = await resPhotoQuery.json();
+        console.assert(resPhotoQuery.status === 200, 'Falha ao consultar foto do veículo');
+        console.assert(!!dataPhotoQuery.default_model_photo, 'Foto padrão do modelo deve existir');
+
+        // Atualização para foto customizada do dono
+        const customOwnerPhoto = 'https://images.unsplash.com/photo-custom-owner-car.jpg';
+        const resUpdatePhoto = await fetch(`${BASE_URL}/vehicles/BRA2E19/photo`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ photo_url: customOwnerPhoto })
+        });
+        const dataUpdatePhoto = await resUpdatePhoto.json();
+        console.assert(resUpdatePhoto.status === 200, 'Falha ao atualizar foto pelo dono');
+        console.assert(dataUpdatePhoto.photo_url === customOwnerPhoto, 'URL da nova foto incorreta');
+        console.assert(dataUpdatePhoto.is_custom === true, 'Foto deve ser marcada como personalizada');
+
+        // Restauração para foto padrão oficial do modelo
+        const resResetPhoto = await fetch(`${BASE_URL}/vehicles/BRA2E19/photo`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ photo_url: 'default' })
+        });
+        const dataResetPhoto = await resResetPhoto.json();
+        console.assert(resResetPhoto.status === 200, 'Falha ao restaurar foto do modelo');
+        console.assert(dataResetPhoto.photo_url === dataPhotoQuery.default_model_photo, 'Deve reverter para a foto do modelo');
+        console.assert(dataResetPhoto.is_custom === false, 'Foto restaurada não deve ser custom');
+        console.log(`✅ 34. Foto Oficial do Modelo & Troca pelo Dono: Foto atualizada com sucesso e reversão para modelo [${dataPhotoQuery.brand} ${dataPhotoQuery.model}] testada.`);
+
+        console.log('\n🎉 TODOS OS 34 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

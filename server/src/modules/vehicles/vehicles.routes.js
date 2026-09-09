@@ -5,6 +5,7 @@ const db = require('../../database/db');
 const { authenticateToken } = require('../../middlewares/auth');
 const { logAudit } = require('../../middlewares/audit');
 const apiPlacasService = require('../../services/apiPlacas.service');
+const { getDefaultPhotoForVehicle, isCustomOwnerPhoto } = require('../../services/vehiclePhoto.service');
 
 // Gerador padronizado de código permanente DNA (Ex: DNA-BR-8F72-29A4-X91)
 function generateDnaCode() {
@@ -234,7 +235,10 @@ router.post('/register', authenticateToken, (req, res) => {
         const cleanOwnerPhone = (owner_phone || owner_whatsapp || '').trim();
         const cleanOwnerCpf = (owner_cpf || '***.***.***-**').trim();
         const cleanMileage = (mileage !== undefined && mileage !== null && mileage !== '') ? Number(mileage) : 0;
-        const finalPhoto = photo_url || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80';
+        const defaultModelPhoto = getDefaultPhotoForVehicle(brand, model);
+        const finalPhoto = (photo_url && photo_url !== 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80')
+            ? photo_url
+            : defaultModelPhoto;
 
         db.transaction(() => {
             // 1. Inserir dados do veículo
@@ -416,7 +420,11 @@ router.post('/register-from-api', authenticateToken, async (req, res) => {
         const cleanOwnerPhone = (owner_phone || owner_whatsapp || (customData && customData.owner_phone) || '').trim();
         const cleanOwnerCpf = (owner_cpf || (customData && customData.owner_cpf) || '***.***.***-**').trim();
         const cleanMileage = (mileage !== undefined && mileage !== null && mileage !== '') ? Number(mileage) : (customData && customData.mileage ? Number(customData.mileage) : 0);
-        const finalPhoto = photo_url || (customData && customData.photo_url) || vData.photo_url || vData.logo || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80';
+        const modelPhotoFromApi = getDefaultPhotoForVehicle(vData.brand, vData.model);
+        const candidatePhoto = photo_url || (customData && customData.photo_url);
+        const finalPhoto = (candidatePhoto && candidatePhoto !== 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80')
+            ? candidatePhoto
+            : modelPhotoFromApi;
 
         db.transaction(() => {
             db.prepare(`
@@ -664,22 +672,6 @@ router.get('/:identifier/documents', (req, res) => {
                     description: 'Documento oficial com quitação integral de IPVA, Taxa de Licenciamento Anual e DPVAT.'
                 },
                 {
-                    id: 'doc_cert_dna',
-                    title: 'Certificação DNA AUTO',
-                    subtitle: 'Passaporte Digital de Procedência e Manutenção',
-                    category: 'CERTIFICAÇÃO OFICIAL',
-                    badge: 'VÁLIDA E HOMOLOGADA',
-                    badge_color: '#00D4FF',
-                    doc_number: dnaCode,
-                    issue_date: '08/09/2026 às 14:32',
-                    valid_until: 'VITALÍCIO COM ATUALIZAÇÃO CONTÍNUA',
-                    hash: 'SHA256:8f72a94bc7210e309bb2f1c8402a715e',
-                    issuer: 'Rede Homologada DNA AUTO Brasil',
-                    file_size: '1.4 MB (Certificado Criptográfico)',
-                    legal_validity: 'Autenticidade garantida por assinatura digital distribuída',
-                    description: 'Garantia de procedência com rastreabilidade total de manutenções, peças aplicadas e odômetro verificado.'
-                },
-                {
                     id: 'doc_laudo_cautelar',
                     title: 'Laudo Pericial Cautelar 360°',
                     subtitle: 'Perícia Técnica e Análise Estrutural Completa',
@@ -710,12 +702,133 @@ router.get('/:identifier/documents', (req, res) => {
                     file_size: '512 KB',
                     legal_validity: 'Registro SUSEP n° 05886',
                     description: 'Cobertura 100% Tabela FIPE contra colisão, furto/roubo, danos a terceiros e socorro 24 horas.'
+                },
+                {
+                    id: 'doc_garantia_revisao',
+                    title: 'Termo de Garantia e Revisão',
+                    subtitle: 'Comprovação de Serviços e Peças Homologadas',
+                    category: 'GARANTIA MECÂNICA',
+                    badge: 'VIGENTE',
+                    badge_color: '#10B981',
+                    doc_number: 'GAR-2026-8819',
+                    issue_date: '15/08/2026',
+                    valid_until: '15/02/2027',
+                    hash: 'SHA256:4f88219c0012baef9182741005391827',
+                    issuer: 'Rede de Oficinas Homologadas',
+                    file_size: '312 KB',
+                    legal_validity: 'Garantia legal conforme Art. 26 do CDC',
+                    description: 'Certificado de garantia de peças genuínas e mão de obra técnica chancelada pela oficina credenciada.'
                 }
             ]
         });
     } catch (err) {
         console.error('Erro ao consultar documentos:', err);
         res.status(500).json({ error: 'Erro ao obter documentos do veículo.' });
+    }
+});
+
+// Consultar Foto Atual e Foto Padrão do Modelo
+router.get('/:identifier/photo', (req, res) => {
+    try {
+        const identifier = (req.params.identifier || '').trim();
+        if (!identifier) {
+            return res.status(400).json({ error: 'Identificador do veículo é obrigatório.' });
+        }
+        const cleanPlate = identifier.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        const vehicle = db.prepare(`
+            SELECT id, brand, model, license_plate, photo_url 
+            FROM vehicles 
+            WHERE id = ? OR UPPER(REPLACE(license_plate, '-', '')) = ? OR UPPER(license_plate) = ?
+        `).get(identifier, cleanPlate, identifier.toUpperCase());
+
+        if (!vehicle) {
+            return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
+
+        const defaultModelPhoto = getDefaultPhotoForVehicle(vehicle.brand, vehicle.model);
+        const currentPhoto = vehicle.photo_url || defaultModelPhoto;
+        const isCustom = isCustomOwnerPhoto(currentPhoto, vehicle.brand, vehicle.model);
+
+        res.json({
+            success: true,
+            vehicle_id: vehicle.id,
+            license_plate: vehicle.license_plate,
+            brand: vehicle.brand,
+            model: vehicle.model,
+            current_photo_url: currentPhoto,
+            default_model_photo: defaultModelPhoto,
+            is_custom: isCustom
+        });
+    } catch (err) {
+        console.error('Erro ao consultar foto do veículo:', err);
+        res.status(500).json({ error: 'Erro ao consultar foto do veículo.' });
+    }
+});
+
+// Atualizar Foto do Veículo (Troca pelo Dono ou Restauração para Padrão do Modelo)
+router.patch('/:identifier/photo', (req, res) => {
+    try {
+        const identifier = (req.params.identifier || '').trim();
+        const { photo_url } = req.body;
+
+        if (!identifier) {
+            return res.status(400).json({ error: 'Identificador do veículo é obrigatório.' });
+        }
+
+        const cleanPlate = identifier.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const vehicle = db.prepare(`
+            SELECT * FROM vehicles 
+            WHERE id = ? OR UPPER(REPLACE(license_plate, '-', '')) = ? OR UPPER(license_plate) = ?
+        `).get(identifier, cleanPlate, identifier.toUpperCase());
+
+        if (!vehicle) {
+            return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
+
+        let newPhoto = photo_url;
+        // Se enviou vazio, 'default' ou 'reset', restaura para a foto oficial do catálogo do modelo
+        if (!newPhoto || newPhoto === 'default' || newPhoto === 'reset') {
+            newPhoto = getDefaultPhotoForVehicle(vehicle.brand, vehicle.model);
+        }
+
+        // 1. Atualizar campo photo_url na tabela vehicles
+        db.prepare(`
+            UPDATE vehicles 
+            SET photo_url = ?, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = ?
+        `).run(newPhoto, vehicle.id);
+
+        // 2. Registrar na tabela vehicle_photos
+        const isOwnerCustom = isCustomOwnerPhoto(newPhoto, vehicle.brand, vehicle.model);
+        const photoId = 'photo_' + Date.now();
+        const category = isOwnerCustom ? 'VEHICLE_MAIN' : 'MODEL_CATALOG';
+        const title = isOwnerCustom ? 'Foto personalizada enviada pelo proprietário' : 'Foto oficial do catálogo do modelo';
+
+        try {
+            db.prepare(`
+                INSERT INTO vehicle_photos (
+                    id, vehicle_id, photo_category, title, file_path, taken_at
+                ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            `).run(photoId, vehicle.id, category, title, newPhoto);
+        } catch (photoErr) {
+            console.warn('Registro em vehicle_photos opcional:', photoErr.message);
+        }
+
+        res.json({
+            success: true,
+            vehicle_id: vehicle.id,
+            license_plate: vehicle.license_plate,
+            photo_url: newPhoto,
+            is_custom: isOwnerCustom,
+            default_model_photo: getDefaultPhotoForVehicle(vehicle.brand, vehicle.model),
+            message: isOwnerCustom 
+                ? 'Foto personalizada do veículo salva com sucesso!' 
+                : 'Foto oficial do catálogo do modelo restaurada com sucesso!'
+        });
+    } catch (err) {
+        console.error('Erro ao atualizar foto do veículo:', err);
+        res.status(500).json({ error: 'Erro ao atualizar foto do veículo.' });
     }
 });
 

@@ -176,6 +176,29 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Qualidade & Testes:**
   - **33 testes automatizados aprovados com 100% de sucesso** em `test/api.test.js`.
 
+### 📷 Ciclo 23: Foto Oficial do Modelo no Cadastro, Troca pelo Dono, Placa Corrigida & Ajustes de Interface
+- **Objetivo e Solicitação do Usuário (Áudio & Texto):**
+  1. *"Aonde está a foto do carro também pode ser trocado pelo dono, na verdade quando cadastra o carro o sistema da plataforma pega uma foto do mesmo modelo do carro e coloca lá até o dono do carro colocar outra"*:
+     - Ao cadastrar qualquer veículo (manual ou via API Placas), o sistema detecta o modelo (Gol, Polo, Golf, Civic, Corolla, HB20, Onix, Renegade, Compass, Toro, Strada, etc.) e associa uma fotografia oficial de alta resolução correspondente (`vehiclePhoto.service.js`).
+     - A foto permanece vinculada até que o dono envie sua própria foto personalizada.
+     - Botão flutuante `📷 Trocar Foto` sobre o veículo na Home e em "Meu Veículo", com modal nativo para upload do celular via `FileReader` (Base64), link de imagem externa ou restauração para a foto do modelo (`default`).
+  2. *"O negócio da placa tá mostrando no lugar errado"*:
+     - Placa posicionada no subtítulo junto ao ano: `${v.license_plate} • ${v.manufacture_year}/${v.model_year}` (ex: `ABC1D23 • 2021/2022`).
+     - Topo direito do card com a tag oficial `☑ Veículo cadastrado`.
+  3. *"O qrcode mais a baixo não deve existir também"*:
+     - Removido o QR Code do card de Certificação DNA AUTO na Home (`.dna-cert-qr-container`), deixando o card em largura total com visual limpo.
+  4. *"Na página principal do app não precisa ter a foto da pessoa"*:
+     - Removido o avatar da pessoa (`.dna-user-avatar`) do topo da Home.
+  5. *"Em documentos não precisa existir isso"*:
+     - Removida a Certificação DNA da lista de documentos (aba dedicada já existe). A aba de Documentos exibe estritamente a documentação veicular legal: CRLV-e Digital 2026, Laudo Cautelar, Seguro e Termo de Garantia Mecânica.
+- **Implementações Técnicas:**
+  - `server/src/services/vehiclePhoto.service.js`: Catálogo oficial de fotos por modelo veicular.
+  - `server/src/modules/vehicles/vehicles.routes.js`: Endpoints `PATCH /:identifier/photo`, `GET /:identifier/photo` e integração com `finalPhoto`.
+  - `public/css/owner-app.css` e `public/js/components/ownerView.js`: Estilização e lógica de upload de foto, correção da placa veicular e limpeza visual da Home e Documentos.
+  - `test/api.test.js`: Inclusão do **Teste 34** validando foto do modelo, troca e reversão.
+- **Qualidade & Testes:**
+  - **34 testes automatizados aprovados com 100% de sucesso** em `test/api.test.js`.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

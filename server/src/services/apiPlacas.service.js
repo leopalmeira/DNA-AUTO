@@ -6,6 +6,7 @@
 
 const { execFile } = require('child_process');
 const https = require('https');
+const { getDefaultPhotoForVehicle } = require('./vehiclePhoto.service');
 
 const DEFAULT_TOKEN = 'be14254e5b6a32f36acabc0542e822dd';
 

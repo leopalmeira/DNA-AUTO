@@ -3,7 +3,7 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-33%2F33%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-34%2F34%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
@@ -164,17 +164,27 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
 - **Acesso Direto:** `#owner` (quando logado como Cliente ou selecionado no simulador)
 - **Design de Alta Fidelidade (Dark Obsidian & Neon Blue):**
   - Viewport móvel nativo sem barras ou menus residuais da web (`body.is-owner-app`).
-  - Card principal com foto do carro, placa, ano, status de saúde `EM DIA` com checkmark esmeralda e reflexo neon sob o asfalto.
+  - **Foto Oficial do Modelo no Cadastro com Troca pelo Dono:**
+    - Ao cadastrar qualquer veículo (manual ou via API Placas), o sistema busca automaticamente no catálogo `vehiclePhoto.service.js` a foto em alta resolução correspondente àquele modelo exato (Gol, Polo, Golf, Civic, Corolla, HB20, Onix, Renegade, Compass, Toro, Strada, etc.).
+    - A foto permanece vinculada até que o dono envie sua própria foto do veículo.
+    - Botão flutuante `📷 Trocar Foto` sobre o veículo na Home e na tela "Meu Veículo", abrindo modal nativo com upload de imagem do celular (via `FileReader` Base64), link direto de URL ou botão de restauração da foto do modelo (`default`).
+  - **Placa Veicular no Padrão Oficial:**
+    - Placa exibida no subtítulo junto com o ano: `${v.license_plate} • ${v.manufacture_year}/${v.model_year}` (ex: `ABC1D23 • 2021/2022`).
+    - Canto superior direito com a tag oficial `☑ Veículo cadastrado`.
+  - **Header Corporativo & Botão de Sair:**
+    - Sem fotos ou avatares no topo da Home. Menu hambúrguer `☰`, logo `DNA AUTO`, sino de alertas `🔔` e botão direto de `Sair`.
+  - **Card de Certificação DNA AUTO Limpo:**
+    - Removido QR code redundante da Home. Card em largura total com status de autenticidade e botão `Ver certificação >`.
   - 3 Medidores rápidos: Quilometragem `87.542 km`, Combustível `72%` com barra dinâmica e Autonomia `~ 520 km`.
   - Timeline horizontal de últimos registros e card de proteção criptografada.
   - Barra de navegação inferior fixa com 5 abas (`Início`, `Veículo`, `Certificação`, `Documentos`, `Mais`).
-  - Drawer lateral completo com 9 itens de menu e card de segurança no rodapé.
+  - Drawer lateral completo com 9 itens de menu e opção de logout.
 - **📁 Carteira Digital de Documentos (100% Nativa, Zero Popups):**
-  - Documentos integrados com visualização e download em PDF dentro do app:
+  - Documentos integrados com visualização em folha oficial e download em PDF:
     1. **CRLV-e Digital 2026:** Licenciamento quitado com validação Senatran e QR Code VIO/SERPRO.
-    2. **Certificação DNA AUTO:** Passaporte digital com hash SHA-256 e selo de autenticidade vitalício.
-    3. **Laudo Pericial Cautelar 360°:** 100% aprovado, sem sinistros graves ou leilão.
-    4. **Apólice de Seguro Auto Protegido:** Cobertura 100% FIPE e assistência 24h.
+    2. **Laudo Pericial Cautelar 360°:** 100% aprovado, sem sinistros graves ou leilão.
+    3. **Apólice de Seguro Auto Protegido:** Cobertura 100% FIPE e assistência 24h.
+    4. **Termo de Garantia Mecânica & Histórico de Revisões:** Selo ativo e cobertura de trem de força.
   - Visualizador de folha oficial em sheet modal nativo com tabelas de dados regulatórios e selos de conformidade jurídica.
 - **⚡ Módulo de Telemetria Mini OBD2 (Tempo Real):**
   - Conexão com dongle Mini OBD2 ELM327 BLE 5.2 via Bluetooth Low Energy.

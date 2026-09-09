@@ -12,6 +12,8 @@ const OwnerView = {
     isObdScanning: false,
     userVehicles: [],
     selectedVehicleId: null,
+    isPhotoModalOpen: false,
+    tempPhotoPreview: null,
 
     // Dados Oficiais do Veículo Padrão (Fallback Seguro e Base de Exibição)
     vehicleData: {
@@ -48,7 +50,7 @@ const OwnerView = {
         ]
     },
 
-    // Dados da Carteira Digital de Documentos
+    // Dados da Carteira Digital de Documentos (Documentos Oficiais do Veículo)
     documentsData: [
         {
             id: 'doc_crlv_2026',
@@ -66,23 +68,6 @@ const OwnerView = {
             file_size: '248 KB (PDF Assinado)',
             legal_validity: 'Válido em todo o território nacional (Lei 14.071/20)',
             description: 'Documento oficial de circulação com quitação integral de IPVA, Taxa de Licenciamento Anual e DPVAT.'
-        },
-        {
-            id: 'doc_cert_dna',
-            title: 'Certificação DNA AUTO',
-            subtitle: 'Passaporte Digital de Procedência e Manutenção',
-            category: 'CERTIFICAÇÃO OFICIAL',
-            badge: 'VÁLIDA E HOMOLOGADA',
-            badge_color: '#00D4FF',
-            badge_bg: 'rgba(0, 212, 255, 0.15)',
-            doc_number: 'DNA-2026-000184',
-            issue_date: '08/09/2026 às 14:32',
-            valid_until: 'VITALÍCIO COM ATUALIZAÇÃO CONTÍNUA',
-            hash: 'SHA256:8f72a94bc7210e309bb2f1c8402a715e',
-            issuer: 'Rede Homologada DNA AUTO Brasil',
-            file_size: '1.4 MB (Certificado Criptográfico)',
-            legal_validity: 'Autenticidade garantida por assinatura digital distribuída',
-            description: 'Garantia de procedência com rastreabilidade total de manutenções, peças originais aplicadas e odômetro verificado.'
         },
         {
             id: 'doc_laudo_cautelar',
@@ -117,6 +102,23 @@ const OwnerView = {
             file_size: '512 KB',
             legal_validity: 'Registro SUSEP n° 05886',
             description: 'Cobertura 100% Tabela FIPE contra colisão, furto/roubo, danos a terceiros e socorro guincho 24 horas.'
+        },
+        {
+            id: 'doc_garantia_revisao',
+            title: 'Termo de Garantia e Revisão',
+            subtitle: 'Comprovação de Serviços e Peças Homologadas',
+            category: 'GARANTIA MECÂNICA',
+            badge: 'VIGENTE',
+            badge_color: '#10B981',
+            badge_bg: 'rgba(16, 185, 129, 0.15)',
+            doc_number: 'GAR-2026-8819',
+            issue_date: '15/08/2026',
+            valid_until: '15/02/2027',
+            hash: 'SHA256:4f88219c0012baef9182741005391827',
+            issuer: 'Rede de Oficinas Homologadas',
+            file_size: '312 KB',
+            legal_validity: 'Garantia legal conforme Art. 26 do CDC',
+            description: 'Certificado de garantia de peças genuínas e mão de obra técnica chancelada pela oficina credenciada.'
         }
     ],
 
@@ -409,11 +411,6 @@ const OwnerView = {
                                     <span class="dna-badge-counter">${v.notifications_count}</span>
                                 </div>
 
-                                <!-- Avatar do Usuário com Trava de Tamanho -->
-                                <div class="dna-user-avatar" onclick="OwnerView.toggleDrawer()" title="Perfil">
-                                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="Avatar" onerror="this.src='/img/car-silhouette.svg'" />
-                                </div>
-
                                 <!-- BOTÃO DE SAIR / LOGOUT (SOLICITAÇÃO DO CLIENTE) -->
                                 <button class="dna-logout-header-btn" onclick="OwnerView.logout()" title="Encerrar Sessão e Sair">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -452,6 +449,9 @@ const OwnerView = {
 
                     <!-- 4. Visualizador de Documento Interno (Sheet Overlay) -->
                     ${this.selectedDoc ? this.renderDocumentViewerModal() : ''}
+
+                    <!-- 5. Modal de Troca de Foto do Veículo pelo Dono -->
+                    ${this.isPhotoModalOpen ? this.renderChangePhotoModal() : ''}
 
                     <!-- 5. Barra de Navegação Inferior Fixa (5 Itens) -->
                     <nav class="dna-bottom-nav">
@@ -725,7 +725,7 @@ const OwnerView = {
             <!-- Card Principal do Veículo -->
             <div class="dna-vehicle-card">
                 
-                <!-- Topo do Card com Placa Oficial Mercosul e Status -->
+                <!-- Topo do Card com Placa no Lugar Correto e Badge Veículo Cadastrado -->
                 <div class="dna-vehicle-header">
                     <div class="dna-mfr-block">
                         <div class="dna-brand-symbol">
@@ -737,24 +737,27 @@ const OwnerView = {
                         </div>
                         <div>
                             <h2 class="dna-vehicle-name">${v.full_title}</h2>
-                            <div style="font-size: 11.5px; color: #CBD5E1; font-weight: 600;">${v.version_label} • ${v.manufacture_year}/${v.model_year}</div>
+                            <div class="dna-plate-year" style="font-size: 11.5px; color: #CBD5E1; font-weight: 700; letter-spacing: 0.4px;">
+                                ${v.license_plate} • ${v.manufacture_year}/${v.model_year}
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Placa Oficial Mercosul Estilizada -->
-                    <div class="dna-mercosul-plate" onclick="OwnerView.navigateTo('vehicle')" style="cursor:pointer;" title="Ver detalhes do veículo">
-                        <div class="dna-mercosul-plate-header">
-                            <span>BRASIL</span>
-                            <span style="color:#FFCC00; font-size:6px;">★</span>
-                        </div>
-                        <div class="dna-mercosul-plate-code">${v.license_plate}</div>
+                    <!-- Badge Veículo Cadastrado (Fiel à Referência Oficial) -->
+                    <div class="dna-registered-tag" onclick="OwnerView.navigateTo('vehicle')" style="cursor:pointer;" title="Veículo Homologado">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Veículo cadastrado</span>
                     </div>
                 </div>
 
-                <!-- Foto do Carro Limpa com Reflexo Profissional -->
-                <div class="dna-car-stage" onclick="OwnerView.navigateTo('vehicle')" style="cursor:pointer;" title="Clique para ficha técnica completa">
+                <!-- Foto do Carro com Botão de Trocar Foto pelo Proprietário -->
+                <div class="dna-car-stage" onclick="OwnerView.openChangePhotoModal()" style="cursor:pointer;" title="Clique para trocar ou ver detalhes da foto">
                     <div class="dna-car-neon-glow"></div>
-                    <img class="dna-car-image" src="${v.photo_url}" alt="${v.full_title}" onerror="this.onerror=null; this.src='/img/car-silhouette.svg';" />
+                    <img class="dna-car-image" src="${v.photo_url}" alt="${v.full_title}" onerror="this.onerror=null; this.src='/img/vw-gol-app.jpg';" />
+                    <button class="dna-car-change-photo-btn" onclick="event.stopPropagation(); OwnerView.openChangePhotoModal();" title="Trocar foto do meu carro">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        <span>Trocar Foto</span>
+                    </button>
                 </div>
 
                 <!-- Status de Saúde Operacional do Carro -->
@@ -797,9 +800,9 @@ const OwnerView = {
                 </div>
             </div>
 
-            <!-- Card de Certificação DNA AUTO Oficial -->
-            <div class="dna-cert-card">
-                <div class="dna-cert-left">
+            <!-- Card de Certificação DNA AUTO Oficial (Sem QR Code Conforme Solicitado) -->
+            <div class="dna-cert-card" onclick="OwnerView.navigateTo('certification')" style="cursor:pointer;" title="Ver Certificação Oficial">
+                <div class="dna-cert-left" style="width:100%;">
                     <div class="dna-cert-badge-row">
                         <div class="dna-cert-shield-icon">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFD21C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -815,36 +818,16 @@ const OwnerView = {
                             </span>
                         </div>
                     </div>
+                    <p style="font-size:11px; color:#CBD5E1; margin: 2px 0 8px; line-height: 1.4;">
+                        Seu veículo foi verificado e possui o registro completo de histórico e diagnóstico.
+                    </p>
                     <div class="dna-cert-code">${v.dna_code}</div>
-                    <div class="dna-cert-date">Última validação: ${v.certification_date}</div>
+                    <div class="dna-cert-date" style="margin-bottom:8px;">${v.certification_date}</div>
                     
-                    <button class="dna-cert-action-btn" onclick="OwnerView.navigateTo('certification')">
-                        <span>Ver laudo completo</span>
+                    <button class="dna-cert-action-btn" onclick="event.stopPropagation(); OwnerView.navigateTo('certification');">
+                        <span>Ver certificação</span>
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                     </button>
-                </div>
-
-                <!-- QR Code Escaneável de Autenticidade -->
-                <div class="dna-cert-qr-container" onclick="OwnerView.navigateTo('certification')" title="Clique para abrir Laudo Oficial">
-                    <svg class="dna-qr-code" viewBox="0 0 100 100">
-                        <rect width="100" height="100" fill="#0A1428" rx="8"/>
-                        <rect x="10" y="10" width="24" height="24" fill="none" stroke="#00D4FF" stroke-width="4" rx="3"/>
-                        <rect x="16" y="16" width="12" height="12" fill="#00D4FF" rx="2"/>
-                        <rect x="66" y="10" width="24" height="24" fill="none" stroke="#00D4FF" stroke-width="4" rx="3"/>
-                        <rect x="72" y="16" width="12" height="12" fill="#00D4FF" rx="2"/>
-                        <rect x="10" y="66" width="24" height="24" fill="none" stroke="#00D4FF" stroke-width="4" rx="3"/>
-                        <rect x="16" y="72" width="12" height="12" fill="#00D4FF" rx="2"/>
-                        <rect x="42" y="12" width="6" height="6" fill="#00D4FF"/>
-                        <rect x="52" y="12" width="6" height="12" fill="#00D4FF"/>
-                        <rect x="42" y="24" width="14" height="6" fill="#00D4FF"/>
-                        <rect x="12" y="42" width="12" height="6" fill="#00D4FF"/>
-                        <rect x="40" y="40" width="20" height="20" fill="#0066FF" rx="3"/>
-                        <circle cx="50" cy="50" r="5" fill="#FFFFFF"/>
-                        <rect x="68" y="42" width="18" height="6" fill="#00D4FF"/>
-                        <rect x="42" y="68" width="8" height="18" fill="#00D4FF"/>
-                        <rect x="78" y="78" width="10" height="10" fill="#00D4FF"/>
-                    </svg>
-                    <span class="dna-qr-label">AUTENTICIDADE</span>
                 </div>
             </div>
 
@@ -1185,9 +1168,13 @@ const OwnerView = {
         return `
             <div style="display:flex; flex-direction:column; gap:12px;">
                 <div class="dna-vehicle-card" style="margin-bottom:0;">
-                    <div class="dna-car-stage">
+                    <div class="dna-car-stage" onclick="OwnerView.openChangePhotoModal()" style="cursor:pointer;" title="Clique para trocar ou ver foto ampliada">
                         <div class="dna-car-neon-glow"></div>
-                        <img class="dna-car-image" src="${v.photo_url}" alt="${v.full_title}" onerror="this.src='/img/car-silhouette.svg';" />
+                        <img class="dna-car-image" src="${v.photo_url}" alt="${v.full_title}" onerror="this.onerror=null; this.src='/img/vw-gol-app.jpg';" />
+                        <button class="dna-car-change-photo-btn" onclick="event.stopPropagation(); OwnerView.openChangePhotoModal();" title="Trocar foto do meu carro">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            <span>Trocar Foto</span>
+                        </button>
                     </div>
                     <h3 style="font-size: 16px; font-weight: 800; color: #FFFFFF; text-align: center; margin: 4px 0 2px;">${v.full_title}</h3>
                     <p style="font-size: 11.5px; color: #CBD5E1; text-align: center; margin: 0 0 10px;">${v.version_label} • Placa: ${v.license_plate}</p>
@@ -1411,6 +1398,199 @@ const OwnerView = {
                     <h4 class="dna-history-title">Telemetria Mini OBD2 Ativa</h4>
                     <p class="dna-history-details">Dongle conectado via Bluetooth Low Energy. Zero falhas detectadas na central do motor.</p>
                     <span style="font-size:9.5px; color:#94A3B8;">Agora</span>
+                </div>
+            </div>
+        `;
+    },
+
+    // ── GESTÃO E TROCA DA FOTO DO CARRO PELO PROPRIETÁRIO ──
+    openChangePhotoModal() {
+        this.isPhotoModalOpen = true;
+        this.tempPhotoPreview = this.vehicleData.photo_url;
+        this.render();
+    },
+
+    closeChangePhotoModal() {
+        this.isPhotoModalOpen = false;
+        this.tempPhotoPreview = null;
+        this.render();
+    },
+
+    handlePhotoFileSelect(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.tempPhotoPreview = e.target.result;
+            const previewImg = document.getElementById('dna-modal-photo-preview');
+            if (previewImg) previewImg.src = this.tempPhotoPreview;
+            const badge = document.getElementById('dna-modal-photo-badge');
+            if (badge) {
+                badge.textContent = 'Nova Foto do Celular Selecionada';
+                badge.style.color = '#00E676';
+                badge.style.borderColor = '#00E676';
+            }
+        };
+        reader.readAsDataURL(file);
+    },
+
+    async saveVehiclePhoto(customUrl) {
+        const photoToSave = customUrl || this.tempPhotoPreview || this.vehicleData.photo_url;
+        if (!photoToSave) return;
+
+        try {
+            const plate = this.vehicleData.license_plate;
+            const res = await fetch(`/api/v1/vehicles/${plate}/photo`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photo_url: photoToSave })
+            });
+            const data = await res.json();
+            if (data.success && data.photo_url) {
+                this.vehicleData.photo_url = data.photo_url;
+                if (this.userVehicles) {
+                    const match = this.userVehicles.find(u => u.license_plate === plate);
+                    if (match) match.photo_url = data.photo_url;
+                }
+            } else {
+                this.vehicleData.photo_url = photoToSave;
+            }
+        } catch (e) {
+            this.vehicleData.photo_url = photoToSave;
+        }
+
+        this.closeChangePhotoModal();
+
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
+            background: #10B981;
+            color: #FFFFFF;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 11.5px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            z-index: 9999;
+            animation: dnaFadeIn 0.2s ease;
+        `;
+        toast.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Foto do veículo atualizada com sucesso!</span>
+        `;
+        const phone = document.querySelector('.dna-phone-frame');
+        if (phone) {
+            phone.appendChild(toast);
+            setTimeout(() => toast.remove(), 2600);
+        }
+    },
+
+    async restoreDefaultModelPhoto() {
+        const plate = this.vehicleData.license_plate;
+        try {
+            const res = await fetch(`/api/v1/vehicles/${plate}/photo`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photo_url: 'default' })
+            });
+            const data = await res.json();
+            if (data.success && data.photo_url) {
+                this.vehicleData.photo_url = data.photo_url;
+                if (this.userVehicles) {
+                    const match = this.userVehicles.find(u => u.license_plate === plate);
+                    if (match) match.photo_url = data.photo_url;
+                }
+            } else {
+                this.vehicleData.photo_url = '/img/vw-gol-app.jpg';
+            }
+        } catch (e) {
+            this.vehicleData.photo_url = '/img/vw-gol-app.jpg';
+        }
+
+        this.closeChangePhotoModal();
+
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
+            background: #0066FF;
+            color: #FFFFFF;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 11.5px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            z-index: 9999;
+            animation: dnaFadeIn 0.2s ease;
+        `;
+        toast.innerHTML = `
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span>Foto oficial do modelo restaurada com sucesso!</span>
+        `;
+        const phone = document.querySelector('.dna-phone-frame');
+        if (phone) {
+            phone.appendChild(toast);
+            setTimeout(() => toast.remove(), 2600);
+        }
+    },
+
+    renderChangePhotoModal() {
+        const v = this.vehicleData;
+        const currentImg = this.tempPhotoPreview || v.photo_url || '/img/vw-gol-app.jpg';
+        return `
+            <div class="dna-photo-modal-overlay" onclick="if(event.target === this) OwnerView.closeChangePhotoModal();">
+                <div class="dna-photo-modal-sheet">
+                    <div class="dna-photo-modal-header">
+                        <div>
+                            <h3>Trocar Foto do Veículo</h3>
+                            <p>${v.full_title} • ${v.license_plate}</p>
+                        </div>
+                        <button class="dna-doc-sheet-close" onclick="OwnerView.closeChangePhotoModal()" title="Fechar">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Prévia da Foto Atual / Nova -->
+                    <div class="dna-photo-preview-box">
+                        <span id="dna-modal-photo-badge" class="dna-photo-status-badge">Foto Atual do Veículo</span>
+                        <img id="dna-modal-photo-preview" class="dna-photo-preview-img" src="${currentImg}" alt="${v.full_title}" onerror="this.onerror=null; this.src='/img/vw-gol-app.jpg';" />
+                    </div>
+
+                    <!-- Opção 1: Upload de Foto Real do Carro do Dono -->
+                    <input type="file" id="dna-photo-file-input" accept="image/*" style="display:none;" onchange="OwnerView.handlePhotoFileSelect(this)" />
+                    <div class="dna-photo-upload-zone" onclick="document.getElementById('dna-photo-file-input').click()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2" style="margin-bottom:4px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        <div style="font-size:12px; font-weight:800; color:#FFFFFF;">Escolher Foto do Celular / Galeria</div>
+                        <div style="font-size:10.5px; color:#94A3B8; margin-top:2px;">Envie uma foto real do seu carro (JPG, PNG ou HEIC)</div>
+                    </div>
+
+                    <!-- Opção 2: URL Externa -->
+                    <div>
+                        <label style="font-size:11px; font-weight:700; color:#CBD5E1; display:block; margin-bottom:4px;">Ou informe o link de uma imagem online:</label>
+                        <input type="text" id="dna-photo-url-input" class="dna-photo-url-input" placeholder="https://exemplo.com/minha-foto.jpg" onchange="document.getElementById('dna-modal-photo-preview').src = this.value; OwnerView.tempPhotoPreview = this.value;" />
+                    </div>
+
+                    <!-- Botão Salvar e Restaurar -->
+                    <button class="dna-photo-btn-primary" onclick="const customUrl = document.getElementById('dna-photo-url-input').value.trim(); OwnerView.saveVehiclePhoto(customUrl);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Salvar Foto do Veículo</span>
+                    </button>
+
+                    <button class="dna-photo-btn-secondary" onclick="OwnerView.restoreDefaultModelPhoto()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2"/></svg>
+                        <span>Restaurar Foto Oficial do Modelo</span>
+                    </button>
                 </div>
             </div>
         `;
