@@ -95,53 +95,67 @@ const AdminView = {
         }
     },
 
+    filterByWorkshop(workshopId, event) {
+        if (event && event.stopPropagation) event.stopPropagation();
+        this.fleetFilterWorkshopId = workshopId;
+
+        // Atualiza submenu da sidebar
+        document.querySelectorAll('#side-sub-workshops .nav-sub-item').forEach(item => {
+            item.classList.toggle('active', item.dataset.wsFilter === workshopId);
+        });
+
+        this.switchTab('workshops');
+    },
+
     renderLayout() {
         const container = document.getElementById('view-content');
         const net = this.cacheData.stats.network;
 
         container.innerHTML = `
-            <!-- Topo do Módulo Administrativo -->
-            <div class="view-header" style="margin-bottom:16px;">
+            <!-- Topo Discreto e Profissional do Módulo Administrativo -->
+            <div class="view-header" style="margin-bottom:18px;">
                 <div class="view-header-title">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <span class="pulse-dot"></span>
-                        <span style="font-size:11px; font-weight:800; letter-spacing:1px; color:var(--brand-gold); text-transform:uppercase;">MATRIZ DNA CENTRAL • GESTÃO MULTI-TENANT</span>
+                        <span class="pulse-dot" style="width:6px; height:6px;"></span>
+                        <span style="font-size:10px; font-weight:700; letter-spacing:1px; color:#64748b; text-transform:uppercase;">DNA CENTRAL • GOVERNANÇA MULTI-TENANT</span>
                     </div>
-                    <h2 style="margin:4px 0;">Painel de Governança & Faturamento da Rede</h2>
-                    <p style="margin:0; color:var(--text-muted); font-size:13px;">Supervisão de oficinas homologadas, carteira de clientes, faturamento em tempo real e automação WhatsApp.</p>
+                    <h2 style="margin:4px 0; font-size:20px; font-weight:700; color:#ffffff;">Painel de Gestão da Rede</h2>
+                    <p style="margin:0; color:#94a3b8; font-size:12.5px;">Supervisão de oficinas credenciadas, veículos atendidos e faturamento da plataforma.</p>
                 </div>
-                <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
-                    <button class="btn btn-sm btn-cyan" onclick="App.switchView('landing')" title="Ver Landing Page pública">
-                        🌟 Landing Page (R$ 59,90)
+                <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                    <button class="btn btn-sm btn-secondary" onclick="App.switchView('landing')" style="font-size:12px; padding:6px 12px;">
+                        <span>Landing Page</span>
                     </button>
-                    <button class="btn btn-sm" onclick="DossierView.render('DNA-BR-8F72-29A4-X91')" style="background:rgba(255,210,28,0.15); color:var(--brand-gold); border:1px solid rgba(255,210,28,0.35);">
-                        🔎 Dossiê 360° (Civic Demo)
+                    <button class="btn btn-sm btn-secondary" onclick="DossierView.render('DNA-BR-8F72-29A4-X91')" style="font-size:12px; padding:6px 12px;">
+                        <span>Dossiê Demo (Civic)</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Navegação em Abas do Painel Administrativo -->
-            <div class="admin-tabs-bar" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:10px; margin-bottom:20px; border-bottom:1px solid var(--border-subtle);">
+            <!-- Navegação em 5 Abas Discretas e Profissionais (Sem Scrollbar e Sem Bagunça) -->
+            <div class="admin-tabs-bar">
                 <button class="admin-tab-btn ${this.currentTab === 'dashboard' ? 'active' : ''}" data-tab="dashboard" onclick="AdminView.switchTab('dashboard')">
-                    📊 Visão Executiva
-                </button>
-                <button class="admin-tab-btn ${this.currentTab === 'revenue' ? 'active' : ''}" data-tab="revenue" onclick="AdminView.switchTab('revenue')">
-                    💰 Faturamento (R$ ${(net.totalGrossRevenueCents / 100).toLocaleString('pt-BR', { notation: 'compact' })})
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>
+                    <span>Visão Geral</span>
                 </button>
                 <button class="admin-tab-btn ${this.currentTab === 'workshops' ? 'active' : ''}" data-tab="workshops" onclick="AdminView.switchTab('workshops')">
-                    🏢 Oficinas Credenciadas (${net.totalWorkshops})
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                    <span>Oficinas & Carros</span>
+                    <span class="admin-tab-count">${net.totalWorkshops} oficinas • ${net.totalVehicles} carros</span>
                 </button>
-                <button class="admin-tab-btn ${this.currentTab === 'fleet' ? 'active' : ''}" data-tab="fleet" onclick="AdminView.switchTab('fleet')">
-                    🚗 Frota por Oficina (${net.totalVehicles} Carros)
-                </button>
-                <button class="admin-tab-btn ${this.currentTab === 'clients' ? 'active' : ''}" data-tab="clients" onclick="AdminView.switchTab('clients')">
-                    👥 Carteira de Clientes (${this.cacheData.clients.length})
+                <button class="admin-tab-btn ${this.currentTab === 'revenue' ? 'active' : ''}" data-tab="revenue" onclick="AdminView.switchTab('revenue')">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v12M15 9.5a3.5 3.5 0 0 0-7 0c0 2 2 3 3.5 3.5s3.5 1.5 3.5 3.5a3.5 3.5 0 0 1-7 0"></path></svg>
+                    <span>Faturamento</span>
+                    <span class="admin-tab-count">R$ ${(net.totalGrossRevenueCents / 100).toLocaleString('pt-BR', { notation: 'compact' })}</span>
                 </button>
                 <button class="admin-tab-btn ${this.currentTab === 'whatsapp' ? 'active' : ''}" data-tab="whatsapp" onclick="AdminView.switchTab('whatsapp')">
-                    📲 Alertas WhatsApp (${this.cacheData.alerts.length})
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                    <span>Alertas WhatsApp</span>
+                    <span class="admin-tab-count">${this.cacheData.alerts.length}</span>
                 </button>
                 <button class="admin-tab-btn ${this.currentTab === 'audit' ? 'active' : ''}" data-tab="audit" onclick="AdminView.switchTab('audit')">
-                    🛡️ Auditoria
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    <span>Auditoria</span>
                 </button>
             </div>
 
@@ -157,9 +171,8 @@ const AdminView = {
             case 'revenue':
                 return this.renderRevenueTab();
             case 'workshops':
-                return this.renderWorkshopsTab();
             case 'fleet':
-                return this.renderFleetTab();
+                return this.renderWorkshopsTab();
             case 'clients':
                 return this.renderClientsTab();
             case 'whatsapp':
@@ -400,190 +413,242 @@ const AdminView = {
         `;
     },
 
-    // ── 3. ABA DE OFICINAS MULTI-TENANT ──
+    // ── 3. ABA HIERÁRQUICA: OFICINAS & CARROS (MULTI-TENANT) ──
     renderWorkshopsTab() {
-        const workshops = this.cacheData.stats.growthByWorkshops;
+        const fleet = this.cacheData.fleet || [];
+        const workshops = this.cacheData.stats.growthByWorkshops || [];
+
+        // Filtro ativo
+        const activeFilter = this.fleetFilterWorkshopId || 'all';
+
+        // Veículos sem oficina vinculada
+        const unassignedCars = fleet.filter(v => !v.workshop_id || v.workshop_name === 'Sem Oficina Vinculada');
+
+        // Oficinas a exibir
+        const displayedWorkshops = activeFilter === 'all'
+            ? workshops
+            : workshops.filter(w => w.id === activeFilter);
+
+        // Se o filtro for 'unassigned'
+        const showOnlyUnassigned = activeFilter === 'unassigned';
 
         return `
-            <div class="panel-box">
-                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:20px;">🏢</span>
-                        <strong>Gestão de Oficinas Credenciadas (Multi-Tenant)</strong>
-                        <span class="badge-proof badge-proven">${workshops.length} Cadastradas</span>
-                    </span>
-                    <button class="btn btn-sm btn-cyan" onclick="App.switchView('login')">
+            <div class="panel-box" style="border:none; padding:0; background:transparent;">
+                <!-- Barra de Filtros Discretos por Oficina -->
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+                    <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+                        <span style="font-size:11.5px; color:#64748b; font-weight:600; text-transform:uppercase; margin-right:4px;">Oficina:</span>
+                        <button class="admin-tab-btn ${activeFilter === 'all' ? 'active' : ''}" style="padding:5px 12px; font-size:12px;" onclick="AdminView.filterByWorkshop('all', event)">
+                            Todas as Oficinas (${fleet.length})
+                        </button>
+                        ${workshops.map(w => {
+                            const count = fleet.filter(v => v.workshop_id === w.id).length;
+                            return `
+                                <button class="admin-tab-btn ${activeFilter === w.id ? 'active' : ''}" style="padding:5px 12px; font-size:12px;" onclick="AdminView.filterByWorkshop('${w.id}', event)">
+                                    ${w.trade_name} (${count})
+                                </button>
+                            `;
+                        }).join('')}
+                        ${unassignedCars.length > 0 ? `
+                            <button class="admin-tab-btn ${activeFilter === 'unassigned' ? 'active' : ''}" style="padding:5px 12px; font-size:12px;" onclick="AdminView.filterByWorkshop('unassigned', event)">
+                                Sem Oficina (${unassignedCars.length})
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    <button class="btn btn-sm btn-secondary" onclick="App.switchView('login')" style="font-size:12px;">
                         + Cadastrar Nova Oficina
                     </button>
                 </div>
 
-                <div class="table-responsive" style="margin-top:16px;">
-                    <table class="erp-table">
-                        <thead>
-                            <tr>
-                                <th>Oficina Parceira</th>
-                                <th>Contato / Telefone</th>
-                                <th>Localização</th>
-                                <th>Carros Atendidos</th>
-                                <th>Faturamento</th>
-                                <th>Status de Homologação</th>
-                                <th style="text-align:center;">Ações de Gestor</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${workshops.map(w => `
-                                <tr>
-                                    <td>
-                                        <strong style="color:#ffffff; font-size:13.5px;">${w.trade_name}</strong>
-                                        <div style="font-size:11px; color:var(--text-muted);">${w.company_name}</div>
-                                        <div class="mono" style="font-size:10.5px; color:var(--brand-gold);">${w.cnpj}</div>
-                                    </td>
-                                    <td>
-                                        <div style="font-size:12px; color:#fff;">${w.phone || '(11) 3456-7890'}</div>
-                                        <div style="font-size:11px; color:var(--text-muted);">${w.email || 'contato@oficina.com.br'}</div>
-                                    </td>
-                                    <td>${w.city} / ${w.state}</td>
-                                    <td class="mono" style="font-weight:700; color:var(--brand-cyan); font-size:14px;">
-                                        ${w.distinct_vehicles_serviced || 0} veículos
-                                    </td>
-                                    <td class="mono" style="font-weight:700; color:#10b981; font-size:14px;">
-                                        R$ ${((w.total_services_amount_cents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                    </td>
-                                    <td>
-                                        ${w.status === 'APPROVED' ? `
-                                            <span class="badge-proof badge-proven">✅ Homologada</span>
-                                        ` : `
-                                            <span class="badge-proof badge-warning">⏳ Pendente</span>
-                                        `}
-                                    </td>
-                                    <td style="text-align:center;">
-                                        <div style="display:flex; gap:6px; justify-content:center;">
-                                            <button class="btn btn-sm btn-cyan" onclick="AdminView.openWorkshopClientsModal('${w.id}')" title="Ver clientes e carros atendidos">
-                                                👥 Clientes & Carros
+                <!-- Lista Hierárquica: Cada Oficina e seus Carros -->
+                <div class="workshop-tree-list">
+                    ${!showOnlyUnassigned ? displayedWorkshops.map(w => {
+                        const cars = fleet.filter(v => v.workshop_id === w.id);
+                        const isApproved = w.status === 'APPROVED';
+
+                        return `
+                            <div class="workshop-tree-card">
+                                <!-- Cabeçalho Discreto da Oficina -->
+                                <div class="workshop-tree-header">
+                                    <div class="ws-tree-title-block">
+                                        <div class="ws-tree-icon">🏢</div>
+                                        <div>
+                                            <div class="ws-tree-name">
+                                                <span>${w.trade_name}</span>
+                                                ${isApproved 
+                                                    ? '<span class="badge-proof badge-proven" style="font-size:10px; padding:1px 6px;">Homologada</span>' 
+                                                    : '<span class="badge-proof badge-warning" style="font-size:10px; padding:1px 6px;">Pendente</span>'}
+                                            </div>
+                                            <div class="ws-tree-meta">
+                                                ${w.company_name} • CNPJ: ${w.cnpj} • ${w.city}/${w.state} • Tel: ${w.phone || '(11) 3456-7890'}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style="display:flex; align-items:center; gap:16px;">
+                                        <div class="ws-tree-stats">
+                                            <span class="ws-stat-pill">Carros: <strong style="color:#38bdf8;">${cars.length}</strong></span>
+                                            <span class="ws-stat-pill">Faturamento: <strong style="color:#10b981;">R$ ${((w.total_services_amount_cents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</strong></span>
+                                        </div>
+                                        ${!isApproved ? `
+                                            <button class="btn btn-sm btn-success" style="font-size:11px; padding:4px 10px;" onclick="AdminView.approveWorkshop('${w.id}')">
+                                                ✓ Homologar
                                             </button>
-                                            ${w.status === 'PENDING' ? `
-                                                <button class="btn btn-sm btn-success" onclick="AdminView.approveWorkshop('${w.id}')" title="Homologar oficina na rede">
-                                                    ✓ Homologar
-                                                </button>
-                                            ` : ''}
+                                        ` : ''}
+                                    </div>
+                                </div>
+
+                                <!-- Carros dentro desta Oficina -->
+                                <div class="workshop-tree-body">
+                                    ${cars.length === 0 ? `
+                                        <div style="padding:20px; text-align:center; color:#64748b; font-size:12px;">
+                                            Nenhum veículo atendido por esta oficina no momento.
                                         </div>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        `;
-    },
-
-    // ── 4. ABA DE FROTA DE CARROS POR OFICINA (MULTI-TENANT) ──
-    renderFleetTab() {
-        const fleet = this.cacheData.fleet;
-        const workshops = this.cacheData.stats.growthByWorkshops;
-
-        const filteredFleet = this.fleetFilterWorkshopId === 'all'
-            ? fleet
-            : fleet.filter(v => v.workshop_id === this.fleetFilterWorkshopId);
-
-        return `
-            <div class="panel-box">
-                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:20px;">🚗</span>
-                        <strong>Frota Cadastrada por Oficina (Isolamento Multi-Tenant)</strong>
-                        <span class="badge-proof badge-cyan">${filteredFleet.length} Veículos</span>
-                    </span>
-
-                    <!-- Filtro por Oficina Credenciada -->
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <label style="font-size:12px; color:var(--text-muted); font-weight:600;">Filtrar por Oficina:</label>
-                        <select class="form-control" style="width:220px; padding:6px 10px; font-size:12px;" onchange="AdminView.changeFleetFilter(this.value)">
-                            <option value="all" ${this.fleetFilterWorkshopId === 'all' ? 'selected' : ''}>Todas as Oficinas (Consolidado)</option>
-                            ${workshops.map(w => `
-                                <option value="${w.id}" ${this.fleetFilterWorkshopId === w.id ? 'selected' : ''}>${w.trade_name} (${w.city})</option>
-                            `).join('')}
-                        </select>
-                    </div>
-                </div>
-
-                <div class="table-responsive" style="margin-top:16px;">
-                    <table class="erp-table">
-                        <thead>
-                            <tr>
-                                <th>Veículo (Placa / Modelo)</th>
-                                <th>Oficina Credenciada (Tenant)</th>
-                                <th>Proprietário / Telefone</th>
-                                <th>Código DNA</th>
-                                <th>Km Atual</th>
-                                <th>Serviços</th>
-                                <th>Total Gasto</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${filteredFleet.length === 0 ? `
-                                <tr>
-                                    <td colspan="8" style="text-align:center; padding:30px; color:var(--text-muted);">
-                                        Nenhum veículo encontrado para a oficina selecionada.
-                                    </td>
-                                </tr>
-                            ` : filteredFleet.map(v => `
-                                <tr>
-                                    <td>
-                                        <div style="display:flex; align-items:center; gap:10px;">
-                                            <div style="width:42px; height:32px; border-radius:4px; overflow:hidden; background:#111; flex-shrink:0;">
-                                                <img src="${v.photo_url || 'https://images.unsplash.com/photo-1590362891991-f776e747a588?w=100'}" style="width:100%; height:100%; object-fit:cover;" />
-                                            </div>
-                                            <div>
-                                                <strong style="color:var(--brand-gold); font-size:13.5px;">${v.license_plate}</strong>
-                                                <div style="font-size:11.5px; color:#fff;">${v.brand} ${v.model} (${v.model_year})</div>
-                                            </div>
+                                    ` : `
+                                        <div class="table-responsive">
+                                            <table class="erp-table" style="margin:0;">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Veículo (Placa / Modelo)</th>
+                                                        <th>Proprietário / Contato</th>
+                                                        <th>Odômetro</th>
+                                                        <th>Passaporte DNA</th>
+                                                        <th>Serviços Realizados</th>
+                                                        <th>Total Investido</th>
+                                                        <th style="text-align:right;">Dossiê</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    ${cars.map(c => `
+                                                        <tr>
+                                                            <td>
+                                                                <div style="display:flex; align-items:center; gap:10px;">
+                                                                    <div style="width:36px; height:26px; border-radius:4px; overflow:hidden; background:#111; flex-shrink:0;">
+                                                                        <img src="${c.photo_url || 'https://images.unsplash.com/photo-1590362891991-f776e747a588?w=100'}" style="width:100%; height:100%; object-fit:cover;" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <strong style="color:#FFD21C; font-size:13px; font-family:var(--font-mono);">${c.license_plate}</strong>
+                                                                        <div style="font-size:11px; color:#cbd5e1;">${c.brand} ${c.model} (${c.model_year})</div>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <div style="font-size:12px; color:#ffffff; font-weight:600;">${c.owner_name}</div>
+                                                                <a href="https://wa.me/55${(c.owner_phone || '').replace(/\D/g, '')}" target="_blank" style="font-size:11px; color:#25D366; text-decoration:none;">
+                                                                    ${c.owner_phone}
+                                                                </a>
+                                                            </td>
+                                                            <td class="mono" style="font-size:12.5px; color:#cbd5e1;">
+                                                                ${(c.current_mileage || 0).toLocaleString('pt-BR')} km
+                                                            </td>
+                                                            <td>
+                                                                ${c.dna_code ? `
+                                                                    <span class="badge-proof badge-proven" style="font-family:var(--font-mono); font-size:10.5px;">
+                                                                        ${c.dna_code}
+                                                                    </span>
+                                                                ` : `
+                                                                    <span class="badge-proof badge-warning" style="font-size:10px;">Sem DNA</span>
+                                                                `}
+                                                            </td>
+                                                            <td class="mono" style="color:#38bdf8; font-weight:600; font-size:12px;">
+                                                                ${c.services_count || 0} ordens
+                                                            </td>
+                                                            <td class="mono" style="color:#10b981; font-weight:700; font-size:12.5px;">
+                                                                R$ ${((c.total_maintenance_cents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                            </td>
+                                                            <td style="text-align:right;">
+                                                                <button class="btn btn-sm btn-secondary" style="font-size:11px; padding:4px 8px;" onclick="DossierView.render('${c.dna_code || c.license_plate}')" title="Ver Dossiê 360°">
+                                                                    Dossiê →
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    `).join('')}
+                                                </tbody>
+                                            </table>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <strong style="color:var(--brand-cyan); font-size:12px;">${v.workshop_name}</strong>
-                                        <div style="font-size:10.5px; color:var(--text-dim);">${v.workshop_city}</div>
-                                    </td>
-                                    <td>
-                                        <div style="font-size:12px; color:#fff; font-weight:600;">${v.owner_name}</div>
-                                        <div style="font-size:11px; color:#25D366; font-family:var(--font-mono);">${v.owner_phone}</div>
-                                    </td>
-                                    <td>
-                                        ${v.dna_code ? `
-                                            <span class="badge-proof badge-proven" style="font-family:var(--font-mono); font-size:11px;">
-                                                ${v.dna_code}
-                                            </span>
-                                        ` : `
-                                            <span class="badge-proof badge-warning">Aguardando Ativação</span>
-                                        `}
-                                    </td>
-                                    <td class="mono" style="font-weight:700;">
-                                        ${(v.current_mileage || 0).toLocaleString('pt-BR')} km
-                                    </td>
-                                    <td class="mono" style="color:var(--brand-cyan); font-weight:700;">
-                                        ${v.services_count || 0}
-                                    </td>
-                                    <td class="mono" style="color:#10b981; font-weight:700;">
-                                        R$ ${((v.total_maintenance_cents || 0) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-cyan" onclick="DossierView.render('${v.dna_code || v.license_plate}')" title="Inspecionar Dossiê">
-                                            🔎 Dossiê 360°
-                                        </button>
-                                    </td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
+                                    `}
+                                </div>
+                            </div>
+                        `;
+                    }).join('') : ''}
+
+                    <!-- Veículos Particulares / Sem Oficina Vinculada -->
+                    ${(activeFilter === 'all' || activeFilter === 'unassigned') && unassignedCars.length > 0 ? `
+                        <div class="workshop-tree-card" style="border-left:3px solid #64748b;">
+                            <div class="workshop-tree-header">
+                                <div class="ws-tree-title-block">
+                                    <div class="ws-tree-icon">🚗</div>
+                                    <div>
+                                        <div class="ws-tree-name">
+                                            <span>Veículos Sem Oficina Vinculada</span>
+                                            <span class="badge-proof" style="background:rgba(255,255,255,0.06); font-size:10px;">Particulares</span>
+                                        </div>
+                                        <div class="ws-tree-meta">
+                                            Carros cadastrados diretamente pelo proprietário aguardando atendimento em oficina credenciada
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ws-tree-stats">
+                                    <span class="ws-stat-pill">Carros: <strong style="color:#f59e0b;">${unassignedCars.length}</strong></span>
+                                </div>
+                            </div>
+                            <div class="workshop-tree-body">
+                                <div class="table-responsive">
+                                    <table class="erp-table" style="margin:0;">
+                                        <thead>
+                                            <tr>
+                                                <th>Veículo (Placa / Modelo)</th>
+                                                <th>Proprietário / Telefone</th>
+                                                <th>Odômetro</th>
+                                                <th>Status DNA</th>
+                                                <th style="text-align:right;">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${unassignedCars.map(c => `
+                                                <tr>
+                                                    <td>
+                                                        <div style="display:flex; align-items:center; gap:10px;">
+                                                            <div style="width:36px; height:26px; border-radius:4px; overflow:hidden; background:#111; flex-shrink:0;">
+                                                                <img src="${c.photo_url || 'https://images.unsplash.com/photo-1590362891991-f776e747a588?w=100'}" style="width:100%; height:100%; object-fit:cover;" />
+                                                            </div>
+                                                            <div>
+                                                                <strong style="color:#FFD21C; font-size:13px; font-family:var(--font-mono);">${c.license_plate}</strong>
+                                                                <div style="font-size:11px; color:#cbd5e1;">${c.brand} ${c.model} (${c.model_year})</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div style="font-size:12px; color:#ffffff;">${c.owner_name}</div>
+                                                        <div style="font-size:11px; color:#25D366;">${c.owner_phone}</div>
+                                                    </td>
+                                                    <td class="mono" style="font-size:12.5px; color:#cbd5e1;">
+                                                        ${(c.current_mileage || 0).toLocaleString('pt-BR')} km
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge-proof badge-warning" style="font-size:10px;">Aguardando Ativação</span>
+                                                    </td>
+                                                    <td style="text-align:right;">
+                                                        <button class="btn btn-sm btn-secondary" style="font-size:11px; padding:4px 8px;" onclick="DossierView.render('${c.license_plate}')">
+                                                            Consultar →
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
             </div>
         `;
     },
 
     changeFleetFilter(workshopId) {
-        this.fleetFilterWorkshopId = workshopId;
-        this.switchTab('fleet');
+        this.filterByWorkshop(workshopId);
     },
 
     // ── 5. ABA DE CARTEIRA DE CLIENTES ──

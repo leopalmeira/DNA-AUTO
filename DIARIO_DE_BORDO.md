@@ -207,6 +207,28 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 
 ---
 
+### 🎨 Ciclo 12: Menu Discreto e Profissional com Hierarquia de Oficinas e Carros por Oficina
+- **Requisito do Usuário:** 
+  1. O menu do painel administrativo deve ser muito mais discreto, profissional e sem poluição visual (eliminar a bagunça de badges coloridos berrantes e abas longas com barra de rolagem horizontal).
+  2. O menu e a plataforma devem exibir claramente as oficinas credenciadas e, dentro de cada oficina, os veículos atendidos por ela em uma hierarquia visual intuitiva.
+- **Implementações:**
+  - **Menu Lateral Discreto (Sidebar Clean & Corporate):**
+    - Redução da saturação de badges e remoção de contrastes excessivos, adotando estilo corporativo minimalista (padrão TOTVS / Linear / Stripe).
+    - Itens de navegação com tipografia sóbria (`#94a3b8`), active com linha de destaque refinada em dourado (`#FFD21C`) e fundo translúcido suave.
+    - Criação de **submenu hierárquico discreto** logo abaixo de *Oficinas & Carros* (`.nav-sub-menu`), listando cada oficina credenciada com contagem sutil de veículos associados e suporte a clique para filtragem instantânea.
+  - **Eliminação da Barra de Rolagem Horizontal nas Abas:**
+    - Ajuste de `.admin-tabs-bar` com `flex-wrap: wrap`, eliminando de vez o estouro horizontal de tela no Windows.
+    - Abas enxutas e integradas: *Visão Geral*, *Oficinas & Carros*, *Faturamento*, *Alertas WhatsApp* e *Auditoria*.
+  - **Aba Hierárquica "Oficinas & Carros" no [adminView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/adminView.js):**
+    - Cada oficina parceira é exibida em um card corporativo dedicado (`.workshop-tree-card`), detalhando nome fantasia, CNPJ, cidade/UF, responsáveis e volume de serviços.
+    - **Dentro de cada oficina:** Tabela de carros atendidos pelo tenant com placa, modelo/ano, foto, proprietário, telefone, odômetro verificado, status de autenticação DNA e botão direto para consulta ao Dossiê 360°.
+    - Seção especial para veículos particulares cadastrados aguardando ativação em oficina parceira.
+- **Validação:**
+  - 16/16 testes automatizados passaram com 100% de sucesso.
+  - Validação de sintaxe JS (`node -c`) com zero erros.
+
+---
+
 ## 🏛️ 3. Tabela de Decisões Arquiteturais (ADRs)
 
 | ID | Decisão | Contexto / Motivação | Consequência / Benefício |

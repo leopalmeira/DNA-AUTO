@@ -1001,39 +1001,153 @@
    ============================================================================== */
 .admin-tabs-bar {
     display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    scrollbar-width: thin;
+    gap: 6px;
+    padding: 4px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
 .admin-tab-btn {
-    background: var(--bg-surface);
-    color: var(--text-muted);
-    border: 1px solid var(--border-subtle);
-    padding: 8px 16px;
-    border-radius: var(--radius-sm);
+    background: transparent;
+    color: #94a3b8;
+    border: none;
+    padding: 7px 16px;
+    border-radius: 6px;
     font-size: 12.5px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
-    transition: all 0.2s ease-in-out;
+    transition: all 0.15s ease-in-out;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
 }
 
 .admin-tab-btn:hover {
-    color: #ffffff;
-    border-color: rgba(255, 210, 28, 0.4);
-    background: var(--bg-surface-elevated);
+    color: #f1f5f9;
+    background: rgba(255, 255, 255, 0.04);
 }
 
 .admin-tab-btn.active {
-    background: rgba(255, 210, 28, 0.12);
-    color: var(--brand-gold);
-    border-color: var(--brand-gold);
-    box-shadow: 0 0 12px rgba(255, 210, 28, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
+
+.admin-tab-count {
+    font-size: 10.5px;
+    color: #64748b;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-family: var(--font-mono);
+}
+
+.admin-tab-btn.active .admin-tab-count {
+    color: #FFD21C;
+    background: rgba(255, 210, 28, 0.12);
+}
+
+/* ==============================================================================
+   ESTILOS HIERÁRQUICOS: OFICINAS ➔ CARROS POR OFICINA (DISCRETO & PROFISSIONAL)
+   ============================================================================== */
+.workshop-tree-card {
+    background: var(--bg-surface);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.workshop-tree-card:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+}
+
+.workshop-tree-header {
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.02);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ws-tree-title-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ws-tree-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #94a3b8;
+}
+
+.ws-tree-name {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ws-tree-meta {
+    font-size: 11.5px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.ws-tree-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+}
+
+.ws-stat-pill {
+    color: #94a3b8;
+}
+
+.ws-stat-pill strong {
+    color: #ffffff;
+}
+
+.workshop-tree-body {
+    padding: 0;
+}
+
+.ws-car-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    transition: background 0.15s;
+}
+
+.ws-car-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.ws-car-row:last-child {
+    border-bottom: none;
+}
+
 
 
