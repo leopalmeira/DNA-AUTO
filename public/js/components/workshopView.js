@@ -9,6 +9,8 @@ const WorkshopView = {
     alertsData: [],
     appointmentsData: [],
     currentSection: 'dashboard', // Módulo / Sub-view ativa
+    vehiclesList: [],
+    lastRegisteredVehicle: null,
     activeAccordions: {
         'veiculos': true,
         'recepcao': false,
@@ -134,6 +136,15 @@ const WorkshopView = {
             } catch (e) {
                 console.warn('Agendamentos não carregados da API, usando dados locais:', e.message);
                 this.appointmentsData = this.getDefaultAppointments();
+            }
+
+            // 4. Veículos Cadastrados na Plataforma
+            try {
+                const vehRes = await API.getVehicles();
+                this.vehiclesList = (vehRes && vehRes.vehicles) ? vehRes.vehicles : [];
+            } catch (ve) {
+                console.warn('Veículos não carregados da API:', ve.message);
+                this.vehiclesList = [];
             }
 
             this.renderMainLayout();
@@ -1958,57 +1969,70 @@ Podemos confirmar o agendamento?
     },
 
     renderRegisteredVehiclesView() {
+        const vehicles = (this.vehiclesList && this.vehiclesList.length > 0) ? this.vehiclesList : [
+            { id: 'veh_civic_touring', brand: 'Honda', model: 'Civic Touring', version_label: '1.5 Turbo', license_plate: 'BRA2E19', manufacture_year: 2018, dna_code: 'DNA-BR-8F72-29A4-X91', current_mileage: 128500, owner_name: 'Carlos Alberto Silva', owner_phone: '(11) 98888-1111', photo_url: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=120' },
+            { id: 'veh_corolla_xei', brand: 'Toyota', model: 'Corolla XEi', version_label: '2.0 Dynamic Force', license_plate: 'ABC1D23', manufacture_year: 2020, dna_code: 'DNA-BR-COROLLA-XEI', current_mileage: 92300, owner_name: 'Renata Vasconcelos', owner_phone: '(11) 97654-3210', photo_url: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=120' },
+            { id: 'veh_gol_msi', brand: 'VW', model: 'Gol Trendline', version_label: '1.6 MSI', license_plate: 'KXZ9012', manufacture_year: 2017, dna_code: 'DNA-BR-1A90-55E8-K12', current_mileage: 88500, owner_name: 'Marcos Donizete', owner_phone: '(19) 99123-4567', photo_url: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=120' },
+            { id: 'veh_fox', brand: 'VW', model: 'Fox 1.0 GII', version_label: 'Total Flex', license_plate: 'PWL4I85', manufacture_year: 2016, dna_code: 'DNA-BR-FOX-85430', current_mileage: 85430, owner_name: 'João da Silva', owner_phone: '(19) 98765-4321', photo_url: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=120' }
+        ];
+
         return `
             <div class="panel-box">
                 <div class="panel-title">
-                    <span>Veículos Atendidos na Oficina (${(this.dashboardData?.stats?.attended_vehicles) || 4})</span>
-                    <button class="btn btn-sm btn-primary" onclick="WorkshopView.openManualVehicleModal()">+ Cadastrar Novo</button>
+                    <span>Veículos Cadastrados na Oficina (${vehicles.length})</span>
+                    <button class="btn btn-sm btn-primary" onclick="WorkshopView.openManualVehicleModal()">+ Cadastrar Novo Veículo</button>
                 </div>
                 <div class="table-responsive">
                     <table class="erp-table">
                         <thead>
                             <tr>
-                                <th>Veículo</th>
+                                <th>Veículo & Foto</th>
                                 <th>Placa</th>
-                                <th>Ano</th>
+                                <th>Proprietário / WhatsApp</th>
                                 <th>DNA AUTO</th>
                                 <th>Odômetro</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td><strong>Honda Civic Touring</strong></td>
-                                <td class="mono" style="color:var(--brand-cyan);">BRA2E19</td>
-                                <td>2018/2019</td>
-                                <td><span class="badge-proof badge-proven" style="font-size:10px;">ATIVO (Nível 4)</span></td>
-                                <td class="mono">128.500 km</td>
-                                <td><button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-8F72-29A4-X91')">Ver Dossiê</button></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Toyota Corolla XEi</strong></td>
-                                <td class="mono" style="color:var(--brand-cyan);">ABC1D23</td>
-                                <td>2020/2021</td>
-                                <td><span class="badge-proof badge-proven" style="font-size:10px;">ATIVO (Nível 4)</span></td>
-                                <td class="mono">92.300 km</td>
-                                <td><button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-COROLLA-XEI')">Ver Dossiê</button></td>
-                            </tr>
-                            <tr>
-                                <td><strong>VW Gol Trendline 1.6</strong></td>
-                                <td class="mono" style="color:var(--brand-cyan);">KXZ9012</td>
-                                <td>2017/2018</td>
-                                <td><span class="badge-proof badge-proven" style="font-size:10px;">ATIVO (Nível 4)</span></td>
-                                <td class="mono">88.500 km</td>
-                                <td><button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-1A90-55E8-K12')">Ver Dossiê</button></td>
-                            </tr>
-                            <tr>
-                                <td><strong>VW Fox 1.0 GII</strong></td>
-                                <td class="mono" style="color:var(--brand-cyan);">PWL4I85</td>
-                                <td>2016/2017</td>
-                                <td><span class="badge-proof badge-pending" style="font-size:10px;">DISPONÍVEL</span></td>
-                                <td class="mono">85.430 km</td>
-                                <td><button class="btn btn-sm btn-primary" onclick="WorkshopView.openDnaOfferModal('veh_fox', 'PWL4I85', 'VW Fox 1.0')">Ativar DNA</button></td>
-                            </tr>
+                            ${vehicles.map(v => `
+                                <tr>
+                                    <td>
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            <img src="${v.photo_url || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=120'}" alt="${v.model}" style="width:44px; height:34px; object-fit:cover; border-radius:5px; border:1px solid rgba(255,255,255,0.12);" onerror="this.src='https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=120'" />
+                                            <div>
+                                                <strong style="color:#ffffff; font-size:13px; display:block;">${v.brand} ${v.model}</strong>
+                                                <span style="font-size:11px; color:var(--text-dim);">${v.version_label || ''} • ${v.manufacture_year || 2020}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="mono" style="color:var(--brand-cyan); font-weight:700; font-size:13px;">${v.license_plate}</td>
+                                    <td>
+                                        <strong style="font-size:12.5px; color:#ffffff; display:block;">${v.owner_name || 'Proprietário a Vincular'}</strong>
+                                        <span style="font-size:11px; color:#25D366; display:inline-flex; align-items:center; gap:3px;">
+                                            💬 ${v.owner_phone || '-'}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge-proof badge-proven" style="font-size:10px; font-weight:800;">
+                                            ${v.dna_code ? v.dna_code : 'ATIVO (Nível 4)'}
+                                        </span>
+                                    </td>
+                                    <td class="mono" style="font-size:12.5px; font-weight:700; color:#cbd5e1;">
+                                        ${Number(v.current_mileage || v.mileage || 0).toLocaleString('pt-BR')} km
+                                    </td>
+                                    <td>
+                                        <div style="display:flex; gap:6px;">
+                                            <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal('${v.id}')" style="font-size:11px; padding:4px 9px; font-weight:800; background:#10b981; border:none;">
+                                                🔧 Novo Serviço
+                                            </button>
+                                            <button class="btn btn-sm btn-cyan" onclick="DossierView.render('${v.dna_code || v.license_plate}')" style="font-size:11px; padding:4px 8px;">
+                                                Ver Dossiê
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
                         </tbody>
                     </table>
                 </div>
@@ -2453,65 +2477,127 @@ Podemos confirmar o agendamento?
     },
 
     // Modal de Cadastro Manual de Veículo
+    // Modal de Cadastro Manual de Veículo (Vinculado a Proprietário, KM de Entrada e Foto com DNA Automático)
     openManualVehicleModal(defaultPlate = '') {
         const modalRoot = document.getElementById('ws-erp-modal-root');
         if (!modalRoot) return;
 
+        const currentYear = new Date().getFullYear();
+
         modalRoot.innerHTML = `
             <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
-                <div class="ws-erp-modal-window" style="max-width:540px;">
-                    <div class="ws-erp-modal-header">
-                        <strong style="color:#ffffff; font-size:15px;">Cadastrar Veículo na Oficina</strong>
+                <div class="ws-erp-modal-window" style="max-width:620px; max-height:92vh; overflow-y:auto;">
+                    <div class="ws-erp-modal-header" style="background:#0b111e; border-bottom:1px solid rgba(255,255,255,0.08); padding:14px 20px;">
+                        <div>
+                            <strong style="color:#ffffff; font-size:16px; display:block;">Cadastrar Entrada de Veículo na Oficina</strong>
+                            <span style="font-size:12px; color:var(--text-dim);">Vínculo com proprietário, hodômetro de entrada e Passaporte Digital DNA Permanente</span>
+                        </div>
                         <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
                     </div>
-                    <form onsubmit="WorkshopView.submitManualRegisterForm(event)" style="padding:16px 20px;">
-                        <div class="form-grid-2">
+
+                    <form onsubmit="WorkshopView.submitManualRegisterForm(event)" style="padding:18px 22px;">
+                        <!-- SEÇÃO 1: DADOS TÉCNICOS DO VEÍCULO -->
+                        <div style="font-size:11px; font-weight:800; color:#FFD21C; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                            <span>🚗 1. DADOS TÉCNICOS DO VEÍCULO</span>
+                        </div>
+
+                        <div class="form-grid-2" style="margin-bottom:10px;">
                             <div class="form-group">
                                 <label class="form-label">Placa do Veículo *</label>
-                                <input type="text" id="manual-veh-plate" class="form-control" value="${defaultPlate}" maxlength="8" style="text-transform:uppercase; font-weight:700; font-family:var(--font-mono);" required />
+                                <input type="text" id="manual-veh-plate" class="form-control" value="${defaultPlate}" maxlength="8" placeholder="Ex: BRA2E19" style="text-transform:uppercase; font-weight:800; font-family:var(--font-mono); color:var(--brand-cyan);" required />
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Marca / Montadora *</label>
-                                <input type="text" id="manual-veh-brand" class="form-control" placeholder="Ex: VW, Honda, Fiat" required />
+                                <input type="text" id="manual-veh-brand" class="form-control" placeholder="Ex: Honda, Toyota, VW, Fiat" required />
                             </div>
                         </div>
 
-                        <div class="form-grid-2">
+                        <div class="form-grid-2" style="margin-bottom:10px;">
                             <div class="form-group">
                                 <label class="form-label">Modelo do Carro *</label>
-                                <input type="text" id="manual-veh-model" class="form-control" placeholder="Ex: Fox 1.0, Civic, Strada" required />
+                                <input type="text" id="manual-veh-model" class="form-control" placeholder="Ex: Civic Touring, Corolla, Strada" required />
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Versão / Motor</label>
-                                <input type="text" id="manual-veh-version" class="form-control" placeholder="Ex: 1.0 Total Flex, 1.5 Turbo" />
+                                <input type="text" id="manual-veh-version" class="form-control" placeholder="Ex: 1.5 Turbo, 2.0 Flex, 1.0 Firefly" />
                             </div>
                         </div>
 
-                        <div class="form-grid-3">
+                        <div class="form-grid-2" style="margin-bottom:16px;">
                             <div class="form-group">
-                                <label class="form-label">Ano *</label>
-                                <input type="number" id="manual-veh-year" class="form-control" value="2018" required />
+                                <label class="form-label">Ano Fabricação/Modelo *</label>
+                                <input type="number" id="manual-veh-year" class="form-control" value="${currentYear}" required />
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Cor</label>
-                                <input type="text" id="manual-veh-color" class="form-control" placeholder="Ex: Prata" />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">KM Odômetro</label>
-                                <input type="number" id="manual-veh-km" class="form-control" placeholder="Ex: 85430" />
+                                <label class="form-label">Cor do Veículo</label>
+                                <input type="text" id="manual-veh-color" class="form-control" placeholder="Ex: Prata, Branco, Preto" />
                             </div>
                         </div>
 
-                        <div style="margin-top:14px; padding:12px; background:rgba(255,210,28,0.06); border-radius:6px; border:1px solid rgba(255,210,28,0.2);">
-                            <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#ffffff; cursor:pointer;">
-                                <input type="checkbox" id="manual-veh-activate-dna" checked />
-                                <span>Ativar Passaporte DNA Digital Permanente para este carro</span>
-                            </label>
+                        <!-- SEÇÃO 2: DADOS DO PROPRIETÁRIO / CLIENTE -->
+                        <div style="font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; display:flex; align-items:center; gap:6px; border-top:1px solid rgba(255,255,255,0.06); padding-top:14px;">
+                            <span>👤 2. DADOS DO PROPRIETÁRIO / CLIENTE</span>
                         </div>
 
-                        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
+                        <div class="form-grid-2" style="margin-bottom:16px;">
+                            <div class="form-group">
+                                <label class="form-label">Nome Completo do Proprietário *</label>
+                                <input type="text" id="manual-veh-owner-name" class="form-control" placeholder="Ex: Carlos Eduardo Silveira" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Telefone / WhatsApp *</label>
+                                <input type="text" id="manual-veh-owner-phone" class="form-control" placeholder="Ex: (11) 98765-4321" required />
+                            </div>
+                        </div>
+
+                        <!-- SEÇÃO 3: HODÔMETRO DE ENTRADA & FOTO DO VEÍCULO -->
+                        <div style="font-size:11px; font-weight:800; color:#10b981; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; display:flex; align-items:center; gap:6px; border-top:1px solid rgba(255,255,255,0.06); padding-top:14px;">
+                            <span>📸 3. HODÔMETRO DE ENTRADA & FOTO DO VEÍCULO</span>
+                        </div>
+
+                        <div class="form-grid-2" style="margin-bottom:12px;">
+                            <div class="form-group">
+                                <label class="form-label" style="color:#10b981; font-weight:800;">Hodômetro na Entrada (KM) *</label>
+                                <input type="number" id="manual-veh-km" class="form-control" placeholder="Ex: 85400" style="font-size:15px; font-weight:800; font-family:var(--font-mono);" required />
+                                <span style="font-size:11px; color:var(--text-dim); margin-top:3px; display:block;">Gravado na entrada e pré-preenchido no modal de serviço.</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Foto do Veículo</label>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <input type="file" id="manual-veh-photo-file" accept="image/*" onchange="WorkshopView.handleVehiclePhotoUpload(event)" style="display:none;" />
+                                    <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('manual-veh-photo-file').click()" style="display:inline-flex; align-items:center; gap:6px;">
+                                        📷 Escolher Imagem
+                                    </button>
+                                    <span id="manual-veh-photo-name" style="font-size:11px; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">Nenhuma foto</span>
+                                </div>
+                                <input type="hidden" id="manual-veh-photo-data" value="" />
+                                <input type="text" id="manual-veh-photo-url" class="form-control" placeholder="Ou cole a URL da foto..." oninput="WorkshopView.updatePhotoPreview(this.value)" style="margin-top:6px; font-size:11px; padding:4px 8px;" />
+                            </div>
+                        </div>
+
+                        <!-- PRÉ-VISUALIZAÇÃO DA FOTO DO CARRO -->
+                        <div id="manual-veh-photo-preview-box" style="display:none; margin-bottom:14px; text-align:center; padding:8px; background:#080d16; border-radius:6px; border:1px dashed rgba(255,255,255,0.15);">
+                            <img id="manual-veh-photo-preview" src="" alt="Prévia do Veículo" style="max-height:130px; max-width:100%; border-radius:5px; object-fit:cover;" />
+                        </div>
+
+                        <!-- BADGE DNA AUTOMÁTICO -->
+                        <div style="margin-top:8px; padding:12px 14px; background:rgba(0,212,255,0.06); border-radius:6px; border:1px solid rgba(0,212,255,0.25); display:flex; align-items:center; gap:12px;">
+                            <div style="font-size:24px;">🧬</div>
+                            <div>
+                                <strong style="color:#00e5ff; font-size:12.5px; display:block;">Passaporte Digital DNA Automático Permanente (Nível 4)</strong>
+                                <span style="font-size:11.5px; color:#cbd5e1; display:block; line-height:1.35;">
+                                    Ao cadastrar, o veículo recebe o DNA ativo perpétuo e <strong>já fica marcado como padrão</strong> no modal de serviço, sem necessidade de procurar ou escolher o carro manualmente.
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- AÇÕES -->
+                        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
                             <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" style="font-weight:700;">Salvar e Dar Entrada</button>
+                            <button type="submit" class="btn btn-primary" style="font-weight:800; background:#10b981; border:none; padding:8px 18px;">
+                                ✅ Salvar Entrada & Iniciar Serviço
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -2519,16 +2605,64 @@ Podemos confirmar o agendamento?
         `;
     },
 
+    handleVehiclePhotoUpload(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        const nameSpan = document.getElementById('manual-veh-photo-name');
+        if (nameSpan) nameSpan.textContent = file.name;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            const dataUrl = evt.target.result;
+            const hidden = document.getElementById('manual-veh-photo-data');
+            if (hidden) hidden.value = dataUrl;
+            this.updatePhotoPreview(dataUrl);
+        };
+        reader.readAsDataURL(file);
+    },
+
+    updatePhotoPreview(url) {
+        const previewBox = document.getElementById('manual-veh-photo-preview-box');
+        const previewImg = document.getElementById('manual-veh-photo-preview');
+        if (previewBox && previewImg) {
+            if (url && url.trim()) {
+                previewImg.src = url.trim();
+                previewBox.style.display = 'block';
+            } else {
+                previewBox.style.display = 'none';
+            }
+        }
+    },
+
     async submitManualRegisterForm(e) {
         e.preventDefault();
-        const plate = document.getElementById('manual-veh-plate').value.trim().toUpperCase();
+        const plate = document.getElementById('manual-veh-plate').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
         const brand = document.getElementById('manual-veh-brand').value.trim();
         const model = document.getElementById('manual-veh-model').value.trim();
         const version = document.getElementById('manual-veh-version').value.trim();
         const year = document.getElementById('manual-veh-year').value;
         const color = document.getElementById('manual-veh-color').value.trim();
         const km = document.getElementById('manual-veh-km').value;
-        const activateDna = document.getElementById('manual-veh-activate-dna').checked;
+        const ownerName = document.getElementById('manual-veh-owner-name').value.trim();
+        const ownerPhone = document.getElementById('manual-veh-owner-phone').value.trim();
+        const photoData = document.getElementById('manual-veh-photo-data')?.value || '';
+        const photoUrl = document.getElementById('manual-veh-photo-url')?.value.trim() || photoData || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80';
+
+        if (!plate || !brand || !model) {
+            alert('Por favor preencha a placa, marca e modelo.');
+            return;
+        }
+
+        if (!ownerName || !ownerPhone) {
+            alert('Por favor preencha o nome e o telefone/WhatsApp do proprietário.');
+            return;
+        }
+
+        if (!km) {
+            alert('Por favor informe o hodômetro registrado na entrada do veículo.');
+            return;
+        }
 
         try {
             const res = await API.registerVehicle({
@@ -2537,20 +2671,51 @@ Podemos confirmar o agendamento?
                 model,
                 version_label: version,
                 manufacture_year: year,
-                color,
-                mileage: km,
-                activate_dna_now: activateDna
+                color: color || 'Não informada',
+                mileage: Number(km),
+                owner_name: ownerName,
+                owner_phone: ownerPhone,
+                photo_url: photoUrl,
+                activate_dna_now: true
             });
 
-            this.closeModal();
-            const dnaCode = (res && res.dna && res.dna.dna_code) || 'Ativo';
-            alert(`✅ Veículo ${brand} ${model} (${plate}) cadastrado com sucesso!\n\n🧬 Passaporte Digital DNA: ${dnaCode}\nO veículo já está registrado na plataforma sem necessidade de cadastrar no dossiê.`);
-            await this.render();
-            this.switchSection('veiculos-pesquisa');
+            const vehicleId = res.vehicle_id || res.vehicle?.id;
+            const dnaCode = (res && res.dna && res.dna.dna_code) || res.dna_code || 'DNA-BR-ATIVO';
 
-            const input = document.getElementById('ws-vehicle-search');
-            if (input) input.value = plate;
-            this.handleSearchVehicle();
+            const newVeh = {
+                id: vehicleId,
+                license_plate: plate,
+                brand,
+                model,
+                version_label: version,
+                manufacture_year: year,
+                color: color || 'Não informada',
+                current_mileage: Number(km),
+                mileage: Number(km),
+                owner_name: ownerName,
+                owner_phone: ownerPhone,
+                photo_url: photoUrl,
+                dna_code: dnaCode,
+                dna_status: 'ACTIVE'
+            };
+
+            this.lastRegisteredVehicle = newVeh;
+            if (!this.vehiclesList) this.vehiclesList = [];
+            this.vehiclesList = [newVeh, ...this.vehiclesList.filter(v => v.id !== vehicleId && v.license_plate !== plate)];
+
+            this.closeModal();
+
+            // Mensagem de sucesso amigável
+            alert(`✅ Veículo ${brand} ${model} (${plate}) cadastrado com sucesso!\n\n🧬 Passaporte Digital DNA: ${dnaCode}\n👤 Proprietário: ${ownerName} (${ownerPhone})\n⏱️ Hodômetro de Entrada: ${Number(km).toLocaleString('pt-BR')} km\n\nO formulário de Registro de Serviço foi aberto automaticamente com este carro já marcado!`);
+
+            // Abrir imediatamente o modal de novo serviço com o carro já marcado e o hodômetro preenchido
+            this.openNewServiceModal(vehicleId);
+
+            // Atualiza visualização em segundo plano se estiver na tela de veículos
+            if (this.currentSection === 'veiculos-cadastrados') {
+                const viewContainer = document.getElementById('ws-viewport-content');
+                if (viewContainer) viewContainer.innerHTML = this.renderRegisteredVehiclesView();
+            }
         } catch (err) {
             alert('Erro ao cadastrar veículo: ' + err.message);
         }
@@ -2769,15 +2934,64 @@ Podemos confirmar o agendamento?
         }
     },
 
-    // Modal de Novo Serviço Nível 4 (Preservado)
+    // Modal de Novo Serviço Nível 4 (População Dinâmica com Auto-Seleção e KM Pré-preenchido)
     openNewServiceModal(vehicleId = '') {
         const modal = document.getElementById('new-service-modal');
         if (!modal) return;
-        if (vehicleId) {
-            const sel = document.getElementById('srv-vehicle-id');
-            if (sel) sel.value = vehicleId;
+
+        const targetVehicleId = vehicleId || this.lastRegisteredVehicle?.id || (this.vehiclesList && this.vehiclesList[0]?.id) || 'veh_civic_touring';
+        const sel = document.getElementById('srv-vehicle-id');
+
+        // Veículos padrão combinados com os cadastrados no sistema
+        let vehicles = (this.vehiclesList && this.vehiclesList.length > 0) ? [...this.vehiclesList] : [
+            { id: 'veh_civic_touring', brand: 'Honda', model: 'Civic Touring', license_plate: 'BRA2E19', dna_code: 'DNA-BR-8F72-29A4-X91', current_mileage: 128500 },
+            { id: 'veh_corolla_xei', brand: 'Toyota', model: 'Corolla XEi', license_plate: 'ABC1D23', dna_code: 'DNA-BR-COROLLA-XEI', current_mileage: 92300 },
+            { id: 'veh_gol_msi', brand: 'VW', model: 'Gol MSI', license_plate: 'KXZ9012', dna_code: 'DNA-BR-1A90-55E8-K12', current_mileage: 88500 }
+        ];
+
+        // Se o último cadastrado existir e não estiver na lista, adiciona no início
+        if (this.lastRegisteredVehicle && !vehicles.some(v => v.id === this.lastRegisteredVehicle.id)) {
+            vehicles.unshift(this.lastRegisteredVehicle);
         }
+
+        if (sel) {
+            sel.innerHTML = '';
+            vehicles.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.id;
+                const dnaTxt = v.dna_code ? ` - ${v.dna_code} (DNA Ativo)` : ' - DNA Ativo';
+                opt.textContent = `${v.brand} ${v.model} (${v.license_plate})${dnaTxt}`;
+                if (v.id === targetVehicleId) {
+                    opt.selected = true;
+                }
+                sel.appendChild(opt);
+            });
+            sel.value = targetVehicleId;
+        }
+
+        // Preenche automaticamente a quilometragem no odômetro com base no veículo selecionado
+        const selectedVeh = vehicles.find(v => v.id === (sel ? sel.value : targetVehicleId)) || this.lastRegisteredVehicle;
+        const kmInput = document.getElementById('srv-mileage');
+        if (kmInput && selectedVeh && (selectedVeh.current_mileage !== undefined || selectedVeh.mileage !== undefined)) {
+            kmInput.value = selectedVeh.current_mileage || selectedVeh.mileage;
+        }
+
+        // Data de hoje por padrão
+        const dateInput = document.getElementById('srv-service-date');
+        if (dateInput) {
+            dateInput.value = new Date().toISOString().split('T')[0];
+        }
+
         modal.classList.add('active');
+    },
+
+    onServiceVehicleChange(vehicleId) {
+        const vehicles = (this.vehiclesList && this.vehiclesList.length > 0) ? this.vehiclesList : [];
+        const veh = vehicles.find(v => v.id === vehicleId) || (this.lastRegisteredVehicle?.id === vehicleId ? this.lastRegisteredVehicle : null);
+        const kmInput = document.getElementById('srv-mileage');
+        if (kmInput && veh && (veh.current_mileage !== undefined || veh.mileage !== undefined)) {
+            kmInput.value = veh.current_mileage || veh.mileage;
+        }
     },
 
     openDnaOfferModal(vehicleId, plate, modelName = 'Veículo') {

@@ -87,6 +87,9 @@ const API = {
     },
 
     // Veículos e DNA
+    getVehicles() {
+        return this.request('/vehicles');
+    },
     searchVehicle(query) {
         return this.request(`/vehicles/search?q=${encodeURIComponent(query)}`);
     },

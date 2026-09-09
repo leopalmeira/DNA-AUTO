@@ -3,7 +3,7 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-25%2F25%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-26%2F26%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
@@ -146,6 +146,13 @@ O ambiente operacional interno da oficina foi transformado em um sistema ERP mod
   - **Cartão do Veículo com Ficha Digital:** Exibição imediata com logotipo oficial da montadora, ano/modelo, motorização, odômetro verificado e botão para abrir a **Ficha Digital do Veículo** (modal com histórico completo, dados do proprietário e lista de revisões).
   - **Botão Direto de Cadastro:** Fluxo desimpedido para cadastrar um novo carro na rede sem perda de tempo na recepção.
 
+- **Cadastro Completo de Veículo Vinculado a Proprietário, KM de Entrada, Foto & Auto-Seleção:**
+  - **Vínculo com Proprietário:** Coleta e associação direta do Nome Completo do Proprietário e Telefone / WhatsApp persistidos no banco de dados (`owners` e `ownership_transfers`).
+  - **Hodômetro na Entrada (KM):** Registro auditado da quilometragem no momento do check-in na oficina gravado em `mileage_records`.
+  - **Foto do Veículo:** Suporte a upload de imagem local com conversão para Base64 DataURL via `FileReader` e prévia visual instantânea, com persistência em `vehicles.photo_url` e na galeria `vehicle_photos`.
+  - **Passaporte Digital DNA Automático:** Todo veículo cadastrado recebe o código permanente ativo (`DNA-BR-XXXX-XXXX-XXX`) sem caixas de seleção opcionais.
+  - **Disponível e Pré-Marcado no Modal de Serviço:** Ao concluir a entrada, o modal *🔧 Registrar Novo Serviço Comprovado (Nível 4)* abre imediatamente com o veículo recém-cadastrado **já selecionado como padrão (`selected`)** e com o **odômetro de entrada pré-preenchido**, sem que o operador precise escolher ou procurar o carro manualmente.
+
 - **Radar Preditivo OBD2 (Telemetria Integrada ao App do Cliente):**
   - Monitoramento da quilometragem real transmitida pelo adaptador OBD2 pareado ao smartphone do cliente.
   - **Semáforos de Desgaste de Componentes Críticos:**
@@ -276,21 +283,24 @@ node test/api.test.js
 ✅ 7. Ativação de DNA: Gerado código permanente DNA-BR-XXXX-XXXX-XXX
 ✅ 8. Relatório DNA para Venda: Emitido com código de autenticação
 ✅ 9. Confirmação de Serviço pela Oficina: Nível elevado para Nível 3 (CONFIRMADO)
-✅ 10. Faturamento e Rede do Admin: R$ 7.207,00 faturamento bruto, 3 oficinas, 3 clientes
+✅ 10. Faturamento e Rede do Admin: R$ 7.746,10 faturamento bruto, 3 oficinas, 3 clientes
 ✅ 11. Clientes por Oficina: 4 clientes encontrados para Veloce Auto Center
-✅ 12. Alertas Preventivos WhatsApp: 8 alertas gerados com links diretos para WhatsApp
+✅ 12. Alertas Preventivos WhatsApp: 17 alertas gerados com links diretos para WhatsApp
 ✅ 13. Esqueci Minha Senha: Senha redefinida com sucesso para o usuário
-✅ 14. Frota por Oficina Multi-Tenant: 4 veículos catalogados com oficina vinculada
+✅ 14. Frota por Oficina Multi-Tenant: 14 veículos catalogados com oficina vinculada
 ✅ 15. Carteira de Clientes: 2 proprietários vinculados à oficina de atendimento
 ✅ 16. Homologação Multi-Tenant: Status da oficina verificado e aprovado com sucesso
-✅ 17. Saldo da API Placas: Saldo verificado com sucesso via WDAPI2
-✅ 18. Consulta de Placa via API Oficial: Veículo consultado em tempo real com sucesso
-✅ 21. Auto-DNA em Veículo Cadastrado: Ativação automática de passaporte permanente
+✅ 17. Keep-Alive Anti-Sleep: Ping no healthcheck executado com sucesso [200 OK]
+✅ 18. Saldo API Placas: Saldo verificado com sucesso via WDAPI2
+✅ 19. Consulta Oficial API Placas: Veículo consultado em tempo real com FIPE oficial
+✅ 21. Cadastro Completo com Auto-DNA: Veículo vinculado a proprietário, KM de entrada e foto com DNA ativo
 ✅ 22. Configurações da Oficina: Atualização de dados e geração de código OTP para WhatsApp
 ✅ 23. Confirmação OTP de WhatsApp: Validação e liberação do canal oficial de mensageria
 ✅ 24. Automação WhatsApp OBD2 em Lote: Disparo preditivo de alertas de óleo e correia
+✅ 25. WhatsApp In-Platform da Oficina: Mensagem transmitida sem sair do sistema
+✅ 26. Listagem Dinâmica de Veículos: Veículos carregados com DNA, proprietários e odômetros de entrada
 
-🎉 TODOS OS 24 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!
+🎉 TODOS OS 26 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!
 ```
 
 ---

@@ -209,7 +209,7 @@ async function runTests() {
         console.assert(dataSearchExt.hasDna === false, 'Veículo externo recém-consultado não deveria ter DNA');
         console.assert(dataSearchExt.fromExternalApi === true, 'Flag fromExternalApi não informada');
         console.assert(dataSearchExt.vehicle.license_plate === 'INT8C36', 'Placa do veículo não coincide');
-        // Teste 21: Cadastro de Veículo com Ativação Automática de DNA Permanente
+        // Teste 21: Cadastro de Veículo Vinculado a Proprietário, Hodômetro e Foto com Ativação Automática de DNA
         const testPlate = `DNA${Math.floor(1000 + Math.random() * 9000)}`;
         const resRegAuto = await fetch(`${BASE_URL}/vehicles/register`, {
             method: 'POST',
@@ -224,6 +224,9 @@ async function runTests() {
                 manufacture_year: 2024,
                 color: 'Prata',
                 mileage: 18500,
+                owner_name: 'Marcos Vinicius Pereira',
+                owner_phone: '(19) 99876-5432',
+                photo_url: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800',
                 activate_dna_now: true
             })
         });
@@ -231,7 +234,11 @@ async function runTests() {
         console.assert(resRegAuto.status === 201, 'Erro no cadastro com ativação automática de DNA');
         console.assert(dataRegAuto.dna && dataRegAuto.dna.dna_code.startsWith('DNA-BR-'), 'Código DNA permanente não gerado automaticamente');
         console.assert(dataRegAuto.dna.status === 'ACTIVE', 'Status do DNA gerado deve ser ACTIVE');
-        console.log(`✅ 21. Auto-DNA em Veículo Cadastrado: ${testPlate} ativado automaticamente com código ${dataRegAuto.dna.dna_code}`);
+        console.assert(dataRegAuto.vehicle && dataRegAuto.vehicle.owner_name === 'Marcos Vinicius Pereira', 'Nome do proprietário não vinculado');
+        console.assert(dataRegAuto.vehicle && dataRegAuto.vehicle.owner_phone === '(19) 99876-5432', 'Telefone/WhatsApp do proprietário não vinculado');
+        console.assert(dataRegAuto.vehicle && dataRegAuto.vehicle.mileage === 18500, 'Hodômetro de entrada divergente');
+        console.assert(dataRegAuto.vehicle && dataRegAuto.vehicle.photo_url.includes('unsplash'), 'Foto do veículo não registrada');
+        console.log(`✅ 21. Cadastro Completo com Auto-DNA: ${testPlate} (${dataRegAuto.vehicle.owner_name} | ${dataRegAuto.vehicle.owner_phone} | ${dataRegAuto.vehicle.mileage} km) ativado com DNA ${dataRegAuto.dna.dna_code}`);
 
         // Teste 22: Atualização de Configurações da Oficina e Geração de Código OTP
         const testPhone = `(19) 9${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -293,7 +300,17 @@ async function runTests() {
         console.assert(dataSingleWpp.protocol && dataSingleWpp.protocol.startsWith('DNA-WPP-'), 'Protocolo único de transmissão não gerado');
         console.log(`✅ 25. WhatsApp In-Platform da Oficina: Mensagem transmitida sem sair do sistema (Protocolo: ${dataSingleWpp.protocol})`);
 
-        console.log('\n🎉 TODOS OS 25 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 26: Listagem Dinâmica de Veículos com DNA e Dados Agregados (/vehicles)
+        const resVehiclesList = await fetch(`${BASE_URL}/vehicles`);
+        const dataVehiclesList = await resVehiclesList.json();
+        console.assert(resVehiclesList.status === 200, 'Falha ao listar veículos cadastrados');
+        console.assert(Array.isArray(dataVehiclesList.vehicles), 'Lista de veículos deve ser um array');
+        const foundNewVeh = dataVehiclesList.vehicles.find(v => v.license_plate === testPlate);
+        console.assert(foundNewVeh && foundNewVeh.dna_code === dataRegAuto.dna.dna_code, 'Veículo recém-cadastrado não encontrado na listagem geral');
+        console.assert(foundNewVeh && foundNewVeh.owner_name === 'Marcos Vinicius Pereira', 'Proprietário não retornado na listagem');
+        console.log(`✅ 26. Listagem Dinâmica de Veículos: ${dataVehiclesList.vehicles.length} veículos carregados com DNA, proprietários e odômetros de entrada`);
+
+        console.log('\n🎉 TODOS OS 26 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

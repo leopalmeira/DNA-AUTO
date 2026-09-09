@@ -370,6 +370,34 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 
 ---
 
+### 🚗 Ciclo 18: Cadastro Completo de Veículo Vinculado a Proprietário, Hodômetro de Entrada, Foto, DNA Automático e Auto-Seleção em Serviços
+- **Objetivo:** Implementar o fluxo unificado e imediato de entrada de veículos na oficina, garantindo que o veículo cadastrado receba o DNA Permanente ativo de forma automática, tenha seus dados vinculados ao proprietário (nome, telefone/WhatsApp), hodômetro de entrada e foto, e já conste como disponível e marcado por padrão (`selected`) no modal de registro de serviço sem necessidade de seleção manual.
+- **Implementações:**
+  - **1. Formulário de Cadastro Completo de Veículo (`openManualVehicleModal`):**
+    - Adicionados campos de Dados do Proprietário: Nome Completo do Proprietário e Telefone / WhatsApp com placeholders corporativos.
+    - Adicionado campo em destaque de Hodômetro na Entrada (KM) com registro auditado.
+    - Adicionado suporte a foto do veículo via upload de imagem local (com conversão para Base64 DataURL via `FileReader`) e preview visual reativo instantâneo, com campo alternativo para URL externa.
+    - Substituição de caixas de seleção opcionais por badge oficial do Passaporte Digital DNA com garantia de ativação automática permanente.
+  - **2. Backend com Vínculo Relacional Completo (`POST /vehicles/register` e `/register-from-api`):**
+    - Persistência imediata na tabela `owners` com nome e telefone/WhatsApp do cliente.
+    - Gravação da posse inicial em `ownership_transfers` com status `COMPLETED` e quilometragem de transferência registrada.
+    - Gravação do hodômetro inicial na tabela `mileage_records` com origem `WORKSHOP_ENTRY` e status de verificado (`verified = 1`).
+    - Gravação da imagem em `vehicles.photo_url` e registro fotográfico na tabela `vehicle_photos` com categoria `VEHICLE_MAIN`.
+    - Geração automática e garantia do código de DNA Permanente ativo (`DNA-BR-XXXX-XXXX-XXX`).
+    - Novo endpoint `GET /vehicles` para listar todos os veículos cadastrados com odômetro mais recente, proprietário vinculado e foto.
+  - **3. Auto-Seleção Imediata no Modal de Serviço Nível 4 (`openNewServiceModal`):**
+    - O modal `🔧 Registrar Novo Serviço Comprovado (Nível 4)` agora carrega dinamicamente todos os veículos cadastrados na oficina através do select `#srv-vehicle-id`.
+    - Ao concluir o cadastro de entrada, o sistema fecha o modal de cadastro e abre imediatamente o modal de novo serviço com o veículo recém-cadastrado **já selecionado como padrão (`selected`)**, sem que o usuário tenha que procurar ou escolher o carro na lista.
+    - O campo **Quilometragem no Odômetro** (`#srv-mileage`) é automaticamente preenchido com o hodômetro registrado na entrada do veículo selecionado.
+    - Implementação do evento reativo `onServiceVehicleChange` que atualiza a quilometragem exibida no modal sempre que outro veículo for selecionado.
+  - **4. Tabela Dinâmica de Veículos do Pátio (`renderRegisteredVehiclesView`):**
+    - Substituição das linhas estáticas da tabela por renderização dinâmica baseada na lista real de veículos da oficina.
+    - Exibição de foto do veículo, modelo/versão, placa destacada, proprietário com link de WhatsApp, código do DNA e botão rápido `🔧 Novo Serviço` com auto-seleção pré-ativada.
+- **Validação e Qualidade:**
+  - Expansão para **26 testes automatizados de integração**, com atualização do Teste 21 (validação do cadastro de veículo vinculado a proprietário, KM de entrada e foto) e criação do Teste 26 (listagem dinâmica e integridade de dados agregados de veículos), todos aprovados com 100% de sucesso.
+
+---
+
 ## 🏛️ 3. Tabela de Decisões Arquiteturais (ADRs)
 
 | ID | Decisão | Contexto / Motivação | Consequência / Benefício |

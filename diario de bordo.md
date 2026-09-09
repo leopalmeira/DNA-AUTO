@@ -94,6 +94,26 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Qualidade e Testes:**
   - 25/25 testes automatizados de integração passando com 100% de sucesso em `test/api.test.js`.
 
+### 🚀 Ciclo 18: Cadastro Completo de Veículo Vinculado a Proprietário, Hodômetro de Entrada, Foto, DNA Automático e Auto-Seleção em Serviços
+- **Formulário Completo de Entrada do Carro:**
+  - Inclusão dos campos de Nome Completo do Proprietário e Telefone / WhatsApp no modal de cadastro.
+  - Inclusão do campo obrigatório de Hodômetro na Entrada (KM).
+  - Suporte completo a foto do veículo via upload de imagem local (com conversão para Base64 DataURL via `FileReader`) e preview visual reativo na tela, além de link de URL externo.
+  - Garantia de DNA Automático Permanente sem caixas de seleção opcionais.
+- **Persistência Relacional no Backend:**
+  - Rotas `POST /vehicles/register` e `POST /vehicles/register-from-api` atualizadas para salvar dados do proprietário na tabela `owners` e criar posse em `ownership_transfers` com status `COMPLETED`.
+  - Hodômetro registrado na tabela `mileage_records` com origem `WORKSHOP_ENTRY` e verificação auditada.
+  - Foto do veículo persistida em `vehicles.photo_url` e na galeria `vehicle_photos`.
+  - Novo endpoint `GET /vehicles` para listagem dinâmica completa de veículos com dados agregados de odômetro, proprietário e DNA.
+- **Auto-Seleção Imediata no Modal de Serviço Nível 4:**
+  - O modal de serviço agora carrega dinamicamente a frota cadastrada na oficina no select `#srv-vehicle-id`.
+  - Ao salvar o cadastro de entrada, o modal de serviço abre imediatamente com o veículo recém-cadastrado **já selecionado como padrão (`selected`)** e com o **odômetro de entrada pré-preenchido**, sem necessidade de escolha manual pelo usuário.
+  - Atualização automática do odômetro ao alternar de carro no dropdown (`onServiceVehicleChange`).
+- **Tabela Dinâmica de Veículos do Pátio:**
+  - A seção de veículos cadastrados agora renderiza em tempo real a lista de veículos com miniatura de foto, dados técnicos, cliente com WhatsApp e botão direto `🔧 Novo Serviço`.
+- **Qualidade e Testes:**
+  - 26/26 testes automatizados de integração passando com 100% de sucesso em `test/api.test.js`.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

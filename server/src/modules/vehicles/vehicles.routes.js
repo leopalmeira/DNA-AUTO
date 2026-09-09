@@ -20,6 +20,32 @@ function generateDnaCode() {
     return `DNA-BR-${randomBlock(4)}-${randomBlock(4)}-${randomBlock(3)}`;
 }
 
+// Listar Todos os Veículos Cadastrados na Plataforma
+router.get('/', (req, res) => {
+    try {
+        const vehicles = db.prepare(`
+            SELECT v.*,
+                   vd.dna_code, vd.status as dna_status, vd.activated_at as dna_activated_at,
+                   vd.activation_modality,
+                   COALESCE(o.name, 'Proprietário Particular') as owner_name,
+                   COALESCE(o.phone, '(11) 98888-0000') as owner_phone,
+                   COALESCE((SELECT MAX(mileage) FROM mileage_records mr WHERE mr.vehicle_id = v.id),
+                            (SELECT MAX(mileage) FROM service_records sr WHERE sr.vehicle_id = v.id), 0) as current_mileage,
+                   (SELECT COUNT(*) FROM service_records sr WHERE sr.vehicle_id = v.id) as services_count
+            FROM vehicles v
+            LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+            LEFT JOIN ownership_transfers ot ON ot.vehicle_id = v.id AND ot.status = 'COMPLETED'
+            LEFT JOIN owners o ON o.id = ot.new_owner_id
+            ORDER BY v.created_at DESC
+        `).all();
+
+        res.json({ success: true, count: vehicles.length, vehicles });
+    } catch (err) {
+        console.error('Erro ao listar veículos:', err);
+        res.status(500).json({ error: 'Erro ao listar veículos.' });
+    }
+});
+
 // Pesquisa Rápida de Veículo (Placa, Chassi ou DNA)
 router.get('/search', async (req, res) => {
     try {
@@ -182,7 +208,8 @@ router.post('/register', authenticateToken, (req, res) => {
             license_plate, chassis_vin, renavam, brand, model,
             version_label, manufacture_year, model_year, fuel_type,
             transmission_type, color, photo_url, activate_dna_now,
-            pricing_plan_id, modality, mileage
+            pricing_plan_id, modality, mileage,
+            owner_name, owner_phone, owner_whatsapp, owner_cpf
         } = req.body;
 
         if (!license_plate || !brand || !model) {
@@ -203,8 +230,14 @@ router.post('/register', authenticateToken, (req, res) => {
 
         const vehicleId = 'veh_' + Date.now();
         let generatedDnaCode = null;
+        const cleanOwnerName = (owner_name || '').trim();
+        const cleanOwnerPhone = (owner_phone || owner_whatsapp || '').trim();
+        const cleanOwnerCpf = (owner_cpf || '***.***.***-**').trim();
+        const cleanMileage = (mileage !== undefined && mileage !== null && mileage !== '') ? Number(mileage) : 0;
+        const finalPhoto = photo_url || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80';
 
         db.transaction(() => {
+            // 1. Inserir dados do veículo
             db.prepare(`
                 INSERT INTO vehicles (
                     id, license_plate, chassis_vin, renavam, brand, model, version_label,
@@ -214,17 +247,46 @@ router.post('/register', authenticateToken, (req, res) => {
                 vehicleId, cleanPlate, cleanChassis, renavam || null, brand, model, version_label || null,
                 year, Number(model_year) || year,
                 fuel_type || 'Flex', transmission_type || 'Manual', color || 'Não informada',
-                photo_url || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80'
+                finalPhoto
             );
 
-            if (mileage && Number(mileage) > 0) {
+            // 2. Vincular dados do proprietário (Nome e Telefone/WhatsApp)
+            if (cleanOwnerName) {
+                const ownerId = 'own_' + Date.now();
                 db.prepare(`
-                    INSERT INTO mileage_records (id, vehicle_id, mileage, recorded_at, source, verified)
-                    VALUES (?, ?, ?, CURRENT_TIMESTAMP, 'WORKSHOP_SERVICE', 1)
-                `).run('mil_' + Date.now(), vehicleId, Number(mileage));
+                    INSERT INTO owners (id, name, document_cpf, phone, created_at)
+                    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+                `).run(ownerId, cleanOwnerName, cleanOwnerCpf, cleanOwnerPhone);
+
+                const transferId = 'trf_' + Date.now();
+                db.prepare(`
+                    INSERT INTO ownership_transfers (
+                        id, vehicle_id, new_owner_id, status, requested_at, completed_at, transfer_mileage, notes
+                    ) VALUES (?, ?, ?, 'COMPLETED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, 'Entrada do veículo e cadastro na oficina')
+                `).run(transferId, vehicleId, ownerId, cleanMileage);
             }
 
-            // Todo carro cadastrado na plataforma automaticamente recebe DNA ativo permanente
+            // 3. Registrar hodômetro verificado na entrada do carro
+            if (cleanMileage > 0) {
+                db.prepare(`
+                    INSERT INTO mileage_records (id, vehicle_id, mileage, recorded_at, source, verified)
+                    VALUES (?, ?, ?, CURRENT_TIMESTAMP, 'WORKSHOP_ENTRY', 1)
+                `).run('mil_' + Date.now(), vehicleId, cleanMileage);
+            }
+
+            // 4. Registrar foto na galeria de fotos do veículo
+            if (photo_url) {
+                try {
+                    db.prepare(`
+                        INSERT INTO vehicle_photos (id, vehicle_id, photo_category, title, file_path, taken_at)
+                        VALUES (?, ?, 'VEHICLE_MAIN', 'Foto de Entrada do Veículo', ?, CURRENT_TIMESTAMP)
+                    `).run('vp_' + Date.now(), vehicleId, finalPhoto);
+                } catch (pe) {
+                    console.warn('Foto não registrada em vehicle_photos:', pe.message);
+                }
+            }
+
+            // 5. Todo carro cadastrado na plataforma automaticamente recebe DNA ativo permanente
             const autoDna = activate_dna_now !== false; // Sempre ativo por padrão
             if (autoDna) {
                 const dnaCode = generateDnaCode();
@@ -254,17 +316,36 @@ router.post('/register', authenticateToken, (req, res) => {
             entityType: 'VEHICLE',
             entityId: vehicleId,
             ipAddress: req.ip,
-            dataAfter: { license_plate: cleanPlate, brand, model, dna_code: generatedDnaCode }
+            dataAfter: { license_plate: cleanPlate, brand, model, dna_code: generatedDnaCode, owner_name: cleanOwnerName, mileage: cleanMileage }
         });
 
         res.status(201).json({
             success: true,
             vehicle_id: vehicleId,
-            vehicle: { id: vehicleId, license_plate: cleanPlate, brand, model },
+            vehicle: {
+                id: vehicleId,
+                license_plate: cleanPlate,
+                brand,
+                model,
+                version_label: version_label || null,
+                color: color || 'Não informada',
+                manufacture_year: year,
+                model_year: Number(model_year) || year,
+                photo_url: finalPhoto,
+                mileage: cleanMileage,
+                current_mileage: cleanMileage,
+                owner_name: cleanOwnerName || 'Proprietário a Cadastrar',
+                owner_phone: cleanOwnerPhone || '(11) 98888-0000',
+                dna_code: generatedDnaCode,
+                dna_status: 'ACTIVE'
+            },
             license_plate: cleanPlate,
             dna_code: generatedDnaCode,
             dna: generatedDnaCode ? { dna_code: generatedDnaCode, status: 'ACTIVE' } : null,
             hasDna: !!generatedDnaCode,
+            owner_name: cleanOwnerName,
+            owner_phone: cleanOwnerPhone,
+            mileage: cleanMileage,
             message: `Veículo ${brand} ${model} (${cleanPlate}) cadastrado com sucesso com DNA ativo!`
         });
     } catch (err) {
@@ -276,7 +357,7 @@ router.post('/register', authenticateToken, (req, res) => {
 // Cadastrar Veículo na Plataforma a partir de Consulta Oficial de Placa
 router.post('/register-from-api', authenticateToken, async (req, res) => {
     try {
-        const { plate, customData, activate_dna_now, modality } = req.body;
+        const { plate, customData, activate_dna_now, modality, owner_name, owner_phone, owner_whatsapp, owner_cpf, mileage, photo_url } = req.body;
         if (!plate) {
             return res.status(400).json({ error: 'Placa obrigatória.' });
         }
@@ -331,6 +412,11 @@ router.post('/register-from-api', authenticateToken, async (req, res) => {
         const fipeRef = (vData.fipe && vData.fipe.reference_month) ? vData.fipe.reference_month : 'Setembro de 2026';
 
         let generatedDna = null;
+        const cleanOwnerName = (owner_name || (customData && customData.owner_name) || '').trim();
+        const cleanOwnerPhone = (owner_phone || owner_whatsapp || (customData && customData.owner_phone) || '').trim();
+        const cleanOwnerCpf = (owner_cpf || (customData && customData.owner_cpf) || '***.***.***-**').trim();
+        const cleanMileage = (mileage !== undefined && mileage !== null && mileage !== '') ? Number(mileage) : (customData && customData.mileage ? Number(customData.mileage) : 0);
+        const finalPhoto = photo_url || (customData && customData.photo_url) || vData.photo_url || vData.logo || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80';
 
         db.transaction(() => {
             db.prepare(`
@@ -351,7 +437,7 @@ router.post('/register-from-api', authenticateToken, async (req, res) => {
                 vData.fuel_type || 'Flex',
                 vData.transmission_type || 'Manual',
                 vData.color || 'Não informada',
-                vData.photo_url || vData.logo || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80'
+                finalPhoto
             );
 
             // Inserir cotação FIPE oficial
@@ -359,6 +445,42 @@ router.post('/register-from-api', authenticateToken, async (req, res) => {
                 INSERT INTO fipe_values (id, vehicle_id, fipe_code, reference_month_year, fipe_price_cents)
                 VALUES (?, ?, ?, ?, ?)
             `).run('fipe_' + Date.now(), vehicleId, fipeCode, fipeRef, fipeCents);
+
+            // Vincular dados do proprietário (Nome e Telefone/WhatsApp)
+            if (cleanOwnerName) {
+                const ownerId = 'own_' + Date.now();
+                db.prepare(`
+                    INSERT INTO owners (id, name, document_cpf, phone, created_at)
+                    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+                `).run(ownerId, cleanOwnerName, cleanOwnerCpf, cleanOwnerPhone);
+
+                const transferId = 'trf_' + Date.now();
+                db.prepare(`
+                    INSERT INTO ownership_transfers (
+                        id, vehicle_id, new_owner_id, status, requested_at, completed_at, transfer_mileage, notes
+                    ) VALUES (?, ?, ?, 'COMPLETED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, 'Entrada do veículo e cadastro na oficina')
+                `).run(transferId, vehicleId, ownerId, cleanMileage);
+            }
+
+            // Registrar hodômetro verificado na entrada do carro
+            if (cleanMileage > 0) {
+                db.prepare(`
+                    INSERT INTO mileage_records (id, vehicle_id, mileage, recorded_at, source, verified)
+                    VALUES (?, ?, ?, CURRENT_TIMESTAMP, 'WORKSHOP_ENTRY', 1)
+                `).run('mil_' + Date.now(), vehicleId, cleanMileage);
+            }
+
+            // Registrar foto na galeria
+            if (photo_url || (customData && customData.photo_url)) {
+                try {
+                    db.prepare(`
+                        INSERT INTO vehicle_photos (id, vehicle_id, photo_category, title, file_path, taken_at)
+                        VALUES (?, ?, 'VEHICLE_MAIN', 'Foto de Entrada do Veículo', ?, CURRENT_TIMESTAMP)
+                    `).run('vp_' + Date.now(), vehicleId, finalPhoto);
+                } catch (pe) {
+                    console.warn('Foto não registrada em vehicle_photos:', pe.message);
+                }
+            }
 
             // Todo carro cadastrado a partir de consulta de placa também ganha DNA ativo imediato
             const autoDna = activate_dna_now !== false;
