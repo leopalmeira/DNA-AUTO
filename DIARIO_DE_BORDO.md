@@ -180,7 +180,30 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
     - `GET /api/v1/admin/clients-all`: Carteira de proprietários vinculados à oficina de atendimento.
     - `POST /api/v1/admin/workshops/:id/status`: Homologação/suspensão de oficinas pelo gestor.
   - **Blindagem Multi-Tenant no [workshopView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/workshopView.js):** Uso de `getEffectiveWorkshopId()` para carregar estritamente a oficina autenticada, impedindo acesso a dados de concorrentes.
-  - **Validação de 16 Testes Automatizados:** 100% dos testes aprovados com regressão zero.
+---
+
+### 🚀 Ciclo 11: Landing Page Padrão TOTVS com Controle Semestral e Motor B2B para Oficinas
+- **Requisito do Usuário:** 
+  1. Dizer expressamente que o dono do carro passa a saber quanto gastou no carro nos últimos 6 meses, além de ter o relatório completo do que foi feito no carro.
+  2. Deixar a landing page no padrão TOTVS, atraente, dinâmica e altamente convidativa.
+  3. Falar diretamente com a oficina mecânica: aumentar o faturamento sabendo quanto falta para a troca de correia dentada ou troca de óleo da caixa de câmbio automático do cliente cadastrado, ou até mesmo a identificação de falha no veículo antes de o carro chegar à oficina.
+- **Implementações ([landingView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingView.js)):**
+  - **Apresentação Padrão TOTVS / Dark Enterprise:**
+    - Visual corporativo com estética Dark Luxury, tipografia moderna e acentos de ouro (`#FFD21C`), ciano (`#38bdf8`) e verde financeiro (`#10b981`).
+    - Switcher dinâmico de perfil no Hero: **"🚗 Sou Dono de Carro"** vs **"🔧 Sou Dono de Oficina Mecânica"**.
+  - **Módulo do Dono do Carro (B2C):**
+    - 📊 **Controle de Gastos dos Últimos 6 Meses:** Dashboard financeiro semestral interativo com gráfico de barras mês a mês (Outubro a Março). Permite clicar em qualquer mês para inspecionar os serviços executados (peças genuínas, mão de obra especializada e fluidos), comprovando transparência total e economia preventiva gerada de até R$ 4.200,00.
+    - 📋 **Relatório Completo de Tudo o que Foi Feito:** Dossiê indelével com fotos Nível 4 (peças velhas x novas), códigos originais (part numbers), notas fiscais digitalizadas e quilometragem blindada contra golpes de odômetro, garantindo até 15% de valorização na venda.
+  - **Módulo da Oficina Mecânica (B2B Engine):**
+    - 📈 **Motor de Aumento de Faturamento:** Seção de alta conversão dedicada a oficinas mecânicas e centros automotivos.
+    - ⚙️ **Alerta de Correia Dentada e Tensores:** Cálculo preditivo da rodagem diária para avisar exatamente quantos km ou dias faltam para a troca de correia dentada de cada cliente cadastrado, disparando mensagens no WhatsApp antes que o motor quebre.
+    - 🔄 **Alerta de Troca de Óleo do Câmbio Automático:** Monitoramento da quilometragem limite para diálise e troca de fluido ATF/CVT (ticket médio de R$ 1.600 a R$ 3.800), recuperando receita de alto valor que antes se perdia.
+    - ⚡ **Identificação de Falhas Antes do Carro Chegar:** Algoritmo preditivo que cruza históricos de sintomas, alertas de sensores e anomalias de ordens de serviço anteriores para detectar falhas precocemente, aumentando em até 40% a produtividade do box da oficina.
+    - 📲 **Radar Preditivo com Disparo de WhatsApp:** Demonstração visual de tabela da oficina com botões interativos de WhatsApp prontos para envio ao cliente.
+    - 🛡️ **Credenciamento Gratuito & Comissões por Ativação:** Sem mensalidade básica e comissões para a oficina por cada DNA ativado.
+- **Validação:**
+  - 16/16 testes automatizados aprovados com 100% de sucesso em [test/api.test.js](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js).
+  - Arquivo estático servido com sucesso (`HTTP 200`, 100+ KB de frontend interativo).
 
 ---
 

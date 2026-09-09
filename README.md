@@ -55,12 +55,38 @@ A plataforma opera em arquitetura **Multi-Tenant** com controle de acesso rigoro
 
 ## 🖥️ Módulos e Funcionalidades do Sistema
 
-### 1. 🌟 Landing Page Oficial de Alta Conversão (R$ 59,90)
-- **Link Direto:** [https://dna-auto.onrender.com/landing](https://dna-auto.onrender.com/landing) *(e na raiz para visitantes não logados)*
-- **Ambiente Local:** [http://localhost:3000/landing](http://localhost:3000/landing)
-- **Oferta em Destaque:** Apresentação da ativação do DNA por **R$ 59,90** com design automotivo escuro e detalhes em ouro `#FFD21C`.
-- **Atividades Monitoradas:** Cards visuais cobrindo trocas de óleo, correias, freios, suspensão, fotos de peças e notas fiscais.
-- **Consulta Interativa de Placa:** Verificação pública instantânea se um veículo possui o histórico certificado.
+### 1. 🌟 Landing Page Oficial Padrão TOTVS / Alta Conversão (R$ 59,90)
+- **Link Direto:** [https://dna-auto.onrender.com/#landing](https://dna-auto.onrender.com/#landing) *(e na raiz do projeto)*
+- **Ambiente Local:** [http://localhost:3000/#landing](http://localhost:3000/#landing)
+- **Design Corporativo de Alto Padrão (Padrão TOTVS / Dark Enterprise):**
+  - Tipografia limpa, paleta Dark Tech com acentos em Ouro (`#FFD21C`), Ciano (`#38bdf8`) e Verde Financeiro (`#10b981`).
+  - Switcher interativo de público no Hero: **"Sou Dono de Carro"** vs **"Sou Dono de Oficina Mecânica"**.
+- **Para o Dono do Carro (Proprietário B2C):**
+  - 📊 **Controle Absoluto de Gastos dos Últimos 6 Meses:**
+    - O proprietário passa a saber exatamente quanto gastou no carro no semestre (mês a mês).
+    - Gráfico interativo com inspeção mensal detalhada (ex: R$ 1.840,00 gastos no semestre com pastilhas de cerâmica, troca de óleo 0W-20 e alinhamento 3D).
+    - Separação clara entre peças genuínas (60,8%), mão de obra (29,3%) e fluidos/filtros (9,9%).
+    - Indicador de economia preventiva gerada ao evitar quebras graves (ex: economia de R$ 4.200,00).
+  - 📋 **Relatório Completo de Tudo o que Foi Feito no Carro:**
+    - Dossiê técnico vitalício com fotos reais de antes e depois (Nível 4 de comprovação).
+    - Código original e fabricante de cada peça aplicada (part numbers).
+    - Notas fiscais digitalizadas arquivadas na nuvem.
+    - Quilometragem auditada e imutável que blinda o veículo contra fraudes de odômetro.
+    - Valorização comprovada de até 15% acima da tabela FIPE e venda até 3x mais rápida.
+- **Para a Oficina Mecânica (Módulo B2B de Aumento de Faturamento):**
+  - 💰 **Máquina de Faturamento Recorrente e Fidelização:**
+    - *"Aumente o faturamento da sua oficina sabendo quanto falta para a troca de correia dentada e troca de óleo do câmbio automático do seu cliente cadastrado."*
+  - ⚙️ **Alerta Preditivo de Correia Dentada & Tensores:**
+    - O sistema calcula a rodagem média diária do cliente e avisa quantos km/dias faltam para a troca (ticket médio de R$ 850 a R$ 1.800).
+  - 🔄 **Alerta de Troca de Óleo do Câmbio Automático (ATF/CVT):**
+    - Identifica clientes que estão atingindo os 40.000 a 60.000 km e alerta para o serviço de diálise de câmbio automático (serviço de alto ticket: R$ 1.600 a R$ 3.800).
+  - ⚡ **Identificação Precoce de Falhas Antes do Carro Chegar na Oficina:**
+    - Diagnóstico preditivo baseado em alertas prévios de sensores, histórico de queixas e desgaste acelerado de componentes.
+    - A oficina prepara elevadores, peças e contata o cliente no WhatsApp antes da quebra na estrada.
+  - 📲 **Radar Preditivo com Disparo de WhatsApp em 1 Clique:**
+    - Mensagens prontas e personalizadas para agendamento direto com o cliente.
+- **Simulador Interativo de Placa:**
+  - Consulta pública imediata com as placas ativas da rede (`BRA2E19`, `ABC1D23`, `STR1A99`).
 
 ### 2. 🛡️ Painel Administrativo Matriz & ERP Multi-Tenant (`/admin`)
 - **Menu Lateral Completo do Gestor de Sistema:**
