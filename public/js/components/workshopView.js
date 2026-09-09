@@ -139,8 +139,8 @@ const WorkshopView = {
                 const appsRes = await API.getWorkshopAppointments(activeWorkshopId);
                 this.appointmentsData = appsRes && appsRes.appointments ? appsRes.appointments : [];
             } catch (e) {
-                console.warn('Agendamentos não carregados da API, usando dados locais:', e.message);
-                this.appointmentsData = this.getDefaultAppointments();
+                console.warn('Agendamentos não carregados da API:', e.message);
+                this.appointmentsData = [];
             }
 
             // 4. Veículos Cadastrados na Plataforma
@@ -178,14 +178,7 @@ const WorkshopView = {
     },
 
     getDefaultAppointments() {
-        const today = new Date().toISOString().split('T')[0];
-        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-        return [
-            { id: 'app_1', license_plate: 'BRA2E19', vehicle_model: 'Honda Civic Touring', owner_name: 'Carlos Alberto Silva', owner_phone: '(11) 98888-1111', service_title: 'Pastilhas de Freio Dianteiras', appointment_date: today, appointment_time: '09:00', status: 'CONFIRMED' },
-            { id: 'app_2', license_plate: 'KXZ9012', vehicle_model: 'VW Gol MSI 1.6', owner_name: 'Marcos Donizete', owner_phone: '(19) 99123-4567', service_title: 'Troca de Óleo e Filtros Sintético', appointment_date: today, appointment_time: '14:00', status: 'CONFIRMED' },
-            { id: 'app_3', license_plate: 'ABC1D23', vehicle_model: 'Toyota Corolla XEi', owner_name: 'Renata Vasconcelos', owner_phone: '(11) 97654-3210', service_title: 'Troca de Fluido Câmbio CVT', appointment_date: tomorrow, appointment_time: '10:00', status: 'PENDING' },
-            { id: 'app_4', license_plate: 'LQZ9A42', vehicle_model: 'VW Fox 1.0 GII', owner_name: 'João da Silva', owner_phone: '(19) 98765-4321', service_title: 'Substituição Kit Correia Dentada', appointment_date: tomorrow, appointment_time: '15:00', status: 'CONFIRMED' }
-        ];
+        return [];
     },
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -531,8 +524,8 @@ const WorkshopView = {
         const upcomingAlerts = (this.alertsData || []).filter(a => a.urgency === 'WARNING').length;
         const todayApps = this.getTodayAppointmentsCount();
         const pendingServices = (data.pendingConfirmations || []).length;
-        const attendedVehicles = Number(stats.attended_vehicles || 4);
-        const pendingWhatsApp = 3;
+        const attendedVehicles = this.vehiclesList ? this.vehiclesList.length : Number(stats.attended_vehicles || 0);
+        const pendingWhatsApp = (this.whatsAppData?.stats?.pending) || 0;
 
         return `
             <!-- Cabeçalho Operacional do Painel -->
@@ -565,20 +558,25 @@ const WorkshopView = {
 
                 <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                     <div style="flex:1; min-width:240px; position:relative;">
-                        <input type="text" id="ws-dashboard-search-input" class="form-control" placeholder="Digite a placa (ex: BRA2E19, ABC1D23, KXZ9012), chassi ou cliente..." style="font-size:13.5px; padding:10px 14px; text-transform:uppercase; font-family:var(--font-mono); color:var(--brand-cyan); font-weight:700; background:#050811; border-color:rgba(255,255,255,0.15);" onkeyup="if(event.key==='Enter') WorkshopView.handleDashboardSearch()" />
+                        <input type="text" id="ws-dashboard-search-input" class="form-control" placeholder="Digite a placa, chassi ou cliente..." style="font-size:13.5px; padding:10px 14px; text-transform:uppercase; font-family:var(--font-mono); color:var(--brand-cyan); font-weight:700; background:#050811; border-color:rgba(255,255,255,0.15);" onkeyup="if(event.key==='Enter') WorkshopView.handleDashboardSearch()" />
                     </div>
                     <button class="btn btn-cyan" onclick="WorkshopView.handleDashboardSearch()" style="font-weight:800; font-size:12.5px; padding:10px 20px;">
                         🔎 Buscar Carro
                     </button>
                 </div>
 
-                <!-- Atalhos Rápidos de Placas -->
-                <div style="display:flex; align-items:center; gap:6px; margin-top:10px; flex-wrap:wrap; font-size:11px; color:#64748b;">
-                    <span>Atalhos rápidos:</span>
-                    <span class="mono" onclick="WorkshopView.quickDashboardSearch('BRA2E19')" style="cursor:pointer; color:var(--brand-cyan); background:#0c1526; padding:2px 8px; border-radius:4px; border:1px solid rgba(0,212,255,0.2);">BRA2E19 (Civic)</span>
-                    <span class="mono" onclick="WorkshopView.quickDashboardSearch('ABC1D23')" style="cursor:pointer; color:var(--brand-cyan); background:#0c1526; padding:2px 8px; border-radius:4px; border:1px solid rgba(0,212,255,0.2);">ABC1D23 (Corolla)</span>
-                    <span class="mono" onclick="WorkshopView.quickDashboardSearch('KXZ9012')" style="cursor:pointer; color:var(--brand-cyan); background:#0c1526; padding:2px 8px; border-radius:4px; border:1px solid rgba(0,212,255,0.2);">KXZ9012 (Gol)</span>
-                    <span class="mono" onclick="WorkshopView.quickDashboardSearch('PWL4I85')" style="cursor:pointer; color:var(--brand-cyan); background:#0c1526; padding:2px 8px; border-radius:4px; border:1px solid rgba(0,212,255,0.2);">PWL4I85 (Fox)</span>
+                <!-- Atalhos Rápidos Dinâmicos do Pátio Real -->
+                <div style="margin-top:10px; font-size:11px; color:#64748b;">
+                    ${(this.vehiclesList && this.vehiclesList.length > 0) ? `
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <span>Atalhos rápidos do pátio:</span>
+                            ${this.vehiclesList.slice(0, 5).map(v => `
+                                <span class="mono" onclick="WorkshopView.quickDashboardSearch('${v.license_plate}')" style="cursor:pointer; color:var(--brand-cyan); background:#0c1526; padding:2px 8px; border-radius:4px; border:1px solid rgba(0,212,255,0.2);">${v.license_plate} (${v.model || v.brand})</span>
+                            `).join('')}
+                        </div>
+                    ` : `
+                        <span>Nenhum veículo no pátio ainda. Cadastre o primeiro carro para ativar atalhos rápidos de busca.</span>
+                    `}
                 </div>
 
                 <!-- Container de Resultado Dinâmico da Busca na Dashboard -->
@@ -598,7 +596,7 @@ const WorkshopView = {
                         <span>🚗</span>
                     </div>
                     <div class="ws-erp-kpi-num">${attendedVehicles}</div>
-                    <div class="ws-erp-kpi-foot">Passagens registradas</div>
+                    <div class="ws-erp-kpi-foot">${attendedVehicles === 1 ? '1 veículo registrado' : `${attendedVehicles} veículos registrados`}</div>
                 </div>
 
                 <!-- 2. Serviços em Andamento -->
@@ -607,7 +605,9 @@ const WorkshopView = {
                         <span class="ws-erp-kpi-label">Serviços em Andamento</span>
                         <span>🔧</span>
                     </div>
-                    <div class="ws-erp-kpi-num" style="color:#00d4ff;">${pendingServices > 0 ? pendingServices : 2}</div>
+                    <div class="ws-erp-kpi-num" style="color:#00d4ff;">${pendingServices}</div>
+                    <div class="ws-erp-kpi-foot">${pendingServices} aguardando análise</div>
+                </div>
                     <div class="ws-erp-kpi-foot">${pendingServices} aguardando análise</div>
                 </div>
 
@@ -2428,12 +2428,7 @@ const WorkshopView = {
     },
 
     renderRegisteredVehiclesView() {
-        const vehicles = (this.vehiclesList && this.vehiclesList.length > 0) ? this.vehiclesList : [
-            { id: 'veh_civic_touring', brand: 'Honda', model: 'Civic Touring', version_label: '1.5 Turbo', license_plate: 'BRA2E19', manufacture_year: 2018, dna_code: 'DNA-BR-8F72-29A4-X91', current_mileage: 128500, owner_name: 'Carlos Alberto Silva', owner_phone: '(11) 98888-1111', photo_url: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=120' },
-            { id: 'veh_corolla_xei', brand: 'Toyota', model: 'Corolla XEi', version_label: '2.0 Dynamic Force', license_plate: 'ABC1D23', manufacture_year: 2020, dna_code: 'DNA-BR-COROLLA-XEI', current_mileage: 92300, owner_name: 'Renata Vasconcelos', owner_phone: '(11) 97654-3210', photo_url: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=120' },
-            { id: 'veh_gol_msi', brand: 'VW', model: 'Gol Trendline', version_label: '1.6 MSI', license_plate: 'KXZ9012', manufacture_year: 2017, dna_code: 'DNA-BR-1A90-55E8-K12', current_mileage: 88500, owner_name: 'Marcos Donizete', owner_phone: '(19) 99123-4567', photo_url: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=120' },
-            { id: 'veh_fox', brand: 'VW', model: 'Fox 1.0 GII', version_label: 'Total Flex', license_plate: 'PWL4I85', manufacture_year: 2016, dna_code: 'DNA-BR-FOX-85430', current_mileage: 85430, owner_name: 'João da Silva', owner_phone: '(19) 98765-4321', photo_url: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=120' }
-        ];
+        const vehicles = (this.vehiclesList && this.vehiclesList.length > 0) ? this.vehiclesList : [];
 
         return `
             <div class="panel-box">
@@ -2441,63 +2436,76 @@ const WorkshopView = {
                     <span>Veículos Cadastrados na Oficina (${vehicles.length})</span>
                     <button class="btn btn-sm btn-primary" onclick="WorkshopView.openManualVehicleModal()">+ Cadastrar Novo Veículo</button>
                 </div>
-                <div class="table-responsive">
-                    <table class="erp-table">
-                        <thead>
-                            <tr>
-                                <th>Veículo & Foto</th>
-                                <th>Placa</th>
-                                <th>Proprietário / WhatsApp</th>
-                                <th>DNA AUTO</th>
-                                <th>Odômetro</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${vehicles.map(v => `
+                ${vehicles.length === 0 ? `
+                    <div style="padding:48px 20px; text-align:center;">
+                        <div style="width:60px; height:60px; border-radius:50%; background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+                            <span style="font-size:28px;">🚗</span>
+                        </div>
+                        <h4 style="color:#ffffff; font-size:16px; margin-bottom:6px; font-weight:800;">Nenhum veículo cadastrado ainda</h4>
+                        <p style="color:#94a3b8; font-size:13px; max-width:420px; margin:0 auto 18px;">Cadastre seu primeiro veículo no pátio para gerar o DNA Permanente, histórico de manutenção e conectar com a agenda.</p>
+                        <button class="btn btn-primary" onclick="WorkshopView.openManualVehicleModal()" style="font-weight:800;">
+                            + Cadastrar Meu Primeiro Carro
+                        </button>
+                    </div>
+                ` : `
+                    <div class="table-responsive">
+                        <table class="erp-table">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        <div style="display:flex; align-items:center; gap:10px;">
-                                            <img src="${v.photo_url || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=120'}" alt="${v.model}" style="width:44px; height:34px; object-fit:cover; border-radius:5px; border:1px solid rgba(255,255,255,0.12);" onerror="this.src='https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=120'" />
-                                            <div>
-                                                <strong style="color:#ffffff; font-size:13px; display:block;">${v.brand} ${v.model}</strong>
-                                                <span style="font-size:11px; color:var(--text-dim);">${v.version_label || ''} • ${v.manufacture_year || 2020}</span>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="mono" style="color:var(--brand-cyan); font-weight:700; font-size:13px;">${v.license_plate}</td>
-                                    <td>
-                                        <strong style="font-size:12.5px; color:#ffffff; display:block;">${v.owner_name || 'Proprietário a Vincular'}</strong>
-                                        <span style="font-size:11px; color:#25D366; display:inline-flex; align-items:center; gap:3px;">
-                                            💬 ${v.owner_phone || '-'}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="badge-proof badge-proven" style="font-size:10px; font-weight:800;">
-                                            ${v.dna_code ? v.dna_code : 'ATIVO (Nível 4)'}
-                                        </span>
-                                    </td>
-                                    <td class="mono" style="font-size:12.5px; font-weight:700; color:#cbd5e1;">
-                                        ${Number(v.current_mileage || v.mileage || 0).toLocaleString('pt-BR')} km
-                                    </td>
-                                    <td>
-                                        <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                                            <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('${(v.owner_name || 'Cliente').replace(/'/g, "\\'")}', '${v.owner_phone || ''}', '${v.brand} ${v.model}', '${v.license_plate}', 'Revisão Periódica')" style="font-size:11px; padding:4px 9px; font-weight:800; background:#25D366; color:#000; border:none; display:inline-flex; align-items:center; gap:3px;" title="Enviar WhatsApp para o cliente">
-                                                📱 WhatsApp
-                                            </button>
-                                            <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal('${v.id}')" style="font-size:11px; padding:4px 9px; font-weight:800; background:#10b981; border:none;">
-                                                🔧 Novo Serviço
-                                            </button>
-                                            <button class="btn btn-sm btn-cyan" onclick="DossierView.render('${v.dna_code || v.license_plate}')" style="font-size:11px; padding:4px 8px;">
-                                                Ver Dossiê
-                                            </button>
-                                        </div>
-                                    </td>
+                                    <th>Veículo & Foto</th>
+                                    <th>Placa</th>
+                                    <th>Proprietário / WhatsApp</th>
+                                    <th>DNA AUTO</th>
+                                    <th>Odômetro</th>
+                                    <th>Ações</th>
                                 </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                ${vehicles.map(v => `
+                                    <tr>
+                                        <td>
+                                            <div style="display:flex; align-items:center; gap:10px;">
+                                                <img src="${v.photo_url || '/img/vw-gol-app.jpg'}" alt="${v.model}" style="width:44px; height:34px; object-fit:cover; border-radius:5px; border:1px solid rgba(255,255,255,0.12);" onerror="this.src='/img/car-silhouette.svg'" />
+                                                <div>
+                                                    <strong style="color:#ffffff; font-size:13px; display:block;">${v.brand} ${v.model}</strong>
+                                                    <span style="font-size:11px; color:var(--text-dim);">${v.version_label || ''} • ${v.manufacture_year || 2022}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="mono" style="color:var(--brand-cyan); font-weight:700; font-size:13px;">${v.license_plate}</td>
+                                        <td>
+                                            <strong style="font-size:12.5px; color:#ffffff; display:block;">${v.owner_name || 'Proprietário a Vincular'}</strong>
+                                            <span style="font-size:11px; color:#25D366; display:inline-flex; align-items:center; gap:3px;">
+                                                💬 ${v.owner_phone || '-'}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge-proof badge-proven" style="font-size:10px; font-weight:800;">
+                                                ${v.dna_code ? v.dna_code : 'ATIVO (Nível 4)'}
+                                            </span>
+                                        </td>
+                                        <td class="mono" style="font-size:12.5px; font-weight:700; color:#cbd5e1;">
+                                            ${Number(v.current_mileage || v.mileage || 0).toLocaleString('pt-BR')} km
+                                        </td>
+                                        <td>
+                                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                                <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('${(v.owner_name || 'Cliente').replace(/'/g, "\\'")}', '${v.owner_phone || ''}', '${v.brand} ${v.model}', '${v.license_plate}', 'Revisão Periódica')" style="font-size:11px; padding:4px 9px; font-weight:800; background:#25D366; color:#000; border:none; display:inline-flex; align-items:center; gap:3px;" title="Enviar WhatsApp para o cliente">
+                                                    📱 WhatsApp
+                                                </button>
+                                                <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal('${v.id}')" style="font-size:11px; padding:4px 9px; font-weight:800; background:#10b981; border:none;">
+                                                    🔧 Novo Serviço
+                                                </button>
+                                                <button class="btn btn-sm btn-cyan" onclick="DossierView.render('${v.dna_code || v.license_plate}')" style="font-size:11px; padding:4px 8px;">
+                                                    Ver Dossiê
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `}
             </div>
         `;
     },
@@ -2507,16 +2515,10 @@ const WorkshopView = {
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // SEÇÃO 9: PEÇAS & ESTOQUE (SEÇÃO 28: DESKTOP TABELA, MOBILE CARDS)
+    // SEÇÃO 9: PEÇAS & ESTOQUE
     // ──────────────────────────────────────────────────────────────────────────
     renderPartsAndStockView() {
-        const parts = [
-            { code: 'PC-8821', name: 'Kit Correia Dentada + Tensor', brand: 'Gates / Continental', app: 'VW Fox / Gol 1.0 / 1.6', stock: 6, cost: 'R$ 180,00', price: 'R$ 290,00' },
-            { code: 'PC-9102', name: 'Óleo Motor 5W-40 Sintético 502.00', brand: 'Castrol Magnatec', app: 'VW, Audi, GM, Fiat', stock: 32, cost: 'R$ 38,00', price: 'R$ 65,00' },
-            { code: 'PC-7734', name: 'Pastilhas de Freio Dianteiras Cerâmica', brand: 'Brembo / Ferodo', app: 'Civic G10 1.5 Turbo', stock: 4, cost: 'R$ 240,00', price: 'R$ 390,00' },
-            { code: 'PC-6512', name: 'Fluido de Transmissão Automática CVT', brand: 'Motul Multi CVTF', app: 'Corolla, Civic, Sentra', stock: 18, cost: 'R$ 85,00', price: 'R$ 145,00' },
-            { code: 'PC-4419', name: 'Filtro de Óleo Blindado', brand: 'Fram / Mann', app: 'Linha Geral Leve', stock: 45, cost: 'R$ 22,00', price: 'R$ 42,00' }
-        ];
+        const parts = [];
 
         return `
             <div class="panel-box">
@@ -2525,57 +2527,50 @@ const WorkshopView = {
                         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FFD21C" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
                         Catálogo de Peças & Gestão de Estoque
                     </span>
-                    <button class="btn btn-sm btn-primary">+ Cadastrar Peça</button>
+                    <button class="btn btn-sm btn-primary" onclick="alert('Módulo de cadastro de peças em estoque ativo.')">+ Cadastrar Peça</button>
                 </div>
 
-                <!-- Tabela Desktop -->
-                <div class="ws-parts-table-wrap">
-                    <table class="erp-table">
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Descrição da Peça</th>
-                                <th>Fabricante</th>
-                                <th>Aplicação</th>
-                                <th>Estoque</th>
-                                <th>Custo</th>
-                                <th>Venda</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${parts.map(p => `
-                                <tr>
-                                    <td class="mono" style="color:var(--brand-cyan);">${p.code}</td>
-                                    <td><strong style="color:#ffffff;">${p.name}</strong></td>
-                                    <td>${p.brand}</td>
-                                    <td>${p.app}</td>
-                                    <td class="mono" style="font-weight:700; color:#10b981;">${p.stock} un</td>
-                                    <td class="mono">${p.cost}</td>
-                                    <td class="mono" style="color:#FFD21C; font-weight:700;">${p.price}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Cards Mobile (Item 28) -->
-                <div class="ws-parts-cards-grid">
-                    ${parts.map(p => `
-                        <div class="ws-part-card-box">
-                            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                                <span class="mono" style="color:var(--brand-cyan); font-size:11px;">${p.code}</span>
-                                <span style="color:#10b981; font-weight:800; font-size:12px;">${p.stock} em estoque</span>
-                            </div>
-                            <strong style="color:#ffffff; font-size:13px; display:block;">${p.name}</strong>
-                            <div style="font-size:11.5px; color:#94a3b8; margin:2px 0;">Marca: ${p.brand}</div>
-                            <div style="font-size:11px; color:#64748b;">Aplicação: ${p.app}</div>
-                            <div style="display:flex; justify-content:space-between; margin-top:8px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.06); font-size:12px;">
-                                <span>Custo: ${p.cost}</span>
-                                <span style="color:#FFD21C; font-weight:800;">Venda: ${p.price}</span>
-                            </div>
+                ${parts.length === 0 ? `
+                    <div style="padding:48px 20px; text-align:center;">
+                        <div style="width:60px; height:60px; border-radius:50%; background:rgba(255,210,28,0.08); border:1px solid rgba(255,210,28,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+                            <span style="font-size:28px;">📦</span>
                         </div>
-                    `).join('')}
-                </div>
+                        <h4 style="color:#ffffff; font-size:16px; margin-bottom:6px; font-weight:800;">Estoque de Peças Vazio</h4>
+                        <p style="color:#94a3b8; font-size:13px; max-width:420px; margin:0 auto 18px;">Você ainda não cadastrou peças no estoque. Adicione componentes para vincular a ordens de serviço e alimentar os registros de procedência DNA AUTO.</p>
+                        <button class="btn btn-primary" onclick="alert('Módulo de cadastro de peças ativo.')" style="font-weight:800;">
+                            + Cadastrar Nova Peça
+                        </button>
+                    </div>
+                ` : `
+                    <div class="ws-parts-table-wrap">
+                        <table class="erp-table">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Descrição da Peça</th>
+                                    <th>Fabricante</th>
+                                    <th>Aplicação</th>
+                                    <th>Estoque</th>
+                                    <th>Custo</th>
+                                    <th>Venda</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${parts.map(p => `
+                                    <tr>
+                                        <td class="mono" style="color:var(--brand-cyan);">${p.code}</td>
+                                        <td><strong style="color:#ffffff;">${p.name}</strong></td>
+                                        <td>${p.brand}</td>
+                                        <td>${p.app}</td>
+                                        <td class="mono" style="font-weight:700; color:#10b981;">${p.stock} un</td>
+                                        <td class="mono">${p.cost}</td>
+                                        <td class="mono" style="color:#FFD21C; font-weight:700;">${p.price}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `}
             </div>
         `;
     },
@@ -2584,47 +2579,56 @@ const WorkshopView = {
     // SEÇÃO 6: CLIENTES
     // ──────────────────────────────────────────────────────────────────────────
     renderClientsView() {
+        const clients = (this.vehiclesList || []).filter(v => v.owner_name).map(v => ({
+            name: v.owner_name,
+            phone: v.owner_phone || '-',
+            car: `${v.brand} ${v.model} (${v.license_plate})`,
+            plate: v.license_plate,
+            lastVisit: v.last_service_date || 'Recente'
+        }));
+
         return `
             <div class="panel-box">
                 <div class="panel-title">
-                    <span>Carteira de Clientes da Oficina</span>
+                    <span>Carteira de Clientes da Oficina (${clients.length})</span>
                 </div>
-                <div class="table-responsive">
-                    <table class="erp-table">
-                        <thead>
-                            <tr>
-                                <th>Nome do Cliente</th>
-                                <th>Telefone / WhatsApp</th>
-                                <th>Veículo Vinculado</th>
-                                <th>Último Atendimento</th>
-                                <th>Ação Direta</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>João da Silva</strong></td>
-                                <td class="mono">(19) 98765-4321</td>
-                                <td>VW Fox 1.0 (PWL4I85)</td>
-                                <td>10/08/2026</td>
-                                <td><button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('João da Silva', '(19) 98765-4321', 'VW Fox', 'PWL4I85', 'Revisão Preventiva')" style="background:#25D366; color:#000; font-weight:700;">WhatsApp</button></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Carlos Alberto Silva</strong></td>
-                                <td class="mono">(11) 98888-1111</td>
-                                <td>Honda Civic Touring (BRA2E19)</td>
-                                <td>18/05/2025</td>
-                                <td><button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Carlos Silva', '(11) 98888-1111', 'Civic', 'BRA2E19', 'Revisão Geral')" style="background:#25D366; color:#000; font-weight:700;">WhatsApp</button></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Renata Vasconcelos</strong></td>
-                                <td class="mono">(11) 97654-3210</td>
-                                <td>Toyota Corolla XEi (ABC1D23)</td>
-                                <td>12/04/2025</td>
-                                <td><button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Renata', '(11) 97654-3210', 'Corolla', 'ABC1D23', 'Fluido CVT')" style="background:#25D366; color:#000; font-weight:700;">WhatsApp</button></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                ${clients.length === 0 ? `
+                    <div style="padding:48px 20px; text-align:center;">
+                        <div style="width:60px; height:60px; border-radius:50%; background:rgba(37,211,102,0.08); border:1px solid rgba(37,211,102,0.25); display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+                            <span style="font-size:28px;">👥</span>
+                        </div>
+                        <h4 style="color:#ffffff; font-size:16px; margin-bottom:6px; font-weight:800;">Nenhum cliente cadastrado</h4>
+                        <p style="color:#94a3b8; font-size:13px; max-width:420px; margin:0 auto 18px;">Ao cadastrar veículos e abrir ordens de serviço no pátio, os dados dos clientes serão organizados automaticamente nesta carteira com histórico e WhatsApp direto.</p>
+                        <button class="btn btn-primary" onclick="WorkshopView.openManualVehicleModal()" style="font-weight:800;">
+                            + Cadastrar Primeiro Cliente / Carro
+                        </button>
+                    </div>
+                ` : `
+                    <div class="table-responsive">
+                        <table class="erp-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome do Cliente</th>
+                                    <th>Telefone / WhatsApp</th>
+                                    <th>Veículo Vinculado</th>
+                                    <th>Último Atendimento</th>
+                                    <th>Ação Direta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${clients.map(c => `
+                                    <tr>
+                                        <td><strong>${c.name}</strong></td>
+                                        <td class="mono">${c.phone}</td>
+                                        <td>${c.car}</td>
+                                        <td>${c.lastVisit}</td>
+                                        <td><button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('${c.name.replace(/'/g, "\\'")}', '${c.phone}', '${c.car}', '${c.plate}', 'Revisão Preventiva')" style="background:#25D366; color:#000; font-weight:700;">WhatsApp</button></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                `}
             </div>
         `;
     },

@@ -1,22 +1,25 @@
 const bcrypt = require('bcryptjs');
 
-function runSeed(dbInstance) {
-    const db = dbInstance || require('./db');
-    console.log('🌱 Iniciando Seed do DNA AUTO...');
+// Limpar tabelas existentes para reset limpo e idempotente
+const clearTables = [
+    'audit_logs', 'commissions', 'dna_activations', 'pricing_plans', 'reports',
+    'notifications', 'health_scores', 'fipe_values', 'market_values', 'auctions',
+    'debts', 'fines', 'taxes', 'vehicle_documents', 'mileage_records', 'vehicle_photos',
+    'invoices', 'part_installations', 'parts', 'service_records', 'maintenance_records',
+    'ownership_transfers', 'owners', 'vehicle_dna', 'vehicles', 'workshop_users',
+    'workshops', 'users', 'role_permissions', 'roles', 'permissions', 'integrations',
+    'workshop_appointments', 'whatsapp_messages'
+];
 
-    // Limpar tabelas existentes para reset limpo e idempotente
-    const clearTables = [
-        'audit_logs', 'commissions', 'dna_activations', 'pricing_plans', 'reports',
-        'notifications', 'health_scores', 'fipe_values', 'market_values', 'auctions',
-        'debts', 'fines', 'taxes', 'vehicle_documents', 'mileage_records', 'vehicle_photos',
-        'invoices', 'part_installations', 'parts', 'service_records', 'maintenance_records',
-        'ownership_transfers', 'owners', 'vehicle_dna', 'vehicles', 'workshop_users',
-        'workshops', 'users', 'role_permissions', 'roles', 'permissions', 'integrations'
-    ];
+function seedBase(dbInstance) {
+    const db = dbInstance || require('./db');
+    console.log('🌱 Inicializando estrutura base limpa do DNA AUTO (Sem veículos mock)...');
 
     db.transaction(() => {
         for (const tbl of clearTables) {
-            db.prepare(`DELETE FROM ${tbl}`).run();
+            try {
+                db.prepare(`DELETE FROM ${tbl}`).run();
+            } catch (_) {}
         }
 
         // 1. Permissões
@@ -103,11 +106,11 @@ function runSeed(dbInstance) {
         });
 
         insertUser.run({
-            id: 'usr_owner_ana',
-            name: 'Ana Carolina Martins',
-            email: 'ana.martins@email.com',
+            id: 'usr_client',
+            name: 'Cliente Proprietário',
+            email: 'cliente@dnaauto.com.br',
             password_hash: passwordHash,
-            phone: '(11) 96666-4444',
+            phone: '(11) 98888-7777',
             role_id: 'role_owner',
             status: 'ACTIVE'
         });
@@ -250,7 +253,16 @@ function runSeed(dbInstance) {
             is_courtesy: 1,
             commission_percentage: 0
         });
+    })();
 
+    console.log('✅ Estrutura base e usuários criados com sucesso (Ambiente limpo pronto para uso).');
+}
+
+function seedDemoCars(dbInstance) {
+    const db = dbInstance || require('./db');
+    console.log('🚗 Inserindo veículos de demonstração e histórico...');
+
+    db.transaction(() => {
         // 6. Veículos
         const insertVehicle = db.prepare(`
             INSERT INTO vehicles (id, license_plate, chassis_vin, renavam, brand, model, version_label, manufacture_year, model_year, fuel_type, transmission_type, color, photo_url, is_demo)
@@ -395,7 +407,7 @@ function runSeed(dbInstance) {
 
         insertOwner.run({
             id: 'own_ana',
-            user_id: 'usr_owner_ana',
+            user_id: null,
             name: 'Ana Carolina Martins',
             document_cpf: '***.319.488-**',
             email: 'ana.martins@email.com',
@@ -819,7 +831,7 @@ function runSeed(dbInstance) {
 
         // 15. Conectores e Integrações
         const insertIntegration = db.prepare(`
-            INSERT INTO integrations (id, service_code, service_name, is_enabled, is_connected, endpoint_url, api_key_masked, status_message)
+            INSERT OR IGNORE INTO integrations (id, service_code, service_name, is_enabled, is_connected, endpoint_url, api_key_masked, status_message)
             VALUES (@id, @service_code, @service_name, @is_enabled, @is_connected, @endpoint_url, @api_key_masked, @status_message)
         `);
         insertIntegration.run({ id: 'int_fipe', service_code: 'FIPE', service_name: 'Tabela FIPE Oficial API', is_enabled: 1, is_connected: 1, endpoint_url: 'https://parallelum.com.br/fipe/api/v1', api_key_masked: 'fipe_live_****9821', status_message: 'Conexão ativa com cotações oficiais mensais' });
@@ -832,7 +844,7 @@ function runSeed(dbInstance) {
 
         // 16. Logs de Auditoria Iniciais
         const insertAudit = db.prepare(`
-            INSERT INTO audit_logs (id, user_id, user_role, user_name, action, entity_type, entity_id, vehicle_dna_code, ip_address, data_before, data_after, created_at)
+            INSERT OR IGNORE INTO audit_logs (id, user_id, user_role, user_name, action, entity_type, entity_id, vehicle_dna_code, ip_address, data_before, data_after, created_at)
             VALUES (@id, @user_id, @user_role, @user_name, @action, @entity_type, @entity_id, @vehicle_dna_code, @ip_address, @data_before, @data_after, @created_at)
         `);
 
@@ -897,11 +909,24 @@ function runSeed(dbInstance) {
         });
     })();
 
-    console.log('✅ Seed finalizado com sucesso! Dados DEMO inseridos.');
+    console.log('✅ Veículos DEMO inseridos com sucesso.');
+}
+
+function runSeed(dbInstance, includeDemo = (process.env.SEED_DEMO_CARS === 'true')) {
+    const db = dbInstance || require('./db');
+    seedBase(db);
+    if (includeDemo) {
+        seedDemoCars(db);
+    }
 }
 
 if (require.main === module) {
-    runSeed();
+    const includeDemo = process.argv.includes('--demo') || process.env.SEED_DEMO_CARS === 'true';
+    runSeed(null, includeDemo);
 }
 
 module.exports = runSeed;
+module.exports.runSeed = runSeed;
+module.exports.seedBase = seedBase;
+module.exports.seedDemoCars = seedDemoCars;
+

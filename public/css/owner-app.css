@@ -1,0 +1,937 @@
+/* ==============================================================================
+   DNA AUTO — NOVO APP DO CLIENTE / PROPRIETÁRIO (DESIGN SYSTEM ULTRA-PREMIUM)
+   Fidelidade absoluta à referência visual: Dark Obsidian, Neon Blue, Glassmorphism
+   ============================================================================== */
+
+:root {
+    --dna-blue-primary: #0066FF;
+    --dna-blue-glow: rgba(0, 102, 255, 0.45);
+    --dna-blue-hover: #1A75FF;
+    --dna-blue-dark: #0A1B36;
+    --dna-cyan-neon: #00D4FF;
+    --dna-green-status: #00E676;
+    --dna-green-glow: rgba(0, 230, 118, 0.35);
+    --dna-bg-obsidian: #050B14;
+    --dna-bg-surface: rgba(8, 16, 32, 0.82);
+    --dna-card-border: rgba(0, 102, 255, 0.28);
+    --dna-text-primary: #FFFFFF;
+    --dna-text-secondary: #94A3B8;
+    --dna-text-dim: #64748B;
+}
+
+/* Container do App no Desktop (Simulador de Smartphone Premium) e 100% no Mobile */
+.dna-app-viewport {
+    min-height: 100vh;
+    background: radial-gradient(circle at 50% 10%, #0A1932 0%, #050B14 70%, #02050A 100%);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 16px 10px 40px;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Outfit', 'Inter', sans-serif;
+    color: var(--dna-text-primary);
+    box-sizing: border-box;
+}
+
+.dna-phone-frame {
+    width: 100%;
+    max-width: 416px;
+    background: #070D18;
+    border-radius: 42px;
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 102, 255, 0.2);
+    border: 4px solid #1E293B;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 890px;
+}
+
+/* Barra de Status do Smartphone (Hora, Ícones de Sinal e Bateria) */
+.dna-phone-statusbar {
+    height: 38px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 24px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: 0.3px;
+    z-index: 10;
+}
+
+.dna-statusbar-notch {
+    width: 110px;
+    height: 24px;
+    background: #000000;
+    border-radius: 14px;
+    margin: 0 auto;
+}
+
+/* Header Superior do App */
+.dna-app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px 14px;
+    position: relative;
+    z-index: 10;
+}
+
+.dna-brand-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.dna-brand-logo-icon {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.6));
+}
+
+.dna-brand-text h1 {
+    font-size: 17px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    margin: 0;
+    color: #FFFFFF;
+    text-shadow: 0 0 12px rgba(0, 102, 255, 0.4);
+}
+
+.dna-brand-text p {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #38BDF8;
+    margin: 0;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+}
+
+.dna-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dna-notif-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    color: #FFFFFF;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dna-notif-btn:hover {
+    background: rgba(0, 102, 255, 0.2);
+    border-color: var(--dna-cyan-neon);
+}
+
+.dna-notif-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 16px;
+    height: 16px;
+    background: #EF4444;
+    color: #FFFFFF;
+    border-radius: 50%;
+    font-size: 9.5px;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #070D18;
+}
+
+.dna-avatar-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #1E293B;
+    border: 1.5px solid var(--dna-cyan-neon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.4);
+}
+
+/* Área de Rolagem do App (Conteúdo) */
+.dna-app-scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 18px 90px;
+    scrollbar-width: none;
+}
+
+.dna-app-scroll-content::-webkit-scrollbar {
+    display: none;
+}
+
+/* 1. Card Principal do Veículo */
+.dna-vehicle-card {
+    background: radial-gradient(circle at 50% 30%, rgba(10, 28, 60, 0.75) 0%, rgba(6, 14, 28, 0.9) 100%);
+    border: 1.5px solid rgba(0, 102, 255, 0.35);
+    border-radius: 20px;
+    padding: 16px 16px 12px;
+    margin-bottom: 16px;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(0, 102, 255, 0.15);
+}
+
+.dna-vehicle-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.dna-vehicle-id-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dna-brand-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dna-vehicle-titles h2 {
+    font-size: 16px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin: 0 0 2px;
+}
+
+.dna-vehicle-titles p {
+    font-size: 11.5px;
+    color: var(--dna-text-secondary);
+    margin: 0;
+    font-family: var(--font-mono);
+}
+
+.dna-registered-pill {
+    background: rgba(0, 102, 255, 0.18);
+    border: 1px solid rgba(0, 102, 255, 0.45);
+    color: #38BDF8;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Área Central do Carro + Status Circular */
+.dna-vehicle-showcase-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 12px 0 14px;
+    position: relative;
+}
+
+.dna-car-image-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.dna-car-image-container img {
+    max-width: 100%;
+    max-height: 145px;
+    object-fit: contain;
+    filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 20px rgba(0, 102, 255, 0.35));
+}
+
+.dna-car-glow-base {
+    position: absolute;
+    bottom: -6px;
+    width: 180px;
+    height: 16px;
+    background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.45) 0%, rgba(0, 102, 255, 0) 70%);
+    border-radius: 50%;
+}
+
+/* Círculo de Status do Veículo */
+.dna-status-circle-box {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #051624 0%, #030C16 100%);
+    border: 2px solid #00E676;
+    box-shadow: 0 0 18px rgba(0, 230, 118, 0.4), inset 0 0 14px rgba(0, 230, 118, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 6px;
+    flex-shrink: 0;
+    margin-left: 10px;
+}
+
+.dna-status-shield {
+    font-size: 16px;
+    color: #00E676;
+    margin-bottom: 2px;
+}
+
+.dna-status-circle-box span.title {
+    font-size: 8px;
+    font-weight: 800;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dna-status-circle-box strong.status-text {
+    font-size: 12px;
+    font-weight: 900;
+    color: #00E676;
+    letter-spacing: 0.5px;
+    margin: 1px 0;
+}
+
+.dna-status-circle-box span.sub {
+    font-size: 7.5px;
+    color: #CBD5E1;
+}
+
+/* Barra Inferior com 3 Medidores Rápidos */
+.dna-metrics-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 8px;
+    background: rgba(4, 9, 18, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 8px 10px;
+}
+
+.dna-metric-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.dna-metric-icon {
+    font-size: 15px;
+    color: #38BDF8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dna-metric-data .label {
+    font-size: 8.5px;
+    color: #64748B;
+    display: block;
+    font-weight: 600;
+}
+
+.dna-metric-data .value {
+    font-size: 11px;
+    font-weight: 800;
+    color: #FFFFFF;
+    font-family: var(--font-mono);
+}
+
+/* 2. Card Certificação DNA AUTO */
+.dna-cert-card {
+    background: radial-gradient(circle at 10% 50%, rgba(10, 30, 68, 0.85) 0%, rgba(6, 15, 32, 0.9) 100%);
+    border: 1.5px solid rgba(0, 102, 255, 0.35);
+    border-radius: 20px;
+    padding: 16px;
+    margin-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 18px rgba(0, 102, 255, 0.12);
+}
+
+.dna-cert-left {
+    flex: 1;
+}
+
+.dna-cert-header-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+
+.dna-cert-icon-box {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(0, 102, 255, 0.2);
+    border: 1px solid rgba(0, 102, 255, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00D4FF;
+    font-size: 15px;
+}
+
+.dna-cert-header-row h3 {
+    font-size: 12.5px;
+    font-weight: 900;
+    color: #FFFFFF;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.dna-cert-valid-tag {
+    background: rgba(0, 230, 118, 0.15);
+    border: 1px solid rgba(0, 230, 118, 0.4);
+    color: #00E676;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.dna-cert-desc {
+    font-size: 10px;
+    color: #94A3B8;
+    line-height: 1.35;
+    margin: 0 0 8px;
+}
+
+.dna-cert-code-row {
+    font-size: 11px;
+    font-weight: 800;
+    color: #38BDF8;
+    font-family: var(--font-mono);
+    margin-bottom: 2px;
+}
+
+.dna-cert-date-row {
+    font-size: 9.5px;
+    color: #64748B;
+    margin-bottom: 10px;
+}
+
+.dna-cert-btn {
+    background: linear-gradient(135deg, #0066FF 0%, #0052CC 100%);
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.dna-cert-btn:hover {
+    background: var(--dna-blue-hover);
+    box-shadow: 0 6px 20px rgba(0, 102, 255, 0.6);
+}
+
+.dna-cert-qr-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.dna-cert-qr-box {
+    background: #FFFFFF;
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 212, 255, 0.6);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.25);
+}
+
+.dna-cert-qr-box img {
+    width: 68px;
+    height: 68px;
+    display: block;
+}
+
+.dna-cert-qr-label {
+    font-size: 8px;
+    color: #64748B;
+    margin-top: 4px;
+    max-width: 74px;
+    line-height: 1.2;
+}
+
+/* 3. Seção ÚLTIMOS REGISTROS */
+.dna-timeline-section {
+    margin-bottom: 16px;
+}
+
+.dna-timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.dna-timeline-header h4 {
+    font-size: 12px;
+    font-weight: 900;
+    color: #CBD5E1;
+    letter-spacing: 0.8px;
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.dna-timeline-header a {
+    font-size: 11px;
+    font-weight: 700;
+    color: #38BDF8;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.dna-timeline-horizontal {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    position: relative;
+    padding: 0 4px;
+    margin-bottom: 14px;
+}
+
+.dna-timeline-line {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    background: rgba(0, 102, 255, 0.35);
+    z-index: 1;
+}
+
+.dna-timeline-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 76px;
+    position: relative;
+    z-index: 2;
+}
+
+.dna-node-circle {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #081222;
+    border: 2px solid #0066FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #38BDF8;
+    margin-bottom: 6px;
+    box-shadow: 0 0 10px rgba(0, 102, 255, 0.4);
+}
+
+.dna-node-circle.active {
+    border-color: #00E676;
+    color: #00E676;
+    box-shadow: 0 0 12px rgba(0, 230, 118, 0.5);
+}
+
+.dna-node-date {
+    font-size: 8px;
+    color: #64748B;
+    font-family: var(--font-mono);
+    margin-bottom: 2px;
+}
+
+.dna-node-title {
+    font-size: 9.5px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin-bottom: 1px;
+    line-height: 1.2;
+}
+
+.dna-node-sub {
+    font-size: 8px;
+    color: #94A3B8;
+}
+
+/* Card de Histórico Seguro */
+.dna-secure-card {
+    background: rgba(7, 15, 28, 0.7);
+    border: 1px solid rgba(0, 230, 118, 0.25);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dna-secure-card:hover {
+    border-color: #00E676;
+    background: rgba(0, 230, 118, 0.08);
+}
+
+.dna-secure-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 230, 118, 0.2);
+    border: 1px solid #00E676;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00E676;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.dna-secure-info {
+    flex: 1;
+}
+
+.dna-secure-info strong {
+    font-size: 11px;
+    color: #FFFFFF;
+    display: block;
+    margin-bottom: 1px;
+}
+
+.dna-secure-info span {
+    font-size: 9.5px;
+    color: #94A3B8;
+    line-height: 1.3;
+    display: block;
+}
+
+/* 4. Barra de Navegação Inferior (Bottom Navigation) */
+.dna-bottom-nav {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: rgba(5, 11, 20, 0.95);
+    backdrop-filter: blur(18px);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 6px;
+    z-index: 10;
+}
+
+.dna-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    color: #64748B;
+    transition: all 0.2s ease;
+    padding: 6px 12px;
+    border-radius: 10px;
+}
+
+.dna-nav-item svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+}
+
+.dna-nav-item span {
+    font-size: 9.5px;
+    font-weight: 700;
+}
+
+.dna-nav-item.active {
+    color: var(--dna-blue-primary);
+}
+
+.dna-nav-item.active svg {
+    filter: drop-shadow(0 0 8px rgba(0, 102, 255, 0.7));
+}
+
+/* 5. GAVETA LATERAL DO MENU (DRAWER COM MENU ABERTO) */
+.dna-drawer-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    z-index: 20;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dna-drawer-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dna-menu-drawer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 82%;
+    max-width: 340px;
+    background: #060D19;
+    border-right: 1.5px solid rgba(0, 102, 255, 0.3);
+    box-shadow: 15px 0 50px rgba(0, 0, 0, 0.8), 5px 0 30px rgba(0, 102, 255, 0.2);
+    z-index: 25;
+    transform: translateX(-100%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+
+.dna-menu-drawer::-webkit-scrollbar {
+    display: none;
+}
+
+.dna-drawer-backdrop.active .dna-menu-drawer {
+    transform: translateX(0);
+}
+
+/* Cabeçalho do Drawer */
+.dna-drawer-header {
+    padding: 22px 18px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: radial-gradient(circle at 100% 0%, rgba(0, 102, 255, 0.15) 0%, rgba(6, 13, 25, 0) 70%);
+}
+
+.dna-drawer-close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.dna-drawer-close-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #EF4444;
+    color: #EF4444;
+}
+
+/* Perfil do Usuário no Drawer */
+.dna-drawer-profile {
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.dna-drawer-profile:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.dna-profile-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dna-profile-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #1E293B;
+    border: 1.5px solid var(--dna-cyan-neon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    font-size: 18px;
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.35);
+}
+
+.dna-profile-meta strong {
+    font-size: 14px;
+    color: #FFFFFF;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.dna-profile-meta span {
+    font-size: 11px;
+    color: #38BDF8;
+    font-weight: 600;
+}
+
+.dna-profile-arrow {
+    color: #64748B;
+    font-size: 14px;
+}
+
+/* Lista de Opções do Drawer */
+.dna-drawer-menu-list {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.dna-drawer-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 12px;
+    color: #CBD5E1;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dna-drawer-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #FFFFFF;
+}
+
+.dna-drawer-item.active {
+    background: var(--dna-blue-primary);
+    color: #FFFFFF;
+    box-shadow: 0 4px 18px rgba(0, 102, 255, 0.5);
+}
+
+.dna-drawer-item.active .dna-item-left span.sub {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.dna-drawer-item.active .dna-item-arrow {
+    color: #FFFFFF;
+}
+
+.dna-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dna-item-icon {
+    font-size: 17px;
+    width: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dna-item-text strong {
+    font-size: 12.5px;
+    font-weight: 700;
+    display: block;
+}
+
+.dna-item-text span.sub {
+    font-size: 9.5px;
+    color: #64748B;
+    display: block;
+    margin-top: 1px;
+}
+
+.dna-item-arrow {
+    font-size: 13px;
+    color: #475569;
+}
+
+/* Card Inferior do Drawer */
+.dna-drawer-footer-card {
+    margin: 12px 14px 20px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: radial-gradient(circle at 10% 50%, rgba(0, 102, 255, 0.2) 0%, rgba(6, 15, 30, 0.8) 100%);
+    border: 1px solid rgba(0, 102, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.dna-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dna-footer-icon {
+    font-size: 18px;
+    color: #00D4FF;
+}
+
+.dna-footer-text strong {
+    font-size: 11.5px;
+    color: #FFFFFF;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.dna-footer-text span {
+    font-size: 9px;
+    color: #94A3B8;
+    display: block;
+    line-height: 1.25;
+}
+
+/* Ajustes Responsivos em Telas Maiores */
+@media (min-width: 900px) {
+    .dna-app-viewport {
+        padding-top: 30px;
+    }
+}

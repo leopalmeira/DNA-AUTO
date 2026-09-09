@@ -398,6 +398,36 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 
 ---
 
+### 📱 Ciclo 19: Novo App Mobile do Cliente Fiel à Referência Visual & Limpeza Total de Mocks no Sistema
+- **Objetivo e Solicitação do Usuário:**
+  1. *Remover todos os dados de mock do sistema todo*: A base de dados e a interface operacional foram limpas para que o próprio usuário/cliente e oficina cadastrem seus próprios carros e dados do zero.
+  2. *Nova Tela do Cliente idêntica à referência visual enviada (com menu lateral aberto e sem menu)*:
+     - Design mobile-first de smartphone ultra-premium (Dark Obsidian `#050B14`, Neon Blue `#0066FF`, Ciano `#00D4FF` e Esmeralda `#00E676`).
+     - **Tela Normal (Sem menu aberto)**:
+       - Header com logo oficial DNA AUTO, indicador de notificações com badge circular (`3`) e avatar do usuário com anel neon azul.
+       - Card do Veículo de Referência (`Volkswagen Gol 1.0`, placa `ABC1D23 • 2021/2022`, tag `☑ Veículo cadastrado`, imagem do carro com reflexo neon azul sob a base, círculo de status `EM DIA (Sem pendências)` com checkmark esmeralda).
+       - Grid com 3 medidores rápidos: Quilometragem `87.542 km`, Combustível `72%` com barra de nível, Autonomia estimada `~ 520 km`.
+       - Card de Certificação DNA AUTO com escudo dourado, tag `☑ Válida`, código `DNA-2026-000184`, data `08/09/2026 às 14:32`, botão `Ver certificação >` e QR Code escaneável de autenticidade.
+       - Timeline horizontal de ÚLTIMOS REGISTROS com 4 nós conectados por trilha luminosa (Revisão Periódica, Troca de Óleo e Filtro, Alinhamento e Balanceamento, Pastilhas de Freio) e card de proteção criptografada.
+       - Barra inferior de navegação (Bottom Navigation Bar) fixa com 5 abas (`Início`, `Veículo`, `Certificação`, `Documentos`, `Mais`).
+     - **Tela com Menu Aberto (Drawer Lateral)**:
+       - Gaveta deslizante cobrindo a tela com backdrop escurecido e botão `✕` de fechar.
+       - Perfil do usuário: avatar, nome (`João Silva`) e papel (`Cliente >`).
+       - 9 itens de navegação com ícones dedicados e setas `>`: *Início* (ativo), *Meu Veículo*, *Certificação DNA AUTO*, *Histórico do Veículo*, *Documentos*, *Diagnóstico OBD*, *Lembretes*, *Oficinas Credenciadas* e *Configurações*.
+       - Card de rodapé com escudo de segurança e slogan: *"Tecnologia e Segurança Veicular - Todos os dados criptografados e validados"*.
+     - **Alternância Instantânea**: Switch superior no simulador permitindo alternar com 1 toque entre *📱 Sem menu aberto* e *📱 Com menu aberto*, além de alternar entre o *🚗 Modelo Gol 1.0* de referência e *➕ Meu Carro Real* para cadastrar qualquer placa.
+- **Implementações Técnicas:**
+  - `public/css/owner-app.css`: Criação de folha de estilos dedicada com variáveis de cores, frame de smartphone, barra de status, reflexo neon do carro, cards de glassmorphism, QR code estilizado e animação suave de drawer.
+  - `public/js/components/ownerView.js`: Reimplementação completa do componente em JavaScript reativo com controle de estado do drawer, abas inferiores, modais informativos e fluxo de cadastro de placa customizada direto na API SQLite.
+  - `public/js/components/workshopView.js`: Limpeza de listas mock estáticas nas telas de veículos cadastrados, estoque de peças e carteira de clientes, substituídas por estados vazios profissionais com botões de ação para o primeiro cadastro.
+  - `server/src/database/seed.js`: Modularização do seed em `seedBase(db)` (criação apenas da estrutura básica, papéis, oficina e planos, deixando 0 veículos mock) e `seedDemoCars(db)` (inserção opcional para testes).
+  - `test/api.test.js`: Ajuste da suíte de 31 testes para instanciar `seedDemoCars()` no setup e restaurar `seedBase()` no bloco `finally`, garantindo 31/31 testes verdes (100%) e base operacional com 0 carros de teste.
+- **Validação:**
+  - 31/31 testes aprovados com 100% de sucesso.
+  - Contagem de veículos no banco após os testes: 0 veículos (`SELECT count(*) FROM vehicles` = 0).
+
+---
+
 ## 🏛️ 3. Tabela de Decisões Arquiteturais (ADRs)
 
 | ID | Decisão | Contexto / Motivação | Consequência / Benefício |

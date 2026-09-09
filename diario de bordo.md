@@ -141,6 +141,28 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Qualidade & Testes Automatizados:**
   - Bateria de testes expandida para **31 testes automatizados** passando com 100% de sucesso (`npm test`), cobrindo status, pareamento, confirmação, templates e envio de mensagens via Baileys.
 
+### 📱 Ciclo 20: Novo App Mobile do Cliente Fiel à Referência & Remoção Total de Mocks do Sistema
+- **Remoção Total de Dados Mock:**
+  - Base operacional de veículos 100% limpa no banco SQLite (`SELECT count(*) FROM vehicles` = 0).
+  - A oficina e o cliente agora cadastram seus próprios dados e veículos reais do zero sem interferência de dados falsos.
+  - Telas de veículos cadastrados, estoque de peças e carteira de clientes em `workshopView.js` com Empty States profissionais e encorajadores.
+  - Bateria de testes automatizados (`npm test`) reajustada para semear veículos de teste dinamicamente e restaurar o banco operacional para 0 carros ao final, mantendo 31/31 testes aprovados (100%).
+- **Novo App Mobile do Proprietário (Mobile-First Ultra-Premium):**
+  - Fiel em 100% à imagem de referência enviada pelo usuário:
+    - Paleta Dark Obsidian (`#050B14`), Neon Blue (`#0066FF`), Ciano (`#00D4FF`) e Esmeralda (`#00E676`).
+    - **Tela Sem Menu (Home)**:
+      - Topo com logo oficial DNA AUTO, sininho de notificações com badge `3` e avatar do usuário com anel neon azul.
+      - Card do Carro com logo da montadora, título `Volkswagen Gol 1.0`, placa e ano `ABC1D23 • 2021/2022`, tag `☑ Veículo cadastrado`, foto do carro com reflexo neon azul sob o assoalho no asfalto escuro.
+      - Círculo de status com checkmark `EM DIA (Sem pendências)`.
+      - 3 Medidores rápidos em cards: Quilometragem `87.542 km`, Combustível `72%` com barra de nível, Autonomia estimada `~ 520 km`.
+      - Card de Certificação DNA AUTO com escudo dourado, tag `☑ Válida`, código `DNA-2026-000184`, data `08/09/2026 às 14:32`, botão `Ver certificação >` e QR Code escaneável.
+      - Timeline horizontal de ÚLTIMOS REGISTROS com 4 nós luminosos conectados e card inferior de proteção criptografada.
+      - Bottom Navigation Bar com 5 abas (`Início`, `Veículo`, `Certificação`, `Documentos`, `Mais`).
+    - **Tela com Menu Aberto (Drawer Lateral)**:
+      - Gaveta deslizante com botão de fechar `✕`, perfil do usuário (`João Silva • Cliente >`), 9 itens de menu com ícones e setas `>` e rodapé com escudo de segurança.
+    - **Simulador Interativo**:
+      - Controles no topo para alternar instantaneamente entre *"📱 Sem menu aberto"* e *"📱 Com menu aberto"*, e entre o *"🚗 Modelo Gol 1.0"* e *"➕ Meu Carro Real"*.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

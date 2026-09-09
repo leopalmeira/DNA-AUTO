@@ -8,6 +8,10 @@ const BASE_URL = `http://localhost:${PORT}/api/v1`;
 async function runTests() {
     console.log('🧪 Iniciando Bateria de Testes Automatizados do DNA AUTO...\n');
 
+    const db = require('../server/src/database/db');
+    const { seedBase, seedDemoCars } = require('../server/src/database/seed');
+    seedDemoCars(db);
+
     server = http.createServer(app);
     await new Promise((resolve) => server.listen(PORT, resolve));
     console.log(`📡 Servidor de teste ouvindo na porta ${PORT}`);
@@ -383,6 +387,12 @@ async function runTests() {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);
     } finally {
+        try {
+            const db = require('../server/src/database/db');
+            const { seedBase } = require('../server/src/database/seed');
+            seedBase(db);
+            console.log('🧹 Base de dados restaurada para estado limpo (sem mocks) com sucesso.');
+        } catch (_) {}
         server.close();
     }
 }
