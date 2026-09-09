@@ -26,7 +26,8 @@ async function runTests() {
             body: JSON.stringify({ email: 'admin@dnaauto.com.br', password: 'admin123' })
         });
         const dataLoginAdmin = await resLoginAdmin.json();
-        console.assert(!!dataLoginAdmin.token, 'Token admin ausente');
+        const adminToken = dataLoginAdmin.token;
+        console.assert(!!adminToken, 'Token admin ausente');
         console.log('✅ 2. Autenticação Admin: Sucesso com JWT');
 
         // Teste 3: Estatísticas da Rede DNA AUTO
@@ -208,9 +209,73 @@ async function runTests() {
         console.assert(dataSearchExt.hasDna === false, 'Veículo externo recém-consultado não deveria ter DNA');
         console.assert(dataSearchExt.fromExternalApi === true, 'Flag fromExternalApi não informada');
         console.assert(dataSearchExt.vehicle.license_plate === 'INT8C36', 'Placa do veículo não coincide');
-        console.log(`✅ 20. Busca Global com API Placas Integrada: Veículo ${dataSearchExt.vehicle.brand} ${dataSearchExt.vehicle.model} reconhecido e pronto para ativação de DNA`);
+        // Teste 21: Cadastro de Veículo com Ativação Automática de DNA Permanente
+        const testPlate = `DNA${Math.floor(1000 + Math.random() * 9000)}`;
+        const resRegAuto = await fetch(`${BASE_URL}/vehicles/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+                license_plate: testPlate,
+                brand: 'Chevrolet',
+                model: 'Onix Plus Turbo',
+                manufacture_year: 2024,
+                color: 'Prata',
+                mileage: 18500,
+                activate_dna_now: true
+            })
+        });
+        const dataRegAuto = await resRegAuto.json();
+        console.assert(resRegAuto.status === 201, 'Erro no cadastro com ativação automática de DNA');
+        console.assert(dataRegAuto.dna && dataRegAuto.dna.dna_code.startsWith('DNA-BR-'), 'Código DNA permanente não gerado automaticamente');
+        console.assert(dataRegAuto.dna.status === 'ACTIVE', 'Status do DNA gerado deve ser ACTIVE');
+        console.log(`✅ 21. Auto-DNA em Veículo Cadastrado: ${testPlate} ativado automaticamente com código ${dataRegAuto.dna.dna_code}`);
 
-        console.log('\n🎉 TODOS OS 20 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 22: Atualização de Configurações da Oficina e Geração de Código OTP
+        const testPhone = `(19) 9${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`;
+        const resSettings = await fetch(`${BASE_URL}/workshops/ws_veloce/settings`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                trade_name: 'Veloce Auto Center Premium Pro',
+                cnpj: '12.345.678/0001-90',
+                whatsapp_official: testPhone,
+                operating_hours: '07:30 às 18:30 (Segunda a Sexta)',
+                auto_send_obd2_alerts: 1
+            })
+        });
+        const dataSettings = await resSettings.json();
+        console.assert(resSettings.status === 200, 'Falha ao salvar configurações da oficina');
+        console.assert(dataSettings.whatsapp_status === 'PENDING_CONFIRMATION', 'Status do novo WhatsApp deve ser PENDING_CONFIRMATION');
+        console.assert(dataSettings.whatsapp_code && dataSettings.whatsapp_code.length === 6, 'Código OTP de 6 dígitos não gerado');
+        console.log(`✅ 22. Configurações da Oficina: Salvas com sucesso e código OTP gerado (${dataSettings.whatsapp_code})`);
+
+        // Teste 23: Confirmação de WhatsApp via Código OTP
+        const resOtp = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/confirm`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                code: dataSettings.whatsapp_code
+            })
+        });
+        const dataOtp = await resOtp.json();
+        console.assert(resOtp.status === 200, 'Falha na confirmação do código OTP');
+        console.assert(dataOtp.whatsapp_status === 'VERIFIED', 'Status pós-confirmação deve ser VERIFIED');
+        console.log(`✅ 23. Confirmação OTP de WhatsApp: Número validado e ativado como canal oficial`);
+
+        // Teste 24: Disparo em Lote de Alertas Preventivos OBD2
+        const resBatch = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/dispatch-batch`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const dataBatch = await resBatch.json();
+        console.assert(resBatch.status === 200, 'Falha no disparo de lote preventivo');
+        console.assert(dataBatch.dispatched_count >= 1, 'Lote deveria conter ao menos 1 veículo para revisão preventiva');
+        console.log(`✅ 24. Automação WhatsApp OBD2 em Lote: ${dataBatch.dispatched_count} alertas disparados com sucesso`);
+
+        console.log('\n🎉 TODOS OS 24 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

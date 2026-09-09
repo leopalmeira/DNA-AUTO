@@ -202,6 +202,7 @@ router.post('/register', authenticateToken, (req, res) => {
         }
 
         const vehicleId = 'veh_' + Date.now();
+        let generatedDnaCode = null;
 
         db.transaction(() => {
             db.prepare(`
@@ -218,31 +219,31 @@ router.post('/register', authenticateToken, (req, res) => {
 
             if (mileage && Number(mileage) > 0) {
                 db.prepare(`
-                    INSERT INTO mileage_records (id, vehicle_id, mileage, source_modality, recorded_at)
-                    VALUES (?, ?, ?, 'WORKSHOP_REGISTER', CURRENT_TIMESTAMP)
+                    INSERT INTO mileage_records (id, vehicle_id, mileage, recorded_at, source, verified)
+                    VALUES (?, ?, ?, CURRENT_TIMESTAMP, 'WORKSHOP_SERVICE', 1)
                 `).run('mil_' + Date.now(), vehicleId, Number(mileage));
             }
 
-            let generatedDnaCode = null;
-            // Se solicitado ativar DNA imediatamente
-            if (activate_dna_now) {
+            // Todo carro cadastrado na plataforma automaticamente recebe DNA ativo permanente
+            const autoDna = activate_dna_now !== false; // Sempre ativo por padrão
+            if (autoDna) {
                 const dnaCode = generateDnaCode();
                 generatedDnaCode = dnaCode;
                 const dnaId = 'dna_' + Date.now();
                 const certificateHash = crypto.createHash('sha256').update(dnaCode + cleanChassis).digest('hex');
-                const effectiveWorkshopId = req.user.workshop ? req.user.workshop.workshop_id : null;
+                const effectiveWorkshopId = req.user && req.user.workshop ? req.user.workshop.workshop_id : null;
 
                 db.prepare(`
                     INSERT INTO vehicle_dna (
                         id, vehicle_id, dna_code, status, activated_at,
                         activated_by_workshop_id, activation_modality, activation_fee_cents, certificate_hash
-                    ) VALUES (?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP, ?, ?, 7900, ?)
+                    ) VALUES (?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP, ?, ?, 5990, ?)
                 `).run(dnaId, vehicleId, dnaCode, effectiveWorkshopId, modality || 'NORMAL', certificateHash);
 
                 db.prepare(`
                     INSERT INTO health_scores (
                         id, vehicle_id, overall_score, documented_percentage, score_rationale
-                    ) VALUES (?, ?, 60, 50, 'DNA ativado no momento do cadastro inicial.')
+                    ) VALUES (?, ?, 75, 60, 'DNA Permanente ativado automaticamente no momento do cadastro inicial.')
                 `).run('hs_' + Date.now(), vehicleId);
             }
         })();
@@ -253,14 +254,18 @@ router.post('/register', authenticateToken, (req, res) => {
             entityType: 'VEHICLE',
             entityId: vehicleId,
             ipAddress: req.ip,
-            dataAfter: { license_plate: cleanPlate, brand, model }
+            dataAfter: { license_plate: cleanPlate, brand, model, dna_code: generatedDnaCode }
         });
 
         res.status(201).json({
             success: true,
             vehicle_id: vehicleId,
+            vehicle: { id: vehicleId, license_plate: cleanPlate, brand, model },
+            license_plate: cleanPlate,
             dna_code: generatedDnaCode,
-            message: 'Veículo cadastrado com sucesso!'
+            dna: generatedDnaCode ? { dna_code: generatedDnaCode, status: 'ACTIVE' } : null,
+            hasDna: !!generatedDnaCode,
+            message: `Veículo ${brand} ${model} (${cleanPlate}) cadastrado com sucesso com DNA ativo!`
         });
     } catch (err) {
         console.error('Erro ao cadastrar veículo:', err);
@@ -355,7 +360,9 @@ router.post('/register-from-api', authenticateToken, async (req, res) => {
                 VALUES (?, ?, ?, ?, ?)
             `).run('fipe_' + Date.now(), vehicleId, fipeCode, fipeRef, fipeCents);
 
-            if (activate_dna_now) {
+            // Todo carro cadastrado a partir de consulta de placa também ganha DNA ativo imediato
+            const autoDna = activate_dna_now !== false;
+            if (autoDna) {
                 const dnaCode = generateDnaCode();
                 generatedDna = dnaCode;
                 const dnaId = 'dna_' + Date.now();
@@ -366,13 +373,13 @@ router.post('/register-from-api', authenticateToken, async (req, res) => {
                     INSERT INTO vehicle_dna (
                         id, vehicle_id, dna_code, status, activated_at,
                         activated_by_workshop_id, activation_modality, activation_fee_cents, certificate_hash
-                    ) VALUES (?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP, ?, ?, 7900, ?)
+                    ) VALUES (?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP, ?, ?, 5990, ?)
                 `).run(dnaId, vehicleId, dnaCode, effectiveWorkshopId, modality || 'NORMAL', certificateHash);
 
                 db.prepare(`
                     INSERT INTO health_scores (
                         id, vehicle_id, overall_score, documented_percentage, score_rationale
-                    ) VALUES (?, ?, 60, 50, 'DNA ativado no momento do cadastro inicial.')
+                    ) VALUES (?, ?, 75, 60, 'DNA Permanente ativado automaticamente na homologação via placa.')
                 `).run('hs_' + Date.now(), vehicleId);
             }
         })();

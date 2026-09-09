@@ -102,7 +102,7 @@ const API = {
             body: JSON.stringify(data)
         });
     },
-    registerVehicleFromApi(plate, customData, activateDnaNow = false) {
+    registerVehicleFromApi(plate, customData = null, activateDnaNow = true) {
         return this.request('/vehicles/register-from-api', {
             method: 'POST',
             body: JSON.stringify({ plate, customData, activate_dna_now: activateDnaNow })
@@ -220,7 +220,7 @@ const API = {
     lookupPlate(plate) {
         return this.request(`/integrations/plate-lookup/${encodeURIComponent(plate)}`);
     },
-    registerVehicleFromApi(plate, customData = null, activateDnaNow = false) {
+    registerVehicleFromApi(plate, customData = null, activateDnaNow = true) {
         return this.request('/vehicles/register-from-api', {
             method: 'POST',
             body: JSON.stringify({
@@ -245,6 +245,25 @@ const API = {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/appointments/${encodeURIComponent(appointmentId)}/status`, {
             method: 'PATCH',
             body: JSON.stringify({ status })
+        });
+    },
+
+    // Configurações da Oficina e WhatsApp Oficial
+    saveWorkshopSettings(workshopId, settings) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/settings`, {
+            method: 'PUT',
+            body: JSON.stringify(settings)
+        });
+    },
+    confirmWorkshopWhatsapp(workshopId, code) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/confirm`, {
+            method: 'POST',
+            body: JSON.stringify({ code })
+        });
+    },
+    dispatchAutomaticWhatsapp(workshopId) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/dispatch-batch`, {
+            method: 'POST'
         });
     }
 };

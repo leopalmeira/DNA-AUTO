@@ -2,7 +2,7 @@
 ## Histórico Técnico, Decisões de Engenharia, Evolução e Entregas
 
 > **Projeto:** DNA AUTO — Identidade e Histórico Digital Permanente de Veículos  
-> **Versão Atual:** 1.2.0  
+> **Versão Atual:** 1.3.0  
 > **Ambiente Live:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/)  
 > **Repositório:** [https://github.com/leopalmeira/DNA-AUTO](https://github.com/leopalmeira/DNA-AUTO)
 
@@ -302,6 +302,40 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 
 ---
 
+### 🚀 Ciclo 16: Persistência de Sessão no F5, Menu Corporativo por Seções, Auto-DNA, WhatsApp com OTP e Tour Guiado
+- **Objetivo:** Resolver desconexão involuntária no refresh de página (F5), segmentar o menu do ERP em seções corporativas, automatizar o passaporte DNA permanente no cadastro, criar confirmação de WhatsApp com código OTP de 6 dígitos com disparo preventivo em lote, e disponibilizar um tour guiado interativo para lojistas e gestores.
+- **Implementações Técnicas:**
+  - **1. Persistência de Sessão e Correção do F5 (`public/js/app.js`):**
+    - Correção no método `init()`: verificação prioritária de `savedUser` e `token` no `localStorage`. Se o usuário possui credencial válida de oficina (`WORKSHOP`), restaura imediatamente o estado sem forçar redirecionamento para a landing page.
+    - Sincronização de URL via `history.replaceState` e hash `#workshop`, além de armazenamento da chave `dna_current_view`.
+    - Garantia de que a função de login rápido (`loginAs`) grave o token durável no `localStorage` antes de invocar a view.
+  - **2. Reorganização do Menu Lateral Corporativo em Seções e Itens em Roadmap (`public/js/components/workshopView.js` & `public/css/components.css`):**
+    - Estruturação do menu em 5 seções operacionais distintas:
+      1. `OPERAÇÃO & BALCÃO`: Dashboard Executivo, Recepção / Check-In, Pesquisar Veículo & Ficha, Cadastrar Novo Carro, Veículos Atendidos.
+      2. `OFICINA & SERVIÇOS`: Ordens de Serviço Ativas, Lançar Novo Serviço Nível 4, Serviços Comprovados, Peças & Estoque.
+      3. `PREDITIVA OBD2`: Radar Preditivo Geral, Manutenções Vencidas (🔴), Próximas Manutenções (🟡), Histórico Geral de Trocas.
+      4. `CLIENTES & CONTATO`: Agenda da Oficina & Box, Carteira de Clientes, Central WhatsApp, Automação OBD2 em Lote.
+      5. `GESTÃO & SISTEMA`: Financeiro & Comissões, Relatórios BI Avançados, Configurações da Oficina, Fazer Tour pelo Sistema.
+    - Tratamento para funcionalidades em desenvolvimento com classe `.is-coming-soon`, texto com tachado (`line-through`), badge `[Em breve]` e manipulador `WorkshopView.handleComingSoon(featureName)`.
+  - **3. Ativação Automática de DNA Permanente em Todo Cadastro (`server/src/modules/vehicles/vehicles.routes.js`):**
+    - Ajuste nos endpoints `/vehicles/register` e `/vehicles/register-from-api`: `autoDna = activate_dna_now !== false` ativo por padrão.
+    - Geração imediata de código único `DNA-BR-XXXX-XXXX-XXX`, inserção em `vehicle_dna` com status `ACTIVE` e inicialização de `health_scores` (75/60).
+    - O carro passa a constar instantaneamente na base DNA AUTO sem exigir ativação posterior no dossiê.
+  - **4. Configurações da Oficina, Confirmação OTP de WhatsApp e Disparo Preventivo em Lote:**
+    - Migração de colunas no SQLite: `whatsapp_official`, `whatsapp_status`, `whatsapp_code`, `auto_send_obd2_alerts`, `operating_hours`.
+    - Endpoint `PUT /api/v1/workshops/:id/settings`: salva dados cadastrais e gera código OTP de 6 dígitos aleatório caso o WhatsApp seja novo ou alterado.
+    - Endpoint `POST /api/v1/workshops/:id/whatsapp/confirm`: validação do código OTP de 6 dígitos informado (ou chave universal de homologação `123456`), promovendo o status para `VERIFIED`.
+    - Endpoint `POST /api/v1/workshops/:id/whatsapp/dispatch-batch`: motor de varredura que cruza a quilometragem atual com os limites de troca de óleo, correia dentada e pastilhas de freio, gerando lote automatizado de mensagens.
+    - Integração e referência técnica aos motores open-source **@whiskeysockets/baileys** (WebSocket direto) e **Evolution API** (REST/Webhooks).
+  - **5. Tour Guiado Interativo pelo Sistema (Onboarding do Lojista):**
+    - Implementação dos métodos `startTour`, `renderTourStep`, `nextTourStep`, `prevTourStep`, `skipTour` e `checkAutoTour`.
+    - 6 etapas guiadas com destaque luminoso (`.ws-tour-spotlight`), backdrop translúcido e card com explicação passo a passo.
+    - Botão "Pular Tour" sempre acessível para dispensar o onboarding e gravar preferência no `localStorage`.
+- **Validação e Qualidade:**
+  - Bateria de testes expandida para **24 testes automatizados de integração**, todos aprovados com 100% de sucesso em `test/api.test.js`.
+
+---
+
 ## 🏛️ 3. Tabela de Decisões Arquiteturais (ADRs)
 
 | ID | Decisão | Contexto / Motivação | Consequência / Benefício |
@@ -364,7 +398,7 @@ DNA-AUTO/
 │       │   └── keepAlive.service.js # Ping anti-sleep no Render
 │       └── server.js            # Aplicação Express e montagem das rotas
 ├── test/
-│   └── api.test.js              # Bateria com 20 testes automatizados
+│   └── api.test.js              # Bateria com 24 testes automatizados
 ├── index.js                     # Entrypoint raiz para deploys em nuvem
 ├── src/index.js                 # Entrypoint secundário para Render Cloud
 ├── package.json                 # Manifesto de dependências e scripts

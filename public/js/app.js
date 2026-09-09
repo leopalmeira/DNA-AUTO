@@ -12,40 +12,35 @@ const App = {
         console.log('🚀 Inicializando DNA AUTO Platform...');
         this.setupModals();
 
-        // Verificar rotas explícitas
-        const isLandingRoute = window.location.pathname === '/landing' ||
-                               window.location.pathname === '/home' ||
-                               window.location.hash === '#landing';
-        const isAdminRoute = window.location.pathname === '/admin' ||
-                             window.location.pathname === '/dnaveiculo/admin' ||
-                             window.location.hash === '#admin';
-        const isLoginRoute = window.location.pathname === '/login' ||
-                             window.location.hash === '#login';
+        // 1. Verificar se há sessão ativa salva no navegador
+        const savedUser = this.getLoggedUser();
+        let savedToken = localStorage.getItem('dna_token');
+        const isExplicitLogin = window.location.pathname === '/login' || window.location.hash === '#login';
+        const isExplicitAdmin = window.location.pathname === '/admin' || window.location.hash === '#admin';
+        const isExplicitLanding = (window.location.pathname === '/landing' || window.location.hash === '#landing') && !savedUser;
 
-        // 1. Se a rota for explicitamente a Landing Page, exibe a Landing Page imediatamente
-        if (isLandingRoute) {
-            console.log('🌐 Rota /landing solicitada. Exibindo Landing Page oficial (R$ 59,90)...');
-            this.switchView('landing');
+        // Se houver usuário salvo e não solicitou explicitamente a tela de login deslogada
+        if (savedUser && savedUser.role_code && !isExplicitLogin) {
+            if (!savedToken) {
+                savedToken = 'sess_' + savedUser.role_code.toLowerCase() + '_' + (savedUser.id || Date.now());
+                localStorage.setItem('dna_token', savedToken);
+            }
+            API.setToken(savedToken);
+            console.log('👤 Restaurando sessão ativa:', savedUser.name, `[${savedUser.role_code}]`);
+
+            // Restaura imediatamente a visualização do perfil correspondente
+            this.loginAs(savedUser.role_code, savedUser, false);
             return;
         }
 
-        // 2. Verificar se há sessão ativa salva
-        const savedUser = this.getLoggedUser();
-        const savedToken = localStorage.getItem('dna_token');
-
-        if (savedUser && savedUser.role_code && savedToken && !isLoginRoute) {
-            console.log('👤 Restaurando sessão ativa:', savedUser.name, `[${savedUser.role_code}]`);
-            API.setToken(savedToken);
-            this.loginAs(savedUser.role_code, savedUser, false);
-        } else if (isAdminRoute) {
-            // Rota de admin sem sessão: mostra login de admin
+        // 2. Rotas não autenticadas
+        if (isExplicitAdmin) {
             console.log('🛡️ Acesso Admin detectado. Abrindo login administrativo...');
             this.switchView('login-admin');
-        } else if (isLoginRoute) {
+        } else if (isExplicitLogin) {
             console.log('🔒 Tela de Login solicitada...');
             this.switchView('login');
         } else {
-            // Sem sessão na raiz: exibe Landing Page oficial de alta conversão (R$ 59,90)
             console.log('🌐 Exibindo Landing Page oficial (R$ 59,90)...');
             this.switchView('landing');
         }
@@ -145,6 +140,7 @@ const App = {
         }
 
         this.currentView = viewName;
+        localStorage.setItem('dna_current_view', viewName);
 
         // Atualiza item ativo na sidebar
         document.querySelectorAll('.nav-item').forEach(el => {
@@ -157,11 +153,21 @@ const App = {
         if (sidebar) sidebar.classList.remove('open');
         if (backdrop) backdrop.classList.remove('active');
 
-        // Isolamento de Tela Cheia para o ERP da Oficina
+        // Isolamento de Tela Cheia e Roteamento SPA
         if (viewName === 'workshop') {
             document.body.classList.add('is-workshop-erp');
+            if (window.location.hash !== '#workshop') {
+                try { history.replaceState(null, '', '#workshop'); } catch (_) { window.location.hash = '#workshop'; }
+            }
         } else {
             document.body.classList.remove('is-workshop-erp');
+            if (viewName === 'admin' && window.location.hash !== '#admin') {
+                try { history.replaceState(null, '', '#admin'); } catch (_) { window.location.hash = '#admin'; }
+            } else if (viewName === 'owner' && window.location.hash !== '#owner') {
+                try { history.replaceState(null, '', '#owner'); } catch (_) { window.location.hash = '#owner'; }
+            } else if (viewName === 'landing' && window.location.hash !== '#landing') {
+                try { history.replaceState(null, '', '#landing'); } catch (_) { window.location.hash = '#landing'; }
+            }
         }
 
         // Renderização dos Módulos
@@ -197,6 +203,11 @@ const App = {
 
         if (saveToStorage) {
             this.setLoggedUser(this.currentUser);
+            if (!localStorage.getItem('dna_token')) {
+                const token = 'sess_' + normRole.toLowerCase() + '_' + (user.id || Date.now());
+                localStorage.setItem('dna_token', token);
+                API.setToken(token);
+            }
         }
 
         // Configura usuário ativo na API
@@ -226,14 +237,16 @@ const App = {
     // ── Logout Seguro ──
     logout() {
         document.body.classList.remove('is-workshop-erp');
+        localStorage.removeItem('dna_current_view');
         this.setLoggedUser(null);
         this.currentUser = null;
         this.currentRole = null;
         API.setToken(null);
         API.setDemoUser(null);
+        try { history.replaceState(null, '', '#landing'); } catch (_) { window.location.hash = '#landing'; }
 
         this.syncProfileState(null);
-        this.switchView('login');
+        this.switchView('landing');
     },
 
     // ── Sincronização Estrita dos Módulos Visíveis (ISOLAMENTO TOTAL) ──

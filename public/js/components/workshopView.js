@@ -32,6 +32,42 @@ const WorkshopView = {
     selectedSlotTime: null,
     officialPhone: '(19) 3245-6789',
     officialWorkshopName: 'Veloce Auto Center Premium',
+    tourCurrentStep: 0,
+    tourActive: false,
+    pendingVerificationCode: null,
+    lastDispatchedBatch: null,
+    tourSteps: [
+        {
+            targetId: 'tour-step-greeting',
+            title: '1. Cockpit da Sua Oficina',
+            desc: 'Bem-vindo ao ERP DNA AUTO! Aqui no topo você acompanha a saudação diária, status da rede conectada e atalhos rápidos do dia a dia.'
+        },
+        {
+            targetId: 'tour-step-kpis',
+            title: '2. Resumo Operacional de Hoje',
+            desc: 'Acompanhe em tempo real o fluxo da sua oficina: veículos atendidos, ordens de serviço ativas, manutenções atrasadas por quilometragem e agendamentos.'
+        },
+        {
+            targetId: 'tour-step-actions',
+            title: '3. Ações Rápidas de Balcão',
+            desc: 'Atalhos de 1 toque para recepção e mecânica: pesquise carros pela placa, cadastre novos veículos, lance serviços ou faça agendamentos imediatos.'
+        },
+        {
+            targetId: 'tour-step-search',
+            title: '4. Recepção & Ficha Digital',
+            desc: 'Localize qualquer veículo cadastrado por placa, chassi ou cliente para consultar a Ficha Digital completa, dados da montadora, FIPE e histórico de revisões.'
+        },
+        {
+            targetId: 'tour-step-obd2',
+            title: '5. Radar Preditivo OBD2 (Faturamento)',
+            desc: 'O sistema cruza a quilometragem do carro do cliente e avisa com semáforos (🔴 🟡 🟢) quando correias, óleo e freios estão perto da troca.'
+        },
+        {
+            targetId: 'tour-step-menu',
+            title: '6. Menu Corporativo em Seções',
+            desc: 'Navegue entre os módulos operacionais separados por seções claras (Balcão, Serviços, Preditiva OBD2, Clientes e Configurações).'
+        }
+    ],
 
     getEffectiveWorkshopId() {
         if (typeof App !== 'undefined' && App.currentUser) {
@@ -93,6 +129,9 @@ const WorkshopView = {
             }
 
             this.renderMainLayout();
+            setTimeout(() => {
+                this.checkAutoTour();
+            }, 500);
         } catch (err) {
             console.error('Erro ao renderizar painel da oficina:', err);
             container.innerHTML = `
@@ -176,6 +215,12 @@ const WorkshopView = {
                             <span class="ws-erp-ws-sub">ID: ${ws.id} • Nível 4 Homologada</span>
                         </div>
 
+                        <!-- Botão Tour Guiado para o Lojista -->
+                        <button class="ws-erp-tour-launch-btn" onclick="WorkshopView.startTour(true)" style="background:rgba(255,210,28,0.12); color:#FFD21C; border:1px solid rgba(255,210,28,0.3); font-weight:700; font-size:11.5px; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;" title="Fazer Tour Guiado pelo Sistema">
+                            <span>🎓</span>
+                            <span>Tour do Sistema</span>
+                        </button>
+
                         <!-- Botão de Notificações com Dropdown -->
                         <div style="position:relative;">
                             <button class="ws-erp-bell-btn" onclick="WorkshopView.toggleNotificationsPopover()" title="Central de Notificações">
@@ -241,282 +286,130 @@ const WorkshopView = {
                     <!-- Backdrop Mobile -->
                     <div id="ws-erp-backdrop" class="ws-erp-drawer-backdrop" onclick="WorkshopView.closeMobileDrawer()"></div>
 
-                    <!-- SIDEBAR DESKTOP & DRAWER MOBILE -->
+                    <!-- SIDEBAR DESKTOP & DRAWER MOBILE ORGANIZADA POR SEÇÕES -->
                     <aside id="ws-erp-sidebar-el" class="ws-erp-sidebar">
                         <div class="ws-erp-sidebar-header">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 <div>
                                     <div class="title-main">DNA AUTO</div>
-                                    <div class="title-sub">Certificação de Registros</div>
+                                    <div class="title-sub">Gestão Empresarial & ERP</div>
                                 </div>
                                 <button class="btn btn-sm" onclick="WorkshopView.closeMobileDrawer()" style="display:none; padding:2px 8px;" id="ws-drawer-close-btn">✕</button>
                             </div>
                         </div>
 
-                        <!-- Navegação Accordion Modular -->
-                        <nav class="ws-erp-nav-scroll">
-                            <!-- 1. VISÃO GERAL -->
-                            <div class="ws-erp-accordion-group">
+                        <!-- Navegação Corporativa Dividida por Seções -->
+                        <nav class="ws-erp-nav-scroll" id="tour-step-menu">
+
+                            <!-- SEÇÃO 1: OPERAÇÃO & BALCÃO -->
+                            <div class="ws-erp-nav-section">
+                                <div class="ws-erp-nav-section-title">
+                                    <span>OPERAÇÃO & BALCÃO</span>
+                                    <span>🏢</span>
+                                </div>
                                 <div class="ws-erp-menu-item ${this.currentSection === 'dashboard' ? 'active' : ''}" onclick="WorkshopView.switchSection('dashboard')">
-                                    <div class="ws-erp-menu-left">
-                                        <span>🏠</span>
-                                        <span>Dashboard</span>
-                                    </div>
+                                    <div class="ws-erp-menu-left"><span>🏠</span> <span>Dashboard Executivo</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'recepcao-checkin' ? 'active' : ''}" onclick="WorkshopView.switchSection('recepcao-checkin')">
+                                    <div class="ws-erp-menu-left"><span>🚘</span> <span>Recepção / Check-In</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'veiculos-pesquisa' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-pesquisa')">
+                                    <div class="ws-erp-menu-left"><span>🔎</span> <span>Pesquisar Veículo & Ficha</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item" onclick="WorkshopView.openManualVehicleModal()">
+                                    <div class="ws-erp-menu-left"><span>🚗</span> <span>Cadastrar Novo Carro</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'veiculos-cadastrados' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
+                                    <div class="ws-erp-menu-left"><span>📋</span> <span>Veículos Atendidos</span></div>
                                 </div>
                             </div>
 
-                            <!-- 2. VEÍCULOS -->
-                            <div class="ws-erp-accordion-group ${this.activeAccordions['veiculos'] ? 'open' : ''}" id="group-veiculos">
-                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('veiculos')">
-                                    <div class="group-title-left">
-                                        <span>🚗</span>
-                                        <span>Veículos</span>
-                                    </div>
-                                    <span class="arrow-icon">▼</span>
+                            <!-- SEÇÃO 2: OFICINA & SERVIÇOS -->
+                            <div class="ws-erp-nav-section">
+                                <div class="ws-erp-nav-section-title">
+                                    <span>OFICINA & SERVIÇOS</span>
+                                    <span>🔧</span>
                                 </div>
-                                <ul class="ws-erp-accordion-items">
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'veiculos-pesquisa' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-pesquisa')">
-                                        <div class="ws-erp-menu-left"><span>🔎</span> <span>Pesquisar Veículo</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'veiculos-cadastrar' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-cadastrar')">
-                                        <div class="ws-erp-menu-left"><span>🚗</span> <span>Cadastrar Veículo</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'veiculos-cadastrados' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
-                                        <div class="ws-erp-menu-left"><span>📋</span> <span>Veículos Cadastrados</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'veiculos-historico' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-historico')">
-                                        <div class="ws-erp-menu-left"><span>📜</span> <span>Histórico dos Veículos</span></div>
-                                    </li>
-                                </ul>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'servicos-os' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-os')">
+                                    <div class="ws-erp-menu-left"><span>🔧</span> <span>Ordens de Serviço</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item" onclick="WorkshopView.openNewServiceModal()">
+                                    <div class="ws-erp-menu-left"><span>➕</span> <span>Lançar Serviço / Peça</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'servicos-concluidos' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-concluidos')">
+                                    <div class="ws-erp-menu-left"><span>✅</span> <span>Serviços Concluídos</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item is-coming-soon" onclick="WorkshopView.handleComingSoon('Peças & Controle de Estoque')">
+                                    <div class="ws-erp-menu-left"><span>📦</span> <span class="item-text">Peças & Estoque</span></div>
+                                    <span class="ws-coming-soon-badge">Em breve</span>
+                                </div>
+                                <div class="ws-erp-menu-item is-coming-soon" onclick="WorkshopView.handleComingSoon('Emissão Direta de NFS-e / DANFE')">
+                                    <div class="ws-erp-menu-left"><span>🧾</span> <span class="item-text">Emissão NFS-e Fiscal</span></div>
+                                    <span class="ws-coming-soon-badge">Em breve</span>
+                                </div>
                             </div>
 
-                            <!-- 3. RECEPÇÃO -->
-                            <div class="ws-erp-accordion-group ${this.activeAccordions['recepcao'] ? 'open' : ''}" id="group-recepcao">
-                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('recepcao')">
-                                    <div class="group-title-left">
-                                        <span>🚘</span>
-                                        <span>Recepção</span>
-                                    </div>
-                                    <span class="arrow-icon">▼</span>
+                            <!-- SEÇÃO 3: MANUTENÇÃO PREDITIVA OBD2 -->
+                            <div class="ws-erp-nav-section">
+                                <div class="ws-erp-nav-section-title">
+                                    <span>PREDITIVA OBD2</span>
+                                    <span>📡</span>
                                 </div>
-                                <ul class="ws-erp-accordion-items">
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'recepcao-checkin' ? 'active' : ''}" onclick="WorkshopView.switchSection('recepcao-checkin')">
-                                        <div class="ws-erp-menu-left"><span>🚘</span> <span>Recepção / Check-In</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'recepcao-novo' ? 'active' : ''}" onclick="WorkshopView.switchSection('recepcao-novo')">
-                                        <div class="ws-erp-menu-left"><span>➕</span> <span>Novo Atendimento</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'recepcao-andamento' ? 'active' : ''}" onclick="WorkshopView.switchSection('recepcao-andamento')">
-                                        <div class="ws-erp-menu-left"><span>📋</span> <span>Atendimentos em Andamento</span></div>
-                                    </li>
-                                </ul>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'manutencao-alertas' ? 'active' : ''}" id="tour-step-obd2" onclick="WorkshopView.switchSection('manutencao-alertas')">
+                                    <div class="ws-erp-menu-left"><span>⚠️</span> <span>Radar Preditivo Geral</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'manutencao-atrasadas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-atrasadas')">
+                                    <div class="ws-erp-menu-left"><span>🔴</span> <span>Manutenções Vencidas</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'manutencao-proximas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-proximas')">
+                                    <div class="ws-erp-menu-left"><span>🟡</span> <span>Próximas Manutenções</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'manutencao-historico' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-historico')">
+                                    <div class="ws-erp-menu-left"><span>📜</span> <span>Histórico Geral de Trocas</span></div>
+                                </div>
                             </div>
 
-                            <!-- 4. SERVIÇOS -->
-                            <div class="ws-erp-accordion-group ${this.activeAccordions['servicos'] ? 'open' : ''}" id="group-servicos">
-                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('servicos')">
-                                    <div class="group-title-left">
-                                        <span>🔧</span>
-                                        <span>Serviços</span>
-                                    </div>
-                                    <span class="arrow-icon">▼</span>
+                            <!-- SEÇÃO 4: CLIENTES & COMUNICAÇÃO -->
+                            <div class="ws-erp-nav-section">
+                                <div class="ws-erp-nav-section-title">
+                                    <span>CLIENTES & CONTATO</span>
+                                    <span>👥</span>
                                 </div>
-                                <ul class="ws-erp-accordion-items">
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'servicos-os' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-os')">
-                                        <div class="ws-erp-menu-left"><span>🔧</span> <span>Ordens de Serviço</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'servicos-novo' ? 'active' : ''}" onclick="WorkshopView.openNewServiceModal()">
-                                        <div class="ws-erp-menu-left"><span>➕</span> <span>Novo Serviço</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'servicos-andamento' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-andamento')">
-                                        <div class="ws-erp-menu-left"><span>⏳</span> <span>Serviços em Andamento</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'servicos-concluidos' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-concluidos')">
-                                        <div class="ws-erp-menu-left"><span>✅</span> <span>Serviços Concluídos</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'servicos-comprovados' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-comprovados')">
-                                        <div class="ws-erp-menu-left"><span>📋</span> <span>Serviços Comprovados</span></div>
-                                    </li>
-                                </ul>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'agenda-oficina' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-oficina')">
+                                    <div class="ws-erp-menu-left"><span>📅</span> <span>Agenda da Oficina & Box</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'clientes-lista' ? 'active' : ''}" onclick="WorkshopView.switchSection('clientes-lista')">
+                                    <div class="ws-erp-menu-left"><span>👤</span> <span>Carteira de Clientes</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'whatsapp-central' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-central')">
+                                    <div class="ws-erp-menu-left"><span>💬</span> <span>Central WhatsApp</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'whatsapp-automaticas' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-automaticas')">
+                                    <div class="ws-erp-menu-left"><span>🤖</span> <span>Automação OBD2 em Lote</span></div>
+                                </div>
                             </div>
 
-                            <!-- 5. MANUTENÇÃO -->
-                            <div class="ws-erp-accordion-group ${this.activeAccordions['manutencao'] ? 'open' : ''}" id="group-manutencao">
-                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('manutencao')">
-                                    <div class="group-title-left">
-                                        <span>⚠️</span>
-                                        <span>Manutenção</span>
-                                    </div>
-                                    <span class="arrow-icon">▼</span>
+                            <!-- SEÇÃO 5: GESTÃO & SISTEMA -->
+                            <div class="ws-erp-nav-section">
+                                <div class="ws-erp-nav-section-title">
+                                    <span>GESTÃO & SISTEMA</span>
+                                    <span>⚙️</span>
                                 </div>
-                                <ul class="ws-erp-accordion-items">
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'manutencao-alertas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-alertas')">
-                                        <div class="ws-erp-menu-left"><span>⚠️</span> <span>Alertas de Manutenção</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'manutencao-atrasadas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-atrasadas')">
-                                        <div class="ws-erp-menu-left"><span>🔴</span> <span>Manutenções Atrasadas</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'manutencao-proximas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-proximas')">
-                                        <div class="ws-erp-menu-left"><span>🟡</span> <span>Próximas Manutenções</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'manutencao-historico' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-historico')">
-                                        <div class="ws-erp-menu-left"><span>📅</span> <span>Histórico de Manutenção</span></div>
-                                    </li>
-                                </ul>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'financeiro-comissoes' ? 'active' : ''}" onclick="WorkshopView.switchSection('financeiro-comissoes')">
+                                    <div class="ws-erp-menu-left"><span>💰</span> <span>Financeiro & Comissões</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item is-coming-soon" onclick="WorkshopView.handleComingSoon('Relatórios Gerenciais BI & Exportação')">
+                                    <div class="ws-erp-menu-left"><span>📊</span> <span class="item-text">Relatórios BI Avançados</span></div>
+                                    <span class="ws-coming-soon-badge">Em breve</span>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'configuracoes-dados' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-dados')">
+                                    <div class="ws-erp-menu-left"><span>⚙</span> <span>Configurações da Oficina</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item" onclick="WorkshopView.startTour(true)" style="color:#FFD21C; background:rgba(255,210,28,0.06); border:1px solid rgba(255,210,28,0.2); border-radius:6px; margin-top:8px;">
+                                    <div class="ws-erp-menu-left"><span>🎓</span> <span>Fazer Tour pelo Sistema</span></div>
+                                </div>
                             </div>
 
-                            <!-- 6. CLIENTES -->
-                            <div class="ws-erp-accordion-group ${this.activeAccordions['clientes'] ? 'open' : ''}" id="group-clientes">
-                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('clientes')">
-                                    <div class="group-title-left">
-                                        <span>👤</span>
-                                        <span>Clientes</span>
-                                    </div>
-                                    <span class="arrow-icon">▼</span>
-                                </div>
-                                <ul class="ws-erp-accordion-items">
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'clientes-lista' ? 'active' : ''}" onclick="WorkshopView.switchSection('clientes-lista')">
-                                        <div class="ws-erp-menu-left"><span>👤</span> <span>Clientes</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'clientes-whatsapp' ? 'active' : ''}" onclick="WorkshopView.switchSection('clientes-whatsapp')">
-                                        <div class="ws-erp-menu-left"><span>📱</span> <span>WhatsApp dos Clientes</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'clientes-historico' ? 'active' : ''}" onclick="WorkshopView.switchSection('clientes-historico')">
-                                        <div class="ws-erp-menu-left"><span>📋</span> <span>Histórico de Atendimentos</span></div>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <!-- 7. AGENDA -->
-                            <div class="ws-erp-accordion-group ${this.activeAccordions['agenda'] ? 'open' : ''}" id="group-agenda">
-                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('agenda')">
-                                    <div class="group-title-left">
-                                        <span>📅</span>
-                                        <span>Agenda</span>
-                                    </div>
-                                    <span class="arrow-icon">▼</span>
-                                </div>
-                                <ul class="ws-erp-accordion-items">
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'agenda-oficina' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-oficina')">
-                                        <div class="ws-erp-menu-left"><span>📅</span> <span>Agenda da Oficina</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'agenda-horarios' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-horarios')">
-                                        <div class="ws-erp-menu-left"><span>🕐</span> <span>Horários</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'agenda-agendamentos' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-agendamentos')">
-                                        <div class="ws-erp-menu-left"><span>✅</span> <span>Agendamentos</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'agenda-confirmacao' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-confirmacao')">
-                                        <div class="ws-erp-menu-left"><span>⏳</span> <span>Aguardando Confirmação</span></div>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <!-- 8. WHATSAPP -->
-                            <div class="ws-erp-accordion-group ${this.activeAccordions['whatsapp'] ? 'open' : ''}" id="group-whatsapp">
-                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('whatsapp')">
-                                    <div class="group-title-left">
-                                        <span>💬</span>
-                                        <span>WhatsApp</span>
-                                    </div>
-                                    <span class="arrow-icon">▼</span>
-                                </div>
-                                <ul class="ws-erp-accordion-items">
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'whatsapp-central' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-central')">
-                                        <div class="ws-erp-menu-left"><span>💬</span> <span>Central WhatsApp</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'whatsapp-automaticas' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-automaticas')">
-                                        <div class="ws-erp-menu-left"><span>📨</span> <span>Mensagens Automáticas</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'whatsapp-avisar' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-avisar')">
-                                        <div class="ws-erp-menu-left"><span>⚠️</span> <span>Manutenções para Avisar</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'whatsapp-enviadas' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-enviadas')">
-                                        <div class="ws-erp-menu-left"><span>📤</span> <span>Mensagens Enviadas</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'whatsapp-confirmados' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-confirmados')">
-                                        <div class="ws-erp-menu-left"><span>✅</span> <span>Clientes Confirmados</span></div>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <!-- 9. PEÇAS / ESTOQUE -->
-                            <div class="ws-erp-accordion-group ${this.activeAccordions['pecas'] ? 'open' : ''}" id="group-pecas">
-                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('pecas')">
-                                    <div class="group-title-left">
-                                        <span>📦</span>
-                                        <span>Peças / Estoque</span>
-                                    </div>
-                                    <span class="arrow-icon">▼</span>
-                                </div>
-                                <ul class="ws-erp-accordion-items">
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'pecas-lista' ? 'active' : ''}" onclick="WorkshopView.switchSection('pecas-lista')">
-                                        <div class="ws-erp-menu-left"><span>📦</span> <span>Peças</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'pecas-estoque' ? 'active' : ''}" onclick="WorkshopView.switchSection('pecas-estoque')">
-                                        <div class="ws-erp-menu-left"><span>📋</span> <span>Estoque</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'pecas-utilizadas' ? 'active' : ''}" onclick="WorkshopView.switchSection('pecas-utilizadas')">
-                                        <div class="ws-erp-menu-left"><span>🔧</span> <span>Peças Utilizadas</span></div>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <!-- 10. RELATÓRIOS -->
-                            <div class="ws-erp-accordion-group ${this.activeAccordions['relatorios'] ? 'open' : ''}" id="group-relatorios">
-                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('relatorios')">
-                                    <div class="group-title-left">
-                                        <span>📊</span>
-                                        <span>Relatórios</span>
-                                    </div>
-                                    <span class="arrow-icon">▼</span>
-                                </div>
-                                <ul class="ws-erp-accordion-items">
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'relatorios-geral' ? 'active' : ''}" onclick="WorkshopView.switchSection('relatorios-geral')">
-                                        <div class="ws-erp-menu-left"><span>📊</span> <span>Relatórios Gerais</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'relatorios-veiculos' ? 'active' : ''}" onclick="WorkshopView.switchSection('relatorios-veiculos')">
-                                        <div class="ws-erp-menu-left"><span>🚗</span> <span>Veículos Atendidos</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'relatorios-servicos' ? 'active' : ''}" onclick="WorkshopView.switchSection('relatorios-servicos')">
-                                        <div class="ws-erp-menu-left"><span>🔧</span> <span>Serviços & Faturamento</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'relatorios-manutencao' ? 'active' : ''}" onclick="WorkshopView.switchSection('relatorios-manutencao')">
-                                        <div class="ws-erp-menu-left"><span>⚠️</span> <span>Manutenções Convertidas</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'relatorios-clientes' ? 'active' : ''}" onclick="WorkshopView.switchSection('relatorios-clientes')">
-                                        <div class="ws-erp-menu-left"><span>👥</span> <span>Retenção de Clientes</span></div>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <!-- 11. CONFIGURAÇÕES -->
-                            <div class="ws-erp-accordion-group ${this.activeAccordions['configuracoes'] ? 'open' : ''}" id="group-configuracoes">
-                                <div class="ws-erp-group-header" onclick="WorkshopView.toggleAccordion('configuracoes')">
-                                    <div class="group-title-left">
-                                        <span>⚙</span>
-                                        <span>Configurações</span>
-                                    </div>
-                                    <span class="arrow-icon">▼</span>
-                                </div>
-                                <ul class="ws-erp-accordion-items">
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'configuracoes-dados' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-dados')">
-                                        <div class="ws-erp-menu-left"><span>⚙</span> <span>Dados da Oficina</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'configuracoes-usuarios' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-usuarios')">
-                                        <div class="ws-erp-menu-left"><span>👥</span> <span>Usuários & Equipe</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'configuracoes-permissoes' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-permissoes')">
-                                        <div class="ws-erp-menu-left"><span>🔐</span> <span>Permissões</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'configuracoes-whatsapp' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-whatsapp')">
-                                        <div class="ws-erp-menu-left"><span>💬</span> <span>Número WhatsApp</span></div>
-                                    </li>
-                                    <li class="ws-erp-menu-item ${this.currentSection === 'configuracoes-notificacoes' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-notificacoes')">
-                                        <div class="ws-erp-menu-left"><span>🔔</span> <span>Notificações</span></div>
-                                    </li>
-                                </ul>
-                            </div>
                         </nav>
                     </aside>
 
@@ -529,6 +422,9 @@ const WorkshopView = {
 
             <!-- CONTAINER PARA MODAIS DO ERP -->
             <div id="ws-erp-modal-root"></div>
+
+            <!-- CONTAINER PARA TOUR GUIADO DO LOGISTA -->
+            <div id="ws-tour-container"></div>
         `;
     },
 
@@ -705,7 +601,7 @@ const WorkshopView = {
 
         return `
             <!-- Banner de Saudação do Painel -->
-            <div class="ws-erp-dashboard-banner">
+            <div class="ws-erp-dashboard-banner" id="tour-step-greeting">
                 <div>
                     <h2 class="ws-erp-greeting-title">BOM DIA, ${userName.toUpperCase()}!</h2>
                     <p class="ws-erp-greeting-sub">${ws.trade_name || 'Veloce Auto Center Premium'} • Operação Diária DNA AUTO</p>
@@ -723,7 +619,7 @@ const WorkshopView = {
                 <span>📊 Resumo de Hoje</span>
             </div>
 
-            <div class="ws-erp-kpi-grid">
+            <div class="ws-erp-kpi-grid" id="tour-step-kpis">
                 <!-- 1. Veículos Atendidos -->
                 <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
                     <div class="ws-erp-kpi-top">
@@ -790,8 +686,8 @@ const WorkshopView = {
                 <span>⚡ Ações Rápidas</span>
             </div>
 
-            <div class="ws-erp-quick-actions-grid">
-                <button class="ws-erp-quick-btn primary-highlight" onclick="WorkshopView.switchSection('veiculos-pesquisa')">
+            <div class="ws-erp-quick-actions-grid" id="tour-step-actions">
+                <button class="ws-erp-quick-btn primary-highlight" id="tour-step-search" onclick="WorkshopView.switchSection('veiculos-pesquisa')">
                     <span style="font-size:16px;">🔎</span>
                     <span>PESQUISAR CARRO</span>
                 </button>
@@ -1981,50 +1877,144 @@ Deseja agendar um horário rápido?
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // SEÇÃO 11: CONFIGURAÇÕES
+    // SEÇÃO 11: CONFIGURAÇÕES DA OFICINA & WHATSAPP
     // ──────────────────────────────────────────────────────────────────────────
     renderConfigurationsView() {
         const ws = this.dashboardData?.workshop || {};
+        const isVerified = ws.whatsapp_status === 'VERIFIED';
+        const pendingCode = ws.whatsapp_code || '123456';
+        const whatsappPhone = ws.whatsapp_official || this.officialPhone || '(19) 3245-6789';
+        const autoSend = ws.auto_send_obd2_alerts !== 0;
+
         return `
-            <div class="panel-box">
-                <div class="panel-title">
-                    <span>⚙ Configurações da Oficina & Auto Center</span>
+            <div class="panel-box" id="tour-step-config" style="background:#090d16; border-color:rgba(255,255,255,0.08);">
+                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:16px;">⚙️</span>
+                        <span>Configurações da Oficina & Auto Center</span>
+                    </span>
+                    <span style="font-size:11px; color:var(--text-dim);">ID Oficina: ${ws.id || 'ws_veloce'}</span>
                 </div>
 
-                <form onsubmit="event.preventDefault(); alert('✅ Configurações salvas com sucesso!');" style="display:flex; flex-direction:column; gap:14px; max-width:620px;">
-                    <div class="form-grid-2">
-                        <div class="form-group">
-                            <label class="form-label">Nome Comercial da Oficina</label>
-                            <input type="text" class="form-control" value="${ws.trade_name || this.officialWorkshopName}" required />
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px; margin-top:8px;">
+                    <!-- COLUNA 1: DADOS CADASTRAIS DA OFICINA -->
+                    <div style="background:#0e1524; padding:18px; border-radius:8px; border:1px solid rgba(255,255,255,0.06);">
+                        <div style="font-size:13px; font-weight:800; color:#ffffff; margin-bottom:14px; display:flex; align-items:center; gap:6px;">
+                            <span>🏢</span> <span>Identificação Empresarial</span>
                         </div>
-                        <div class="form-group">
-                            <label class="form-label">CNPJ Oficial</label>
-                            <input type="text" class="form-control" value="${ws.cnpj || '12.345.678/0001-90'}" required />
-                        </div>
+
+                        <form onsubmit="WorkshopView.submitWorkshopSettings(event)" style="display:flex; flex-direction:column; gap:12px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:11.5px; color:#cbd5e1;">Nome Comercial da Oficina</label>
+                                <input type="text" id="ws-cfg-name" class="form-control" value="${ws.trade_name || this.officialWorkshopName}" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:11.5px; color:#cbd5e1;">CNPJ Oficial</label>
+                                <input type="text" id="ws-cfg-cnpj" class="form-control" value="${ws.cnpj || '12.345.678/0001-90'}" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:11.5px; color:#cbd5e1;">WhatsApp Oficial para Mensagens & Alertas</label>
+                                <input type="text" id="ws-cfg-phone" class="form-control" value="${whatsappPhone}" placeholder="(11) 98888-7777" required />
+                                <span style="font-size:10.5px; color:#94a3b8; margin-top:3px; display:block;">Número que será remetente de avisos de óleo, correia e aprovações.</span>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:11.5px; color:#cbd5e1;">Horário de Atendimento Operacional</label>
+                                <input type="text" id="ws-cfg-hours" class="form-control" value="${ws.operating_hours || '08:00 às 18:00 (Segunda a Sexta)'}" />
+                            </div>
+
+                            <div style="background:rgba(0,212,255,0.05); padding:10px; border-radius:6px; border:1px solid rgba(0,212,255,0.15); font-size:11.5px; margin-top:4px;">
+                                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:#e2e8f0;">
+                                    <input type="checkbox" id="ws-cfg-auto-obd2" ${autoSend ? 'checked' : ''} />
+                                    <span>Habilitar envio automático de alerta WhatsApp quando odômetro OBD2 atingir limite preventivo</span>
+                                </label>
+                            </div>
+
+                            <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                                <button type="submit" class="btn btn-primary" style="font-weight:700; font-size:12px; padding:7px 16px;">
+                                    Salvar Dados da Oficina
+                                </button>
+                            </div>
+                        </form>
                     </div>
 
-                    <div class="form-grid-2">
-                        <div class="form-group">
-                            <label class="form-label">WhatsApp Oficial para Disparo</label>
-                            <input type="text" class="form-control" value="${this.officialPhone}" required />
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Horário de Atendimento</label>
-                            <input type="text" class="form-control" value="08:00 às 18:00 (Segunda a Sexta)" />
-                        </div>
-                    </div>
+                    <!-- COLUNA 2: AUTENTICAÇÃO DO WHATSAPP COM CÓDIGO OTP -->
+                    <div style="background:#0e1524; padding:18px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <div style="font-size:13px; font-weight:800; color:#ffffff; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <span>💬</span> <span>Status do WhatsApp Oficial</span>
+                                </div>
+                                ${isVerified 
+                                    ? `<span class="ws-phone-status-badge verified">🟢 Ativo & Verificado</span>`
+                                    : `<span class="ws-phone-status-badge pending">🟡 Confirmação Pendente</span>`
+                                }
+                            </div>
 
-                    <div style="background:#0a0f18; padding:12px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); font-size:12px;">
-                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                            <input type="checkbox" checked />
-                            <span>Enviar alerta automático de WhatsApp aos clientes quando odômetro OBD2 atingir limite preventivo</span>
-                        </label>
-                    </div>
+                            ${isVerified ? `
+                                <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:8px; padding:14px; margin-bottom:14px;">
+                                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                        <span style="font-size:18px;">✅</span>
+                                        <strong style="color:#34d399; font-size:13px;">Canal Oficial Homologado</strong>
+                                    </div>
+                                    <p style="color:#cbd5e1; font-size:11.5px; line-height:1.4; margin:0 0 8px 0;">
+                                        O número <strong>${whatsappPhone}</strong> está validado na rede DNA AUTO e autorizado a enviar ordens de serviço, notificações de revisão e laudos digitais aos clientes.
+                                    </p>
+                                    <div style="font-size:10.5px; color:#94a3b8;">
+                                        Última sincronização de status: Hoje às 09:30 • Protocolo SHA-256 ativo.
+                                    </div>
+                                </div>
+                            ` : `
+                                <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.28); border-radius:8px; padding:14px; margin-bottom:14px;">
+                                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                        <span style="font-size:18px;">🔐</span>
+                                        <strong style="color:#fbbf24; font-size:13px;">Confirmação de 6 Dígitos Necessária</strong>
+                                    </div>
+                                    <p style="color:#cbd5e1; font-size:11.5px; line-height:1.4; margin:0 0 10px 0;">
+                                        Para prevenir envio indevido, informe o código de verificação enviado para o número <strong>${whatsappPhone}</strong> para desbloquear os disparos automáticos.
+                                    </p>
+                                    
+                                    <div style="background:#080c14; padding:8px 12px; border-radius:6px; margin-bottom:12px; font-size:11px; color:#94a3b8; border:1px solid rgba(255,255,255,0.05);">
+                                        <span>🔑 Código gerado para este canal: </span>
+                                        <strong style="color:#FFD21C; font-family:monospace; font-size:13px; letter-spacing:1.5px;">${pendingCode}</strong>
+                                        <span style="display:block; font-size:10px; color:#64748b; margin-top:2px;">(Código de homologação padrão: 123456)</span>
+                                    </div>
 
-                    <div style="display:flex; justify-content:flex-end;">
-                        <button type="submit" class="btn btn-primary" style="font-weight:700;">Salvar Alterações</button>
+                                    <form onsubmit="WorkshopView.submitConfirmWhatsappCode(event)" style="display:flex; gap:8px; align-items:center;">
+                                        <input type="text" id="ws-otp-code-input" class="form-control mono" maxlength="6" placeholder="000000" style="max-width:130px; text-align:center; font-size:14px; font-weight:700; letter-spacing:2px;" required />
+                                        <button type="submit" class="btn btn-primary" style="font-weight:700; font-size:12px; padding:8px 14px; white-space:nowrap;">
+                                            Confirmar Número
+                                        </button>
+                                    </form>
+                                </div>
+                            `}
+
+                            <!-- AUTOMAÇÃO DE DISPARO EM LOTE OBD2 -->
+                            <div style="background:#080d17; border:1px solid rgba(0,212,255,0.18); border-radius:8px; padding:14px;">
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                                    <span style="font-size:16px;">🤖</span>
+                                    <strong style="color:#ffffff; font-size:12.5px;">Disparo Preventivo em Lote (Radar OBD2)</strong>
+                                </div>
+                                <p style="color:#94a3b8; font-size:11px; line-height:1.4; margin:0 0 10px 0;">
+                                    O sistema varre os veículos cadastrados na oficina e dispara mensagens de WhatsApp personalizadas aos clientes cuja quilometragem atingiu o vencimento de óleo, correia ou pastilhas.
+                                </p>
+                                <button type="button" class="btn btn-secondary" onclick="WorkshopView.triggerBatchWhatsappDispatch()" style="font-size:11.5px; font-weight:700; width:100%; border-color:rgba(0,212,255,0.4); color:#00d4ff;">
+                                    🚀 Executar Disparo em Lote para Clientes com Revisão Próxima
+                                </button>
+                                <div id="ws-batch-dispatch-feedback" style="margin-top:10px; display:none;"></div>
+                            </div>
+                        </div>
+
+                        <!-- NOTA SOBRE INTEGRAÇÃO WHATSAPP (BAILEYS / EVOLUTION API) -->
+                        <div style="margin-top:14px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.06); font-size:10.5px; color:#64748b; line-height:1.4;">
+                            <strong style="color:#94a3b8; display:block; margin-bottom:2px;">🔌 Repositórios e Motores de WhatsApp Suportados:</strong>
+                            • <strong>@whiskeysockets/baileys</strong>: Comunicação direta WebSocket Multi-Device open-source sem custos de API.<br/>
+                            • <strong>Evolution API / WPPConnect</strong>: Servidor REST API conteinerizado com QR Code e Webhooks automáticos para ERPs.
+                        </div>
                     </div>
-                </form>
+                </div>
             </div>
         `;
     },
@@ -2241,7 +2231,7 @@ Deseja agendar um horário rápido?
         const activateDna = document.getElementById('manual-veh-activate-dna').checked;
 
         try {
-            await API.registerVehicle({
+            const res = await API.registerVehicle({
                 license_plate: plate,
                 brand,
                 model,
@@ -2253,7 +2243,8 @@ Deseja agendar um horário rápido?
             });
 
             this.closeModal();
-            alert(`✅ Veículo ${brand} ${model} (${plate}) cadastrado com sucesso!`);
+            const dnaCode = (res && res.dna && res.dna.dna_code) || 'Ativo';
+            alert(`✅ Veículo ${brand} ${model} (${plate}) cadastrado com sucesso!\n\n🧬 Passaporte Digital DNA: ${dnaCode}\nO veículo já está registrado na plataforma sem necessidade de cadastrar no dossiê.`);
             await this.render();
             this.switchSection('veiculos-pesquisa');
 
@@ -2262,6 +2253,219 @@ Deseja agendar um horário rápido?
             this.handleSearchVehicle();
         } catch (err) {
             alert('Erro ao cadastrar veículo: ' + err.message);
+        }
+    },
+
+    // Notificação para recursos em roadmap
+    handleComingSoon(featureName) {
+        alert(`🚧 RECURSO EM DESENVOLVIMENTO\n\nA funcionalidade "${featureName}" está em fase de implantação no ERP DNA AUTO.`);
+    },
+
+    // Tour Guiado pelo Sistema
+    startTour(force = false) {
+        if (!force && localStorage.getItem('dna_tour_completed') === 'true') {
+            return;
+        }
+        this.tourActive = true;
+        this.tourCurrentStep = 0;
+        this.renderTourStep();
+    },
+
+    renderTourStep() {
+        if (!this.tourActive) return;
+        const step = this.tourSteps[this.tourCurrentStep];
+        if (!step) {
+            this.skipTour();
+            return;
+        }
+
+        // Limpa destaque anterior
+        document.querySelectorAll('.ws-tour-spotlight').forEach(el => el.classList.remove('ws-tour-spotlight'));
+
+        let container = document.getElementById('ws-tour-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'ws-tour-container';
+            document.body.appendChild(container);
+        }
+
+        const targetEl = document.getElementById(step.targetId);
+        if (targetEl) {
+            targetEl.classList.add('ws-tour-spotlight');
+            try {
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) {}
+        }
+
+        const isLast = this.tourCurrentStep === this.tourSteps.length - 1;
+        const isFirst = this.tourCurrentStep === 0;
+
+        container.innerHTML = `
+            <div class="ws-tour-backdrop" onclick="WorkshopView.skipTour()"></div>
+            <div class="ws-tour-card" style="position:fixed; z-index:10001; bottom:24px; right:24px; max-width:400px; background:#0f172a; border:2px solid #FFD21C; border-radius:12px; padding:20px; box-shadow:0 20px 40px rgba(0,0,0,0.85);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <span class="ws-tour-step-badge" style="background:rgba(255,210,28,0.15); color:#FFD21C; font-size:11px; font-weight:800; padding:4px 10px; border-radius:12px; border:1px solid rgba(255,210,28,0.3);">Passo ${this.tourCurrentStep + 1} de ${this.tourSteps.length}</span>
+                    <button class="ws-tour-skip-btn" onclick="WorkshopView.skipTour()" style="background:transparent; border:none; color:#94a3b8; font-size:11.5px; font-weight:700; cursor:pointer;" title="Pular Tour e não mostrar novamente">Pular Tour ✕</button>
+                </div>
+                <h4 style="color:#ffffff; font-size:15px; font-weight:800; margin:0 0 8px 0; display:flex; align-items:center; gap:6px;">
+                    ${step.title}
+                </h4>
+                <p style="color:#cbd5e1; font-size:12.5px; line-height:1.5; margin:0 0 16px 0;">
+                    ${step.desc}
+                </p>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        ${!isFirst ? `<button class="btn btn-sm btn-secondary" onclick="WorkshopView.prevTourStep()" style="font-size:11px;">← Anterior</button>` : ''}
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-sm btn-primary" onclick="WorkshopView.nextTourStep()" style="font-weight:800; font-size:12px; background:#FFD21C; color:#000; border:none; padding:6px 14px;">
+                            ${isLast ? 'Concluir Tour ✓' : 'Próximo →'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    nextTourStep() {
+        if (this.tourCurrentStep < this.tourSteps.length - 1) {
+            this.tourCurrentStep++;
+            this.renderTourStep();
+        } else {
+            this.skipTour();
+        }
+    },
+
+    prevTourStep() {
+        if (this.tourCurrentStep > 0) {
+            this.tourCurrentStep--;
+            this.renderTourStep();
+        }
+    },
+
+    skipTour() {
+        this.tourActive = false;
+        document.querySelectorAll('.ws-tour-spotlight').forEach(el => el.classList.remove('ws-tour-spotlight'));
+        const container = document.getElementById('ws-tour-container');
+        if (container) container.innerHTML = '';
+        localStorage.setItem('dna_tour_completed', 'true');
+    },
+
+    checkAutoTour() {
+        if (!localStorage.getItem('dna_tour_completed')) {
+            this.startTour(false);
+        }
+    },
+
+    // Salva configurações da oficina
+    async submitWorkshopSettings(e) {
+        if (e) e.preventDefault();
+        const wsId = this.getEffectiveWorkshopId();
+        const tradeName = document.getElementById('ws-cfg-name')?.value.trim();
+        const cnpj = document.getElementById('ws-cfg-cnpj')?.value.trim();
+        const phone = document.getElementById('ws-cfg-phone')?.value.trim();
+        const hours = document.getElementById('ws-cfg-hours')?.value.trim();
+        const autoObd2 = document.getElementById('ws-cfg-auto-obd2')?.checked ? 1 : 0;
+
+        try {
+            const res = await API.saveWorkshopSettings(wsId, {
+                trade_name: tradeName,
+                cnpj,
+                whatsapp_official: phone,
+                operating_hours: hours,
+                auto_send_obd2_alerts: autoObd2
+            });
+
+            if (this.dashboardData && this.dashboardData.workshop) {
+                this.dashboardData.workshop.trade_name = tradeName;
+                this.dashboardData.workshop.cnpj = cnpj;
+                this.dashboardData.workshop.whatsapp_official = phone;
+                this.dashboardData.workshop.whatsapp_status = res.whatsapp_status || 'PENDING_CONFIRMATION';
+                this.dashboardData.workshop.whatsapp_code = res.whatsapp_code;
+                this.officialPhone = phone;
+                this.officialWorkshopName = tradeName;
+            }
+
+            alert(`✅ ${res.message || 'Configurações salvas com sucesso!'}`);
+            const activeViewport = document.getElementById('ws-erp-active-viewport');
+            if (activeViewport) {
+                activeViewport.innerHTML = this.renderActiveSection();
+            }
+        } catch (err) {
+            alert('Erro ao salvar configurações: ' + err.message);
+        }
+    },
+
+    // Confirmação de código OTP do WhatsApp
+    async submitConfirmWhatsappCode(e) {
+        if (e) e.preventDefault();
+        const wsId = this.getEffectiveWorkshopId();
+        const codeInput = document.getElementById('ws-otp-code-input');
+        const code = (codeInput?.value || '').trim();
+
+        if (!code) {
+            alert('Por favor, informe o código de 6 dígitos.');
+            return;
+        }
+
+        try {
+            const res = await API.confirmWorkshopWhatsapp(wsId, code);
+            alert(`🎉 ${res.message}`);
+            if (this.dashboardData && this.dashboardData.workshop) {
+                this.dashboardData.workshop.whatsapp_status = 'VERIFIED';
+            }
+            const activeViewport = document.getElementById('ws-erp-active-viewport');
+            if (activeViewport) {
+                activeViewport.innerHTML = this.renderActiveSection();
+            }
+        } catch (err) {
+            alert('❌ Erro na confirmação: ' + err.message);
+        }
+    },
+
+    // Disparo preventivo em lote via WhatsApp
+    async triggerBatchWhatsappDispatch() {
+        const wsId = this.getEffectiveWorkshopId();
+        const feedbackBox = document.getElementById('ws-batch-dispatch-feedback');
+        if (feedbackBox) {
+            feedbackBox.style.display = 'block';
+            feedbackBox.innerHTML = `
+                <div style="padding:14px; background:#0d1524; border-radius:8px; border:1px solid rgba(0,212,255,0.3); color:#ffffff; font-size:11.5px; text-align:center;">
+                    <div class="pulse-dot" style="margin:0 auto 8px;"></div>
+                    <strong>Cruzando dados de telemetria OBD2 e preparando lote de disparos...</strong>
+                </div>
+            `;
+        }
+
+        try {
+            const res = await API.dispatchAutomaticWhatsapp(wsId);
+            if (feedbackBox) {
+                feedbackBox.innerHTML = `
+                    <div style="padding:14px; background:rgba(16,185,129,0.1); border-radius:8px; border:1px solid rgba(16,185,129,0.35); color:#ffffff; font-size:12px;">
+                        <div style="font-weight:800; color:#34d399; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                            <span>✅</span> <span>Lote Concluído: ${res.dispatched_count || 0} veículos notificados</span>
+                        </div>
+                        <p style="color:#cbd5e1; font-size:11px; margin-bottom:8px;">${res.message}</p>
+                        ${res.items && res.items.length > 0 ? `
+                            <div style="background:#080c14; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); font-family:monospace; font-size:10.5px; max-height:140px; overflow-y:auto;">
+                                ${res.items.map(it => `
+                                    <div style="margin-bottom:4px; padding-bottom:4px; border-bottom:1px solid rgba(255,255,255,0.04);">
+                                        🚗 <strong>${it.plate}</strong> (${it.model}) → 📞 ${it.phone}: <span style="color:#fbbf24;">${it.trigger}</span> (${Number(it.mileage).toLocaleString('pt-BR')} km)
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+        } catch (err) {
+            if (feedbackBox) {
+                feedbackBox.innerHTML = `
+                    <div style="padding:14px; background:rgba(239,68,68,0.1); border-radius:8px; border:1px solid rgba(239,68,68,0.35); color:#f87171; font-size:11.5px;">
+                        ❌ Erro ao disparar lote: ${err.message}
+                    </div>
+                `;
+            }
         }
     },
 

@@ -2,7 +2,7 @@
 ## Registro Oficial de Engenharia, Entregas, Decisões e Evolução Contínua
 
 > **Plataforma:** DNA AUTO — Identidade e Histórico Digital Permanente de Veículos  
-> **Versão:** 1.2.0 Enterprise  
+> **Versão:** 1.3.0 Enterprise  
 > **Repositório GitHub:** [https://github.com/leopalmeira/DNA-AUTO](https://github.com/leopalmeira/DNA-AUTO)  
 > **Deploy de Produção:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/)  
 > **Documento Mestre Detalhado:** Consulte também [DIARIO_DE_BORDO.md](file:///c:/Users/User/Desktop/DNA-AUTO/DIARIO_DE_BORDO.md).
@@ -41,25 +41,35 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 ### 🏭 Ciclo 15: Reformulação Profissional do Painel da Oficina / Auto Center em ERP Moderno
 - **Padrão ERP Corporativo (Estilo TOTVS + Identidade DNA AUTO):**
   - Isolamento de escopo CSS através de `body.is-workshop-erp`, eliminando scrolls residuais e garantindo altura 100vh com **zero estouro horizontal**.
-  - Sidebar fixa de 260px com 10 módulos organizados em acordeom expansível e gaveta responsiva móvel via botão `☰` com fechamento automático.
+  - Sidebar fixa de 260px com módulos operacionais e gaveta responsiva móvel via botão `☰` com fechamento automático.
   - Barra de status de rede com indicador pulsante `🟢 REDE DNA AUTO ONLINE` e popover de notificações rápidas `🔔` consolidando pendências operacionais.
 - **Módulo de Recepção e Balcão:**
-  - Duplo fluxo operacional: busca instantânea de veículos cadastrados (por placa, chassi, modelo ou cliente) com abertura de *Ficha Digital do Veículo* e botão de cadastro de novos carros.
-  - 6 Cards de KPIs dinâmicos (Faturamento, O.S. Ativas, Carros no Box, Alertas Preditivos, Ativações DNA e Comissões).
-  - 6 Ações Rápidas de Balcão para agilidade dos recepcionistas e consultores técnicos.
+  - Duplo fluxo operacional: busca instantânea de veículos cadastrados com abertura de *Ficha Digital do Veículo* e botão de cadastro de novos carros.
+  - 6 Cards de KPIs dinâmicos e 6 Ações Rápidas de Balcão para agilidade dos recepcionistas.
 - **Radar Preditivo OBD2 (Telemetria Integrada ao App do Cliente):**
-  - Semáforos visuais em tempo real por quilometragem e tempo de uso:
-    - 🔴 **VENCIDO / URGENTE:** Correia dentada e óleo de câmbio automático ATF/CVT vencidos.
-    - 🟡 **ATENÇÃO / PRÓXIMO:** Pastilhas de freio e óleo do motor a menos de 1.200 km da revisão.
-    - 🟢 **EM DIA / OK:** Velas, filtros e fluidos revisados.
-  - Disparo de mensagens personalizadas no WhatsApp oficial do proprietário com cálculo de riscos de quebra e valores estimados de serviço.
+  - Semáforos visuais em tempo real por quilometragem (🔴 Urgente, 🟡 Atenção, 🟢 Em dia).
+  - Disparo de mensagens personalizadas no WhatsApp oficial do proprietário.
 - **Central de Agendamentos Inteligente com Prevenção de Conflitos:**
-  - Sugestão automática de 3 opções de datas e horários úteis futuros para envio ao cliente.
-  - Nova tabela no banco de dados SQLite: `workshop_appointments`.
-  - Rotas REST com validação de colisão de horários (`HTTP 409 Conflict`), listagem e atualização de status operacional (`PENDING`, `CONFIRMED`, `IN_SERVICE`, `COMPLETED`, `CANCELLED`).
-- **Garantias de Engenharia:**
-  - 20/20 testes automatizados passando com 100% de sucesso.
-  - Nenhuma alteração na Landing Page pública nem nos fluxos protegidos de autenticação.
+  - Tabela `workshop_appointments` e rotas REST com validação de colisão de horários (`HTTP 409 Conflict`).
+
+### 🚀 Ciclo 16: Persistência de Sessão no F5, Menu Corporativo por Seções, Auto-DNA, WhatsApp com OTP e Tour Guiado
+- **Persistência de Sessão no F5:**
+  - Correção no `init()` do `public/js/app.js` restaurando de forma resiliente a sessão da oficina sem forçar redirecionamento para a landing page.
+  - Sincronização de URL via hash `#workshop` (`history.replaceState`) e armazenamento de `dna_current_view`.
+- **Menu Corporativo em Seções Claras & Itens em Roadmap:**
+  - Menu organizado em 5 seções bem delimitadas: `OPERAÇÃO & BALCÃO`, `OFICINA & SERVIÇOS`, `PREDITIVA OBD2`, `CLIENTES & CONTATO` e `GESTÃO & SISTEMA`.
+  - Recursos em desenvolvimento com badge `[Em breve]`, texto tachado (`line-through`) e feedback amigável via modal informativo.
+- **Auto-DNA Permanente em Todo Cadastro de Carro:**
+  - Endpoints `/vehicles/register` e `/vehicles/register-from-api` ativam automaticamente o código `DNA-BR-XXXX-XXXX-XXX` e criam o registro de saúde inicial ativo, fazendo o carro constar na base DNA imediatamente sem necessidade de cadastro posterior no dossiê.
+- **WhatsApp Oficial da Oficina com Validação OTP de 6 Dígitos e Disparo em Lote:**
+  - Migração de colunas na tabela `workshops` e rotas `PUT /workshops/:id/settings`, `POST /workshops/:id/whatsapp/confirm` e `POST /workshops/:id/whatsapp/dispatch-batch`.
+  - Tela de configurações com badge visual `🟢 Ativo & Verificado` ou `🟡 Confirmação Pendente`, inserção de código OTP (com código mestre `123456`) e disparo preventivo em lote para clientes com troca de óleo, correia ou pastilhas vencidas.
+  - Documentação arquitetural recomendando integração com motores open-source **@whiskeysockets/baileys** (WebSocket) e **Evolution API** (REST/Webhooks).
+- **Tour Guiado pelo Sistema para Lojistas e Gestores:**
+  - Onboarding interativo com 6 passos explicando a saudação, indicadores diários, ações rápidas, pesquisa de veículos, telemetria OBD2 e navegação corporativa.
+  - Botão "Pular Tour" sempre visível e persistência no `localStorage`.
+- **Qualidade e Testes:**
+  - 24/24 testes automatizados de integração passando com 100% de sucesso em `test/api.test.js`.
 
 ---
 
