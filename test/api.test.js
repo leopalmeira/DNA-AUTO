@@ -382,7 +382,30 @@ async function runTests() {
         console.assert(historyList.length >= 1, 'Histórico deve registrar o envio');
         console.log(`✅ 31. Envio & Histórico Baileys: Mensagem enviada e registrada no histórico da oficina (${historyList.length} mensagens no log)`);
 
-        console.log('\n🎉 TODOS OS 31 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 32: Telemetria em Tempo Real do Mini OBD2 (ELM327 BLE)
+        const resObd = await fetch(`${BASE_URL}/vehicles/BRA2E19/obd`);
+        const dataObd = await resObd.json();
+        console.assert(resObd.status === 200, 'Falha ao consultar telemetria OBD2');
+        console.assert(dataObd.success === true, 'Sucesso esperado na telemetria');
+        console.assert(dataObd.device.connected === true, 'Dispositivo OBD2 deve estar conectado');
+        console.assert(dataObd.telemetry.rpm > 0, 'RPM deve ser maior que 0');
+        console.assert(dataObd.telemetry.coolant_temp_c === 90, 'Temperatura do motor incorreta');
+        console.assert(dataObd.telemetry.battery_voltage >= 13.8, 'Tensão do alternador insuficiente');
+        console.assert(dataObd.diagnostics.dtc_count === 0, 'Não deve haver códigos de falha DTC ativos');
+        console.log(`✅ 32. Telemetria Mini OBD2: Dongle ${dataObd.device.name} conectado | RPM: ${dataObd.telemetry.rpm} | Temp: ${dataObd.telemetry.coolant_temp_c}°C | Bateria: ${dataObd.telemetry.battery_voltage}V | Falhas: ${dataObd.diagnostics.dtc_count} DTC`);
+
+        // Teste 33: Documentos Digitais Autenticados (CRLV-e 2026 e Certificados)
+        const resDocs = await fetch(`${BASE_URL}/vehicles/BRA2E19/documents`);
+        const dataDocs = await resDocs.json();
+        console.assert(resDocs.status === 200, 'Falha ao consultar documentos digitais');
+        console.assert(dataDocs.success === true, 'Sucesso esperado nos documentos');
+        console.assert(Array.isArray(dataDocs.documents) && dataDocs.documents.length >= 4, 'Deveriam existir ao menos 4 documentos veiculares');
+        const crlvDoc = dataDocs.documents.find(d => d.id === 'doc_crlv_2026');
+        console.assert(!!crlvDoc, 'CRLV-e 2026 não localizado');
+        console.assert(crlvDoc.badge === 'LICENCIADO 2026', 'Status do licenciamento 2026 incorreto');
+        console.log(`✅ 33. Documentos Digitais Autenticados: ${dataDocs.documents.length} documentos carregados (incluindo ${crlvDoc.title} com status "${crlvDoc.badge}")`);
+
+        console.log('\n🎉 TODOS OS 33 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

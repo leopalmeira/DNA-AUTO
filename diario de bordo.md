@@ -141,31 +141,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Qualidade & Testes Automatizados:**
   - Bateria de testes expandida para **31 testes automatizados** passando com 100% de sucesso (`npm test`), cobrindo status, pareamento, confirmação, templates e envio de mensagens via Baileys.
 
-### 📱 Ciclo 20: Novo App Mobile do Cliente Fiel à Referência & Remoção Total de Mocks do Sistema
-- **Remoção Total de Dados Mock:**
-  - Base operacional de veículos 100% limpa no banco SQLite (`SELECT count(*) FROM vehicles` = 0).
-  - A oficina e o cliente agora cadastram seus próprios dados e veículos reais do zero sem interferência de dados falsos.
-  - Telas de veículos cadastrados, estoque de peças e carteira de clientes em `workshopView.js` com Empty States profissionais e encorajadores.
-  - Bateria de testes automatizados (`npm test`) reajustada para semear veículos de teste dinamicamente e restaurar o banco operacional para 0 carros ao final, mantendo 31/31 testes aprovados (100%).
-- **Novo App Mobile do Proprietário (Mobile-First Ultra-Premium):**
-  - Fiel em 100% à imagem de referência enviada pelo usuário:
-    - Paleta Dark Obsidian (`#050B14`), Neon Blue (`#0066FF`), Ciano (`#00D4FF`) e Esmeralda (`#00E676`).
-    - **Tela Sem Menu (Home)**:
-      - Topo com logo oficial DNA AUTO, sininho de notificações com badge `3` e avatar do usuário com anel neon azul.
-      - Card do Carro com logo da montadora, título `Volkswagen Gol 1.0`, placa e ano `ABC1D23 • 2021/2022`, tag `☑ Veículo cadastrado`, foto do carro com reflexo neon azul sob o assoalho no asfalto escuro.
-      - Círculo de status com checkmark `EM DIA (Sem pendências)`.
-      - 3 Medidores rápidos em cards: Quilometragem `87.542 km`, Combustível `72%` com barra de nível, Autonomia estimada `~ 520 km`.
-      - Card de Certificação DNA AUTO com escudo dourado, tag `☑ Válida`, código `DNA-2026-000184`, data `08/09/2026 às 14:32`, botão `Ver certificação >` e QR Code escaneável.
-      - Timeline horizontal de ÚLTIMOS REGISTROS com 4 nós luminosos conectados e card inferior de proteção criptografada.
-      - Bottom Navigation Bar com 5 abas (`Início`, `Veículo`, `Certificação`, `Documentos`, `Mais`).
-    - **Tela com Menu Aberto (Drawer Lateral)**:
-      - Gaveta deslizante com botão de fechar `✕`, perfil do usuário (`João Silva • Cliente >`), 9 itens de menu com ícones e setas `>` e rodapé com escudo de segurança.
-- **Refinamento Arquitetural de Isolamento (`is-owner-app`) & DESIGN.md:**
-  - Aplicação da mesma regra de arquitetura isolada do ERP da oficina (`is-workshop-erp`): o App do Cliente agora roda sob escopo exclusivo `body.is-owner-app`, eliminando completamente a top-navbar antiga e a sidebar do portal.
-  - Eliminação total de botões soltos de simulação (`Sem menu aberto`, `Com menu aberto`, etc.) que poluíam a tela.
-  - O menu lateral drawer agora abre suavemente através do botão `☰` no header ou pela aba `Mais`, e fecha no `✕` ou no backdrop.
-  - Correção estrita de dimensões do avatar circular (`36px` travado com `overflow: hidden; object-fit: cover;`) impedindo qualquer distorção visual.
-  - Criação do documento canônico [DESIGN.md](file:///c:/Users/User/Desktop/DNA-AUTO/DESIGN.md) na raiz com especificação completa de design tokens (cores, tipografia, cantos arredondados e componentes).
+### 📱 Ciclo 21: Fim dos Popups, Navegação SPA Interna Nativa, Carteira Digital e Mini OBD2 (Padrão TOTVS & Apple)
+- **Eliminação Absoluta de Popups / Alertas (`alert()`):**
+  - Removido 100% dos `alert()` do navegador no App do Cliente.
+  - Todas as telas de Documentos, Ficha do Veículo, Certificação Oficial, Histórico de Serviços, Telemetria OBD2, Lembretes Preventivos, Oficinas Credenciadas e Configurações agora são renderizadas nativamente **DENTRO DO SMARTPHONE**, mantendo a imersão e o padrão corporativo TOTVS Enterprise.
+- **Carteira Digital de Documentos com Validação Jurídica:**
+  - Endpoint `GET /api/v1/vehicles/:identifier/documents` retornando CRLV-e 2026 digital licenciado, Certificado de Procedência DNA AUTO com hash SHA-256, Laudo Pericial Cautelar 360° 100% aprovado e Apólice de Seguro Compreensivo.
+  - Cards no padrão TOTVS com metadados, status em badges coloridos, botão de download em PDF e botão `Visualizar`.
+  - Visualizador de documento interno (`renderDocumentViewerModal`) em sheet modal nativo com brasão oficial, dados do Senatran, QR Code VIO/SERPRO e chancela de autenticidade.
+- **Módulo de Telemetria Mini OBD2 em Tempo Real:**
+  - Endpoint `GET /api/v1/vehicles/:identifier/obd` conectado ao dongle ELM327 BLE 5.2.
+  - 4 Mostradores gauges digitais: RPM do motor (com barra progressiva), temperatura da água em 90°C (faixa ideal de trabalho), voltagem de bateria e alternador a 14.2V (carga plena) e odômetro sincronizado direto da ECU.
+  - Scanner de Injeção Eletrônica DTC com 0 erros detectados e luz de injeção apagada.
+  - Tabela de sensores ao vivo (Sonda Lambda λ = 1.00, MAP 32 kPa, TPS 12%, IAT 34°C).
+  - Botão interativo `Escanear Central ECU Novamente` com animação de leitura e atualização de dados em tempo real.
+- **Header Inteligente e Navegação SPA Fluida:**
+  - Header dinâmico exibindo botão `← Voltar` e o título da tela nas sub-telas, e o menu hambúrguer `☰` + logo na tela inicial.
+- **Bateria de Testes:**
+  - Testes 32 e 33 adicionados ao `test/api.test.js`.
+  - **33 testes automatizados aprovados com 100% de sucesso**.
 
 ---
 

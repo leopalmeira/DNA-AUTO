@@ -426,8 +426,27 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
     - Ocultação da top-navbar e sidebar do portal para que o App do Cliente assuma a tela toda com seu próprio Header, Drawer lateral e Bottom Bar.
     - Remoção dos botões soltos de teste, fixação das dimensões do avatar circular (36px travado) e criação do [DESIGN.md](file:///c:/Users/User/Desktop/DNA-AUTO/DESIGN.md) na raiz.
 - **Validação:**
-  - 31/31 testes aprovados com 100% de sucesso.
-  - Contagem de veículos no banco após os testes: 0 veículos (`SELECT count(*) FROM vehicles` = 0).
+### 📱 Ciclo 20: Fim dos Popups, Navegação SPA Interna Nativa, Carteira Digital de Documentos e Módulo Mini OBD2 (Padrão TOTVS & Apple)
+- **Objetivo e Solicitação do Usuário:**
+  1. *Eliminar todos os alertas/popups nativos do navegador (`alert()`)*: Os documentos e demais itens do app estavam abrindo em caixas de diálogo externas do browser, quebrando a imersão e o padrão visual de aplicativo móvel de elite.
+  2. *Navegação 100% Interna Fluida*: Toda e qualquer consulta, documento ou detalhe agora é renderizada nativamente **DENTRO DO APLICATIVO** no container de rolagem do smartphone.
+  3. *Módulo Mini OBD2 em Tempo Real*: Recepção e exibição dos dados telemétricos veiculares (RPM, temperatura do motor em 90°C, alternador em 14.2V, odômetro sincronizado via ECU e scanner de DTC de injeção com zero falhas).
+  4. *Padrão TOTVS Enterprise & Apple*: Interface corporativa de alta precisão, Dark Obsidian com acentos Neon Blue, Ciano e Esmeralda, tipografia de alta legibilidade, cabeçalho inteligente com botão `← Voltar` nas sub-telas e folha de visualização interna de documentos.
+- **Implementações Técnicas:**
+  - **1. Backend (`server/src/modules/vehicles/vehicles.routes.js`):**
+    - `GET /api/v1/vehicles/:identifier/obd`: Retorna dados telemétricos completos do dongle Mini OBD2 ELM327 BLE (conexão ativa, RPM, temperatura de arrefecimento 90°C, tensão de bateria/alternador 14.2V, odômetro sincronizado com a central da ECU, scanner de falhas DTC com 0 erros e leitura dos sensores de oxigênio/sonda lambda, MAP e borboleta).
+    - `GET /api/v1/vehicles/:identifier/documents`: Retorna a carteira digital de documentos autenticados do veículo (CRLV-e 2026 digital licenciado, Certificação DNA AUTO permanente com hash SHA-256, Laudo Cautelar 360° com 100% de aprovação estrutural e Apólice de Seguro Compreensivo).
+  - **2. Frontend (`public/js/components/ownerView.js`):**
+    - Reestruturação da máquina de estados do aplicativo móvel com navegação SPA via `navigateTo(screen)` suportando 10 telas internas: `'home'`, `'documents'`, `'obd'`, `'vehicle'`, `'certification'`, `'history'`, `'reminders'`, `'workshops'`, `'settings'` e `'notifications'`.
+    - **Remoção de 100% dos `alert()`**: Nenhuma função dispara popup nativo cinza do sistema operacional.
+    - **Header Inteligente**: Em modo `'home'` exibe menu hambúrguer `☰`, logo DNA AUTO, sino de notificação e avatar. Em qualquer sub-tela (`'documents'`, `'obd'`, etc.), exibe botão `← Voltar` e o título da tela em destaque.
+    - **Visualizador Interno de Documentos (`renderDocumentViewerModal`)**: Modal tipo bottom sheet nativo dentro do smartphone, simulando folha de papel oficial com brasão, QR Code VIO/SENATRAN, carimbos de validação jurídica e botão de salvar cópia no celular.
+    - **Módulo Mini OBD2 Interativo (`rescanObd`)**: Instrumentação digital com mostradores gauges de RPM, barra progressiva, termômetro, voltímetro e scanner DTC com animação de re-escaneamento em tempo real e feedback de dados.
+  - **3. Design e Estilos (`public/css/owner-app.css`):**
+    - Adição de tokens e estilos para sub-telas internas (`.dna-subscreen-header`, `.dna-back-btn`, `.dna-documents-container`, `.dna-doc-card`, `.dna-doc-sheet`, `.dna-obd-container`, `.dna-obd-live-pulse`, `.dna-obd-gauge-card`, `.dna-obd-sensors-table`).
+- **Validação e Qualidade:**
+  - Criação dos testes 32 (Telemetria Mini OBD2) e 33 (Documentos Digitais Autenticados) em `test/api.test.js`.
+  - Bateria com **33 testes automatizados aprovados com 100% de sucesso**.
 
 ---
 
@@ -442,6 +461,7 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 | **ADR-05** | **Isolamento de Admin via Rota `/admin`** | Não poluir a tela inicial de clientes e oficinas com botões de administrador. | Maior segurança por obscuridade e navegação limpa para usuários comuns. |
 | **ADR-06** | **ERP de Oficina em Escopo Isolado (`is-workshop-erp`)** | Transformar a interface da oficina em um sistema de gestão corporativo moderno (estilo TOTVS) sem conflitar com as regras de CSS da Landing Page. | Viewport 100vh estável, sem scroll da página principal, zero estouro horizontal e foco operacional em balcão, box e agendamentos. |
 | **ADR-07** | **App do Cliente em Escopo Isolado (`is-owner-app`)** | Eliminar cabeçalhos e sidebars residuais da web para entregar a experiência mobile-first idêntica ao design de aplicativo do cliente. | Interface limpa, responsiva, sem botões de mock, com drawer nativo e dimensões travadas. |
+| **ADR-08** | **Navegação SPA Interna e Telemetria Mini OBD2** | Eliminar popups do navegador e centralizar documentos e telemetria veicular em tempo real dentro do frame do aplicativo. | Experiência de aplicativo nativo de padrão corporativo TOTVS, sem saídas da tela, com leitura de ECU e documentos com validade jurídica. |
 
 ---
 

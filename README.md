@@ -3,7 +3,7 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-31%2F31%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-33%2F33%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
@@ -160,11 +160,30 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
   - Prevenção automática de colisão de horários no banco de dados SQLite (`HTTP 409 Conflict`).
   - Gestão de estados de agendamento: `PENDING`, `CONFIRMED`, `IN_SERVICE`, `COMPLETED` e `CANCELLED`.
 
-### 5. 🚗 Painel do Proprietário & Dossiê 360°
-- **Dossiê 360° Completo:** Visualização em linha do tempo com filtros e Score de Saúde (0 a 100).
-- **Lupa Investigativa:** Campo de busca rápida no histórico (ex: pesquise *"óleo"* ou *"correia"* para achar o serviço exato).
-- **Declaração de Serviços:** O próprio dono pode cadastrar serviços antigos que possui guardados em notas fiscais.
-- **Relatório de Venda & Cartaz com QR Code:** Geração de laudo para anexar ao anúncio do carro e cartaz imprimível em PDF para colocar no vidro do veículo.
+### 5. 📱 Novo App Mobile do Proprietário (Padrão Apple & TOTVS Enterprise)
+- **Acesso Direto:** `#owner` (quando logado como Cliente ou selecionado no simulador)
+- **Design de Alta Fidelidade (Dark Obsidian & Neon Blue):**
+  - Viewport móvel nativo sem barras ou menus residuais da web (`body.is-owner-app`).
+  - Card principal com foto do carro, placa, ano, status de saúde `EM DIA` com checkmark esmeralda e reflexo neon sob o asfalto.
+  - 3 Medidores rápidos: Quilometragem `87.542 km`, Combustível `72%` com barra dinâmica e Autonomia `~ 520 km`.
+  - Timeline horizontal de últimos registros e card de proteção criptografada.
+  - Barra de navegação inferior fixa com 5 abas (`Início`, `Veículo`, `Certificação`, `Documentos`, `Mais`).
+  - Drawer lateral completo com 9 itens de menu e card de segurança no rodapé.
+- **📁 Carteira Digital de Documentos (100% Nativa, Zero Popups):**
+  - Documentos integrados com visualização e download em PDF dentro do app:
+    1. **CRLV-e Digital 2026:** Licenciamento quitado com validação Senatran e QR Code VIO/SERPRO.
+    2. **Certificação DNA AUTO:** Passaporte digital com hash SHA-256 e selo de autenticidade vitalício.
+    3. **Laudo Pericial Cautelar 360°:** 100% aprovado, sem sinistros graves ou leilão.
+    4. **Apólice de Seguro Auto Protegido:** Cobertura 100% FIPE e assistência 24h.
+  - Visualizador de folha oficial em sheet modal nativo com tabelas de dados regulatórios e selos de conformidade jurídica.
+- **⚡ Módulo de Telemetria Mini OBD2 (Tempo Real):**
+  - Conexão com dongle Mini OBD2 ELM327 BLE 5.2 via Bluetooth Low Energy.
+  - 4 Mostradores gauges digitais: RPM do motor com barra de rotação, temperatura do líquido de arrefecimento em 90°C (faixa ideal), tensão da bateria/alternador em 14.2V e odômetro lido da ECU.
+  - Scanner de Injeção Eletrônica DTC com 0 erros detectados e luz de injeção apagada.
+  - Tabela de sensores ao vivo (Sonda Lambda λ = 1.00, MAP 32 kPa, TPS 12%, IAT 34°C).
+  - Botão `Escanear Central ECU Novamente` com leitura e recálculo dinâmico em tempo real.
+- **Zero Popups / Alerts:**
+  - 100% das telas (Documentos, Veículo, Certificação, Histórico, OBD2, Lembretes, Oficinas e Configurações) funcionam como navegação SPA interna sem qualquer caixa cinza do navegador.
 
 ---
 
