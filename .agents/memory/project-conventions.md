@@ -6,8 +6,9 @@ updated: 2026-09-09
 
 # Project Conventions
 
-## Git Workflow & Deploy
-- Sempre commitar no git e realizar push para o repositório remoto (`origin master`) ao concluir alterações e ciclos de tarefas.
+## Git Workflow & Deploy Remoto Imediato
+- Imediatamente após qualquer alteração ou ciclo de tarefa, realizar `git add`, `git commit` e OBRIGATORIAMENTE `git push origin master` para o GitHub remoto.
+- Nenhuma alteração de código ou documentação deve permanecer pendente apenas no ambiente local.
 - As mensagens de commit devem ser claras e em conformidade com Conventional Commits (ex: `feat:`, `fix:`, `docs:`, `refactor:`).
 
 ## Documentação Contínua Obrigatória
