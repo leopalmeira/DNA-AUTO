@@ -15,12 +15,14 @@ const App = {
         // 1. Verificar se há sessão ativa salva no navegador
         const savedUser = this.getLoggedUser();
         let savedToken = localStorage.getItem('dna_token');
-        const isExplicitLogin = window.location.pathname === '/login' || window.location.hash === '#login';
-        const isExplicitAdmin = window.location.pathname === '/admin' || window.location.hash === '#admin';
-        const isExplicitLanding = (window.location.pathname === '/landing' || window.location.hash === '#landing') && !savedUser;
+        const pathname = (window.location.pathname.toLowerCase().replace(/\/+$/, '')) || '/';
+        const hash = window.location.hash.toLowerCase();
+        const isExplicitLogin = pathname === '/login' || hash === '#login';
+        const isExplicitAdmin = pathname === '/admin' || hash === '#admin';
+        const isLandingRoute = pathname === '/' || pathname === '/cliente' || pathname === '/autocente' || pathname === '/autocenter' || hash === '#cliente' || hash === '#autocente' || hash === '#autocenter' || hash === '#landing' || hash === '#home';
 
-        // Se houver usuário salvo e não solicitou explicitamente a tela de login deslogada
-        if (savedUser && savedUser.role_code && !isExplicitLogin) {
+        // Se houver usuário salvo e não estiver acessando explicitamente tela deslogada ou landing
+        if (savedUser && savedUser.role_code && !isExplicitLogin && !isLandingRoute) {
             if (!savedToken) {
                 savedToken = 'sess_' + savedUser.role_code.toLowerCase() + '_' + (savedUser.id || Date.now());
                 localStorage.setItem('dna_token', savedToken);
@@ -33,35 +35,76 @@ const App = {
             return;
         }
 
-        // 2. Rotas diretas via URL / Hash
-        if (window.location.hash === '#owner') {
-            this.switchView('owner');
-        } else if (window.location.hash === '#workshop') {
-            this.switchView('workshop');
-        } else if (isExplicitAdmin) {
-            console.log('🛡️ Acesso Admin detectado. Abrindo login administrativo...');
-            this.switchView('login-admin');
-        } else if (isExplicitLogin) {
-            console.log('🔒 Tela de Login solicitada...');
-            this.switchView('login');
-        } else {
-            console.log('🌐 Exibindo Landing Page oficial (R$ 59,90)...');
-            this.switchView('landing');
-        }
+        // 2. Roteamento reativo inicial
+        this.handleRoute();
 
-        // 3. Ouvinte reativo para navegação por hash (#owner, #workshop, #landing)
-        window.addEventListener('hashchange', () => {
-            const h = window.location.hash;
-            if (h === '#owner') {
-                this.switchView('owner');
-            } else if (h === '#workshop') {
-                this.switchView('workshop');
-            } else if (h === '#admin') {
-                this.switchView('admin');
-            } else if (h === '#landing' || h === '') {
-                this.switchView('landing');
-            }
+        // 3. Ouvintes reativos para navegação SPA e histórico (Voltar/Avançar)
+        window.addEventListener('popstate', () => {
+            this.handleRoute();
         });
+
+        window.addEventListener('hashchange', () => {
+            this.handleRoute();
+        });
+    },
+
+    // ── Roteador Central SPA por Pathname e Hash ──
+    handleRoute() {
+        const pathname = (window.location.pathname.toLowerCase().replace(/\/+$/, '')) || '/';
+        const hash = window.location.hash.toLowerCase();
+
+        if (pathname === '/cliente' || hash === '#cliente') {
+            this.switchView('landing-client');
+        } else if (pathname === '/autocente' || pathname === '/autocenter' || hash === '#autocente' || hash === '#autocenter') {
+            this.switchView('landing-workshop');
+        } else if (pathname === '/owner' || hash === '#owner') {
+            this.switchView('owner');
+        } else if (pathname === '/workshop' || hash === '#workshop') {
+            this.switchView('workshop');
+        } else if (pathname === '/admin' || hash === '#admin') {
+            this.switchView('admin');
+        } else if (pathname === '/login' || hash === '#login') {
+            this.switchView('login');
+        } else if (pathname === '/dossier' || hash === '#dossier') {
+            this.switchView('dossier');
+        } else if (pathname === '/sales' || hash === '#sales') {
+            this.switchView('sales');
+        } else if (hash === '#landing') {
+            this.switchView('landing-home');
+        } else {
+            this.switchView('landing-home');
+        }
+    },
+
+    // ── Navegação SPA sem Recarregar a Página ──
+    navigateTo(path, replace = false) {
+        if (!path) path = '/';
+        try {
+            if (replace) {
+                history.replaceState(null, '', path);
+            } else {
+                history.pushState(null, '', path);
+            }
+        } catch (_) {}
+        this.handleRoute();
+    },
+
+    // ── Acesso Direto ao Credenciamento Oficial de Oficina ──
+    goToRegisterWorkshop() {
+        if (typeof LoginView !== 'undefined') {
+            LoginView.selectedRoleTab = 'WORKSHOP';
+            LoginView.activeMode = 'REGISTER';
+        }
+        this.switchView('login');
+    },
+
+    // ── Acesso Direto ao Cadastro do Dono de Carro ──
+    goToRegisterOwner() {
+        if (typeof LoginView !== 'undefined') {
+            LoginView.selectedRoleTab = 'OWNER';
+            LoginView.activeMode = 'REGISTER';
+        }
+        this.switchView('login');
     },
 
     // ── Gestão de Sessão Local ──
@@ -83,7 +126,7 @@ const App = {
 
     onBrandClick() {
         if (!this.currentRole) {
-            this.switchView('landing');
+            this.navigateTo('/');
         } else if (this.currentRole === 'ADMIN') {
             this.switchView('admin');
         } else if (this.currentRole === 'WORKSHOP') {
@@ -127,8 +170,8 @@ const App = {
 
     // ── Alternador Central de Telas com Bloqueio RBAC ──
     switchView(viewName, param = null) {
-        // Views públicas acessíveis diretamente (incluindo App do Cliente e ERP da Oficina)
-        const publicViews = ['landing', 'login', 'login-admin', 'sales', 'dossier', 'owner', 'workshop'];
+        // Views públicas acessíveis diretamente (incluindo Landings, App do Cliente e ERP da Oficina)
+        const publicViews = ['landing', 'landing-home', 'landing-client', 'landing-workshop', 'login', 'login-admin', 'sales', 'dossier', 'owner', 'workshop'];
 
         // Se não logado e tentando acessar área restrita da matriz administrativa
         if (viewName === 'admin' && this.currentRole !== 'ADMIN') {
@@ -146,8 +189,10 @@ const App = {
             this.currentRole = 'WORKSHOP';
         }
 
+        const isLandingGroup = ['landing', 'landing-home', 'landing-client', 'landing-workshop'].includes(viewName);
+
         // Se estiver saindo da landing page ou login para uma tela do sistema interno, restaura layout
-        if (viewName !== 'landing' && viewName !== 'login' && viewName !== 'login-admin') {
+        if (!isLandingGroup && viewName !== 'login' && viewName !== 'login-admin') {
             if (typeof LoginView !== 'undefined' && LoginView.restoreLayout) {
                 LoginView.restoreLayout();
             }
@@ -185,13 +230,41 @@ const App = {
             document.body.classList.remove('is-owner-app');
             if (viewName === 'admin' && window.location.hash !== '#admin') {
                 try { history.replaceState(null, '', '#admin'); } catch (_) { window.location.hash = '#admin'; }
-            } else if (viewName === 'landing' && window.location.hash !== '#landing') {
-                try { history.replaceState(null, '', '#landing'); } catch (_) { window.location.hash = '#landing'; }
+            } else if (viewName === 'landing-home') {
+                if (window.location.pathname !== '/' && window.location.hash !== '') {
+                    try { history.replaceState(null, '', '/'); } catch (_) {}
+                }
+            } else if (viewName === 'landing-client') {
+                if (window.location.pathname !== '/cliente' && window.location.hash !== '#cliente') {
+                    try { history.replaceState(null, '', '/cliente'); } catch (_) {}
+                }
+            } else if (viewName === 'landing-workshop') {
+                if (window.location.pathname !== '/autocente' && window.location.hash !== '#autocente') {
+                    try { history.replaceState(null, '', '/autocente'); } catch (_) {}
+                }
             }
         }
 
         // Renderização dos Módulos
-        if (viewName === 'landing') {
+        if (viewName === 'landing-home') {
+            if (typeof LandingHomeView !== 'undefined') {
+                LandingHomeView.render();
+            } else {
+                LandingView.render('/');
+            }
+        } else if (viewName === 'landing-client') {
+            if (typeof LandingClientView !== 'undefined') {
+                LandingClientView.render();
+            } else {
+                LandingView.render('/cliente');
+            }
+        } else if (viewName === 'landing-workshop') {
+            if (typeof LandingWorkshopView !== 'undefined') {
+                LandingWorkshopView.render();
+            } else {
+                LandingView.render('/autocente');
+            }
+        } else if (viewName === 'landing') {
             LandingView.render();
         } else if (viewName === 'login-admin') {
             LoginView.render(true);
@@ -267,10 +340,10 @@ const App = {
         this.currentRole = null;
         API.setToken(null);
         API.setDemoUser(null);
-        try { history.replaceState(null, '', '#landing'); } catch (_) { window.location.hash = '#landing'; }
+        try { history.replaceState(null, '', '/'); } catch (_) {}
 
         this.syncProfileState(null);
-        this.switchView('landing');
+        this.switchView('landing-home');
     },
 
     // ── Sincronização Estrita dos Módulos Visíveis (ISOLAMENTO TOTAL) ──

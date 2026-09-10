@@ -243,6 +243,35 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Adicionado o **Teste 36** em `test/api.test.js` validando manifesto, service worker e ícones.
      - **36 testes automatizados aprovados com 100% de sucesso**.
 
+### 🚀 Ciclo 26: Reestruturação Completa das Landings do DNA AUTO (Separação Exclusiva de Públicos B2C e B2B)
+- **Objetivo e Solicitação do Usuário:**
+  - Reformular completamente a experiência das landing pages do DNA AUTO, acabando com a mistura de públicos e criando uma arquitetura limpa, mobile-first e de alta conversão:
+    1. `/` -> HOME / Porta de entrada para identificação e direcionamento dos dois públicos.
+    2. `/cliente` -> Landing exclusiva para Proprietário de Veículo, direcionando diretamente ao App do Cliente (`#owner` / `OwnerView`).
+    3. `/autocente` -> Landing exclusiva para Dono de Oficina / Auto Center, direcionando diretamente ao ERP da Oficina (`#workshop` / `WorkshopView`) e credenciamento oficial.
+  - Eliminação de dados/métricas inventadas, dashboards gigantescos e poluição visual.
+- **Implementações Técnicas e Entregas:**
+  1. **Arquitetura de Rotas e SPA sem Reload (`public/js/app.js`):**
+     - Roteador `handleRoute()` e método `navigateTo(path)` mapeando `/`, `/cliente`, `/autocente` (e compatibilidade `/autocenter`).
+     - Ouvintes reativos para eventos `popstate` e `hashchange`.
+     - Integração direta dos CTAs com as rotas reais do projeto: App do Cliente (`#owner`), ERP da Oficina (`#workshop`) e Credenciamento Oficial (`App.goToRegisterWorkshop()`).
+  2. **Novos Componentes Modulares (`public/js/components/`):**
+     - `landingHomeView.js` (`LandingHomeView`): Apresentação institucional limpa com 2 cards interativos de seleção de perfil.
+     - `landingClientView.js` (`LandingClientView`): Landing focada no dono do carro, com 5 benefícios essenciais, mockup real do app do cliente, prevenção, FAQ em acordeão (5 perguntas) e barra fixa de CTA no celular.
+     - `landingWorkshopView.js` (`LandingWorkshopView`): Landing focada em oficinas, com seção de 3 problemas, diagrama da solução, mockup do radar preditivo com dados demonstrativos claramente identificados, mensagem WhatsApp, 4 benefícios, 3 passos operacionais, credenciamento, FAQ em acordeão (6 perguntas) e barra fixa de CTA no celular.
+     - `landingView.js`: Controlador unificado e fachada delegadora que roteia dinamicamente e preserva compatibilidade retroativa.
+  3. **Estilos e Design System Mobile-First (`public/css/landing.css`):**
+     - Estética Dark Obsidian, azul tecnológico, ciano, grafite e toques de dourado (#FFD21C) e verde (#10B981).
+     - Tipografia limpa, cards com bordas suaves e sombras sutis.
+     - Responsividade testada para 360px, 390px, 412px, tablet e desktop.
+     - Barra de CTA fixa inferior para dispositivos móveis (`.dna-mobile-sticky-bar`).
+     - Suporte a `prefers-reduced-motion`.
+  4. **SEO & Open Graph (`public/index.html`):**
+     - Títulos, descrições e tags Open Graph dinâmicas e semânticas para cada público.
+  5. **Qualidade & Testes:**
+     - Validação de sintaxe JS (`node -c`).
+     - Suíte de 36 testes automatizados aprovada com 100% de sucesso (`npm test`).
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

@@ -13,8 +13,11 @@
 
 ## 🌐 Acesso Rápido ao Sistema
 
-* **🌟 Landing Page Oficial (R$ 59,90):** [https://dna-auto.onrender.com/landing](https://dna-auto.onrender.com/landing) *(ou na raiz [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/))*
-* **🚀 Aplicação / Sistema Web:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/)
+* **🏠 Home / Entrada Oficial:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/) *(Portal limpo para direcionamento de perfil)*
+* **🚗 Landing do Cliente (Proprietário):** [https://dna-auto.onrender.com/cliente](https://dna-auto.onrender.com/cliente) *(Exclusiva para donos de carro)*
+* **🔧 Landing da Oficina (Auto Center):** [https://dna-auto.onrender.com/autocente](https://dna-auto.onrender.com/autocente) *(Exclusiva para donos de oficinas mecânicas)*
+* **📱 App do Cliente (Proprietário):** [https://dna-auto.onrender.com/#owner](https://dna-auto.onrender.com/#owner)
+* **🏭 Painel ERP da Oficina:** [https://dna-auto.onrender.com/#workshop](https://dna-auto.onrender.com/#workshop)
 * **🛡️ Painel Administrativo Matriz:** [https://dna-auto.onrender.com/admin](https://dna-auto.onrender.com/admin)
 * **🚗 Dossiê Demonstrativo (Honda Civic):** [https://dna-auto.onrender.com/#dossier](https://dna-auto.onrender.com/#dossier)
 * **📂 Repositório Oficial:** [https://github.com/leopalmeira/DNA-AUTO](https://github.com/leopalmeira/DNA-AUTO)
@@ -55,33 +58,22 @@ A plataforma opera em arquitetura **Multi-Tenant** com controle de acesso rigoro
 
 ## 🖥️ Módulos e Funcionalidades do Sistema
 
-### 1. 🌟 Landing Page Oficial Padrão TOTVS / Alta Conversão (R$ 59,90)
-- **Link Direto:** [https://dna-auto.onrender.com/#landing](https://dna-auto.onrender.com/#landing) *(e na raiz do projeto)*
-- **Ambiente Local:** [http://localhost:3000/#landing](http://localhost:3000/#landing)
-- **Design Corporativo de Alto Padrão (Padrão TOTVS / Dark Enterprise):**
-  - Tipografia limpa, paleta Dark Tech com acentos em Ouro (`#FFD21C`), Ciano (`#38bdf8`) e Verde Financeiro (`#10b981`).
-  - Switcher interativo de público no Hero: **"Sou Dono de Carro"** vs **"Sou Dono de Oficina Mecânica"**.
-- **Para o Dono do Carro (Proprietário B2C):**
-  - 📊 **Controle Absoluto de Gastos dos Últimos 6 Meses:**
-    - O proprietário passa a saber exatamente quanto gastou no carro no semestre (mês a mês).
-    - Gráfico interativo com inspeção mensal detalhada (ex: R$ 1.840,00 gastos no semestre com pastilhas de cerâmica, troca de óleo 0W-20 e alinhamento 3D).
-    - Separação clara entre peças genuínas (60,8%), mão de obra (29,3%) e fluidos/filtros (9,9%).
-    - Indicador de economia preventiva gerada ao evitar quebras graves (ex: economia de R$ 4.200,00).
-  - 📋 **Relatório Completo de Tudo o que Foi Feito no Carro:**
-    - Dossiê técnico vitalício com fotos reais de antes e depois (Nível 4 de comprovação).
-    - Código original e fabricante de cada peça aplicada (part numbers).
-    - Notas fiscais digitalizadas arquivadas na nuvem.
-    - Quilometragem auditada e imutável que blinda o veículo contra fraudes de odômetro.
-    - Valorização comprovada de até 15% acima da tabela FIPE e venda até 3x mais rápida.
-- **Para a Oficina Mecânica (Módulo B2B de Aumento de Faturamento):**
-  - 💰 **Máquina de Faturamento Recorrente e Fidelização:**
-    - *"Aumente o faturamento da sua oficina sabendo quanto falta para a troca de correia dentada e troca de óleo do câmbio automático do seu cliente cadastrado."*
-  - ⚙️ **Alerta Preditivo de Correia Dentada & Tensores:**
-    - O sistema calcula a rodagem média diária do cliente e avisa quantos km/dias faltam para a troca (ticket médio de R$ 850 a R$ 1.800).
-  - 🛢️ **Alerta Preditivo de Óleo de Câmbio Automático:**
-    - Troca de fluido aos 40.000 ou 60.000 km (serviço premium de R$ 1.200 a R$ 2.400).
-  - 📈 **Taxa de Conversão e Retorno de Pátio:**
-    - 78% dos clientes retornam para fazer a preventiva na mesma oficina credenciada.
+### 1. 🌟 Arquitetura Desacoplada de Landing Pages (Três Portas Independentes)
+O DNA AUTO conta com uma arquitetura limpa de páginas públicas, separando rigorosamente a comunicação e a jornada entre o proprietário de veículo e a oficina mecânica:
+
+* **🏠 Home / Entrada Institucional (`/`):**
+  - **Objetivo:** Identificar o perfil do visitante em segundos e direcioná-lo diretamente para sua experiência exclusiva.
+  - **Estrutura:** Headline objetiva, subheadline clara e 2 cards interativos: *Sou dono de carro* (-> `/cliente`) e *Sou dono de oficina* (-> `/autocente`).
+* **🚗 Landing do Cliente (`/cliente`):**
+  - **Público Exclusivo:** Proprietários de veículos.
+  - **Foco:** Histórico do carro, controle de revisões, quilometragem e próximos cuidados.
+  - **Componentes:** 5 benefícios essenciais, mockup fiel do aplicativo do cliente, seção de prevenção, FAQ em acordeão e CTA direto para o **App do Cliente** (`#owner`).
+  - **Mobile:** Barra de CTA fixa inferior para smartphones.
+* **🔧 Landing da Oficina / Auto Center (`/autocente`):**
+  - **Público Exclusivo:** Donos e gestores de centros automotivos e oficinas mecânicas.
+  - **Foco:** Retenção de carteira de clientes, radar preditivo de manutenção e comunicação proativa.
+  - **Componentes:** Seção dos 3 problemas reais (Cliente Esquece, Timing, Oportunidade), diagrama visual da solução, mockup do Radar de Manutenção com dados demonstrativos transparentes, simulação de contato WhatsApp, 4 benefícios chave, 3 passos para credenciamento, FAQ em acordeão e CTAs duplos diretos para o **ERP da Oficina** (`#workshop`) e **Credenciamento Oficial**.
+  - **Mobile:** Barra de CTA fixa inferior para smartphones.
 
 ### 2. 🛡️ Painel Administrativo Matriz (`/admin`)
 - **Acesso Restrito:** Perfil `ADMIN` com visualização hierárquica da rede.

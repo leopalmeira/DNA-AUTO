@@ -529,28 +529,7 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
          6. *Fluidos & Arrefecimento* (Líquido de arrefecimento aditivado anticorrosivo, óleo sintético 5W-30 no nível e fluido de transmissão)
   3. **Plano de Revisões Programadas:**
      - **Card de Próxima Revisão:** Meta de quilometragem (90.000 km), quilometragem restante calculada dinamicamente, lista de 4 itens obrigatórios de substituição e botão de ação `📅 Agendar Revisão na Rede Homologada`.
-     - **Histórico Cronológico de Revisões Concluídas:** Relação das revisões periódicas (80.000 km, 70.000 km, 60.000 km) com selo Padrão Ouro Nível 4 DNA AUTO, notas fiscais anexadas e oficina executante.
-  4. **Backend REST API:**
-     - Endpoint `GET /api/v1/vehicles/:identifier/inspection` retornando o dossiê da inspeção pericial, módulos técnicos, próxima revisão e histórico comprovado.
-  5. **Bateria de Testes Automatizados:**
-     - Adição do **Teste 35** em `test/api.test.js`.
-     - **35 testes automatizados aprovados com 100% de sucesso**.
-
-### 📲 Ciclo 24: Progressive Web App (PWA) Padrão Google Play Store & Download Automático no Perfil do Cliente
-- **Objetivo e Solicitação do Usuário (Áudio):**
-  - *"Ao conectar no perfil de cliente, deve iniciar automaticamente o download do PWA, o aplicativo tendo o logo tudo bonitinho, igual um aplicativo nativo da Play Store. Faça isso pra que possa ser baixado e ficar lá na área de trabalho como um aplicativo regular, igual da Play Store, PWA tudo certinho, original, seguindo todos os requisitos e parâmetros que a Play Store exige."*
-- **Implementações Técnicas e de Conformidade com a Google Play Store:**
-  1. **Manifesto Web Oficial PWA ([manifest.json](file:///c:/Users/User/Desktop/DNA-AUTO/public/manifest.json)):**
-     - Especificação estrita W3C e Play Store / TWA:
-       - `name`: "DNA AUTO — Passaporte & Histórico Veicular"
-       - `short_name`: "DNA AUTO"
-       - `start_url`: "/#owner"
-       - `display`: "standalone" com `display_override: ["window-controls-overlay", "standalone", "minimal-ui"]`
-       - `background_color`: "#0B0F19"
-       - `theme_color`: "#0B0F19"
-       - `orientation`: "portrait-primary"
-       - `categories`: ["auto_and_vehicles", "utilities", "productivity"]
-       - `shortcuts`: Atalhos rápidos para "Meu Carro", "Inspeção 360°", "Revisões" e "Dossiê".
+     - **Histórico Cronológico de Revisões Concluídas:** Relação das revisões periódicas (80.000        - `shortcuts`: Atalhos rápidos para "Meu Carro", "Inspeção 360°", "Revisões" e "Dossiê".
   2. **Geração de Ícones Oficiais em Múltiplas Resoluções ([generatePwaIcons.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/utils/generatePwaIcons.js)):**
      - SVG vetorial de alta definição `dna-logo.svg`.
      - PNGs codificados em RGBA puro com zlib:
@@ -575,6 +554,34 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
      - Inclusão do **Teste 36** em `test/api.test.js` validando `manifest.json`, `sw.js` e ícones oficiais.
      - **36 testes automatizados aprovados com 100% de sucesso**.
 
+### 🚀 Ciclo 26: Reestruturação Completa das Landings do DNA AUTO (Separação Exclusiva de Públicos B2C e B2B)
+- **Objetivo e Solicitação do Usuário:**
+  - Reformular integralmente a experiência de entrada do DNA AUTO, eliminando a mistura de públicos e criando uma arquitetura de três portas independentes, limpas, mobile-first e de alta conversão:
+    1. `/` -> HOME institucional ultralimpa para identificação e direcionamento dos dois públicos.
+    2. `/cliente` -> Landing exclusiva para Proprietário de Veículo, direcionando diretamente ao App do Cliente (`#owner`).
+    3. `/autocente` -> Landing exclusiva para Dono de Oficina / Auto Center, direcionando diretamente ao ERP da Oficina (`#workshop`) e credenciamento oficial.
+  - Eliminação de dados/métricas fictícias, dashboards gigantescos poluídos e complexidade desnecessária.
+- **Implementações Técnicas e Entregas:**
+  1. **Arquitetura de Rotas e SPA sem Reload ([app.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/app.js)):**
+     - Roteador `handleRoute()` e método `navigateTo(path)` mapeando `/`, `/cliente`, `/autocente` (e compatibilidade `/autocenter`).
+     - Integração direta dos CTAs com as rotas reais do projeto: App do Cliente (`#owner`), ERP da Oficina (`#workshop`) e Credenciamento Oficial (`App.goToRegisterWorkshop()`).
+     - Suporte a histórico do navegador (`popstate`) e alternâncias via hash (`hashchange`).
+  2. **Novos Componentes Modulares ([public/js/components/](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components)):**
+     - [landingHomeView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingHomeView.js): Porta de entrada com 2 cards de escolha de perfil.
+     - [landingClientView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingClientView.js): Landing B2C para donos de carro, com os 5 benefícios essenciais, mockup fiel do aplicativo do cliente, seção de prevenção, FAQ em acordeão (5 perguntas) e barra fixa de CTA no celular.
+     - [landingWorkshopView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingWorkshopView.js): Landing B2B para oficinas mecânicas, com os 3 problemas reais, diagrama em blocos da solução, mockup do radar de manutenção com identificação de dados demonstrativos, simulação de WhatsApp, 4 benefícios, 3 passos de ativação, FAQ em acordeão (6 perguntas) e barra fixa de CTA no celular.
+     - [landingView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingView.js): Fachada delegadora unificada com compatibilidade total.
+  3. **Estilos e Design System Mobile-First ([landing.css](file:///c:/Users/User/Desktop/DNA-AUTO/public/css/landing.css)):**
+     - Estética Dark Obsidian, azul tecnológico (#0066FF), ciano (#00D4FF), grafite e destaques em dourado (#FFD21C) e verde (#10B981).
+     - Testes de responsividade garantidos para 360px, 390px, 412px, tablet e desktop sem scroll horizontal.
+     - Barra de CTA fixa inferior para dispositivos móveis (`.dna-mobile-sticky-bar`).
+     - Suporte integral a `prefers-reduced-motion`.
+  4. **SEO & Open Graph ([index.html](file:///c:/Users/User/Desktop/DNA-AUTO/public/index.html)):**
+     - Títulos, descrições e metadados Open Graph dinâmicos para cada uma das páginas.
+  5. **Qualidade & Testes Automatizados:**
+     - Validação de sintaxe JS (`node -c`) em todos os arquivos modificados e novos.
+     - Suíte completa de 36 testes automatizados de integração aprovada com 100% de sucesso (`npm test`).
+
 ---
 
 ## 🏛️ 3. Tabela de Decisões Arquiteturais (ADRs)
@@ -592,6 +599,7 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 | **ADR-09** | **Fotos Veiculares por Modelo & Troca pelo Proprietário** | Garantir que nenhum veículo cadastrado fique sem foto, exibindo uma fotografia oficial do modelo exato até que o proprietário faça upload de sua própria foto. | Experiência visual rica e consistente desde o primeiro segundo, flexibilidade total para o dono personalizar e reversibilidade garantida. |
 | **ADR-10** | **Inspeção Técnica 360° & Revisões em Substituição a Documentos** | Substituir o módulo de documentos por inspeção pericial e planejamento de revisões preventivas. | Foco primordial na integridade mecânica, segurança rodoviária e valorização de revenda com laudo pericial 98/100 e plano de revisão. |
 | **ADR-11** | **PWA Instalável com Padrão Google Play Store / TWA** | Transformar o aplicativo do cliente em um app nativo instalável na área de trabalho e na tela inicial do celular com prompt automático. | Zero atrito de loja, ícone oficial na tela inicial, funcionamento standalone em tela cheia e elegibilidade para publicação direta via Trusted Web Activity (TWA). |
+| **ADR-12** | **Desacoplamento de Landings por Público (`/`, `/cliente`, `/autocente`)** | Eliminar confusão cognitiva de misturar propostas de valor para proprietários e oficinas na mesma página. | Clareza imediata de proposta, CTAs diretos para os respectivos apps sem páginas intermediárias, dados reais sem métricas falsas e conversão otimizada. |
 
 ---
 

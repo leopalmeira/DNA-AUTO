@@ -1,0 +1,1195 @@
+/* ==============================================================================
+   DNA AUTO — DESIGN SYSTEM DAS LANDINGS (HOME, CLIENTE, AUTOCENTE)
+   Estética: Premium, Automotiva, Tecnológica, Limpa, Confiável
+   Paleta: Dark Obsidian, Grafite, Azul Tecnológico (#0066FF), Ciano (#00D4FF),
+           Ouro (#FFD21C), Sucesso (#10B981) e Branco (#FFFFFF)
+   Mobile-First (360px, 390px, 412px, 768px, 1024px, 1280px+)
+   ============================================================================== */
+
+:root {
+    --dna-bg-root: #05080D;
+    --dna-bg-card: #0A0F18;
+    --dna-bg-card-hover: #0E1624;
+    --dna-bg-glass: rgba(10, 15, 24, 0.88);
+    --dna-border-subtle: rgba(255, 255, 255, 0.08);
+    --dna-border-highlight: rgba(0, 102, 255, 0.35);
+    --dna-border-cyan: rgba(0, 212, 255, 0.35);
+    --dna-border-gold: rgba(255, 210, 28, 0.35);
+    
+    --dna-primary: #0066FF;
+    --dna-primary-hover: #1A75FF;
+    --dna-primary-glow: rgba(0, 102, 255, 0.25);
+    
+    --dna-cyan: #00D4FF;
+    --dna-cyan-glow: rgba(0, 212, 255, 0.25);
+    
+    --dna-gold: #FFD21C;
+    --dna-gold-glow: rgba(255, 210, 28, 0.2);
+    
+    --dna-green: #10B981;
+    --dna-green-glow: rgba(16, 185, 129, 0.25);
+    
+    --dna-text-white: #FFFFFF;
+    --dna-text-muted: #94A3B8;
+    --dna-text-dim: #64748B;
+    --dna-radius-sm: 8px;
+    --dna-radius-md: 14px;
+    --dna-radius-lg: 20px;
+    --dna-radius-full: 9999px;
+    
+    --dna-shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.7);
+    --dna-shadow-glow: 0 0 25px rgba(0, 102, 255, 0.15);
+}
+
+/* ── Container Raiz de Todas as Landings ── */
+.dna-landing-page {
+    background-color: var(--dna-bg-root);
+    color: var(--dna-text-white);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    box-sizing: border-box;
+}
+
+.dna-landing-page *,
+.dna-landing-page *::before,
+.dna-landing-page *::after {
+    box-sizing: border-box;
+}
+
+/* ── Header / Navbar Universal das Landings ── */
+.dna-nav {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background: rgba(5, 8, 13, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--dna-border-subtle);
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+.dna-nav-container {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.dna-nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    user-select: none;
+}
+
+.dna-nav-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.dna-nav-title {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--dna-text-white);
+    line-height: 1;
+}
+
+.dna-nav-title span.gold {
+    color: var(--dna-gold);
+}
+
+.dna-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.dna-nav-link {
+    color: var(--dna-text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 6px 10px;
+    border-radius: var(--dna-radius-sm);
+}
+
+.dna-nav-link:hover {
+    color: var(--dna-text-white);
+}
+
+.dna-nav-link.active {
+    color: var(--dna-cyan);
+}
+
+.dna-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 18px;
+    font-size: 13.5px;
+    font-weight: 600;
+    border-radius: var(--dna-radius-sm);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.dna-nav-btn-primary {
+    background: var(--dna-primary);
+    color: var(--dna-text-white);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.dna-nav-btn-primary:hover {
+    background: var(--dna-primary-hover);
+    box-shadow: 0 4px 14px var(--dna-primary-glow);
+    transform: translateY(-1px);
+}
+
+.dna-nav-btn-ghost {
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--dna-text-muted);
+    border-color: var(--dna-border-subtle);
+}
+
+.dna-nav-btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--dna-text-white);
+}
+
+/* ── Container Padrão das Seções ── */
+.dna-section-container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* ── Selo / Badge Tecnológico ── */
+.dna-badge-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: var(--dna-radius-full);
+    margin-bottom: 16px;
+    background: rgba(0, 102, 255, 0.1);
+    color: var(--dna-cyan);
+    border: 1px solid rgba(0, 212, 255, 0.25);
+}
+
+.dna-badge-tag.gold {
+    background: rgba(255, 210, 28, 0.1);
+    color: var(--dna-gold);
+    border-color: rgba(255, 210, 28, 0.25);
+}
+
+.dna-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: currentColor;
+    box-shadow: 0 0 8px currentColor;
+}
+
+/* ── Botões Principais de Ação ── */
+.dna-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 13px 26px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: var(--dna-radius-sm);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    text-align: center;
+}
+
+.dna-btn-primary {
+    background: var(--dna-primary);
+    color: var(--dna-text-white);
+    box-shadow: 0 4px 20px var(--dna-primary-glow);
+    border-color: rgba(255, 255, 255, 0.18);
+}
+
+.dna-btn-primary:hover {
+    background: var(--dna-primary-hover);
+    box-shadow: 0 6px 26px rgba(0, 102, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.dna-btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--dna-text-white);
+    border: 1px solid var(--dna-border-subtle);
+}
+
+.dna-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.dna-btn-outline-green {
+    background: rgba(16, 185, 129, 0.08);
+    color: var(--dna-green);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.dna-btn-outline-green:hover {
+    background: rgba(16, 185, 129, 0.16);
+    border-color: var(--dna-green);
+    transform: translateY(-2px);
+}
+
+/* ── HOME (PORTAL DE ENTRADA) ── */
+.home-hero {
+    padding: 60px 20px 70px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 70px);
+}
+
+.home-headline {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    max-width: 680px;
+    margin: 0 auto 16px;
+    color: var(--dna-text-white);
+}
+
+.home-subheadline {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--dna-text-muted);
+    max-width: 580px;
+    margin: 0 auto 40px;
+}
+
+/* Cards de Escolha de Perfil na Home */
+.home-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+    width: 100%;
+    max-width: 740px;
+    margin: 0 auto;
+}
+
+@media (min-width: 680px) {
+    .home-cards-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.home-profile-card {
+    background: var(--dna-bg-card);
+    border: 1px solid var(--dna-border-subtle);
+    border-radius: var(--dna-radius-md);
+    padding: 34px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.25s ease;
+    cursor: pointer;
+    box-shadow: var(--dna-shadow-card);
+    position: relative;
+    overflow: hidden;
+}
+
+.home-profile-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+    transition: background 0.25s ease;
+}
+
+.home-profile-card.client:hover {
+    border-color: var(--dna-border-cyan);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 35px -10px rgba(0, 212, 255, 0.2);
+}
+
+.home-profile-card.client:hover::before {
+    background: var(--dna-cyan);
+}
+
+.home-profile-card.workshop:hover {
+    border-color: var(--dna-border-highlight);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 35px -10px rgba(0, 102, 255, 0.25);
+}
+
+.home-profile-card.workshop:hover::before {
+    background: var(--dna-primary);
+}
+
+.home-card-icon {
+    font-size: 38px;
+    margin-bottom: 16px;
+    line-height: 1;
+}
+
+.home-card-title {
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--dna-text-white);
+    margin: 0 0 10px;
+}
+
+.home-card-text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--dna-text-muted);
+    margin: 0 0 24px;
+    min-height: 42px;
+}
+
+.home-profile-card .dna-btn {
+    width: 100%;
+}
+
+/* ── LANDINGS ESPECÍFICAS (/cliente e /autocente) ── */
+.landing-hero {
+    padding: 60px 20px 50px;
+    text-align: center;
+}
+
+.landing-hero-headline {
+    font-size: 32px;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    max-width: 720px;
+    margin: 0 auto 16px;
+    color: var(--dna-text-white);
+}
+
+.landing-hero-text {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--dna-text-muted);
+    max-width: 600px;
+    margin: 0 auto 28px;
+}
+
+.landing-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.landing-hero-caption {
+    font-size: 13px;
+    color: var(--dna-text-dim);
+    margin-top: 10px;
+}
+
+/* ── Seção de Benefícios (Cliente) ── */
+.landing-benefits-section {
+    padding: 50px 20px;
+    background: rgba(10, 15, 24, 0.4);
+    border-top: 1px solid var(--dna-border-subtle);
+    border-bottom: 1px solid var(--dna-border-subtle);
+}
+
+.landing-section-title {
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--dna-text-white);
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+}
+
+.landing-section-subtitle {
+    font-size: 15px;
+    text-align: center;
+    color: var(--dna-text-muted);
+    max-width: 580px;
+    margin: 0 auto 36px;
+}
+
+.landing-benefits-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    max-width: 620px;
+    margin: 0 auto;
+}
+
+@media (min-width: 600px) {
+    .landing-benefits-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.landing-benefit-item {
+    background: var(--dna-bg-card);
+    border: 1px solid var(--dna-border-subtle);
+    border-radius: var(--dna-radius-sm);
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--dna-text-white);
+}
+
+.landing-benefit-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 212, 255, 0.12);
+    color: var(--dna-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+/* ── Mockup do App do Cliente (/cliente) ── */
+.landing-client-mockup-section {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.client-app-preview-card {
+    max-width: 440px;
+    margin: 30px auto 26px;
+    background: #080D15;
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 102, 255, 0.12);
+    text-align: left;
+    position: relative;
+}
+
+.client-mockup-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--dna-border-subtle);
+}
+
+.client-mockup-car-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--dna-text-white);
+    margin: 0;
+}
+
+.client-mockup-plate {
+    font-size: 12px;
+    font-family: monospace;
+    background: #111A29;
+    padding: 3px 8px;
+    border-radius: 4px;
+    color: var(--dna-cyan);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+}
+
+.client-mockup-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--dna-green);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 4px 10px;
+    border-radius: var(--dna-radius-full);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.client-mockup-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.client-stat-box {
+    background: #0D1422;
+    border: 1px solid var(--dna-border-subtle);
+    border-radius: var(--dna-radius-sm);
+    padding: 12px;
+}
+
+.client-stat-label {
+    font-size: 11px;
+    color: var(--dna-text-dim);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.client-stat-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--dna-text-white);
+}
+
+.client-mockup-timeline {
+    border-top: 1px solid var(--dna-border-subtle);
+    padding-top: 14px;
+}
+
+.client-timeline-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dna-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 10px;
+}
+
+.client-timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.client-timeline-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--dna-cyan);
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+
+.client-timeline-desc {
+    color: var(--dna-text-white);
+}
+
+.client-timeline-date {
+    font-size: 11px;
+    color: var(--dna-text-dim);
+}
+
+/* ── OFICINA (/autocente) — SEÇÃO PROBLEMAS ── */
+.workshop-problems-section {
+    padding: 60px 20px;
+    background: rgba(10, 15, 24, 0.5);
+    border-top: 1px solid var(--dna-border-subtle);
+}
+
+.workshop-problems-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    .workshop-problems-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.workshop-problem-card {
+    background: var(--dna-bg-card);
+    border: 1px solid var(--dna-border-subtle);
+    border-radius: var(--dna-radius-md);
+    padding: 24px;
+    text-align: left;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.workshop-problem-card:hover {
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.workshop-problem-badge {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--dna-gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.workshop-problem-card p {
+    font-size: 14.5px;
+    line-height: 1.55;
+    color: var(--dna-text-muted);
+    margin: 0;
+}
+
+/* ── OFICINA — FLUXO DA SOLUÇÃO VISUAL ── */
+.workshop-solution-section {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.solution-flow-container {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    max-width: 980px;
+    margin: 32px auto 0;
+}
+
+.flow-step-pill {
+    background: #0B121E;
+    border: 1px solid var(--dna-border-highlight);
+    color: var(--dna-text-white);
+    padding: 10px 16px;
+    border-radius: var(--dna-radius-sm);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.flow-step-pill.highlight {
+    background: rgba(0, 102, 255, 0.18);
+    border-color: var(--dna-cyan);
+    color: var(--dna-cyan);
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.2);
+}
+
+.flow-arrow {
+    color: var(--dna-text-dim);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* ── OFICINA — RADAR PREDITIVO MOCKUP ── */
+.workshop-radar-section {
+    padding: 60px 20px;
+    background: #070B12;
+    border-top: 1px solid var(--dna-border-subtle);
+    border-bottom: 1px solid var(--dna-border-subtle);
+    text-align: center;
+}
+
+.radar-mockup-card {
+    max-width: 580px;
+    margin: 28px auto 26px;
+    background: #0A0F19;
+    border: 1px solid rgba(0, 102, 255, 0.35);
+    border-radius: var(--dna-radius-md);
+    padding: 22px;
+    box-shadow: var(--dna-shadow-card), 0 0 35px rgba(0, 102, 255, 0.12);
+    text-align: left;
+}
+
+.radar-mockup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--dna-border-subtle);
+}
+
+.radar-mockup-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--dna-text-white);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.radar-pulse-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--dna-green);
+    box-shadow: 0 0 10px var(--dna-green);
+    animation: dnaPulse 2s infinite;
+}
+
+@keyframes dnaPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.radar-item {
+    background: #0F1726;
+    border: 1px solid var(--dna-border-subtle);
+    border-radius: var(--dna-radius-sm);
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.radar-item:last-child {
+    margin-bottom: 0;
+}
+
+.radar-item-car {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--dna-text-white);
+}
+
+.radar-item-km {
+    font-size: 12.5px;
+    color: var(--dna-text-muted);
+}
+
+.radar-item-action-badge {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: var(--dna-radius-full);
+    white-space: nowrap;
+}
+
+.radar-item-action-badge.yellow {
+    background: rgba(255, 210, 28, 0.12);
+    color: var(--dna-gold);
+    border: 1px solid rgba(255, 210, 28, 0.3);
+}
+
+.radar-item-action-badge.blue {
+    background: rgba(0, 102, 255, 0.12);
+    color: #4D94FF;
+    border: 1px solid rgba(0, 102, 255, 0.3);
+}
+
+.radar-item-action-badge.green {
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--dna-green);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.radar-mockup-disclaimer {
+    font-size: 11px;
+    color: var(--dna-text-dim);
+    text-align: center;
+    margin-top: 12px;
+    margin-bottom: 0;
+}
+
+/* ── OFICINA — MOCKUP WHATSAPP ── */
+.workshop-whatsapp-section {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.whatsapp-mockup-card {
+    max-width: 460px;
+    margin: 28px auto 20px;
+    background: #0B141A;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 12px 35px -10px rgba(0, 0, 0, 0.8), 0 0 25px rgba(16, 185, 129, 0.1);
+    text-align: left;
+}
+
+.whatsapp-chat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.whatsapp-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #005C4B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.whatsapp-chat-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #E9EDEF;
+}
+
+.whatsapp-chat-status {
+    font-size: 11px;
+    color: #8696A0;
+}
+
+.whatsapp-bubble {
+    background: #005C4B;
+    color: #E9EDEF;
+    border-radius: 12px 12px 2px 12px;
+    padding: 14px 16px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.whatsapp-bubble p {
+    margin: 0 0 8px;
+}
+
+.whatsapp-bubble p:last-child {
+    margin-bottom: 0;
+}
+
+.whatsapp-time {
+    font-size: 10px;
+    color: rgba(233, 237, 239, 0.7);
+    text-align: right;
+    margin-top: 4px;
+}
+
+/* ── OFICINA — BENEFÍCIOS (4 CARDS) ── */
+.workshop-benefits-section {
+    padding: 60px 20px;
+    background: rgba(10, 15, 24, 0.4);
+    border-top: 1px solid var(--dna-border-subtle);
+    border-bottom: 1px solid var(--dna-border-subtle);
+}
+
+.workshop-benefits-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    max-width: 880px;
+    margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+    .workshop-benefits-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.workshop-benefit-item {
+    background: var(--dna-bg-card);
+    border: 1px solid var(--dna-border-subtle);
+    border-radius: var(--dna-radius-sm);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 15.5px;
+    font-weight: 600;
+    color: var(--dna-text-white);
+}
+
+.workshop-benefit-check {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--dna-green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+/* ── COMO FUNCIONA (3 PASSOS) ── */
+.steps-section {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.steps-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    max-width: 880px;
+    margin: 32px auto;
+}
+
+@media (min-width: 720px) {
+    .steps-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.step-card {
+    background: var(--dna-bg-card);
+    border: 1px solid var(--dna-border-subtle);
+    border-radius: var(--dna-radius-md);
+    padding: 28px 20px;
+    text-align: center;
+}
+
+.step-number {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--dna-cyan);
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+}
+
+.step-text {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--dna-text-white);
+    line-height: 1.45;
+    margin: 0;
+}
+
+/* ── SEÇÃO DE CREDENCIAMENTO ── */
+.accreditation-section {
+    padding: 50px 20px;
+    background: #080D15;
+    border-top: 1px solid var(--dna-border-subtle);
+    border-bottom: 1px solid var(--dna-border-subtle);
+    text-align: center;
+}
+
+/* ── SEÇÃO FAQ (ACORDEÃO LIMPO) ── */
+.faq-section {
+    padding: 60px 20px;
+    max-width: 780px;
+    margin: 0 auto;
+}
+
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 30px;
+}
+
+.faq-item {
+    background: var(--dna-bg-card);
+    border: 1px solid var(--dna-border-subtle);
+    border-radius: var(--dna-radius-sm);
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+}
+
+.faq-item.active {
+    border-color: rgba(0, 102, 255, 0.35);
+}
+
+.faq-question {
+    width: 100%;
+    padding: 16px 20px;
+    background: none;
+    border: none;
+    color: var(--dna-text-white);
+    font-size: 15px;
+    font-weight: 600;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    cursor: pointer;
+}
+
+.faq-chevron {
+    font-size: 18px;
+    color: var(--dna-text-dim);
+    transition: transform 0.25s ease;
+}
+
+.faq-item.active .faq-chevron {
+    transform: rotate(180deg);
+    color: var(--dna-cyan);
+}
+
+.faq-answer {
+    padding: 0 20px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--dna-text-muted);
+    display: none;
+}
+
+.faq-item.active .faq-answer {
+    display: block;
+}
+
+/* ── CTA FINAL ── */
+.final-cta-section {
+    padding: 70px 20px;
+    text-align: center;
+    background: #05080D;
+    border-top: 1px solid var(--dna-border-subtle);
+}
+
+.final-cta-title {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--dna-text-white);
+    margin: 0 0 12px;
+}
+
+.final-cta-text {
+    font-size: 15.5px;
+    color: var(--dna-text-muted);
+    max-width: 520px;
+    margin: 0 auto 28px;
+}
+
+/* ── FOOTER SIMPLES ── */
+.dna-footer {
+    padding: 24px 20px;
+    text-align: center;
+    border-top: 1px solid var(--dna-border-subtle);
+    font-size: 12.5px;
+    color: var(--dna-text-dim);
+}
+
+.dna-footer a {
+    color: var(--dna-text-muted);
+    text-decoration: none;
+}
+
+.dna-footer a:hover {
+    color: var(--dna-text-white);
+}
+
+/* ── BARRA INFERIOR FIXA SOMENTE NO CELULAR (MOBILE STICKY CTA) ── */
+.dna-mobile-sticky-bar {
+    display: none;
+}
+
+@media (max-width: 680px) {
+    .dna-mobile-sticky-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(5, 8, 13, 0.94);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        padding: 12px 16px;
+        z-index: 999;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+    }
+    
+    .dna-mobile-sticky-bar .dna-btn {
+        width: 100%;
+        max-width: 380px;
+        padding: 13px 20px;
+        font-size: 15px;
+    }
+    
+    /* Espaçamento extra no final para não sobrepor o sticky */
+    .landing-client-page,
+    .landing-workshop-page {
+        padding-bottom: 74px;
+    }
+}
+
+/* ── Ajustes Responsivos Específicos para Telas Pequenas (360px - 412px) ── */
+@media (max-width: 480px) {
+    .dna-nav-container {
+        padding: 12px 16px;
+    }
+    
+    .home-headline,
+    .landing-hero-headline {
+        font-size: 24px;
+    }
+    
+    .home-subheadline,
+    .landing-hero-text {
+        font-size: 14.5px;
+    }
+    
+    .home-profile-card {
+        padding: 26px 20px;
+    }
+    
+    .client-app-preview-card,
+    .radar-mockup-card,
+    .whatsapp-mockup-card {
+        padding: 16px;
+    }
+    
+    .landing-hero-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .landing-hero-actions .dna-btn {
+        width: 100%;
+    }
+}
+
+/* Suporte a preferência de movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
