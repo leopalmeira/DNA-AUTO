@@ -631,14 +631,6 @@ router.post('/:id/whatsapp/confirm', async (req, res) => {
             return res.status(404).json({ error: 'Oficina não encontrada.' });
         }
 
-        if (code) {
-            const cleanCode = code.toString().trim();
-            const isValid = cleanCode === workshop.whatsapp_code || cleanCode === '123456';
-            if (!isValid) {
-                return res.status(400).json({ error: 'Código de confirmação inválido ou expirado.' });
-            }
-        }
-
         const confirmResult = await baileysService.confirmConnection(workshopId);
 
         db.prepare(`

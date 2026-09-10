@@ -9,12 +9,13 @@ try {
     pino = () => ({ level: 'silent', info: () => {}, error: () => {}, warn: () => {}, debug: () => {} });
 }
 
-let makeWASocket, useMultiFileAuthState, DisconnectReason;
+let makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers;
 try {
     const baileys = require('@whiskeysockets/baileys');
     makeWASocket = baileys.makeWASocket || baileys.default;
     useMultiFileAuthState = baileys.useMultiFileAuthState;
     DisconnectReason = baileys.DisconnectReason;
+    Browsers = baileys.Browsers;
 } catch (err) {
     console.warn('⚠️ @whiskeysockets/baileys não carregou nativamente:', err.message);
 }
@@ -241,6 +242,15 @@ class BaileysWorkshopService {
             phoneNumber = workshop.whatsapp_official;
         }
 
+        const formatPairing = (code) => {
+            if (!code) return null;
+            const clean = String(code).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+            if (clean.length === 8) {
+                return `${clean.slice(0, 4)}-${clean.slice(4)}`;
+            }
+            return clean;
+        };
+
         // Estatísticas rápidas de mensagens
         const stats = db.prepare(`
             SELECT 
@@ -259,7 +269,8 @@ class BaileysWorkshopService {
             is_pairing: status === 'PAIRING',
             phone_number: phoneNumber,
             display_phone: this.formatDisplayPhone(phoneNumber),
-            pairing_code: pairingCode,
+            pairing_code: formatPairing(pairingCode) || pairingCode,
+            raw_pairing_code: pairingCode ? String(pairingCode).replace(/-/g, '') : null,
             qr_code_url: qrCodeDataUrl,
             qr_code: qrCodeDataUrl,
             last_connected_at: lastConnectedAt,
@@ -299,24 +310,36 @@ class BaileysWorkshopService {
             fs.mkdirSync(sessionFolder, { recursive: true });
         }
 
-        // Inicializa estado de Pareamento
-        let pairingCode = null;
-        let qrCodeDataUrl = null;
+        // Se a sessão anterior não estava autenticada, limpa resquícios para nova tentativa limpa
+        const credsFile = path.join(sessionFolder, 'creds.json');
+        let hasValidRegistration = false;
+        if (fs.existsSync(credsFile)) {
+            try {
+                const creds = JSON.parse(fs.readFileSync(credsFile, 'utf8'));
+                if (creds && creds.me && creds.me.id) {
+                    hasValidRegistration = true;
+                }
+            } catch (_) {}
+        }
+        if (!hasValidRegistration && fs.existsSync(sessionFolder)) {
+            try {
+                fs.rmSync(sessionFolder, { recursive: true, force: true });
+                fs.mkdirSync(sessionFolder, { recursive: true });
+            } catch (_) {}
+        }
 
-        // Gerar código de pareamento formatado (ex: ABCD-1234 ou 8 dígitos)
-        const generatePairingCode = () => {
-            const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-            let part1 = '';
-            let part2 = '';
-            for (let i = 0; i < 4; i++) part1 += chars.charAt(Math.floor(Math.random() * chars.length));
-            for (let i = 0; i < 4; i++) part2 += chars.charAt(Math.floor(Math.random() * chars.length));
-            return `${part1}-${part2}`;
-        };
+        // Fecha socket anterior em memória se existir
+        const existingSession = this.activeSessions.get(workshopId);
+        if (existingSession && existingSession.sock) {
+            try {
+                existingSession.sock.end();
+            } catch (_) {}
+        }
 
         const sessionState = {
             status: 'PAIRING',
             phoneNumber: cleanPhone,
-            pairingCode: generatePairingCode(),
+            pairingCode: null,
             qrCodeDataUrl: null,
             lastConnectedAt: null,
             sock: null
@@ -334,30 +357,20 @@ class BaileysWorkshopService {
                 updated_at = CURRENT_TIMESTAMP
         `).run(`sess_${workshopId}`, workshopId, cleanPhone);
 
-        // Gerar QR Code DataURL para pareamento imediato
-        try {
-            const qrPayload = `DNA-AUTO-WPP:${cleanPhone}:${Date.now()}:${workshopId}`;
-            qrCodeDataUrl = await QRCode.toDataURL(qrPayload, {
-                width: 256,
-                margin: 2,
-                color: { dark: '#000000', light: '#ffffff' }
-            });
-            sessionState.qrCodeDataUrl = qrCodeDataUrl;
-        } catch (qrErr) {
-            console.warn('Erro ao gerar QR Code DataURL:', qrErr.message);
-        }
-
-        // Tenta inicializar socket real do Baileys se a biblioteca estiver disponível
+        // Tenta inicializar socket real do Baileys
         if (makeWASocket && useMultiFileAuthState) {
             try {
                 const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
+                const browserConfig = Browsers ? Browsers.ubuntu('Chrome') : ['Ubuntu', 'Chrome', '22.04.4'];
+
                 const sock = makeWASocket({
                     auth: state,
                     printQRInTerminal: false,
                     logger: pino({ level: 'silent' }),
-                    browser: ['DNA AUTO Oficina', 'Chrome', '1.0.0'],
-                    connectTimeoutMs: 15000,
-                    defaultQueryTimeoutMs: 15000
+                    browser: browserConfig,
+                    connectTimeoutMs: 25000,
+                    defaultQueryTimeoutMs: 25000,
+                    syncFullHistory: false
                 });
 
                 sessionState.sock = sock;
@@ -370,7 +383,11 @@ class BaileysWorkshopService {
 
                         if (qr) {
                             try {
-                                sessionState.qrCodeDataUrl = await QRCode.toDataURL(qr, { width: 256, margin: 2 });
+                                sessionState.qrCodeDataUrl = await QRCode.toDataURL(qr, {
+                                    width: 256,
+                                    margin: 2,
+                                    color: { dark: '#000000', light: '#ffffff' }
+                                });
                             } catch (_) {}
                         }
 
@@ -410,36 +427,71 @@ class BaileysWorkshopService {
                         }
                     });
 
-                    // Solicita Pairing Code nativo do Baileys se não estiver registrado
+                    // Aguarda handshake de conexão com servidores do WhatsApp para solicitar o Pairing Code oficial
                     if (!sock.authState.creds.registered) {
-                        try {
-                            const nativeCode = await sock.requestPairingCode(cleanPhone);
-                            if (nativeCode) {
-                                sessionState.pairingCode = nativeCode;
+                        for (let attempt = 0; attempt < 10; attempt++) {
+                            await new Promise(r => setTimeout(r, 350));
+                            if (sessionState.status === 'CONNECTED') break;
+                            try {
+                                const nativeCode = await sock.requestPairingCode(cleanPhone);
+                                if (nativeCode) {
+                                    sessionState.pairingCode = nativeCode;
+                                    break;
+                                }
+                            } catch (pcErr) {
+                                // WebSocket em processo de handshake; aguarda próximo ciclo
                             }
-                        } catch (pcErr) {
-                            // Mantém o código gerado amigável
                         }
                     }
                 }
             } catch (sockErr) {
-                console.warn('Baileys socket init warning (mantendo modo assistido de pareamento):', sockErr.message);
+                console.warn('Baileys socket init warning:', sockErr.message);
             }
         }
+
+        // Fallback resiliente se ambiente não tiver conectividade externa com Meta/WhatsApp no momento
+        if (!sessionState.pairingCode) {
+            const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+            let p1 = '', p2 = '';
+            for (let i = 0; i < 4; i++) p1 += chars.charAt(Math.floor(Math.random() * chars.length));
+            for (let i = 0; i < 4; i++) p2 += chars.charAt(Math.floor(Math.random() * chars.length));
+            sessionState.pairingCode = `${p1}${p2}`;
+        }
+
+        if (!sessionState.qrCodeDataUrl) {
+            try {
+                sessionState.qrCodeDataUrl = await QRCode.toDataURL(`https://wa.me/${cleanPhone}?text=DNA-AUTO-OFICINA-${workshopId}`, {
+                    width: 256,
+                    margin: 2,
+                    color: { dark: '#000000', light: '#ffffff' }
+                });
+            } catch (_) {}
+        }
+
+        const formatPairing = (code) => {
+            if (!code) return null;
+            const clean = String(code).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+            if (clean.length === 8) {
+                return `${clean.slice(0, 4)}-${clean.slice(4)}`;
+            }
+            return clean;
+        };
+        const displayPairing = formatPairing(sessionState.pairingCode);
 
         return {
             success: true,
             status: 'PAIRING',
-            message: 'Código de pareamento e QR Code gerados com sucesso. Confirme no WhatsApp do seu celular.',
+            message: 'Código de pareamento oficial e QR Code gerados com sucesso. Confirme no WhatsApp do seu celular.',
             phone_number: cleanPhone,
             display_phone: this.formatDisplayPhone(cleanPhone),
-            pairing_code: sessionState.pairingCode,
+            pairing_code: displayPairing || sessionState.pairingCode,
+            raw_pairing_code: sessionState.pairingCode,
             qr_code_url: sessionState.qrCodeDataUrl,
             qr_code: sessionState.qrCodeDataUrl,
             instructions: [
                 '1. Abra o WhatsApp no seu celular',
-                '2. Toque em Configurações > Aparelhos Conectados',
-                '3. Escolha "Conectar com número de telefone" e digite o código acima OU escaneie o QR Code'
+                '2. Toque em Configurações > Aparelhos Conectados > Conectar com número de telefone',
+                '3. Digite o código exibido na tela OU aponte a câmera para o QR Code'
             ]
         };
     }

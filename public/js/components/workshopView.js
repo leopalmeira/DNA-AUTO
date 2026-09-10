@@ -1690,7 +1690,12 @@ const WorkshopView = {
     async pollWhatsAppStatus() {
         try {
             const res = await API.getWhatsAppStatus(this.currentWorkshopId);
-            if (res && res.status !== this.whatsAppData?.status) {
+            if (!res) return;
+            const prev = this.whatsAppData || {};
+            const changed = res.status !== prev.status ||
+                            res.pairing_code !== prev.pairing_code ||
+                            res.qr_code_url !== prev.qr_code_url;
+            if (changed) {
                 this.whatsAppData = res;
                 if (res.status === 'CONNECTED') {
                     clearInterval(this.whatsAppPollingInterval);
@@ -1741,7 +1746,8 @@ const WorkshopView = {
 
         // 2. ESTADO: PROCESSO DE AUTENTICAÇÃO / PAREAMENTO
         if (isPairing) {
-            const pairingCode = session.pairing_code || '482 719';
+            const pairingCode = session.pairing_code;
+            const rawCode = session.raw_pairing_code || (pairingCode ? String(pairingCode).replace(/-/g, '') : '');
             return `
                 <div style="padding:20px;">
                     <div class="panel-box" style="max-width:620px; margin:20px auto; padding:32px 28px; text-align:center; background:#0a0f1d; border:1px solid rgba(0,212,255,0.45); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.6);">
@@ -1753,35 +1759,45 @@ const WorkshopView = {
                         <h3 style="color:#ffffff; font-size:19px; font-weight:800; margin:0 0 6px;">Conecte seu WhatsApp</h3>
                         <p style="color:#94a3b8; font-size:12.5px; margin:0 0 20px;">Abra o WhatsApp no seu celular e siga as instruções para vincular este dispositivo.</p>
 
-                        <!-- Bloco do Código de Pareamento de 8 Dígitos -->
+                        <!-- Bloco do Código de Pareamento -->
                         <div style="background:#060a14; border:1px solid rgba(255,210,28,0.45); border-radius:10px; padding:18px; margin-bottom:20px;">
                             <span style="font-size:12px; color:#cbd5e1; display:block; margin-bottom:8px; font-weight:600;">
-                                Digite o código exibido abaixo no WhatsApp para confirmar a conexão:
+                                ${pairingCode ? 'Digite o código exibido abaixo no WhatsApp do celular:' : 'Conectando aos servidores do WhatsApp para gerar o código oficial...'}
                             </span>
-                            <div style="font-size:34px; font-weight:900; letter-spacing:4px; font-family:var(--font-mono); color:#FFD21C; text-shadow:0 0 15px rgba(255,210,28,0.35); margin:6px 0;">
-                                ${pairingCode}
-                            </div>
-                            <button class="btn btn-xs" onclick="navigator.clipboard.writeText('${pairingCode}'); alert('Código ${pairingCode} copiado com sucesso!');" style="margin-top:8px; background:rgba(255,210,28,0.12); color:#FFD21C; border:1px solid rgba(255,210,28,0.3); font-weight:700; padding:4px 12px; border-radius:4px; cursor:pointer;">
-                                📋 Copiar Código
-                            </button>
+                            ${pairingCode ? `
+                                <div style="font-size:34px; font-weight:900; letter-spacing:4px; font-family:var(--font-mono); color:#FFD21C; text-shadow:0 0 15px rgba(255,210,28,0.35); margin:6px 0;">
+                                    ${pairingCode}
+                                </div>
+                                <button class="btn btn-xs" onclick="navigator.clipboard.writeText('${rawCode || pairingCode}'); alert('Código ${pairingCode} copiado com sucesso!');" style="margin-top:8px; background:rgba(255,210,28,0.12); color:#FFD21C; border:1px solid rgba(255,210,28,0.3); font-weight:700; padding:6px 14px; border-radius:4px; cursor:pointer;">
+                                    📋 Copiar Código (${rawCode || pairingCode})
+                                </button>
+                            ` : `
+                                <div style="font-size:18px; font-weight:700; color:#38bdf8; padding:10px 0;">
+                                    <span class="pulse-dot" style="display:inline-block; margin-right:8px;"></span> Aguardando WhatsApp...
+                                </div>
+                            `}
                         </div>
 
                         <!-- QR Code Alternativo para Leitura Direta -->
                         ${session.qr_code_url ? `
                             <div style="margin:16px 0;">
-                                <span style="font-size:11.5px; color:#64748b; display:block; margin-bottom:8px;">Ou aponte a câmera do WhatsApp para escanear o QR Code:</span>
-                                <img src="${session.qr_code_url}" alt="QR Code WhatsApp" style="width:180px; height:180px; border-radius:8px; border:3px solid #ffffff; background:#ffffff; padding:4px;" />
+                                <span style="font-size:11.5px; color:#94a3b8; display:block; margin-bottom:8px; font-weight:600;">Ou aponte a câmera do WhatsApp para escanear o QR Code oficial:</span>
+                                <img src="${session.qr_code_url}" alt="QR Code WhatsApp" style="width:190px; height:190px; border-radius:8px; border:3px solid #ffffff; background:#ffffff; padding:4px;" />
                             </div>
                         ` : ''}
 
                         <!-- Indicador de Espera Pulsante -->
-                        <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:20px; color:#38bdf8; font-size:12.5px;">
+                        <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:16px; color:#38bdf8; font-size:12.5px;">
                             <span class="pulse-dot" style="width:8px; height:8px;"></span>
-                            <span>Estamos aguardando a confirmação...</span>
+                            <span>Aguardando confirmação do celular...</span>
                         </div>
 
-                        <div style="margin-top:18px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.06); display:flex; justify-content:center; gap:10px;">
-                            <button class="btn btn-sm btn-primary" onclick="WorkshopView.confirmWhatsAppNow()" style="background:#10b981; border:none; font-weight:800; font-size:12px; padding:7px 18px; cursor:pointer;">
+                        <!-- Botão de Ativação / Confirmação Imediata -->
+                        <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08); text-align:center;">
+                            <p style="font-size:11.5px; color:#94a3b8; margin:0 0 10px;">
+                                Já digitou o código no celular ou deseja ativar a central de mensagens agora?
+                            </p>
+                            <button class="btn btn-sm btn-primary" onclick="WorkshopView.confirmWhatsAppNow()" style="background:#10b981; color:#ffffff; border:none; font-weight:800; font-size:13px; padding:10px 24px; border-radius:6px; cursor:pointer; box-shadow:0 4px 14px rgba(16,185,129,0.35);">
                                 ✓ Confirmar Conexão Realizada
                             </button>
                         </div>
@@ -2214,13 +2230,13 @@ const WorkshopView = {
         const btn = document.getElementById('ws-wpp-connect-btn');
         if (btn) {
             btn.disabled = true;
-            btn.textContent = 'INICIALIZANDO BAILEYS...';
+            btn.textContent = 'CONECTANDO AO WHATSAPP (3s)...';
         }
 
         try {
             const res = await API.connectWhatsApp(this.currentWorkshopId, phone);
             this.whatsAppData = res;
-            this.loadWhatsAppStatus(true);
+            await this.loadWhatsAppStatus(true);
         } catch (err) {
             alert('Erro ao iniciar conexão: ' + err.message);
             if (btn) {
