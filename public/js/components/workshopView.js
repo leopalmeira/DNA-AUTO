@@ -257,6 +257,7 @@ const WorkshopView = {
         container.innerHTML = `
             <div class="ws-erp-viewport">
                 <!-- ======================================================== -->
+                <!-- ======================================================== -->
                 <!-- HEADER ERP SUPERIOR                                      -->
                 <!-- ======================================================== -->
                 <header class="ws-erp-header-bar">
@@ -267,18 +268,17 @@ const WorkshopView = {
                         </button>
 
                         <!-- Brand Block DNA AUTO -->
-                        <div class="ws-erp-brand-block" onclick="WorkshopView.switchSection('dashboard')">
-                            <div style="width:30px; height:30px; border-radius:6px; background:#0a0f16; border:1px solid rgba(255,210,28,0.45); display:flex; align-items:center; justify-content:center;">
-                                <svg viewBox="0 0 120 120" width="18" height="18" fill="none" stroke="#FFD21C" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M 54 62 C 51 55 51 46 57 41 C 62 36 67 40 65 50 C 63 56 64 64 64 64" stroke-width="8" />
-                                    <path d="M 45 66 C 41 53 41 39 50 30 C 58 21 68 21 75 30 C 82 40 82 55 77 66" stroke-width="9" />
-                                    <path d="M 36 68 C 30 52 31 32 43 20 C 54 9 72 9 83 20 C 93 32 94 52 88 68" stroke-width="9" />
-                                    <path d="M 22 84 L 32 84 C 36 78 42 75 48 75 L 72 75 C 78 75 84 78 88 84 L 98 84" stroke-width="10" />
+                        <div class="ws-erp-brand-block" onclick="WorkshopView.switchSection('dashboard')" style="cursor:pointer; display:flex; align-items:center; gap:12px;">
+                            <div style="width:34px; height:34px; border-radius:8px; background:linear-gradient(135deg, #0066FF, #00D4FF); display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px rgba(0,102,255,0.4);">
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                    <path d="M2 17l10 5 10-5"></path>
+                                    <path d="M2 12l10 5 10-5"></path>
                                 </svg>
                             </div>
                             <div>
-                                <h1>DNA <span style="color:#FFD21C;">AUTO</span></h1>
-                                <p>Certificação de Registros Veiculares</p>
+                                <h1 style="font-size:16px; font-weight:800; color:#ffffff; margin:0; letter-spacing:0.5px;">DNA <span style="color:#38bdf8;">AUTO</span></h1>
+                                <p style="font-size:10.5px; color:#94a3b8; margin:0;">Certificação de Registros Veiculares</p>
                             </div>
                         </div>
                     </div>
@@ -291,7 +291,7 @@ const WorkshopView = {
                         </div>
 
                         <!-- Botão Tour Guiado para o Lojista -->
-                        <button class="ws-erp-tour-launch-btn" onclick="WorkshopView.startTour(true)" style="background:rgba(255,210,28,0.12); color:#FFD21C; border:1px solid rgba(255,210,28,0.3); font-weight:700; font-size:11.5px; padding:6px 12px; border-radius:6px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;" title="Fazer Tour Guiado pelo Sistema">
+                        <button class="ws-erp-tour-launch-btn" onclick="WorkshopView.startTour(true)" style="background:rgba(0,102,255,0.15); color:#38bdf8; border:1px solid rgba(0,102,255,0.3); font-weight:700; font-size:11.5px; padding:6px 14px; border-radius:6px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;" title="Fazer Tour Guiado pelo Sistema">
                             <span>🎓</span>
                             <span>Tour do Sistema</span>
                         </button>
@@ -314,10 +314,12 @@ const WorkshopView = {
                     <!-- SIDEBAR DESKTOP & DRAWER MOBILE ORGANIZADA POR SEÇÕES -->
                     <aside id="ws-erp-sidebar-el" class="ws-erp-sidebar">
                         <div class="ws-erp-sidebar-header">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <div class="title-main">DNA AUTO</div>
-                                    <div class="title-sub">Gestão Empresarial & ERP</div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <div style="width:28px; height:28px; border-radius:6px; background:#0066FF; display:flex; align-items:center; justify-content:center;">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#ffffff" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"></path></svg>
+                                    </div>
+                                    <div style="font-size:14px; font-weight:800; color:#ffffff; letter-spacing:0.5px;">DNA AUTO</div>
                                 </div>
                                 <button class="btn btn-sm" onclick="WorkshopView.closeMobileDrawer()" style="display:none; padding:2px 8px;" id="ws-drawer-close-btn">✕</button>
                             </div>
@@ -327,7 +329,7 @@ const WorkshopView = {
                         <div class="ws-sidebar-notif-box" id="ws-sidebar-notif-box">
                             <button type="button" class="ws-sidebar-notif-btn" onclick="WorkshopView.toggleNotificationsPopover()" title="Central de Notificações da Oficina">
                                 <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="font-size:16px;">🔔</span>
+                                    <span style="font-size:15px;">🔔</span>
                                     <span style="font-size:12px; font-weight:700; color:#f8fafc;">Notificações</span>
                                 </div>
                                 <div style="display:flex; align-items:center; gap:6px;">
@@ -373,43 +375,42 @@ const WorkshopView = {
                             </div>
                         </div>
 
-                        <!-- Menu Lateral Oficial da Oficina (10 Módulos do Layout) -->
+                        <!-- Menu Lateral Oficial da Oficina (Layout Limpo do Blueprint) -->
                         <nav class="ws-erp-nav-scroll" id="tour-step-menu">
                             <div class="ws-erp-menu-item ${this.currentSection === 'dashboard' ? 'active' : ''}" onclick="WorkshopView.switchSection('dashboard')">
-                                <div class="ws-erp-menu-left"><span>🏠</span> <span>1. Dashboard / Pátio</span></div>
+                                <div class="ws-erp-menu-left"><span>🏠</span> <span>Dashboard</span></div>
                             </div>
                             <div class="ws-erp-menu-item ${this.currentSection === 'recepcao-checkin' ? 'active' : ''}" onclick="WorkshopView.switchSection('recepcao-checkin')">
-                                <div class="ws-erp-menu-left"><span>📥</span> <span>2. Recepção / Pátio</span></div>
-                                <span class="badge-proof badge-proven" style="font-size:9px; padding:1px 5px; background:rgba(0,212,255,0.2); color:#00d4ff;">4 no Pátio</span>
+                                <div class="ws-erp-menu-left"><span>📥</span> <span>Recepção / Pátio</span></div>
+                                <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(56,189,248,0.15); color:#38bdf8; border-radius:12px;">4</span>
                             </div>
                             <div class="ws-erp-menu-item" onclick="WorkshopView.openManualVehicleModal()">
-                                <div class="ws-erp-menu-left"><span>🚗</span> <span>3. Cadastrar Carro</span></div>
-                                <span class="badge-proof badge-proven" style="font-size:9px; padding:1px 5px; background:rgba(16,185,129,0.2); color:#10b981;">+ Novo</span>
+                                <div class="ws-erp-menu-left"><span>🚗</span> <span>Cadastrar Carro</span></div>
                             </div>
                             <div class="ws-erp-menu-item ${this.currentSection === 'agenda-oficina' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-oficina')">
-                                <div class="ws-erp-menu-left"><span>📅</span> <span>4. Agenda da Semana</span></div>
+                                <div class="ws-erp-menu-left"><span>📅</span> <span>Agenda da Semana</span></div>
                             </div>
                             <div class="ws-erp-menu-item ${this.currentSection === 'whatsapp-central' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-central')">
-                                <div class="ws-erp-menu-left"><span>📱</span> <span>5. WhatsApp Central</span></div>
-                                <span class="badge-proof" id="ws-menu-wpp-badge" style="font-size:9px; padding:2px 6px; background:rgba(37,211,102,0.15); color:#25D366; font-weight:700;">Online</span>
+                                <div class="ws-erp-menu-left"><span>💬</span> <span>WhatsApp</span></div>
+                                <span class="badge-proof" id="ws-menu-wpp-badge" style="font-size:9.5px; padding:2px 7px; background:rgba(37,211,102,0.15); color:#25D366; font-weight:700; border-radius:12px;">Online</span>
                             </div>
                             <div class="ws-erp-menu-item ${this.currentSection === 'servicos-os' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-os')">
-                                <div class="ws-erp-menu-left"><span>🔧</span> <span>6. Serviços & Ordens</span></div>
-                                <span class="badge-proof" style="font-size:9px; padding:1px 5px; background:rgba(255,210,28,0.2); color:#FFD21C;">18 OS</span>
+                                <div class="ws-erp-menu-left"><span>🔧</span> <span>Serviços & Ordens</span></div>
+                                <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(0,102,255,0.15); color:#60a5fa; border-radius:12px;">18 OS</span>
                             </div>
                             <div class="ws-erp-menu-item ${this.currentSection === 'manutencao-alertas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-alertas')">
-                                <div class="ws-erp-menu-left"><span>⚠️</span> <span>7. Radar Preditivo OBD2</span></div>
-                                <span class="badge-proof" style="font-size:9px; padding:1px 5px; background:rgba(239,68,68,0.2); color:#ef4444;">4 Alertas</span>
+                                <div class="ws-erp-menu-left"><span>⚠️</span> <span>Radar Preditivo OBD2</span></div>
+                                <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(239,68,68,0.15); color:#ef4444; border-radius:12px;">4</span>
                             </div>
                             <div class="ws-erp-menu-item ${this.currentSection === 'veiculos-cadastrados' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
-                                <div class="ws-erp-menu-left"><span>📋</span> <span>8. Ficha Digital do Veículo</span></div>
+                                <div class="ws-erp-menu-left"><span>📋</span> <span>Ficha Digital do Veículo</span></div>
                             </div>
                             <div class="ws-erp-menu-item ${this.currentSection === 'notificacoes-feed' ? 'active' : ''}" onclick="WorkshopView.switchSection('notificacoes-feed')">
-                                <div class="ws-erp-menu-left"><span>🔔</span> <span>9. Notificações</span></div>
-                                <span class="badge-proof" style="font-size:9px; padding:1px 5px; background:rgba(0,102,255,0.25); color:#38bdf8;">4 Novas</span>
+                                <div class="ws-erp-menu-left"><span>🔔</span> <span>Notificações</span></div>
+                                <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(56,189,248,0.15); color:#38bdf8; border-radius:12px;">4</span>
                             </div>
                             <div class="ws-erp-menu-item ${this.currentSection === 'configuracoes-dados' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-dados')">
-                                <div class="ws-erp-menu-left"><span>⚙️</span> <span>10. Configurações</span></div>
+                                <div class="ws-erp-menu-left"><span>⚙️</span> <span>Configurações</span></div>
                             </div>
                         </nav>
                     </aside>
@@ -605,157 +606,131 @@ const WorkshopView = {
         const pendingWhatsApp = (this.whatsAppData?.stats?.pending) || 0;
 
         return `
-            <!-- Cabeçalho Operacional do Painel -->
-            <div class="ws-erp-dashboard-banner" id="tour-step-greeting">
-                <div>
-                    <h2 class="ws-erp-greeting-title">PAINEL OPERACIONAL DA OFICINA</h2>
-                    <p class="ws-erp-greeting-sub">${ws.trade_name || 'Veloce Auto Center Premium'} • Gestão de Pátio & Manutenção Preventiva</p>
+            <!-- TOPBAR: TÍTULO DASHBOARD + BUSCA RÁPIDA INTEGRADA (BLUEPRINT OFICIAL) -->
+            <div class="ws-dash-topbar" id="tour-step-greeting">
+                <div class="ws-dash-title-group">
+                    <h1 class="ws-dash-title">Dashboard</h1>
                 </div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <button class="btn btn-sm" onclick="WorkshopView.switchSection('agenda-oficina')" style="background:rgba(255,210,28,0.12); color:#FFD21C; border:1px solid rgba(255,210,28,0.3); font-weight:700; font-size:11.5px; padding:6px 14px; border-radius:6px; cursor:pointer;">
-                        📅 Ver Grade Semanal da Oficina
-                    </button>
-                </div>
-            </div>
 
-            <!-- BUSCA RÁPIDA DE VEÍCULOS & ENTRADAS DIRETO NA DASHBOARD -->
-            <div class="panel-box ws-dashboard-search-card" style="background:#090e1a; border:1px solid rgba(0,212,255,0.35); padding:16px 20px; border-radius:10px; margin-bottom:20px; box-shadow:0 4px 20px rgba(0,0,0,0.4);">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:20px;">🔎</span>
-                        <div>
-                            <strong style="color:#ffffff; font-size:14.5px;">Buscar Veículo & Ficha Digital no Pátio</strong>
-                            <span style="font-size:11.5px; color:#94a3b8; display:block;">Consulte histórico, odômetro, DNA AUTO ou envie WhatsApp com 1 toque</span>
-                        </div>
+                <div class="ws-dash-search-container">
+                    <div class="ws-dash-search-box">
+                        <svg class="ws-search-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#64748b" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="ws-dashboard-search-input" class="ws-dash-search-input"
+                               placeholder="Buscar por placa, chassi, modelo ou cliente..."
+                               onkeyup="if(event.key==='Enter') WorkshopView.handleDashboardSearch()" />
+                        <button class="ws-dash-search-btn" onclick="WorkshopView.handleDashboardSearch()">
+                            Buscar
+                        </button>
                     </div>
-                    <button class="btn btn-primary btn-sm" onclick="WorkshopView.openManualVehicleModal()" style="font-weight:800; background:#10b981; border:none; display:inline-flex; align-items:center; gap:6px;">
-                        <span>🚗</span> <span>+ Cadastrar Novo Carro</span>
-                    </button>
                 </div>
-
-                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                    <div style="flex:1; min-width:240px; position:relative;">
-                        <input type="text" id="ws-dashboard-search-input" class="form-control" placeholder="Digite a placa, chassi ou cliente..." style="font-size:13.5px; padding:10px 14px; text-transform:uppercase; font-family:var(--font-mono); color:var(--brand-cyan); font-weight:700; background:#050811; border-color:rgba(255,255,255,0.15);" onkeyup="if(event.key==='Enter') WorkshopView.handleDashboardSearch()" />
-                    </div>
-                    <button class="btn btn-cyan" onclick="WorkshopView.handleDashboardSearch()" style="font-weight:800; font-size:12.5px; padding:10px 20px;">
-                        🔎 Buscar Carro
-                    </button>
-                </div>
-
-                <!-- Atalhos Rápidos Dinâmicos do Pátio Real -->
-                <div style="margin-top:10px; font-size:11px; color:#64748b;">
-                    ${(this.vehiclesList && this.vehiclesList.length > 0) ? `
-                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                            <span>Atalhos rápidos do pátio:</span>
-                            ${this.vehiclesList.slice(0, 5).map(v => `
-                                <span class="mono" onclick="WorkshopView.quickDashboardSearch('${v.license_plate}')" style="cursor:pointer; color:var(--brand-cyan); background:#0c1526; padding:2px 8px; border-radius:4px; border:1px solid rgba(0,212,255,0.2);">${v.license_plate} (${v.model || v.brand})</span>
-                            `).join('')}
-                        </div>
-                    ` : `
-                        <span>Nenhum veículo no pátio ainda. Cadastre o primeiro carro para ativar atalhos rápidos de busca.</span>
-                    `}
-                </div>
-
-                <!-- Container de Resultado Dinâmico da Busca na Dashboard -->
-                <div id="ws-dashboard-search-result" style="margin-top:14px; display:none;"></div>
             </div>
 
-            <!-- RESUMO EXECUTIVO (6 KPIS EXATOS DO MAPA VISUAL) -->
-            <div class="ws-erp-section-title">
-                <span>📊 Resumo Operacional de Hoje</span>
-            </div>
+            <!-- CONTAINER DE RESULTADO DINÂMICO DA BUSCA NA DASHBOARD -->
+            <div id="ws-dashboard-search-result" style="margin-bottom:18px; display:none;"></div>
 
-            <div class="ws-erp-kpi-grid" id="tour-step-kpis">
+            <!-- RESUMO OPERACIONAL DE HOJE (6 KPIS EXATOS DO BLUEPRINT EM GRID 3x2) -->
+            <div class="ws-dash-kpi-grid" id="tour-step-kpis">
                 <!-- 1. Faturamento do Mês -->
-                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('servicos-os')">
-                    <div class="ws-erp-kpi-top">
-                        <span class="ws-erp-kpi-label">Faturamento do Mês</span>
-                        <span style="font-size:18px;">💰</span>
+                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('servicos-os')">
+                    <div class="ws-dash-kpi-header">
+                        <span class="ws-dash-kpi-label">Faturamento do Mês</span>
                     </div>
-                    <div class="ws-erp-kpi-num" style="color:#10b981;">R$ 48.750,00</div>
-                    <div class="ws-erp-kpi-foot" style="color:#10b981; font-weight:700;">+12% vs mês anterior</div>
+                    <div class="ws-dash-kpi-value-row">
+                        <span class="ws-dash-kpi-value">R$ 48.750,00</span>
+                    </div>
+                    <div class="ws-dash-kpi-badge-row">
+                        <span class="ws-dash-trend-badge success">↑ 12%</span>
+                    </div>
                 </div>
 
                 <!-- 2. Ordens de Serviço Ativas -->
-                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('servicos-os')">
-                    <div class="ws-erp-kpi-top">
-                        <span class="ws-erp-kpi-label">Ordens de Serviço Ativas</span>
-                        <span style="font-size:18px;">🔧</span>
+                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('servicos-os')">
+                    <div class="ws-dash-kpi-header">
+                        <span class="ws-dash-kpi-label">Ordens de Serviço Ativas</span>
                     </div>
-                    <div class="ws-erp-kpi-num" style="color:#00d4ff;">18</div>
-                    <div class="ws-erp-kpi-foot">8 em andamento, 10 aguardando</div>
+                    <div class="ws-dash-kpi-value-row">
+                        <span class="ws-dash-kpi-value">18</span>
+                    </div>
+                    <div class="ws-dash-kpi-subtext">8 em andamento, 10 aguardando</div>
                 </div>
 
                 <!-- 3. Carros no Box -->
-                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('recepcao-checkin')">
-                    <div class="ws-erp-kpi-top">
-                        <span class="ws-erp-kpi-label">Carros no Box</span>
-                        <span style="font-size:18px;">🚘</span>
+                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('recepcao-checkin')">
+                    <div class="ws-dash-kpi-header">
+                        <span class="ws-dash-kpi-label">Carros no Box</span>
                     </div>
-                    <div class="ws-erp-kpi-num" style="color:#38bdf8;">6</div>
-                    <div class="ws-erp-kpi-foot">Capacidade: 8 boxes (75%)</div>
+                    <div class="ws-dash-kpi-value-row">
+                        <span class="ws-dash-kpi-value">6</span>
+                    </div>
+                    <div class="ws-dash-kpi-subtext">Capacidade: 8 boxes (75%)</div>
                 </div>
 
                 <!-- 4. Alertas Preditivos OBD2 -->
-                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('manutencao-alertas')">
-                    <div class="ws-erp-kpi-top">
-                        <span class="ws-erp-kpi-label">Alertas Preditivos OBD2</span>
-                        <span style="font-size:18px;">⚠️</span>
+                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('manutencao-alertas')">
+                    <div class="ws-dash-kpi-header">
+                        <span class="ws-dash-kpi-label">Alertas Preditivos OBD2</span>
                     </div>
-                    <div class="ws-erp-kpi-num" style="color:#ef4444;">4</div>
-                    <div class="ws-erp-kpi-foot" style="color:#f87171;">2 críticos, 2 atenção</div>
+                    <div class="ws-dash-kpi-value-row">
+                        <span class="ws-dash-kpi-value text-danger">4</span>
+                    </div>
+                    <div class="ws-dash-kpi-subtext text-danger">2 críticos, 2 atenção</div>
                 </div>
 
                 <!-- 5. Ativações DNA do Mês -->
-                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
-                    <div class="ws-erp-kpi-top">
-                        <span class="ws-erp-kpi-label">Ativações DNA do Mês</span>
-                        <span style="font-size:18px;">🛡️</span>
+                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
+                    <div class="ws-dash-kpi-header">
+                        <span class="ws-dash-kpi-label">Ativações DNA do Mês</span>
                     </div>
-                    <div class="ws-erp-kpi-num" style="color:#FFD21C;">23</div>
-                    <div class="ws-erp-kpi-foot">Meta: 30 (76% atingida)</div>
+                    <div class="ws-dash-kpi-value-row">
+                        <span class="ws-dash-kpi-value">23</span>
+                    </div>
+                    <div class="ws-dash-kpi-subtext">Meta: 30 (76% atingida)</div>
                 </div>
 
                 <!-- 6. Comissões a Receber -->
-                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('configuracoes-dados')">
-                    <div class="ws-erp-kpi-top">
-                        <span class="ws-erp-kpi-label">Comissões a Receber</span>
-                        <span style="font-size:18px;">💳</span>
+                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('configuracoes-dados')">
+                    <div class="ws-dash-kpi-header">
+                        <span class="ws-dash-kpi-label">Comissões a Receber</span>
                     </div>
-                    <div class="ws-erp-kpi-num" style="color:#a855f7;">R$ 3.240,00</div>
-                    <div class="ws-erp-kpi-foot">Previsão pgto: 05/05</div>
+                    <div class="ws-dash-kpi-value-row">
+                        <span class="ws-dash-kpi-value">R$ 3.240,00</span>
+                    </div>
+                    <div class="ws-dash-kpi-subtext">Previsão pgto: 05/05</div>
                 </div>
             </div>
 
-            <!-- 6 AÇÕES RÁPIDAS (EXATAS DO BLUEPRINT) -->
-            <div class="ws-erp-section-title">
-                <span>⚡ Ações Rápidas</span>
+            <!-- SEÇÃO: AÇÕES RÁPIDAS (EXATO DO BLUEPRINT EM GRID 3 COLUNAS) -->
+            <div class="ws-dash-section-header">
+                <h3 class="ws-dash-section-title">Ações rápidas</h3>
             </div>
 
-            <div class="ws-erp-quick-actions-grid" id="tour-step-actions">
-                <button class="ws-erp-quick-btn primary-highlight" onclick="WorkshopView.switchSection('recepcao-checkin')">
-                    <span style="font-size:18px;">🚘</span>
-                    <span>+ NOVA ENTRADA</span>
+            <div class="ws-dash-actions-grid" id="tour-step-actions">
+                <button class="ws-dash-action-btn primary" onclick="WorkshopView.openManualVehicleModal()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"></path></svg>
+                    <span>Nova Entrada</span>
                 </button>
-                <button class="ws-erp-quick-btn" onclick="WorkshopView.openNewServiceModal()">
-                    <span style="font-size:18px;">🔧</span>
-                    <span>LANÇAR PEÇA / SERVIÇO</span>
+                <button class="ws-dash-action-btn" onclick="WorkshopView.openNewServiceModal()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                    <span>Lançar Peça / Serviço</span>
                 </button>
-                <button class="ws-erp-quick-btn" onclick="WorkshopView.openNewServiceModal()">
-                    <span style="font-size:18px;">📝</span>
-                    <span>NOVA ORDEM DE SERVIÇO</span>
+                <button class="ws-dash-action-btn" onclick="WorkshopView.openNewServiceModal()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                    <span>Nova Ordem de Serviço</span>
                 </button>
-                <button class="ws-erp-quick-btn" onclick="WorkshopView.switchSection('manutencao-alertas')">
-                    <span style="font-size:18px;">⚠️</span>
-                    <span>ALERTA PREDITIVO</span>
+                <button class="ws-dash-action-btn" onclick="WorkshopView.switchSection('manutencao-alertas')">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#ef4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    <span>Alerta Preditivo</span>
                 </button>
-                <button class="ws-erp-quick-btn" onclick="WorkshopView.openSmartScheduleModal()">
-                    <span style="font-size:18px;">📅</span>
-                    <span>AGENDAR MANUTENÇÃO</span>
+                <button class="ws-dash-action-btn" onclick="WorkshopView.openSmartScheduleModal()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>Agendar Manutenção</span>
                 </button>
-                <button class="ws-erp-quick-btn" onclick="WorkshopView.openManualVehicleModal()">
-                    <span style="font-size:18px;">🚗</span>
-                    <span>CADASTRAR CARRO</span>
+                <button class="ws-dash-action-btn" onclick="WorkshopView.openManualVehicleModal()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L1.4 12c-.2.4-.4.9-.4 1.4V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+                    <span>Cadastrar Carro</span>
                 </button>
             </div>
 
@@ -763,7 +738,7 @@ const WorkshopView = {
             <div class="panel-box" style="margin-bottom:16px;">
                 <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--brand-cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                         Veículos no Pátio & Atendimentos em Andamento (6 boxes ocupados)
                     </span>
                     <button class="btn btn-sm btn-secondary" onclick="WorkshopView.switchSection('recepcao-checkin')">Ver Pátio Completo</button>
@@ -784,10 +759,10 @@ const WorkshopView = {
                             <tr>
                                 <td>
                                     <div style="display:flex; align-items:center; gap:8px;">
-                                        <img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=100&auto=format&fit=crop&q=80" alt="Civic" style="width:40px; height:30px; object-fit:cover; border-radius:4px;" onerror="this.src='/img/car-silhouette.svg'" />
+                                        <img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=100&auto=format&fit=crop&q=80" alt="Civic" style="width:44px; height:32px; object-fit:cover; border-radius:6px;" onerror="this.src='/img/car-silhouette.svg'" />
                                         <div>
                                             <strong style="color:#ffffff;">Honda Civic Touring 1.5 Turbo</strong>
-                                            <div class="mono" style="color:var(--brand-cyan); font-size:11px;">BRA2E19 • 87.542 km</div>
+                                            <div class="mono" style="color:#38bdf8; font-size:11px;">BRA2E19 • 87.542 km</div>
                                         </div>
                                     </div>
                                 </td>
@@ -796,24 +771,24 @@ const WorkshopView = {
                                     <div style="font-size:11px; color:#25D366;">(11) 98765-4321</div>
                                 </td>
                                 <td>
-                                    <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#FFD21C; font-weight:700;">Box 02</span>
+                                    <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#38bdf8; font-weight:700;">Box 02</span>
                                     <div style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">Troca Pastilhas + Óleo 0W-20</div>
                                 </td>
                                 <td><span class="badge-proof badge-pending" style="font-size:10px;">🟠 EM EXECUÇÃO</span></td>
                                 <td>
                                     <div style="display:flex; gap:6px;">
-                                        <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Carlos Henrique', '(11) 98765-4321', 'Honda Civic Touring', 'BRA2E19', 'Troca Pastilhas e Óleo')" style="background:#25D366; color:#000; font-weight:800; padding:4px 8px; border-radius:4px; font-size:10.5px;">💬 WhatsApp</button>
-                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_civic_touring', 'BRA2E19')" style="font-size:10.5px; padding:4px 8px;">📋 Ficha Digital</button>
+                                        <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Carlos Henrique', '(11) 98765-4321', 'Honda Civic Touring', 'BRA2E19', 'Troca Pastilhas e Óleo')" style="background:#25D366; color:#000; font-weight:800; padding:5px 10px; border-radius:14px; font-size:11px;">💬 WhatsApp</button>
+                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_civic_touring', 'BRA2E19')" style="font-size:11px; padding:5px 10px; border-radius:6px;">📋 Ficha Digital</button>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
                                     <div style="display:flex; align-items:center; gap:8px;">
-                                        <img src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=100&auto=format&fit=crop&q=80" alt="Corolla" style="width:40px; height:30px; object-fit:cover; border-radius:4px;" onerror="this.src='/img/car-silhouette.svg'" />
+                                        <img src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=100&auto=format&fit=crop&q=80" alt="Corolla" style="width:44px; height:32px; object-fit:cover; border-radius:6px;" onerror="this.src='/img/car-silhouette.svg'" />
                                         <div>
                                             <strong style="color:#ffffff;">Toyota Corolla Altis 2.0</strong>
-                                            <div class="mono" style="color:var(--brand-cyan); font-size:11px;">FDT3C45 • 41.200 km</div>
+                                            <div class="mono" style="color:#38bdf8; font-size:11px;">FDT3C45 • 41.200 km</div>
                                         </div>
                                     </div>
                                 </td>
@@ -822,24 +797,24 @@ const WorkshopView = {
                                     <div style="font-size:11px; color:#25D366;">(11) 97654-3210</div>
                                 </td>
                                 <td>
-                                    <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#FFD21C; font-weight:700;">Box 04</span>
+                                    <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#38bdf8; font-weight:700;">Box 04</span>
                                     <div style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">Revisão Preventiva 40.000 km</div>
                                 </td>
                                 <td><span class="badge-proof" style="background:rgba(251,191,36,0.2); color:#fbbf24; font-size:10px;">🟡 AGUARDANDO PEÇAS</span></td>
                                 <td>
                                     <div style="display:flex; gap:6px;">
-                                        <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Maria Fernandes', '(11) 97654-3210', 'Toyota Corolla Altis', 'FDT3C45', 'Revisão Preventiva 40k')" style="background:#25D366; color:#000; font-weight:800; padding:4px 8px; border-radius:4px; font-size:10.5px;">💬 WhatsApp</button>
-                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_corolla_altis', 'FDT3C45')" style="font-size:10.5px; padding:4px 8px;">📋 Ficha Digital</button>
+                                        <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Maria Fernandes', '(11) 97654-3210', 'Toyota Corolla Altis', 'FDT3C45', 'Revisão Preventiva 40k')" style="background:#25D366; color:#000; font-weight:800; padding:5px 10px; border-radius:14px; font-size:11px;">💬 WhatsApp</button>
+                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_corolla_altis', 'FDT3C45')" style="font-size:11px; padding:5px 10px; border-radius:6px;">📋 Ficha Digital</button>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
                                     <div style="display:flex; align-items:center; gap:8px;">
-                                        <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=100&auto=format&fit=crop&q=80" alt="Compass" style="width:40px; height:30px; object-fit:cover; border-radius:4px;" onerror="this.src='/img/car-silhouette.svg'" />
+                                        <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=100&auto=format&fit=crop&q=80" alt="Compass" style="width:44px; height:32px; object-fit:cover; border-radius:6px;" onerror="this.src='/img/car-silhouette.svg'" />
                                         <div>
                                             <strong style="color:#ffffff;">Jeep Compass Longitude</strong>
-                                            <div class="mono" style="color:var(--brand-cyan); font-size:11px;">QWE7A32 • 56.890 km</div>
+                                            <div class="mono" style="color:#38bdf8; font-size:11px;">QWE7A32 • 56.890 km</div>
                                         </div>
                                     </div>
                                 </td>
@@ -848,24 +823,24 @@ const WorkshopView = {
                                     <div style="font-size:11px; color:#25D366;">(11) 96543-2109</div>
                                 </td>
                                 <td>
-                                    <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#FFD21C; font-weight:700;">Box 01</span>
+                                    <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#38bdf8; font-weight:700;">Box 01</span>
                                     <div style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">Diagnóstico OBD2 (Sonda Lambda)</div>
                                 </td>
                                 <td><span class="badge-proof badge-pending" style="font-size:10px;">🟠 EM DIAGNÓSTICO</span></td>
                                 <td>
                                     <div style="display:flex; gap:6px;">
-                                        <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Roberto Silva', '(11) 96543-2109', 'Jeep Compass', 'QWE7A32', 'Diagnóstico Sonda Lambda')" style="background:#25D366; color:#000; font-weight:800; padding:4px 8px; border-radius:4px; font-size:10.5px;">💬 WhatsApp</button>
-                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_compass_long', 'QWE7A32')" style="font-size:10.5px; padding:4px 8px;">📋 Ficha Digital</button>
+                                        <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Roberto Silva', '(11) 96543-2109', 'Jeep Compass', 'QWE7A32', 'Diagnóstico Sonda Lambda')" style="background:#25D366; color:#000; font-weight:800; padding:5px 10px; border-radius:14px; font-size:11px;">💬 WhatsApp</button>
+                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_compass_long', 'QWE7A32')" style="font-size:11px; padding:5px 10px; border-radius:6px;">📋 Ficha Digital</button>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
                                     <div style="display:flex; align-items:center; gap:8px;">
-                                        <img src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=100&auto=format&fit=crop&q=80" alt="HR-V" style="width:40px; height:30px; object-fit:cover; border-radius:4px;" onerror="this.src='/img/car-silhouette.svg'" />
+                                        <img src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=100&auto=format&fit=crop&q=80" alt="HR-V" style="width:44px; height:32px; object-fit:cover; border-radius:6px;" onerror="this.src='/img/car-silhouette.svg'" />
                                         <div>
                                             <strong style="color:#ffffff;">Honda HR-V EXL 1.8</strong>
-                                            <div class="mono" style="color:var(--brand-cyan); font-size:11px;">XY29D10 • 38.120 km</div>
+                                            <div class="mono" style="color:#38bdf8; font-size:11px;">XY29D10 • 38.120 km</div>
                                         </div>
                                     </div>
                                 </td>
@@ -874,14 +849,14 @@ const WorkshopView = {
                                     <div style="font-size:11px; color:#25D366;">(11) 95432-1098</div>
                                 </td>
                                 <td>
-                                    <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#FFD21C; font-weight:700;">Box 05</span>
+                                    <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#38bdf8; font-weight:700;">Box 05</span>
                                     <div style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">Alinhamento 3D + Balanceamento</div>
                                 </td>
                                 <td><span class="badge-proof badge-proven" style="font-size:10px;">🟢 PRONTO P/ RETIRADA</span></td>
                                 <td>
                                     <div style="display:flex; gap:6px;">
-                                        <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Patrícia Souza', '(11) 95432-1098', 'Honda HR-V', 'XY29D10', 'Alinhamento e Balanceamento')" style="background:#25D366; color:#000; font-weight:800; padding:4px 8px; border-radius:4px; font-size:10.5px;">💬 WhatsApp</button>
-                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_hrv_exl', 'XY29D10')" style="font-size:10.5px; padding:4px 8px;">📋 Ficha Digital</button>
+                                        <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Patrícia Souza', '(11) 95432-1098', 'Honda HR-V', 'XY29D10', 'Alinhamento e Balanceamento')" style="background:#25D366; color:#000; font-weight:800; padding:5px 10px; border-radius:14px; font-size:11px;">💬 WhatsApp</button>
+                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_hrv_exl', 'XY29D10')" style="font-size:11px; padding:5px 10px; border-radius:6px;">📋 Ficha Digital</button>
                                     </div>
                                 </td>
                             </tr>
@@ -2926,148 +2901,144 @@ const WorkshopView = {
     // ──────────────────────────────────────────────────────────────────────────
     renderRecepcaoCheckinView() {
         return `
-            <div class="panel-box" style="border-color:var(--brand-cyan);">
-                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--brand-cyan)" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        Recepção & Pátio da Oficina (4 Veículos Ativos nos Boxes)
+            <!-- HEADER DA RECEPÇÃO / PÁTIO -->
+            <div class="ws-dash-topbar">
+                <div class="ws-dash-title-group">
+                    <h1 class="ws-dash-title">Recepção / Pátio</h1>
+                    <span style="font-size:12.5px; color:#94a3b8; display:block; margin-top:3px;">
+                        Gestão de entradas, pátio e atendimento em tempo real (4 veículos ativos)
                     </span>
-                    <button class="btn btn-primary btn-sm" onclick="WorkshopView.openManualVehicleModal()" style="font-weight:800; background:#10b981; border:none; display:inline-flex; align-items:center; gap:6px;">
-                        <span>🚗</span> <span>+ Nova Entrada de Veículo</span>
-                    </button>
                 </div>
 
-                <!-- CARDS DETALHADOS DOS VEÍCULOS NO PÁTIO (4 CARROS DO BLUEPRINT) -->
-                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap:16px; margin-bottom:20px;">
-                    <!-- 1. Honda Civic Touring (BRA2E19) -->
-                    <div style="background:#090f1d; border:1px solid rgba(0,212,255,0.35); border-radius:10px; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
-                        <div>
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                                <span class="mono" style="background:rgba(0,212,255,0.15); color:var(--brand-cyan); font-weight:800; font-size:13px; padding:3px 8px; border-radius:4px; border:1px solid rgba(0,212,255,0.4);">BRA2E19</span>
-                                <span class="mono" style="background:#1e293b; color:#FFD21C; font-weight:700; font-size:11px; padding:3px 8px; border-radius:4px;">Box 02</span>
-                            </div>
-                            <div style="display:flex; gap:12px; margin-bottom:12px;">
-                                <img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=160&auto=format&fit=crop&q=80" alt="Civic" style="width:74px; height:56px; object-fit:cover; border-radius:6px;" onerror="this.src='/img/car-silhouette.svg'" />
-                                <div>
-                                    <strong style="color:#ffffff; font-size:14px; display:block;">Honda Civic Touring 1.5</strong>
-                                    <span style="font-size:11px; color:#94a3b8;">2021/2022 • 87.542 km • Preto Cristal</span>
-                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:3px;">👤 <strong>Carlos Henrique</strong></div>
-                                </div>
-                            </div>
-                            <div style="background:#050811; padding:10px; border-radius:6px; border-left:3px solid #f59e0b; margin-bottom:14px;">
-                                <div style="font-size:11px; color:#f59e0b; font-weight:700;">SERVIÇO EM EXECUÇÃO:</div>
-                                <div style="font-size:12px; color:#ffffff; margin-top:2px;">Troca de pastilhas dianteiras + Óleo 0W-20 sintético</div>
-                            </div>
-                        </div>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Carlos Henrique', '(11) 98765-4321', 'Honda Civic Touring', 'BRA2E19', 'Troca Pastilhas e Óleo')" style="flex:1; background:#25D366; color:#000; font-weight:800; font-size:11.5px; padding:7px; border:none; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
-                                <span>💬</span> <span>WhatsApp</span>
-                            </button>
-                            <button class="btn btn-sm btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_civic_touring', 'BRA2E19')" style="flex:1; font-size:11.5px; padding:7px; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
-                                <span>📋</span> <span>Ficha Digital</span>
-                            </button>
-                        </div>
+                <div class="ws-dash-search-container">
+                    <div class="ws-dash-search-box">
+                        <svg class="ws-search-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#64748b" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="ws-recepcao-search-input" class="ws-dash-search-input"
+                               placeholder="Buscar por placa, chassi, modelo ou cliente..."
+                               onkeyup="if(event.key==='Enter') WorkshopView.handleSearchVehicle()" />
+                        <button class="ws-dash-search-btn" onclick="WorkshopView.handleSearchVehicle()">
+                            Buscar
+                        </button>
                     </div>
-
-                    <!-- 2. Toyota Corolla Altis (FDT3C45) -->
-                    <div style="background:#090f1d; border:1px solid rgba(251,191,36,0.3); border-radius:10px; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
-                        <div>
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                                <span class="mono" style="background:rgba(251,191,36,0.15); color:#fbbf24; font-weight:800; font-size:13px; padding:3px 8px; border-radius:4px; border:1px solid rgba(251,191,36,0.4);">FDT3C45</span>
-                                <span class="mono" style="background:#1e293b; color:#FFD21C; font-weight:700; font-size:11px; padding:3px 8px; border-radius:4px;">Box 04</span>
-                            </div>
-                            <div style="display:flex; gap:12px; margin-bottom:12px;">
-                                <img src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=160&auto=format&fit=crop&q=80" alt="Corolla" style="width:74px; height:56px; object-fit:cover; border-radius:6px;" onerror="this.src='/img/car-silhouette.svg'" />
-                                <div>
-                                    <strong style="color:#ffffff; font-size:14px; display:block;">Toyota Corolla Altis 2.0</strong>
-                                    <span style="font-size:11px; color:#94a3b8;">2022 • 41.200 km • Prata Névoa</span>
-                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:3px;">👤 <strong>Maria Fernandes</strong></div>
-                                </div>
-                            </div>
-                            <div style="background:#050811; padding:10px; border-radius:6px; border-left:3px solid #fbbf24; margin-bottom:14px;">
-                                <div style="font-size:11px; color:#fbbf24; font-weight:700;">AGUARDANDO PEÇAS:</div>
-                                <div style="font-size:12px; color:#ffffff; margin-top:2px;">Revisão Preventiva 40.000 km (Filtros e Velas Iridium)</div>
-                            </div>
-                        </div>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Maria Fernandes', '(11) 97654-3210', 'Toyota Corolla Altis', 'FDT3C45', 'Revisão Preventiva 40k')" style="flex:1; background:#25D366; color:#000; font-weight:800; font-size:11.5px; padding:7px; border:none; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
-                                <span>💬</span> <span>WhatsApp</span>
-                            </button>
-                            <button class="btn btn-sm btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_corolla_altis', 'FDT3C45')" style="flex:1; font-size:11.5px; padding:7px; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
-                                <span>📋</span> <span>Ficha Digital</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 3. Jeep Compass Longitude (QWE7A32) -->
-                    <div style="background:#090f1d; border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
-                        <div>
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                                <span class="mono" style="background:rgba(239,68,68,0.15); color:#ef4444; font-weight:800; font-size:13px; padding:3px 8px; border-radius:4px; border:1px solid rgba(239,68,68,0.4);">QWE7A32</span>
-                                <span class="mono" style="background:#1e293b; color:#FFD21C; font-weight:700; font-size:11px; padding:3px 8px; border-radius:4px;">Box 01</span>
-                            </div>
-                            <div style="display:flex; gap:12px; margin-bottom:12px;">
-                                <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=160&auto=format&fit=crop&q=80" alt="Compass" style="width:74px; height:56px; object-fit:cover; border-radius:6px;" onerror="this.src='/img/car-silhouette.svg'" />
-                                <div>
-                                    <strong style="color:#ffffff; font-size:14px; display:block;">Jeep Compass Longitude</strong>
-                                    <span style="font-size:11px; color:#94a3b8;">2020 • 56.890 km • Branco Polar</span>
-                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:3px;">👤 <strong>Roberto Silva</strong></div>
-                                </div>
-                            </div>
-                            <div style="background:#050811; padding:10px; border-radius:6px; border-left:3px solid #ef4444; margin-bottom:14px;">
-                                <div style="font-size:11px; color:#ef4444; font-weight:700;">EM DIAGNÓSTICO OBD2:</div>
-                                <div style="font-size:12px; color:#ffffff; margin-top:2px;">Falha de injeção / Sensor O2 Sonda Lambda (DTC P0135)</div>
-                            </div>
-                        </div>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Roberto Silva', '(11) 96543-2109', 'Jeep Compass', 'QWE7A32', 'Diagnóstico Sonda Lambda')" style="flex:1; background:#25D366; color:#000; font-weight:800; font-size:11.5px; padding:7px; border:none; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
-                                <span>💬</span> <span>WhatsApp</span>
-                            </button>
-                            <button class="btn btn-sm btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_compass_long', 'QWE7A32')" style="flex:1; font-size:11.5px; padding:7px; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
-                                <span>📋</span> <span>Ficha Digital</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 4. Honda HR-V EXL (XY29D10) -->
-                    <div style="background:#090f1d; border:1px solid rgba(16,185,129,0.35); border-radius:10px; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
-                        <div>
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                                <span class="mono" style="background:rgba(16,185,129,0.15); color:#10b981; font-weight:800; font-size:13px; padding:3px 8px; border-radius:4px; border:1px solid rgba(16,185,129,0.4);">XY29D10</span>
-                                <span class="mono" style="background:#1e293b; color:#FFD21C; font-weight:700; font-size:11px; padding:3px 8px; border-radius:4px;">Box 05</span>
-                            </div>
-                            <div style="display:flex; gap:12px; margin-bottom:12px;">
-                                <img src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=160&auto=format&fit=crop&q=80" alt="HR-V" style="width:74px; height:56px; object-fit:cover; border-radius:6px;" onerror="this.src='/img/car-silhouette.svg'" />
-                                <div>
-                                    <strong style="color:#ffffff; font-size:14px; display:block;">Honda HR-V EXL 1.8</strong>
-                                    <span style="font-size:11px; color:#94a3b8;">2021 • 38.120 km • Cinza Barium</span>
-                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:3px;">👤 <strong>Patrícia Souza</strong></div>
-                                </div>
-                            </div>
-                            <div style="background:#050811; padding:10px; border-radius:6px; border-left:3px solid #10b981; margin-bottom:14px;">
-                                <div style="font-size:11px; color:#10b981; font-weight:700;">CONCLUÍDO / PRONTO:</div>
-                                <div style="font-size:12px; color:#ffffff; margin-top:2px;">Alinhamento a laser 3D e Balanceamento das 4 rodas</div>
-                            </div>
-                        </div>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Patrícia Souza', '(11) 95432-1098', 'Honda HR-V', 'XY29D10', 'Alinhamento e Balanceamento')" style="flex:1; background:#25D366; color:#000; font-weight:800; font-size:11.5px; padding:7px; border:none; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
-                                <span>💬</span> <span>WhatsApp</span>
-                            </button>
-                            <button class="btn btn-sm btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_hrv_exl', 'XY29D10')" style="flex:1; font-size:11.5px; padding:7px; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
-                                <span>📋</span> <span>Ficha Digital</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PESQUISA RÁPIDA INTEGRADA PARA CHECK-IN -->
-                <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
-                    <div style="font-size:13px; font-weight:800; color:#ffffff; margin-bottom:10px;">
-                        🔍 Localizar outro veículo por Placa ou Chassi para dar Entrada:
-                    </div>
-                    ${this.renderVehicleSearchView()}
                 </div>
             </div>
+
+            <!-- LISTA DE CARDS HORIZONTAIS DO PÁTIO (EXATO DO BLUEPRINT SCREEN 2) -->
+            <div class="ws-yard-card-list" style="margin-bottom:24px;">
+                <!-- 1. Honda Civic 2021 (BRA2E19) -->
+                <div class="ws-yard-card-item">
+                    <div style="display:flex; align-items:center; gap:16px; min-width:0;">
+                        <img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=160&auto=format&fit=crop&q=80" alt="Civic" class="ws-yard-thumb" onerror="this.src='/img/car-silhouette.svg'" />
+                        <div class="ws-yard-info-col" style="min-width:140px;">
+                            <div class="ws-yard-plate">BRA2E19</div>
+                            <span style="font-size:11px; color:#38bdf8; font-weight:600;">Revisão 80k</span>
+                            <span class="ws-yard-sub">87.542 km</span>
+                        </div>
+                        <div class="ws-yard-info-col" style="min-width:180px;">
+                            <div class="ws-yard-model">Honda Civic 2021</div>
+                            <span class="ws-yard-sub">1.5 Turbo</span>
+                            <div style="font-size:12px; color:#ffffff; font-weight:600;">João Silva</div>
+                        </div>
+                    </div>
+                    <div class="ws-yard-actions">
+                        <button class="ws-yard-btn-whatsapp" onclick="WorkshopView.openWhatsAppModal('João Silva', '(11) 98765-4321', 'Honda Civic 2021', 'BRA2E19', 'Revisão 80k')">
+                            <span>💬</span> WhatsApp
+                        </button>
+                        <button class="ws-yard-btn-dossier" onclick="WorkshopView.openDigitalVehicleSheet('veh_civic_touring', 'BRA2E19')">
+                            Ficha Digital
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2. Toyota Corolla 2022 (FDT3C45) -->
+                <div class="ws-yard-card-item">
+                    <div style="display:flex; align-items:center; gap:16px; min-width:0;">
+                        <img src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=160&auto=format&fit=crop&q=80" alt="Corolla" class="ws-yard-thumb" onerror="this.src='/img/car-silhouette.svg'" />
+                        <div class="ws-yard-info-col" style="min-width:140px;">
+                            <div class="ws-yard-plate">FDT3C45</div>
+                            <span style="font-size:11px; color:#fbbf24; font-weight:600;">2022 • 1.8</span>
+                            <span class="ws-yard-sub">56.230 km</span>
+                        </div>
+                        <div class="ws-yard-info-col" style="min-width:180px;">
+                            <div class="ws-yard-model">Toyota Corolla</div>
+                            <span class="ws-yard-sub">1.8 Flex</span>
+                            <div style="font-size:12px; color:#ffffff; font-weight:600;">Maria Oliveira</div>
+                        </div>
+                    </div>
+                    <div class="ws-yard-actions">
+                        <button class="ws-yard-btn-whatsapp" onclick="WorkshopView.openWhatsAppModal('Maria Oliveira', '(11) 97654-3210', 'Toyota Corolla', 'FDT3C45', 'Revisão')">
+                            <span>💬</span> WhatsApp
+                        </button>
+                        <button class="ws-yard-btn-dossier" onclick="WorkshopView.openDigitalVehicleSheet('veh_corolla_altis', 'FDT3C45')">
+                            Ficha Digital
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3. Jeep Compass 2022 (QWE7A32) -->
+                <div class="ws-yard-card-item">
+                    <div style="display:flex; align-items:center; gap:16px; min-width:0;">
+                        <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=160&auto=format&fit=crop&q=80" alt="Compass" class="ws-yard-thumb" onerror="this.src='/img/car-silhouette.svg'" />
+                        <div class="ws-yard-info-col" style="min-width:140px;">
+                            <div class="ws-yard-plate">QWE7A32</div>
+                            <span style="font-size:11px; color:#ef4444; font-weight:600;">2022 • 2.0</span>
+                            <span class="ws-yard-sub">32.870 km</span>
+                        </div>
+                        <div class="ws-yard-info-col" style="min-width:180px;">
+                            <div class="ws-yard-model">Jeep Compass</div>
+                            <span class="ws-yard-sub">2.0 Turbo Diesel</span>
+                            <div style="font-size:12px; color:#ffffff; font-weight:600;">Carlos Souza</div>
+                        </div>
+                    </div>
+                    <div class="ws-yard-actions">
+                        <button class="ws-yard-btn-whatsapp" onclick="WorkshopView.openWhatsAppModal('Carlos Souza', '(11) 96543-2109', 'Jeep Compass', 'QWE7A32', 'Diagnóstico')">
+                            <span>💬</span> WhatsApp
+                        </button>
+                        <button class="ws-yard-btn-dossier" onclick="WorkshopView.openDigitalVehicleSheet('veh_compass_long', 'QWE7A32')">
+                            Ficha Digital
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. Honda HR-V 2021 (XY29D10) -->
+                <div class="ws-yard-card-item">
+                    <div style="display:flex; align-items:center; gap:16px; min-width:0;">
+                        <img src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=160&auto=format&fit=crop&q=80" alt="HR-V" class="ws-yard-thumb" onerror="this.src='/img/car-silhouette.svg'" />
+                        <div class="ws-yard-info-col" style="min-width:140px;">
+                            <div class="ws-yard-plate">XY29D10</div>
+                            <span style="font-size:11px; color:#10b981; font-weight:600;">2021 • 1.8</span>
+                            <span class="ws-yard-sub">45.120 km</span>
+                        </div>
+                        <div class="ws-yard-info-col" style="min-width:180px;">
+                            <div class="ws-yard-model">Honda HR-V</div>
+                            <span class="ws-yard-sub">1.8 EXL</span>
+                            <div style="font-size:12px; color:#ffffff; font-weight:600;">Ana Costa</div>
+                        </div>
+                    </div>
+                    <div class="ws-yard-actions">
+                        <button class="ws-yard-btn-whatsapp" onclick="WorkshopView.openWhatsAppModal('Ana Costa', '(11) 95432-1098', 'Honda HR-V', 'XY29D10', 'Retirada Pronta')">
+                            <span>💬</span> WhatsApp
+                        </button>
+                        <button class="ws-yard-btn-dossier" onclick="WorkshopView.openDigitalVehicleSheet('veh_hrv_exl', 'XY29D10')">
+                            Ficha Digital
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AÇÕES DE CADASTRO E PESQUISA COMPLETA -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+                <button class="ws-dash-action-btn primary" onclick="WorkshopView.openManualVehicleModal()">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"></path></svg>
+                    <span>Nova Entrada de Veículo no Pátio</span>
+                </button>
+            </div>
+
+            <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
+                ${this.renderVehicleSearchView()}
         `;
     },
 
