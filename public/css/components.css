@@ -1932,8 +1932,47 @@ body.is-owner-app #app-container > .main-layout > #view-content {
 }
 
 @media (max-width: 640px) {
+    .ws-dash-topbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        margin-bottom: 16px;
+    }
+
+    .ws-dash-title {
+        font-size: 20px;
+    }
+
+    .ws-dash-search-container {
+        max-width: 100%;
+        min-width: 0;
+        width: 100%;
+    }
+
     .ws-dash-kpi-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .ws-dash-kpi-card {
+        padding: 10px 12px;
+        min-height: 80px;
+    }
+
+    .ws-dash-kpi-label {
+        font-size: 11px;
+    }
+
+    .ws-dash-kpi-value {
+        font-size: 17px;
+    }
+
+    .ws-dash-kpi-subtext {
+        font-size: 10px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 
@@ -2020,7 +2059,15 @@ body.is-owner-app #app-container > .main-layout > #view-content {
 
 @media (max-width: 600px) {
     .ws-dash-actions-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 18px;
+    }
+
+    .ws-dash-action-btn {
+        padding: 10px 12px;
+        font-size: 11.5px;
+        gap: 6px;
     }
 }
 
@@ -2076,6 +2123,20 @@ body.is-owner-app #app-container > .main-layout > #view-content {
     justify-content: space-between;
     gap: 16px;
     transition: all 0.15s ease;
+}
+
+@media (max-width: 640px) {
+    .ws-yard-card-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 12px 14px;
+    }
+
+    .ws-yard-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
 }
 
 .ws-yard-card-item:hover {
