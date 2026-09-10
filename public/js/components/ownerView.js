@@ -6,9 +6,9 @@
 
 const OwnerView = {
     isDrawerOpen: false,
-    currentScreen: 'home', // 'home' | 'vehicle' | 'certification' | 'documents' | 'obd' | 'history' | 'reminders' | 'workshops' | 'settings' | 'notifications'
-    activeTab: 'home', // 'home' | 'vehicle' | 'certification' | 'documents' | 'more'
-    selectedDoc: null,
+    currentScreen: 'home', // 'home' | 'vehicle' | 'certification' | 'inspection' | 'obd' | 'history' | 'reminders' | 'workshops' | 'settings' | 'notifications'
+    activeTab: 'home', // 'home' | 'vehicle' | 'certification' | 'inspection' | 'more'
+    inspectionTab: 'inspection', // 'inspection' | 'revisions'
     isObdScanning: false,
     userVehicles: [],
     selectedVehicleId: null,
@@ -50,77 +50,142 @@ const OwnerView = {
         ]
     },
 
-    // Dados da Carteira Digital de Documentos (Documentos Oficiais do Veículo)
-    documentsData: [
-        {
-            id: 'doc_crlv_2026',
-            title: 'CRLV-e Digital 2026',
-            subtitle: 'Certificado de Registro e Licenciamento Eletrônico',
-            category: 'SENATRAN / DETRAN',
-            badge: 'LICENCIADO 2026',
-            badge_color: '#00E676',
-            badge_bg: 'rgba(0, 230, 118, 0.15)',
-            doc_number: '2026.0481.9201-9',
-            issue_date: '10/01/2026',
-            valid_until: '31/10/2026',
-            hash: 'SHA256:7a9f82d1c04e2893f4125bce892a40b1',
-            issuer: 'Secretaria Nacional de Trânsito',
-            file_size: '248 KB (PDF Assinado)',
-            legal_validity: 'Válido em todo o território nacional (Lei 14.071/20)',
-            description: 'Documento oficial de circulação com quitação integral de IPVA, Taxa de Licenciamento Anual e DPVAT.'
+    // Dados da Inspeção Técnica 360° Homologada
+    inspectionData: {
+        score: 98,
+        status: '100% APROVADO • LAUDO CONFORME',
+        inspection_code: 'INSP-2026-8819',
+        inspected_at: '15/08/2026',
+        valid_until: '15/08/2027',
+        workshop: 'Veloce Auto Center Premium',
+        technical_lead: 'Eng. Marcelo Antunes (CREA 506.892-SP)',
+        modules: [
+            {
+                id: 'mod_engine',
+                name: 'Motor & Injeção Eletrônica',
+                score: 99,
+                status: 'CONFORME',
+                icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4m0 12v4M2 12h4m12 0h4m-3.17-6.83l-2.83 2.83M6 18l-2.83 2.83m0-13.66L6 6m12 12l2.83 2.83"/></svg>',
+                items: [
+                    { name: 'Nível e Viscosidade do Óleo', status: 'OK', detail: 'Sintético 5W40 VW 502 00 no nível máximo' },
+                    { name: 'Correia Dentada e Tensores', status: 'OK', detail: 'Trocada aos 70.000 km, tensão ideal sem trincas' },
+                    { name: 'Sistema de Arrefecimento', status: 'OK', detail: 'Pressão 1.4 bar • Proporção 50% aditivo G12+' },
+                    { name: 'Velas de Ignição e Bobinas', status: 'OK', detail: 'Gap 0.8 mm limpo • Faísca com queima perfeita' }
+                ]
+            },
+            {
+                id: 'mod_brakes',
+                name: 'Sistema de Freios',
+                score: 96,
+                status: 'CONFORME',
+                icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>',
+                items: [
+                    { name: 'Pastilhas Dianteiras', status: 'OK', detail: '8.5 mm de espessura (Desgaste 25% - Seguro)' },
+                    { name: 'Pastilhas Traseiras / Sapatas', status: 'OK', detail: '7.0 mm de espessura (Desgaste 30%)' },
+                    { name: 'Discos de Freio Dianteiros', status: 'OK', detail: 'Espessura 21.8 mm (mín. 19.0 mm) • Zero empeno' },
+                    { name: 'Fluido de Freio DOT 4', status: 'OK', detail: 'Ponto de ebulição 242°C • Umidade 0.7%' }
+                ]
+            },
+            {
+                id: 'mod_suspension',
+                name: 'Suspensão, Direção & Geometria',
+                score: 97,
+                status: 'CONFORME',
+                icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M5 7l7-5 7 5M5 17l7 5 7-5"/></svg>',
+                items: [
+                    { name: 'Amortecedores Dianteiros/Traseiros', status: 'OK', detail: 'Eficiência 88% no dinamômetro • Sem vazamentos' },
+                    { name: 'Buchas, Pivôs e Terminais', status: 'OK', detail: 'Coifas íntegras e zero folgas mecânicas' },
+                    { name: 'Alinhamento 3D e Convergência', status: 'OK', detail: 'Geometria dentro da tolerância de fábrica (0°02\')' }
+                ]
+            },
+            {
+                id: 'mod_tires',
+                name: 'Pneus & Rodas',
+                score: 98,
+                status: 'CONFORME',
+                icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>',
+                items: [
+                    { name: 'Pneu Dianteiro Esquerdo (175/70 R14)', status: 'OK', detail: 'Sulco 6.5 mm (Mínimo legal 1.6 mm)' },
+                    { name: 'Pneu Dianteiro Direito (175/70 R14)', status: 'OK', detail: 'Sulco 6.4 mm' },
+                    { name: 'Pneus Traseiros + Estepe', status: 'OK', detail: 'Sulcos 6.8 mm / 7.2 mm • 32 PSI calibrados' },
+                    { name: 'Balanceamento Dinâmico', status: 'OK', detail: 'Zero vibrações em velocidade de cruzeiro' }
+                ]
+            },
+            {
+                id: 'mod_electric',
+                name: 'Sistema Elétrico, Bateria & Luzes',
+                score: 100,
+                status: 'CONFORME',
+                icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="13" rx="2"/><line x1="6" y1="11" x2="10" y2="11"/><line x1="14" y1="11" x2="18" y2="11"/></svg>',
+                items: [
+                    { name: 'Bateria 60Ah Heliar', status: 'OK', detail: '12.6V em repouso • Teste CCA 480A (Saúde 96%)' },
+                    { name: 'Alternador / Regulador de Tensão', status: 'OK', detail: '14.2V constante sob carga plena' },
+                    { name: 'Conjunto Óptico e Iluminação', status: 'OK', detail: 'Faróis foco duplo, lanternas e setas 100%' }
+                ]
+            },
+            {
+                id: 'mod_fluids',
+                name: 'Fluidos & Filtros',
+                score: 98,
+                status: 'CONFORME',
+                icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>',
+                items: [
+                    { name: 'Filtro de Ar do Motor', status: 'OK', detail: 'Elemento celulose limpo e desobstruído' },
+                    { name: 'Filtro de Combustível', status: 'OK', detail: 'Pressão estável na linha de injeção (4.2 bar)' },
+                    { name: 'Filtro de Cabine (Ar Condicionado)', status: 'OK', detail: 'Higienização por ozônio e fluxo de ar pleno' }
+                ]
+            }
+        ]
+    },
+
+    // Plano de Revisões e Próximas Trocas
+    revisionsData: {
+        next_revision: {
+            target_mileage: 90000,
+            current_mileage: 87542,
+            remaining_km: 2458,
+            estimated_date: 'Novembro / 2026',
+            status: 'PROGRAMADA',
+            items: [
+                'Troca de óleo sintético 5W40 e filtro de óleo',
+                'Troca do filtro de combustível',
+                'Rodízio e balanceamento das 4 rodas',
+                'Checklist de 40 itens de suspensão e freios'
+            ]
         },
-        {
-            id: 'doc_laudo_cautelar',
-            title: 'Laudo Pericial Cautelar 360°',
-            subtitle: 'Perícia Técnica e Análise Estrutural Completa',
-            category: 'VISTORIA PERICIAL',
-            badge: '100% APROVADO',
-            badge_color: '#00E676',
-            badge_bg: 'rgba(0, 230, 118, 0.15)',
-            doc_number: 'LAUDO-9942-2026',
-            issue_date: '05/08/2026',
-            valid_until: '05/08/2027',
-            hash: 'SHA256:b3d19f8021c379a29881fc04918e77a2',
-            issuer: 'Perícias Técnicas Automotivas Homologadas',
-            file_size: '3.8 MB (Laudo Fotográfico Completo)',
-            legal_validity: 'Conformidade com resolução CONTRAN n° 466',
-            description: 'Zero indícios de sinistro grave, enchente ou leilão. Estrutura monobloco, motor e numerações de chassi íntegras.'
-        },
-        {
-            id: 'doc_apolice_seguro',
-            title: 'Apólice de Seguro Auto Protegido',
-            subtitle: 'Proteção Compreensiva e Assistência 24h',
-            category: 'SEGURO AUTOMOTIVO',
-            badge: 'VIGENTE',
-            badge_color: '#38BDF8',
-            badge_bg: 'rgba(56, 189, 248, 0.15)',
-            doc_number: 'SEG-882190-26',
-            issue_date: '15/03/2026',
-            valid_until: '15/03/2027',
-            hash: 'SHA256:92e4827bb100fae4119e88b201f810aa',
-            issuer: 'Companhia de Seguros Gerais',
-            file_size: '512 KB',
-            legal_validity: 'Registro SUSEP n° 05886',
-            description: 'Cobertura 100% Tabela FIPE contra colisão, furto/roubo, danos a terceiros e socorro guincho 24 horas.'
-        },
-        {
-            id: 'doc_garantia_revisao',
-            title: 'Termo de Garantia e Revisão',
-            subtitle: 'Comprovação de Serviços e Peças Homologadas',
-            category: 'GARANTIA MECÂNICA',
-            badge: 'VIGENTE',
-            badge_color: '#10B981',
-            badge_bg: 'rgba(16, 185, 129, 0.15)',
-            doc_number: 'GAR-2026-8819',
-            issue_date: '15/08/2026',
-            valid_until: '15/02/2027',
-            hash: 'SHA256:4f88219c0012baef9182741005391827',
-            issuer: 'Rede de Oficinas Homologadas',
-            file_size: '312 KB',
-            legal_validity: 'Garantia legal conforme Art. 26 do CDC',
-            description: 'Certificado de garantia de peças genuínas e mão de obra técnica chancelada pela oficina credenciada.'
-        }
-    ],
+        history: [
+            {
+                revision_label: 'Revisão dos 80.000 km',
+                performed_at: '15/08/2026',
+                mileage_at_service: 80150,
+                workshop: 'Veloce Auto Center Premium',
+                cost_cents: 89000,
+                status: 'CONCLUÍDA',
+                proof_level: 'Nível 4 (Padrão Ouro DNA)',
+                items_summary: 'Óleo sintético 5W40, velas de ignição, filtro de óleo e de ar do motor.'
+            },
+            {
+                revision_label: 'Revisão dos 70.000 km',
+                performed_at: '10/01/2026',
+                mileage_at_service: 69800,
+                workshop: 'Veloce Auto Center Premium',
+                cost_cents: 145000,
+                status: 'CONCLUÍDA',
+                proof_level: 'Nível 4 (Padrão Ouro DNA)',
+                items_summary: 'Substituição preventiva da correia dentada, tensores e bomba d\'água.'
+            },
+            {
+                revision_label: 'Revisão dos 60.000 km',
+                performed_at: '12/06/2025',
+                mileage_at_service: 59900,
+                workshop: 'Bosch Car Service Centro',
+                cost_cents: 78000,
+                status: 'CONCLUÍDA',
+                proof_level: 'Nível 4 (Padrão Ouro DNA)',
+                items_summary: 'Pastilhas de freio dianteiras, fluido DOT 4 e geometria de suspensão 3D.'
+            }
+        ]
+    },
 
     // Dados de Telemetria Mini OBD2 (Tempo Real)
     obdData: {
@@ -192,7 +257,7 @@ const OwnerView = {
     navigateTo(screen) {
         this.currentScreen = screen;
         
-        if (['home', 'vehicle', 'certification', 'documents'].includes(screen)) {
+        if (['home', 'vehicle', 'certification', 'inspection'].includes(screen)) {
             this.activeTab = screen;
         } else {
             this.activeTab = 'more';
@@ -211,54 +276,10 @@ const OwnerView = {
         this.navigateTo(tab);
     },
 
-    // Visualizar Documento Dentro do App
-    viewDocument(docId) {
-        const doc = this.documentsData.find(d => d.id === docId);
-        if (doc) {
-            this.selectedDoc = doc;
-            this.render();
-        }
-    },
-
-    // Fechar Modal do Visualizador de Documentos
-    closeDocumentViewer() {
-        this.selectedDoc = null;
+    // Alternar entre Inspeção Técnica e Plano de Revisões
+    setInspectionTab(tab) {
+        this.inspectionTab = tab;
         this.render();
-    },
-
-    // Download Simulado do Documento com Toast Nativo
-    downloadDocument(docId) {
-        const doc = this.documentsData.find(d => d.id === docId);
-        if (!doc) return;
-
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: absolute;
-            bottom: 80px;
-            left: 20px;
-            right: 20px;
-            background: #10B981;
-            color: #FFFFFF;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-size: 11.5px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-            z-index: 99;
-            animation: dnaFadeIn 0.2s ease;
-        `;
-        toast.innerHTML = `
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>Download de <strong>${doc.title}</strong> concluído com sucesso!</span>
-        `;
-        const phone = document.querySelector('.dna-phone-frame');
-        if (phone) {
-            phone.appendChild(toast);
-            setTimeout(() => toast.remove(), 2600);
-        }
     },
 
     // Re-escanear ECU via Mini OBD2 em Tempo Real
@@ -316,7 +337,7 @@ const OwnerView = {
                     if (realVeh.current_mileage) this.vehicleData.current_mileage = realVeh.current_mileage;
                     if (realVeh.owner_name) this.vehicleData.user_name = realVeh.owner_name;
 
-                    // Busca telemetria e docs específicos do veículo real
+                    // Buscar Inspeção e OBD2 para o Veículo Ativo
                     this.fetchVehicleExtras(this.vehicleData.license_plate);
                 }
             }
@@ -326,14 +347,15 @@ const OwnerView = {
     // Buscar Documentos e OBD2 para o Veículo Ativo
     async fetchVehicleExtras(plate) {
         try {
-            const [rDocs, rObd] = await Promise.all([
-                fetch(`/api/v1/vehicles/${plate}/documents`),
+            const [rInsp, rObd] = await Promise.all([
+                fetch(`/api/v1/vehicles/${plate}/inspection`),
                 fetch(`/api/v1/vehicles/${plate}/obd`)
             ]);
-            if (rDocs.ok) {
-                const dDocs = await rDocs.json();
-                if (dDocs.success && Array.isArray(dDocs.documents)) {
-                    this.documentsData = dDocs.documents;
+            if (rInsp.ok) {
+                const dInsp = await rInsp.json();
+                if (dInsp.success) {
+                    if (dInsp.inspection) this.inspectionData = dInsp.inspection;
+                    if (dInsp.revisions) this.revisionsData = dInsp.revisions;
                 }
             }
             if (rObd.ok) {
@@ -486,16 +508,14 @@ const OwnerView = {
                             <span class="dna-nav-label">Certificação</span>
                         </div>
 
-                        <div class="dna-nav-item ${this.activeTab === 'documents' ? 'active' : ''}" onclick="OwnerView.switchTab('documents')">
+                        <div class="dna-nav-item ${this.activeTab === 'inspection' ? 'active' : ''}" onclick="OwnerView.switchTab('inspection')">
                             <div class="dna-nav-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                    <polyline points="14 2 14 8 20 8"/>
-                                    <line x1="16" y1="13" x2="8" y2="13"/>
-                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <path d="M9 11l3 3L22 4"/>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
                                 </svg>
                             </div>
-                            <span class="dna-nav-label">Documentos</span>
+                            <span class="dna-nav-label">Inspeção</span>
                         </div>
 
                         <div class="dna-nav-item ${this.activeTab === 'more' ? 'active' : ''}" onclick="OwnerView.switchTab('more')">
@@ -576,13 +596,16 @@ const OwnerView = {
                                 <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                             </div>
 
-                            <!-- 5. Documentos -->
-                            <div class="dna-menu-item ${this.currentScreen === 'documents' ? 'active' : ''}" onclick="OwnerView.navigateTo('documents')">
+                            <!-- 5. Inspeção Técnica & Revisões -->
+                            <div class="dna-menu-item ${this.currentScreen === 'inspection' ? 'active' : ''}" onclick="OwnerView.navigateTo('inspection')">
                                 <div class="dna-menu-item-left">
                                     <div class="dna-menu-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                            <path d="M9 11l3 3L22 4"/>
+                                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                        </svg>
                                     </div>
-                                    <span>Documentos</span>
+                                    <span>Inspeção & Revisão</span>
                                 </div>
                                 <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                             </div>
@@ -631,6 +654,17 @@ const OwnerView = {
                                 <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                             </div>
 
+                            <!-- 10. Baixar Aplicativo Oficial PWA / Play Store -->
+                            <div class="dna-menu-item" style="background: rgba(255, 210, 28, 0.08); border: 1px solid rgba(255, 210, 28, 0.25);" onclick="OwnerView.toggleDrawer(false); if (typeof PwaInstall !== 'undefined') PwaInstall.renderPlayStoreModal();">
+                                <div class="dna-menu-item-left">
+                                    <div class="dna-menu-icon" style="color:#FFD21C;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    </div>
+                                    <span style="color:#FFD21C; font-weight:800;">Baixar App Oficial (PWA)</span>
+                                </div>
+                                <span class="dna-badge-counter" style="background:#FFD21C; color:#0B0F19; font-weight:800; font-size:9px; padding:2px 6px;">PLAY STORE</span>
+                            </div>
+
                             <!-- BOTÃO DE SAIR NO MENU LATERAL (LOGOUT) -->
                             <div class="dna-drawer-logout-item" onclick="OwnerView.logout()" title="Sair do aplicativo">
                                 <div class="dna-menu-item-left">
@@ -659,6 +693,11 @@ const OwnerView = {
                 </div>
             </div>
         `;
+
+        // Dispara automaticamente o download / prompt de instalação do PWA
+        if (typeof PwaInstall !== 'undefined' && PwaInstall.triggerAutoPromptForClient) {
+            PwaInstall.triggerAutoPromptForClient();
+        }
     },
 
     // Retorna Título Amigável para o Topo
@@ -666,7 +705,7 @@ const OwnerView = {
         const titles = {
             'vehicle': 'Meu Veículo',
             'certification': 'Certificação DNA',
-            'documents': 'Documentos',
+            'inspection': 'Inspeção & Revisão',
             'obd': 'Telemetria Mini OBD2',
             'history': 'Histórico Completo',
             'reminders': 'Lembretes Preventivos',
@@ -680,8 +719,8 @@ const OwnerView = {
     // Roteador de Telas Internas SPA
     renderCurrentScreenContent() {
         switch (this.currentScreen) {
-            case 'documents':
-                return this.renderDocumentsScreen();
+            case 'inspection':
+                return this.renderInspectionScreen();
             case 'obd':
                 return this.renderObdScreen();
             case 'vehicle':
@@ -897,149 +936,159 @@ const OwnerView = {
         }
     },
 
-    // ── 2. TELA DE DOCUMENTOS (100% NATIVA DENTRO DO SMARTPHONE) ──
-    renderDocumentsScreen() {
+    // ── 2. TELA DE INSPEÇÃO TÉCNICA 360° E PLANO DE REVISÕES DO VEÍCULO ──
+    renderInspectionScreen() {
+        const insp = this.inspectionData;
+        const rev = this.revisionsData;
+        const v = this.vehicleData;
+        const isInspection = this.inspectionTab === 'inspection';
+
         return `
-            <div class="dna-documents-container">
-                <!-- Cabeçalho Informativo TOTVS Enterprise -->
-                <div style="background: rgba(8, 16, 32, 0.9); border: 1px solid rgba(0, 102, 255, 0.25); border-radius: 14px; padding: 12px 14px; margin-bottom: 6px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <h3 style="font-size: 13.5px; font-weight: 800; color: #FFFFFF; margin: 0;">Carteira Digital Veicular</h3>
-                        <span style="background: rgba(0, 230, 118, 0.15); border: 1px solid #00E676; color: #00E676; font-size: 9.5px; font-weight: 800; padding: 2px 6px; border-radius: 6px;">
-                            ${this.documentsData.length} DOCUMENTOS ATIVOS
-                        </span>
-                    </div>
-                    <p style="font-size: 11px; color: #CBD5E1; margin: 0; line-height: 1.4;">
-                        Documentos oficiais homologados com assinatura digital, regularidade fiscal e laudos de integridade veicular.
-                    </p>
+            <div class="dna-insp-container">
+                <!-- Seletor em Segmented Tabs: Inspeção 360° vs Plano de Revisões -->
+                <div class="dna-insp-segmented-tabs">
+                    <button class="dna-insp-tab-btn ${isInspection ? 'active' : ''}" onclick="OwnerView.setInspectionTab('inspection')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        <span>Inspeção 360°</span>
+                    </button>
+                    <button class="dna-insp-tab-btn ${!isInspection ? 'active' : ''}" onclick="OwnerView.setInspectionTab('revisions')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>Plano de Revisões</span>
+                    </button>
                 </div>
 
-                <!-- Lista de Cards de Documentos -->
-                ${this.documentsData.map(doc => `
-                    <div class="dna-doc-card">
-                        <div class="dna-doc-card-top">
-                            <div class="dna-doc-title-group">
-                                <div class="dna-doc-icon-box">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                        <polyline points="14 2 14 8 20 8"/>
-                                        <line x1="16" y1="13" x2="8" y2="13"/>
-                                        <line x1="16" y1="17" x2="8" y2="17"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <h4 class="dna-doc-title">${doc.title}</h4>
-                                    <span class="dna-doc-issuer">${doc.category} • ${doc.issuer}</span>
-                                </div>
+                ${isInspection ? `
+                    <!-- ── ABA 1: LAUDO DE INSPEÇÃO TÉCNICA 360° ── -->
+                    <div class="dna-insp-header-card">
+                        <div class="dna-insp-header-top">
+                            <div>
+                                <span style="font-size: 9.5px; color: #00D4FF; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Laudo Pericial Oficial</span>
+                                <h3 style="font-size: 14px; font-weight: 900; color: #FFFFFF; margin: 2px 0 0;">Inspeção Veicular 360°</h3>
                             </div>
-                            <span class="dna-doc-badge" style="color:${doc.badge_color}; background:${doc.badge_bg || 'rgba(0, 230, 118, 0.15)'}; border-color:${doc.badge_color};">
-                                ${doc.badge}
+                            <span class="dna-insp-score-badge">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                SCORE ${insp.score}/100
                             </span>
                         </div>
 
-                        <!-- Metadados em Grade -->
-                        <div class="dna-doc-meta-grid">
-                            <div class="dna-doc-meta-item">
-                                <span class="dna-doc-meta-lbl">Número do Documento</span>
-                                <span class="dna-doc-meta-val">${doc.doc_number}</span>
+                        <div class="dna-insp-meta-grid">
+                            <div class="dna-insp-meta-item">
+                                <span class="dna-insp-meta-label">Situação do Laudo</span>
+                                <span class="dna-insp-meta-value" style="color:#00E676;">${insp.status}</span>
                             </div>
-                            <div class="dna-doc-meta-item">
-                                <span class="dna-doc-meta-lbl">Vigência / Validade</span>
-                                <span class="dna-doc-meta-val">${doc.valid_until}</span>
+                            <div class="dna-insp-meta-item">
+                                <span class="dna-insp-meta-label">Código da Inspeção</span>
+                                <span class="dna-insp-meta-value" style="color:#00D4FF; font-family:monospace;">${insp.inspection_code}</span>
+                            </div>
+                            <div class="dna-insp-meta-item">
+                                <span class="dna-insp-meta-label">Data da Vistoria</span>
+                                <span class="dna-insp-meta-value">${insp.inspected_at}</span>
+                            </div>
+                            <div class="dna-insp-meta-item">
+                                <span class="dna-insp-meta-label">Validade Técnica</span>
+                                <span class="dna-insp-meta-value">${insp.valid_until}</span>
                             </div>
                         </div>
 
-                        <p class="dna-doc-desc">${doc.description}</p>
-
-                        <!-- Ações Dentro do App -->
-                        <div class="dna-doc-actions">
-                            <button class="dna-btn-doc-view" onclick="OwnerView.viewDocument('${doc.id}')">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                <span>Visualizar</span>
-                            </button>
-                            <button class="dna-btn-doc-dl" onclick="OwnerView.downloadDocument('${doc.id}')" title="Salvar cópia">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                <span>PDF</span>
-                            </button>
+                        <div style="font-size: 10px; color: #94A3B8; line-height: 1.35; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.06);">
+                            Responsável: <strong style="color:#FFFFFF;">${insp.workshop}</strong> • ${insp.technical_lead}
                         </div>
                     </div>
-                `).join('')}
 
-                <div style="height: 12px;"></div>
-            </div>
-        `;
-    },
+                    <!-- Lista dos 6 Módulos Inspecionados -->
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        <span style="font-size: 11px; font-weight: 800; color: #CBD5E1; text-transform: uppercase; letter-spacing: 0.5px;">Sistemas Inspecionados (${insp.modules.length})</span>
+                        
+                        ${insp.modules.map(m => `
+                            <div class="dna-insp-module-card">
+                                <div class="dna-insp-module-header">
+                                    <div class="dna-insp-module-title-group">
+                                        <div class="dna-insp-module-icon">${m.icon}</div>
+                                        <div>
+                                            <h4 class="dna-insp-module-title">${m.name}</h4>
+                                            <span style="font-size:10px; color:#38BDF8; font-weight:700;">Score: ${m.score}/100</span>
+                                        </div>
+                                    </div>
+                                    <span class="dna-insp-status-tag">${m.status}</span>
+                                </div>
 
-    // ── 3. VISUALIZADOR INTERNO DE DOCUMENTO (MODAL SHEET NATIVO) ──
-    renderDocumentViewerModal() {
-        const doc = this.selectedDoc;
-        const v = this.vehicleData;
-        if (!doc) return '';
-
-        return `
-            <div class="dna-doc-modal-overlay" onclick="if(event.target === this) OwnerView.closeDocumentViewer();">
-                <div class="dna-doc-sheet">
-                    <div class="dna-doc-sheet-header">
-                        <div>
-                            <span style="font-size: 9.5px; color: #00D4FF; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Visualizador Oficial</span>
-                            <h3 class="dna-doc-sheet-title">${doc.title}</h3>
+                                <div class="dna-insp-items-list">
+                                    ${m.items.map(it => `
+                                        <div class="dna-insp-item-row">
+                                            <div class="dna-insp-item-top">
+                                                <span class="dna-insp-item-name">${it.name}</span>
+                                                <span class="dna-insp-item-badge">
+                                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                                    ${it.status}
+                                                </span>
+                                            </div>
+                                            <span class="dna-insp-item-detail">${it.detail}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : `
+                    <!-- ── ABA 2: PLANO DE REVISÕES & PRÓXIMAS TROCAS ── -->
+                    <!-- Card em Destaque: Próxima Revisão Programada -->
+                    <div class="dna-rev-next-card">
+                        <div class="dna-rev-next-header">
+                            <div>
+                                <span style="font-size: 9.5px; color: #00D4FF; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Próxima Intervenção Preventiva</span>
+                                <h3 style="font-size: 15px; font-weight: 900; color: #FFFFFF; margin: 2px 0 0;">${rev.next_revision.target_mileage.toLocaleString('pt-BR')} km</h3>
+                            </div>
+                            <span class="dna-rev-next-pill">${rev.next_revision.status}</span>
                         </div>
-                        <button class="dna-doc-sheet-close" onclick="OwnerView.closeDocumentViewer()" title="Fechar">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+
+                        <div class="dna-rev-countdown-box">
+                            <div class="dna-rev-countdown-left">
+                                <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Faltam para a Revisão</span>
+                                <span style="font-size:14px; font-weight:900; color:#00E676;">~ ${rev.next_revision.remaining_km.toLocaleString('pt-BR')} km</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Data Estimada</span>
+                                <span style="font-size:12px; font-weight:800; color:#FFFFFF; display:block;">${rev.next_revision.estimated_date}</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span style="font-size:11px; font-weight:800; color:#CBD5E1; display:block; margin-bottom:6px;">Itens Obrigatórios Desta Revisão:</span>
+                            <div class="dna-rev-items-checklist">
+                                ${rev.next_revision.items.map(it => `
+                                    <div class="dna-rev-item-check">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                        <span>${it}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <button class="dna-rev-action-btn" onclick="OwnerView.navigateTo('workshops')">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <span>Agendar Revisão na Rede Homologada</span>
                         </button>
                     </div>
 
-                    <!-- Papel Digital do Documento com Letras Claras TOTVS -->
-                    <div class="dna-doc-paper-preview">
-                        <span class="dna-doc-paper-badge">${doc.badge}</span>
+                    <!-- Histórico de Revisões Periódicas Concluídas -->
+                    <div style="display:flex; flex-direction:column; gap:10px; margin-top:4px;">
+                        <span style="font-size: 11px; font-weight: 800; color: #CBD5E1; text-transform: uppercase; letter-spacing: 0.5px;">Histórico de Revisões Oficiais</span>
                         
-                        <div class="dna-doc-paper-header">
-                            <h4>REPÚBLICA FEDERATIVA DO BRASIL</h4>
-                            <p style="font-size:11px; color:#E2E8F0; font-weight:700;">${doc.issuer}</p>
-                            <p style="font-size: 9.5px; color: #94A3B8; margin-top: 2px;">DOCUMENTO DIGITAL COM VALIDADE JURÍDICA NACIONAL</p>
-                        </div>
-
-                        <!-- Tabela de Dados Oficiais -->
-                        <table class="dna-doc-data-table">
-                            <tr><td class="label">Veículo:</td><td class="val">${v.brand} ${v.model}</td></tr>
-                            <tr><td class="label">Placa Oficial:</td><td class="val">${v.license_plate}</td></tr>
-                            <tr><td class="label">Chassi / VIN:</td><td class="val">${v.chassis_vin}</td></tr>
-                            <tr><td class="label">Renavam:</td><td class="val">${v.renavam}</td></tr>
-                            <tr><td class="label">Exercício:</td><td class="val">${v.model_year} (Licenciado 2026)</td></tr>
-                            <tr><td class="label">Proprietário:</td><td class="val">${v.user_name}</td></tr>
-                            <tr><td class="label">N° do Registro:</td><td class="val">${doc.doc_number}</td></tr>
-                            <tr><td class="label">Data Emissão:</td><td class="val">${doc.issue_date}</td></tr>
-                            <tr><td class="label">Situação Legal:</td><td class="val" style="color:#00E676;">Sem Débitos / Regularizado</td></tr>
-                        </table>
-
-                        <!-- Selo e QR Code Oficial de Validação -->
-                        <div class="dna-doc-validation-stamp">
-                            <svg class="dna-stamp-qr" viewBox="0 0 100 100">
-                                <rect width="100" height="100" fill="#000" rx="4"/>
-                                <rect x="8" y="8" width="28" height="28" fill="none" stroke="#00D4FF" stroke-width="5" rx="3"/>
-                                <rect x="15" y="15" width="14" height="14" fill="#00D4FF"/>
-                                <rect x="64" y="8" width="28" height="28" fill="none" stroke="#00D4FF" stroke-width="5" rx="3"/>
-                                <rect x="71" y="15" width="14" height="14" fill="#00D4FF"/>
-                                <rect x="8" y="64" width="28" height="28" fill="none" stroke="#00D4FF" stroke-width="5" rx="3"/>
-                                <rect x="15" y="71" width="14" height="14" fill="#00D4FF"/>
-                                <rect x="42" y="12" width="16" height="8" fill="#00D4FF"/>
-                                <rect x="40" y="40" width="20" height="20" fill="#0066FF"/>
-                                <rect x="64" y="64" width="24" height="24" fill="#00D4FF"/>
-                            </svg>
-                            <div class="dna-stamp-info">
-                                <strong>AUTENTICAÇÃO DIGITAL VIO / SERPRO</strong>
-                                <span style="color:#CBD5E1;">Hash: ${doc.hash}</span>
-                                <span style="display:block; margin-top:2px; font-size:8.5px; color:#94A3B8;">Documento assinado digitalmente conforme MP 2.200-2/2001.</span>
+                        ${rev.history.map(h => `
+                            <div class="dna-rev-history-card">
+                                <div class="dna-rev-history-top">
+                                    <h4 class="dna-rev-history-title">${h.revision_label}</h4>
+                                    <span class="dna-rev-history-km">${h.mileage_at_service.toLocaleString('pt-BR')} km</span>
+                                </div>
+                                <p class="dna-rev-history-summary">${h.items_summary}</p>
+                                <div class="dna-rev-history-footer">
+                                    <span>Oficina: <strong>${h.workshop}</strong></span>
+                                    <span>Realizada em: <strong>${h.performed_at}</strong></span>
+                                </div>
                             </div>
-                        </div>
+                        `).join('')}
                     </div>
-
-                    <!-- Botão de Ação -->
-                    <button class="dna-obd-rescan-btn" onclick="OwnerView.downloadDocument('${doc.id}'); OwnerView.closeDocumentViewer();">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        <span>Salvar Cópia Oficial no Celular</span>
-                    </button>
-                </div>
+                `}
             </div>
         `;
     },
@@ -1213,9 +1262,9 @@ const OwnerView = {
                     <p style="font-size: 11px; color: #CBD5E1; margin: 0;">Registro ativo na plataforma DNA AUTO com certificação de procedência válida.</p>
                 </div>
 
-                <button class="dna-obd-rescan-btn" onclick="OwnerView.navigateTo('documents')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
-                    <span>Acessar Documentos do Veículo</span>
+                <button class="dna-obd-rescan-btn" onclick="OwnerView.navigateTo('inspection')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    <span>Ver Inspeção & Revisões do Veículo</span>
                 </button>
             </div>
         `;
@@ -1244,9 +1293,9 @@ const OwnerView = {
                         <p style="margin:0;">• <strong>Hash SHA-256:</strong> <code style="font-size:9.5px; color:#00D4FF;">8f72a94bc7210e309bb2f1c8402a715e</code></p>
                     </div>
 
-                    <button class="dna-btn-doc-view" style="width:100%;" onclick="OwnerView.viewDocument('doc_cert_dna')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        <span>Abrir Certificado em Tela Cheia</span>
+                    <button class="dna-btn-doc-view" style="width:100%;" onclick="OwnerView.navigateTo('inspection')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        <span>Ver Laudo de Inspeção Técnica</span>
                     </button>
                 </div>
             </div>
@@ -1389,8 +1438,8 @@ const OwnerView = {
                 </div>
 
                 <div class="dna-history-item-card" style="border-left: 4px solid #00D4FF;">
-                    <h4 class="dna-history-title">CRLV-e 2026 Disponível</h4>
-                    <p class="dna-history-details">Seu documento de licenciamento digital 2026 está pronto para visualização na aba de documentos.</p>
+                    <h4 class="dna-history-title">Inspeção Veicular 360° Conforme</h4>
+                    <p class="dna-history-details">Laudo pericial com score 98/100 e 6 sistemas inspecionados homologado pela rede credenciada.</p>
                     <span style="font-size:9.5px; color:#94A3B8;">Hoje</span>
                 </div>
 

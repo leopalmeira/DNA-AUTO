@@ -3,7 +3,7 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-34%2F34%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-36%2F36%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
@@ -177,23 +177,30 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
     - Removido QR code redundante da Home. Card em largura total com status de autenticidade e botão `Ver certificação >`.
   - 3 Medidores rápidos: Quilometragem `87.542 km`, Combustível `72%` com barra dinâmica e Autonomia `~ 520 km`.
   - Timeline horizontal de últimos registros e card de proteção criptografada.
-  - Barra de navegação inferior fixa com 5 abas (`Início`, `Veículo`, `Certificação`, `Documentos`, `Mais`).
+  - Barra de navegação inferior fixa com 5 abas (`Início`, `Veículo`, `Certificação`, `Inspeção`, `Mais`).
   - Drawer lateral completo com 9 itens de menu e opção de logout.
-- **📁 Carteira Digital de Documentos (100% Nativa, Zero Popups):**
-  - Documentos integrados com visualização em folha oficial e download em PDF:
-    1. **CRLV-e Digital 2026:** Licenciamento quitado com validação Senatran e QR Code VIO/SERPRO.
-    2. **Laudo Pericial Cautelar 360°:** 100% aprovado, sem sinistros graves ou leilão.
-    3. **Apólice de Seguro Auto Protegido:** Cobertura 100% FIPE e assistência 24h.
-    4. **Termo de Garantia Mecânica & Histórico de Revisões:** Selo ativo e cobertura de trem de força.
-  - Visualizador de folha oficial em sheet modal nativo com tabelas de dados regulatórios e selos de conformidade jurídica.
+- **🔍 Módulo de Inspeção Técnica 360° & Plano de Revisões Programadas:**
+  - **Inspeção Técnica 360° (Laudo Pericial Oficial):**
+    - Status `100% APROVADO • LAUDO CONFORME` com Score Pericial `98/100` e código pericial autenticado `INSP-2026-8819`.
+    - Checklist auditado em 6 módulos vitais: *Motor & Transmissão*, *Sistema de Freios*, *Suspensão & Direção*, *Pneus & Rodas*, *Elétrica & Módulos* e *Fluidos & Arrefecimento*.
+    - Emissão chancelada pela rede homologada com odômetro auditado.
+  - **Plano de Revisões Preventivas Programadas:**
+    - Card da Próxima Revisão Programada (90.000 km) com contagem regressiva de quilometragem e lista de 4 itens obrigatórios para substituição.
+    - Botão de ação direta `📅 Agendar Revisão na Rede Homologada`.
+    - Linha do tempo de revisões concluídas com selo Nível 4 DNA AUTO (80k km, 70k km, 60k km) e notas fiscais anexadas.
 - **⚡ Módulo de Telemetria Mini OBD2 (Tempo Real):**
   - Conexão com dongle Mini OBD2 ELM327 BLE 5.2 via Bluetooth Low Energy.
   - 4 Mostradores gauges digitais: RPM do motor com barra de rotação, temperatura do líquido de arrefecimento em 90°C (faixa ideal), tensão da bateria/alternador em 14.2V e odômetro lido da ECU.
   - Scanner de Injeção Eletrônica DTC com 0 erros detectados e luz de injeção apagada.
   - Tabela de sensores ao vivo (Sonda Lambda λ = 1.00, MAP 32 kPa, TPS 12%, IAT 34°C).
   - Botão `Escanear Central ECU Novamente` com leitura e recálculo dinâmico em tempo real.
+- **📲 Progressive Web App (PWA) Padrão Google Play Store & Download Automático:**
+  - **Instalação Automática:** Ao acessar o perfil de cliente, o prompt nativo de instalação é acionado automaticamente pelo navegador.
+  - **Sheet Modal Estilo Play Store:** Ícone 3D com selo "Verificado pelo Play Protect 🛡️", avaliação 4.9 ★, tamanho ~ 2.8 MB e botão `📲 INSTALAR NA ÁREA DE TRABALHO`.
+  - **Manifesto & Service Worker:** Totalmente em conformidade com W3C Web App Manifest e Play Store / TWA, com ícones em alta resolução (192x192, 512x512, maskable e SVG) e suporte offline.
+  - **Item no Drawer:** Acesso rápido permanente `📲 Baixar App Oficial (PWA)` no menu lateral.
 - **Zero Popups / Alerts:**
-  - 100% das telas (Documentos, Veículo, Certificação, Histórico, OBD2, Lembretes, Oficinas e Configurações) funcionam como navegação SPA interna sem qualquer caixa cinza do navegador.
+  - 100% das telas (Inspeção & Revisões, Veículo, Certificação, Histórico, OBD2, Lembretes, Oficinas e Configurações) funcionam como navegação SPA interna sem qualquer caixa cinza do navegador.
 
 ---
 

@@ -199,6 +199,50 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Qualidade & Testes:**
   - **34 testes automatizados aprovados com 100% de sucesso** em `test/api.test.js`.
 
+### 🔍 Ciclo 24: Inspeção Técnica 360° & Plano de Revisões Programadas (Substituição de Documentos)
+- **Objetivo e Solicitação do Usuário:**
+  - *"deve ter a parte de inspeção e revição do carro e sobre documentação nao precisa ter"*
+- **Implementações Técnicas e Entregas:**
+  1. **Exclusão Completa do Módulo de Documentação:**
+     - Retirada da aba "Documentos" da barra de navegação inferior (bottom nav) e do drawer lateral.
+     - Removidos modais de visualizador de documentos e métodos correlatos.
+  2. **Novo Módulo "Inspeção & Revisão" (`renderInspectionScreen`):**
+     - Integrado como 4ª aba na barra inferior com ícone de checklist (`📋` `Inspeção`) e como item 5 no menu lateral (`🔍 Inspeção & Revisão`).
+     - Seletor de abas segmentadas no topo:
+       - `🔍 Inspeção 360°`
+       - `🔧 Plano de Revisões`
+     - **Laudo Pericial Oficial DNA AUTO (Inspeção 360°):**
+       - Status `100% APROVADO • LAUDO CONFORME` com Score de Integridade `98/100`, Código Pericial `INSP-2026-8819`, Oficina Homologada Certificadora (`Veloce Auto Center`) e odômetro auditado.
+       - 6 Módulos Técnicos Inspecionados com checklist minucioso: *Motor & Transmissão*, *Sistema de Freios*, *Suspensão & Direção*, *Pneus & Rodas*, *Elétrica & Módulos* e *Fluidos & Arrefecimento*.
+     - **Plano de Revisões Programadas:**
+       - Card da Próxima Revisão: Meta de 90.000 km, quilometragem restante, itens obrigatórios a substituir e botão `📅 Agendar Revisão na Rede Homologada`.
+       - Histórico Cronológico de Revisões Concluídas (80.000 km, 70.000 km, 60.000 km) com selo Nível 4 DNA AUTO e notas fiscais anexadas.
+  3. **Backend REST API:**
+     - Endpoint `GET /api/v1/vehicles/:identifier/inspection` retornando laudo pericial, módulos auditados, próxima revisão e histórico de revisões.
+  4. **Qualidade & Testes Automatizados:**
+     - Adicionado o **Teste 35** em `test/api.test.js`.
+     - **35 testes automatizados aprovados com 100% de sucesso**.
+
+### 📲 Ciclo 25: Progressive Web App (PWA) Padrão Google Play Store & Download Automático no Perfil do Cliente
+- **Objetivo e Solicitação do Usuário:**
+  - *"Ao conectar no perfil de cliente, deve iniciar automaticamente o download do PWA, o aplicativo tendo o logo tudo bonitinho, igual um aplicativo nativo da Play Store. Faça isso pra que possa ser baixado e ficar lá na área de trabalho como um aplicativo regular, igual da Play Store, PWA tudo certinho, original, seguindo todos os requisitos e parâmetros que a Play Store exige."*
+- **Implementações Técnicas e Entregas:**
+  1. **Manifesto Web PWA (`public/manifest.json`):**
+     - Conformidade integral com especificações W3C e Play Store / TWA.
+     - `name`: "DNA AUTO — Passaporte & Histórico Veicular", `short_name`: "DNA AUTO", `display`: "standalone", `orientation`: "portrait-primary", `start_url`: "/#owner".
+     - 4 atalhos rápidos (*shortcuts*) no ícone do aplicativo.
+  2. **Ícones Oficiais em Resoluções Nativas (`public/img/icons/`):**
+     - Gerador em Node.js com zlib e SVG vetorial: `icon-192x192.png`, `icon-512x512.png`, `maskable-icon-512x512.png`, `apple-touch-icon.png` e `favicon.png`.
+  3. **Service Worker Oficial (`public/sw.js`):**
+     - Gestão de cache com estratégia Network-First com fallback para offline graceful, habilitando instalabilidade pelo navegador.
+  4. **Instalação Automática ao Conectar no Perfil de Cliente (`public/js/components/pwaInstall.js`):**
+     - Disparo automático do prompt nativo de instalação ao acessar `#owner` ou logar como Cliente.
+     - Bottom sheet modal estilo Google Play Store com ícone 3D, selo Play Protect, avaliação 4.9 ★ e botão `📲 INSTALAR NA ÁREA DE TRABALHO`.
+     - Opção de download permanente no Drawer Lateral do cliente.
+  5. **Qualidade & Testes Automatizados:**
+     - Adicionado o **Teste 36** em `test/api.test.js` validando manifesto, service worker e ícones.
+     - **36 testes automatizados aprovados com 100% de sucesso**.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

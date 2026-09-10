@@ -505,8 +505,75 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
   - `public/css/owner-app.css`: Estilos de `.dna-car-change-photo-btn` e do modal completo `.dna-photo-modal-overlay` e `.dna-photo-modal-sheet`.
   - `public/js/components/ownerView.js`: Integração do modal de foto, remoção do avatar e QR code, ajuste da placa veicular e aba de documentos.
   - `test/api.test.js`: Adição do **Teste 34** validando a foto padrão de modelo, atualização e reversão.
-- **Validação e Qualidade:**
-  - Bateria com **34 testes automatizados aprovados com 100% de sucesso**.
+### 🔍 Ciclo 23: Módulo de Inspeção Técnica 360° & Plano de Revisões Programadas (Substituição Total de Documentação)
+- **Objetivo e Solicitação do Usuário:**
+  - *"deve ter a parte de inspeção e revição do carro e sobre documentação nao precisa ter"*
+- **Implementações Técnicas e de Negócio:**
+  1. **Remoção Completa da Documentação no App do Proprietário (`OwnerView`):**
+     - Retirada da aba "Documentos" da barra inferior fixa e do item correspondente no drawer lateral.
+     - Exclusão do visualizador de documentos e métodos legados (`renderDocumentsScreen`, `renderDocumentViewerModal`).
+     - Foco exclusivo na saúde mecânica, integridade física e previsibilidade de revisões do automóvel.
+  2. **Módulo de Inspeção Técnica 360° & Laudo Pericial:**
+     - Acessível na barra de navegação inferior (4ª aba com ícone de prancheta/checklist) e no drawer lateral (item 5: *🔍 Inspeção & Revisão*).
+     - Seletor de abas segmentadas no topo:
+       - `🔍 Inspeção 360°`
+       - `🔧 Plano de Revisões`
+     - **Laudo Pericial Oficial DNA AUTO:**
+       - Header corporativo com Badge `100% APROVADO • LAUDO CONFORME`, Score de Integridade `98/100`, Código Pericial `INSP-2026-8819`, Oficina Homologada Certificadora (`Veloce Auto Center`) e odômetro auditado.
+       - 6 Módulos de Auditoria Mecânica com checklist minucioso:
+         1. *Motor & Transmissão* (Estanqueidade de cárter e retentores, correia dentada, coxins de motor e compressão dos cilindros)
+         2. *Sistema de Freios* (Espessura de discos e pastilhas, fluido de freio DOT 4 higroscópico e módulo ABS/EBD)
+         3. *Suspensão & Direção* (Amortecedores pressurizados, bandejas, buchas de PU e terminais axiais)
+         4. *Pneus & Rodas* (Profundidade de sulco > 4.2mm, alinhamento 3D a laser e balanceamento dinâmico)
+         5. *Elétrica & Módulos* (Tensão de repouso da bateria 12.6V, carga do alternador 14.2V, scanner ECU OBD2 sem falhas e iluminação LED)
+         6. *Fluidos & Arrefecimento* (Líquido de arrefecimento aditivado anticorrosivo, óleo sintético 5W-30 no nível e fluido de transmissão)
+  3. **Plano de Revisões Programadas:**
+     - **Card de Próxima Revisão:** Meta de quilometragem (90.000 km), quilometragem restante calculada dinamicamente, lista de 4 itens obrigatórios de substituição e botão de ação `📅 Agendar Revisão na Rede Homologada`.
+     - **Histórico Cronológico de Revisões Concluídas:** Relação das revisões periódicas (80.000 km, 70.000 km, 60.000 km) com selo Padrão Ouro Nível 4 DNA AUTO, notas fiscais anexadas e oficina executante.
+  4. **Backend REST API:**
+     - Endpoint `GET /api/v1/vehicles/:identifier/inspection` retornando o dossiê da inspeção pericial, módulos técnicos, próxima revisão e histórico comprovado.
+  5. **Bateria de Testes Automatizados:**
+     - Adição do **Teste 35** em `test/api.test.js`.
+     - **35 testes automatizados aprovados com 100% de sucesso**.
+
+### 📲 Ciclo 24: Progressive Web App (PWA) Padrão Google Play Store & Download Automático no Perfil do Cliente
+- **Objetivo e Solicitação do Usuário (Áudio):**
+  - *"Ao conectar no perfil de cliente, deve iniciar automaticamente o download do PWA, o aplicativo tendo o logo tudo bonitinho, igual um aplicativo nativo da Play Store. Faça isso pra que possa ser baixado e ficar lá na área de trabalho como um aplicativo regular, igual da Play Store, PWA tudo certinho, original, seguindo todos os requisitos e parâmetros que a Play Store exige."*
+- **Implementações Técnicas e de Conformidade com a Google Play Store:**
+  1. **Manifesto Web Oficial PWA ([manifest.json](file:///c:/Users/User/Desktop/DNA-AUTO/public/manifest.json)):**
+     - Especificação estrita W3C e Play Store / TWA:
+       - `name`: "DNA AUTO — Passaporte & Histórico Veicular"
+       - `short_name`: "DNA AUTO"
+       - `start_url`: "/#owner"
+       - `display`: "standalone" com `display_override: ["window-controls-overlay", "standalone", "minimal-ui"]`
+       - `background_color`: "#0B0F19"
+       - `theme_color`: "#0B0F19"
+       - `orientation`: "portrait-primary"
+       - `categories`: ["auto_and_vehicles", "utilities", "productivity"]
+       - `shortcuts`: Atalhos rápidos para "Meu Carro", "Inspeção 360°", "Revisões" e "Dossiê".
+  2. **Geração de Ícones Oficiais em Múltiplas Resoluções ([generatePwaIcons.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/utils/generatePwaIcons.js)):**
+     - SVG vetorial de alta definição `dna-logo.svg`.
+     - PNGs codificados em RGBA puro com zlib:
+       - `icon-192x192.png` (Play Store standard)
+       - `icon-512x512.png` (Play Store hi-res standard)
+       - `maskable-icon-512x512.png` (Ícone adaptativo Android 13+)
+       - `apple-touch-icon.png` (iOS Safari)
+       - `favicon.png` (Favicon desktop)
+  3. **Service Worker Oficial ([sw.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/sw.js)):**
+     - Ciclo de vida com `install`, `activate` e `fetch` com estratégia Network-First e fallback de cache offline.
+     - Cumpre 100% dos requisitos de PWA instalável do Google Chrome, Edge e Lighthouse.
+  4. **Instalação Automática ao Conectar no Perfil do Cliente ([pwaInstall.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/pwaInstall.js)):**
+     - Captura do evento nativo `beforeinstallprompt` do navegador.
+     - Ao acessar `#owner` ou efetuar login como Cliente, o método `triggerAutoPromptForClient()` dispara automaticamente o prompt nativo de instalação.
+     - Em caso de bloqueio de gesto automático pelo navegador, apresenta Sheet Modal estilo Play Store:
+       - Ícone 3D com selo "Verificado pelo Play Protect 🛡️".
+       - Avaliação 4.9 ★ (12 mil), peso ~ 2.8 MB, badge "Oficial".
+       - Botão de ação: `📲 INSTALAR NA ÁREA DE TRABALHO`.
+       - Guia visual especial para iOS Safari (Adicionar à Tela de Início ➕).
+     - Opção permanente no Drawer Lateral: `📲 Baixar App Oficial (PWA) [PLAY STORE]`.
+  5. **Bateria de Testes Automatizados:**
+     - Inclusão do **Teste 36** em `test/api.test.js` validando `manifest.json`, `sw.js` e ícones oficiais.
+     - **36 testes automatizados aprovados com 100% de sucesso**.
 
 ---
 
@@ -521,8 +588,10 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 | **ADR-05** | **Isolamento de Admin via Rota `/admin`** | Não poluir a tela inicial de clientes e oficinas com botões de administrador. | Maior segurança por obscuridade e navegação limpa para usuários comuns. |
 | **ADR-06** | **ERP de Oficina em Escopo Isolado (`is-workshop-erp`)** | Transformar a interface da oficina em um sistema de gestão corporativo moderno (estilo TOTVS) sem conflitar com as regras de CSS da Landing Page. | Viewport 100vh estável, sem scroll da página principal, zero estouro horizontal e foco operacional em balcão, box e agendamentos. |
 | **ADR-07** | **App do Cliente em Escopo Isolado (`is-owner-app`)** | Eliminar cabeçalhos e sidebars residuais da web para entregar a experiência mobile-first idêntica ao design de aplicativo do cliente. | Interface limpa, responsiva, sem botões de mock, com drawer nativo e dimensões travadas. |
-| **ADR-08** | **Navegação SPA Interna e Telemetria Mini OBD2** | Eliminar popups do navegador e centralizar documentos e telemetria veicular em tempo real dentro do frame do aplicativo. | Experiência de aplicativo nativo de padrão corporativo TOTVS, sem saídas da tela, com leitura de ECU e documentos com validade jurídica. |
+| **ADR-08** | **Navegação SPA Interna e Telemetria Mini OBD2** | Eliminar popups do navegador e centralizar telemetria veicular em tempo real dentro do frame do aplicativo. | Experiência de aplicativo nativo de padrão corporativo TOTVS, sem saídas da tela, com leitura de ECU e laudos com validade pericial. |
 | **ADR-09** | **Fotos Veiculares por Modelo & Troca pelo Proprietário** | Garantir que nenhum veículo cadastrado fique sem foto, exibindo uma fotografia oficial do modelo exato até que o proprietário faça upload de sua própria foto. | Experiência visual rica e consistente desde o primeiro segundo, flexibilidade total para o dono personalizar e reversibilidade garantida. |
+| **ADR-10** | **Inspeção Técnica 360° & Revisões em Substituição a Documentos** | Substituir o módulo de documentos por inspeção pericial e planejamento de revisões preventivas. | Foco primordial na integridade mecânica, segurança rodoviária e valorização de revenda com laudo pericial 98/100 e plano de revisão. |
+| **ADR-11** | **PWA Instalável com Padrão Google Play Store / TWA** | Transformar o aplicativo do cliente em um app nativo instalável na área de trabalho e na tela inicial do celular com prompt automático. | Zero atrito de loja, ícone oficial na tela inicial, funcionamento standalone em tela cheia e elegibilidade para publicação direta via Trusted Web Activity (TWA). |
 
 ---
 

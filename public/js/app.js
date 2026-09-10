@@ -203,6 +203,9 @@ const App = {
             WorkshopView.render();
         } else if (viewName === 'owner') {
             OwnerView.render();
+            if (typeof PwaInstall !== 'undefined' && PwaInstall.triggerAutoPromptForClient) {
+                PwaInstall.triggerAutoPromptForClient();
+            }
         } else if (viewName === 'sales') {
             SalesPageView.render();
         } else if (viewName === 'dossier') {

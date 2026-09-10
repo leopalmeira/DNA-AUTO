@@ -1908,4 +1908,649 @@
     gap: 6px;
 }
 
+/* ==============================================================================
+   MÓDULO DE INSPEÇÃO TÉCNICA 360° E PLANO DE REVISÕES DO VEÍCULO
+   ============================================================================== */
 
+.dna-insp-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 20px;
+}
+
+/* Segmented Control / Alternador de Sub-Abas */
+.dna-insp-segmented-tabs {
+    display: flex;
+    background: rgba(5, 11, 20, 0.95);
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    border-radius: 12px;
+    padding: 4px;
+    gap: 4px;
+}
+
+.dna-insp-tab-btn {
+    flex: 1;
+    padding: 9px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 9px;
+    color: #94A3B8;
+    font-size: 11.5px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.dna-insp-tab-btn.active {
+    background: linear-gradient(135deg, #0066FF, #00D4FF);
+    color: #FFFFFF;
+    box-shadow: 0 4px 14px rgba(0, 102, 255, 0.4);
+}
+
+/* Card Cabeçalho do Laudo de Inspeção */
+.dna-insp-header-card {
+    background: radial-gradient(circle at 50% 20%, rgba(12, 30, 65, 0.95) 0%, rgba(6, 14, 28, 0.98) 100%);
+    border: 1.5px solid rgba(0, 212, 255, 0.35);
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dna-insp-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dna-insp-score-badge {
+    background: rgba(0, 230, 118, 0.15);
+    border: 1px solid #00E676;
+    color: #00E676;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dna-insp-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    background: #050B14;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+.dna-insp-meta-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.dna-insp-meta-label {
+    font-size: 9.5px;
+    color: #94A3B8;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.dna-insp-meta-value {
+    font-size: 11px;
+    color: #FFFFFF;
+    font-weight: 700;
+    margin-top: 1px;
+}
+
+/* Card de Módulo Inspecionado (Motor, Freios, etc.) */
+.dna-insp-module-card {
+    background: rgba(8, 16, 32, 0.88);
+    border: 1px solid rgba(0, 102, 255, 0.22);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dna-insp-module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 8px;
+}
+
+.dna-insp-module-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dna-insp-module-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(0, 102, 255, 0.15);
+    color: #00D4FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dna-insp-module-title {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin: 0;
+}
+
+.dna-insp-status-tag {
+    font-size: 9px;
+    font-weight: 800;
+    color: #00E676;
+    background: rgba(0, 230, 118, 0.15);
+    border: 1px solid rgba(0, 230, 118, 0.4);
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+.dna-insp-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dna-insp-item-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: rgba(5, 11, 20, 0.6);
+    border-radius: 8px;
+    padding: 8px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.dna-insp-item-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dna-insp-item-name {
+    font-size: 11px;
+    font-weight: 700;
+    color: #E2E8F0;
+}
+
+.dna-insp-item-badge {
+    font-size: 9.5px;
+    font-weight: 800;
+    color: #00E676;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.dna-insp-item-detail {
+    font-size: 10px;
+    color: #94A3B8;
+    line-height: 1.35;
+}
+
+/* Card da Próxima Revisão Programada */
+.dna-rev-next-card {
+    background: linear-gradient(135deg, rgba(8, 20, 48, 0.95), rgba(5, 11, 24, 0.98));
+    border: 1.5px solid #00D4FF;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.18);
+}
+
+.dna-rev-next-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.dna-rev-next-pill {
+    background: rgba(0, 212, 255, 0.15);
+    border: 1px solid #00D4FF;
+    color: #00D4FF;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.dna-rev-countdown-box {
+    background: #050B14;
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dna-rev-countdown-left {
+    display: flex;
+    flex-direction: column;
+}
+
+.dna-rev-items-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dna-rev-item-check {
+    font-size: 11px;
+    color: #E2E8F0;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.dna-rev-action-btn {
+    background: linear-gradient(135deg, #0066FF, #00D4FF);
+    color: #FFFFFF;
+    font-size: 12.5px;
+    font-weight: 800;
+    padding: 11px 16px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(0, 102, 255, 0.4);
+    transition: all 0.2s ease;
+}
+
+.dna-rev-action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 212, 255, 0.5);
+}
+
+/* Card de Histórico de Revisão */
+.dna-rev-history-card {
+    background: rgba(8, 16, 32, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 4px solid #00E676;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dna-rev-history-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dna-rev-history-title {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin: 0;
+}
+
+.dna-rev-history-km {
+    font-size: 10px;
+    font-weight: 800;
+    color: #00E676;
+    background: rgba(0, 230, 118, 0.15);
+    padding: 2px 6px;
+    border-radius: 6px;
+}
+
+.dna-rev-history-summary {
+    font-size: 11px;
+    color: #CBD5E1;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.dna-rev-history-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #94A3B8;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 6px;
+    margin-top: 2px;
+}
+
+/* ==========================================================================
+   PWA INSTALLATION MODAL & PLAY STORE STYLE PROMPT
+   ========================================================================== */
+
+.dna-pwa-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 7, 18, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 999999;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (min-width: 600px) {
+    .dna-pwa-modal-backdrop {
+        align-items: center;
+    }
+}
+
+.dna-pwa-modal-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.dna-pwa-modal-sheet {
+    width: 100%;
+    max-width: 440px;
+    background: #0B0F19;
+    border: 1px solid rgba(255, 210, 28, 0.25);
+    border-radius: 28px 28px 0 0;
+    padding: 24px 20px 28px;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 210, 28, 0.1);
+    transform: translateY(100%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    color: #FFFFFF;
+    box-sizing: border-box;
+}
+
+@media (min-width: 600px) {
+    .dna-pwa-modal-sheet {
+        border-radius: 24px;
+        transform: scale(0.92) translateY(20px);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .dna-pwa-modal-backdrop.active .dna-pwa-modal-sheet {
+        transform: scale(1) translateY(0);
+    }
+}
+
+.dna-pwa-modal-backdrop.active .dna-pwa-modal-sheet {
+    transform: translateY(0);
+}
+
+.dna-pwa-sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.dna-pwa-store-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    color: #38BDF8;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+.dna-pwa-close-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #94A3B8;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.dna-pwa-close-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+    color: #FFFFFF;
+}
+
+.dna-pwa-app-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 14px;
+    margin-bottom: 18px;
+}
+
+.dna-pwa-icon-wrapper {
+    position: relative;
+    width: 68px;
+    height: 68px;
+    flex-shrink: 0;
+}
+
+.dna-pwa-app-icon {
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+    border: 1.5px solid rgba(255, 210, 28, 0.3);
+    object-fit: cover;
+}
+
+.dna-pwa-verified-badge {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    font-size: 14px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+}
+
+.dna-pwa-app-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.dna-pwa-app-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin: 0 0 2px;
+    letter-spacing: -0.3px;
+}
+
+.dna-pwa-app-author {
+    font-size: 11.5px;
+    color: #94A3B8;
+    margin: 0 0 8px;
+}
+
+.dna-pwa-tags-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.dna-pwa-tag-gold {
+    background: rgba(255, 210, 28, 0.15);
+    color: #FFD21C;
+    border: 1px solid rgba(255, 210, 28, 0.3);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.dna-pwa-tag {
+    background: rgba(255, 255, 255, 0.06);
+    color: #CBD5E1;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.dna-pwa-tag-green {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10B981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.dna-pwa-benefits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.dna-pwa-benefit-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.dna-pwa-benefit-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: rgba(255, 210, 28, 0.1);
+    color: #FFD21C;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.dna-pwa-benefit-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dna-pwa-benefit-text strong {
+    font-size: 12.5px;
+    color: #FFFFFF;
+    font-weight: 700;
+}
+
+.dna-pwa-benefit-text span {
+    font-size: 11px;
+    color: #94A3B8;
+    line-height: 1.35;
+}
+
+.dna-pwa-ios-instructions {
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 18px;
+}
+
+.dna-pwa-actions-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dna-pwa-install-btn {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: none;
+    background: #FFD21C;
+    color: #0B0F19;
+    font-size: 13.5px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(255, 210, 28, 0.35);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dna-pwa-install-btn:hover {
+    background: #FFE066;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(255, 210, 28, 0.45);
+}
+
+.dna-pwa-install-btn:active {
+    transform: scale(0.98);
+}
+
+.dna-pwa-skip-btn {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: color 0.2s;
+}
+
+.dna-pwa-skip-btn:hover {
+    color: #CBD5E1;
+}
+
+.dna-pwa-toast-success {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-30px);
+    background: #0B0F19;
+    border: 1.5px solid #10B981;
+    border-radius: 16px;
+    padding: 14px 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(16, 185, 129, 0.2);
+    z-index: 9999999;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 90vw;
+}
+
+.dna-pwa-toast-success.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}

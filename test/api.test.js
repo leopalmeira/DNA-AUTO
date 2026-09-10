@@ -10,6 +10,7 @@ async function runTests() {
 
     const db = require('../server/src/database/db');
     const { seedBase, seedDemoCars } = require('../server/src/database/seed');
+    seedBase(db);
     seedDemoCars(db);
 
     server = http.createServer(app);
@@ -435,7 +436,37 @@ async function runTests() {
         console.assert(dataResetPhoto.is_custom === false, 'Foto restaurada não deve ser custom');
         console.log(`✅ 34. Foto Oficial do Modelo & Troca pelo Dono: Foto atualizada com sucesso e reversão para modelo [${dataPhotoQuery.brand} ${dataPhotoQuery.model}] testada.`);
 
-        console.log('\n🎉 TODOS OS 34 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 35: Inspeção Técnica 360° e Plano de Revisões do Veículo
+        const resInsp = await fetch(`${BASE_URL}/vehicles/BRA2E19/inspection`);
+        const dataInsp = await resInsp.json();
+        console.assert(resInsp.status === 200, 'Falha ao consultar inspeção técnica do veículo');
+        console.assert(dataInsp.success === true, 'Sucesso esperado na inspeção');
+        console.assert(dataInsp.inspection.score === 98, 'Score da inspeção deve ser 98');
+        console.assert(Array.isArray(dataInsp.inspection.modules) && dataInsp.inspection.modules.length === 6, 'Devem existir 6 módulos inspecionados');
+        console.assert(dataInsp.revisions.next_revision.target_mileage === 90000, 'Meta da próxima revisão incorreta');
+        console.assert(Array.isArray(dataInsp.revisions.history) && dataInsp.revisions.history.length >= 3, 'Histórico de revisões deve conter registros');
+        console.log(`✅ 35. Inspeção Técnica 360° & Revisões: Laudo [${dataInsp.inspection.inspection_code}] com Score ${dataInsp.inspection.score}/100 e Próxima Revisão em ${dataInsp.revisions.next_revision.target_mileage.toLocaleString('pt-BR')} km validada com sucesso.`);
+
+        // Teste 36: Progressive Web App (PWA) e Parâmetros Google Play Store / TWA
+        const resManifest = await fetch(`http://localhost:${PORT}/manifest.json`);
+        console.assert(resManifest.status === 200, 'Manifesto PWA deve retornar status 200');
+        const dataManifest = await resManifest.json();
+        console.assert(dataManifest.name.includes('DNA AUTO'), 'Nome do PWA incorreto');
+        console.assert(dataManifest.short_name === 'DNA AUTO', 'Nome curto do PWA deve ser DNA AUTO');
+        console.assert(dataManifest.display === 'standalone', 'Display do PWA deve ser standalone');
+        console.assert(Array.isArray(dataManifest.icons) && dataManifest.icons.length >= 4, 'PWA deve conter múltiplos ícones');
+        const has192 = dataManifest.icons.some(i => i.sizes === '192x192');
+        const has512 = dataManifest.icons.some(i => i.sizes === '512x512');
+        console.assert(has192 && has512, 'PWA deve ter ícones 192x192 e 512x512 para Play Store');
+        
+        const resSw = await fetch(`http://localhost:${PORT}/sw.js`);
+        console.assert(resSw.status === 200, 'Service Worker deve retornar status 200');
+        const swContent = await resSw.text();
+        console.assert(swContent.includes('self.addEventListener'), 'Service Worker deve conter listeners');
+
+        console.log(`✅ 36. PWA Oficial Google Play Store: Manifesto [${dataManifest.short_name}] com display standalone, Service Worker e ${dataManifest.icons.length} ícones nativos validado com sucesso.`);
+
+        console.log('\n🎉 TODOS OS 36 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);
