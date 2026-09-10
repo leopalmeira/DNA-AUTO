@@ -1,39 +1,18 @@
 // ==============================================================================
 // DNA AUTO — LANDING EXCLUSIVA PARA PROPRIETÁRIO DE VEÍCULO (/cliente)
-// Foco total no dono do carro: Histórico, Manutenções, Quilometragem e App
+// Foco total no dono do carro: Histórico, Manutenções, Gastos e Valorização
 // ==============================================================================
 
 const LandingClientView = {
-    faqOpenIndex: 0,
-
-    toggleFaq(index) {
-        this.faqOpenIndex = this.faqOpenIndex === index ? -1 : index;
-        const items = document.querySelectorAll('.client-faq-item');
-        items.forEach((item, i) => {
-            if (i === this.faqOpenIndex) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
-        });
-    },
-
-    scrollToSection(sectionId) {
-        const el = document.getElementById(sectionId);
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    },
-
     render() {
         // Atualiza Title e SEO
-        document.title = 'DNA AUTO | Cuide melhor do seu carro';
+        document.title = 'DNA AUTO | Tecnologia que fortalece seu veículo';
         const metaDesc = document.querySelector('meta[name="description"]');
         if (metaDesc) {
-            metaDesc.setAttribute('content', 'Tenha mais controle sobre seu veículo, sua manutenção, quilometragem e os próximos cuidados com o DNA AUTO.');
+            metaDesc.setAttribute('content', 'Seu carro mais valorizado, mais seguro e sempre em dia. Histórico completo de manutenções, controle de gastos e valorização em até 10%.');
         }
 
-        // Esconde layout legado
+        // Oculta layouts internos da aplicação
         const sidebar = document.querySelector('.sidebar');
         const topbar = document.querySelector('.top-navbar');
         const backdrop = document.getElementById('sidebar-backdrop');
@@ -48,257 +27,415 @@ const LandingClientView = {
         if (!container) return;
 
         container.innerHTML = `
-            <div class="dna-landing-page landing-client-page">
-                <!-- HEADER SIMPLES /cliente -->
-                <header class="dna-nav" role="banner">
-                    <div class="dna-nav-container">
-                        <a href="/" class="dna-nav-brand" onclick="event.preventDefault(); App.navigateTo('/');" title="DNA AUTO Home">
-                            <div class="dna-nav-logo">
-                                <svg viewBox="0 0 120 120" width="28" height="28" fill="none" stroke="#FFD21C" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M 54 62 C 51 55 51 46 57 41 C 62 36 67 40 65 50 C 63 56 64 64 64 64" stroke-width="7" />
-                                    <path d="M 45 66 C 41 53 41 39 50 30 C 58 21 68 21 75 30 C 82 40 82 55 77 66" stroke-width="8" />
-                                    <path d="M 36 68 C 30 52 31 32 43 20 C 54 9 72 9 83 20 C 93 32 94 52 88 68" stroke-width="8" />
-                                    <path d="M 28 70 C 21 52 23 27 36 14 C 50 1 78 1 91 14 C 103 27 105 52 98 70" stroke-width="8" />
-                                    <path d="M 22 84 L 32 84 C 36 78 42 75 48 75 L 72 75 C 78 75 84 78 88 84 L 98 84" stroke-width="9" />
+            <div class="dna-official-landing cl-landing">
+                <!-- 1. NAVBAR -->
+                <header class="cl-nav" role="banner">
+                    <div class="cl-nav-inner">
+                        <a href="/cliente" class="cl-brand" onclick="event.preventDefault(); App.navigateTo('/cliente');">
+                            <div class="cl-logo-icon">
+                                <svg viewBox="0 0 40 40" width="34" height="34" fill="none">
+                                    <path d="M8 8 L24 8 C30 8 34 13 34 20 C34 27 30 32 24 32 L8 32 Z" stroke="#0066FF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M15 15 L23 15 C26 15 28 17 28 20 C28 23 26 25 23 25 L15 25 Z" fill="#00D4FF"/>
                                 </svg>
                             </div>
-                            <span class="dna-nav-title">DNA <span class="gold">AUTO</span></span>
+                            <div class="cl-brand-text">
+                                <span class="cl-brand-title">DNA AUTO</span>
+                                <span class="cl-brand-sub">Tecnologia que fortalece seu veículo.</span>
+                            </div>
                         </a>
 
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <a href="/autocente" class="dna-nav-link" onclick="event.preventDefault(); App.navigateTo('/autocente');" style="font-size:13px;">
-                                Sou oficina
-                            </a>
-                            <button class="dna-nav-btn dna-nav-btn-primary" onclick="App.switchView('owner')">
-                                Entrar no app
+                        <nav class="cl-nav-links" aria-label="Navegação do Cliente">
+                            <a href="#beneficios" class="cl-nav-item">Benefícios</a>
+                            <a href="#como-funciona" class="cl-nav-item">Como funciona</a>
+                            <a href="#oficinas" class="cl-nav-item">Rede de oficinas</a>
+                            <a href="#planos" class="cl-nav-item">Planos</a>
+                        </nav>
+
+                        <div class="cl-nav-actions">
+                            <button class="cl-btn-cta-pill" onclick="App.switchView('owner')">
+                                <span>Quero meu DNA AUTO</span>
+                                <span class="cl-arrow">→</span>
                             </button>
                         </div>
                     </div>
                 </header>
 
-                <!-- HERO SECTION /cliente -->
-                <section class="landing-hero" role="region" aria-label="Apresentação do Produto">
-                    <div class="dna-section-container">
-                        <div class="dna-badge-tag">
-                            <span class="dna-badge-dot"></span>
-                            PARA PROPRIETÁRIOS DE VEÍCULOS
-                        </div>
-                        <h1 class="landing-hero-headline">
-                            Seu carro tem uma história.<br>O DNA AUTO ajuda você a cuidar dela.
-                        </h1>
-                        <p class="landing-hero-text">
-                            Tenha mais controle sobre seu veículo, sua manutenção, quilometragem e os próximos cuidados.
-                        </p>
+                <!-- 2. HERO SECTION -->
+                <section class="cl-hero" id="hero">
+                    <div class="cl-container cl-hero-grid">
+                        <div class="cl-hero-content">
+                            <span class="cl-hero-badge">MAIS QUE UM APP. É O DNA DO SEU CARRO.</span>
+                            <h1 class="cl-hero-headline">
+                                Seu carro<br>
+                                mais valorizado,<br>
+                                mais seguro e<br>
+                                <span class="cl-text-gradient">sempre em dia.</span>
+                            </h1>
+                            <p class="cl-hero-desc">
+                                Com o DNA AUTO você tem o histórico completo do seu veículo, controla os gastos, recebe alertas de manutenção e ainda valoriza seu carro em até 10%.
+                            </p>
 
-                        <div class="landing-hero-actions">
-                            <button class="dna-btn dna-btn-primary" onclick="App.switchView('owner')">
-                                <span>Entrar no app</span>
-                                <span aria-hidden="true">→</span>
-                            </button>
-                            <button class="dna-btn dna-btn-secondary" onclick="LandingClientView.scrollToSection('beneficios-cliente')">
-                                <span>Como funciona</span>
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- SEÇÃO BENEFÍCIOS -->
-                <section class="landing-benefits-section" id="beneficios-cliente" role="region" aria-label="Benefícios para o Proprietário">
-                    <div class="dna-section-container">
-                        <h2 class="landing-section-title">O que você acompanha no DNA AUTO</h2>
-                        <p class="landing-section-subtitle">Tudo o que importa para manter a saúde e o valor do seu carro em um só lugar.</p>
-
-                        <div class="landing-benefits-grid">
-                            <div class="landing-benefit-item">
-                                <span class="landing-benefit-check" aria-hidden="true">✓</span>
-                                <span>Histórico do veículo</span>
-                            </div>
-                            <div class="landing-benefit-item">
-                                <span class="landing-benefit-check" aria-hidden="true">✓</span>
-                                <span>Manutenções</span>
-                            </div>
-                            <div class="landing-benefit-item">
-                                <span class="landing-benefit-check" aria-hidden="true">✓</span>
-                                <span>Quilometragem</span>
-                            </div>
-                            <div class="landing-benefit-item">
-                                <span class="landing-benefit-check" aria-hidden="true">✓</span>
-                                <span>Próximos cuidados</span>
-                            </div>
-                            <div class="landing-benefit-item" style="grid-column: 1 / -1;">
-                                <span class="landing-benefit-check" aria-hidden="true">✓</span>
-                                <span>Informações importantes do veículo</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- MOCKUP DO APLICATIVO DO CLIENTE -->
-                <section class="landing-client-mockup-section" role="region" aria-label="Demonstração do Aplicativo">
-                    <div class="dna-section-container">
-                        <h2 class="landing-section-title">Tenha as informações do seu carro mais organizadas.</h2>
-                        <p class="landing-section-subtitle">Visualização simples, rápida e na palma da sua mão.</p>
-
-                        <div class="client-app-preview-card">
-                            <div class="client-mockup-top">
-                                <div>
-                                    <h3 class="client-mockup-car-title">Volkswagen Gol 1.0</h3>
-                                    <span style="font-size:12px; color:var(--dna-text-dim);">2022 • Flex</span>
-                                </div>
-                                <div style="text-align:right;">
-                                    <span class="client-mockup-plate">ABC1D23</span>
-                                    <div style="margin-top:4px;">
-                                        <span class="client-mockup-status-badge">
-                                            <span style="width:6px; height:6px; border-radius:50%; background:#10B981;"></span>
-                                            EM DIA
-                                        </span>
+                            <div class="cl-hero-cta-wrap">
+                                <button class="cl-btn-hero" onclick="App.switchView('owner')">
+                                    <span>Quero contratar o DNA AUTO</span>
+                                    <span class="cl-arrow">→</span>
+                                </button>
+                                <div class="cl-price-tag">
+                                    <div class="cl-dollar-circle">$</div>
+                                    <div class="cl-price-info">
+                                        <span class="cl-price-label">Taxa única</span>
+                                        <span class="cl-price-val">R$ 59,90</span>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="client-mockup-stats">
-                                <div class="client-stat-box">
-                                    <div class="client-stat-label">Quilometragem</div>
-                                    <div class="client-stat-value">87.542 km</div>
+                        <!-- MOCKUP DO APP + CARRO -->
+                        <div class="cl-hero-media">
+                            <div class="cl-media-frame">
+                                <img src="/img/cl-hero-car-phone.jpg" alt="App DNA AUTO no smartphone e veículo moderno" class="cl-hero-img" onerror="this.src='/img/landing-client-official.jpg'"/>
+                            </div>
+                        </div>
+
+                        <!-- CARD LATERAL -->
+                        <div class="cl-hero-side-card">
+                            <div class="cl-side-card-inner">
+                                <h3>Conheça o verdadeiro valor do seu carro.</h3>
+                                <p>O DNA AUTO cuida hoje para você ter mais valor amanhã.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. SEÇÃO BRANCA: O QUE VOCÊ GANHA COM O DNA AUTO -->
+                <section class="cl-white-section" id="beneficios">
+                    <div class="cl-container">
+                        <div class="cl-section-header light">
+                            <h2 class="cl-section-title light">
+                                O que você ganha com o <span class="cl-text-blue">DNA AUTO?</span>
+                            </h2>
+                            <p class="cl-section-subtitle light">
+                                Tudo o que você precisa para ter controle, segurança e mais valor no seu veículo.
+                            </p>
+                        </div>
+
+                        <div class="cl-deliverables-grid">
+                            <div class="cl-deliv-card">
+                                <div class="cl-deliv-icon-wrap">
+                                    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#0066FF" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
                                 </div>
-                                <div class="client-stat-box">
-                                    <div class="client-stat-label">Próxima Revisão</div>
-                                    <div class="client-stat-value">90.000 km</div>
+                                <h3>Valorização do veículo em até 10%</h3>
+                                <p>Um histórico completo e atualizado aumenta a confiança na hora da venda.</p>
+                            </div>
+
+                            <div class="cl-deliv-card">
+                                <div class="cl-deliv-icon-wrap">
+                                    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#0066FF" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                </div>
+                                <h3>Histórico completo de serviços</h3>
+                                <p>Tenha em mãos todo o registro de manutenções, peças trocadas e serviços realizados.</p>
+                            </div>
+
+                            <div class="cl-deliv-card">
+                                <div class="cl-deliv-icon-wrap">
+                                    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#0066FF" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="1" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="5" y1="12" x2="1" y2="12"/><line x1="23" y1="12" x2="19" y2="12"/></svg>
+                                </div>
+                                <h3>Controle de gastos</h3>
+                                <p>Saiba exatamente quanto gastou com seu veículo no semestre e no ano.</p>
+                            </div>
+
+                            <div class="cl-deliv-card">
+                                <div class="cl-deliv-icon-wrap">
+                                    <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#0066FF" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                                </div>
+                                <h3>Alertas e lembretes</h3>
+                                <p>O sistema avisa quando chegar a hora de trocar peças, fazer revisões e evitar problemas maiores.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. SEÇÃO ESCURA: POR QUE O DNA DO SEU CARRO É TÃO IMPORTANTE? -->
+                <section class="cl-dark-section" id="como-funciona">
+                    <div class="cl-container">
+                        <div class="cl-section-header dark">
+                            <h2 class="cl-section-title dark">Por que o DNA do seu carro é tão importante?</h2>
+                            <p class="cl-section-subtitle dark">
+                                O DNA AUTO registra cada detalhe do seu veículo, criando um histórico confiável que valoriza o seu carro, facilita a manutenção e evita surpresas no futuro.
+                            </p>
+                        </div>
+
+                        <div class="cl-importance-grid">
+                            <div class="cl-importance-card">
+                                <div class="cl-importance-icon">
+                                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#00D4FF" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                </div>
+                                <div class="cl-importance-info">
+                                    <h4>Mais segurança</h4>
+                                    <p>Você sabe o que foi feito e o que ainda precisa ser feito.</p>
                                 </div>
                             </div>
 
-                            <div class="client-mockup-timeline">
-                                <div class="client-timeline-title">Últimos Cuidados Realizados</div>
-                                <div class="client-timeline-item">
-                                    <div class="client-timeline-dot"></div>
+                            <div class="cl-importance-card">
+                                <div class="cl-importance-icon">
+                                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#00D4FF" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                                </div>
+                                <div class="cl-importance-info">
+                                    <h4>Mais confiança na revenda</h4>
+                                    <p>Com histórico completo, seu carro vale mais.</p>
+                                </div>
+                            </div>
+
+                            <div class="cl-importance-card">
+                                <div class="cl-importance-icon">
+                                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#00D4FF" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                </div>
+                                <div class="cl-importance-info">
+                                    <h4>Menos imprevistos</h4>
+                                    <p>O sistema avisa sobre manutenções preventivas e corretivas.</p>
+                                </div>
+                            </div>
+
+                            <div class="cl-importance-card">
+                                <div class="cl-importance-icon">
+                                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#00D4FF" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M8 12h8"/></svg>
+                                </div>
+                                <div class="cl-importance-info">
+                                    <h4>Gastos sob controle</h4>
+                                    <p>Veja quanto gasta por mês e por ano.</p>
+                                </div>
+                            </div>
+
+                            <div class="cl-importance-card">
+                                <div class="cl-importance-icon">
+                                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#00D4FF" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                                </div>
+                                <div class="cl-importance-info">
+                                    <h4>Seu carro sempre em dia</h4>
+                                    <p>Manutenção em dia é economia e tranquilidade.</p>
+                                </div>
+                            </div>
+
+                            <div class="cl-importance-card">
+                                <div class="cl-importance-icon">
+                                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#00D4FF" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                </div>
+                                <div class="cl-importance-info">
+                                    <h4>Mais valorização</h4>
+                                    <p>Carros com histórico completo são mais valorizados no mercado.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. SEÇÃO BRANCA: HISTÓRICO E GASTOS -->
+                <section class="cl-white-section" id="gastos">
+                    <div class="cl-container">
+                        <div class="cl-section-header light">
+                            <h2 class="cl-section-title light">Histórico e gastos: seu carro em números</h2>
+                            <p class="cl-section-subtitle light">
+                                Acompanhe tudo o que foi feito e quanto você gastou, com relatórios simples e objetivos.
+                            </p>
+                        </div>
+
+                        <div class="cl-finance-grid">
+                            <!-- CARD SEMESTRE -->
+                            <div class="cl-finance-card">
+                                <div class="cl-finance-card-head">
+                                    <div class="cl-cal-icon">
+                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#FFFFFF" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                    </div>
                                     <div>
-                                        <div class="client-timeline-desc">Revisão Periódica e Óleo</div>
-                                        <div class="client-timeline-date">85.200 km • Veloce Auto Center</div>
+                                        <div class="cl-finance-title">Gastos por semestre</div>
+                                        <div class="cl-finance-val">R$ 1.284,50</div>
+                                        <div class="cl-finance-sub">Últimos 6 meses</div>
                                     </div>
                                 </div>
-                                <div class="client-timeline-item">
-                                    <div class="client-timeline-dot"></div>
+
+                                <div class="cl-finance-list">
+                                    <div class="cl-finance-item">
+                                        <div class="cl-item-icon">⚙️</div>
+                                        <span class="cl-item-label">Revisões e manutenções</span>
+                                        <span class="cl-item-val">R$ 620,00</span>
+                                    </div>
+                                    <div class="cl-finance-item">
+                                        <div class="cl-item-icon">🔧</div>
+                                        <span class="cl-item-label">Peças e reposições</span>
+                                        <span class="cl-item-val">R$ 412,30</span>
+                                    </div>
+                                    <div class="cl-finance-item">
+                                        <div class="cl-item-icon">📋</div>
+                                        <span class="cl-item-label">Serviços diversos</span>
+                                        <span class="cl-item-val">R$ 252,20</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CARD ANO -->
+                            <div class="cl-finance-card">
+                                <div class="cl-finance-card-head">
+                                    <div class="cl-cal-icon">
+                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#FFFFFF" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                    </div>
                                     <div>
-                                        <div class="client-timeline-desc">Alinhamento e Geometria 3D</div>
-                                        <div class="client-timeline-date">74.300 km • Bosch Car Service</div>
+                                        <div class="cl-finance-title">Gastos por ano</div>
+                                        <div class="cl-finance-val">R$ 2.487,90</div>
+                                        <div class="cl-finance-sub">Últimos 12 meses</div>
+                                    </div>
+                                </div>
+
+                                <div class="cl-finance-list">
+                                    <div class="cl-finance-item">
+                                        <div class="cl-item-icon">⚙️</div>
+                                        <span class="cl-item-label">Revisões e manutenções</span>
+                                        <span class="cl-item-val">R$ 1.210,00</span>
+                                    </div>
+                                    <div class="cl-finance-item">
+                                        <div class="cl-item-icon">🔧</div>
+                                        <span class="cl-item-label">Peças e reposições</span>
+                                        <span class="cl-item-val">R$ 948,50</span>
+                                    </div>
+                                    <div class="cl-finance-item">
+                                        <div class="cl-item-icon">📋</div>
+                                        <span class="cl-item-label">Serviços diversos</span>
+                                        <span class="cl-item-val">R$ 329,40</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <div style="margin-top:28px;">
-                            <button class="dna-btn dna-btn-primary" onclick="App.switchView('owner')">
-                                <span>Entrar no app</span>
-                                <span aria-hidden="true">→</span>
-                            </button>
-                        </div>
                     </div>
                 </section>
 
-                <!-- BLOCO DE PREVENÇÃO -->
-                <section style="padding:50px 20px; background:#070C15; border-top:1px solid var(--dna-border-subtle); border-bottom:1px solid var(--dna-border-subtle); text-align:center;">
-                    <div class="dna-section-container">
-                        <h2 style="font-size:22px; font-weight:700; color:var(--dna-text-white); margin-bottom:12px;">
-                            Cuide do seu carro antes que a manutenção vire um problema.
-                        </h2>
-                        <p style="font-size:15px; color:var(--dna-text-muted); max-width:540px; margin:0 auto 24px;">
-                            Antecipe trocas de componentes essenciais e evite surpresas indesejadas no trânsito.
-                        </p>
-                        <button class="dna-btn dna-btn-primary" onclick="App.switchView('owner')">
-                            <span>Entrar no app</span>
-                        </button>
-                    </div>
-                </section>
-
-                <!-- FAQ DO CLIENTE COM ACORDEÃO -->
-                <section class="faq-section" role="region" aria-label="Perguntas Frequentes">
-                    <h2 class="landing-section-title">Perguntas Frequentes</h2>
-                    <p class="landing-section-subtitle">Esclareça suas dúvidas sobre como usar o DNA AUTO para cuidar do seu veículo.</p>
-
-                    <div class="faq-list">
-                        <!-- ITEM 1 -->
-                        <div class="faq-item client-faq-item active">
-                            <button class="faq-question" onclick="LandingClientView.toggleFaq(0)" aria-expanded="true">
-                                <span>O que é o DNA AUTO?</span>
-                                <span class="faq-chevron">▼</span>
-                            </button>
-                            <div class="faq-answer">
-                                É uma plataforma que organiza a história e a manutenção do seu veículo, permitindo acompanhar revisões, quilometragem e próximos cuidados de maneira clara e segura.
-                            </div>
+                <!-- 6. SEÇÃO ESCURA: REDE DE OFICINAS CREDENCIADAS -->
+                <section class="cl-network-section" id="oficinas">
+                    <div class="cl-container">
+                        <div class="cl-section-header dark">
+                            <h2 class="cl-section-title dark">Rede de oficinas <span class="cl-text-cyan">credenciadas</span></h2>
+                            <p class="cl-section-subtitle dark">
+                                Conte com uma rede de oficinas credenciadas e de confiança, prontas para atender seu veículo com qualidade, transparência e o histórico completo do seu carro.
+                            </p>
                         </div>
 
-                        <!-- ITEM 2 -->
-                        <div class="faq-item client-faq-item">
-                            <button class="faq-question" onclick="LandingClientView.toggleFaq(1)" aria-expanded="false">
-                                <span>Como acompanho meu veículo?</span>
-                                <span class="faq-chevron">▼</span>
-                            </button>
-                            <div class="faq-answer">
-                                Ao acessar o aplicativo, você visualiza o painel do seu carro com a quilometragem atualizada, os registros de serviços feitos e os lembretes de manutenção.
-                            </div>
-                        </div>
+                        <div class="cl-network-grid">
+                            <div class="cl-network-badges-col">
+                                <div class="cl-network-badge-item">
+                                    <div class="cl-net-icon">
+                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#00D4FF" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                                    </div>
+                                    <div class="cl-net-text">
+                                        <h4>Oficinas verificadas e credenciadas</h4>
+                                    </div>
+                                </div>
 
-                        <!-- ITEM 3 -->
-                        <div class="faq-item client-faq-item">
-                            <button class="faq-question" onclick="LandingClientView.toggleFaq(2)" aria-expanded="false">
-                                <span>Consigo acompanhar a manutenção?</span>
-                                <span class="faq-chevron">▼</span>
-                            </button>
-                            <div class="faq-answer">
-                                Sim. Você pode consultar o histórico de revisões, peças trocadas, datas e recomendações das oficinas para as próximas trocas preventivas.
-                            </div>
-                        </div>
+                                <div class="cl-network-badge-item">
+                                    <div class="cl-net-icon">
+                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#00D4FF" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                    </div>
+                                    <div class="cl-net-text">
+                                        <h4>Atendimento especializado para a sua marca e modelo</h4>
+                                    </div>
+                                </div>
 
-                        <!-- ITEM 4 -->
-                        <div class="faq-item client-faq-item">
-                            <button class="faq-question" onclick="LandingClientView.toggleFaq(3)" aria-expanded="false">
-                                <span>Como entro no aplicativo?</span>
-                                <span class="faq-chevron">▼</span>
-                            </button>
-                            <div class="faq-answer">
-                                Basta clicar no botão "Entrar no app" em qualquer ponto desta página para acessar diretamente sua área de cliente.
+                                <div class="cl-network-badge-item">
+                                    <div class="cl-net-icon">
+                                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#00D4FF" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                                    </div>
+                                    <div class="cl-net-text">
+                                        <h4>Serviços com garantia e nota fiscal</h4>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
 
-                        <!-- ITEM 5 -->
-                        <div class="faq-item client-faq-item">
-                            <button class="faq-question" onclick="LandingClientView.toggleFaq(4)" aria-expanded="false">
-                                <span>Preciso instalar alguma coisa?</span>
-                                <span class="faq-chevron">▼</span>
-                            </button>
-                            <div class="faq-answer">
-                                Não é obrigatório instalar nada. Você pode acessar direto pelo navegador do seu celular ou computador. Se preferir, pode adicioná-lo à tela inicial do seu celular como aplicativo PWA.
+                            <!-- CARD DE OFICINA COM FOTO -->
+                            <div class="cl-network-photo-card">
+                                <img src="/img/cl-workshop-network.jpg" alt="Oficina mecânica credenciada DNA AUTO" class="cl-network-img" onerror="this.src='/img/landing-client-official.jpg'"/>
+                                <div class="cl-network-card-overlay">
+                                    <h4>Seu carro em boas mãos, em qualquer lugar.</h4>
+                                    <button class="cl-btn-network" onclick="App.switchView('owner')">
+                                        <span>Ver rede de oficinas</span>
+                                        <span class="cl-arrow">→</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- CTA FINAL /cliente -->
-                <section class="final-cta-section" role="region" aria-label="Chamada Final">
-                    <div class="dna-section-container">
-                        <h2 class="final-cta-title">Cuide melhor do seu carro.</h2>
-                        <p class="final-cta-text">Tenha suas informações e manutenções mais organizadas.</p>
-                        <button class="dna-btn dna-btn-primary" onclick="App.switchView('owner')">
-                            <span>Entrar no app</span>
-                            <span aria-hidden="true">→</span>
-                        </button>
+                <!-- 7. PRÉ-FOOTER / TAXA ÚNICA E BENEFÍCIOS -->
+                <section class="cl-prefooter-section" id="planos">
+                    <div class="cl-container">
+                        <div class="cl-prefooter-card">
+                            <div class="cl-prefooter-brand">
+                                <div class="cl-logo-icon">
+                                    <svg viewBox="0 0 40 40" width="32" height="32" fill="none">
+                                        <path d="M8 8 L24 8 C30 8 34 13 34 20 C34 27 30 32 24 32 L8 32 Z" stroke="#0066FF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M15 15 L23 15 C26 15 28 17 28 20 C28 23 26 25 23 25 L15 25 Z" fill="#00D4FF"/>
+                                    </svg>
+                                </div>
+                                <div class="cl-brand-text">
+                                    <span class="cl-brand-title">DNA AUTO</span>
+                                    <span class="cl-brand-sub">Tecnologia que fortalece seu veículo.</span>
+                                </div>
+                            </div>
+
+                            <div class="cl-prefooter-price-block">
+                                <span class="cl-prefooter-price-sub">Tudo isso por apenas</span>
+                                <div class="cl-prefooter-price-val">R$ 59,90</div>
+                                <span class="cl-prefooter-price-hint">Taxa única pelo sistema.</span>
+                            </div>
+
+                            <div class="cl-prefooter-checks">
+                                <div class="cl-check-item">
+                                    <span class="cl-check-sym">✓</span>
+                                    <span>Sem mensalidades</span>
+                                </div>
+                                <div class="cl-check-item">
+                                    <span class="cl-check-sym">✓</span>
+                                    <span>Sem taxas escondidas</span>
+                                </div>
+                                <div class="cl-check-item">
+                                    <span class="cl-check-sym">✓</span>
+                                    <span>Sem fidelidade</span>
+                                </div>
+                            </div>
+
+                            <button class="cl-btn-cta-pill" onclick="App.switchView('owner')">
+                                <span>Quero meu DNA AUTO</span>
+                                <span class="cl-arrow">→</span>
+                            </button>
+                        </div>
                     </div>
                 </section>
 
-                <!-- FOOTER -->
-                <footer class="dna-footer">
-                    <div class="dna-section-container">
-                        <p>© 2026 DNA AUTO. Feito para proprietários que valorizam seus veículos.</p>
+                <!-- 8. BOTTOM BAR DE CREDIBILIDADE -->
+                <footer class="cl-bottom-bar">
+                    <div class="cl-container cl-bottom-inner">
+                        <div class="cl-bottom-tags">
+                            <div class="cl-bottom-item">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#94A3B8" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                <span>Mais segurança</span>
+                            </div>
+                            <div class="cl-bottom-item">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#94A3B8" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                                <span>Mais valor</span>
+                            </div>
+                            <div class="cl-bottom-item">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#94A3B8" stroke-width="2"><rect x="1" y="3" width="15" height="13" rx="2"/><polygon points="16 8 20 8 23 11 23 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                                <span>Mais controle</span>
+                            </div>
+                            <div class="cl-bottom-item">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#94A3B8" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                                <span>Mais tranquilidade</span>
+                            </div>
+                        </div>
+
+                        <div class="cl-bottom-motto">
+                            <span class="cl-motto-bold">DNA AUTO</span>
+                            <span class="cl-motto-text">Seu carro. Nosso compromisso.</span>
+                        </div>
                     </div>
                 </footer>
-
-                <!-- BARRA INFERIOR FIXA SOMENTE NO CELULAR -->
-                <div class="dna-mobile-sticky-bar" role="complementary" aria-label="Ação Rápida Mobile">
-                    <button class="dna-btn dna-btn-primary" onclick="App.switchView('owner')">
-                        <span>Entrar no app</span>
-                        <span aria-hidden="true">→</span>
-                    </button>
-                </div>
             </div>
         `;
     }

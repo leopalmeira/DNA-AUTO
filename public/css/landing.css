@@ -1193,3 +1193,1147 @@
         scroll-behavior: auto !important;
     }
 }
+
+/* ==============================================================================
+   DNA AUTO — LANDINGS OFICIAIS (OFICINA & CLIENTE) — FIDELIDADE VISUAL 1:1
+   ============================================================================== */
+
+.dna-official-landing {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #FFFFFF;
+    background-color: #070E1E;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    line-height: 1.5;
+}
+
+.dna-official-landing * {
+    box-sizing: border-box;
+}
+
+.ws-container, .cl-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ── NAVBAR UNIVERSAL DAS LANDINGS ── */
+.ws-nav, .cl-nav {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background: rgba(7, 14, 30, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ws-nav-inner, .cl-nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.ws-brand, .cl-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: #FFFFFF;
+}
+
+.ws-brand-title, .cl-brand-title {
+    font-size: 19px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #FFFFFF;
+    display: block;
+    line-height: 1.1;
+}
+
+.ws-brand-sub, .cl-brand-sub {
+    font-size: 11px;
+    color: #94A3B8;
+    display: block;
+}
+
+.ws-nav-links, .cl-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+}
+
+.ws-nav-item, .cl-nav-item {
+    color: #CBD5E1;
+    text-decoration: none;
+    font-size: 13.5px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.ws-nav-item:hover, .cl-nav-item:hover {
+    color: #00D4FF;
+}
+
+.ws-btn-cta-pill, .cl-btn-cta-pill {
+    background: #0066FF;
+    color: #FFFFFF;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 9999px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 15px rgba(0, 102, 255, 0.35);
+}
+
+.ws-btn-cta-pill:hover, .cl-btn-cta-pill:hover {
+    background: #0052CC;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 102, 255, 0.5);
+}
+
+/* ── HERO SECTION ── */
+.ws-hero, .cl-hero {
+    background: radial-gradient(circle at 70% 30%, #0E224D 0%, #070E1E 70%);
+    padding: 50px 0 60px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    position: relative;
+    overflow: hidden;
+}
+
+.ws-hero-grid, .cl-hero-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.9fr 0.95fr;
+    align-items: center;
+    gap: 32px;
+}
+
+.ws-hero-badge, .cl-hero-badge {
+    display: inline-block;
+    color: #00D4FF;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+}
+
+.ws-hero-headline, .cl-hero-headline {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: #FFFFFF;
+    margin: 0 0 16px 0;
+}
+
+.ws-text-gradient, .cl-text-gradient {
+    background: linear-gradient(90deg, #00D4FF 0%, #0066FF 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.ws-hero-desc, .cl-hero-desc {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #94A3B8;
+    margin: 0 0 24px 0;
+    max-width: 480px;
+}
+
+.ws-btn-hero, .cl-btn-hero {
+    background: #0066FF;
+    color: #FFFFFF;
+    border: none;
+    padding: 13px 26px;
+    border-radius: 9999px;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.25s ease;
+    box-shadow: 0 6px 22px rgba(0, 102, 255, 0.4);
+}
+
+.ws-btn-hero:hover, .cl-btn-hero:hover {
+    background: #1A75FF;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0, 102, 255, 0.6);
+}
+
+.ws-hero-media, .cl-hero-media {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ws-media-frame, .cl-media-frame {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: #0B1730;
+}
+
+.ws-hero-img, .cl-hero-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+/* ── CARDS LATERAIS DO HERO (OFICINA) ── */
+.ws-hero-cards-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ws-hero-card {
+    background: rgba(13, 27, 54, 0.7);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    backdrop-filter: blur(10px);
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.ws-hero-card:hover {
+    transform: translateX(4px);
+    border-color: #00D4FF;
+}
+
+.ws-card-circle-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0, 102, 255, 0.15);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ws-card-text h4 {
+    margin: 0 0 2px 0;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.ws-card-text p {
+    margin: 0;
+    font-size: 11.5px;
+    color: #94A3B8;
+    line-height: 1.4;
+}
+
+/* ── TAGS & LATERAL CLIENTE ── */
+.cl-hero-cta-wrap {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.cl-price-tag {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(13, 27, 54, 0.8);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    padding: 8px 16px;
+    border-radius: 9999px;
+}
+
+.cl-dollar-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #0066FF;
+    color: #FFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.cl-price-label {
+    display: block;
+    font-size: 10.5px;
+    color: #94A3B8;
+    line-height: 1;
+}
+
+.cl-price-val {
+    display: block;
+    font-size: 16px;
+    font-weight: 800;
+    color: #00D4FF;
+}
+
+.cl-hero-side-card {
+    background: rgba(13, 27, 54, 0.85);
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    border-radius: 16px;
+    padding: 24px;
+    backdrop-filter: blur(12px);
+}
+
+.cl-side-card-inner h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.cl-side-card-inner p {
+    margin: 0;
+    font-size: 13px;
+    color: #94A3B8;
+    line-height: 1.5;
+}
+
+/* ── SEÇÃO BRANCA: O QUE VOCÊ GANHA / RECEBE ── */
+.ws-white-section, .cl-white-section {
+    background-color: #FFFFFF;
+    color: #0F172A;
+    padding: 65px 0;
+}
+
+.ws-section-header.light, .cl-section-header.light {
+    text-align: left;
+    margin-bottom: 40px;
+}
+
+.ws-section-title.light, .cl-section-title.light {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #0F172A;
+    margin: 0 0 10px 0;
+}
+
+.ws-text-blue, .cl-text-blue {
+    color: #0066FF;
+}
+
+.ws-text-cyan, .cl-text-cyan {
+    color: #00D4FF;
+}
+
+.ws-section-subtitle.light, .cl-section-subtitle.light {
+    font-size: 15px;
+    color: #64748B;
+    max-width: 600px;
+    margin: 0;
+}
+
+.ws-deliverables-grid, .cl-deliverables-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+}
+
+.ws-deliv-card, .cl-deliv-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 28px 22px;
+    transition: all 0.25s ease;
+}
+
+.ws-deliv-card:hover, .cl-deliv-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+    border-color: #BFDBFE;
+}
+
+.ws-deliv-icon-wrap, .cl-deliv-icon-wrap {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #EFF6FF;
+    border: 1px solid #DBEAFE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 18px;
+}
+
+.ws-deliv-card h3, .cl-deliv-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 10px 0;
+    line-height: 1.3;
+}
+
+.ws-deliv-card p, .cl-deliv-card p {
+    font-size: 13px;
+    color: #64748B;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── SEÇÃO ESCURA (COMO FUNCIONA & IMPORTÂNCIA) ── */
+.ws-dark-section, .cl-dark-section {
+    background-color: #081226;
+    color: #FFFFFF;
+    padding: 70px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ws-section-header.dark, .cl-section-header.dark {
+    margin-bottom: 40px;
+}
+
+.ws-section-title.dark, .cl-section-title.dark {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: #FFFFFF;
+    margin: 0 0 8px 0;
+}
+
+.ws-section-subtitle.dark, .cl-section-subtitle.dark {
+    font-size: 15px;
+    color: #94A3B8;
+    max-width: 650px;
+    margin: 0;
+}
+
+/* ── PASSOS DA OFICINA (COMO FUNCIONA) ── */
+.ws-steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.ws-step-card {
+    background: rgba(14, 28, 56, 0.6);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    border-radius: 16px;
+    padding: 24px 20px;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.ws-step-card:hover {
+    transform: translateY(-3px);
+    border-color: #00D4FF;
+}
+
+.ws-step-badge-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.ws-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #0066FF;
+    color: #FFFFFF;
+    font-size: 13.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ws-step-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ws-step-card h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0 0 8px 0;
+    line-height: 1.3;
+}
+
+.ws-step-card p {
+    font-size: 12.5px;
+    color: #94A3B8;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* ── IMPORTÂNCIA CLIENTE (GRID 3x2) ── */
+.cl-importance-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.cl-importance-card {
+    background: rgba(14, 28, 56, 0.6);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    border-radius: 14px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.cl-importance-card:hover {
+    transform: translateY(-2px);
+    border-color: #00D4FF;
+}
+
+.cl-importance-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 102, 255, 0.15);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cl-importance-info h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0 0 3px 0;
+}
+
+.cl-importance-info p {
+    font-size: 12px;
+    color: #94A3B8;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ── SEÇÃO MAIS LUCRO PARA A OFICINA ── */
+.ws-profit-section {
+    background-color: #060D1C;
+    padding: 70px 0;
+}
+
+.ws-profit-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.05fr;
+    gap: 22px;
+    align-items: stretch;
+}
+
+.ws-profit-card {
+    background: rgba(14, 28, 56, 0.7);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    border-radius: 18px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+}
+
+.ws-card-highlight {
+    background: linear-gradient(180deg, rgba(14, 28, 56, 0.9) 0%, rgba(10, 42, 92, 0.7) 100%);
+    border-color: rgba(0, 212, 255, 0.4);
+    box-shadow: 0 10px 30px rgba(0, 102, 255, 0.15);
+}
+
+.ws-obd-img-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.ws-obd-img {
+    width: 65px;
+    height: 65px;
+    border-radius: 8px;
+    object-fit: contain;
+    background: #0B1329;
+    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ws-obd-label {
+    font-size: 13px;
+    color: #94A3B8;
+    display: block;
+}
+
+.ws-obd-price {
+    font-size: 24px;
+    font-weight: 800;
+    color: #FFFFFF;
+}
+
+.ws-obd-sub {
+    font-size: 11px;
+    color: #64748B;
+    display: block;
+}
+
+.ws-profit-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    margin: 12px 0 18px 0;
+}
+
+.ws-install-profit-block {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.ws-coin-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 212, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ws-install-sub {
+    font-size: 12px;
+    color: #94A3B8;
+    display: block;
+}
+
+.ws-install-val {
+    font-size: 26px;
+    font-weight: 800;
+    color: #00D4FF;
+}
+
+.ws-install-hint {
+    font-size: 11px;
+    color: #64748B;
+    display: block;
+}
+
+.ws-profit-explainer {
+    font-size: 12.5px;
+    color: #94A3B8;
+    line-height: 1.5;
+    margin-top: auto;
+}
+
+.ws-growth-icon {
+    margin-bottom: 12px;
+}
+
+.ws-days-pill {
+    font-size: 13px;
+    color: #00D4FF;
+    font-weight: 600;
+}
+
+.ws-growth-percent {
+    font-size: 46px;
+    font-weight: 800;
+    color: #00D4FF;
+    line-height: 1;
+    margin: 6px 0;
+}
+
+.ws-growth-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 16px;
+}
+
+.ws-growth-text {
+    font-size: 13px;
+    color: #94A3B8;
+    line-height: 1.55;
+    margin-top: auto;
+}
+
+.ws-special-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.ws-dollar-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #0066FF;
+    color: #FFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.ws-special-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.ws-special-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.ws-check-circle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #0066FF;
+    color: #FFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.ws-special-item strong {
+    display: block;
+    font-size: 14px;
+    color: #FFFFFF;
+    margin-bottom: 2px;
+}
+
+.ws-special-item p {
+    font-size: 12px;
+    color: #94A3B8;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.ws-monthly-plan-box {
+    background: rgba(11, 23, 48, 0.8);
+    border: 1px solid rgba(0, 102, 255, 0.35);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    margin-top: auto;
+}
+
+.ws-plan-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 4px;
+}
+
+.ws-plan-desc {
+    font-size: 11.5px;
+    color: #94A3B8;
+    line-height: 1.4;
+    margin: 0 0 8px 0;
+}
+
+.ws-plan-price {
+    font-size: 22px;
+    font-weight: 800;
+    color: #00D4FF;
+}
+
+.ws-plan-sub {
+    font-size: 12px;
+    color: #94A3B8;
+    font-weight: normal;
+}
+
+/* ── GASTOS CLIENTE (SEÇÃO BRANCA) ── */
+.cl-finance-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 26px;
+}
+
+.cl-finance-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+}
+
+.cl-finance-card-head {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.cl-cal-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #0066FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cl-finance-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748B;
+}
+
+.cl-finance-val {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1.1;
+}
+
+.cl-finance-sub {
+    font-size: 12px;
+    color: #0066FF;
+    font-weight: 600;
+}
+
+.cl-finance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 1px solid #E2E8F0;
+    padding-top: 16px;
+}
+
+.cl-finance-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13.5px;
+}
+
+.cl-item-icon {
+    margin-right: 8px;
+}
+
+.cl-item-label {
+    color: #475569;
+    flex: 1;
+}
+
+.cl-item-val {
+    font-weight: 700;
+    color: #0F172A;
+}
+
+/* ── REDE DE OFICINAS CLIENTE ── */
+.cl-network-section {
+    background-color: #060D1C;
+    padding: 70px 0;
+}
+
+.cl-network-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 32px;
+    align-items: center;
+}
+
+.cl-network-badges-col {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.cl-network-badge-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(14, 28, 56, 0.6);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    border-radius: 14px;
+    padding: 16px 20px;
+}
+
+.cl-net-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 102, 255, 0.15);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cl-net-text h4 {
+    margin: 0;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.cl-network-photo-card {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+}
+
+.cl-network-img {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    display: block;
+}
+
+.cl-network-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(0deg, rgba(7, 14, 30, 0.95) 0%, rgba(7, 14, 30, 0.4) 100%);
+    padding: 20px;
+}
+
+.cl-network-card-overlay h4 {
+    margin: 0 0 12px 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.cl-btn-network {
+    background: #0066FF;
+    color: #FFFFFF;
+    border: none;
+    padding: 9px 18px;
+    border-radius: 9999px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ── PRÉ-FOOTER BANNERS ── */
+.ws-prefooter-section, .cl-prefooter-section {
+    background-color: #070E1E;
+    padding: 50px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ws-prefooter-card, .cl-prefooter-card {
+    background: radial-gradient(circle at 50% 50%, #0E2452 0%, #08142A 100%);
+    border: 1px solid rgba(0, 102, 255, 0.35);
+    border-radius: 20px;
+    padding: 36px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.ws-prefooter-brand, .cl-prefooter-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ws-prefooter-text {
+    font-size: 15px;
+    color: #CBD5E1;
+    max-width: 420px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.cl-prefooter-price-block {
+    text-align: center;
+}
+
+.cl-prefooter-price-sub {
+    font-size: 12px;
+    color: #94A3B8;
+    display: block;
+}
+
+.cl-prefooter-price-val {
+    font-size: 32px;
+    font-weight: 800;
+    color: #00D4FF;
+    line-height: 1.1;
+}
+
+.cl-prefooter-price-hint {
+    font-size: 11px;
+    color: #64748B;
+    display: block;
+}
+
+.cl-prefooter-checks {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cl-check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #CBD5E1;
+}
+
+.cl-check-sym {
+    color: #00D4FF;
+    font-weight: bold;
+}
+
+/* ── BOTTOM CREDIBILITY BARS ── */
+.ws-bottom-bar, .cl-bottom-bar {
+    background-color: #040812;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 20px 0;
+}
+
+.ws-bottom-grid {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.ws-bottom-item, .cl-bottom-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #94A3B8;
+}
+
+.cl-bottom-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.cl-bottom-tags {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.cl-bottom-motto {
+    font-size: 13px;
+    color: #94A3B8;
+}
+
+.cl-motto-bold {
+    color: #FFFFFF;
+    font-weight: 700;
+    margin-right: 4px;
+}
+
+/* ── RESPONSIVIDADE MOBILE & TABLET ── */
+@media (max-width: 992px) {
+    .ws-hero-grid, .cl-hero-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .ws-deliverables-grid, .cl-deliverables-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .ws-steps-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .cl-importance-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .ws-profit-cards-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .cl-finance-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .cl-network-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ws-prefooter-card, .cl-prefooter-card {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+}
+
+@media (max-width: 640px) {
+    .ws-nav-links, .cl-nav-links {
+        display: none;
+    }
+    
+    .ws-hero-headline, .cl-hero-headline {
+        font-size: 32px;
+    }
+    
+    .ws-deliverables-grid, .cl-deliverables-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ws-steps-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .cl-importance-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
