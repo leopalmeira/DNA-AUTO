@@ -272,6 +272,41 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Validação de sintaxe JS (`node -c`).
      - Suíte de 36 testes automatizados aprovada com 100% de sucesso (`npm test`).
 
+### 🎨 Ciclo 27: Sincronização Completa das 20 Telas e Design System com o Mapa Oficial de Layout
+- **Objetivo e Solicitação do Usuário:**
+  - Alinhar integralmente a plataforma DNA AUTO (App Cliente Mobile e Painel Oficina ERP) e o Design System às 20 telas oficiais especificadas no mapa de arquitetura e blueprint de layout:
+    - **App Cliente (10 Telas Mobile):**
+      1. Home do Cliente (`renderDashboardScreen`)
+      2. Meu Veículo (`renderVehicleScreen`)
+      3. Certificação DNA AUTO (`renderCertificationsScreen`)
+      4. Inspeção Técnica 360° (`renderTechnicalInspectionScreen`)
+      5. Revisões Preventivas (`renderRevisionsScreen`) - Tela dedicada
+      6. Diagnóstico OBD2 (`renderObd2Screen`)
+      7. Histórico / Dossiê (`renderHistoryScreen`)
+      8. Alertas / Lembretes (`renderAlertsScreen`)
+      9. Oficinas da Rede (`renderWorkshopsScreen`)
+      10. Mais / Perfil (`renderMoreScreen` / Drawer lateral com todas as 10 telas em ordem)
+    - **Painel Oficina (10 Módulos ERP):**
+      1. Dashboard / Pátio (6 KPIs exatos: R$ 48.750,00, 18 OS, 6 Box, 4 Alertas OBD2, 23 Ativações DNA, R$ 3.240,00 Comissões; 6 Ações Rápidas; busca no pátio)
+      2. Recepção / Pátio (4 cards detalhados: BRA2E19, FDT3C45, QWE7A32, XY29D10 com botões [WhatsApp] e [Ficha Digital])
+      3. Cadastrar Carro (formulário em 2 colunas com Carlos Henrique, Civic 2021, DNA permanente e foto do carro)
+      4. Agenda da Semana (navegador `< 14 a 20 de abril de 2025 >`, grade horária das 08:00 às 18:00 com almoço 12h-13h bloqueado em cinza, 5 agendamentos na semana)
+      5. WhatsApp Central (status online, pairing code 482 719, layout em 2 colunas com templates de mensagens à esquerda e histórico/envio à direita)
+      6. Serviços & Ordens (abas Todas, Ativas, Concluídas, ordens de serviço OS 000458 a 000454)
+      7. Radar Preditivo OBD2 (tabela semáforo com botão [WhatsApp Avisar])
+      8. Ficha Digital do Veículo (4 abas: Histórico, Revisões, Fotos, Documentos)
+      9. Notificações (feed cronológico com 4 abas)
+      10. Configurações da Oficina
+    - **Design System Oficial (`DESIGN.md` e `public/css/variables.css`):**
+      - Cores oficiais: Dark Blue `#0F172A`, Dark Gray `#1E293B`, Electric Blue `#0066FF`, Cyan `#00D4FF`, Green `#10B981`, Amber `#F59E0B`, Orange `#F97316`, Red `#EF4444`, Slate Gray `#64748B`, Light Slate `#94A3B8`, White `#FFFFFF`.
+      - Tipografia com Google Fonts (Inter / Poppins).
+- **Implementações Técnicas e Entregas:**
+  1. `DESIGN.md`: Documento mestre de Design Tokens, schemas de componentes e diretrizes visuais.
+  2. `public/css/variables.css`: Importação de Google Fonts, paleta exata e tokens CSS integrados.
+  3. `public/js/components/ownerView.js`: Veículo padrão Honda Civic Touring 2021/2022 (BRA2E19), adição da tela 5 de Revisões Preventivas, alinhamento das 10 telas e drawer lateral atualizado.
+  4. `public/js/components/workshopView.js`: Navegador de semana `< 14 a 20 de abril de 2025 >`, dados padrão da semana em `getDefaultAppointments()`, WhatsApp com Pairing Code `482 719` e layout em 2 colunas, formulário de cadastro com Carlos Henrique e Civic 2021, Ficha Digital com 4 abas interativas e feed de notificações.
+  5. **Qualidade & Testes:** Suíte completa com 36 testes automatizados aprovada com 100% de sucesso (`npm test`).
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

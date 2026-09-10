@@ -1,13 +1,34 @@
 /* ==============================================================================
    DNA AUTO — DESIGN SYSTEM TOKENS & IDENTIDADE VISUAL
    Conceito: CERTIFICAÇÃO DE REGISTROS VEICULARES (High-End Automotive Tech)
-   Paleta Oficial: Amarelo DNA AUTO #FFD21C & Obsidiana Profunda #05080D
+   Paleta Oficial: Amarelo DNA AUTO #FFD21C, Azul #0066FF & Obsidiana Profunda #05080D
    ============================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap');
 
 :root {
-    /* 1. FUNDO OFICIAL (Dark Automotive) */
+    /* 1. PALETA CROMÁTICA OFICIAL (MAPA DE LAYOUT) */
+    --color-primary-dark: #0F172A;
+    --color-primary-surface: #1E293B;
+    --color-primary-blue: #0066FF;
+    --color-primary-glow: rgba(0, 102, 255, 0.45);
+    --color-cyan-neon: #00D4FF;
+    --color-cyan-glow: rgba(0, 212, 255, 0.4);
+    --color-gold: #FFD21C;
+    --color-gold-glow: rgba(255, 210, 28, 0.35);
+
+    /* 2. SEMÁFORO DE STATUS */
+    --color-success: #10B981;
+    --color-attention: #F59E0B;
+    --color-warning: #F97316;
+    --color-error: #EF4444;
+
+    /* 3. NEUTROS */
+    --color-neutral-white: #FFFFFF;
+    --color-neutral-gray: #94A3B8;
+    --color-neutral-dim: #64748B;
+
+    /* 4. FUNDO OFICIAL (Dark Automotive) */
     --bg-main: #05080D;
     --bg-darker: #030508;
     --bg-surface: #0A0F16;
@@ -16,7 +37,7 @@
     --bg-surface-active: #1B2734;
     --bg-glass: rgba(10, 15, 22, 0.82);
 
-    /* 2. SUPERFÍCIES & BORDAS DE PRECISÃO */
+    /* 5. SUPERFÍCIES & BORDAS DE PRECISÃO */
     --surface-1: #111923;
     --surface-2: #16212D;
     --surface-3: #1B2734;
@@ -25,16 +46,17 @@
     --border-strong: #28384B;
     --border-focus: #FFD21C;
 
-    /* 3. COR PRINCIPAL: AMARELO DNA AUTO (#FFD21C) */
+    /* 6. COR PRINCIPAL: AMARELO DNA AUTO (#FFD21C) & AZUL (#0066FF) */
     --brand-primary: #FFD21C;
     --brand-primary-hover: #FFE052;
     --brand-primary-active: #E6BC0E;
+    --brand-blue: #0066FF;
     --brand-glow: rgba(255, 210, 28, 0.28);
     --brand-glow-lg: 0 0 35px rgba(255, 210, 28, 0.35);
 
     /* Acentos Complementares */
-    --brand-cyan: #38bdf8;
-    --brand-cyan-glow: rgba(56, 189, 248, 0.2);
+    --brand-cyan: #00D4FF;
+    --brand-cyan-glow: rgba(0, 212, 255, 0.2);
 
     /* 4. STATUS DO CERTIFICADO (Oficial DNA AUTO) */
     /* Certificado: Verde Elegante */

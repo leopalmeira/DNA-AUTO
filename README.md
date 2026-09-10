@@ -97,14 +97,17 @@ O DNA AUTO conta com uma arquitetura limpa de páginas públicas, separando rigo
 ### 4. 🏭 Painel da Oficina / Auto Center — ERP Simplificado & WhatsApp Baileys Oficial
 O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e conexão direta com os clientes através do Baileys:
 
-- **Menu Lateral Simplificado (6 Módulos Diretos):**
-  - **1. 🏠 Dashboard:** Painel do pátio com card de Busca Rápida de Veículos, atalhos de placas e resumo de hoje.
-  - **2. 🚗 Cadastrar Carro:** Cadastro rápido com auto-DNA, dados do proprietário, hodômetro auditado e foto do veículo.
-  - **3. 📅 Agenda da Semana:** Grade semanal com dias úteis de 08:00 às 18:00 e horário de almoço das 12:00 às 13:00 bloqueado em cinza.
-  - **4. 📱 WhatsApp:** Central Oficial de mensageria com pareamento via código de 8 dígitos ou QR Code, templates dinâmicos e histórico.
-  - **5. 🔧 Serviços & Ordens:** Abertura e acompanhamento de ordens de serviço, peças aplicadas e fotos reais de comprovação.
-  - **6. ⚙️ Configurações:** Parâmetros da oficina, expediente e horário de atendimento.
-  - **Sino de Notificações (🔔):** Integrado na barra lateral com badge de situações (atrasadas, próximas, agenda e WhatsApp).
+- **Menu Lateral Oficial da Oficina (10 Módulos do Blueprint):**
+  - **1. 🏠 Dashboard / Pátio:** 6 KPIs exatos (R$ 48.750,00, 18 OS, 6 Box, 4 Alertas OBD2, 23 Ativações DNA, R$ 3.240,00 Comissões), 6 Ações Rápidas de Balcão e lista de carros no pátio.
+  - **2. 📥 Recepção / Pátio:** 4 cards detalhados nos boxes (BRA2E19, FDT3C45, QWE7A32, XY29D10) com odômetro auditado e botões diretos `[WhatsApp]` e `[Ficha Digital]`.
+  - **3. 🚗 Cadastrar Carro:** Formulário em 2 colunas com dados técnicos e do proprietário (Carlos Henrique, Civic 2021), Passaporte DNA automático permanente e upload de foto com prévia.
+  - **4. 📅 Agenda da Semana:** Navegador de semana `< 14 a 20 de abril de 2025 >`, grade interativa de 08:00 às 18:00 com almoço 12h-13h bloqueado em cinza e agendamentos confirmados.
+  - **5. 📱 WhatsApp Central:** Status da conexão (`🟢 Online`, Pairing Code `482 719`), layout em 2 colunas com templates de mensagens à esquerda e formulário/histórico à direita.
+  - **6. 🔧 Serviços & Ordens:** Abas de filtro (*Todas*, *Ativas*, *Concluídas*), tabela detalhada com OS 000458 a 000454, valores e ações rápidas.
+  - **7. ⚠️ Radar Preditivo OBD2:** Tabela semáforo de desgaste preventivo com odômetro real e botão `[WhatsApp Avisar]`.
+  - **8. 📋 Ficha Digital do Veículo:** 4 abas interativas (*Histórico*, *Revisões*, *Fotos*, *Documentos*), especificações da montadora e Tabela FIPE.
+  - **9. 🔔 Notificações:** Central de notificações operacionais em feed cronológico com 4 abas (*Todas*, *Urgentes*, *Agenda*, *WhatsApp*).
+  - **10. ⚙️ Configurações:** Parâmetros da oficina, expediente, horários de atendimento e dados corporativos.
 
 - **Módulo Oficial Baileys (@whiskeysockets/baileys):**
   - **Experiência Transparente para o Lojista:** Zero complexidade técnica. Fluxo direto: digitar número -> código de pareamento de 8 dígitos formatado (`ABCD-1234`) ou QR Code -> `🟢 Online`.
@@ -170,7 +173,19 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
   - 3 Medidores rápidos: Quilometragem `87.542 km`, Combustível `72%` com barra dinâmica e Autonomia `~ 520 km`.
   - Timeline horizontal de últimos registros e card de proteção criptografada.
   - Barra de navegação inferior fixa com 5 abas (`Início`, `Veículo`, `Certificação`, `Inspeção`, `Mais`).
-  - Drawer lateral completo com 9 itens de menu e opção de logout.
+  - Drawer lateral completo com as 10 telas em ordem oficial e opção de logout.
+
+- **As 10 Telas Oficiais do App do Cliente (Blueprint):**
+  - **1. 🏠 Home / Início:** Visão executiva com o veículo padrão Honda Civic Touring 1.5 Turbo (`BRA2E19`), gauges de KM (`87.542 km`), combustível (`72%`) e autonomia (`~ 520 km`), card de certificação DNA, timeline de registros e atalhos rápidos.
+  - **2. 🚗 Meu Veículo:** Ficha técnica completa com foto em alta resolução, placa oficial, especificações da montadora, ano/modelo, Tabela FIPE e odômetro auditado.
+  - **3. 🛡️ Certificação DNA AUTO:** Selo Ouro Nível 4, hash SHA-256 criptográfico, parâmetros de validação e valorização estimada de revenda (+15%).
+  - **4. 🔍 Inspeção Técnica 360°:** Laudo pericial com Score 98/100, status conforme e checklist auditado nos 6 módulos vitais (Motor, Freios, Suspensão, Pneus, Elétrica, Fluidos).
+  - **5. 🔧 Revisões Preventivas (Tela Dedicada):** Próxima revisão programada aos 90.000 km, checklist de 4 itens obrigatórios, botão de agendamento e histórico de revisões anteriores.
+  - **6. ⚡ Diagnóstico OBD2 (Telemetria):** Leitura da ECU em tempo real via Mini OBD2 ELM327 BLE (RPM, temp 90°C, bateria 14.2V, odômetro real e scanner DTC 0 falhas).
+  - **7. 📜 Histórico / Dossiê:** Linha do tempo com 4 níveis de comprovação, busca por peças (lupa investigativa) e notas fiscais anexadas.
+  - **8. ⏰ Alertas / Lembretes:** Prazos de manutenção preventiva por quilometragem e tempo com semáforos de atenção.
+  - **9. 🏢 Oficinas da Rede:** Rede homologada de auto centers para atendimento com rota, contato e especialidades.
+  - **10. 👤 Mais / Perfil (Drawer Lateral):** Menu lateral em gaveta móvel com acesso direto a todas as 10 telas, download PWA e encerramento de sessão.
 - **🔍 Módulo de Inspeção Técnica 360° & Plano de Revisões Programadas:**
   - **Inspeção Técnica 360° (Laudo Pericial Oficial):**
     - Status `100% APROVADO • LAUDO CONFORME` com Score Pericial `98/100` e código pericial autenticado `INSP-2026-8819`.

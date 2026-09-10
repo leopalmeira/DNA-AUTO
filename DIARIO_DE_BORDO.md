@@ -542,6 +542,7 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
      - Ciclo de vida com `install`, `activate` e `fetch` com estratégia Network-First e fallback de cache offline.
      - Cumpre 100% dos requisitos de PWA instalável do Google Chrome, Edge e Lighthouse.
   4. **Instalação Automática ao Conectar no Perfil do Cliente ([pwaInstall.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/pwaInstall.js)):**
+  5. **Instalação Automática ao Conectar no Perfil do Cliente ([pwaInstall.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/pwaInstall.js)):**
      - Captura do evento nativo `beforeinstallprompt` do navegador.
      - Ao acessar `#owner` ou efetuar login como Cliente, o método `triggerAutoPromptForClient()` dispara automaticamente o prompt nativo de instalação.
      - Em caso de bloqueio de gesto automático pelo navegador, apresenta Sheet Modal estilo Play Store:
@@ -550,9 +551,11 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
        - Botão de ação: `📲 INSTALAR NA ÁREA DE TRABALHO`.
        - Guia visual especial para iOS Safari (Adicionar à Tela de Início ➕).
      - Opção permanente no Drawer Lateral: `📲 Baixar App Oficial (PWA) [PLAY STORE]`.
-  5. **Bateria de Testes Automatizados:**
+  6. **Bateria de Testes Automatizados:**
      - Inclusão do **Teste 36** em `test/api.test.js` validando `manifest.json`, `sw.js` e ícones oficiais.
      - **36 testes automatizados aprovados com 100% de sucesso**.
+
+---
 
 ### 🚀 Ciclo 26: Reestruturação Completa das Landings do DNA AUTO (Separação Exclusiva de Públicos B2C e B2B)
 - **Objetivo e Solicitação do Usuário:**
@@ -566,21 +569,44 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
      - Roteador `handleRoute()` e método `navigateTo(path)` mapeando `/`, `/cliente`, `/autocente` (e compatibilidade `/autocenter`).
      - Integração direta dos CTAs com as rotas reais do projeto: App do Cliente (`#owner`), ERP da Oficina (`#workshop`) e Credenciamento Oficial (`App.goToRegisterWorkshop()`).
      - Suporte a histórico do navegador (`popstate`) e alternâncias via hash (`hashchange`).
-  2. **Novos Componentes Modulares ([public/js/components/](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components)):**
-     - [landingHomeView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingHomeView.js): Porta de entrada com 2 cards de escolha de perfil.
-     - [landingClientView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingClientView.js): Landing B2C para donos de carro, com os 5 benefícios essenciais, mockup fiel do aplicativo do cliente, seção de prevenção, FAQ em acordeão (5 perguntas) e barra fixa de CTA no celular.
-     - [landingWorkshopView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingWorkshopView.js): Landing B2B para oficinas mecânicas, com os 3 problemas reais, diagrama em blocos da solução, mockup do radar de manutenção com identificação de dados demonstrativos, simulação de WhatsApp, 4 benefícios, 3 passos de ativação, FAQ em acordeão (6 perguntas) e barra fixa de CTA no celular.
-     - [landingView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingView.js): Fachada delegadora unificada com compatibilidade total.
-  3. **Estilos e Design System Mobile-First ([landing.css](file:///c:/Users/User/Desktop/DNA-AUTO/public/css/landing.css)):**
-     - Estética Dark Obsidian, azul tecnológico (#0066FF), ciano (#00D4FF), grafite e destaques em dourado (#FFD21C) e verde (#10B981).
-     - Testes de responsividade garantidos para 360px, 390px, 412px, tablet e desktop sem scroll horizontal.
-     - Barra de CTA fixa inferior para dispositivos móveis (`.dna-mobile-sticky-bar`).
-     - Suporte integral a `prefers-reduced-motion`.
-  4. **SEO & Open Graph ([index.html](file:///c:/Users/User/Desktop/DNA-AUTO/public/index.html)):**
-     - Títulos, descrições e metadados Open Graph dinâmicos para cada uma das páginas.
-  5. **Qualidade & Testes Automatizados:**
-     - Validação de sintaxe JS (`node -c`) em todos os arquivos modificados e novos.
-     - Suíte completa de 36 testes automatizados de integração aprovada com 100% de sucesso (`npm test`).
+  2. **Novos Componentes Modulares:** LandingHomeView, LandingClientView e LandingWorkshopView.
+      - Validação de sintaxe JS (`node -c`) em todos os arquivos modificados e novos.
+      - Suíte completa de 36 testes automatizados de integração aprovada com 100% de sucesso (`npm test`).
+
+### 🎨 Ciclo 27: Sincronização Completa das 20 Telas e Design System com o Mapa Oficial de Layout
+- **Objetivo e Solicitação do Usuário:**
+  - Alinhar integralmente a plataforma DNA AUTO (App Cliente Mobile e Painel Oficina ERP) e o Design System às 20 telas oficiais especificadas no blueprint de layout e mapa de arquitetura:
+    - **App Cliente (10 Telas Mobile):**
+      1. Home do Cliente (`renderDashboardScreen`)
+      2. Meu Veículo (`renderVehicleScreen`)
+      3. Certificação DNA AUTO (`renderCertificationsScreen`)
+      4. Inspeção Técnica 360° (`renderTechnicalInspectionScreen`)
+      5. Revisões Preventivas (`renderRevisionsScreen`) - Tela dedicada
+      6. Diagnóstico OBD2 (`renderObd2Screen`)
+      7. Histórico / Dossiê (`renderHistoryScreen`)
+      8. Alertas / Lembretes (`renderAlertsScreen`)
+      9. Oficinas da Rede (`renderWorkshopsScreen`)
+      10. Mais / Perfil (`renderMoreScreen` / Drawer lateral com todas as 10 telas em ordem)
+    - **Painel Oficina (10 Módulos ERP):**
+      1. Dashboard / Pátio (6 KPIs exatos: R$ 48.750,00, 18 OS, 6 Box, 4 Alertas OBD2, 23 Ativações DNA, R$ 3.240,00 Comissões; 6 Ações Rápidas; busca no pátio)
+      2. Recepção / Pátio (4 cards detalhados: BRA2E19, FDT3C45, QWE7A32, XY29D10 com botões [WhatsApp] e [Ficha Digital])
+      3. Cadastrar Carro (formulário em 2 colunas com Carlos Henrique, Civic 2021, DNA permanente e foto do carro)
+      4. Agenda da Semana (navegador `< 14 a 20 de abril de 2025 >`, grade horária das 08:00 às 18:00 com almoço 12h-13h bloqueado em cinza, 5 agendamentos na semana)
+      5. WhatsApp Central (status online, pairing code 482 719, layout em 2 colunas com templates de mensagens à esquerda e histórico/envio à direita)
+      6. Serviços & Ordens (abas Todas, Ativas, Concluídas, ordens de serviço OS 000458 a 000454)
+      7. Radar Preditivo OBD2 (tabela semáforo com botão [WhatsApp Avisar])
+      8. Ficha Digital do Veículo (4 abas: Histórico, Revisões, Fotos, Documentos)
+      9. Notificações (feed cronológico com 4 abas)
+      10. Configurações da Oficina
+    - **Design System Oficial (`DESIGN.md` e `public/css/variables.css`):**
+      - Cores oficiais: Dark Blue `#0F172A`, Dark Gray `#1E293B`, Electric Blue `#0066FF`, Cyan `#00D4FF`, Green `#10B981`, Amber `#F59E0B`, Orange `#F97316`, Red `#EF4444`, Slate Gray `#64748B`, Light Slate `#94A3B8`, White `#FFFFFF`.
+      - Tipografia com Google Fonts (Inter / Poppins).
+- **Implementações Técnicas e Entregas:**
+  1. `DESIGN.md`: Documento mestre de Design Tokens, schemas de componentes e diretrizes visuais.
+  2. `public/css/variables.css`: Importação de Google Fonts, paleta exata e tokens CSS integrados.
+  3. `public/js/components/ownerView.js`: Veículo padrão Honda Civic Touring 2021/2022 (BRA2E19), adição da tela 5 de Revisões Preventivas, alinhamento das 10 telas e drawer lateral atualizado.
+  4. `public/js/components/workshopView.js`: Navegador de semana `< 14 a 20 de abril de 2025 >`, dados padrão da semana em `getDefaultAppointments()`, WhatsApp com Pairing Code `482 719` e layout em 2 colunas, formulário de cadastro com Carlos Henrique e Civic 2021, Ficha Digital com 4 abas interativas e feed de notificações.
+  5. **Qualidade & Testes:** Suíte completa com 36 testes automatizados aprovada com 100% de sucesso (`npm test`).
 
 ---
 
@@ -595,6 +621,12 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 | **ADR-05** | **Isolamento de Admin via Rota `/admin`** | Não poluir a tela inicial de clientes e oficinas com botões de administrador. | Maior segurança por obscuridade e navegação limpa para usuários comuns. |
 | **ADR-06** | **ERP de Oficina em Escopo Isolado (`is-workshop-erp`)** | Transformar a interface da oficina em um sistema de gestão corporativo moderno (estilo TOTVS) sem conflitar com as regras de CSS da Landing Page. | Viewport 100vh estável, sem scroll da página principal, zero estouro horizontal e foco operacional em balcão, box e agendamentos. |
 | **ADR-07** | **App do Cliente em Escopo Isolado (`is-owner-app`)** | Eliminar cabeçalhos e sidebars residuais da web para entregar a experiência mobile-first idêntica ao design de aplicativo do cliente. | Interface limpa, responsiva, sem botões de mock, com drawer nativo e dimensões travadas. |
+| **ADR-08** | **Navegação SPA Interna e Telemetria Mini OBD2** | Eliminar popups do navegador e centralizar telemetria veicular em tempo real dentro do frame do aplicativo. | Experiência de aplicativo nativo de padrão corporativo TOTVS, sem saídas da tela, com leitura de ECU e laudos com validade pericial. |
+| **ADR-09** | **Fotos Veiculares por Modelo & Troca pelo Proprietário** | Garantir que nenhum veículo cadastrado fique sem foto, exibindo uma fotografia oficial do modelo exato até que o proprietário faça upload de sua própria foto. | Experiência visual rica e consistente desde o primeiro segundo, flexibilidade total para o dono personalizar e reversibilidade garantida. |
+| **ADR-10** | **Inspeção Técnica 360° & Revisões em Substituição a Documentos** | Substituir o módulo de documentos por inspeção pericial e planejamento de revisões preventivas. | Foco primordial na integridade mecânica, segurança rodoviária e valorização de revenda com laudo pericial 98/100 e plano de revisão. |
+| **ADR-11** | **PWA Instalável com Padrão Google Play Store / TWA** | Transformar o aplicativo do cliente em um app nativo instalável na área de trabalho e na tela inicial do celular com prompt automático. | Zero atrito de loja, ícone oficial na tela inicial, funcionamento standalone em tela cheia e elegibilidade para publicação direta via Trusted Web Activity (TWA). |
+| **ADR-12** | **Desacoplamento de Landings por Público (`/`, `/cliente`, `/autocente`)** | Eliminar confusão cognitiva de misturar propostas de valor para proprietários e oficinas na mesma página. | Clareza imediata de proposta, CTAs diretos para os respectivos apps sem páginas intermediárias, dados reais sem métricas falsas e conversão otimizada. |
+| **ADR-13** | **Sincronização 100% Fiel das 20 Telas e Design System Oficial** | Padronizar rigorosamente todas as telas da plataforma com os 10 módulos de ERP de oficina e as 10 telas de aplicativo do proprietário. | Fidelidade absoluta ao blueprint de layout, identidade visual de alta densidade (Inter/Poppins) e consistência total entre módulos. |tivo do cliente. | Interface limpa, responsiva, sem botões de mock, com drawer nativo e dimensões travadas. |
 | **ADR-08** | **Navegação SPA Interna e Telemetria Mini OBD2** | Eliminar popups do navegador e centralizar telemetria veicular em tempo real dentro do frame do aplicativo. | Experiência de aplicativo nativo de padrão corporativo TOTVS, sem saídas da tela, com leitura de ECU e laudos com validade pericial. |
 | **ADR-09** | **Fotos Veiculares por Modelo & Troca pelo Proprietário** | Garantir que nenhum veículo cadastrado fique sem foto, exibindo uma fotografia oficial do modelo exato até que o proprietário faça upload de sua própria foto. | Experiência visual rica e consistente desde o primeiro segundo, flexibilidade total para o dono personalizar e reversibilidade garantida. |
 | **ADR-10** | **Inspeção Técnica 360° & Revisões em Substituição a Documentos** | Substituir o módulo de documentos por inspeção pericial e planejamento de revisões preventivas. | Foco primordial na integridade mecânica, segurança rodoviária e valorização de revenda com laudo pericial 98/100 e plano de revisão. |

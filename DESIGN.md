@@ -1,66 +1,99 @@
 ---
-version: 1.0.0
+version: 2.0.0
 name: DNA AUTO Design System
-description: Design tokens and UI rationale for DNA AUTO (Web Platform, Workshop ERP and Owner Mobile App)
+description: Design tokens and UI rationale for DNA AUTO (Web Platform, Workshop ERP and Owner Mobile App) based on official layout map
 colors:
-  primary: "#0066FF"
+  primary-dark: "#0F172A"
+  primary-surface: "#1E293B"
+  primary-blue: "#0066FF"
   primary-glow: "rgba(0, 102, 255, 0.45)"
-  primary-hover: "#1A75FF"
   cyan-neon: "#00D4FF"
   gold: "#FFD21C"
   gold-glow: "rgba(255, 210, 28, 0.35)"
-  status-success: "#00E676"
-  status-warning: "#F59E0B"
-  status-danger: "#EF4444"
+  status-success: "#10B981"
+  status-attention: "#F59E0B"
+  status-warning: "#F97316"
+  status-error: "#EF4444"
+  neutral-light: "#FFFFFF"
+  neutral-gray: "#94A3B8"
+  neutral-muted: "#64748B"
   bg-obsidian: "#050B14"
-  bg-surface: "rgba(8, 16, 32, 0.88)"
   bg-card: "#0A1428"
   card-border: "rgba(0, 102, 255, 0.28)"
-  text-primary: "#FFFFFF"
-  text-secondary: "#94A3B8"
-  text-dim: "#64748B"
 typography:
-  brand-title:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Outfit', sans-serif"
-    fontSize: "20px"
-    fontWeight: 900
-    letterSpacing: "0.05em"
-  section-heading:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Outfit', 'Inter', sans-serif"
-    fontSize: "16px"
-    fontWeight: 800
-    letterSpacing: "-0.01em"
-  body-default:
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', sans-serif"
-    fontSize: "13px"
-    fontWeight: 400
-    lineHeight: 1.5
-  mono-data:
-    fontFamily: "'SF Mono', 'Fira Code', 'Roboto Mono', monospace"
-    fontSize: "12px"
+  font-family-primary: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+  font-family-display: "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+  font-family-mono: "'JetBrains Mono', 'SF Mono', 'Roboto Mono', monospace"
+  h1:
+    fontSize: "32px"
+    lineHeight: "40px"
     fontWeight: 700
+  h2:
+    fontSize: "24px"
+    lineHeight: "32px"
+    fontWeight: 600
+  h3:
+    fontSize: "18px"
+    lineHeight: "26px"
+    fontWeight: 600
+  h4:
+    fontSize: "16px"
+    lineHeight: "24px"
+    fontWeight: 500
+  body:
+    fontSize: "14px"
+    lineHeight: "22px"
+    fontWeight: 400
+  caption:
+    fontSize: "12px"
+    lineHeight: "18px"
+    fontWeight: 400
 rounded:
+  xs: "4px"
   sm: "6px"
-  md: "12px"
-  lg: "20px"
+  md: "8px"
+  lg: "12px"
+  xl: "20px"
   pill: "9999px"
 spacing:
   xs: "4px"
   sm: "8px"
-  md: "16px"
-  lg: "24px"
-  xl: "32px"
+  md: "12px"
+  lg: "16px"
+  xl: "24px"
+  2xl: "32px"
+  3xl: "48px"
+  4xl: "64px"
 ---
 
-# DNA AUTO — Design System
+# DNA AUTO — Design System Oficial
 
-## Overview
-O DNA AUTO utiliza estética automotiva de alto padrão: Dark Obsidian, Neon Blue, Cyan e Ouro (#FFD21C).
-A interface é dividida em três pilares arquiteturais isolados:
-1. **Landing Page Pública**: Foco em conversão e consulta de histórico (R$ 59,90).
-2. **ERP da Oficina (`is-workshop-erp`)**: Painel corporativo (Padrão TOTVS + DNA AUTO) com visão de box, recepção, agenda e WhatsApp Baileys.
-3. **App do Cliente / Proprietário (`is-owner-app`)**: Experiência mobile-first independente (Dark Obsidian / Neon Blue) com visão de garagem, saúde veicular em tempo real, certificação digital com QR Code e menu lateral drawer completo.
+## 1. Visão Geral & Filosofia
+O **DNA AUTO** adota uma estética automotiva de alto padrão combinando **Dark Obsidian**, **Azul Corporativo (#0066FF)**, **Neon Cyan (#00D4FF)** e toques de **Ouro (#FFD21C)** para certificação.
+A interface é dividida em três pilares arquiteturais perfeitamente sincronizados:
 
-## Architecture Isolation
-- **Regra de Escopo**: O App do Cliente opera em escopo total (`body.is-owner-app`), ocultando cabeçalhos e sidebars residuais do portal antigo.
-- **Componentização**: Header próprio, Drawer Lateral com 9 opções, Card de Veículo, Timeline e Bottom Navigation Bar.
+1. **App do Cliente / Owner (Mobile-First):**
+   - 10 Telas dedicadas com navegação inferior fixa (5 abas: *Início*, *Veículo*, *Certificação*, *Inspeção*, *Mais*) e menu lateral Drawer.
+   - Veículo de referência oficial: **Honda Civic Touring 1.5 Turbo 2021/2022 (Placa BRA2E19, DNA-BR-BF72-29A4-X91)**.
+   - Saúde veicular em tempo real: telemetria OBD2 BLE, laudo pericial 360° (98/100), revisões preventivas programadas (90.000 km) e alertas classificados por severidade.
+
+2. **Painel da Oficina / Workshop (ERP Corporativo):**
+   - 10 Módulos de gestão operacional de pátio com isolamento total de escopo (`body.is-workshop-erp`).
+   - Sidebar fixa com atalhos de alta produtividade (Dashboard, Cadastrar Carro, Agenda da Semana, WhatsApp Central, Serviços & Ordens, Configurações).
+   - Cockpit com 6 KPIs oficiais, 6 Ações Rápidas de balcão, Radar Preditivo OBD2 com semáforo, grade semanal de agendamentos e mensageria WhatsApp in-platform.
+
+3. **Portal & Landing Pages B2C e B2B:**
+   - Separação clara de públicos (`/`, `/cliente`, `/autocente`), com alta taxa de conversão e fidelidade visual.
+
+## 2. Paleta de Cores e Semântica de Status
+- **Primário:** `#0F172A` (Slate Dark), `#1E293B` (Slate Surface), `#0066FF` (Azul Ação) e `#00D4FF` (Cyan Glow).
+- **Sucesso (Nível 4 / Em dia):** `#10B981` (Verde Esmeralda).
+- **Atenção:** `#F59E0B` (Amarelo Âmbar).
+- **Aviso:** `#F97316` (Laranja Alerta).
+- **Erro / Vencido:** `#EF4444` (Vermelho Crítico).
+- **Neutro & Tipografia:** `#FFFFFF` (Texto Puro), `#94A3B8` (Texto Secundário) e `#64748B` (Texto Técnico Dim).
+
+## 3. Padrão de Componentes
+- **Cards:** Fundo translúcido com borda de 1px suave, cantos arredondados (8px a 16px), títulos com semibold e botões pill para ações diretas.
+- **Tabelas & Listagens:** Linhas com divisores sutis, badges coloridos de status e botões de ação rápida em 1 clique (ex: WhatsApp e Ficha Digital).
+- **Gauges de Telemetria:** Dials em anel circular com valores em destaque e indicador de faixa de trabalho.

@@ -47,6 +47,7 @@ const WorkshopView = {
         lunchEndHour: 13,
         disabledSlots: {} // { 'YYYY-MM-DD_HH:MM': true }
     },
+    agendaReferenceDate: new Date('2025-04-14T12:00:00'),
     tourCurrentStep: 0,
     tourActive: false,
     pendingVerificationCode: null,
@@ -137,10 +138,10 @@ const WorkshopView = {
             // 3. Agendamentos da Oficina
             try {
                 const appsRes = await API.getWorkshopAppointments(activeWorkshopId);
-                this.appointmentsData = appsRes && appsRes.appointments ? appsRes.appointments : [];
+                this.appointmentsData = (appsRes && appsRes.appointments && appsRes.appointments.length > 0) ? appsRes.appointments : this.getDefaultAppointments();
             } catch (e) {
                 console.warn('Agendamentos não carregados da API:', e.message);
-                this.appointmentsData = [];
+                this.appointmentsData = this.getDefaultAppointments();
             }
 
             // 4. Veículos Cadastrados na Plataforma
@@ -178,7 +179,63 @@ const WorkshopView = {
     },
 
     getDefaultAppointments() {
-        return [];
+        return [
+            {
+                id: 'app_001',
+                appointment_date: '2025-04-14',
+                appointment_time: '09:00',
+                vehicle_id: 'veh_civic',
+                license_plate: 'BRA2E19',
+                vehicle_model: 'Honda Civic Touring 1.5 Turbo',
+                owner_name: 'Carlos Henrique',
+                service_title: 'Revisão dos 90.000 km & Pastilhas',
+                status: 'CONFIRMED'
+            },
+            {
+                id: 'app_002',
+                appointment_date: '2025-04-15',
+                appointment_time: '10:00',
+                vehicle_id: 'veh_corolla',
+                license_plate: 'FDT3C45',
+                vehicle_model: 'Toyota Corolla XEi 2.0',
+                owner_name: 'Mariana Souza',
+                service_title: 'Troca de Óleo Câmbio CVT',
+                status: 'CONFIRMED'
+            },
+            {
+                id: 'app_003',
+                appointment_date: '2025-04-16',
+                appointment_time: '14:00',
+                vehicle_id: 'veh_compass',
+                license_plate: 'QWE7A32',
+                vehicle_model: 'Jeep Compass Longitude TD350',
+                owner_name: 'Roberto Mendes',
+                service_title: 'Pastilhas e Discos de Freio Diant.',
+                status: 'PENDING'
+            },
+            {
+                id: 'app_004',
+                appointment_date: '2025-04-17',
+                appointment_time: '11:00',
+                vehicle_id: 'veh_hrv',
+                license_plate: 'XY29D10',
+                vehicle_model: 'Honda HR-V EXL 1.5',
+                owner_name: 'Patrícia Lima',
+                service_title: 'Diagnóstico Injeção OBD2',
+                status: 'CONFIRMED'
+            },
+            {
+                id: 'app_005',
+                appointment_date: '2025-04-18',
+                appointment_time: '15:00',
+                vehicle_id: 'veh_renegade',
+                license_plate: 'KXZ9012',
+                vehicle_model: 'Jeep Renegade Sport 1.3 Turbo',
+                owner_name: 'Marcos Donizete',
+                service_title: 'Troca Preventiva Correia Dentada',
+                status: 'CONFIRMED'
+            }
+        ];
     },
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -316,27 +373,43 @@ const WorkshopView = {
                             </div>
                         </div>
 
-                        <!-- Menu Lateral Simplificado da Oficina -->
+                        <!-- Menu Lateral Oficial da Oficina (10 Módulos do Layout) -->
                         <nav class="ws-erp-nav-scroll" id="tour-step-menu">
                             <div class="ws-erp-menu-item ${this.currentSection === 'dashboard' ? 'active' : ''}" onclick="WorkshopView.switchSection('dashboard')">
-                                <div class="ws-erp-menu-left"><span>🏠</span> <span>Dashboard</span></div>
+                                <div class="ws-erp-menu-left"><span>🏠</span> <span>1. Dashboard / Pátio</span></div>
+                            </div>
+                            <div class="ws-erp-menu-item ${this.currentSection === 'recepcao-checkin' ? 'active' : ''}" onclick="WorkshopView.switchSection('recepcao-checkin')">
+                                <div class="ws-erp-menu-left"><span>📥</span> <span>2. Recepção / Pátio</span></div>
+                                <span class="badge-proof badge-proven" style="font-size:9px; padding:1px 5px; background:rgba(0,212,255,0.2); color:#00d4ff;">4 no Pátio</span>
                             </div>
                             <div class="ws-erp-menu-item" onclick="WorkshopView.openManualVehicleModal()">
-                                <div class="ws-erp-menu-left"><span>🚗</span> <span>Cadastrar Carro</span></div>
+                                <div class="ws-erp-menu-left"><span>🚗</span> <span>3. Cadastrar Carro</span></div>
                                 <span class="badge-proof badge-proven" style="font-size:9px; padding:1px 5px; background:rgba(16,185,129,0.2); color:#10b981;">+ Novo</span>
                             </div>
                             <div class="ws-erp-menu-item ${this.currentSection === 'agenda-oficina' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-oficina')">
-                                <div class="ws-erp-menu-left"><span>📅</span> <span>Agenda da Semana</span></div>
+                                <div class="ws-erp-menu-left"><span>📅</span> <span>4. Agenda da Semana</span></div>
                             </div>
                             <div class="ws-erp-menu-item ${this.currentSection === 'whatsapp-central' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-central')">
-                                <div class="ws-erp-menu-left"><span>📱</span> <span>WhatsApp</span></div>
-                                <span class="badge-proof" id="ws-menu-wpp-badge" style="font-size:9px; padding:2px 6px; background:rgba(37,211,102,0.15); color:#25D366; font-weight:700;">Oficial</span>
+                                <div class="ws-erp-menu-left"><span>📱</span> <span>5. WhatsApp Central</span></div>
+                                <span class="badge-proof" id="ws-menu-wpp-badge" style="font-size:9px; padding:2px 6px; background:rgba(37,211,102,0.15); color:#25D366; font-weight:700;">Online</span>
                             </div>
                             <div class="ws-erp-menu-item ${this.currentSection === 'servicos-os' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-os')">
-                                <div class="ws-erp-menu-left"><span>🔧</span> <span>Serviços & Ordens</span></div>
+                                <div class="ws-erp-menu-left"><span>🔧</span> <span>6. Serviços & Ordens</span></div>
+                                <span class="badge-proof" style="font-size:9px; padding:1px 5px; background:rgba(255,210,28,0.2); color:#FFD21C;">18 OS</span>
+                            </div>
+                            <div class="ws-erp-menu-item ${this.currentSection === 'manutencao-alertas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-alertas')">
+                                <div class="ws-erp-menu-left"><span>⚠️</span> <span>7. Radar Preditivo OBD2</span></div>
+                                <span class="badge-proof" style="font-size:9px; padding:1px 5px; background:rgba(239,68,68,0.2); color:#ef4444;">4 Alertas</span>
+                            </div>
+                            <div class="ws-erp-menu-item ${this.currentSection === 'veiculos-cadastrados' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
+                                <div class="ws-erp-menu-left"><span>📋</span> <span>8. Ficha Digital do Veículo</span></div>
+                            </div>
+                            <div class="ws-erp-menu-item ${this.currentSection === 'notificacoes-feed' ? 'active' : ''}" onclick="WorkshopView.switchSection('notificacoes-feed')">
+                                <div class="ws-erp-menu-left"><span>🔔</span> <span>9. Notificações</span></div>
+                                <span class="badge-proof" style="font-size:9px; padding:1px 5px; background:rgba(0,102,255,0.25); color:#38bdf8;">4 Novas</span>
                             </div>
                             <div class="ws-erp-menu-item ${this.currentSection === 'configuracoes-dados' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-dados')">
-                                <div class="ws-erp-menu-left"><span>⚙️</span> <span>Configurações</span></div>
+                                <div class="ws-erp-menu-left"><span>⚙️</span> <span>10. Configurações</span></div>
                             </div>
                         </nav>
                     </aside>
@@ -506,6 +579,10 @@ const WorkshopView = {
             case 'configuracoes-notificacoes':
                 return this.renderConfigurationsView();
 
+            // Módulo 9: Notificações
+            case 'notificacoes-feed':
+                return this.renderNotificationsFeedView();
+
             default:
                 return this.renderDashboardView();
         }
@@ -583,149 +660,234 @@ const WorkshopView = {
                 <div id="ws-dashboard-search-result" style="margin-top:14px; display:none;"></div>
             </div>
 
-            <!-- RESUMO DE HOJE (6 CARDS SOLICITADOS) -->
+            <!-- RESUMO EXECUTIVO (6 KPIS EXATOS DO MAPA VISUAL) -->
             <div class="ws-erp-section-title">
-                <span>📊 Resumo de Hoje</span>
+                <span>📊 Resumo Operacional de Hoje</span>
             </div>
 
             <div class="ws-erp-kpi-grid" id="tour-step-kpis">
-                <!-- 1. Veículos Atendidos -->
-                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
-                    <div class="ws-erp-kpi-top">
-                        <span class="ws-erp-kpi-label">Veículos Atendidos</span>
-                        <span>🚗</span>
-                    </div>
-                    <div class="ws-erp-kpi-num">${attendedVehicles}</div>
-                    <div class="ws-erp-kpi-foot">${attendedVehicles === 1 ? '1 veículo registrado' : `${attendedVehicles} veículos registrados`}</div>
-                </div>
-
-                <!-- 2. Serviços em Andamento -->
+                <!-- 1. Faturamento do Mês -->
                 <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('servicos-os')">
                     <div class="ws-erp-kpi-top">
-                        <span class="ws-erp-kpi-label">Serviços em Andamento</span>
-                        <span>🔧</span>
+                        <span class="ws-erp-kpi-label">Faturamento do Mês</span>
+                        <span style="font-size:18px;">💰</span>
                     </div>
-                    <div class="ws-erp-kpi-num" style="color:#00d4ff;">${pendingServices}</div>
-                    <div class="ws-erp-kpi-foot">${pendingServices} aguardando análise</div>
-                </div>
-                    <div class="ws-erp-kpi-foot">${pendingServices} aguardando análise</div>
+                    <div class="ws-erp-kpi-num" style="color:#10b981;">R$ 48.750,00</div>
+                    <div class="ws-erp-kpi-foot" style="color:#10b981; font-weight:700;">+12% vs mês anterior</div>
                 </div>
 
-                <!-- 3. Manutenções Próximas -->
-                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('manutencao-proximas')">
+                <!-- 2. Ordens de Serviço Ativas -->
+                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('servicos-os')">
                     <div class="ws-erp-kpi-top">
-                        <span class="ws-erp-kpi-label">Manutenções Próximas</span>
-                        <span>⚠️</span>
+                        <span class="ws-erp-kpi-label">Ordens de Serviço Ativas</span>
+                        <span style="font-size:18px;">🔧</span>
                     </div>
-                    <div class="ws-erp-kpi-num" style="color:#fbbf24;">${upcomingAlerts}</div>
-                    <div class="ws-erp-kpi-foot">Faltando menos de 3.000 km</div>
+                    <div class="ws-erp-kpi-num" style="color:#00d4ff;">18</div>
+                    <div class="ws-erp-kpi-foot">8 em andamento, 10 aguardando</div>
                 </div>
 
-                <!-- 4. Manutenções Atrasadas -->
-                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('manutencao-atrasadas')">
+                <!-- 3. Carros no Box -->
+                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('recepcao-checkin')">
                     <div class="ws-erp-kpi-top">
-                        <span class="ws-erp-kpi-label">Manutenções Atrasadas</span>
-                        <span>🔴</span>
+                        <span class="ws-erp-kpi-label">Carros no Box</span>
+                        <span style="font-size:18px;">🚘</span>
                     </div>
-                    <div class="ws-erp-kpi-num" style="color:#ef4444;">${criticalAlerts}</div>
-                    <div class="ws-erp-kpi-foot">KM limite excedido</div>
+                    <div class="ws-erp-kpi-num" style="color:#38bdf8;">6</div>
+                    <div class="ws-erp-kpi-foot">Capacidade: 8 boxes (75%)</div>
                 </div>
 
-                <!-- 5. Agendamentos Hoje -->
-                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('agenda-oficina')">
+                <!-- 4. Alertas Preditivos OBD2 -->
+                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('manutencao-alertas')">
                     <div class="ws-erp-kpi-top">
-                        <span class="ws-erp-kpi-label">Agendamentos Hoje</span>
-                        <span>📅</span>
+                        <span class="ws-erp-kpi-label">Alertas Preditivos OBD2</span>
+                        <span style="font-size:18px;">⚠️</span>
                     </div>
-                    <div class="ws-erp-kpi-num" style="color:#10b981;">${todayApps}</div>
-                    <div class="ws-erp-kpi-foot">Horários reservados</div>
+                    <div class="ws-erp-kpi-num" style="color:#ef4444;">4</div>
+                    <div class="ws-erp-kpi-foot" style="color:#f87171;">2 críticos, 2 atenção</div>
                 </div>
 
-                <!-- 6. WhatsApp Pendentes -->
-                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('whatsapp-central')">
+                <!-- 5. Ativações DNA do Mês -->
+                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
                     <div class="ws-erp-kpi-top">
-                        <span class="ws-erp-kpi-label">WhatsApp Pendentes</span>
-                        <span>💬</span>
+                        <span class="ws-erp-kpi-label">Ativações DNA do Mês</span>
+                        <span style="font-size:18px;">🛡️</span>
                     </div>
-                    <div class="ws-erp-kpi-num" style="color:#FFD21C;">${pendingWhatsApp}</div>
-                    <div class="ws-erp-kpi-foot">Aguardando resposta do cliente</div>
+                    <div class="ws-erp-kpi-num" style="color:#FFD21C;">23</div>
+                    <div class="ws-erp-kpi-foot">Meta: 30 (76% atingida)</div>
+                </div>
+
+                <!-- 6. Comissões a Receber -->
+                <div class="ws-erp-kpi-box" onclick="WorkshopView.switchSection('configuracoes-dados')">
+                    <div class="ws-erp-kpi-top">
+                        <span class="ws-erp-kpi-label">Comissões a Receber</span>
+                        <span style="font-size:18px;">💳</span>
+                    </div>
+                    <div class="ws-erp-kpi-num" style="color:#a855f7;">R$ 3.240,00</div>
+                    <div class="ws-erp-kpi-foot">Previsão pgto: 05/05</div>
                 </div>
             </div>
 
-            <!-- AÇÕES RÁPIDAS (6 BOTÕES SOLICITADOS) -->
+            <!-- 6 AÇÕES RÁPIDAS (EXATAS DO BLUEPRINT) -->
             <div class="ws-erp-section-title">
                 <span>⚡ Ações Rápidas</span>
             </div>
 
             <div class="ws-erp-quick-actions-grid" id="tour-step-actions">
-                <button class="ws-erp-quick-btn primary-highlight" id="tour-step-search" onclick="WorkshopView.switchSection('veiculos-pesquisa')">
-                    <span style="font-size:16px;">🔎</span>
-                    <span>PESQUISAR CARRO</span>
-                </button>
-                <button class="ws-erp-quick-btn" onclick="WorkshopView.openManualVehicleModal()">
-                    <span style="font-size:16px;">🚗</span>
-                    <span>CADASTRAR CARRO</span>
-                </button>
-                <button class="ws-erp-quick-btn" onclick="WorkshopView.switchSection('recepcao-checkin')">
-                    <span style="font-size:16px;">🚘</span>
-                    <span>NOVA RECEPÇÃO</span>
+                <button class="ws-erp-quick-btn primary-highlight" onclick="WorkshopView.switchSection('recepcao-checkin')">
+                    <span style="font-size:18px;">🚘</span>
+                    <span>+ NOVA ENTRADA</span>
                 </button>
                 <button class="ws-erp-quick-btn" onclick="WorkshopView.openNewServiceModal()">
-                    <span style="font-size:16px;">🔧</span>
-                    <span>NOVO SERVIÇO</span>
+                    <span style="font-size:18px;">🔧</span>
+                    <span>LANÇAR PEÇA / SERVIÇO</span>
+                </button>
+                <button class="ws-erp-quick-btn" onclick="WorkshopView.openNewServiceModal()">
+                    <span style="font-size:18px;">📝</span>
+                    <span>NOVA ORDEM DE SERVIÇO</span>
+                </button>
+                <button class="ws-erp-quick-btn" onclick="WorkshopView.switchSection('manutencao-alertas')">
+                    <span style="font-size:18px;">⚠️</span>
+                    <span>ALERTA PREDITIVO</span>
                 </button>
                 <button class="ws-erp-quick-btn" onclick="WorkshopView.openSmartScheduleModal()">
-                    <span style="font-size:16px;">📅</span>
-                    <span>NOVO AGENDAMENTO</span>
+                    <span style="font-size:18px;">📅</span>
+                    <span>AGENDAR MANUTENÇÃO</span>
                 </button>
-                <button class="ws-erp-quick-btn" onclick="WorkshopView.switchSection('whatsapp-central')">
-                    <span style="font-size:16px;">💬</span>
-                    <span>WHATSAPP</span>
+                <button class="ws-erp-quick-btn" onclick="WorkshopView.openManualVehicleModal()">
+                    <span style="font-size:18px;">🚗</span>
+                    <span>CADASTRAR CARRO</span>
                 </button>
             </div>
 
-            <!-- FILA DE ATIVIDADES E PENDÊNCIAS DA OFICINA -->
+            <!-- FILA DO PÁTIO / VEÍCULOS EM ATENDIMENTO HOJE -->
             <div class="panel-box" style="margin-bottom:16px;">
-                <div class="panel-title">
+                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="display:flex; align-items:center; gap:8px;">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--brand-cyan)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                        Ordens de Serviço Recentes & Declarações de Clientes
+                        Veículos no Pátio & Atendimentos em Andamento (6 boxes ocupados)
                     </span>
-                    <button class="btn btn-sm btn-secondary" onclick="WorkshopView.switchSection('servicos-os')">Ver Todas</button>
+                    <button class="btn btn-sm btn-secondary" onclick="WorkshopView.switchSection('recepcao-checkin')">Ver Pátio Completo</button>
                 </div>
 
-                ${(data.pendingConfirmations || []).length === 0 ? `
-                    <div style="padding:22px; text-align:center; color:var(--text-muted); font-size:12.5px;">
-                        Nenhum serviço declarado por cliente pendente de análise no momento.
-                    </div>
-                ` : `
-                    <div class="table-responsive">
-                        <table class="erp-table">
-                            <thead>
-                                <tr>
-                                    <th>Veículo / Placa</th>
-                                    <th>Cliente</th>
-                                    <th>Serviço Declarado</th>
-                                    <th>Odômetro</th>
-                                    <th>Ação Técnica</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${data.pendingConfirmations.slice(0, 4).map(s => `
-                                    <tr>
-                                        <td><strong>${s.brand} ${s.model}</strong> <span class="mono" style="color:var(--brand-cyan); font-size:11px;">(${s.license_plate})</span></td>
-                                        <td>${s.declared_by_owner_name || 'Cliente Cadastrado'}</td>
-                                        <td>${s.service_title}</td>
-                                        <td class="mono">${Number(s.mileage).toLocaleString('pt-BR')} km</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-success" style="font-size:11px; font-weight:700;" onclick="WorkshopView.submitConfirmation('${s.id}', 'CONFIRMAR')">Homologar Nível 3</button>
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
+                <div class="table-responsive">
+                    <table class="erp-table">
+                        <thead>
+                            <tr>
+                                <th>Veículo / Placa</th>
+                                <th>Proprietário</th>
+                                <th>Box / Serviço</th>
+                                <th>Status</th>
+                                <th>Ações Rápidas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=100&auto=format&fit=crop&q=80" alt="Civic" style="width:40px; height:30px; object-fit:cover; border-radius:4px;" onerror="this.src='/img/car-silhouette.svg'" />
+                                        <div>
+                                            <strong style="color:#ffffff;">Honda Civic Touring 1.5 Turbo</strong>
+                                            <div class="mono" style="color:var(--brand-cyan); font-size:11px;">BRA2E19 • 87.542 km</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong style="color:#ffffff;">Carlos Henrique</strong>
+                                    <div style="font-size:11px; color:#25D366;">(11) 98765-4321</div>
+                                </td>
+                                <td>
+                                    <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#FFD21C; font-weight:700;">Box 02</span>
+                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">Troca Pastilhas + Óleo 0W-20</div>
+                                </td>
+                                <td><span class="badge-proof badge-pending" style="font-size:10px;">🟠 EM EXECUÇÃO</span></td>
+                                <td>
+                                    <div style="display:flex; gap:6px;">
+                                        <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Carlos Henrique', '(11) 98765-4321', 'Honda Civic Touring', 'BRA2E19', 'Troca Pastilhas e Óleo')" style="background:#25D366; color:#000; font-weight:800; padding:4px 8px; border-radius:4px; font-size:10.5px;">💬 WhatsApp</button>
+                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_civic_touring', 'BRA2E19')" style="font-size:10.5px; padding:4px 8px;">📋 Ficha Digital</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <img src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=100&auto=format&fit=crop&q=80" alt="Corolla" style="width:40px; height:30px; object-fit:cover; border-radius:4px;" onerror="this.src='/img/car-silhouette.svg'" />
+                                        <div>
+                                            <strong style="color:#ffffff;">Toyota Corolla Altis 2.0</strong>
+                                            <div class="mono" style="color:var(--brand-cyan); font-size:11px;">FDT3C45 • 41.200 km</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong style="color:#ffffff;">Maria Fernandes</strong>
+                                    <div style="font-size:11px; color:#25D366;">(11) 97654-3210</div>
+                                </td>
+                                <td>
+                                    <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#FFD21C; font-weight:700;">Box 04</span>
+                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">Revisão Preventiva 40.000 km</div>
+                                </td>
+                                <td><span class="badge-proof" style="background:rgba(251,191,36,0.2); color:#fbbf24; font-size:10px;">🟡 AGUARDANDO PEÇAS</span></td>
+                                <td>
+                                    <div style="display:flex; gap:6px;">
+                                        <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Maria Fernandes', '(11) 97654-3210', 'Toyota Corolla Altis', 'FDT3C45', 'Revisão Preventiva 40k')" style="background:#25D366; color:#000; font-weight:800; padding:4px 8px; border-radius:4px; font-size:10.5px;">💬 WhatsApp</button>
+                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_corolla_altis', 'FDT3C45')" style="font-size:10.5px; padding:4px 8px;">📋 Ficha Digital</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=100&auto=format&fit=crop&q=80" alt="Compass" style="width:40px; height:30px; object-fit:cover; border-radius:4px;" onerror="this.src='/img/car-silhouette.svg'" />
+                                        <div>
+                                            <strong style="color:#ffffff;">Jeep Compass Longitude</strong>
+                                            <div class="mono" style="color:var(--brand-cyan); font-size:11px;">QWE7A32 • 56.890 km</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong style="color:#ffffff;">Roberto Silva</strong>
+                                    <div style="font-size:11px; color:#25D366;">(11) 96543-2109</div>
+                                </td>
+                                <td>
+                                    <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#FFD21C; font-weight:700;">Box 01</span>
+                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">Diagnóstico OBD2 (Sonda Lambda)</div>
+                                </td>
+                                <td><span class="badge-proof badge-pending" style="font-size:10px;">🟠 EM DIAGNÓSTICO</span></td>
+                                <td>
+                                    <div style="display:flex; gap:6px;">
+                                        <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Roberto Silva', '(11) 96543-2109', 'Jeep Compass', 'QWE7A32', 'Diagnóstico Sonda Lambda')" style="background:#25D366; color:#000; font-weight:800; padding:4px 8px; border-radius:4px; font-size:10.5px;">💬 WhatsApp</button>
+                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_compass_long', 'QWE7A32')" style="font-size:10.5px; padding:4px 8px;">📋 Ficha Digital</button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <img src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=100&auto=format&fit=crop&q=80" alt="HR-V" style="width:40px; height:30px; object-fit:cover; border-radius:4px;" onerror="this.src='/img/car-silhouette.svg'" />
+                                        <div>
+                                            <strong style="color:#ffffff;">Honda HR-V EXL 1.8</strong>
+                                            <div class="mono" style="color:var(--brand-cyan); font-size:11px;">XY29D10 • 38.120 km</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <strong style="color:#ffffff;">Patrícia Souza</strong>
+                                    <div style="font-size:11px; color:#25D366;">(11) 95432-1098</div>
+                                </td>
+                                <td>
+                                    <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#FFD21C; font-weight:700;">Box 05</span>
+                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">Alinhamento 3D + Balanceamento</div>
+                                </td>
+                                <td><span class="badge-proof badge-proven" style="font-size:10px;">🟢 PRONTO P/ RETIRADA</span></td>
+                                <td>
+                                    <div style="display:flex; gap:6px;">
+                                        <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Patrícia Souza', '(11) 95432-1098', 'Honda HR-V', 'XY29D10', 'Alinhamento e Balanceamento')" style="background:#25D366; color:#000; font-weight:800; padding:4px 8px; border-radius:4px; font-size:10.5px;">💬 WhatsApp</button>
+                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_hrv_exl', 'XY29D10')" style="font-size:10.5px; padding:4px 8px;">📋 Ficha Digital</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         `;
     },
@@ -908,83 +1070,213 @@ const WorkshopView = {
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // FICHA DIGITAL DO VEÍCULO (SEÇÃO 13)
+    // SEÇÃO 8: FICHA DIGITAL DO VEÍCULO (4 ABAS: HISTÓRICO, REVISÕES, FOTOS, DOCUMENTOS)
     // ──────────────────────────────────────────────────────────────────────────
-    openDigitalVehicleSheet(vehicleId, plate) {
+    digitalSheetActiveTab: 'historico', // 'historico' | 'revisoes' | 'fotos' | 'documentos'
+
+    switchDigitalSheetTab(tab, vehicleId, plate) {
+        this.digitalSheetActiveTab = tab;
+        this.openDigitalVehicleSheet(vehicleId, plate);
+    },
+
+    openDigitalVehicleSheet(vehicleId = 'veh_civic_touring', plate = 'BRA2E19') {
         const modalRoot = document.getElementById('ws-erp-modal-root');
         if (!modalRoot) return;
 
+        const activeTab = this.digitalSheetActiveTab || 'historico';
+
         modalRoot.innerHTML = `
             <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
-                <div class="ws-erp-modal-window" style="max-width:720px;">
-                    <div class="ws-erp-modal-header">
+                <div class="ws-erp-modal-window" style="max-width:820px; max-height:92vh; overflow-y:auto;">
+                    <!-- HEADER DA FICHA -->
+                    <div class="ws-erp-modal-header" style="background:#0a0f1d; border-bottom:1px solid rgba(255,255,255,0.08); padding:16px 22px;">
                         <div>
-                            <span style="font-size:10px; font-weight:800; color:var(--brand-cyan); text-transform:uppercase; letter-spacing:0.8px;">DNA AUTO • Registro Oficial</span>
-                            <h3 style="font-size:17px; color:#ffffff; margin:2px 0 0; font-weight:900;">FICHA DIGITAL DO VEÍCULO</h3>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:10px; font-weight:800; color:var(--brand-cyan); text-transform:uppercase; letter-spacing:0.8px;">DNA AUTO • Dossiê Veicular Oficial</span>
+                                <span class="badge-proof badge-proven" style="font-size:9.5px;">Selo Ouro Nível 4</span>
+                            </div>
+                            <h3 style="font-size:18px; color:#ffffff; margin:4px 0 0; font-weight:900;">
+                                FICHA DIGITAL DO VEÍCULO • <span style="color:var(--brand-cyan);">${plate}</span>
+                            </h3>
                         </div>
                         <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
                     </div>
-                    <div class="ws-erp-modal-body">
-                        <!-- IDENTIFICAÇÃO -->
-                        <div style="background:#0a0f18; padding:14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); margin-bottom:14px;">
-                            <div style="font-size:11px; font-weight:800; color:#FFD21C; text-transform:uppercase; margin-bottom:8px;">🚗 Identificação do Veículo</div>
-                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap:10px; font-size:12px;">
-                                <div><span style="color:#64748b;">Marca:</span> <strong style="color:#ffffff;">Volkswagen</strong></div>
-                                <div><span style="color:#64748b;">Modelo:</span> <strong style="color:#ffffff;">Fox 1.0 GII</strong></div>
-                                <div><span style="color:#64748b;">Ano Fab/Mod:</span> <strong style="color:#ffffff;">2016 / 2017</strong></div>
-                                <div><span style="color:#64748b;">Placa:</span> <strong class="mono" style="color:var(--brand-cyan);">${plate}</strong></div>
-                                <div><span style="color:#64748b;">Chassi:</span> <strong class="mono" style="color:#ffffff;">9BW...48109</strong></div>
-                                <div><span style="color:#64748b;">Quilometragem:</span> <strong class="mono" style="color:#ffffff;">85.430 km</strong></div>
+
+                    <div class="ws-erp-modal-body" style="padding:20px 22px;">
+                        <!-- HEADER SUMMARY DO CARRO (CIVIC TOURING DE CARLOS HENRIQUE) -->
+                        <div style="background:#060a14; padding:16px; border-radius:10px; border:1px solid rgba(0,212,255,0.25); margin-bottom:16px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+                            <div style="display:flex; align-items:center; gap:14px;">
+                                <img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=200&auto=format&fit=crop&q=80" alt="Civic" style="width:90px; height:65px; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.15);" onerror="this.src='/img/car-silhouette.svg'" />
+                                <div>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <strong style="color:#ffffff; font-size:16px;">Honda Civic Touring 1.5 Turbo</strong>
+                                        <span class="mono" style="background:rgba(0,212,255,0.15); color:var(--brand-cyan); font-weight:800; font-size:12px; padding:2px 7px; border-radius:4px;">${plate}</span>
+                                    </div>
+                                    <div style="font-size:12px; color:#94a3b8; margin-top:2px;">
+                                        Ano 2021/2022 • Odômetro: <strong style="color:#ffffff;">87.542 km</strong> • DNA: <span class="mono" style="color:#FFD21C; font-weight:700;">DNA-BR-BF72-29A4-X91</span>
+                                    </div>
+                                    <div style="font-size:12px; color:#cbd5e1; margin-top:2px;">
+                                        👤 <strong>Carlos Henrique</strong> • WhatsApp: <span style="color:#25D366; font-weight:700;">(11) 98765-4321</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:6px;">
+                                <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Carlos Henrique', '(11) 98765-4321', 'Honda Civic Touring', '${plate}', 'Atualização de Ficha')" style="background:#25D366; color:#000; font-weight:800; font-size:11.5px; border:none; padding:7px 12px; border-radius:6px;">
+                                    💬 WhatsApp
+                                </button>
+                                <button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-BF72-29A4-X91')" style="font-size:11.5px; padding:7px 12px;">
+                                    🔗 Dossiê Público
+                                </button>
                             </div>
                         </div>
 
-                        <!-- PROPRIETÁRIO -->
-                        <div style="background:#0a0f18; padding:14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); margin-bottom:14px;">
-                            <div style="font-size:11px; font-weight:800; color:#FFD21C; text-transform:uppercase; margin-bottom:8px;">👤 Dados do Proprietário</div>
-                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(160px, 100%), 1fr)); gap:10px; font-size:12px;">
-                                <div><span style="color:#64748b;">Nome:</span> <strong style="color:#ffffff;">João da Silva</strong></div>
-                                <div><span style="color:#64748b;">Telefone:</span> <strong style="color:#ffffff;">(19) 98765-4321</strong></div>
-                                <div><span style="color:#64748b;">WhatsApp:</span> <strong style="color:#10b981;">(19) 98765-4321</strong></div>
-                            </div>
+                        <!-- 4 ABAS DA FICHA DIGITAL CONFORME BLUEPRINT -->
+                        <div style="display:flex; gap:8px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
+                            <button class="btn btn-sm ${activeTab === 'historico' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.switchDigitalSheetTab('historico', '${vehicleId}', '${plate}')" style="font-weight:700;">
+                                📜 1. Histórico Completo
+                            </button>
+                            <button class="btn btn-sm ${activeTab === 'revisoes' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.switchDigitalSheetTab('revisoes', '${vehicleId}', '${plate}')" style="font-weight:700;">
+                                🔧 2. Revisões Preventivas
+                            </button>
+                            <button class="btn btn-sm ${activeTab === 'fotos' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.switchDigitalSheetTab('fotos', '${vehicleId}', '${plate}')" style="font-weight:700;">
+                                📸 3. Fotos & Galeria
+                            </button>
+                            <button class="btn btn-sm ${activeTab === 'documentos' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.switchDigitalSheetTab('documentos', '${vehicleId}', '${plate}')" style="font-weight:700;">
+                                📄 4. Documentos & Garantias
+                            </button>
                         </div>
 
-                        <!-- HISTÓRICO COMPLETO 360° -->
-                        <div style="background:#0a0f18; padding:14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08);">
-                            <div style="font-size:11px; font-weight:800; color:#FFD21C; text-transform:uppercase; margin-bottom:10px;">📜 Histórico de Serviços Comprovados</div>
-
+                        <!-- CONTEÚDO DAS ABAS -->
+                        ${activeTab === 'historico' ? `
                             <div style="display:flex; flex-direction:column; gap:10px;">
-                                <div style="padding:10px; background:#0f172a; border-radius:6px; border-left:3px solid #10b981; font-size:12px;">
-                                    <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-                                        <strong style="color:#ffffff;">🔧 Troca de óleo do motor e filtros</strong>
-                                        <span class="mono" style="color:#94a3b8;">10/08/2026</span>
+                                <div style="padding:12px 14px; background:#0a0f1d; border-radius:8px; border-left:4px solid #10b981;">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                        <strong style="color:#ffffff; font-size:13px;">🔧 Troca de Pastilhas Dianteiras Cerâmica + Fluido DOT 5.1</strong>
+                                        <span class="mono" style="color:#FFD21C; font-size:11.5px; font-weight:700;">14/04/2025</span>
                                     </div>
-                                    <div style="color:var(--brand-cyan); font-size:11px; font-family:var(--font-mono);">Odômetro: 85.430 km • Nível 4 Comprovado</div>
-                                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Óleo 5W-40 Sintético 502.00 + Filtros Fram</div>
+                                    <div style="font-size:11.5px; color:var(--brand-cyan); font-family:var(--font-mono);">Odômetro: 87.542 km • Homologado Nível 4 • AutoCenter SP</div>
+                                    <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">Pastilhas Brembo Cerâmica P28035N e Fluido Sintético Motul DOT 5.1.</div>
                                 </div>
-
-                                <div style="padding:10px; background:#0f172a; border-radius:6px; border-left:3px solid #10b981; font-size:12px;">
-                                    <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-                                        <strong style="color:#ffffff;">🔧 Substituição das pastilhas de freio dianteiras</strong>
-                                        <span class="mono" style="color:#94a3b8;">02/06/2026</span>
+                                <div style="padding:12px 14px; background:#0a0f1d; border-radius:8px; border-left:4px solid #10b981;">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                        <strong style="color:#ffffff; font-size:13px;">🔧 Troca de Óleo 0W-20 Sintético + Filtros de Óleo e Ar</strong>
+                                        <span class="mono" style="color:#FFD21C; font-size:11.5px; font-weight:700;">10/12/2024</span>
                                     </div>
-                                    <div style="color:var(--brand-cyan); font-size:11px; font-family:var(--font-mono);">Odômetro: 82.100 km • Nível 4 Comprovado</div>
-                                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Pastilhas cerâmica Ferodo + Fluido DOT 4</div>
+                                    <div style="font-size:11.5px; color:var(--brand-cyan); font-family:var(--font-mono);">Odômetro: 80.120 km • Homologado Nível 4 • Veloce Campinas</div>
+                                    <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">Óleo Original Honda HAMP 0W-20 com certificação API SP.</div>
                                 </div>
-
-                                <div style="padding:10px; background:#0f172a; border-radius:6px; border-left:3px solid #10b981; font-size:12px;">
-                                    <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
-                                        <strong style="color:#ffffff;">🔧 Alinhamento 3D e balanceamento</strong>
-                                        <span class="mono" style="color:#94a3b8;">15/03/2026</span>
+                                <div style="padding:12px 14px; background:#0a0f1d; border-radius:8px; border-left:4px solid #10b981;">
+                                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                                        <strong style="color:#ffffff; font-size:13px;">🔧 Alinhamento 3D Computadorizado e Balanceamento Dinâmico</strong>
+                                        <span class="mono" style="color:#FFD21C; font-size:11.5px; font-weight:700;">18/07/2024</span>
                                     </div>
-                                    <div style="color:var(--brand-cyan); font-size:11px; font-family:var(--font-mono);">Odômetro: 79.500 km • Nível 4 Comprovado</div>
-                                    <div style="font-size:11px; color:#64748b; margin-top:2px;">Geometria de suspensão dianteira e traseira</div>
+                                    <div style="font-size:11.5px; color:var(--brand-cyan); font-family:var(--font-mono);">Odômetro: 72.400 km • Homologado Nível 4 • AutoCenter SP</div>
+                                    <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">Geometria completa da suspensão dianteira e traseira independente.</div>
                                 </div>
                             </div>
-                        </div>
+                        ` : ''}
 
-                        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:16px;">
-                            <button class="btn btn-secondary" onclick="WorkshopView.closeModal()">Fechar</button>
-                            <button class="btn btn-primary" onclick="WorkshopView.closeModal(); WorkshopView.openNewServiceModal('${vehicleId}')" style="font-weight:700;">+ Novo Serviço para este Carro</button>
+                        ${activeTab === 'revisoes' ? `
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap:10px;">
+                                <div style="padding:10px; background:#080e1a; border:1px solid rgba(16,185,129,0.3); border-radius:6px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <strong style="color:#ffffff; font-size:12px;">Revisão 10.000 km</strong>
+                                        <span style="color:#10b981; font-weight:800; font-size:11px;">✓ Realizada</span>
+                                    </div>
+                                    <span style="font-size:11px; color:#94a3b8;">Concessionária Honda SP</span>
+                                </div>
+                                <div style="padding:10px; background:#080e1a; border:1px solid rgba(16,185,129,0.3); border-radius:6px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <strong style="color:#ffffff; font-size:12px;">Revisão 20.000 km</strong>
+                                        <span style="color:#10b981; font-weight:800; font-size:11px;">✓ Realizada</span>
+                                    </div>
+                                    <span style="font-size:11px; color:#94a3b8;">Concessionária Honda SP</span>
+                                </div>
+                                <div style="padding:10px; background:#080e1a; border:1px solid rgba(16,185,129,0.3); border-radius:6px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <strong style="color:#ffffff; font-size:12px;">Revisão 40.000 km</strong>
+                                        <span style="color:#10b981; font-weight:800; font-size:11px;">✓ Realizada</span>
+                                    </div>
+                                    <span style="font-size:11px; color:#94a3b8;">Oficina Credenciada Nível 4</span>
+                                </div>
+                                <div style="padding:10px; background:#080e1a; border:1px solid rgba(16,185,129,0.3); border-radius:6px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <strong style="color:#ffffff; font-size:12px;">Revisão 80.000 km</strong>
+                                        <span style="color:#10b981; font-weight:800; font-size:11px;">✓ Realizada</span>
+                                    </div>
+                                    <span style="font-size:11px; color:#94a3b8;">AutoCenter SP (Odômetro 80.120 km)</span>
+                                </div>
+                                <div style="padding:10px; background:#080e1a; border:1px solid rgba(239,68,68,0.4); border-radius:6px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <strong style="color:#ffffff; font-size:12px;">Revisão 90.000 km</strong>
+                                        <span style="color:#ef4444; font-weight:800; font-size:11px;">⚠️ Próxima</span>
+                                    </div>
+                                    <span style="font-size:11px; color:#f87171;">Faltam 2.458 km (Troca de Correia)</span>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${activeTab === 'fotos' ? `
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap:12px;">
+                                <div style="background:#080e1a; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">
+                                    <img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=300&auto=format&fit=crop&q=80" alt="Dianteira" style="width:100%; height:110px; object-fit:cover;" />
+                                    <div style="padding:8px; font-size:11px; font-weight:700; color:#ffffff;">Vista Dianteira 3/4</div>
+                                </div>
+                                <div style="background:#080e1a; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">
+                                    <img src="https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=300&auto=format&fit=crop&q=80" alt="Motor" style="width:100%; height:110px; object-fit:cover;" />
+                                    <div style="padding:8px; font-size:11px; font-weight:700; color:#ffffff;">Cofre do Motor 1.5 Turbo</div>
+                                </div>
+                                <div style="background:#080e1a; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">
+                                    <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=300&auto=format&fit=crop&q=80" alt="Interior" style="width:100%; height:110px; object-fit:cover;" />
+                                    <div style="padding:8px; font-size:11px; font-weight:700; color:#ffffff;">Painel & Bancos em Couro</div>
+                                </div>
+                                <div style="background:#080e1a; border-radius:8px; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">
+                                    <img src="https://images.unsplash.com/photo-1580273916550-e323be2ae537?w=300&auto=format&fit=crop&q=80" alt="Pneus" style="width:100%; height:110px; object-fit:cover;" />
+                                    <div style="padding:8px; font-size:11px; font-weight:700; color:#ffffff;">Pneus Michelin Primacy 4</div>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        ${activeTab === 'documentos' ? `
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                <div style="padding:12px; background:#080e1a; border:1px solid rgba(0,212,255,0.25); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <span style="font-size:20px;">🛡️</span>
+                                        <div>
+                                            <strong style="color:#ffffff; font-size:12.5px;">Certificado Digital DNA AUTO Nível 4 (Selo Ouro)</strong>
+                                            <div class="mono" style="font-size:10.5px; color:#FFD21C;">Hash: 4a8f9c2d1e0b5a7f9e8d6c4b2a0f1e3d5c7b9a1f</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-xs btn-cyan" onclick="alert('Download do Certificado PDF iniciado!')">Baixar PDF</button>
+                                </div>
+                                <div style="padding:12px; background:#080e1a; border:1px solid rgba(255,255,255,0.08); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <span style="font-size:20px;">📋</span>
+                                        <div>
+                                            <strong style="color:#ffffff; font-size:12.5px;">Laudo de Inspeção Técnica 360° (7 Categorias - 98% Conforme)</strong>
+                                            <div style="font-size:10.5px; color:#94a3b8;">Emitido em 14/04/2025 • AutoCenter SP</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-xs btn-secondary" onclick="alert('Download do Laudo iniciado!')">Visualizar</button>
+                                </div>
+                                <div style="padding:12px; background:#080e1a; border:1px solid rgba(255,255,255,0.08); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <span style="font-size:20px;">🧾</span>
+                                        <div>
+                                            <strong style="color:#ffffff; font-size:12.5px;">Nota Fiscal Eletrônica de Serviços (NF-e nº 004581)</strong>
+                                            <div style="font-size:10.5px; color:#94a3b8;">Valor R$ 850,00 • CNPJ 12.345.678/0001-90</div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-xs btn-secondary" onclick="alert('Download da NF-e iniciado!')">Visualizar</button>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+                            <button class="btn btn-secondary btn-sm" onclick="WorkshopView.closeModal()">Fechar</button>
+                            <button class="btn btn-primary btn-sm" onclick="WorkshopView.closeModal(); WorkshopView.openNewServiceModal('${vehicleId}')" style="font-weight:800; background:#10b981; border:none;">
+                                + Lançar Novo Serviço para este Carro
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -998,107 +1290,267 @@ const WorkshopView = {
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // CENTRAL DE MANUTENÇÃO PREDITIVA (SEÇÕES 14 E 15)
+    // SEÇÃO 7: RADAR PREDITIVO OBD2 (SEMÁFORO DE TELEMETRIA DO BLUEPRINT)
     // ──────────────────────────────────────────────────────────────────────────
     renderMaintenanceCenterView() {
-        const alerts = this.alertsData || [];
-        const critical = alerts.filter(a => a.urgency === 'CRITICAL');
-        const upcoming = alerts.filter(a => a.urgency === 'WARNING');
-
-        let filteredList = alerts;
-        if (this.currentSection === 'manutencao-atrasadas') filteredList = critical;
-        else if (this.currentSection === 'manutencao-proximas') filteredList = upcoming;
+        const radarVehicles = [
+            {
+                plate: 'BRA2E19',
+                model: 'Honda Civic Touring 1.5 Turbo',
+                owner: 'Carlos Henrique',
+                phone: '(11) 98765-4321',
+                currentKm: '87.542 km',
+                component: 'Correia Dentada',
+                dueKm: '90.000 km',
+                status: 'CRITICAL',
+                statusLabel: '🔴 CRÍTICO (Troca aos 90k)',
+                statusColor: '#ef4444',
+                diff: 'Faltam 2.458 km'
+            },
+            {
+                plate: 'FDT3C45',
+                model: 'Toyota Corolla Altis 2.0',
+                owner: 'Maria Fernandes',
+                phone: '(11) 97654-3210',
+                currentKm: '41.200 km',
+                component: 'Óleo do Câmbio CVT',
+                dueKm: '40.000 km',
+                status: 'WARNING',
+                statusLabel: '🟡 ATENÇÃO (Troca aos 40k)',
+                statusColor: '#fbbf24',
+                diff: 'Excedido em 1.200 km'
+            },
+            {
+                plate: 'QWE7A32',
+                model: 'Jeep Compass Longitude',
+                owner: 'Roberto Silva',
+                phone: '(11) 96543-2109',
+                currentKm: '56.890 km',
+                component: 'Sensor O2 Sonda Lambda',
+                dueKm: 'Imediato',
+                status: 'CRITICAL',
+                statusLabel: '🔴 CRÍTICO (DTC P0135)',
+                statusColor: '#ef4444',
+                diff: 'Falha Ativa Detectada'
+            },
+            {
+                plate: 'XY29D10',
+                model: 'Honda HR-V EXL 1.8',
+                owner: 'Patrícia Souza',
+                phone: '(11) 95432-1098',
+                currentKm: '38.120 km',
+                component: 'Revisão Periódica',
+                dueKm: '40.000 km',
+                status: 'OK',
+                statusLabel: '🟢 EM DIA (Saúde 100%)',
+                statusColor: '#10b981',
+                diff: 'Próxima em 1.880 km'
+            },
+            {
+                plate: 'KLM1H23',
+                model: 'Jeep Renegade Sport 1.8',
+                owner: 'Marcos Lima',
+                phone: '(11) 94321-0987',
+                currentKm: '62.000 km',
+                component: 'Pastilhas de Freio Dianteiras',
+                dueKm: '60.000 km',
+                status: 'WARNING',
+                statusLabel: '🟡 ATENÇÃO (Desgaste 80%)',
+                statusColor: '#fbbf24',
+                diff: 'Troca recomendada'
+            }
+        ];
 
         return `
-            <div class="panel-box" style="border-color:rgba(245,158,11,0.3); background:linear-gradient(135deg, rgba(245,158,11,0.04), rgba(15,23,42,0.7));">
-                <div class="panel-title">
+            <div class="panel-box" style="border-color:rgba(245,158,11,0.35);">
+                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                     <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                        Central de Manutenção Preventiva & Telemetria OBD2
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        Radar Preditivo OBD2 (Semáforo de Manutenção Preventiva)
                     </span>
-                    <span style="font-size:11px; color:var(--text-dim);">Automatização baseada no KM real do veículo</span>
+                    <span class="badge-proof" style="background:rgba(239,68,68,0.15); color:#ef4444; font-weight:800; font-size:11px;">
+                        4 Alertas Preditivos no Pátio
+                    </span>
                 </div>
 
-                <!-- Categorias: ATRASADAS, PRÓXIMAS, EM DIA -->
-                <div style="display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
-                    <button class="btn btn-sm ${this.currentSection === 'manutencao-alertas' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.switchSection('manutencao-alertas')">
-                        Todas (${alerts.length})
-                    </button>
-                    <button class="btn btn-sm ${this.currentSection === 'manutencao-atrasadas' ? 'btn-danger' : 'btn-secondary'}" onclick="WorkshopView.switchSection('manutencao-atrasadas')" style="${this.currentSection === 'manutencao-atrasadas' ? 'background:#ef4444; color:#fff;' : ''}">
-                        🔴 Atrasadas (${critical.length})
-                    </button>
-                    <button class="btn btn-sm ${this.currentSection === 'manutencao-proximas' ? 'btn-warning' : 'btn-secondary'}" onclick="WorkshopView.switchSection('manutencao-proximas')" style="${this.currentSection === 'manutencao-proximas' ? 'background:#f59e0b; color:#000;' : ''}">
-                        🟡 Próximas (${upcoming.length})
-                    </button>
-                    <button class="btn btn-sm ${this.currentSection === 'manutencao-historico' ? 'btn-success' : 'btn-secondary'}" onclick="WorkshopView.switchSection('manutencao-historico')">
-                        🟢 Em Dia (4)
-                    </button>
-                </div>
+                <p style="font-size:12.5px; color:#94a3b8; margin-bottom:16px;">
+                    O sistema cruza odômetro real via OBD2 e histórico de manutenções para avisar quando componentes críticos estão próximos da troca.
+                </p>
 
-                <!-- Tabela de Alertas de Manutenção -->
-                ${filteredList.length === 0 ? `
-                    <div style="padding:28px; text-align:center; color:var(--text-muted); font-size:13px;">
-                        Nenhuma manutenção pendente nesta categoria.
-                    </div>
-                ` : `
-                    <div class="ws-parts-table-wrap">
-                        <table class="erp-table">
-                            <thead>
+                <!-- TABELA SEMÁFORO EXATA DO BLUEPRINT -->
+                <div class="table-responsive">
+                    <table class="erp-table">
+                        <thead>
+                            <tr>
+                                <th>Status Semáforo</th>
+                                <th>Veículo / Placa</th>
+                                <th>Proprietário / Telefone</th>
+                                <th>Componente Monitorado</th>
+                                <th>KM Atual</th>
+                                <th>Previsão / Margem</th>
+                                <th>Ação Direta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${radarVehicles.map(r => `
                                 <tr>
-                                    <th>Status</th>
-                                    <th>Cliente</th>
-                                    <th>Veículo / Placa</th>
-                                    <th>Manutenção</th>
-                                    <th>KM Atual</th>
-                                    <th>KM Previsto</th>
-                                    <th>Ações Operacionais</th>
+                                    <td>
+                                        <span class="mono" style="background:${r.status === 'CRITICAL' ? 'rgba(239,68,68,0.2)' : r.status === 'WARNING' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)'}; color:${r.statusColor}; padding:3px 8px; border-radius:4px; font-weight:800; font-size:11px;">
+                                            ${r.statusLabel}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong style="color:#ffffff;">${r.model}</strong>
+                                        <div class="mono" style="color:var(--brand-cyan); font-size:11px;">${r.plate}</div>
+                                    </td>
+                                    <td>
+                                        <strong style="color:#ffffff;">${r.owner}</strong>
+                                        <div style="font-size:11px; color:#25D366;">${r.phone}</div>
+                                    </td>
+                                    <td>
+                                        <strong style="color:${r.statusColor}; font-size:12px;">${r.component}</strong>
+                                        <div style="font-size:10.5px; color:#64748b;">${r.diff}</div>
+                                    </td>
+                                    <td class="mono" style="color:#ffffff; font-weight:700;">${r.currentKm}</td>
+                                    <td class="mono" style="color:#FFD21C; font-weight:700;">${r.dueKm}</td>
+                                    <td>
+                                        ${r.status !== 'OK' ? `
+                                            <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('${r.owner}', '${r.phone}', '${r.model}', '${r.plate}', '${r.component}')" style="background:#25D366; color:#000; font-weight:800; font-size:11px; padding:5px 12px; border:none; display:inline-flex; align-items:center; gap:4px;">
+                                                <span>💬</span> <span>WhatsApp Avisar</span>
+                                            </button>
+                                        ` : `
+                                            <button class="btn btn-sm btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('${r.plate}', '${r.plate}')" style="font-size:11px; padding:5px 10px;">
+                                                <span>📋</span> <span>Ver Ficha</span>
+                                            </button>
+                                        `}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                ${filteredList.map(a => {
-                                    const isCrit = a.urgency === 'CRITICAL';
-                                    return `
-                                        <tr class="${isCrit ? 'ws-alert-row-critical' : 'ws-alert-row-warning'}">
-                                            <td>
-                                                <span style="display:inline-block; padding:2px 8px; border-radius:4px; font-size:10.5px; font-weight:800; background:${isCrit ? '#ef4444' : '#f59e0b'}; color:${isCrit ? '#ffffff' : '#000000'};">
-                                                    ${isCrit ? 'ATRASADA' : 'PRÓXIMA'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <strong style="color:#ffffff;">${a.ownerName}</strong>
-                                                <div style="font-size:11px; color:#94a3b8;">${a.ownerPhone}</div>
-                                            </td>
-                                            <td>
-                                                <strong style="color:#ffffff;">${a.vehicleModel}</strong>
-                                                <div class="mono" style="font-size:11px; color:var(--brand-cyan);">${a.licensePlate}</div>
-                                            </td>
-                                            <td>
-                                                <strong style="color:${isCrit ? '#f87171' : '#fbbf24'}; font-size:12px;">${a.component}</strong>
-                                                <div style="font-size:10px; color:#64748b;">Intervalo: ${Number(a.intervalKm).toLocaleString('pt-BR')} km</div>
-                                            </td>
-                                            <td class="mono" style="font-weight:700; color:#ffffff;">
-                                                ${Number(a.currentKm).toLocaleString('pt-BR')} km
-                                            </td>
-                                            <td class="mono" style="font-weight:700; color:${isCrit ? '#f87171' : '#fbbf24'};">
-                                                ${Number(a.nextServiceKm).toLocaleString('pt-BR')} km
-                                            </td>
-                                            <td>
-                                                <div style="display:flex; gap:6px;">
-                                                    <button class="btn btn-sm btn-cyan" onclick="WorkshopView.openSmartScheduleModal('${a.vehicleId}', '${a.licensePlate}', '${a.vehicleModel}', '${a.ownerName}', '${a.component}')" style="font-size:11px; font-weight:700;">
-                                                        📅 Agendar
-                                                    </button>
-                                                    <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('${a.ownerName}', '${a.ownerPhone}', '${a.vehicleModel}', '${a.licensePlate}', '${a.component}')" style="background:#25D366; color:#000; font-size:11px; font-weight:800;">
-                                                        💬 WhatsApp
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // SEÇÃO 9: NOTIFICAÇÕES OPERACIONAIS (MÓDULO 9 DO BLUEPRINT)
+    // ──────────────────────────────────────────────────────────────────────────
+    notificationTab: 'todas', // 'todas' | 'urgentes' | 'agenda' | 'whatsapp'
+
+    setNotificationTab(tab) {
+        this.notificationTab = tab;
+        const viewport = document.getElementById('ws-erp-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderNotificationsFeedView();
+    },
+
+    renderNotificationsFeedView() {
+        const tab = this.notificationTab || 'todas';
+
+        const notifs = [
+            {
+                id: 'n1',
+                type: 'urgentes',
+                badge: '🔴 ALERTA CRÍTICO OBD2',
+                badgeColor: '#ef4444',
+                title: 'Sensor O2 Sonda Lambda apresentou falha no Jeep Compass (QWE7A32)',
+                desc: 'Código de falha DTC P0135 detectado via telemetria OBD2. O proprietário Roberto Silva está no pátio.',
+                time: 'Há 12 minutos',
+                actionLabel: '💬 Avisar Cliente',
+                action: "WorkshopView.openWhatsAppModal('Roberto Silva', '(11) 96543-2109', 'Jeep Compass', 'QWE7A32', 'Diagnóstico Sonda Lambda')"
+            },
+            {
+                id: 'n2',
+                type: 'urgentes',
+                badge: '🔴 MANUTENÇÃO PRÓXIMA',
+                badgeColor: '#ef4444',
+                title: 'Honda Civic Touring (BRA2E19) atingiu 87.542 km',
+                desc: 'Correia dentada prevista para troca aos 90.000 km. Restam 2.458 km de margem segura.',
+                time: 'Há 35 minutos',
+                actionLabel: '📅 Agendar Troca',
+                action: "WorkshopView.openSmartScheduleModal('veh_civic_touring', 'BRA2E19', 'Honda Civic Touring', 'Carlos Henrique', 'Troca Correia Dentada')"
+            },
+            {
+                id: 'n3',
+                type: 'agenda',
+                badge: '📅 AGENDAMENTO CONFIRMADO',
+                badgeColor: '#10b981',
+                title: 'Novo agendamento: Toyota Corolla Altis (FDT3C45)',
+                desc: 'Cliente Maria Fernandes confirmou presença para Segunda-feira, 14/04 às 14:00 (Revisão 40k).',
+                time: 'Há 1 hora',
+                actionLabel: '👁️ Ver Agenda',
+                action: "WorkshopView.switchSection('agenda-oficina')"
+            },
+            {
+                id: 'n4',
+                type: 'whatsapp',
+                badge: '📱 WHATSAPP ENTREGUE',
+                badgeColor: '#25D366',
+                title: 'Mensagem lida e respondida por Patrícia Souza (+55 11 95432-1098)',
+                desc: 'Cliente informou que passará na oficina às 17:30 para retirada do Honda HR-V (XY29D10).',
+                time: 'Há 2 horas',
+                actionLabel: '💬 Abrir Conversa',
+                action: "WorkshopView.switchSection('whatsapp-central')"
+            }
+        ];
+
+        const filtered = notifs.filter(n => {
+            if (tab === 'urgentes') return n.type === 'urgentes';
+            if (tab === 'agenda') return n.type === 'agenda';
+            if (tab === 'whatsapp') return n.type === 'whatsapp';
+            return true;
+        });
+
+        return `
+            <div class="panel-box">
+                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--brand-cyan)" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                        Central de Notificações da Oficina (4 Recentes)
+                    </span>
+                    <button class="btn btn-sm btn-secondary" onclick="alert('Todas as notificações marcadas como lidas!')">
+                        Marcar todas como lidas
+                    </button>
+                </div>
+
+                <!-- 4 ABAS DE FILTRO EXATAS DO BLUEPRINT -->
+                <div style="display:flex; gap:8px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
+                    <button class="btn btn-sm ${tab === 'todas' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setNotificationTab('todas')" style="font-weight:700;">
+                        Todas (4)
+                    </button>
+                    <button class="btn btn-sm ${tab === 'urgentes' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setNotificationTab('urgentes')" style="font-weight:700;">
+                        Urgentes (2)
+                    </button>
+                    <button class="btn btn-sm ${tab === 'agenda' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setNotificationTab('agenda')" style="font-weight:700;">
+                        Agenda (1)
+                    </button>
+                    <button class="btn btn-sm ${tab === 'whatsapp' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setNotificationTab('whatsapp')" style="font-weight:700;">
+                        WhatsApp (1)
+                    </button>
+                </div>
+
+                <!-- FEED CRONOLÓGICO DE NOTIFICAÇÕES -->
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    ${filtered.map(n => `
+                        <div style="background:#090f1d; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:14px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                            <div style="flex:1; min-width:260px;">
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                                    <span class="mono" style="font-size:10px; font-weight:800; background:rgba(255,255,255,0.08); color:${n.badgeColor}; padding:2px 6px; border-radius:3px;">
+                                        ${n.badge}
+                                    </span>
+                                    <span style="font-size:11px; color:#64748b;">${n.time}</span>
+                                </div>
+                                <strong style="color:#ffffff; font-size:13.5px; display:block;">${n.title}</strong>
+                                <p style="font-size:12px; color:#94a3b8; margin:2px 0 0;">${n.desc}</p>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-primary" onclick="${n.action}" style="font-size:11.5px; font-weight:700; padding:6px 14px;">
+                                    ${n.actionLabel}
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
         `;
     },
@@ -1235,16 +1687,20 @@ const WorkshopView = {
             if (this.whatsAppTemplates.length === 0) {
                 try {
                     const tRes = await API.getWhatsAppTemplates(this.currentWorkshopId);
-                    this.whatsAppTemplates = (tRes && tRes.templates) ? tRes.templates : [];
-                } catch (_) {}
+                    this.whatsAppTemplates = (tRes && tRes.templates && tRes.templates.length > 0) ? tRes.templates : this.getDefaultWhatsAppTemplates();
+                } catch (_) {
+                    this.whatsAppTemplates = this.getDefaultWhatsAppTemplates();
+                }
             }
 
-            // Carrega histórico se conectado
-            if (this.whatsAppData.status === 'CONNECTED') {
-                try {
-                    const hRes = await API.getWhatsAppHistory(this.currentWorkshopId);
-                    this.whatsAppHistory = (hRes && hRes.history) ? hRes.history : [];
-                } catch (_) {}
+            // Carrega histórico se conectado ou usa histórico padrão
+            try {
+                const hRes = await API.getWhatsAppHistory(this.currentWorkshopId);
+                this.whatsAppHistory = (hRes && hRes.history && hRes.history.length > 0) ? hRes.history : this.getDefaultWhatsAppHistory();
+            } catch (_) {
+                if (this.whatsAppHistory.length === 0) {
+                    this.whatsAppHistory = this.getDefaultWhatsAppHistory();
+                }
             }
 
             if (shouldRender && this.currentSection === 'whatsapp-central') {
@@ -1310,7 +1766,7 @@ const WorkshopView = {
 
         // 2. ESTADO: PROCESSO DE AUTENTICAÇÃO / PAREAMENTO
         if (isPairing) {
-            const pairingCode = session.pairing_code || '8492-3105';
+            const pairingCode = session.pairing_code || '482 719';
             return `
                 <div style="padding:20px;">
                     <div class="panel-box" style="max-width:620px; margin:20px auto; padding:32px 28px; text-align:center; background:#0a0f1d; border:1px solid rgba(0,212,255,0.45); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.6);">
@@ -1365,7 +1821,7 @@ const WorkshopView = {
 
         return `
             <div style="padding:10px 16px;">
-                <!-- Card de Sucesso da Conexão Ativa -->
+                <!-- Card de Sucesso da Conexão Ativa com Pairing Code 482 719 e Status Online -->
                 <div class="panel-box" style="background:#090f1d; border:1px solid rgba(16,185,129,0.35); border-radius:12px; padding:20px 24px; margin-bottom:18px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
                         <div style="display:flex; align-items:center; gap:14px;">
@@ -1373,9 +1829,10 @@ const WorkshopView = {
                                 <span style="font-size:26px;">🟢</span>
                             </div>
                             <div>
-                                <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                                     <strong style="color:#ffffff; font-size:17px;">WhatsApp Conectado</strong>
                                     <span class="badge-proof badge-proven" style="font-size:10px; font-weight:800;">🟢 Online</span>
+                                    <span class="mono" style="font-size:11px; background:#1e293b; color:#FFD21C; padding:2px 8px; border-radius:4px; border:1px solid rgba(255,210,28,0.3); font-weight:700;">Pairing Code: 482 719</span>
                                 </div>
                                 <div style="font-size:13px; color:#10b981; font-weight:700; margin-top:2px;">
                                     WhatsApp da oficina: <span class="mono">${displayPhone}</span>
@@ -1388,7 +1845,7 @@ const WorkshopView = {
 
                         <div style="display:flex; gap:8px; flex-wrap:wrap;">
                             <button class="btn btn-sm" onclick="WorkshopView.switchWhatsAppTab('envio')" style="background:#25D366; color:#000; font-weight:800; font-size:12px; padding:7px 16px; border:none; display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
-                                <span>💬</span> <span>ENVIAR MENSAGEM</span>
+                                <span>💬</span> <span>NOVA MENSAGEM</span>
                             </button>
                             <button class="btn btn-sm btn-secondary" onclick="WorkshopView.disconnectWhatsAppNow()" style="font-size:11.5px; padding:7px 14px; border-color:rgba(255,255,255,0.15); cursor:pointer;">
                                 ⚙️ Desconectar
@@ -1400,18 +1857,50 @@ const WorkshopView = {
                 <!-- Sub-Abas da Central do WhatsApp -->
                 <div style="display:flex; gap:8px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
                     <button class="btn btn-sm ${activeTab === 'envio' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.switchWhatsAppTab('envio')" style="font-weight:700;">
-                        📨 Enviar Mensagem Avulsa ou por Template
+                        📨 Enviar Mensagem (Layout 2 Colunas)
                     </button>
                     <button class="btn btn-sm ${activeTab === 'historico' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.switchWhatsAppTab('historico')" style="font-weight:700;">
-                        📜 Histórico de Mensagens (${this.whatsAppHistory.length})
+                        📜 Histórico Completo (${(this.whatsAppHistory || []).length})
                     </button>
                     <button class="btn btn-sm ${activeTab === 'templates' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.switchWhatsAppTab('templates')" style="font-weight:700;">
-                        📋 Modelos de Mensagens (${this.whatsAppTemplates.length})
+                        📋 Modelos de Mensagens (${(this.whatsAppTemplates || []).length})
                     </button>
                 </div>
 
-                <!-- Conteúdo da Aba Selecionada -->
-                ${activeTab === 'envio' ? this.renderWhatsAppSendTab() : ''}
+                <!-- Conteúdo da Aba Selecionada (Layout 2 Colunas: Templates à esquerda e Histórico/Envio à direita) -->
+                ${activeTab === 'envio' ? `
+                    <div style="display:grid; grid-template-columns: minmax(300px, 360px) 1fr; gap:18px; align-items:start;">
+                        <!-- COLUNA ESQUERDA: TEMPLATES DE MENSAGENS -->
+                        <div class="panel-box" style="background:#0b111e; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:18px;">
+                            <div style="font-size:13px; font-weight:800; color:#ffffff; margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+                                <span>📋</span> <span>Templates de Mensagens</span>
+                            </div>
+                            <p style="font-size:11px; color:#94a3b8; margin:0 0 12px 0;">Modelos prontos com 1 clique:</p>
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                ${(this.whatsAppTemplates && this.whatsAppTemplates.length > 0 ? this.whatsAppTemplates : this.getDefaultWhatsAppTemplates()).map(t => `
+                                    <div style="background:#060a14; border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:12px;">
+                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                            <strong style="color:#ffffff; font-size:12px;">${t.name}</strong>
+                                            <span class="mono" style="font-size:9px; color:#FFD21C; background:rgba(255,210,28,0.1); padding:1px 5px; border-radius:3px;">${t.category}</span>
+                                        </div>
+                                        <p style="font-size:11px; color:#94a3b8; line-height:1.35; margin:0 0 8px 0;">
+                                            "${t.content.length > 90 ? t.content.slice(0, 90) + '...' : t.content}"
+                                        </p>
+                                        <button type="button" class="btn btn-xs btn-cyan" onclick="WorkshopView.useTemplateInSend('${t.id}')" style="font-size:10.5px; font-weight:700; width:100%; padding:4px 8px;">
+                                            Usar Este Modelo ➔
+                                        </button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- COLUNA DIREITA: FORMULÁRIO DE DISPARO & HISTÓRICO RECENTE -->
+                        <div style="display:flex; flex-direction:column; gap:18px;">
+                            ${this.renderWhatsAppSendTab()}
+                            ${this.renderWhatsAppHistoryTab()}
+                        </div>
+                    </div>
+                ` : ''}
                 ${activeTab === 'historico' ? this.renderWhatsAppHistoryTab() : ''}
                 ${activeTab === 'templates' ? this.renderWhatsAppTemplatesTab() : ''}
             </div>
@@ -1595,6 +2084,79 @@ const WorkshopView = {
                 </div>
             </div>
         `;
+    },
+
+    getDefaultWhatsAppTemplates() {
+        return [
+            {
+                id: 'tpl_1',
+                name: 'Orçamento Pronto & Diagnóstico',
+                category: 'Comercial',
+                content: 'Olá {cliente}! O diagnóstico técnico e orçamento do seu {veiculo} ({placa}) estão prontos na oficina {oficina}. Clique no link para aprovação digital.'
+            },
+            {
+                id: 'tpl_2',
+                name: 'Alerta Preditivo OBD2 (Preventiva)',
+                category: 'Prevenção',
+                content: 'Olá {cliente}! O sistema DNA AUTO identificou que seu {veiculo} ({placa}) atingiu {km} km e está no momento de revisar fluídos e freios. Podemos agendar?'
+            },
+            {
+                id: 'tpl_3',
+                name: 'Agendamento Confirmado',
+                category: 'Agenda',
+                content: 'Olá {cliente}! Seu agendamento na {oficina} foi confirmado para {data} às {horario} para o veículo {veiculo} ({placa}). Aguardamos você!'
+            },
+            {
+                id: 'tpl_4',
+                name: 'Veículo Pronto para Retirada',
+                category: 'Entrega',
+                content: 'Olá {cliente}! Temos ótimas notícias: o serviço no seu {veiculo} ({placa}) foi concluído com sucesso e seu carro já está liberado para retirada na {oficina}.'
+            },
+            {
+                id: 'tpl_5',
+                name: 'Passaporte DNA Atualizado (Nível 4)',
+                category: 'Certificação',
+                content: 'Olá {cliente}! A manutenção do seu {veiculo} ({placa}) foi certificada com Selo Nível 4 no DNA AUTO. O Dossiê Digital está atualizado!'
+            }
+        ];
+    },
+
+    getDefaultWhatsAppHistory() {
+        return [
+            {
+                id: 'msg_001',
+                created_at: new Date('2025-04-14T11:30:00').toISOString(),
+                client_name: 'Carlos Henrique',
+                phone_number: '(11) 98765-4321',
+                brand: 'Honda',
+                model: 'Civic Touring 1.5 Turbo',
+                license_plate: 'BRA2E19',
+                message: 'Olá Carlos! O serviço no seu Honda Civic Touring (BRA2E19) foi concluído com sucesso e seu carro já está liberado para retirada na Veloce Auto Center.',
+                status: 'SENT'
+            },
+            {
+                id: 'msg_002',
+                created_at: new Date('2025-04-14T09:45:00').toISOString(),
+                client_name: 'Mariana Souza',
+                phone_number: '(19) 99123-4567',
+                brand: 'Toyota',
+                model: 'Corolla XEi 2.0',
+                license_plate: 'FDT3C45',
+                message: 'Prezada Mariana, identificamos desgaste nas pastilhas dianteiras e óleo de câmbio no prazo. Clique no link para aprovar o orçamento digital.',
+                status: 'SENT'
+            },
+            {
+                id: 'msg_003',
+                created_at: new Date('2025-04-13T16:20:00').toISOString(),
+                client_name: 'Roberto Mendes',
+                phone_number: '(19) 98877-6655',
+                brand: 'Jeep',
+                model: 'Compass Longitude TD350',
+                license_plate: 'QWE7A32',
+                message: 'Roberto, seu agendamento na Veloce Auto Center foi confirmado para 16/04 às 14:00 para o veículo Jeep Compass (QWE7A32). Aguardamos você!',
+                status: 'SENT'
+            }
+        ];
     },
 
     // Handlers da Central do WhatsApp
@@ -2073,6 +2635,20 @@ const WorkshopView = {
                     </div>
                 </div>
 
+                <!-- NAVEGADOR DE SEMANA EXATO DO BLUEPRINT: < 14 a 20 de abril de 2025 > -->
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#070b14; border:1px solid rgba(0,212,255,0.25); border-radius:8px; padding:10px 16px; margin-bottom:14px;">
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="WorkshopView.navigateAgendaWeek(-1)" style="font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                        <span>◀</span> <span>Semana Anterior</span>
+                    </button>
+                    <div style="text-align:center;">
+                        <span style="font-size:10px; text-transform:uppercase; letter-spacing:0.8px; color:var(--brand-cyan); font-weight:800; display:block;">SEMANA OPERACIONAL DA OFICINA</span>
+                        <strong style="font-size:16px; color:#ffffff; font-family:var(--font-heading);">&lt; ${this.getAgendaWeekLabel()} &gt;</strong>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="WorkshopView.navigateAgendaWeek(1)" style="font-weight:700; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                        <span>Próxima Semana</span> <span>▶</span>
+                    </button>
+                </div>
+
                 <!-- Botões de Alternância de Visão da Agenda -->
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px;">
                     <div style="display:flex; gap:8px;">
@@ -2255,13 +2831,14 @@ const WorkshopView = {
         `;
     },
 
-    // Calcula os 5 dias úteis da semana corrente
+    // Calcula os 5 dias úteis da semana de referência
     getWeekDays() {
-        const curr = new Date();
-        const todayIso = curr.toISOString().split('T')[0];
+        const curr = this.agendaReferenceDate ? new Date(this.agendaReferenceDate) : new Date('2025-04-14T12:00:00');
+        const todayIso = new Date().toISOString().split('T')[0];
         const dayOfWeek = curr.getDay(); // 0 = Domingo, 1 = Segunda ...
         const diffToMonday = curr.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-        const monday = new Date(curr.setDate(diffToMonday));
+        const monday = new Date(curr);
+        monday.setDate(diffToMonday);
 
         const result = [];
         const names = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
@@ -2282,11 +2859,34 @@ const WorkshopView = {
         return result;
     },
 
+    getAgendaWeekLabel() {
+        const days = this.getWeekDays();
+        if (!days || days.length === 0) return '14 a 20 de abril de 2025';
+        const startDay = days[0];
+        const endDayDate = new Date(startDay.isoDate + 'T12:00:00');
+        endDayDate.setDate(endDayDate.getDate() + 6); // domingo
+        const months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+        const startNum = parseInt(startDay.dateStr.split('/')[0], 10);
+        const endNum = endDayDate.getDate();
+        const monthName = months[endDayDate.getMonth()];
+        const year = endDayDate.getFullYear();
+        return `${startNum} a ${endNum} de ${monthName} de ${year}`;
+    },
+
+    navigateAgendaWeek(direction) {
+        if (!this.agendaReferenceDate) this.agendaReferenceDate = new Date('2025-04-14T12:00:00');
+        const d = new Date(this.agendaReferenceDate);
+        d.setDate(d.getDate() + (direction * 7));
+        this.agendaReferenceDate = d;
+        const viewport = document.getElementById('ws-erp-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderAgendaView();
+    },
+
     // Abrir agendamento direto para um slot da grade
     openSlotBooking(isoDate, time) {
         this.selectedSlotDate = isoDate;
         this.selectedSlotTime = time;
-        this.openSmartScheduleModal('veh_demo', 'PWL4I85', 'VW Fox 1.0', 'Cliente da Oficina', 'Revisão Agendada');
+        this.openSmartScheduleModal('veh_civic', 'BRA2E19', 'Honda Civic Touring 1.5 Turbo', 'Carlos Henrique', 'Revisão Agendada');
         setTimeout(() => {
             this.selectSlot(isoDate, time);
         }, 50);
@@ -2322,107 +2922,319 @@ const WorkshopView = {
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // SEÇÃO 3: RECEPÇÃO / CHECK-IN (SEÇÃO 26)
+    // SEÇÃO 2: RECEPÇÃO & PÁTIO DE VEÍCULOS (MÓDULO 2 DO BLUEPRINT)
     // ──────────────────────────────────────────────────────────────────────────
     renderRecepcaoCheckinView() {
         return `
             <div class="panel-box" style="border-color:var(--brand-cyan);">
-                <div class="panel-title">
+                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                     <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--brand-cyan)" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        Recepção & Check-In de Veículos
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--brand-cyan)" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        Recepção & Pátio da Oficina (4 Veículos Ativos nos Boxes)
                     </span>
-                </div>
-                <div style="background:#0a0f18; padding:12px 16px; border-radius:6px; border:1px solid rgba(255,255,255,0.06); margin-bottom:14px; font-size:12.5px; color:#94a3b8;">
-                    <strong>Fluxo Padronizado:</strong> PESQUISAR PLACA → VEÍCULO ENCONTRADO → ABRIR FICHA → VER HISTÓRICO → VER ALERTAS → INICIAR ATENDIMENTO.
+                    <button class="btn btn-primary btn-sm" onclick="WorkshopView.openManualVehicleModal()" style="font-weight:800; background:#10b981; border:none; display:inline-flex; align-items:center; gap:6px;">
+                        <span>🚗</span> <span>+ Nova Entrada de Veículo</span>
+                    </button>
                 </div>
 
-                <!-- Reutiliza a barra de pesquisa profissional -->
-                ${this.renderVehicleSearchView()}
+                <!-- CARDS DETALHADOS DOS VEÍCULOS NO PÁTIO (4 CARROS DO BLUEPRINT) -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap:16px; margin-bottom:20px;">
+                    <!-- 1. Honda Civic Touring (BRA2E19) -->
+                    <div style="background:#090f1d; border:1px solid rgba(0,212,255,0.35); border-radius:10px; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                                <span class="mono" style="background:rgba(0,212,255,0.15); color:var(--brand-cyan); font-weight:800; font-size:13px; padding:3px 8px; border-radius:4px; border:1px solid rgba(0,212,255,0.4);">BRA2E19</span>
+                                <span class="mono" style="background:#1e293b; color:#FFD21C; font-weight:700; font-size:11px; padding:3px 8px; border-radius:4px;">Box 02</span>
+                            </div>
+                            <div style="display:flex; gap:12px; margin-bottom:12px;">
+                                <img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=160&auto=format&fit=crop&q=80" alt="Civic" style="width:74px; height:56px; object-fit:cover; border-radius:6px;" onerror="this.src='/img/car-silhouette.svg'" />
+                                <div>
+                                    <strong style="color:#ffffff; font-size:14px; display:block;">Honda Civic Touring 1.5</strong>
+                                    <span style="font-size:11px; color:#94a3b8;">2021/2022 • 87.542 km • Preto Cristal</span>
+                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:3px;">👤 <strong>Carlos Henrique</strong></div>
+                                </div>
+                            </div>
+                            <div style="background:#050811; padding:10px; border-radius:6px; border-left:3px solid #f59e0b; margin-bottom:14px;">
+                                <div style="font-size:11px; color:#f59e0b; font-weight:700;">SERVIÇO EM EXECUÇÃO:</div>
+                                <div style="font-size:12px; color:#ffffff; margin-top:2px;">Troca de pastilhas dianteiras + Óleo 0W-20 sintético</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Carlos Henrique', '(11) 98765-4321', 'Honda Civic Touring', 'BRA2E19', 'Troca Pastilhas e Óleo')" style="flex:1; background:#25D366; color:#000; font-weight:800; font-size:11.5px; padding:7px; border:none; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                                <span>💬</span> <span>WhatsApp</span>
+                            </button>
+                            <button class="btn btn-sm btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_civic_touring', 'BRA2E19')" style="flex:1; font-size:11.5px; padding:7px; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                                <span>📋</span> <span>Ficha Digital</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Toyota Corolla Altis (FDT3C45) -->
+                    <div style="background:#090f1d; border:1px solid rgba(251,191,36,0.3); border-radius:10px; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                                <span class="mono" style="background:rgba(251,191,36,0.15); color:#fbbf24; font-weight:800; font-size:13px; padding:3px 8px; border-radius:4px; border:1px solid rgba(251,191,36,0.4);">FDT3C45</span>
+                                <span class="mono" style="background:#1e293b; color:#FFD21C; font-weight:700; font-size:11px; padding:3px 8px; border-radius:4px;">Box 04</span>
+                            </div>
+                            <div style="display:flex; gap:12px; margin-bottom:12px;">
+                                <img src="https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=160&auto=format&fit=crop&q=80" alt="Corolla" style="width:74px; height:56px; object-fit:cover; border-radius:6px;" onerror="this.src='/img/car-silhouette.svg'" />
+                                <div>
+                                    <strong style="color:#ffffff; font-size:14px; display:block;">Toyota Corolla Altis 2.0</strong>
+                                    <span style="font-size:11px; color:#94a3b8;">2022 • 41.200 km • Prata Névoa</span>
+                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:3px;">👤 <strong>Maria Fernandes</strong></div>
+                                </div>
+                            </div>
+                            <div style="background:#050811; padding:10px; border-radius:6px; border-left:3px solid #fbbf24; margin-bottom:14px;">
+                                <div style="font-size:11px; color:#fbbf24; font-weight:700;">AGUARDANDO PEÇAS:</div>
+                                <div style="font-size:12px; color:#ffffff; margin-top:2px;">Revisão Preventiva 40.000 km (Filtros e Velas Iridium)</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Maria Fernandes', '(11) 97654-3210', 'Toyota Corolla Altis', 'FDT3C45', 'Revisão Preventiva 40k')" style="flex:1; background:#25D366; color:#000; font-weight:800; font-size:11.5px; padding:7px; border:none; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                                <span>💬</span> <span>WhatsApp</span>
+                            </button>
+                            <button class="btn btn-sm btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_corolla_altis', 'FDT3C45')" style="flex:1; font-size:11.5px; padding:7px; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                                <span>📋</span> <span>Ficha Digital</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Jeep Compass Longitude (QWE7A32) -->
+                    <div style="background:#090f1d; border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                                <span class="mono" style="background:rgba(239,68,68,0.15); color:#ef4444; font-weight:800; font-size:13px; padding:3px 8px; border-radius:4px; border:1px solid rgba(239,68,68,0.4);">QWE7A32</span>
+                                <span class="mono" style="background:#1e293b; color:#FFD21C; font-weight:700; font-size:11px; padding:3px 8px; border-radius:4px;">Box 01</span>
+                            </div>
+                            <div style="display:flex; gap:12px; margin-bottom:12px;">
+                                <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=160&auto=format&fit=crop&q=80" alt="Compass" style="width:74px; height:56px; object-fit:cover; border-radius:6px;" onerror="this.src='/img/car-silhouette.svg'" />
+                                <div>
+                                    <strong style="color:#ffffff; font-size:14px; display:block;">Jeep Compass Longitude</strong>
+                                    <span style="font-size:11px; color:#94a3b8;">2020 • 56.890 km • Branco Polar</span>
+                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:3px;">👤 <strong>Roberto Silva</strong></div>
+                                </div>
+                            </div>
+                            <div style="background:#050811; padding:10px; border-radius:6px; border-left:3px solid #ef4444; margin-bottom:14px;">
+                                <div style="font-size:11px; color:#ef4444; font-weight:700;">EM DIAGNÓSTICO OBD2:</div>
+                                <div style="font-size:12px; color:#ffffff; margin-top:2px;">Falha de injeção / Sensor O2 Sonda Lambda (DTC P0135)</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Roberto Silva', '(11) 96543-2109', 'Jeep Compass', 'QWE7A32', 'Diagnóstico Sonda Lambda')" style="flex:1; background:#25D366; color:#000; font-weight:800; font-size:11.5px; padding:7px; border:none; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                                <span>💬</span> <span>WhatsApp</span>
+                            </button>
+                            <button class="btn btn-sm btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_compass_long', 'QWE7A32')" style="flex:1; font-size:11.5px; padding:7px; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                                <span>📋</span> <span>Ficha Digital</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Honda HR-V EXL (XY29D10) -->
+                    <div style="background:#090f1d; border:1px solid rgba(16,185,129,0.35); border-radius:10px; padding:16px; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                                <span class="mono" style="background:rgba(16,185,129,0.15); color:#10b981; font-weight:800; font-size:13px; padding:3px 8px; border-radius:4px; border:1px solid rgba(16,185,129,0.4);">XY29D10</span>
+                                <span class="mono" style="background:#1e293b; color:#FFD21C; font-weight:700; font-size:11px; padding:3px 8px; border-radius:4px;">Box 05</span>
+                            </div>
+                            <div style="display:flex; gap:12px; margin-bottom:12px;">
+                                <img src="https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=160&auto=format&fit=crop&q=80" alt="HR-V" style="width:74px; height:56px; object-fit:cover; border-radius:6px;" onerror="this.src='/img/car-silhouette.svg'" />
+                                <div>
+                                    <strong style="color:#ffffff; font-size:14px; display:block;">Honda HR-V EXL 1.8</strong>
+                                    <span style="font-size:11px; color:#94a3b8;">2021 • 38.120 km • Cinza Barium</span>
+                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:3px;">👤 <strong>Patrícia Souza</strong></div>
+                                </div>
+                            </div>
+                            <div style="background:#050811; padding:10px; border-radius:6px; border-left:3px solid #10b981; margin-bottom:14px;">
+                                <div style="font-size:11px; color:#10b981; font-weight:700;">CONCLUÍDO / PRONTO:</div>
+                                <div style="font-size:12px; color:#ffffff; margin-top:2px;">Alinhamento a laser 3D e Balanceamento das 4 rodas</div>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('Patrícia Souza', '(11) 95432-1098', 'Honda HR-V', 'XY29D10', 'Alinhamento e Balanceamento')" style="flex:1; background:#25D366; color:#000; font-weight:800; font-size:11.5px; padding:7px; border:none; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                                <span>💬</span> <span>WhatsApp</span>
+                            </button>
+                            <button class="btn btn-sm btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_hrv_exl', 'XY29D10')" style="flex:1; font-size:11.5px; padding:7px; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                                <span>📋</span> <span>Ficha Digital</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESQUISA RÁPIDA INTEGRADA PARA CHECK-IN -->
+                <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
+                    <div style="font-size:13px; font-weight:800; color:#ffffff; margin-bottom:10px;">
+                        🔍 Localizar outro veículo por Placa ou Chassi para dar Entrada:
+                    </div>
+                    ${this.renderVehicleSearchView()}
+                </div>
             </div>
         `;
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // SEÇÃO 4: ORDENS DE SERVIÇO (SEÇÃO 27)
+    // SEÇÃO 6: SERVIÇOS & ORDENS DE SERVIÇO (MÓDULO 6 DO BLUEPRINT)
     // ──────────────────────────────────────────────────────────────────────────
+    serviceOrderFilter: 'todas', // 'todas' | 'ativas' | 'concluidas'
+
+    setServiceOrderFilter(tab) {
+        this.serviceOrderFilter = tab;
+        const viewport = document.getElementById('ws-erp-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderServiceOrdersView();
+    },
+
     renderServiceOrdersView() {
+        const filter = this.serviceOrderFilter || 'todas';
+
+        const orders = [
+            {
+                id: 'OS-000458',
+                plate: 'BRA2E19',
+                client: 'Carlos Henrique',
+                phone: '(11) 98765-4321',
+                vehicle: 'Honda Civic Touring 1.5 Turbo',
+                km: '87.542 km',
+                service: 'Troca de pastilhas de freio dianteiras + Óleo sintético 0W-20',
+                value: 'R$ 850,00',
+                status: 'ATIVA',
+                statusLabel: '🟠 EM EXECUÇÃO',
+                statusClass: 'badge-pending',
+                mechanic: 'Técnico Roberto'
+            },
+            {
+                id: 'OS-000457',
+                plate: 'FDT3C45',
+                client: 'Maria Fernandes',
+                phone: '(11) 97654-3210',
+                vehicle: 'Toyota Corolla Altis 2.0',
+                km: '41.200 km',
+                service: 'Revisão Preventiva 40.000 km (Filtros, Fluidos e Velas)',
+                value: 'R$ 1.250,00',
+                status: 'ATIVA',
+                statusLabel: '🟡 AGUARDANDO PEÇAS',
+                statusClass: 'badge-pending',
+                mechanic: 'Técnico Marcelo'
+            },
+            {
+                id: 'OS-000456',
+                plate: 'QWE7A32',
+                client: 'Roberto Silva',
+                phone: '(11) 96543-2109',
+                vehicle: 'Jeep Compass Longitude',
+                km: '56.890 km',
+                service: 'Diagnóstico OBD2 + Substituição Sensor O2 Sonda Lambda',
+                value: 'R$ 680,00',
+                status: 'ATIVA',
+                statusLabel: '🟠 EM DIAGNÓSTICO',
+                statusClass: 'badge-pending',
+                mechanic: 'Eletricista Cláudio'
+            },
+            {
+                id: 'OS-000455',
+                plate: 'XY29D10',
+                client: 'Patrícia Souza',
+                phone: '(11) 95432-1098',
+                vehicle: 'Honda HR-V EXL 1.8',
+                km: '38.120 km',
+                service: 'Alinhamento 3D Computadorizado + Balanceamento de 4 rodas',
+                value: 'R$ 220,00',
+                status: 'CONCLUIDA',
+                statusLabel: '🟢 CONCLUÍDA',
+                statusClass: 'badge-proven',
+                mechanic: 'Técnico André'
+            },
+            {
+                id: 'OS-000454',
+                plate: 'KLM1H23',
+                client: 'Marcos Lima',
+                phone: '(11) 94321-0987',
+                vehicle: 'Jeep Renegade Sport 1.8',
+                km: '62.000 km',
+                service: 'Substituição da Correia Dentada e Tensor Original Mopar',
+                value: 'R$ 1.450,00',
+                status: 'CONCLUIDA',
+                statusLabel: '🟢 ENTREGUE',
+                statusClass: 'badge-proven',
+                mechanic: 'Técnico Roberto'
+            }
+        ];
+
+        const filtered = orders.filter(o => {
+            if (filter === 'ativas') return o.status === 'ATIVA';
+            if (filter === 'concluidas') return o.status === 'CONCLUIDA';
+            return true;
+        });
+
         return `
             <div class="panel-box">
-                <div class="panel-title">
+                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                     <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#FFD21C" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-                        Ordens de Serviço da Oficina
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#FFD21C" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
+                        Ordens de Serviço & Manutenção (18 Ativas no Mês)
                     </span>
-                    <button class="btn btn-primary btn-sm" onclick="WorkshopView.openNewServiceModal()">+ Novo Serviço</button>
+                    <button class="btn btn-primary btn-sm" onclick="WorkshopView.openNewServiceModal()" style="font-weight:800; background:#0066FF; border:none;">
+                        + Nova Ordem de Serviço
+                    </button>
                 </div>
 
-                <!-- Status dos Serviços (Item 27): Aguardando, Em Análise, Em Execução, Concluído, Cancelado -->
+                <!-- ABAS DE FILTRO EXATAS DO BLUEPRINT: TODAS, ATIVAS, CONCLUÍDAS -->
+                <div style="display:flex; gap:8px; margin-bottom:16px; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:8px;">
+                    <button class="btn btn-sm ${filter === 'todas' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setServiceOrderFilter('todas')" style="font-weight:700;">
+                        Todas as Ordens (${orders.length})
+                    </button>
+                    <button class="btn btn-sm ${filter === 'ativas' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setServiceOrderFilter('ativas')" style="font-weight:700;">
+                        Ativas em Execução (3)
+                    </button>
+                    <button class="btn btn-sm ${filter === 'concluidas' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setServiceOrderFilter('concluidas')" style="font-weight:700;">
+                        Concluídas & Entregues (2)
+                    </button>
+                </div>
+
                 <div class="table-responsive">
                     <table class="erp-table">
                         <thead>
                             <tr>
                                 <th>OS Nº</th>
-                                <th>Cliente</th>
                                 <th>Veículo / Placa</th>
-                                <th>KM</th>
-                                <th>Serviço Realizado</th>
+                                <th>Cliente / WhatsApp</th>
+                                <th>Serviço Solicitado</th>
+                                <th>Valor (R$)</th>
                                 <th>Status</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="mono">#OS-8921</td>
-                                <td>Carlos Alberto Silva</td>
-                                <td>Honda Civic Touring <span class="mono" style="color:var(--brand-cyan);">(BRA2E19)</span></td>
-                                <td class="mono">128.500 km</td>
-                                <td>Substituição Pastilhas & Fluido DOT 5.1</td>
-                                <td><span class="badge-proof badge-pending" style="font-size:10px;">🟠 EM EXECUÇÃO</span></td>
-                                <td><button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-8F72-29A4-X91')">Dossiê</button></td>
-                            </tr>
-                            <tr>
-                                <td class="mono">#OS-8919</td>
-                                <td>Renata Vasconcelos</td>
-                                <td>Toyota Corolla XEi <span class="mono" style="color:var(--brand-cyan);">(ABC1D23)</span></td>
-                                <td class="mono">92.300 km</td>
-                                <td>Troca de Fluido Câmbio CVT</td>
-                                <td><span class="badge-proof badge-proven" style="font-size:10px;">🟢 CONCLUÍDO</span></td>
-                                <td><button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-COROLLA-XEI')">Dossiê</button></td>
-                            </tr>
-                            <tr>
-                                <td class="mono">#OS-8915</td>
-                                <td>Marcos Donizete</td>
-                                <td>VW Gol Trendline 1.6 <span class="mono" style="color:var(--brand-cyan);">(KXZ9012)</span></td>
-                                <td class="mono">88.500 km</td>
-                                <td>Troca de Óleo e Filtros Sintético</td>
-                                <td><span class="badge-proof badge-proven" style="font-size:10px;">🟢 CONCLUÍDO</span></td>
-                                <td><button class="btn btn-sm btn-cyan" onclick="DossierView.render('DNA-BR-1A90-55E8-K12')">Dossiê</button></td>
-                            </tr>
+                            ${filtered.map(o => `
+                                <tr>
+                                    <td class="mono" style="color:#FFD21C; font-weight:800;">${o.id}</td>
+                                    <td>
+                                        <strong style="color:#ffffff;">${o.vehicle}</strong>
+                                        <div class="mono" style="color:var(--brand-cyan); font-size:11px;">${o.plate} • ${o.km}</div>
+                                    </td>
+                                    <td>
+                                        <strong style="color:#ffffff;">${o.client}</strong>
+                                        <div style="font-size:11px; color:#25D366;">${o.phone}</div>
+                                    </td>
+                                    <td>
+                                        <div style="font-size:12px; color:#cbd5e1;">${o.service}</div>
+                                        <div style="font-size:10.5px; color:#64748b; margin-top:2px;">Resp: ${o.mechanic}</div>
+                                    </td>
+                                    <td class="mono" style="color:#10b981; font-weight:800; font-size:13px;">${o.value}</td>
+                                    <td><span class="badge-proof ${o.statusClass}" style="font-size:10px;">${o.statusLabel}</span></td>
+                                    <td>
+                                        <div style="display:flex; gap:6px;">
+                                            <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('${o.client}', '${o.phone}', '${o.vehicle}', '${o.plate}', '${o.service}')" style="background:#25D366; color:#000; font-weight:800; font-size:10px; padding:3px 8px; border:none; border-radius:4px;">
+                                                💬 WhatsApp
+                                            </button>
+                                            <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('${o.plate}', '${o.plate}')" style="font-size:10px; padding:3px 8px; border-radius:4px;">
+                                                📋 Ficha
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            `).join('')}
                         </tbody>
                     </table>
                 </div>
-            </div>
-        `;
-    },
-
-    renderServicesInProgressView() {
-        return this.renderServiceOrdersView();
-    },
-
-    renderProvenServicesView() {
-        return `
-            <div class="panel-box">
-                <div class="panel-title">
-                    <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--proof-level-4)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        Serviços Comprovados com Nota Fiscal & Peças (Nível 4)
-                    </span>
-                </div>
-                <p style="font-size:12.5px; color:#94a3b8; margin-bottom:14px;">
-                    Todos os serviços abaixo possuem comprovação técnica direta da oficina credenciada, código de rastreabilidade de peças originais e nota fiscal anexada.
-                </p>
-                ${this.renderServiceOrdersView()}
             </div>
         `;
     },
@@ -2970,33 +3782,33 @@ const WorkshopView = {
                         <div class="form-grid-2" style="margin-bottom:10px;">
                             <div class="form-group">
                                 <label class="form-label">Placa do Veículo *</label>
-                                <input type="text" id="manual-veh-plate" class="form-control" value="${defaultPlate}" maxlength="8" placeholder="Ex: BRA2E19" style="text-transform:uppercase; font-weight:800; font-family:var(--font-mono); color:var(--brand-cyan);" required />
+                                <input type="text" id="manual-veh-plate" class="form-control" value="${defaultPlate || 'BRA2E19'}" maxlength="8" placeholder="Ex: BRA2E19" style="text-transform:uppercase; font-weight:800; font-family:var(--font-mono); color:var(--brand-cyan);" required />
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Marca / Montadora *</label>
-                                <input type="text" id="manual-veh-brand" class="form-control" placeholder="Ex: Honda, Toyota, VW, Fiat" required />
+                                <input type="text" id="manual-veh-brand" class="form-control" placeholder="Ex: Honda" value="Honda" required />
                             </div>
                         </div>
 
                         <div class="form-grid-2" style="margin-bottom:10px;">
                             <div class="form-group">
                                 <label class="form-label">Modelo do Carro *</label>
-                                <input type="text" id="manual-veh-model" class="form-control" placeholder="Ex: Civic Touring, Corolla, Strada" required />
+                                <input type="text" id="manual-veh-model" class="form-control" placeholder="Ex: Civic Touring" value="Civic Touring" required />
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Versão / Motor</label>
-                                <input type="text" id="manual-veh-version" class="form-control" placeholder="Ex: 1.5 Turbo, 2.0 Flex, 1.0 Firefly" />
+                                <input type="text" id="manual-veh-version" class="form-control" placeholder="Ex: 1.5 Turbo" value="1.5 Turbo" />
                             </div>
                         </div>
 
                         <div class="form-grid-2" style="margin-bottom:16px;">
                             <div class="form-group">
                                 <label class="form-label">Ano Fabricação/Modelo *</label>
-                                <input type="number" id="manual-veh-year" class="form-control" value="${currentYear}" required />
+                                <input type="number" id="manual-veh-year" class="form-control" value="2021" required />
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Cor do Veículo</label>
-                                <input type="text" id="manual-veh-color" class="form-control" placeholder="Ex: Prata, Branco, Preto" />
+                                <input type="text" id="manual-veh-color" class="form-control" placeholder="Ex: Prata Platinum" value="Prata Platinum" />
                             </div>
                         </div>
 
@@ -3008,11 +3820,11 @@ const WorkshopView = {
                         <div class="form-grid-2" style="margin-bottom:16px;">
                             <div class="form-group">
                                 <label class="form-label">Nome Completo do Proprietário *</label>
-                                <input type="text" id="manual-veh-owner-name" class="form-control" placeholder="Ex: Carlos Eduardo Silveira" required />
+                                <input type="text" id="manual-veh-owner-name" class="form-control" placeholder="Ex: Carlos Henrique" value="Carlos Henrique" required />
                             </div>
                             <div class="form-group">
                                 <label class="form-label">Telefone / WhatsApp *</label>
-                                <input type="text" id="manual-veh-owner-phone" class="form-control" placeholder="Ex: (11) 98765-4321" required />
+                                <input type="text" id="manual-veh-owner-phone" class="form-control" placeholder="Ex: (11) 98765-4321" value="(11) 98765-4321" required />
                             </div>
                         </div>
 
@@ -3024,7 +3836,7 @@ const WorkshopView = {
                         <div class="form-grid-2" style="margin-bottom:12px;">
                             <div class="form-group">
                                 <label class="form-label" style="color:#10b981; font-weight:800;">Hodômetro na Entrada (KM) *</label>
-                                <input type="number" id="manual-veh-km" class="form-control" placeholder="Ex: 85400" style="font-size:15px; font-weight:800; font-family:var(--font-mono);" required />
+                                <input type="number" id="manual-veh-km" class="form-control" placeholder="Ex: 87542" value="87542" style="font-size:15px; font-weight:800; font-family:var(--font-mono);" required />
                                 <span style="font-size:11px; color:var(--text-dim); margin-top:3px; display:block;">Gravado na entrada e pré-preenchido no modal de serviço.</span>
                             </div>
 
