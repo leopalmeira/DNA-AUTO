@@ -466,7 +466,21 @@ async function runTests() {
 
         console.log(`✅ 36. PWA Oficial Google Play Store: Manifesto [${dataManifest.short_name}] com display standalone, Service Worker e ${dataManifest.icons.length} ícones nativos validado com sucesso.`);
 
-        console.log('\n🎉 TODOS OS 36 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 37: Upload Real de Foto do Veículo (Multipart/Form-Data) com Persistência
+        const photoFormData = new FormData();
+        const dummyImageBuffer = Buffer.from('fake-jpeg-image-binary-data');
+        photoFormData.append('photo', new Blob([dummyImageBuffer], { type: 'image/jpeg' }), 'car_owner_upload.jpg');
+        const resPhotoUpload = await fetch(`${BASE_URL}/vehicles/BRA2E19/photo-upload`, {
+            method: 'POST',
+            body: photoFormData
+        });
+        const dataPhotoUpload = await resPhotoUpload.json();
+        console.assert(resPhotoUpload.status === 200, 'Falha no endpoint de photo-upload');
+        console.assert(dataPhotoUpload.success === true, 'Upload de foto deve retornar success: true');
+        console.assert(typeof dataPhotoUpload.photo_url === 'string' && dataPhotoUpload.photo_url.startsWith('/uploads/vehicles/'), 'URL da foto deve apontar para /uploads/vehicles/');
+        console.log(`✅ 37. Upload Real de Foto do Veículo (Multipart): Arquivo salvo em [${dataPhotoUpload.photo_url}] e persistido com sucesso no banco de dados.`);
+
+        console.log('\n🎉 TODOS OS 37 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

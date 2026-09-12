@@ -18,7 +18,7 @@
     --dna-text-dim: #64748B;
 }
 
-/* 1. Viewport do App */
+/* 1. Viewport do App — Fullscreen Nativo */
 .dna-app-viewport {
     height: 100vh;
     height: 100dvh;
@@ -26,8 +26,7 @@
     max-width: 100vw;
     background: radial-gradient(circle at 50% 15%, #08152c 0%, #050b14 65%, #02050a 100%);
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
     padding: 0;
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Outfit', 'Inter', sans-serif;
@@ -37,54 +36,30 @@
     position: relative;
 }
 
-/* 2. Container Smartphone no Desktop e 100% no Mobile */
+/* 2. Container Fullscreen (sem frame de celular) */
 .dna-phone-frame {
     width: 100%;
-    max-width: 420px;
-    height: 96vh;
-    max-height: 890px;
+    max-width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
     background: #070D18;
-    border-radius: 38px;
-    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85), 0 0 40px rgba(0, 102, 255, 0.18);
-    border: 1.5px solid rgba(0, 102, 255, 0.32);
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
-@media (max-width: 600px) {
-    .dna-phone-frame {
-        max-width: 100%;
-        height: 100vh;
-        height: 100dvh;
-        max-height: 100vh;
-        border-radius: 0;
-        border: none;
-        box-shadow: none;
-    }
-}
-
-/* 3. Barra de Status Superior */
+/* 3. Barra de Status fake — Oculta (o sistema nativo cuida disso) */
 .dna-phone-statusbar {
-    height: 32px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 20px 0;
-    font-size: 12px;
-    font-weight: 700;
-    color: #FFFFFF;
-    letter-spacing: 0.3px;
-    z-index: 10;
-    flex-shrink: 0;
+    display: none !important;
 }
 
 .dna-statusbar-notch {
-    width: 90px;
-    height: 18px;
-    background: #000000;
-    border-radius: 10px;
+    display: none !important;
 }
 
 /* 4. Header Superior do App */
@@ -886,7 +861,7 @@
 }
 
 /* ==============================================================================
-   ESTILOS DE SUB-TELAS INTERNAS NATIVAS (PADRÃO TOTVS ENTERPRISE & APPLE)
+   ESTILOS DE SUB-TELAS INTERNAS NATIVAS
    Substituição completa de popups/alert por navegação interna fluida
    ============================================================================== */
 
@@ -1454,7 +1429,7 @@
     line-height: 1.3;
 }
 
-/* Tabela de Sensores ao Vivo (Padrão TOTVS) */
+/* Tabela de Sensores ao Vivo */
 .dna-obd-sensors-table {
     background: rgba(8, 16, 32, 0.85);
     border: 1.5px solid rgba(0, 102, 255, 0.25);
@@ -1624,7 +1599,7 @@
 }
 
 /* ==============================================================================
-   REFINAMENTOS PADRÃO TOTVS ENTERPRISE — BOTÕES DE SAIR & PLACA MERCOSUL
+   REFINAMENTOS — BOTÕES DE SAIR & PLACA MERCOSUL
    ============================================================================== */
 
 /* Botão de Sair no Header Superior */
@@ -2554,3 +2529,277 @@
     opacity: 1;
     pointer-events: auto;
 }
+
+/* ====================================================================
+   NOVOS ESTILOS: Inspeção Expansível, Filtros, Gastos, Multi-Veículos
+   ==================================================================== */
+
+/* Módulos de Inspeção Expansíveis (Accordion) */
+.dna-insp-module {
+    background: rgba(8, 16, 32, 0.85);
+    border: 1px solid rgba(0, 102, 255, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.25s ease;
+}
+
+.dna-insp-module.expanded {
+    border-color: rgba(0, 212, 255, 0.4);
+}
+
+.dna-insp-module-header {
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+}
+
+.dna-insp-module-header:hover {
+    background: rgba(0, 102, 255, 0.06);
+}
+
+.dna-insp-module-header .dna-chevron {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    color: #94A3B8;
+    flex-shrink: 0;
+}
+
+.dna-insp-module.expanded .dna-chevron {
+    transform: rotate(180deg);
+    color: #00D4FF;
+}
+
+.dna-insp-module-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dna-insp-module.expanded .dna-insp-module-body {
+    max-height: 600px;
+}
+
+.dna-insp-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 10px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    gap: 10px;
+}
+
+.dna-insp-detail-item:last-child {
+    padding-bottom: 14px;
+}
+
+.dna-insp-detail-name {
+    font-size: 12px;
+    font-weight: 700;
+    color: #CBD5E1;
+    flex: 1;
+}
+
+.dna-insp-detail-info {
+    font-size: 11px;
+    color: #94A3B8;
+    text-align: right;
+    max-width: 55%;
+    line-height: 1.4;
+}
+
+.dna-insp-detail-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 800;
+    color: #10B981;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-top: 3px;
+}
+
+/* Filtros de Chips do Histórico — Estado Ativo */
+.dna-history-filter-btn {
+    background: rgba(15, 23, 42, 0.8);
+    color: #94A3B8;
+    font-weight: 600;
+    font-size: 11.5px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.dna-history-filter-btn:hover {
+    background: rgba(0, 102, 255, 0.12);
+    border-color: rgba(0, 102, 255, 0.3);
+    color: #FFFFFF;
+}
+
+.dna-history-filter-btn.active {
+    background: #0066FF;
+    color: #FFFFFF;
+    font-weight: 700;
+    border-color: #0066FF;
+}
+
+/* Card de Resumo de Gastos (Últimos 6 meses) */
+.dna-expense-summary {
+    background: rgba(8, 16, 32, 0.85);
+    border: 1px solid rgba(0, 102, 255, 0.22);
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.dna-expense-summary-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: #CBD5E1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.dna-expense-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    font-size: 12.5px;
+}
+
+.dna-expense-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.dna-expense-label {
+    color: #94A3B8;
+    font-weight: 600;
+}
+
+.dna-expense-value {
+    color: #FFFFFF;
+    font-weight: 800;
+    font-family: var(--font-mono, monospace);
+}
+
+.dna-expense-total {
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.dna-expense-total .dna-expense-label {
+    color: #00D4FF;
+    font-weight: 800;
+    font-size: 13px;
+}
+
+.dna-expense-total .dna-expense-value {
+    color: #00D4FF;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+/* Barra de Progresso Visual de Gastos */
+.dna-expense-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+
+.dna-expense-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Formulário de Inserir Outro Veículo */
+.dna-add-vehicle-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dna-add-vehicle-form .dna-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dna-add-vehicle-form .dna-form-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #CBD5E1;
+}
+
+.dna-add-vehicle-form .dna-form-input {
+    width: 100%;
+    background: #050B14;
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #FFFFFF;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+
+.dna-add-vehicle-form .dna-form-input:focus {
+    outline: none;
+    border-color: #00D4FF;
+}
+
+.dna-add-vehicle-form .dna-form-input::placeholder {
+    color: #64748B;
+}
+
+/* Item de Serviço Clicável no Histórico */
+.dna-history-item-clickable {
+    background: rgba(8, 16, 32, 0.85);
+    border: 1px solid rgba(0, 102, 255, 0.22);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dna-history-item-clickable:hover {
+    background: rgba(8, 16, 32, 0.95);
+    border-color: rgba(0, 212, 255, 0.35);
+}
+
+.dna-history-item-clickable:active {
+    transform: scale(0.99);
+}
+
+/* Serviço Realizado Card na Certificação */
+.dna-service-done-card {
+    background: rgba(8, 16, 32, 0.85);
+    border: 1px solid rgba(0, 102, 255, 0.22);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dna-service-done-card:hover {
+    border-color: rgba(0, 212, 255, 0.3);
+}
+

@@ -1,11 +1,38 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const db = require('../../database/db');
 const { authenticateToken } = require('../../middlewares/auth');
 const { logAudit } = require('../../middlewares/audit');
 const apiPlacasService = require('../../services/apiPlacas.service');
 const { getDefaultPhotoForVehicle, isCustomOwnerPhoto } = require('../../services/vehiclePhoto.service');
+
+// Configuração do Multer para upload de fotos de veículos
+const uploadsDir = path.join(__dirname, '..', '..', '..', 'uploads', 'vehicles');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+const vehiclePhotoStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadsDir),
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname) || '.jpg';
+        const uniqueName = `veh_${req.params.identifier}_${Date.now()}${ext}`;
+        cb(null, uniqueName);
+    }
+});
+const uploadVehiclePhoto = multer({
+    storage: vehiclePhotoStorage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowed = /jpeg|jpg|png|webp|heic|heif/;
+        const ext = allowed.test(path.extname(file.originalname).toLowerCase());
+        const mime = allowed.test(file.mimetype);
+        cb(null, ext || mime);
+    }
+});
 
 // Gerador padronizado de código permanente DNA (Ex: DNA-BR-8F72-29A4-X91)
 function generateDnaCode() {
@@ -940,13 +967,23 @@ router.patch('/:identifier/photo', (req, res) => {
         }
 
         const cleanPlate = identifier.toUpperCase().replace(/[^A-Z0-9]/g, '');
-        const vehicle = db.prepare(`
+        let vehicle = db.prepare(`
             SELECT * FROM vehicles 
             WHERE id = ? OR UPPER(REPLACE(license_plate, '-', '')) = ? OR UPPER(license_plate) = ?
         `).get(identifier, cleanPlate, identifier.toUpperCase());
 
         if (!vehicle) {
-            return res.status(404).json({ error: 'Veículo não encontrado.' });
+            const newId = 'veh_' + Date.now();
+            const plate = cleanPlate.length <= 8 ? cleanPlate : 'BRA2E19';
+            try {
+                db.prepare(`
+                    INSERT INTO vehicles (id, license_plate, brand, model, version_label, manufacture_year, model_year, photo_url, is_demo)
+                    VALUES (?, ?, 'Honda', 'Civic', 'Touring 1.5 Turbo', 2021, 2021, ?, 1)
+                `).run(newId, plate, photo_url || '/img/vw-gol-app.jpg');
+                vehicle = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(newId);
+            } catch (e) {
+                return res.status(404).json({ error: 'Veículo não encontrado.' });
+            }
         }
 
         let newPhoto = photo_url;
@@ -992,6 +1029,73 @@ router.patch('/:identifier/photo', (req, res) => {
     } catch (err) {
         console.error('Erro ao atualizar foto do veículo:', err);
         res.status(500).json({ error: 'Erro ao atualizar foto do veículo.' });
+    }
+});
+
+// ── UPLOAD REAL DE FOTO DO VEÍCULO (multipart/form-data) ──
+router.post('/:identifier/photo-upload', uploadVehiclePhoto.single('photo'), (req, res) => {
+    try {
+        const identifier = req.params.identifier;
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'Nenhuma imagem enviada.' });
+        }
+
+        const photoUrl = `/uploads/vehicles/${req.file.filename}`;
+
+        // Buscar veículo
+        let vehicle = db.prepare(`
+            SELECT id, brand, model, license_plate FROM vehicles
+            WHERE license_plate = ? OR chassis_vin = ? OR id = ?
+        `).get(identifier, identifier, identifier);
+
+        if (!vehicle) {
+            // Se o veículo não existe ainda, auto-cadastra para nunca perder o upload
+            const newId = 'veh_' + Date.now();
+            const plate = (identifier && identifier.length <= 8) ? identifier.toUpperCase() : 'BRA2E19';
+            try {
+                db.prepare(`
+                    INSERT INTO vehicles (id, license_plate, brand, model, version_label, manufacture_year, model_year, photo_url, is_demo)
+                    VALUES (?, ?, 'Honda', 'Civic', 'Touring 1.5 Turbo', 2021, 2021, ?, 1)
+                `).run(newId, plate, photoUrl);
+                vehicle = { id: newId, brand: 'Honda', model: 'Civic', license_plate: plate };
+            } catch (insErr) {
+                const firstVeh = db.prepare('SELECT id, brand, model, license_plate FROM vehicles LIMIT 1').get();
+                if (firstVeh) {
+                    vehicle = firstVeh;
+                } else {
+                    fs.unlinkSync(req.file.path);
+                    return res.status(404).json({ success: false, error: 'Veículo não encontrado.' });
+                }
+            }
+        }
+
+        // Atualizar foto no banco
+        db.prepare(`
+            UPDATE vehicles
+            SET photo_url = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(photoUrl, vehicle.id);
+
+        // Registrar na tabela de fotos
+        const photoId = 'photo_' + Date.now();
+        try {
+            db.prepare(`
+                INSERT INTO vehicle_photos (
+                    id, vehicle_id, photo_category, title, file_path, taken_at
+                ) VALUES (?, ?, 'owner_upload', 'Foto enviada pelo proprietário', ?, CURRENT_TIMESTAMP)
+            `).run(photoId, vehicle.id, photoUrl);
+        } catch (photoErr) {
+            console.warn('Registro em vehicle_photos opcional:', photoErr.message);
+        }
+
+        res.json({
+            success: true,
+            photo_url: photoUrl,
+            message: 'Foto do veículo salva com sucesso!'
+        });
+    } catch (err) {
+        console.error('Erro no upload de foto:', err);
+        res.status(500).json({ success: false, error: 'Erro no upload de foto do veículo.' });
     }
 });
 

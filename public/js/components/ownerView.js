@@ -1,19 +1,22 @@
 // ==============================================================================
-// DNA AUTO — APLICATIVO MOBILE DO CLIENTE / PROPRIETÁRIO (PADRÃO TOTVS & APPLE)
-// Interface Corporativa de Alta Precisão: Letras Claras, Dados Reais do Backend,
+// DNA AUTO — APLICATIVO MOBILE DO CLIENTE / PROPRIETÁRIO
+// Interface de Alta Precisão: Letras Claras, Dados Reais do Backend,
 // Zero Popups (Alert) e Botão de Logout / Sair da Conta
 // ==============================================================================
 
 const OwnerView = {
     isDrawerOpen: false,
-    currentScreen: 'home', // 'home' | 'vehicle' | 'certification' | 'inspection' | 'obd' | 'history' | 'reminders' | 'workshops' | 'settings' | 'notifications'
-    activeTab: 'home', // 'home' | 'vehicle' | 'certification' | 'inspection' | 'more'
-    inspectionTab: 'inspection', // 'inspection' | 'revisions'
+    currentScreen: 'home',
+    activeTab: 'home',
+    inspectionTab: 'inspection',
     isObdScanning: false,
     userVehicles: [],
     selectedVehicleId: null,
     isPhotoModalOpen: false,
     tempPhotoPreview: null,
+    historyFilter: 'all',
+    expandedModules: {},
+    isAddVehicleOpen: false,
 
     // Dados Oficiais do Veículo Padrão (Fiel ao Mapa Oficial: Honda Civic BRA2E19)
     vehicleData: {
@@ -382,29 +385,46 @@ const OwnerView = {
                 if (data.success && Array.isArray(data.vehicles) && data.vehicles.length > 0) {
                     this.userVehicles = data.vehicles;
                     
-                    // Se houver veículo cadastrado pelo usuário/oficina, usa ele
-                    const realVeh = data.vehicles[0];
-                    this.vehicleData.id = realVeh.id;
-                    this.vehicleData.brand = realVeh.brand || this.vehicleData.brand;
-                    this.vehicleData.model = realVeh.model || this.vehicleData.model;
-                    this.vehicleData.full_title = `${realVeh.brand} ${realVeh.model}`.trim();
-                    this.vehicleData.version_label = realVeh.version_label || this.vehicleData.version_label;
-                    this.vehicleData.license_plate = realVeh.license_plate || this.vehicleData.license_plate;
-                    this.vehicleData.manufacture_year = realVeh.manufacture_year || this.vehicleData.manufacture_year;
-                    this.vehicleData.model_year = realVeh.model_year || this.vehicleData.model_year;
-                    this.vehicleData.color = realVeh.color || this.vehicleData.color;
-                    this.vehicleData.chassis_vin = realVeh.chassis_vin || this.vehicleData.chassis_vin;
-                    this.vehicleData.renavam = realVeh.renavam || this.vehicleData.renavam;
-                    this.vehicleData.photo_url = realVeh.photo_url || this.vehicleData.photo_url;
-                    if (realVeh.dna_code) this.vehicleData.dna_code = realVeh.dna_code;
-                    if (realVeh.current_mileage) this.vehicleData.current_mileage = realVeh.current_mileage;
-                    if (realVeh.owner_name) this.vehicleData.user_name = realVeh.owner_name;
-
-                    // Buscar Inspeção e OBD2 para o Veículo Ativo
-                    this.fetchVehicleExtras(this.vehicleData.license_plate);
+                    // Se houver veículo cadastrado, prioriza o atualmente selecionado
+                    const activePlate = this.vehicleData.license_plate;
+                    const realVeh = (activePlate && data.vehicles.find(u => u.license_plate === activePlate)) || data.vehicles[0];
+                    this.applyVehicleData(realVeh);
                 }
             }
         } catch (_) {}
+    },
+
+    // Aplicar dados de um veículo selecionado
+    applyVehicleData(realVeh) {
+        if (!realVeh) return;
+        this.vehicleData.id = realVeh.id;
+        this.vehicleData.brand = realVeh.brand || this.vehicleData.brand;
+        this.vehicleData.model = realVeh.model || this.vehicleData.model;
+        this.vehicleData.full_title = `${realVeh.brand} ${realVeh.model}`.trim();
+        this.vehicleData.version_label = realVeh.version_label || this.vehicleData.version_label;
+        this.vehicleData.license_plate = realVeh.license_plate || this.vehicleData.license_plate;
+        this.vehicleData.manufacture_year = realVeh.manufacture_year || this.vehicleData.manufacture_year;
+        this.vehicleData.model_year = realVeh.model_year || this.vehicleData.model_year;
+        this.vehicleData.color = realVeh.color || this.vehicleData.color;
+        this.vehicleData.chassis_vin = realVeh.chassis_vin || this.vehicleData.chassis_vin;
+        this.vehicleData.renavam = realVeh.renavam || this.vehicleData.renavam;
+        if (realVeh.photo_url) this.vehicleData.photo_url = realVeh.photo_url;
+        if (realVeh.dna_code) this.vehicleData.dna_code = realVeh.dna_code;
+        if (realVeh.current_mileage) this.vehicleData.current_mileage = realVeh.current_mileage;
+        if (realVeh.owner_name) this.vehicleData.user_name = realVeh.owner_name;
+
+        // Buscar Inspeção e OBD2 para o Veículo Ativo
+        this.fetchVehicleExtras(this.vehicleData.license_plate);
+    },
+
+    // Alternar entre veículos da conta
+    selectVehicle(plate) {
+        if (!this.userVehicles) return;
+        const realVeh = this.userVehicles.find(u => u.license_plate === plate);
+        if (realVeh) {
+            this.applyVehicleData(realVeh);
+            this.render();
+        }
     },
 
     // Buscar Documentos e OBD2 para o Veículo Ativo
@@ -448,19 +468,8 @@ const OwnerView = {
 
         container.innerHTML = `
             <div class="dna-app-viewport">
-                <!-- Frame do Smartphone Móvel -->
+                <!-- App Fullscreen (sem frame de celular) -->
                 <div class="dna-phone-frame">
-                    
-                    <!-- 1. Barra de Status Superior -->
-                    <div class="dna-phone-statusbar">
-                        <span>9:41</span>
-                        <div class="dna-statusbar-notch"></div>
-                        <div style="display:flex; align-items:center; gap:5px;">
-                            <svg width="13" height="10" viewBox="0 0 16 12" fill="white"><path d="M0 8.5h2v3.5H0zm3.5-3h2v6.5h-2zm3.5-3h2v9.5h-2zm3.5-2.5h2v12h-2z"/></svg>
-                            <svg width="13" height="10" viewBox="0 0 16 12" fill="white"><path d="M8 2.5a9.6 9.6 0 0 1 6.8 2.8l-1.4 1.4A7.6 7.6 0 0 0 8 4.5c-2 0-3.9.8-5.4 2.2L1.2 5.3A9.6 9.6 0 0 1 8 2.5zm0 4c1.7 0 3.3.7 4.4 1.8l-1.4 1.4A4.3 4.3 0 0 0 8 8.5c-1.2 0-2.3.5-3 1.2L3.6 8.3A6.2 6.2 0 0 1 8 6.5zm0 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/></svg>
-                            <svg width="17" height="9" viewBox="0 0 24 12" fill="white"><rect x="1" y="1" width="20" height="10" rx="3" fill="none" stroke="white" stroke-width="2"/><rect x="3" y="3" width="14" height="6" rx="1.5"/><path d="M22 4h1a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-1z"/></svg>
-                        </div>
-                    </div>
 
                     <!-- 2. Header do App com BOTÃO DE SAIR VISÍVEL -->
                     <header class="dna-app-header">
@@ -759,7 +768,7 @@ const OwnerView = {
                                     </svg>
                                 </div>
                                 <h4>DNA AUTO</h4>
-                                <p class="dna-footer-slogan">Padrão TOTVS Enterprise</p>
+                                <p class="dna-footer-slogan">Certificação de Registros Veiculares</p>
                                 <p class="dna-footer-sub">Dados do motor e histórico oficial com validade jurídica</p>
                             </div>
                         </div>
@@ -829,6 +838,17 @@ const OwnerView = {
                 <h2 style="font-size:18px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">Olá, João!</h2>
                 <p style="font-size:12px; color:#94A3B8; margin:0;">Seu veículo sempre protegido.</p>
             </div>
+
+            ${this.userVehicles && this.userVehicles.length > 1 ? `
+                <div style="display:flex; gap:6px; overflow-x:auto; margin-bottom:12px; padding-bottom:4px;">
+                    ${this.userVehicles.map(veh => `
+                        <button onclick="OwnerView.selectVehicle('${veh.license_plate}')" style="background:${veh.license_plate === v.license_plate ? '#0066FF' : 'rgba(15,23,42,0.85)'}; color:#FFFFFF; border:1px solid ${veh.license_plate === v.license_plate ? '#00D4FF' : 'rgba(255,255,255,0.15)'}; padding:5px 12px; border-radius:14px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap; transition:all 0.2s;">
+                            <span>${veh.brand} ${veh.model}</span>
+                            <span style="font-size:9.5px; opacity:0.8; font-family:var(--font-mono, monospace);">(${veh.license_plate})</span>
+                        </button>
+                    `).join('')}
+                </div>
+            ` : ''}
 
             <!-- Card Principal do Veículo (Honda Civic BRA2E19) -->
             <div class="dna-vehicle-card">
@@ -941,14 +961,21 @@ const OwnerView = {
         const v = this.vehicleData;
         return `
             <div style="display:flex; flex-direction:column; gap:14px;">
+                ${this.userVehicles && this.userVehicles.length > 1 ? `
+                    <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:2px;">
+                        ${this.userVehicles.map(veh => `
+                            <button onclick="OwnerView.selectVehicle('${veh.license_plate}')" style="background:${veh.license_plate === v.license_plate ? '#0066FF' : 'rgba(15,23,42,0.85)'}; color:#FFFFFF; border:1px solid ${veh.license_plate === v.license_plate ? '#00D4FF' : 'rgba(255,255,255,0.15)'}; padding:5px 12px; border-radius:14px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap; transition:all 0.2s;">
+                                <span>${veh.brand} ${veh.model}</span>
+                                <span style="font-size:9.5px; opacity:0.8; font-family:var(--font-mono, monospace);">(${veh.license_plate})</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
                 <div class="dna-vehicle-card" style="margin-bottom:0;">
-                    <div class="dna-car-stage" onclick="OwnerView.openChangePhotoModal()" style="cursor:pointer;" title="Clique para trocar foto">
+                    <div class="dna-car-stage">
                         <div class="dna-car-neon-glow"></div>
                         <img class="dna-car-image" src="${v.photo_url}" alt="${v.full_title}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80';" />
-                        <button class="dna-car-change-photo-btn" onclick="event.stopPropagation(); OwnerView.openChangePhotoModal();" title="Trocar foto do meu carro">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                            <span>Trocar Foto</span>
-                        </button>
                     </div>
                     <div style="text-align:center; margin-top:8px;">
                         <h3 style="font-size:17px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">${v.full_title}</h3>
@@ -960,7 +987,7 @@ const OwnerView = {
                     </div>
                 </div>
 
-                <!-- Métricas do Veículo (Tela 2 do Mapa) -->
+                <!-- Métricas do Veículo -->
                 <div class="dna-vehicle-specs-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div class="dna-spec-card" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px;">
                         <span style="font-size:10.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Quilometragem atual</span>
@@ -982,22 +1009,113 @@ const OwnerView = {
                 </div>
 
                 <div style="display:flex; gap:10px;">
-                    <button class="dna-obd-rescan-btn" onclick="OwnerView.openChangePhotoModal()" style="flex:1;">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                        <span>Trocar Foto</span>
-                    </button>
                     <button class="dna-obd-rescan-btn" onclick="OwnerView.navigateTo('inspection')" style="flex:1; background:#0066FF;">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                         <span>Ver Inspeção</span>
+                    </button>
+                    <button class="dna-obd-rescan-btn" onclick="OwnerView.toggleAddVehicleForm()" style="flex:1; background:rgba(16,185,129,0.15); border:1px solid #10B981; color:#10B981;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                        <span>Inserir Outro Veículo</span>
+                    </button>
+                </div>
+
+                ${this.isAddVehicleOpen ? this.renderAddVehicleForm() : ''}
+            </div>
+        `;
+    },
+
+    // Toggle do formulário de adicionar veículo
+    toggleAddVehicleForm() {
+        this.isAddVehicleOpen = !this.isAddVehicleOpen;
+        this.render();
+    },
+
+    // Formulário de inserir outro veículo
+    renderAddVehicleForm() {
+        return `
+            <div style="background:rgba(8,16,32,0.9); border:1.5px solid rgba(0,212,255,0.3); border-radius:14px; padding:16px; margin-top:4px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                    <h4 style="font-size:14px; font-weight:800; color:#FFFFFF; margin:0;">Inserir Novo Veículo</h4>
+                    <button onclick="OwnerView.toggleAddVehicleForm()" style="background:none; border:none; color:#94A3B8; cursor:pointer; font-size:18px;">&times;</button>
+                </div>
+
+                <div style="background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:8px; padding:10px 12px; margin-bottom:14px;">
+                    <span style="font-size:11px; color:#F59E0B; font-weight:700; display:flex; align-items:center; gap:6px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        Será necessário adquirir um novo leitor OBD para o veículo adicional.
+                    </span>
+                </div>
+
+                <div class="dna-add-vehicle-form">
+                    <div class="dna-form-group">
+                        <label class="dna-form-label">Placa do Veículo *</label>
+                        <input type="text" id="add-veh-plate" class="dna-form-input" placeholder="Ex: ABC1D23" maxlength="7" />
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <div class="dna-form-group">
+                            <label class="dna-form-label">Marca</label>
+                            <input type="text" id="add-veh-brand" class="dna-form-input" placeholder="Ex: Toyota" />
+                        </div>
+                        <div class="dna-form-group">
+                            <label class="dna-form-label">Modelo</label>
+                            <input type="text" id="add-veh-model" class="dna-form-input" placeholder="Ex: Corolla" />
+                        </div>
+                    </div>
+                    <div class="dna-form-group">
+                        <label class="dna-form-label">Ano de Fabricação/Modelo</label>
+                        <input type="text" id="add-veh-year" class="dna-form-input" placeholder="Ex: 2023/2024" />
+                    </div>
+                    <button onclick="OwnerView.submitAddVehicle()" style="width:100%; background:#0066FF; color:#FFFFFF; font-weight:800; font-size:13px; padding:12px; border-radius:10px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:4px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                        <span>Cadastrar Veículo</span>
                     </button>
                 </div>
             </div>
         `;
     },
 
+    // Submeter novo veículo
+    async submitAddVehicle() {
+        const plate = (document.getElementById('add-veh-plate')?.value || '').trim().toUpperCase();
+        const brand = (document.getElementById('add-veh-brand')?.value || '').trim();
+        const model = (document.getElementById('add-veh-model')?.value || '').trim();
+        const year = (document.getElementById('add-veh-year')?.value || '').trim();
+
+        if (!plate || plate.length < 7) {
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#EF4444; color:#fff; padding:10px 20px; border-radius:10px; font-size:12px; font-weight:700; z-index:99999; box-shadow:0 4px 16px rgba(0,0,0,0.4);';
+            toast.textContent = 'Informe a placa do veículo (7 caracteres)';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/v1/vehicles/register-from-api', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plate, customData: { brand, model, year_label: year }, activate_dna_now: true })
+            });
+            const data = await res.json();
+            if (data.success || data.vehicle) {
+                this.isAddVehicleOpen = false;
+                this._backendSynced = false;
+                this.render();
+                const toast = document.createElement('div');
+                toast.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#10B981; color:#fff; padding:10px 20px; border-radius:10px; font-size:12px; font-weight:700; z-index:99999; box-shadow:0 4px 16px rgba(0,0,0,0.4);';
+                toast.textContent = `Veículo ${plate} cadastrado com sucesso!`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 3000);
+            }
+        } catch (e) {
+            console.error('Erro ao cadastrar veículo:', e);
+        }
+    },
+
     // ── 3. TELA: CERTIFICAÇÃO DNA AUTO (TELA 3 DO MAPA) ──
     renderCertificationScreen() {
         const v = this.vehicleData;
+        const timeline = v.timeline || [];
         return `
             <div style="display:flex; flex-direction:column; gap:14px;">
                 <div style="background: radial-gradient(circle at 50% 20%, rgba(12, 30, 65, 0.95) 0%, rgba(6, 14, 28, 0.98) 100%); border: 2px solid #00D4FF; border-radius: 18px; padding: 22px 18px; text-align: center; box-shadow: 0 0 25px rgba(0, 212, 255, 0.25);">
@@ -1041,8 +1159,108 @@ const OwnerView = {
                         </div>
                     </div>
                 </div>
+
+                <!-- Serviços Realizados -->
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Serviços realizados</span>
+                    ${timeline.map(t => `
+                        <div class="dna-service-done-card" onclick="OwnerView.navigateTo('history')">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                                <div style="flex:1;">
+                                    <span style="font-size:10.5px; color:#00D4FF; font-weight:700;">${t.date}</span>
+                                    <h4 style="font-size:13px; font-weight:800; color:#FFFFFF; margin:2px 0 0;">${t.title}</h4>
+                                </div>
+                                <span style="background:rgba(16,185,129,0.15); color:#10B981; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px; flex-shrink:0;">${t.km}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:10.5px; color:#94A3B8;">
+                                <span>Oficina: <strong style="color:#FFFFFF;">${t.workshop}</strong></span>
+                                <div style="display:flex; align-items:center; gap:4px;">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                    <span style="color:#10B981; font-weight:700;">Comprovado</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Peças Trocadas com Nota Fiscal -->
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Peças trocadas</span>
+                    <div class="dna-service-done-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="flex:1;">
+                                <span style="font-size:12.5px; font-weight:700; color:#FFFFFF;">Correia Dentada Continental</span>
+                                <span style="font-size:11px; color:#94A3B8; display:block;">Ref: CT1192 • Instalada em 10/10/2024</span>
+                            </div>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <span style="font-size:10px; color:#FFD21C; font-weight:700; background:rgba(255,210,28,0.1); padding:2px 6px; border-radius:4px;">📷 Foto</span>
+                                <span style="font-size:10px; color:#00D4FF; font-weight:700; background:rgba(0,212,255,0.1); padding:2px 6px; border-radius:4px;">🧾 NF</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dna-service-done-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="flex:1;">
+                                <span style="font-size:12.5px; font-weight:700; color:#FFFFFF;">Pastilhas de Freio Bosch</span>
+                                <span style="font-size:11px; color:#94A3B8; display:block;">Ref: BP1234 • Instalada em 12/04/2025</span>
+                            </div>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <span style="font-size:10px; color:#FFD21C; font-weight:700; background:rgba(255,210,28,0.1); padding:2px 6px; border-radius:4px;">📷 Foto</span>
+                                <span style="font-size:10px; color:#00D4FF; font-weight:700; background:rgba(0,212,255,0.1); padding:2px 6px; border-radius:4px;">🧾 NF</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dna-service-done-card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="flex:1;">
+                                <span style="font-size:12.5px; font-weight:700; color:#FFFFFF;">Óleo Sintético 0W20 Honda HAMP</span>
+                                <span style="font-size:11px; color:#94A3B8; display:block;">4L • Trocado em 15/12/2023</span>
+                            </div>
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <span style="font-size:10px; color:#00D4FF; font-weight:700; background:rgba(0,212,255,0.1); padding:2px 6px; border-radius:4px;">🧾 NF</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gastos nos Últimos 6 Meses -->
+                <div class="dna-expense-summary">
+                    <div class="dna-expense-summary-title">Gastos nos últimos 6 meses</div>
+                    <div class="dna-expense-row">
+                        <span class="dna-expense-label">Revisão periódica - 80.000 km</span>
+                        <span class="dna-expense-value">R$ 1.450,00</span>
+                    </div>
+                    <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:58%; background:#0066FF;"></div></div>
+                    <div class="dna-expense-row" style="margin-top:6px;">
+                        <span class="dna-expense-label">Troca de correia dentada</span>
+                        <span class="dna-expense-value">R$ 980,00</span>
+                    </div>
+                    <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:39%; background:#00D4FF;"></div></div>
+                    <div class="dna-expense-row" style="margin-top:6px;">
+                        <span class="dna-expense-label">Suspensão e direção</span>
+                        <span class="dna-expense-value">R$ 720,00</span>
+                    </div>
+                    <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:29%; background:#10B981;"></div></div>
+                    <div class="dna-expense-row" style="margin-top:6px;">
+                        <span class="dna-expense-label">Peças avulsas</span>
+                        <span class="dna-expense-value">R$ 350,00</span>
+                    </div>
+                    <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:14%; background:#F59E0B;"></div></div>
+
+                    <div class="dna-expense-total">
+                        <span class="dna-expense-label">Total (6 meses)</span>
+                        <span class="dna-expense-value">R$ 3.500,00</span>
+                    </div>
+                </div>
             </div>
         `;
+    },
+
+    // Toggle de expansão de módulo de inspeção
+    toggleInspModule(moduleId) {
+        this.expandedModules[moduleId] = !this.expandedModules[moduleId];
+        const el = document.querySelector(`[data-module-id="${moduleId}"]`);
+        if (el) el.classList.toggle('expanded');
     },
 
     // ── 4. TELA: INSPEÇÃO TÉCNICA 360° (TELA 4 DO MAPA) ──
@@ -1064,48 +1282,70 @@ const OwnerView = {
                 </div>
 
                 <!-- Banner 100% APROVADO / LAUDO CONFORME -->
-                <div style="background:rgba(16,185,129,0.12); border:1.5px solid #10B981; border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:12px;">
-                    <div style="width:32px; height:32px; border-radius:50%; background:#10B981; color:#0B0F19; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                <div style="background:rgba(16,185,129,0.12); border:1.5px solid #10B981; border-radius:12px; padding:14px 16px; display:flex; align-items:center; gap:12px;">
+                    <div style="width:36px; height:36px; border-radius:50%; background:#10B981; color:#0B0F19; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
                     </div>
                     <div style="flex:1;">
-                        <strong style="color:#10B981; font-size:13px; display:block; letter-spacing:0.4px;">100% APROVADO</strong>
-                        <span style="color:#FFFFFF; font-size:11.5px; font-weight:700;">LAUDO CONFORME</span>
+                        <strong style="color:#10B981; font-size:14px; display:block; letter-spacing:0.4px;">100% APROVADO</strong>
+                        <span style="color:#FFFFFF; font-size:12px; font-weight:700;">LAUDO CONFORME</span>
                     </div>
                 </div>
 
                 <!-- Score Pericial & Código da Inspeção -->
-                <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <span style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Score Pericial</span>
-                        <div style="font-size:16px; font-weight:800; color:#FFFFFF;">${insp.score}/100</div>
+                        <span style="font-size:11px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Score Pericial</span>
+                        <div style="font-size:20px; font-weight:900; color:#FFFFFF;">${insp.score}/100</div>
                     </div>
                     <div style="text-align:right;">
-                        <span style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Código da inspeção</span>
-                        <div style="font-size:12px; font-weight:800; color:#00D4FF; font-family:var(--font-mono, monospace);">${insp.inspection_code}</div>
+                        <span style="font-size:11px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Código da inspeção</span>
+                        <div style="font-size:13px; font-weight:800; color:#00D4FF; font-family:var(--font-mono, monospace);">${insp.inspection_code}</div>
                     </div>
                 </div>
 
-                <!-- Áreas Auditadas (6 Módulos) -->
+                <!-- Áreas Auditadas (6 Módulos Expansíveis) -->
                 <div style="display:flex; flex-direction:column; gap:8px;">
-                    <span style="font-size:11px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Áreas auditadas</span>
+                    <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Áreas auditadas — toque para ver detalhes</span>
                     ${insp.modules.map(m => `
-                        <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.2); border-radius:10px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <div style="color:#10B981;">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        <div class="dna-insp-module ${this.expandedModules[m.id] ? 'expanded' : ''}" data-module-id="${m.id}">
+                            <div class="dna-insp-module-header" onclick="OwnerView.toggleInspModule('${m.id}')">
+                                <div style="display:flex; align-items:center; gap:10px; flex:1;">
+                                    <div style="color:#10B981;">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </div>
+                                    <div>
+                                        <span style="font-size:13px; font-weight:700; color:#FFFFFF; display:block;">${m.name}</span>
+                                        <span style="font-size:10.5px; color:#94A3B8; font-weight:600;">Score: ${m.score}/100</span>
+                                    </div>
                                 </div>
-                                <span style="font-size:12.5px; font-weight:700; color:#FFFFFF;">${m.name}</span>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:10.5px; color:#10B981; font-weight:800; background:rgba(16,185,129,0.1); padding:3px 8px; border-radius:4px;">CONFORME</span>
+                                    <svg class="dna-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                                </div>
                             </div>
-                            <span style="font-size:10px; color:#10B981; font-weight:800; background:rgba(16,185,129,0.1); padding:2px 6px; border-radius:4px;">CONFORME</span>
+                            <div class="dna-insp-module-body">
+                                ${(m.items || []).map(item => `
+                                    <div class="dna-insp-detail-item">
+                                        <div style="flex:1;">
+                                            <div class="dna-insp-detail-name">${item.name}</div>
+                                            <div class="dna-insp-detail-status">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                                ${item.status}
+                                            </div>
+                                        </div>
+                                        <div class="dna-insp-detail-info">${item.detail}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
                         </div>
                     `).join('')}
                 </div>
 
                 <!-- Odômetro auditado -->
-                <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:11.5px; color:#94A3B8;">Odômetro auditado</span>
-                    <strong style="font-size:13px; color:#00D4FF; font-weight:800;">${Number(v.current_mileage).toLocaleString('pt-BR')} km</strong>
+                <div style="background:rgba(15,23,42,0.9); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:12px; color:#94A3B8; font-weight:600;">Odômetro auditado</span>
+                    <strong style="font-size:14px; color:#00D4FF; font-weight:800;">${Number(v.current_mileage).toLocaleString('pt-BR')} km</strong>
                 </div>
             </div>
         `;
@@ -1267,23 +1507,47 @@ const OwnerView = {
         `;
     },
 
+    // Alterar filtro do histórico
+    setHistoryFilter(filter) {
+        this.historyFilter = filter;
+        this.render();
+    },
+
     // ── 7. TELA: HISTÓRICO / DOSSIÊ (TELA 7 DO MAPA) ──
     renderHistoryScreen() {
         const v = this.vehicleData;
+        const filter = this.historyFilter || 'all';
+
+        // Dados de peças e fotos para os filtros
+        const partsData = [
+            { name: 'Correia Dentada Continental', ref: 'CT1192', date: '10/10/2024', workshop: 'Oficina AutoTech' },
+            { name: 'Pastilhas de Freio Bosch', ref: 'BP1234', date: '12/04/2025', workshop: 'Oficina AutoTech' },
+            { name: 'Óleo Sintético 0W20 Honda HAMP', ref: '4L', date: '15/12/2023', workshop: 'Oficina AutoTech' },
+            { name: 'Filtro de Ar Motor K&N', ref: 'FA3301', date: '12/04/2025', workshop: 'Oficina AutoTech' },
+            { name: 'Velas de Ignição NGK Iridium', ref: 'ILZKR7B-11S', date: '12/04/2025', workshop: 'Oficina AutoTech' }
+        ];
+
+        const photosData = [
+            { title: 'Correia Dentada Nova Instalada', date: '10/10/2024', type: 'Peça Instalada' },
+            { title: 'Odômetro 80.000 km', date: '12/04/2025', type: 'Registro' },
+            { title: 'Pastilhas Dianteiras Novas', date: '12/04/2025', type: 'Peça Nova' },
+            { title: 'Nota Fiscal NF-e 009284', date: '12/04/2025', type: 'Nota Fiscal' }
+        ];
+
         return `
             <div style="display:flex; flex-direction:column; gap:12px;">
                 <!-- Filtros em Chips: Todos, Serviços, Peças, Fotos -->
                 <div class="dna-history-pill-filters" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px;">
-                    <button class="btn btn-sm active" style="background:#0066FF; color:#FFF; font-weight:700; font-size:11px; padding:4px 12px; border-radius:20px; border:none; cursor:pointer;">Todos</button>
-                    <button class="btn btn-sm" style="background:rgba(15,23,42,0.8); color:#94A3B8; font-weight:600; font-size:11px; padding:4px 12px; border-radius:20px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;">Serviços</button>
-                    <button class="btn btn-sm" style="background:rgba(15,23,42,0.8); color:#94A3B8; font-weight:600; font-size:11px; padding:4px 12px; border-radius:20px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;">Peças</button>
-                    <button class="btn btn-sm" style="background:rgba(15,23,42,0.8); color:#94A3B8; font-weight:600; font-size:11px; padding:4px 12px; border-radius:20px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;">Fotos</button>
+                    <button class="dna-history-filter-btn ${filter === 'all' ? 'active' : ''}" onclick="OwnerView.setHistoryFilter('all')">Todos</button>
+                    <button class="dna-history-filter-btn ${filter === 'services' ? 'active' : ''}" onclick="OwnerView.setHistoryFilter('services')">Serviços</button>
+                    <button class="dna-history-filter-btn ${filter === 'parts' ? 'active' : ''}" onclick="OwnerView.setHistoryFilter('parts')">Peças</button>
+                    <button class="dna-history-filter-btn ${filter === 'photos' ? 'active' : ''}" onclick="OwnerView.setHistoryFilter('photos')">Fotos</button>
                 </div>
 
-                <!-- Lista de Linha do Tempo (Timeline do Mapa) -->
+                <!-- Conteúdo Filtrado -->
                 <div class="dna-history-list" style="display:flex; flex-direction:column; gap:10px;">
-                    ${v.timeline.map(t => `
-                        <div class="dna-history-item-card" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-radius:12px; padding:12px 14px;">
+                    ${filter === 'all' || filter === 'services' ? v.timeline.map(t => `
+                        <div class="dna-history-item-clickable">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
                                 <div>
                                     <span style="font-size:10.5px; color:#00D4FF; font-weight:700;">${t.date}</span>
@@ -1299,7 +1563,45 @@ const OwnerView = {
                                 <span style="color:#10B981; font-weight:700;">Comprovado Nível 4</span>
                             </div>
                         </div>
-                    `).join('')}
+                    `).join('') : ''}
+
+                    ${filter === 'all' || filter === 'parts' ? `
+                        ${filter === 'parts' ? '<span style="font-size:11px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Peças Utilizadas</span>' : ''}
+                        ${partsData.map(p => `
+                            <div class="dna-history-item-clickable">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div style="flex:1;">
+                                        <span style="font-size:13px; font-weight:700; color:#FFFFFF; display:block;">${p.name}</span>
+                                        <span style="font-size:11px; color:#94A3B8;">Ref: ${p.ref} • ${p.date}</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <span style="font-size:10px; color:#FFD21C; font-weight:700; background:rgba(255,210,28,0.1); padding:2px 6px; border-radius:4px;">📷</span>
+                                        <span style="font-size:10px; color:#00D4FF; font-weight:700; background:rgba(0,212,255,0.1); padding:2px 6px; border-radius:4px;">🧾</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    ` : ''}
+
+                    ${filter === 'photos' ? `
+                        <span style="font-size:11px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Registros Fotográficos</span>
+                        ${photosData.map(ph => `
+                            <div class="dna-history-item-clickable">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div style="display:flex; align-items:center; gap:12px;">
+                                        <div style="width:40px; height:40px; border-radius:8px; background:rgba(0,102,255,0.15); display:flex; align-items:center; justify-content:center; color:#00D4FF; flex-shrink:0;">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                        </div>
+                                        <div>
+                                            <span style="font-size:13px; font-weight:700; color:#FFFFFF; display:block;">${ph.title}</span>
+                                            <span style="font-size:11px; color:#94A3B8;">${ph.date} • ${ph.type}</span>
+                                        </div>
+                                    </div>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                                </div>
+                            </div>
+                        `).join('')}
+                    ` : ''}
                 </div>
             </div>
         `;
@@ -1391,8 +1693,8 @@ const OwnerView = {
                 </div>
 
                 <div class="dna-history-item-card">
-                    <h4 class="dna-history-title" style="margin-bottom:6px;">Padrão Visual</h4>
-                    <p class="dna-history-details">Tema: Dark Obsidian & Neon Blue (Padrão TOTVS Enterprise & Apple)</p>
+                    <h4 class="dna-history-title" style="margin-bottom:6px;">Aparência</h4>
+                    <p class="dna-history-details">Tema: Dark Obsidian & Neon Blue</p>
                 </div>
 
                 <!-- Botão de Sair com Destaque -->
@@ -1444,12 +1746,14 @@ const OwnerView = {
     closeChangePhotoModal() {
         this.isPhotoModalOpen = false;
         this.tempPhotoPreview = null;
+        this._selectedPhotoFile = null;
         this.render();
     },
 
     handlePhotoFileSelect(input) {
         if (!input.files || !input.files[0]) return;
         const file = input.files[0];
+        this._selectedPhotoFile = file;
         const reader = new FileReader();
         reader.onload = (e) => {
             this.tempPhotoPreview = e.target.result;
@@ -1466,28 +1770,49 @@ const OwnerView = {
     },
 
     async saveVehiclePhoto(customUrl) {
-        const photoToSave = customUrl || this.tempPhotoPreview || this.vehicleData.photo_url;
-        if (!photoToSave) return;
+        const plate = this.vehicleData.license_plate;
+        const fileInput = document.getElementById('dna-photo-file-input');
+        const fileToUpload = (fileInput && fileInput.files && fileInput.files[0]) || this._selectedPhotoFile;
 
         try {
-            const plate = this.vehicleData.license_plate;
-            const res = await fetch(`/api/v1/vehicles/${plate}/photo`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ photo_url: photoToSave })
-            });
-            const data = await res.json();
-            if (data.success && data.photo_url) {
-                this.vehicleData.photo_url = data.photo_url;
-                if (this.userVehicles) {
-                    const match = this.userVehicles.find(u => u.license_plate === plate);
-                    if (match) match.photo_url = data.photo_url;
+            if (fileToUpload) {
+                // Upload real via multipart/form-data
+                const formData = new FormData();
+                formData.append('photo', fileToUpload);
+                const res = await fetch(`/api/v1/vehicles/${plate}/photo-upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (data.success && data.photo_url) {
+                    this.vehicleData.photo_url = data.photo_url;
+                    if (this.userVehicles) {
+                        const match = this.userVehicles.find(u => u.license_plate === plate);
+                        if (match) match.photo_url = data.photo_url;
+                    }
                 }
             } else {
-                this.vehicleData.photo_url = photoToSave;
+                // URL externa ou preview
+                const photoToSave = customUrl || this.tempPhotoPreview || this.vehicleData.photo_url;
+                if (!photoToSave) return;
+                const res = await fetch(`/api/v1/vehicles/${plate}/photo`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ photo_url: photoToSave })
+                });
+                const data = await res.json();
+                if (data.success && data.photo_url) {
+                    this.vehicleData.photo_url = data.photo_url;
+                    if (this.userVehicles) {
+                        const match = this.userVehicles.find(u => u.license_plate === plate);
+                        if (match) match.photo_url = data.photo_url;
+                    }
+                } else {
+                    this.vehicleData.photo_url = photoToSave;
+                }
             }
         } catch (e) {
-            this.vehicleData.photo_url = photoToSave;
+            console.error('Erro ao salvar foto:', e);
         }
 
         this.closeChangePhotoModal();

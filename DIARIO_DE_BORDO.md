@@ -610,6 +610,41 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 
 ---
 
+### 📱 Ciclo 28: Aprimoramento da Experiência Mobile do App do Cliente (Fullscreen PWA, Persistência de Fotos, Accordions de Inspeção, Filtros de Histórico, Gastos na Certificação e Multi-Veículos)
+- **Demandas e Solicitações do Cliente:**
+  1. O app do cliente deve consumir 100% da tela do telefone (remover simulação de moldura/frame de celular e notch fake).
+  2. Persistência real da foto do carro: foto enviada do celular deve ser gravada no banco de dados e persistir permanentemente ao reentrar no app.
+  3. Tela de Histórico / Dossiê: filtros clicáveis (*Serviços*, *Peças*, *Fotos*) que filtram o conteúdo interativamente.
+  4. Tela Meu Veículo: remoção do botão redundante *"Trocar Foto"* e adição do botão *"Inserir Outro Veículo"* (com aviso de OBD2 adicional e suporte a multi-veículos na mesma conta).
+  5. Tela de Inspeção Técnica 360°: módulos auditados mais claros e clicáveis (accordions expansíveis com detalhes de sub-itens e conformidade).
+  6. Tela de Certificação: inclusão de serviços realizados, peças trocadas com foto/nota fiscal e demonstrativo detalhado de gastos nos últimos 6 meses.
+  7. Limpeza geral de referências visuais residuais a frameworks externos.
+- **Implementações Técnicas Realizadas:**
+  1. `public/css/owner-app.css`:
+     - `.dna-phone-frame` reconfigurado para `width: 100%`, `max-width: 100%`, `height: 100vh`/`100dvh`, `border: none`, `border-radius: 0`, `box-shadow: none`.
+     - `.dna-phone-statusbar` e `.dna-statusbar-notch` com `display: none !important`.
+     - Estilização de accordions expansíveis com rotação de chevron para módulos de inspeção.
+     - Estilização dos chips de filtro ativo no histórico.
+     - Componente de resumo de gastos nos últimos 6 meses com barras de proporção e total.
+  2. `server/src/modules/vehicles/vehicles.routes.js`:
+     - Novo endpoint `POST /api/v1/vehicles/:identifier/photo-upload` com `multer` salvando imagens reais em `server/uploads/vehicles/`.
+     - Atualização do campo `photo_url` no SQLite e inserção de registro em `vehicle_photos`.
+     - Fallback de auto-criação/resiliência: nunca retorna 404 em placas válidas.
+  3. `server/src/database/db.js` & `server/src/database/seed.js`:
+     - Verificação de presença de veículos no seed inicial automatizado, garantindo que o Civic `BRA2E19` e os carros de demonstração estejam sempre disponíveis.
+  4. `public/js/components/ownerView.js`:
+     - Upload real via `multipart/form-data` armazenando `_selectedPhotoFile`.
+     - Filtros clicáveis de histórico com alternância de abas (*Todos*, *Serviços*, *Peças*, *Fotos*).
+     - Accordions interativos na Inspeção Técnica com chevron rotativo e renderização de `items[]`.
+     - Inclusão de serviços realizados, peças trocadas com badges 📷 e 🧾, e painel de gastos na Certificação.
+     - Botão *"Inserir Outro Veículo"* com formulário de cadastro e persistência na API.
+     - Seletor rápido de veículos em abas tanto na Home quanto em Meu Veículo.
+  5. `test/api.test.js`:
+     - Adicionado Teste 37 validando upload multipart de fotos e persistência da URL no banco de dados.
+     - Suíte completa com 37 testes automatizados aprovada com 100% de sucesso (`npm test`).
+
+---
+
 ## 🏛️ 3. Tabela de Decisões Arquiteturais (ADRs)
 
 | ID | Decisão | Contexto / Motivação | Consequência / Benefício |
@@ -626,12 +661,8 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
 | **ADR-10** | **Inspeção Técnica 360° & Revisões em Substituição a Documentos** | Substituir o módulo de documentos por inspeção pericial e planejamento de revisões preventivas. | Foco primordial na integridade mecânica, segurança rodoviária e valorização de revenda com laudo pericial 98/100 e plano de revisão. |
 | **ADR-11** | **PWA Instalável com Padrão Google Play Store / TWA** | Transformar o aplicativo do cliente em um app nativo instalável na área de trabalho e na tela inicial do celular com prompt automático. | Zero atrito de loja, ícone oficial na tela inicial, funcionamento standalone em tela cheia e elegibilidade para publicação direta via Trusted Web Activity (TWA). |
 | **ADR-12** | **Desacoplamento de Landings por Público (`/`, `/cliente`, `/autocente`)** | Eliminar confusão cognitiva de misturar propostas de valor para proprietários e oficinas na mesma página. | Clareza imediata de proposta, CTAs diretos para os respectivos apps sem páginas intermediárias, dados reais sem métricas falsas e conversão otimizada. |
-| **ADR-13** | **Sincronização 100% Fiel das 20 Telas e Design System Oficial** | Padronizar rigorosamente todas as telas da plataforma com os 10 módulos de ERP de oficina e as 10 telas de aplicativo do proprietário. | Fidelidade absoluta ao blueprint de layout, identidade visual de alta densidade (Inter/Poppins) e consistência total entre módulos. |tivo do cliente. | Interface limpa, responsiva, sem botões de mock, com drawer nativo e dimensões travadas. |
-| **ADR-08** | **Navegação SPA Interna e Telemetria Mini OBD2** | Eliminar popups do navegador e centralizar telemetria veicular em tempo real dentro do frame do aplicativo. | Experiência de aplicativo nativo de padrão corporativo TOTVS, sem saídas da tela, com leitura de ECU e laudos com validade pericial. |
-| **ADR-09** | **Fotos Veiculares por Modelo & Troca pelo Proprietário** | Garantir que nenhum veículo cadastrado fique sem foto, exibindo uma fotografia oficial do modelo exato até que o proprietário faça upload de sua própria foto. | Experiência visual rica e consistente desde o primeiro segundo, flexibilidade total para o dono personalizar e reversibilidade garantida. |
-| **ADR-10** | **Inspeção Técnica 360° & Revisões em Substituição a Documentos** | Substituir o módulo de documentos por inspeção pericial e planejamento de revisões preventivas. | Foco primordial na integridade mecânica, segurança rodoviária e valorização de revenda com laudo pericial 98/100 e plano de revisão. |
-| **ADR-11** | **PWA Instalável com Padrão Google Play Store / TWA** | Transformar o aplicativo do cliente em um app nativo instalável na área de trabalho e na tela inicial do celular com prompt automático. | Zero atrito de loja, ícone oficial na tela inicial, funcionamento standalone em tela cheia e elegibilidade para publicação direta via Trusted Web Activity (TWA). |
-| **ADR-12** | **Desacoplamento de Landings por Público (`/`, `/cliente`, `/autocente`)** | Eliminar confusão cognitiva de misturar propostas de valor para proprietários e oficinas na mesma página. | Clareza imediata de proposta, CTAs diretos para os respectivos apps sem páginas intermediárias, dados reais sem métricas falsas e conversão otimizada. |
+| **ADR-13** | **Sincronização 100% Fiel das 20 Telas e Design System Oficial** | Padronizar rigorosamente todas as telas da plataforma com os 10 módulos de ERP de oficina e as 10 telas de aplicativo do proprietário. | Fidelidade absoluta ao blueprint de layout, identidade visual de alta densidade (Inter/Poppins) e consistência total entre módulos. |
+| **ADR-14** | **PWA Fullscreen Nativo e Upload Real de Fotos com Multer** | Eliminar a simulação de smartphone no PWA instalado e garantir persistência física e em banco das fotos enviadas pelo proprietário. | O app consome 100% da tela do telefone sem moldura fake; uploads gravados em disco e SQLite com suporte a multi-veículos. |
 
 ---
 
@@ -689,7 +720,7 @@ DNA-AUTO/
 │       └── server.js            # Aplicação Express e montagem das rotas
 ├── server/sessions/             # Sessões persistidas de WhatsApp por oficina (ws_*)
 ├── test/
-│   └── api.test.js              # Bateria com 34 testes automatizados (100% sucesso)
+│   └── api.test.js              # Bateria com 37 testes automatizados (100% sucesso)
 ├── index.js                     # Entrypoint raiz para deploys em nuvem
 ├── src/index.js                 # Entrypoint secundário para Render Cloud
 ├── package.json                 # Manifesto de dependências (@whiskeysockets/baileys, qrcode, pino)

@@ -3,7 +3,7 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-36%2F36%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-37%2F37%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
@@ -155,23 +155,27 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
   - Prevenção automática de colisão de horários no banco de dados SQLite (`HTTP 409 Conflict`).
   - Gestão de estados de agendamento: `PENDING`, `CONFIRMED`, `IN_SERVICE`, `COMPLETED` e `CANCELLED`.
 
-### 5. 📱 Novo App Mobile do Proprietário (Padrão Apple & TOTVS Enterprise)
+### 5. 📱 Novo App Mobile do Proprietário (PWA Fullscreen Nativo)
 - **Acesso Direto:** `#owner` (quando logado como Cliente ou selecionado no simulador)
-- **Design de Alta Fidelidade (Dark Obsidian & Neon Blue):**
-  - Viewport móvel nativo sem barras ou menus residuais da web (`body.is-owner-app`).
-  - **Foto Oficial do Modelo no Cadastro com Troca pelo Dono:**
-    - Ao cadastrar qualquer veículo (manual ou via API Placas), o sistema busca automaticamente no catálogo `vehiclePhoto.service.js` a foto em alta resolução correspondente àquele modelo exato (Gol, Polo, Golf, Civic, Corolla, HB20, Onix, Renegade, Compass, Toro, Strada, etc.).
-    - A foto permanece vinculada até que o dono envie sua própria foto do veículo.
-    - Botão flutuante `📷 Trocar Foto` sobre o veículo na Home e na tela "Meu Veículo", abrindo modal nativo com upload de imagem do celular (via `FileReader` Base64), link direto de URL ou botão de restauração da foto do modelo (`default`).
+- **Design de Alta Fidelidade (Fullscreen Dark Obsidian & Neon Blue):**
+  - **Fullscreen Nativo PWA:** Consumo de 100% da tela em smartphones e tablets, eliminando simulação de moldura/frame de celular e notch fake.
+  - **Upload Real de Fotos com Persistência:**
+    - Suporte a upload via `multipart/form-data` para `POST /api/v1/vehicles/:identifier/photo-upload` com `multer`.
+    - Salvamento persistente dos arquivos na pasta `/uploads/vehicles/` e URL gravada permanentemente no SQLite (`vehicles.photo_url`).
+    - Seed automático e resiliente: o veículo nunca se perde e a foto permanece gravada ao recarregar a página.
+  - **Multi-Veículos na Mesma Conta:**
+    - Botão *"Inserir Outro Veículo"* na tela Meu Veículo com aviso prévio sobre a necessidade de leitor OBD2 adicional.
+    - Seletor rápido de veículos em barra horizontal tanto na Home quanto na tela Meu Veículo para alternância fluida.
   - **Placa Veicular no Padrão Oficial:**
-    - Placa exibida no subtítulo junto com o ano: `${v.license_plate} • ${v.manufacture_year}/${v.model_year}` (ex: `ABC1D23 • 2021/2022`).
-    - Canto superior direito com a tag oficial `☑ Veículo cadastrado`.
+    - Placa exibida no subtítulo junto com o ano: `${v.license_plate} • ${v.manufacture_year}/${v.model_year}` (ex: `BRA2E19 • 2021/2021`).
   - **Header Corporativo & Botão de Sair:**
-    - Sem fotos ou avatares no topo da Home. Menu hambúrguer `☰`, logo `DNA AUTO`, sino de alertas `🔔` e botão direto de `Sair`.
-  - **Card de Certificação DNA AUTO Limpo:**
-    - Removido QR code redundante da Home. Card em largura total com status de autenticidade e botão `Ver certificação >`.
-  - 3 Medidores rápidos: Quilometragem `87.542 km`, Combustível `72%` com barra dinâmica e Autonomia `~ 520 km`.
-  - Timeline horizontal de últimos registros e card de proteção criptografada.
+    - Sem referências visuais de frameworks externos. Menu hambúrguer `☰`, logo `DNA AUTO`, sino de alertas `🔔` e botão direto de `Sair`.
+  - **Inspeção Técnica 360° Expansível:**
+    - Módulos auditados (Motor, Freios, Suspensão, etc.) com accordions clicáveis, animação de chevron e listagem de sub-itens técnicos detalhados com badge de conformidade.
+  - **Filtros Interativos no Histórico / Dossiê:**
+    - Chips clicáveis (*Todos*, *Serviços*, *Peças*, *Fotos*) que filtram instantaneamente o conteúdo na tela.
+  - **Gastos e Peças na Certificação:**
+    - Apresentação de serviços realizados, peças substituídas com foto e nota fiscal, e demonstrativo visual de gastos nos últimos 6 meses com gráfico de barras e valor consolidado.
   - Barra de navegação inferior fixa com 5 abas (`Início`, `Veículo`, `Certificação`, `Inspeção`, `Mais`).
   - Drawer lateral completo com as 10 telas em ordem oficial e opção de logout.
 

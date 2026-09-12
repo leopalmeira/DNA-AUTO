@@ -38,13 +38,14 @@ initializeDatabase();
 // Exporta o banco imediatamente para que módulos dependentes (como seed) acessem a instância
 module.exports = db;
 
-// Executa seed automático caso o banco esteja vazio (essencial em novos deploys como Render)
+// Executa seed automático caso o banco ou a tabela de veículos esteja vazia
 try {
     const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
-    if (!userCount || userCount.count === 0) {
-        console.log('🌱 Banco vazio detectado. Executando seed inicial automatizado...');
+    const vehCount = db.prepare('SELECT COUNT(*) as count FROM vehicles').get();
+    if (!userCount || userCount.count === 0 || !vehCount || vehCount.count === 0) {
+        console.log('🌱 Banco ou veículos vazios detectados. Executando seed inicial automatizado...');
         const runSeed = require('./seed');
-        runSeed(db);
+        runSeed(db, true);
     }
 } catch (e) {
     console.warn('Verificação de seed ignorada:', e.message);

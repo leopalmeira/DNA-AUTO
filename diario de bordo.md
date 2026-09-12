@@ -305,7 +305,38 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   2. `public/css/variables.css`: Importação de Google Fonts, paleta exata e tokens CSS integrados.
   3. `public/js/components/ownerView.js`: Veículo padrão Honda Civic Touring 2021/2022 (BRA2E19), adição da tela 5 de Revisões Preventivas, alinhamento das 10 telas e drawer lateral atualizado.
   4. `public/js/components/workshopView.js`: Navegador de semana `< 14 a 20 de abril de 2025 >`, dados padrão da semana em `getDefaultAppointments()`, WhatsApp com Pairing Code `482 719` e layout em 2 colunas, formulário de cadastro com Carlos Henrique e Civic 2021, Ficha Digital com 4 abas interativas e feed de notificações.
-  5. **Qualidade & Testes:** Suíte completa com 36 testes automatizados aprovada com 100% de sucesso (`npm test`).
+### 📱 Ciclo 28: Aprimoramento da Experiência Mobile do App do Cliente (Fullscreen PWA, Persistência de Fotos, Accordions de Inspeção, Filtros de Histórico, Gastos na Certificação e Multi-Veículos)
+- **Demandas e Solicitações do Cliente:**
+  1. O app do cliente deve consumir 100% da tela do telefone (remover simulação de moldura/frame de celular e notch fake).
+  2. Persistência real da foto do carro: foto enviada do celular deve ser gravada no banco de dados e persistir permanentemente ao reentrar no app.
+  3. Tela de Histórico / Dossiê: filtros clicáveis (*Serviços*, *Peças*, *Fotos*) que filtram o conteúdo interativamente.
+  4. Tela Meu Veículo: remoção do botão redundante *"Trocar Foto"* e adição do botão *"Inserir Outro Veículo"* (com aviso de OBD2 adicional e suporte a multi-veículos na mesma conta).
+  5. Tela de Inspeção Técnica 360°: módulos auditados mais claros e clicáveis (accordions expansíveis com detalhes de sub-itens e conformidade).
+  6. Tela de Certificação: inclusão de serviços realizados, peças trocadas com foto/nota fiscal e demonstrativo detalhado de gastos nos últimos 6 meses.
+  7. Limpeza geral de referências visuais residuais a frameworks externos.
+- **Implementações Técnicas Realizadas:**
+  1. `public/css/owner-app.css`:
+     - `.dna-phone-frame` reconfigurado para `width: 100%`, `max-width: 100%`, `height: 100vh`/`100dvh`, `border: none`, `border-radius: 0`, `box-shadow: none`.
+     - `.dna-phone-statusbar` e `.dna-statusbar-notch` com `display: none !important`.
+     - Estilização de accordions expansíveis com rotação de chevron para módulos de inspeção.
+     - Estilização dos chips de filtro ativo no histórico.
+     - Componente de resumo de gastos nos últimos 6 meses com barras de proporção e total.
+  2. `server/src/modules/vehicles/vehicles.routes.js`:
+     - Novo endpoint `POST /api/v1/vehicles/:identifier/photo-upload` com `multer` salvando imagens reais em `server/uploads/vehicles/`.
+     - Atualização do campo `photo_url` no SQLite e inserção de registro em `vehicle_photos`.
+     - Fallback de auto-criação/resiliência: nunca retorna 404 em placas válidas.
+  3. `server/src/database/db.js` & `server/src/database/seed.js`:
+     - Verificação de presença de veículos no seed inicial automatizado, garantindo que o Civic `BRA2E19` e os carros de demonstração estejam sempre disponíveis.
+  4. `public/js/components/ownerView.js`:
+     - Upload real via `multipart/form-data` armazenando `_selectedPhotoFile`.
+     - Filtros clicáveis de histórico com alternância de abas (*Todos*, *Serviços*, *Peças*, *Fotos*).
+     - Accordions interativos na Inspeção Técnica com chevron rotativo e renderização de `items[]`.
+     - Inclusão de serviços realizados, peças trocadas com badges 📷 e 🧾, e painel de gastos na Certificação.
+     - Botão *"Inserir Outro Veículo"* com formulário de cadastro e persistência na API.
+     - Seletor rápido de veículos em abas tanto na Home quanto em Meu Veículo.
+  5. `test/api.test.js`:
+     - Adicionado Teste 37 validando upload multipart de fotos e persistência da URL no banco de dados.
+     - Suíte completa com 37 testes automatizados aprovada com 100% de sucesso (`npm test`).
 
 ---
 
