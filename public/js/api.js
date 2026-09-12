@@ -274,10 +274,10 @@ const API = {
     getWhatsAppStatus(workshopId) {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/status`);
     },
-    connectWhatsApp(workshopId, phoneNumber) {
+    connectWhatsApp(workshopId, phoneNumber, mode = 'qr') {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/connect`, {
             method: 'POST',
-            body: JSON.stringify({ phone_number: phoneNumber })
+            body: JSON.stringify({ phone_number: phoneNumber, mode })
         });
     },
     disconnectWhatsApp(workshopId) {
@@ -297,5 +297,23 @@ const API = {
             method: 'POST',
             body: JSON.stringify(payload)
         });
+    },
+
+    // Módulo de Cadastro de Clientes & Códigos de Ativação
+    registerClientActivation(workshopId, data) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/clients/register-activation`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    getClientActivations(workshopId) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/clients/activations`);
+    },
+    activateClientCode(code) {
+        return this.request('/clients/activate', {
+            method: 'POST',
+            body: JSON.stringify({ activation_code: code })
+        });
     }
 };
+

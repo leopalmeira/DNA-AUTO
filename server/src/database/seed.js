@@ -2,13 +2,14 @@ const bcrypt = require('bcryptjs');
 
 // Limpar tabelas existentes para reset limpo e idempotente
 const clearTables = [
+    'client_activations', 'whatsapp_messages', 'whatsapp_sessions',
     'audit_logs', 'commissions', 'dna_activations', 'pricing_plans', 'reports',
     'notifications', 'health_scores', 'fipe_values', 'market_values', 'auctions',
     'debts', 'fines', 'taxes', 'vehicle_documents', 'mileage_records', 'vehicle_photos',
     'invoices', 'part_installations', 'parts', 'service_records', 'maintenance_records',
     'ownership_transfers', 'owners', 'vehicle_dna', 'vehicles', 'workshop_users',
     'workshops', 'users', 'role_permissions', 'roles', 'permissions', 'integrations',
-    'workshop_appointments', 'whatsapp_messages'
+    'workshop_appointments'
 ];
 
 function seedBase(dbInstance) {
@@ -24,7 +25,7 @@ function seedBase(dbInstance) {
 
         // 1. Permissões
         const insertPermission = db.prepare(`
-            INSERT INTO permissions (id, name, category, description)
+            INSERT OR REPLACE INTO permissions (id, name, category, description)
             VALUES (@id, @name, @category, @description)
         `);
 
@@ -43,7 +44,7 @@ function seedBase(dbInstance) {
 
         // 2. Roles
         const insertRole = db.prepare(`
-            INSERT INTO roles (id, code, name, description)
+            INSERT OR REPLACE INTO roles (id, code, name, description)
             VALUES (@id, @code, @name, @description)
         `);
 

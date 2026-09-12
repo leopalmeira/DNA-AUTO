@@ -284,12 +284,6 @@ const WorkshopView = {
                     </div>
 
                     <div class="ws-erp-header-right">
-                        <!-- Identificação da Oficina -->
-                        <div class="ws-erp-ws-title">
-                            <span class="ws-erp-ws-name">${ws.trade_name}</span>
-                            <span class="ws-erp-ws-sub">ID: ${ws.id} • Nível 4 Homologada</span>
-                        </div>
-
                         <!-- Botão Tour Guiado para o Lojista -->
                         <button class="ws-erp-tour-launch-btn" onclick="WorkshopView.startTour(true)" style="background:rgba(0,102,255,0.15); color:#38bdf8; border:1px solid rgba(0,102,255,0.3); font-weight:700; font-size:11.5px; padding:6px 14px; border-radius:6px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;" title="Fazer Tour Guiado pelo Sistema">
                             <span>🎓</span>
@@ -375,49 +369,89 @@ const WorkshopView = {
                             </div>
                         </div>
 
-                        <!-- Menu Lateral Oficial da Oficina (Layout Limpo do Blueprint) -->
+                        <!-- Menu Lateral Oficial da Oficina (Organizado em 4 Setores) -->
                         <nav class="ws-erp-nav-scroll" id="tour-step-menu">
-                            <div class="ws-erp-menu-item ${this.currentSection === 'dashboard' ? 'active' : ''}" onclick="WorkshopView.switchSection('dashboard')">
-                                <div class="ws-erp-menu-left"><span>🏠</span> <span>Dashboard</span></div>
+                            <!-- SETOR 1: OPERAÇÃO & ENTRADA -->
+                            <div class="ws-menu-sector">
+                                <div class="ws-menu-sector-title">
+                                    <span>🚗</span> <span>OPERAÇÃO & ENTRADA</span>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'dashboard' ? 'active' : ''}" onclick="WorkshopView.switchSection('dashboard')">
+                                    <div class="ws-erp-menu-left"><span>🏠</span> <span>Dashboard</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'recepcao-checkin' ? 'active' : ''}" onclick="WorkshopView.switchSection('recepcao-checkin')">
+                                    <div class="ws-erp-menu-left"><span>📥</span> <span>Recepção / Pátio</span></div>
+                                    <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(56,189,248,0.15); color:#38bdf8; border-radius:12px;">4</span>
+                                </div>
+                                <div class="ws-erp-menu-item ws-menu-item-highlight" onclick="WorkshopView.openQuickEntryModal()">
+                                    <div class="ws-erp-menu-left"><span>⚡</span> <span style="color:#38bdf8; font-weight:700;">Nova Entrada Rápida</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item" onclick="WorkshopView.openManualVehicleModal()">
+                                    <div class="ws-erp-menu-left"><span>🚗</span> <span>Cadastrar Carro</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ws-menu-item-accent" onclick="WorkshopView.openClientActivationModal()">
+                                    <div class="ws-erp-menu-left"><span>👥</span> <span style="color:#FFD21C; font-weight:700;">Cadastrar Cliente & Código</span></div>
+                                </div>
                             </div>
-                            <div class="ws-erp-menu-item ${this.currentSection === 'recepcao-checkin' ? 'active' : ''}" onclick="WorkshopView.switchSection('recepcao-checkin')">
-                                <div class="ws-erp-menu-left"><span>📥</span> <span>Recepção / Pátio</span></div>
-                                <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(56,189,248,0.15); color:#38bdf8; border-radius:12px;">4</span>
+
+                            <!-- SETOR 2: OFICINA & SERVIÇOS -->
+                            <div class="ws-menu-sector">
+                                <div class="ws-menu-sector-title">
+                                    <span>🔧</span> <span>OFICINA & SERVIÇOS</span>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'servicos-os' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-os')">
+                                    <div class="ws-erp-menu-left"><span>🔧</span> <span>Serviços & Ordens</span></div>
+                                    <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(0,102,255,0.15); color:#60a5fa; border-radius:12px;">18 OS</span>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'agenda-oficina' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-oficina')">
+                                    <div class="ws-erp-menu-left"><span>📅</span> <span>Agenda da Semana</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'veiculos-cadastrados' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
+                                    <div class="ws-erp-menu-left"><span>📋</span> <span>Ficha Digital do Veículo</span></div>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'manutencao-alertas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-alertas')">
+                                    <div class="ws-erp-menu-left"><span>⚠️</span> <span>Radar Preditivo OBD2</span></div>
+                                    <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(239,68,68,0.15); color:#ef4444; border-radius:12px;">4</span>
+                                </div>
                             </div>
-                            <div class="ws-erp-menu-item" onclick="WorkshopView.openManualVehicleModal()">
-                                <div class="ws-erp-menu-left"><span>🚗</span> <span>Cadastrar Carro</span></div>
+
+                            <!-- SETOR 3: COMUNICAÇÃO & CONTATO -->
+                            <div class="ws-menu-sector">
+                                <div class="ws-menu-sector-title">
+                                    <span>💬</span> <span>COMUNICAÇÃO & CONTATO</span>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'whatsapp-central' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-central')">
+                                    <div class="ws-erp-menu-left"><span>💬</span> <span>WhatsApp</span></div>
+                                    <span class="badge-proof" id="ws-menu-wpp-badge" style="font-size:9.5px; padding:2px 7px; background:rgba(37,211,102,0.15); color:#25D366; font-weight:700; border-radius:12px;">Online</span>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'notificacoes-feed' ? 'active' : ''}" onclick="WorkshopView.switchSection('notificacoes-feed')">
+                                    <div class="ws-erp-menu-left"><span>🔔</span> <span>Notificações</span></div>
+                                    <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(56,189,248,0.15); color:#38bdf8; border-radius:12px;">4</span>
+                                </div>
                             </div>
-                            <div class="ws-erp-menu-item ${this.currentSection === 'agenda-oficina' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-oficina')">
-                                <div class="ws-erp-menu-left"><span>📅</span> <span>Agenda da Semana</span></div>
-                            </div>
-                            <div class="ws-erp-menu-item ${this.currentSection === 'whatsapp-central' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-central')">
-                                <div class="ws-erp-menu-left"><span>💬</span> <span>WhatsApp</span></div>
-                                <span class="badge-proof" id="ws-menu-wpp-badge" style="font-size:9.5px; padding:2px 7px; background:rgba(37,211,102,0.15); color:#25D366; font-weight:700; border-radius:12px;">Online</span>
-                            </div>
-                            <div class="ws-erp-menu-item ${this.currentSection === 'servicos-os' ? 'active' : ''}" onclick="WorkshopView.switchSection('servicos-os')">
-                                <div class="ws-erp-menu-left"><span>🔧</span> <span>Serviços & Ordens</span></div>
-                                <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(0,102,255,0.15); color:#60a5fa; border-radius:12px;">18 OS</span>
-                            </div>
-                            <div class="ws-erp-menu-item ${this.currentSection === 'manutencao-alertas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-alertas')">
-                                <div class="ws-erp-menu-left"><span>⚠️</span> <span>Radar Preditivo OBD2</span></div>
-                                <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(239,68,68,0.15); color:#ef4444; border-radius:12px;">4</span>
-                            </div>
-                            <div class="ws-erp-menu-item ${this.currentSection === 'veiculos-cadastrados' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
-                                <div class="ws-erp-menu-left"><span>📋</span> <span>Ficha Digital do Veículo</span></div>
-                            </div>
-                            <div class="ws-erp-menu-item ${this.currentSection === 'notificacoes-feed' ? 'active' : ''}" onclick="WorkshopView.switchSection('notificacoes-feed')">
-                                <div class="ws-erp-menu-left"><span>🔔</span> <span>Notificações</span></div>
-                                <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(56,189,248,0.15); color:#38bdf8; border-radius:12px;">4</span>
-                            </div>
-                            <div class="ws-erp-menu-item ${this.currentSection === 'configuracoes-dados' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-dados')">
-                                <div class="ws-erp-menu-left"><span>⚙️</span> <span>Configurações</span></div>
+
+                            <!-- SETOR 4: GESTÃO & SISTEMA -->
+                            <div class="ws-menu-sector">
+                                <div class="ws-menu-sector-title">
+                                    <span>⚙️</span> <span>GESTÃO & SISTEMA</span>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'configuracoes-dados' ? 'active' : ''}" onclick="WorkshopView.switchSection('configuracoes-dados')">
+                                    <div class="ws-erp-menu-left"><span>⚙️</span> <span>Configurações</span></div>
+                                </div>
                             </div>
                         </nav>
                     </aside>
 
                     <!-- ÁREA PRINCIPAL DE CONTEÚDO (SUB-VIEWS) -->
                     <main class="ws-erp-content-viewport" id="ws-erp-active-viewport">
-                        ${this.renderActiveSection()}
+                        <div class="ws-erp-viewport-inner">
+                            ${this.renderActiveSection()}
+                        </div>
+                        
+                        <!-- RODAPÉ DISCRETO HOMOLOGADO (CONFORME SOLICITADO PELO CLIENTE) -->
+                        <footer class="ws-erp-footer-subtle">
+                            <span>DNA AUTO © 2026 • Operando com <strong>${ws.trade_name}</strong> (ID: ${ws.id} • Nível 4 Homologada) • Todos os direitos reservados</span>
+                        </footer>
                     </main>
                 </div>
             </div>
@@ -631,6 +665,34 @@ const WorkshopView = {
             <!-- CONTAINER DE RESULTADO DINÂMICO DA BUSCA NA DASHBOARD -->
             <div id="ws-dashboard-search-result" style="margin-bottom:18px; display:none;"></div>
 
+            <!-- HERO BANNER DE BOAS-VINDAS & ENTRADA RÁPIDA DE CLIENTES -->
+            <div class="ws-dash-hero-banner" id="tour-step-hero">
+                <div class="ws-dash-hero-info">
+                    <div class="ws-dash-hero-tag">
+                        <span class="pulse-dot"></span>
+                        <span>RECEPÇÃO & PÁTIO EM TEMPO REAL</span>
+                    </div>
+                    <h2 class="ws-dash-hero-headline">Painel Operacional da Oficina</h2>
+                    <p class="ws-dash-hero-description">
+                        Cadastre veículos e clientes com facilidade, dê entrada no pátio em 1 clique e gere códigos de ativação para seus clientes acompanharem pelo app.
+                    </p>
+                </div>
+                <div class="ws-dash-hero-cta-group">
+                    <button class="btn ws-dash-cta-btn ws-dash-cta-primary" onclick="WorkshopView.openQuickEntryModal()" title="Registrar Entrada Rápida de Veículo no Pátio">
+                        <span style="font-size:16px;">⚡</span>
+                        <span>Nova Entrada Rápida</span>
+                    </button>
+                    <button class="btn ws-dash-cta-btn ws-dash-cta-secondary" onclick="WorkshopView.openManualVehicleModal()" title="Cadastrar Veículo na Frota">
+                        <span style="font-size:16px;">🚗</span>
+                        <span>Cadastrar Carro</span>
+                    </button>
+                    <button class="btn ws-dash-cta-btn ws-dash-cta-accent" onclick="WorkshopView.openClientActivationModal()" title="Cadastrar Cliente com Código para o App Mobile">
+                        <span style="font-size:16px;">👥</span>
+                        <span>Cadastrar Cliente & Código</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- RESUMO OPERACIONAL DE HOJE (6 KPIS EXATOS DO BLUEPRINT EM GRID 3x2) -->
             <div class="ws-dash-kpi-grid" id="tour-step-kpis">
                 <!-- 1. Faturamento do Mês -->
@@ -708,9 +770,17 @@ const WorkshopView = {
             </div>
 
             <div class="ws-dash-actions-grid" id="tour-step-actions">
-                <button class="ws-dash-action-btn primary" onclick="WorkshopView.openManualVehicleModal()">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"></path></svg>
-                    <span>Nova Entrada</span>
+                <button class="ws-dash-action-btn primary" onclick="WorkshopView.openQuickEntryModal()" title="Registrar Entrada Rápida de Veículo no Pátio">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+                    <span>Nova Entrada Rápida</span>
+                </button>
+                <button class="ws-dash-action-btn" onclick="WorkshopView.openManualVehicleModal()" title="Cadastrar Veículo Completo">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L1.4 12c-.2.4-.4.9-.4 1.4V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+                    <span>Cadastrar Carro</span>
+                </button>
+                <button class="ws-dash-action-btn" onclick="WorkshopView.openClientActivationModal()" style="border-color:rgba(255,210,28,0.35);" title="Cadastrar Cliente com Código para o App">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FFD21C" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span style="color:#FFD21C; font-weight:700;">Cadastrar Cliente & Código</span>
                 </button>
                 <button class="ws-dash-action-btn" onclick="WorkshopView.openNewServiceModal()">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
@@ -720,19 +790,12 @@ const WorkshopView = {
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
                     <span>Nova Ordem de Serviço</span>
                 </button>
-                <button class="ws-dash-action-btn" onclick="WorkshopView.switchSection('manutencao-alertas')">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#ef4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                    <span>Alerta Preditivo</span>
-                </button>
                 <button class="ws-dash-action-btn" onclick="WorkshopView.openSmartScheduleModal()">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                     <span>Agendar Manutenção</span>
                 </button>
-                <button class="ws-dash-action-btn" onclick="WorkshopView.openManualVehicleModal()">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L1.4 12c-.2.4-.4.9-.4 1.4V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
-                    <span>Cadastrar Carro</span>
-                </button>
             </div>
+
 
             <!-- FILA DO PÁTIO / VEÍCULOS EM ATENDIMENTO HOJE -->
             <div class="panel-box" style="margin-bottom:16px;">
@@ -1716,28 +1779,39 @@ const WorkshopView = {
         const isPairing = status === 'PAIRING';
         const displayPhone = session.display_phone || session.phone_number || this.officialPhone || '+55 (19) 3245-6789';
 
-        // 1. ESTADO: DESCONECTADO (TELA LIMPA CONFORME SOLICITADO)
+        // 1. ESTADO: DESCONECTADO
         if (!isConnected && !isPairing) {
+            const currentMode = this.whatsAppConnectMode || 'qr';
             return `
                 <div style="padding:20px;">
-                    <div class="panel-box" style="max-width:560px; margin:30px auto; padding:38px 32px; text-align:center; background:#0a0f1d; border:1px solid rgba(37,211,102,0.35); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.6);">
-                        <div style="width:68px; height:68px; margin:0 auto 16px; border-radius:50%; background:rgba(37,211,102,0.12); display:flex; align-items:center; justify-content:center; border:1px solid rgba(37,211,102,0.4);">
-                            <span style="font-size:34px;">📱</span>
+                    <div class="panel-box" style="max-width:560px; margin:30px auto; padding:36px 30px; text-align:center; background:#0a0f1d; border:1px solid rgba(37,211,102,0.35); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.6);">
+                        <div style="width:64px; height:64px; margin:0 auto 16px; border-radius:50%; background:rgba(37,211,102,0.12); display:flex; align-items:center; justify-content:center; border:1px solid rgba(37,211,102,0.4);">
+                            <span style="font-size:32px;">📱</span>
                         </div>
                         <h3 style="color:#ffffff; font-size:20px; font-weight:800; margin:0 0 6px;">Conecte o WhatsApp da sua oficina</h3>
-                        <p style="color:#94a3b8; font-size:13px; margin:0 0 24px;">Envie mensagens aos seus clientes diretamente pelo DNA AUTO.</p>
+                        <p style="color:#94a3b8; font-size:13px; margin:0 0 20px;">Envie notificações de veículos, ordens de serviço e laudos diretamente pelo DNA AUTO.</p>
                         
+                        <!-- Seletor de Modo de Conexão -->
+                        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:18px;">
+                            <button type="button" class="btn btn-sm ${currentMode === 'qr' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setWhatsAppMode('qr')" style="font-weight:700; font-size:12px; padding:6px 14px; ${currentMode === 'qr' ? 'background:#25D366; color:#000; border:none;' : ''}">
+                                📷 Escanear QR Code (Padrão)
+                            </button>
+                            <button type="button" class="btn btn-sm ${currentMode === 'code' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.setWhatsAppMode('code')" style="font-weight:700; font-size:12px; padding:6px 14px; ${currentMode === 'code' ? 'background:#FFD21C; color:#000; border:none;' : ''}">
+                                🔢 Código de Telefone
+                            </button>
+                        </div>
+
                         <form onsubmit="WorkshopView.startWhatsAppConnect(event)" style="max-width:340px; margin:0 auto; text-align:left;">
-                            <label style="display:block; font-size:12px; color:#cbd5e1; font-weight:700; margin-bottom:6px;">Número do WhatsApp</label>
+                            <label style="display:block; font-size:12px; color:#cbd5e1; font-weight:700; margin-bottom:6px;">Número do WhatsApp da Oficina</label>
                             <input type="text" id="ws-wpp-phone-input" class="form-control" placeholder="+55 (__) _____-____" value="${displayPhone !== '(19) 3245-6789' ? displayPhone : ''}" style="font-size:15px; text-align:center; font-weight:800; letter-spacing:1px; background:#050811; border-color:rgba(255,255,255,0.18); padding:12px;" required />
                             
                             <button type="submit" id="ws-wpp-connect-btn" class="btn btn-primary" style="width:100%; margin-top:14px; padding:12px; font-weight:800; font-size:14px; background:#25D366; color:#000; border:none; letter-spacing:0.5px; cursor:pointer;">
-                                CONTINUAR →
+                                ${currentMode === 'qr' ? 'GERAR QR CODE OFICIAL →' : 'GERAR CÓDIGO DE PAREAMENTO →'}
                             </button>
                         </form>
 
-                        <div style="margin-top:26px; padding-top:18px; border-top:1px solid rgba(255,255,255,0.06); font-size:12px; color:#64748b; line-height:1.5;">
-                            "Você poderá enviar avisos sobre veículos, serviços, orçamentos, revisões e certificações."
+                        <div style="margin-top:24px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); font-size:11.5px; color:#64748b; line-height:1.5;">
+                            "Conexão multi-tenant segura e direta via socket oficial Baileys."
                         </div>
                     </div>
                 </div>
@@ -1748,56 +1822,85 @@ const WorkshopView = {
         if (isPairing) {
             const pairingCode = session.pairing_code;
             const rawCode = session.raw_pairing_code || (pairingCode ? String(pairingCode).replace(/-/g, '') : '');
+            const currentMode = session.mode || this.whatsAppConnectMode || 'qr';
+
             return `
                 <div style="padding:20px;">
-                    <div class="panel-box" style="max-width:620px; margin:20px auto; padding:32px 28px; text-align:center; background:#0a0f1d; border:1px solid rgba(0,212,255,0.45); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.6);">
+                    <div class="panel-box" style="max-width:620px; margin:20px auto; padding:30px 26px; text-align:center; background:#0a0f1d; border:1px solid rgba(0,212,255,0.45); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.6);">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
                             <span style="font-size:11px; font-weight:800; color:var(--brand-cyan); text-transform:uppercase; letter-spacing:0.5px;">CONEXÃO BAILEYS • OFICINA EXCLUSIVA</span>
                             <button class="btn btn-xs btn-secondary" onclick="WorkshopView.disconnectWhatsAppNow()">Cancelar</button>
                         </div>
 
                         <h3 style="color:#ffffff; font-size:19px; font-weight:800; margin:0 0 6px;">Conecte seu WhatsApp</h3>
-                        <p style="color:#94a3b8; font-size:12.5px; margin:0 0 20px;">Abra o WhatsApp no seu celular e siga as instruções para vincular este dispositivo.</p>
+                        <p style="color:#94a3b8; font-size:12.5px; margin:0 0 16px;">Vincule o aparelho da sua oficina para habilitar disparos automáticos e avisos aos clientes.</p>
 
-                        <!-- Bloco do Código de Pareamento -->
-                        <div style="background:#060a14; border:1px solid rgba(255,210,28,0.45); border-radius:10px; padding:18px; margin-bottom:20px;">
-                            <span style="font-size:12px; color:#cbd5e1; display:block; margin-bottom:8px; font-weight:600;">
-                                ${pairingCode ? 'Digite o código exibido abaixo no WhatsApp do celular:' : 'Conectando aos servidores do WhatsApp para gerar o código oficial...'}
-                            </span>
-                            ${pairingCode ? `
-                                <div style="font-size:34px; font-weight:900; letter-spacing:4px; font-family:var(--font-mono); color:#FFD21C; text-shadow:0 0 15px rgba(255,210,28,0.35); margin:6px 0;">
-                                    ${pairingCode}
-                                </div>
-                                <button class="btn btn-xs" onclick="navigator.clipboard.writeText('${rawCode || pairingCode}'); alert('Código ${pairingCode} copiado com sucesso!');" style="margin-top:8px; background:rgba(255,210,28,0.12); color:#FFD21C; border:1px solid rgba(255,210,28,0.3); font-weight:700; padding:6px 14px; border-radius:4px; cursor:pointer;">
-                                    📋 Copiar Código (${rawCode || pairingCode})
-                                </button>
-                            ` : `
-                                <div style="font-size:18px; font-weight:700; color:#38bdf8; padding:10px 0;">
-                                    <span class="pulse-dot" style="display:inline-block; margin-right:8px;"></span> Aguardando WhatsApp...
-                                </div>
-                            `}
+                        <!-- Abas de Alternância entre QR Code e Código -->
+                        <div style="display:flex; justify-content:center; gap:8px; margin-bottom:20px;">
+                            <button type="button" class="btn btn-xs ${currentMode === 'qr' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.switchWhatsAppConnectMode('qr')" style="font-weight:700; ${currentMode === 'qr' ? 'background:#25D366; color:#000; border:none;' : ''}">
+                                📷 Escanear QR Code
+                            </button>
+                            <button type="button" class="btn btn-xs ${currentMode === 'code' ? 'btn-primary' : 'btn-secondary'}" onclick="WorkshopView.switchWhatsAppConnectMode('code')" style="font-weight:700; ${currentMode === 'code' ? 'background:#FFD21C; color:#000; border:none;' : ''}">
+                                🔢 Digitar Código de 8 Dígitos
+                            </button>
                         </div>
 
-                        <!-- QR Code Alternativo para Leitura Direta -->
-                        ${session.qr_code_url ? `
-                            <div style="margin:16px 0;">
-                                <span style="font-size:11.5px; color:#94a3b8; display:block; margin-bottom:8px; font-weight:600;">Ou aponte a câmera do WhatsApp para escanear o QR Code oficial:</span>
-                                <img src="${session.qr_code_url}" alt="QR Code WhatsApp" style="width:190px; height:190px; border-radius:8px; border:3px solid #ffffff; background:#ffffff; padding:4px;" />
+                        ${currentMode === 'qr' ? `
+                            <!-- MODO QR CODE OFICIAL BAILEYS -->
+                            <div style="background:#060a14; border:1px solid rgba(0,212,255,0.3); border-radius:12px; padding:22px 18px; margin-bottom:18px;">
+                                ${session.qr_code_url ? `
+                                    <div style="background:#ffffff; padding:12px; border-radius:12px; display:inline-block; margin-bottom:14px; box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+                                        <img src="${session.qr_code_url}" alt="QR Code WhatsApp Baileys" style="width:210px; height:210px; display:block;" />
+                                    </div>
+                                ` : `
+                                    <div style="padding:40px 20px; text-align:center;">
+                                        <div class="pulse-dot" style="margin:0 auto 12px;"></div>
+                                        <strong style="color:#38bdf8; font-size:14px; display:block;">Gerando QR Code oficial do Baileys...</strong>
+                                        <span style="font-size:11.5px; color:#94a3b8;">Aguardando conexão com os servidores do WhatsApp</span>
+                                    </div>
+                                `}
+
+                                <div style="max-width:440px; margin:0 auto; text-align:left; background:#0b1322; border-radius:8px; padding:12px 16px; border:1px solid rgba(255,255,255,0.06); font-size:11.5px; color:#cbd5e1; line-height:1.6;">
+                                    <strong style="color:#00d4ff; display:block; margin-bottom:4px;">Instruções para escanear:</strong>
+                                    1. Abra o WhatsApp no seu celular.<br/>
+                                    2. Toque em <strong>Mais opções</strong> (⋮) ou <strong>Configurações</strong>.<br/>
+                                    3. Selecione <strong>Aparelhos conectados</strong> e depois <strong>Conectar um aparelho</strong>.<br/>
+                                    4. Aponte a câmera para este QR Code.
+                                </div>
                             </div>
-                        ` : ''}
+                        ` : `
+                            <!-- MODO CÓDIGO DE PAREAMENTO -->
+                            <div style="background:#060a14; border:1px solid rgba(255,210,28,0.45); border-radius:10px; padding:20px; margin-bottom:20px;">
+                                <span style="font-size:12px; color:#cbd5e1; display:block; margin-bottom:8px; font-weight:600;">
+                                    ${pairingCode ? 'Digite o código abaixo no WhatsApp do celular:' : 'Conectando aos servidores do WhatsApp para gerar o código...'}
+                                </span>
+                                ${pairingCode ? `
+                                    <div style="font-size:34px; font-weight:900; letter-spacing:4px; font-family:var(--font-mono); color:#FFD21C; text-shadow:0 0 15px rgba(255,210,28,0.35); margin:6px 0;">
+                                        ${pairingCode}
+                                    </div>
+                                    <button class="btn btn-xs" onclick="navigator.clipboard.writeText('${rawCode || pairingCode}'); alert('Código ${pairingCode} copiado com sucesso!');" style="margin-top:8px; background:rgba(255,210,28,0.12); color:#FFD21C; border:1px solid rgba(255,210,28,0.3); font-weight:700; padding:6px 14px; border-radius:4px; cursor:pointer;">
+                                        📋 Copiar Código (${rawCode || pairingCode})
+                                    </button>
+                                ` : `
+                                    <div style="font-size:18px; font-weight:700; color:#38bdf8; padding:10px 0;">
+                                        <span class="pulse-dot" style="display:inline-block; margin-right:8px;"></span> Aguardando WhatsApp...
+                                    </div>
+                                `}
+                            </div>
+                        `}
 
-                        <!-- Indicador de Espera Pulsante -->
-                        <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:16px; color:#38bdf8; font-size:12.5px;">
+                        <!-- Indicador de Espera Pulsante em Tempo Real -->
+                        <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:14px; color:#38bdf8; font-size:12.5px;">
                             <span class="pulse-dot" style="width:8px; height:8px;"></span>
-                            <span>Aguardando confirmação do celular...</span>
+                            <span>Aguardando leitura e confirmação do celular...</span>
                         </div>
 
-                        <!-- Botão de Ativação / Confirmação Imediata -->
-                        <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08); text-align:center;">
-                            <p style="font-size:11.5px; color:#94a3b8; margin:0 0 10px;">
-                                Já digitou o código no celular ou deseja ativar a central de mensagens agora?
+                        <!-- Botão de Ativação / Confirmação Assistida -->
+                        <div style="margin-top:18px; padding-top:14px; border-top:1px solid rgba(255,255,255,0.08); text-align:center;">
+                            <p style="font-size:11px; color:#94a3b8; margin:0 0 10px;">
+                                Já escaneou o QR Code ou digitou o código no celular?
                             </p>
-                            <button class="btn btn-sm btn-primary" onclick="WorkshopView.confirmWhatsAppNow()" style="background:#10b981; color:#ffffff; border:none; font-weight:800; font-size:13px; padding:10px 24px; border-radius:6px; cursor:pointer; box-shadow:0 4px 14px rgba(16,185,129,0.35);">
+                            <button class="btn btn-sm btn-primary" onclick="WorkshopView.confirmWhatsAppNow()" style="background:#10b981; color:#ffffff; border:none; font-weight:800; font-size:13px; padding:9px 24px; border-radius:6px; cursor:pointer; box-shadow:0 4px 14px rgba(16,185,129,0.35);">
                                 ✓ Confirmar Conexão Realizada
                             </button>
                         </div>
@@ -2234,7 +2337,8 @@ const WorkshopView = {
         }
 
         try {
-            const res = await API.connectWhatsApp(this.currentWorkshopId, phone);
+            const mode = this.whatsAppConnectMode || 'qr';
+            const res = await API.connectWhatsApp(this.currentWorkshopId, phone, mode);
             this.whatsAppData = res;
             await this.loadWhatsAppStatus(true);
         } catch (err) {
@@ -4323,5 +4427,396 @@ const WorkshopView = {
         } catch (err) {
             alert('Erro ao registrar decisão: ' + err.message);
         }
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // CONTROLES DE MODO DE CONEXÃO DO WHATSAPP (QR CODE OU CÓDIGO)
+    // ──────────────────────────────────────────────────────────────────────────
+    whatsAppConnectMode: 'qr',
+
+    setWhatsAppMode(mode) {
+        this.whatsAppConnectMode = mode;
+        const viewport = document.getElementById('ws-erp-active-viewport');
+        if (viewport && this.currentSection === 'whatsapp-central') {
+            viewport.innerHTML = this.renderWhatsAppCenterView();
+        }
+    },
+
+    async switchWhatsAppConnectMode(mode) {
+        this.whatsAppConnectMode = mode;
+        const phone = this.whatsAppData?.display_phone || this.whatsAppData?.phone_number || this.officialPhone || '';
+        if (phone && this.whatsAppData?.status === 'PAIRING') {
+            try {
+                const res = await API.connectWhatsApp(this.currentWorkshopId, phone, mode);
+                this.whatsAppData = res;
+                await this.loadWhatsAppStatus(true);
+            } catch (err) {
+                console.warn('Erro ao alternar modo WhatsApp:', err);
+                const viewport = document.getElementById('ws-erp-active-viewport');
+                if (viewport && this.currentSection === 'whatsapp-central') {
+                    viewport.innerHTML = this.renderWhatsAppCenterView();
+                }
+            }
+        } else {
+            this.setWhatsAppMode(mode);
+        }
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // ENTRADA RÁPIDA DE VEÍCULOS NO PÁTIO (DASHBOARD & RECEPÇÃO)
+    // ──────────────────────────────────────────────────────────────────────────
+    openQuickEntryModal() {
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (!modalRoot) return;
+
+        modalRoot.innerHTML = `
+            <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
+                <div class="ws-erp-modal-window" style="max-width:580px; max-height:90vh; overflow-y:auto;">
+                    <div class="ws-erp-modal-header" style="background:#0a0f1d; border-bottom:1px solid rgba(255,255,255,0.08); padding:16px 20px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:38px; height:38px; border-radius:8px; background:rgba(0,212,255,0.12); display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,212,255,0.3);">
+                                <span style="font-size:20px;">⚡</span>
+                            </div>
+                            <div>
+                                <strong style="color:#ffffff; font-size:16px; display:block;">Entrada Rápida de Veículo no Pátio</strong>
+                                <span style="font-size:11.5px; color:#94a3b8;">Cadastre o carro e cliente em poucos segundos com preenchimento ágil</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
+                    </div>
+
+                    <form onsubmit="WorkshopView.submitQuickEntryForm(event)" style="padding:20px;">
+                        <!-- BUSCA / AUTO-PREENCHIMENTO POR PLACA -->
+                        <div style="background:#060a14; border:1px solid rgba(0,212,255,0.3); border-radius:10px; padding:14px; margin-bottom:16px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <label class="form-label" style="font-size:12px; color:#38bdf8; font-weight:800; text-transform:uppercase;">Placa do Veículo *</label>
+                                <span style="font-size:11px; color:#64748b;">(Mercosul ou Antiga)</span>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="ws-quick-plate" class="form-control" placeholder="ABC1D23" maxlength="8" style="text-transform:uppercase; font-size:18px; font-weight:900; letter-spacing:2px; font-family:var(--font-mono); color:#FFD21C; text-align:center; background:#040711;" onblur="WorkshopView.autoFillQuickEntryByPlate(this.value)" required />
+                                <button type="button" class="btn btn-sm btn-cyan" onclick="WorkshopView.autoFillQuickEntryByPlate(document.getElementById('ws-quick-plate').value)" style="white-space:nowrap; font-weight:700;">
+                                    🔍 Buscar
+                                </button>
+                            </div>
+                            <span id="ws-quick-plate-feedback" style="display:block; font-size:11px; color:#94a3b8; margin-top:4px;">
+                                Digite a placa e o sistema buscará os dados já salvos automaticamente.
+                            </span>
+                        </div>
+
+                        <!-- DADOS DO CARRO -->
+                        <div class="form-grid-2" style="margin-bottom:12px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:11.5px;">Marca / Montadora *</label>
+                                <input type="text" id="ws-quick-brand" class="form-control" placeholder="Ex: Toyota, Honda, VW" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:11.5px;">Modelo do Veículo *</label>
+                                <input type="text" id="ws-quick-model" class="form-control" placeholder="Ex: Corolla XEi, Civic" required />
+                            </div>
+                        </div>
+
+                        <div class="form-grid-2" style="margin-bottom:12px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:11.5px;">Hodômetro Atual (KM) *</label>
+                                <input type="number" id="ws-quick-km" class="form-control" placeholder="Ex: 85000" style="font-weight:700; font-family:var(--font-mono);" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:11.5px;">Ano / Cor</label>
+                                <input type="text" id="ws-quick-year-color" class="form-control" placeholder="Ex: 2022 • Prata" />
+                            </div>
+                        </div>
+
+                        <!-- DADOS DO CLIENTE -->
+                        <div style="font-size:11.5px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin:16px 0 10px 0; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px; display:flex; align-items:center; gap:6px;">
+                            <span>👤 DADOS DO CLIENTE</span>
+                        </div>
+
+                        <div class="form-grid-2" style="margin-bottom:12px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:11.5px;">Nome do Cliente *</label>
+                                <input type="text" id="ws-quick-client-name" class="form-control" placeholder="Ex: Carlos Oliveira" required />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:11.5px;">WhatsApp do Cliente *</label>
+                                <input type="text" id="ws-quick-client-phone" class="form-control" placeholder="(19) 98765-4321" required />
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="form-label" style="font-size:11.5px;">Motivo da Entrada / Observações Iniciais</label>
+                            <input type="text" id="ws-quick-reason" class="form-control" placeholder="Ex: Revisão 60k, Barulho na suspensão, Troca de óleo" />
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+                            <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" style="background:#10b981; color:#ffffff; font-weight:800; border:none; padding:10px 20px; display:inline-flex; align-items:center; gap:6px;">
+                                <span>⚡</span> <span>Confirmar Entrada</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+    },
+
+    async autoFillQuickEntryByPlate(plate) {
+        if (!plate) return;
+        const clean = plate.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (clean.length < 3) return;
+
+        const feedback = document.getElementById('ws-quick-plate-feedback');
+        if (feedback) feedback.innerHTML = '<span style="color:#38bdf8;">🔍 Buscando dados do veículo...</span>';
+
+        try {
+            const res = await API.searchVehicle(clean);
+            if (res && res.found && res.vehicle) {
+                const v = res.vehicle;
+                const brandInput = document.getElementById('ws-quick-brand');
+                const modelInput = document.getElementById('ws-quick-model');
+                const kmInput = document.getElementById('ws-quick-km');
+                const clientNameInput = document.getElementById('ws-quick-client-name');
+                const clientPhoneInput = document.getElementById('ws-quick-client-phone');
+                const yearColorInput = document.getElementById('ws-quick-year-color');
+
+                if (brandInput && !brandInput.value) brandInput.value = v.brand || '';
+                if (modelInput && !modelInput.value) modelInput.value = v.model || '';
+                if (kmInput && !kmInput.value) kmInput.value = v.current_mileage || v.mileage || '';
+                if (clientNameInput && !clientNameInput.value) clientNameInput.value = v.owner_name || '';
+                if (clientPhoneInput && !clientPhoneInput.value) clientPhoneInput.value = v.owner_phone || '';
+                if (yearColorInput && !yearColorInput.value) yearColorInput.value = `${v.manufacture_year || ''} • ${v.color || ''}`.trim();
+
+                if (feedback) feedback.innerHTML = `<span style="color:#10b981; font-weight:700;">✓ Veículo ${v.brand} ${v.model} localizado na base!</span>`;
+            } else {
+                if (feedback) feedback.innerHTML = `<span style="color:#fbbf24;">Placa nova. Preencha os campos para cadastrar a primeira entrada.</span>`;
+            }
+        } catch (_) {
+            if (feedback) feedback.innerHTML = `<span style="color:#94a3b8;">Placa pronta para cadastro.</span>`;
+        }
+    },
+
+    async submitQuickEntryForm(e) {
+        e.preventDefault();
+        const plate = document.getElementById('ws-quick-plate').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const brand = document.getElementById('ws-quick-brand').value.trim();
+        const model = document.getElementById('ws-quick-model').value.trim();
+        const km = document.getElementById('ws-quick-km').value;
+        const ownerName = document.getElementById('ws-quick-client-name').value.trim();
+        const ownerPhone = document.getElementById('ws-quick-client-phone').value.trim();
+        const yearColor = document.getElementById('ws-quick-year-color')?.value.trim() || '';
+        const reason = document.getElementById('ws-quick-reason')?.value.trim() || 'Entrada no Pátio';
+
+        let year = new Date().getFullYear();
+        let color = 'Não informada';
+        if (yearColor.includes('•')) {
+            const parts = yearColor.split('•');
+            year = parseInt(parts[0], 10) || year;
+            color = parts[1].trim() || color;
+        }
+
+        try {
+            const res = await API.registerVehicle({
+                license_plate: plate,
+                brand,
+                model,
+                manufacture_year: year,
+                color,
+                mileage: Number(km),
+                owner_name: ownerName,
+                owner_phone: ownerPhone,
+                activate_dna_now: true
+            });
+
+            const vehicleId = res.vehicle_id || res.vehicle?.id;
+            const dnaCode = (res && res.dna && res.dna.dna_code) || res.dna_code || 'DNA-BR-ATIVO';
+
+            const newVeh = {
+                id: vehicleId,
+                license_plate: plate,
+                brand,
+                model,
+                current_mileage: Number(km),
+                mileage: Number(km),
+                owner_name: ownerName,
+                owner_phone: ownerPhone,
+                dna_code: dnaCode,
+                dna_status: 'ACTIVE'
+            };
+
+            this.lastRegisteredVehicle = newVeh;
+            if (!this.vehiclesList) this.vehiclesList = [];
+            this.vehiclesList = [newVeh, ...this.vehiclesList.filter(v => v.license_plate !== plate)];
+
+            this.closeModal();
+
+            // Gera também código de ativação do cliente para facilitar
+            try {
+                await API.registerClientActivation(this.currentWorkshopId, {
+                    license_plate: plate,
+                    client_name: ownerName,
+                    client_phone: ownerPhone,
+                    vehicle_model: `${brand} ${model}`
+                });
+            } catch (_) {}
+
+            alert(`✅ Entrada confirmada com sucesso!\n\n🚗 Veículo: ${brand} ${model} (${plate})\n👤 Cliente: ${ownerName} (${ownerPhone})\n⏱️ Odômetro: ${Number(km).toLocaleString('pt-BR')} km\nMotivo: ${reason}`);
+            await this.render();
+        } catch (err) {
+            alert('Erro ao registrar entrada rápida: ' + err.message);
+        }
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // CADASTRO DE CLIENTE & CÓDIGO DE ATIVAÇÃO PARA O APP MOBILE
+    // ──────────────────────────────────────────────────────────────────────────
+    openClientActivationModal() {
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (!modalRoot) return;
+
+        modalRoot.innerHTML = `
+            <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
+                <div class="ws-erp-modal-window" style="max-width:540px;">
+                    <div class="ws-erp-modal-header" style="background:#0a0f1d; border-bottom:1px solid rgba(255,255,255,0.08); padding:16px 20px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:38px; height:38px; border-radius:8px; background:rgba(255,210,28,0.12); display:flex; align-items:center; justify-content:center; border:1px solid rgba(255,210,28,0.3);">
+                                <span style="font-size:20px;">🔑</span>
+                            </div>
+                            <div>
+                                <strong style="color:#ffffff; font-size:16px; display:block;">Cadastrar Cliente & Código de Ativação</strong>
+                                <span style="font-size:11.5px; color:#94a3b8;">Gere o código para o cliente ativar o carro no app mobile</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
+                    </div>
+
+                    <div id="ws-activation-modal-content" style="padding:20px;">
+                        <form onsubmit="WorkshopView.submitClientActivationForm(event)" style="display:flex; flex-direction:column; gap:14px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:12px; color:#FFD21C; font-weight:800;">Placa do Veículo *</label>
+                                <input type="text" id="ws-act-plate" class="form-control" placeholder="ABC1D23" maxlength="8" style="text-transform:uppercase; font-size:16px; font-weight:900; letter-spacing:1.5px; font-family:var(--font-mono); text-align:center;" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:12px;">Nome do Cliente *</label>
+                                <input type="text" id="ws-act-name" class="form-control" placeholder="Ex: João da Silva" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:12px;">WhatsApp do Cliente *</label>
+                                <input type="text" id="ws-act-phone" class="form-control" placeholder="(19) 98765-4321" required />
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:12px;">Modelo / Veículo (Opcional)</label>
+                                <input type="text" id="ws-act-model" class="form-control" placeholder="Ex: Honda Civic 2021" />
+                            </div>
+
+                            <div style="background:#090e1a; border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px; font-size:11.5px; color:#94a3b8; line-height:1.45;">
+                                💡 Um código exclusivo de ativação (ex: <strong>DNA-8421</strong>) será gerado. O cliente poderá usá-lo no app dele para ativar o carro e preencher dados adicionais.
+                            </div>
+
+                            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:8px;">
+                                <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()">Cancelar</button>
+                                <button type="submit" class="btn btn-primary" style="background:#FFD21C; color:#000000; font-weight:800; border:none; padding:10px 20px; cursor:pointer;">
+                                    Gerar Código de Ativação ➔
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async submitClientActivationForm(e) {
+        e.preventDefault();
+        const plate = document.getElementById('ws-act-plate').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const clientName = document.getElementById('ws-act-name').value.trim();
+        const clientPhone = document.getElementById('ws-act-phone').value.trim();
+        const vehicleModel = document.getElementById('ws-act-model')?.value.trim() || 'Veículo';
+
+        if (!plate || !clientName || !clientPhone) {
+            alert('Preencha a placa, nome e WhatsApp do cliente.');
+            return;
+        }
+
+        const container = document.getElementById('ws-activation-modal-content');
+        if (container) {
+            container.innerHTML = `
+                <div style="padding:24px; text-align:center;">
+                    <div class="pulse-dot" style="margin:0 auto 12px;"></div>
+                    <strong style="color:#ffffff; font-size:14px; display:block;">Gerando código exclusivo DNA AUTO...</strong>
+                    <span style="font-size:12px; color:#94a3b8;">Gravando na central de ativações</span>
+                </div>
+            `;
+        }
+
+        try {
+            const res = await API.registerClientActivation(this.currentWorkshopId, {
+                license_plate: plate,
+                client_name: clientName,
+                client_phone: clientPhone,
+                vehicle_model: vehicleModel
+            });
+
+            const code = res.activation_code || 'DNA-8421';
+
+            if (container) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:10px 0;">
+                        <div style="width:52px; height:52px; margin:0 auto 12px; border-radius:50%; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; border:1px solid rgba(16,185,129,0.4);">
+                            <span style="font-size:26px;">🎉</span>
+                        </div>
+                        <h4 style="color:#ffffff; font-size:17px; font-weight:800; margin:0 0 6px;">Código Gerado com Sucesso!</h4>
+                        <p style="color:#94a3b8; font-size:12.5px; margin:0 0 16px;">
+                            Passe este código para o cliente <strong>${clientName}</strong> ativar no app mobile.
+                        </p>
+
+                        <div style="background:#050811; border:2px dashed #FFD21C; border-radius:12px; padding:18px; margin-bottom:16px;">
+                            <span style="font-size:11px; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:4px;">CÓDIGO DE ATIVAÇÃO DO VEÍCULO</span>
+                            <div style="font-size:32px; font-weight:900; letter-spacing:4px; font-family:var(--font-mono); color:#FFD21C; text-shadow:0 0 12px rgba(255,210,28,0.3);">
+                                ${code}
+                            </div>
+                            <div style="font-size:12px; color:#38bdf8; margin-top:6px;">
+                                Placa: <strong class="mono">${plate}</strong> • Cliente: <strong>${clientName}</strong>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <div style="display:flex; gap:8px;">
+                                <button type="button" class="btn btn-secondary" onclick="WorkshopView.copyActivationCode('${code}')" style="flex:1; font-weight:700; font-size:12px; padding:10px;">
+                                    📋 Copiar Código
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="WorkshopView.sendActivationWhatsApp('${clientPhone}', '${clientName}', '${plate}', '${code}')" style="flex:1; font-weight:800; font-size:12px; padding:10px; background:#25D366; color:#000; border:none; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+                                    <span>📱</span> <span>Enviar via WhatsApp</span>
+                                </button>
+                            </div>
+                            <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()" style="font-size:12px; margin-top:4px;">
+                                Concluir & Fechar
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        } catch (err) {
+            alert('Erro ao gerar código de ativação: ' + err.message);
+            this.openClientActivationModal();
+        }
+    },
+
+    copyActivationCode(code) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(code);
+        }
+        alert(`📋 Código ${code} copiado para a área de transferência!`);
+    },
+
+    sendActivationWhatsApp(phone, name, plate, code) {
+        const workshopName = this.officialWorkshopName || 'DNA AUTO Centro Automotivo';
+        const msg = `Olá ${name}! Seu veículo placa ${plate} foi cadastrado no sistema da oficina ${workshopName}.\n\nPara ativar o acompanhamento digital em tempo real no app DNA AUTO, use o seu código exclusivo:\n👉 *${code}*\n\nAcesse: https://dnaauto.com.br/#owner e insira seu código para ver a saúde e histórico do seu veículo!`;
+        
+        const cleanPhone = phone.replace(/\D/g, '');
+        const targetPhone = cleanPhone.startsWith('55') ? cleanPhone : '55' + cleanPhone;
+        const url = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
     }
 };

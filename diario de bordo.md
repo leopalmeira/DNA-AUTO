@@ -338,6 +338,38 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Adicionado Teste 37 validando upload multipart de fotos e persistência da URL no banco de dados.
      - Suíte completa com 37 testes automatizados aprovada com 100% de sucesso (`npm test`).
 
+### 📅 Ciclo — Correção WhatsApp Baileys QR Code, Cadastro de Clientes com Ativação, Entrada Rápida & Tablet 10"
+- **Demandas Atendidas:**
+  1. Correção do pareamento de WhatsApp no painel da oficina: o QR code gerado não pareava ao ser escaneado pela câmera.
+  2. Dashboard mais amigável e funcional: botão e fluxo rápido de entrada de veículos no pátio com auto-preenchimento por placa.
+  3. Nome da oficina no rodapé de forma discreta, sem poluir o cabeçalho.
+  4. Menu lateral do ERP setorizado em categorias claras (Operação, Serviços, Comunicação, Gestão).
+  5. Cadastro de cliente pela oficina com geração de código de ativação (`DNA-XXXX`) e tela de ativação no app do cliente.
+  6. Responsividade total para tablet de 10 polegadas em pé (Portrait) e deitado (Landscape).
+- **Implementações Técnicas Realizadas:**
+  1. `server/src/modules/workshops/baileys.service.js`:
+     - Separação estrita dos modos `'qr'` vs `'code'`. No modo QR Code, `requestPairingCode` não é chamado para não invalidar o socket.
+     - Tratamento transparente do código de erro Baileys 515 (`restartRequired`) com reconexão imediata usando as credenciais persistidas, concluindo o handshake para `CONNECTED`.
+  2. `server/src/database/schema.sql` & `server/src/database/db.js`:
+     - Criação da tabela `client_activations` com índices em `activation_code`, `license_plate` e `workshop_id`.
+  3. `server/src/modules/workshops/workshops.routes.js`:
+     - Rota `POST /api/v1/workshops/:id/clients/register-activation` (cria ativação, gera código e texto formatado para envio no WhatsApp).
+     - Rota `GET /api/v1/workshops/:id/clients/activations` (listagem e status).
+  4. `server/src/server.js`:
+     - Rota pública `POST /api/v1/clients/activate` para validar o código de ativação pelo app do cliente.
+  5. `public/js/components/workshopView.js`:
+     - Remoção do nome da oficina do topo e inserção no rodapé discreto (`.ws-erp-footer-subtle`).
+     - Setorização da sidebar com títulos estruturados.
+     - Hero banner na recepção com entrada rápida de veículos por placa.
+     - Abas no WhatsApp para alternar entre QR Code e Código de Telefone.
+  6. `public/js/components/ownerView.js`:
+     - Botão e item de menu no Drawer para "Ativar Veículo com Código".
+     - Modal de validação com auto-formatação e feedback imediato.
+  7. `public/css/components.css`:
+     - Media queries dedicadas para tablets de 10 polegadas (Portrait 768px-992px e Landscape 993px-1280px).
+  8. `test/api.test.js`:
+     - Adicionado Teste 38 validando geração de código de ativação e validação pelo cliente. Bateria com 38/38 testes aprovados (100%).
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

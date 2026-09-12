@@ -731,16 +731,43 @@ DNA-AUTO/
 
 ---
 
-## 🔮 5. Próximos Passos e Roadmap de Evolução
+---
 
-1. **Integração com Gateway de Pagamento (PIX Automático):**
-   - Implementação de webhook com Mercado Pago ou Asaas para confirmação instantânea do pagamento de R$ 59,90 via PIX Copia e Cola / QR Code dinâmico.
-2. **Disparo Automático Agendado de WhatsApp (Cron Job):**
-   - Criação de rotina diária no backend disparando automaticamente os alertas de manutenção aos proprietários via webhook de mensageria.
-3. **App Mobile PWA (Progressive Web App):**
-   - Configuração de `manifest.json` e Service Workers para que proprietários e mecânicos possam instalar o DNA AUTO no smartphone como aplicativo nativo.
-4. **Integração Governamental via API SINESP / DETRAN:**
-   - Preenchimento automatizado de ano, cor, cilindrada e combustível a partir do número da placa.
+## 🚀 6. Atualização de Engenharia — Correção do WhatsApp Baileys, Cadastro de Clientes & Adaptação para Tablets
+
+### 1. Correção Raiz do Pareamento WhatsApp via QR Code
+- **Causa Identificada:** O Baileys gerava o QR Code inicial, mas quando um número de telefone era passado no payload, o backend invocava simultaneamente `requestPairingCode()`. No protocolo Baileys/WhatsApp Web, solicitar pairing code invalida instantaneamente o QR Code gerado para o mesmo socket. Além disso, ao escanear o QR Code, o servidor do WhatsApp enviava uma desconexão transitória de handshake com código 515 (`restartRequired`), que antes era tratada como falha de conexão.
+- **Solução Implementada:** 
+  - Separação explícita de modos na API: `mode: 'qr'` (padrão) e `mode: 'code'`.
+  - No modo `qr`, o backend **nunca** executa `requestPairingCode()`.
+  - Tratamento automático do código 515 no evento `connection.update`: reconexão imediata e silenciosa reutilizando a pasta de credenciais da sessão (`server/sessions/ws_*`), assegurando transição suave para `status = 'CONNECTED'` e persistência em `whatsapp_sessions`.
+  - UI do ERP atualizada com abas dedicadas: `[ 📷 Escanear QR Code ]` e `[ 🔢 Código de Telefone ]`.
+
+### 2. Cadastro de Clientes & Geração de Código de Ativação (`DNA-XXXX`)
+- Criação da tabela `client_activations` no SQLite para controle do vínculo entre oficina, cliente e veículo:
+  - Campos: `id`, `workshop_id`, `client_name`, `whatsapp`, `license_plate`, `vehicle_id`, `owner_id`, `activation_code`, `status`, `created_at`, `activated_at`.
+- Rota `POST /api/v1/workshops/:id/clients/register-activation`: Gera código alfanumérico limpo (ex: `DNA-8421`) e texto pronto para envio por WhatsApp com 1 clique.
+- Rota pública `POST /api/v1/clients/activate`: Cliente insere o código no app mobile (`#owner`), validando o carro e liberando acesso imediato ao seu dossiê e manutenções.
+- Modal de ativação elegante no app do cliente com auto-formatação e feedback em tempo real.
+
+### 3. Entrada Rápida de Veículos no Pátio
+- Hero Banner dinâmico no topo do Dashboard da Oficina com botão `[ + Dar Entrada de Veículo ]`.
+- Modal de Entrada Rápida com auto-busca e pré-preenchimento ao digitar a placa (via API Placas e base local).
+- Atualização em tempo real do pátio e frota ativa.
+
+### 4. Reestruturação do Layout do ERP & Responsividade Tablet 10"
+- **Nome da Oficina no Rodapé:** Removido do topo do ERP (`.ws-erp-ws-title`) e adicionado ao rodapé de forma discreta (`.ws-erp-footer-subtle`).
+- **Sidebar Setorizada:** Organizada em 4 setores com títulos elegantes:
+  1. `OPERAÇÃO & ENTRADA`
+  2. `OFICINA & SERVIÇOS`
+  3. `COMUNICAÇÃO & CONTATO`
+  4. `GESTÃO & SISTEMA`
+- **Responsividade para Tablets de 10 polegadas:**
+  - **Portrait (768px a 992px):** Sidebar compacta com rolagem horizontal de setores, grids adaptados para 2 colunas e modais com 94% de largura.
+  - **Landscape (993px a 1280px):** Sidebar com 230px, grids de cards proporcionais e tabelas fluidas.
+
+### 5. Bateria de Testes Automatizados Expandida
+- Bateria atualizada para **38 testes automatizados**, cobrindo todas as rotas de ativação e registro de clientes, além de todos os fluxos anteriores com **100% de sucesso**.
 
 ---
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*

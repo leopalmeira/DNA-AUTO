@@ -607,12 +607,13 @@ router.post('/:id/whatsapp/connect', async (req, res) => {
     try {
         const workshopId = req.params.id;
         const phone_number = req.body.phone_number || req.body.phone || req.body.whatsapp;
+        const mode = req.body.mode || 'qr'; // 'qr' | 'code'
 
         if (!phone_number) {
             return res.status(400).json({ error: 'Número de WhatsApp da oficina é obrigatório.' });
         }
 
-        const connectResult = await baileysService.connectWorkshop(workshopId, phone_number);
+        const connectResult = await baileysService.connectWorkshop(workshopId, phone_number, mode);
         res.json(connectResult);
     } catch (err) {
         console.error('Erro ao iniciar conexão WhatsApp Baileys:', err);
@@ -841,6 +842,132 @@ router.post('/:id/whatsapp/dispatch-batch', (req, res) => {
     } catch (err) {
         console.error('Erro ao processar lote de WhatsApp:', err);
         res.status(500).json({ error: 'Erro ao disparar mensagens automáticas.' });
+    }
+});
+
+// ==============================================================================
+// MÓDULO DE CADASTRO DE CLIENTE & CÓDIGO DE ATIVAÇÃO
+// ==============================================================================
+
+function generateActivationCode() {
+    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    let code = 'DNA-';
+    for (let i = 0; i < 4; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+}
+
+// 1. Cadastrar Cliente & Gerar Código de Ativação pela Oficina
+router.post('/:id/clients/register-activation', async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const plate = (req.body.license_plate || req.body.plate || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const clientName = (req.body.client_name || req.body.name || '').trim();
+        const rawPhone = (req.body.whatsapp || req.body.phone || '').trim();
+        const brand = (req.body.brand || '').trim();
+        const model = (req.body.model || '').trim();
+
+        if (!plate || plate.length < 7) {
+            return res.status(400).json({ error: 'Placa do veículo é obrigatória (formato Mercosul ou padrão).' });
+        }
+        if (!clientName) {
+            return res.status(400).json({ error: 'Nome do cliente é obrigatório.' });
+        }
+        if (!rawPhone || rawPhone.length < 8) {
+            return res.status(400).json({ error: 'Número de WhatsApp do cliente é obrigatório.' });
+        }
+
+        const workshop = db.prepare(`SELECT id, trade_name FROM workshops WHERE id = ?`).get(workshopId);
+        if (!workshop) {
+            return res.status(404).json({ error: 'Oficina não encontrada.' });
+        }
+
+        // 1. Verifica ou cria Veículo
+        let vehicle = db.prepare(`SELECT * FROM vehicles WHERE license_plate = ?`).get(plate);
+        if (!vehicle) {
+            const vehId = `veh_${plate}_${Date.now()}`;
+            const currentYear = new Date().getFullYear();
+            db.prepare(`
+                INSERT INTO vehicles (id, license_plate, chassis_vin, brand, model, version_label, manufacture_year, model_year, fuel_type, color, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Flex', 'Não informada', CURRENT_TIMESTAMP)
+            `).run(
+                vehId,
+                plate,
+                `93H${plate}${Date.now().toString().slice(-8)}`,
+                brand || 'Veículo',
+                model || 'Padrão',
+                '1.0',
+                currentYear,
+                currentYear
+            );
+            vehicle = db.prepare(`SELECT * FROM vehicles WHERE id = ?`).get(vehId);
+        }
+
+        // 2. Verifica ou cria Proprietário
+        let owner = db.prepare(`SELECT * FROM owners WHERE phone = ? OR name = ?`).get(rawPhone, clientName);
+        if (!owner) {
+            const ownerId = `own_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+            db.prepare(`
+                INSERT INTO owners (id, name, document_cpf, phone, created_at)
+                VALUES (?, ?, '000.000.000-00', ?, CURRENT_TIMESTAMP)
+            `).run(ownerId, clientName, rawPhone);
+            owner = db.prepare(`SELECT * FROM owners WHERE id = ?`).get(ownerId);
+        }
+
+        // 3. Gera Código de Ativação Único
+        let activationCode = generateActivationCode();
+        let attempts = 0;
+        while (attempts < 10) {
+            const exists = db.prepare(`SELECT id FROM client_activations WHERE activation_code = ?`).get(activationCode);
+            if (!exists) break;
+            activationCode = generateActivationCode();
+            attempts++;
+        }
+
+        const actId = `act_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        db.prepare(`
+            INSERT INTO client_activations (id, workshop_id, client_name, whatsapp, license_plate, activation_code, vehicle_id, owner_id, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', CURRENT_TIMESTAMP)
+        `).run(actId, workshopId, clientName, rawPhone, plate, activationCode, vehicle.id, owner.id);
+
+        res.status(201).json({
+            success: true,
+            message: `Cliente ${clientName} cadastrado com sucesso! Código de ativação gerado.`,
+            activation_code: activationCode,
+            client: {
+                name: clientName,
+                whatsapp: rawPhone,
+                plate: plate,
+                vehicle_id: vehicle.id
+            },
+            whatsapp_share_text: `Olá ${clientName}! Seu cadastro no DNA AUTO foi iniciado pela oficina ${workshop.trade_name}. Para ativar seu aplicativo e acompanhar o histórico e manutenções do seu veículo (${plate}), use o código de ativação: ${activationCode}`
+        });
+    } catch (err) {
+        console.error('Erro ao cadastrar cliente e gerar ativação:', err);
+        res.status(500).json({ error: 'Erro ao cadastrar cliente na oficina.' });
+    }
+});
+
+// 2. Listar Ativações de Clientes da Oficina
+router.get('/:id/clients/activations', async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const activations = db.prepare(`
+            SELECT a.*, v.brand, v.model, v.photo_url
+            FROM client_activations a
+            LEFT JOIN vehicles v ON a.vehicle_id = v.id
+            WHERE a.workshop_id = ?
+            ORDER BY a.created_at DESC
+        `).all(workshopId);
+
+        res.json({
+            success: true,
+            activations: activations || []
+        });
+    } catch (err) {
+        console.error('Erro ao listar ativações:', err);
+        res.status(500).json({ error: 'Erro ao consultar lista de ativações.' });
     }
 });
 

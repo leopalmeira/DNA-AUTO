@@ -62,3 +62,26 @@ try {
     }
 } catch (_) {}
 
+// Garantir presença da tabela client_activations
+try {
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS client_activations (
+            id TEXT PRIMARY KEY,
+            workshop_id TEXT NOT NULL REFERENCES workshops(id) ON DELETE CASCADE,
+            client_name TEXT NOT NULL,
+            whatsapp TEXT NOT NULL,
+            license_plate TEXT NOT NULL,
+            activation_code TEXT NOT NULL UNIQUE,
+            vehicle_id TEXT REFERENCES vehicles(id),
+            owner_id TEXT REFERENCES owners(id),
+            status TEXT NOT NULL DEFAULT 'PENDING',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            activated_at DATETIME
+        );
+        CREATE INDEX IF NOT EXISTS idx_client_activations_code ON client_activations(activation_code);
+        CREATE INDEX IF NOT EXISTS idx_client_activations_plate ON client_activations(license_plate);
+        CREATE INDEX IF NOT EXISTS idx_client_activations_ws ON client_activations(workshop_id);
+    `);
+} catch (e) {
+    console.warn('Erro ao criar client_activations:', e.message);
+}

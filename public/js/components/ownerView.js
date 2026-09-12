@@ -17,6 +17,7 @@ const OwnerView = {
     historyFilter: 'all',
     expandedModules: {},
     isAddVehicleOpen: false,
+    isActivationModalOpen: false,
 
     // Dados Oficiais do Veículo Padrão (Fiel ao Mapa Oficial: Honda Civic BRA2E19)
     vehicleData: {
@@ -547,6 +548,9 @@ const OwnerView = {
                     <!-- 5. Modal de Troca de Foto do Veículo pelo Dono -->
                     ${this.isPhotoModalOpen ? this.renderChangePhotoModal() : ''}
 
+                    <!-- 5.1. Modal de Ativação com Código da Oficina -->
+                    ${this.isActivationModalOpen ? this.renderActivationModal() : ''}
+
                     <!-- 5. Barra de Navegação Inferior Fixa (5 Itens) -->
                     <nav class="dna-bottom-nav">
                         <div class="dna-nav-item ${this.activeTab === 'home' ? 'active' : ''}" onclick="OwnerView.switchTab('home')">
@@ -735,6 +739,17 @@ const OwnerView = {
                                     <span>Configurações</span>
                                 </div>
                                 <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                            </div>
+
+                            <!-- Ativar com Código da Oficina -->
+                            <div class="dna-menu-item" style="background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.25);" onclick="OwnerView.toggleDrawer(false); OwnerView.openActivationModal();">
+                                <div class="dna-menu-item-left">
+                                    <div class="dna-menu-icon" style="color:#00D4FF;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                                    </div>
+                                    <span style="color:#00D4FF; font-weight:800;">Ativar Veículo com Código</span>
+                                </div>
+                                <span class="dna-badge-counter" style="background:#00D4FF; color:#0B0F19; font-weight:800; font-size:9px; padding:2px 6px;">OFICINA</span>
                             </div>
 
                             <!-- 10. Baixar Aplicativo Oficial PWA / Play Store -->
@@ -1018,6 +1033,11 @@ const OwnerView = {
                         <span>Inserir Outro Veículo</span>
                     </button>
                 </div>
+
+                <button class="dna-obd-rescan-btn" onclick="OwnerView.openActivationModal()" style="width:100%; margin-top:2px; background:linear-gradient(135deg, rgba(0,212,255,0.12) 0%, rgba(0,102,255,0.12) 100%); border:1.5px solid #00D4FF; color:#00D4FF; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px; padding:11px; border-radius:12px; cursor:pointer;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                    <span>Recebeu código da oficina? Ativar Veículo Aqui</span>
+                </button>
 
                 ${this.isAddVehicleOpen ? this.renderAddVehicleForm() : ''}
             </div>
@@ -1946,6 +1966,132 @@ const OwnerView = {
                     <button class="dna-photo-btn-secondary" onclick="OwnerView.restoreDefaultModelPhoto()">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2"/></svg>
                         <span>Restaurar Foto Oficial do Modelo</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    openActivationModal() {
+        this.isActivationModalOpen = true;
+        this.render();
+    },
+
+    closeActivationModal() {
+        this.isActivationModalOpen = false;
+        this.render();
+    },
+
+    async submitClientActivation() {
+        const inputCode = (document.getElementById('dna-client-activation-code')?.value || '').trim().toUpperCase();
+        if (!inputCode || inputCode.length < 4) {
+            this.showOwnerToast('Informe o código de ativação fornecido pela oficina (ex: DNA-8421)', 'error');
+            return;
+        }
+
+        const submitBtn = document.getElementById('dna-btn-submit-activation');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span>Validando código...</span>';
+        }
+
+        try {
+            const data = await API.activateClientCode(inputCode);
+            if (data && data.success) {
+                this.isActivationModalOpen = false;
+                this.showOwnerToast(`🎉 Veículo ativado com sucesso! (${data.vehicle?.license_plate || inputCode})`, 'success');
+
+                // Sincroniza e seleciona o veículo
+                if (data.vehicle) {
+                    if (!this.userVehicles) this.userVehicles = [];
+                    const exists = this.userVehicles.find(v => v.license_plate === data.vehicle.license_plate);
+                    if (!exists) {
+                        this.userVehicles.push(data.vehicle);
+                    }
+                    this.applyVehicleData(data.vehicle);
+                }
+                if (data.client?.name) {
+                    this.vehicleData.user_name = data.client.name;
+                }
+                this._backendSynced = false;
+                await this.syncBackendVehicles();
+                this.render();
+            } else {
+                this.showOwnerToast(data.error || 'Código de ativação inválido.', 'error');
+            }
+        } catch (err) {
+            this.showOwnerToast(err.message || 'Código de ativação não encontrado ou expirado.', 'error');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Validar e Ativar Meu Carro</span>';
+            }
+        }
+    },
+
+    showOwnerToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        const bg = type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : '#0066FF';
+        toast.style.cssText = `
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${bg};
+            color: #FFFFFF;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 12.5px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            z-index: 999999;
+            max-width: 90%;
+            text-align: center;
+            animation: dnaFadeIn 0.2s ease;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3500);
+    },
+
+    renderActivationModal() {
+        return `
+            <div class="dna-photo-modal-overlay" onclick="if(event.target === this) OwnerView.closeActivationModal();">
+                <div class="dna-photo-modal-sheet" style="max-width: 440px;">
+                    <div class="dna-photo-modal-header">
+                        <div>
+                            <h3 style="display:flex; align-items:center; gap:8px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                                <span>Ativar Veículo com Código</span>
+                            </h3>
+                            <p>Vincule seu carro com o código de 4 dígitos gerado pela sua oficina</p>
+                        </div>
+                        <button class="dna-doc-sheet-close" onclick="OwnerView.closeActivationModal()" title="Fechar">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+
+                    <div style="background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.25); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+                        <span style="font-size: 11.5px; color: #E2E8F0; line-height: 1.5; display: block;">
+                            Sua oficina credenciada gera um código exclusivo (ex: <strong style="color: #00D4FF; font-family: monospace;">DNA-8421</strong>) ao cadastrar seu veículo. Digite abaixo para liberar seu laudo, histórico e dossiê.
+                        </span>
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="font-size: 11.5px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 6px;">Código de Ativação *</label>
+                        <input type="text" id="dna-client-activation-code" placeholder="DNA-XXXX" maxlength="12" style="width: 100%; background: rgba(8, 16, 32, 0.95); border: 2px solid #00D4FF; color: #FFFFFF; font-size: 20px; font-weight: 900; font-family: var(--font-mono, monospace); text-align: center; letter-spacing: 3px; padding: 12px; border-radius: 10px; text-transform: uppercase; outline: none; box-shadow: 0 0 16px rgba(0, 212, 255, 0.2);" onkeyup="this.value = this.value.toUpperCase(); if (event.key === 'Enter') OwnerView.submitClientActivation();" />
+                    </div>
+
+                    <button id="dna-btn-submit-activation" class="dna-photo-btn-primary" onclick="OwnerView.submitClientActivation()" style="margin-top: 8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Validar e Ativar Meu Carro</span>
+                    </button>
+
+                    <button class="dna-photo-btn-secondary" onclick="OwnerView.closeActivationModal()" style="margin-top: 8px;">
+                        <span>Cancelar</span>
                     </button>
                 </div>
             </div>

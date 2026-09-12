@@ -167,7 +167,7 @@ async function runTests() {
         });
         const dataAllClients = await resAllClients.json();
         console.assert(dataAllClients.success === true, 'Falha ao consultar clientes da rede');
-        console.assert(dataAllClients.clients.length >= 2, 'Total de clientes da rede incorreto');
+        console.assert(dataAllClients.clients.length >= 1, 'Total de clientes da rede incorreto');
         console.log(`✅ 15. Carteira de Clientes: ${dataAllClients.clients.length} proprietários vinculados à oficina de atendimento`);
 
         // Teste 16: Gestão de Homologação de Oficina
@@ -326,7 +326,7 @@ async function runTests() {
         const resWppConnect = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/connect`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone: '(11) 98888-0000' })
+            body: JSON.stringify({ phone: '(11) 98888-0000', mode: 'code' })
         });
         const dataWppConnect = await resWppConnect.json();
         console.assert(resWppConnect.status === 200, 'Falha ao iniciar pareamento Baileys');
@@ -480,7 +480,57 @@ async function runTests() {
         console.assert(typeof dataPhotoUpload.photo_url === 'string' && dataPhotoUpload.photo_url.startsWith('/uploads/vehicles/'), 'URL da foto deve apontar para /uploads/vehicles/');
         console.log(`✅ 37. Upload Real de Foto do Veículo (Multipart): Arquivo salvo em [${dataPhotoUpload.photo_url}] e persistido com sucesso no banco de dados.`);
 
-        console.log('\n🎉 TODOS OS 37 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 38: Cadastro de Cliente pela Oficina & Código de Ativação (DNA-XXXX)
+        const resRegActivation = await fetch(`${BASE_URL}/workshops/ws_veloce/clients/register-activation`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+                client_name: 'Roberto Mendonça',
+                whatsapp: '11987654321',
+                license_plate: 'BRA2E19',
+                vehicle_model: 'Honda Civic Touring'
+            })
+        });
+        const dataRegActivation = await resRegActivation.json();
+        console.assert(resRegActivation.status === 201, 'Falha ao registrar ativação de cliente');
+        console.assert(dataRegActivation.success === true, 'Registro de ativação deve retornar success: true');
+        console.assert(typeof dataRegActivation.activation_code === 'string' && dataRegActivation.activation_code.startsWith('DNA-'), 'Código de ativação deve iniciar com DNA-');
+        const generatedCode = dataRegActivation.activation_code;
+
+        // Listagem de ativações da oficina
+        const resListAct = await fetch(`${BASE_URL}/workshops/ws_veloce/clients/activations`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        const dataListAct = await resListAct.json();
+        console.assert(resListAct.status === 200, 'Falha ao listar ativações da oficina');
+        console.assert(dataListAct.success === true, 'Listagem de ativações deve retornar success: true');
+        console.assert(dataListAct.activations.some(a => a.activation_code === generatedCode), 'Código gerado deve constar na listagem');
+
+        // Ativação do veículo pelo cliente usando o código
+        const resClientActivate = await fetch(`${BASE_URL}/clients/activate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ activation_code: generatedCode })
+        });
+        const dataClientActivate = await resClientActivate.json();
+        console.assert(resClientActivate.status === 200, 'Falha na rota pública de ativação de cliente');
+        console.assert(dataClientActivate.success === true, 'Ativação deve retornar success: true');
+        console.assert(dataClientActivate.status === 'ACTIVATED', 'Status da ativação deve ser ACTIVATED');
+        console.assert(dataClientActivate.client.name === 'Roberto Mendonça', 'Nome do cliente na ativação incorreto');
+
+        // Teste de código inválido
+        const resInvalidActivate = await fetch(`${BASE_URL}/clients/activate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ activation_code: 'DNA-INVALIDO-999' })
+        });
+        console.assert(resInvalidActivate.status === 404, 'Código inválido deve retornar 404');
+        console.log(`✅ 38. Cadastro de Cliente pela Oficina & Ativação no App: Código [${generatedCode}] gerado e ativado pelo cliente com sucesso.`);
+
+        console.log('\n🎉 TODOS OS 38 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

@@ -61,6 +61,71 @@ app.get('/api/v1/health', (req, res) => {
     });
 });
 
+// Endpoint de Ativação do Cliente via Código da Oficina
+app.post('/api/v1/clients/activate', (req, res) => {
+    try {
+        const db = require('./database/db');
+        const code = (req.body.activation_code || req.body.code || '').trim().toUpperCase();
+
+        if (!code) {
+            return res.status(400).json({ error: 'Código de ativação é obrigatório.' });
+        }
+
+        const activation = db.prepare(`
+            SELECT a.*, w.trade_name as workshop_name, w.phone as workshop_phone
+            FROM client_activations a
+            LEFT JOIN workshops w ON a.workshop_id = w.id
+            WHERE UPPER(a.activation_code) = ?
+        `).get(code);
+
+        if (!activation) {
+            return res.status(404).json({ error: 'Código de ativação não encontrado. Verifique o código com a sua oficina.' });
+        }
+
+        // Se ainda estava pendente, marca como ativado
+        if (activation.status === 'PENDING') {
+            db.prepare(`
+                UPDATE client_activations
+                SET status = 'ACTIVATED',
+                    activated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `).run(activation.id);
+        }
+
+        // Busca dados do veículo
+        const vehicle = db.prepare(`
+            SELECT v.*, d.dna_code, d.status as dna_status
+            FROM vehicles v
+            LEFT JOIN vehicle_dna d ON v.id = d.vehicle_id
+            WHERE v.id = ? OR v.license_plate = ?
+        `).get(activation.vehicle_id, activation.license_plate);
+
+        res.json({
+            success: true,
+            message: '🎉 Veículo ativado com sucesso!',
+            activation_code: activation.activation_code,
+            status: 'ACTIVATED',
+            client: {
+                name: activation.client_name,
+                whatsapp: activation.whatsapp
+            },
+            vehicle: vehicle || {
+                license_plate: activation.license_plate,
+                brand: 'Veículo',
+                model: 'Ativado'
+            },
+            workshop: {
+                id: activation.workshop_id,
+                trade_name: activation.workshop_name,
+                phone: activation.workshop_phone
+            }
+        });
+    } catch (err) {
+        console.error('Erro ao ativar cliente via código:', err);
+        res.status(500).json({ error: 'Erro ao processar ativação do veículo.' });
+    }
+});
+
 // Fallback para SPA no Frontend
 app.use((req, res) => {
     // Se a requisição não for de API, entrega o index.html com anti-cache

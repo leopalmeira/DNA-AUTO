@@ -2874,3 +2874,253 @@ body.is-owner-app #app-container > .main-layout > #view-content {
     animation: fadeIn 0.25s ease;
 }
 
+/* ==============================================================================
+   17. SEPARADORES DE SETORES DO MENU LATERAL (SIDEBAR SETORIZADA)
+   ============================================================================== */
+.ws-menu-sector {
+    margin-bottom: 12px;
+}
+
+.ws-menu-sector-title {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #64748B;
+    padding: 8px 16px 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+}
+
+.ws-menu-sector-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    margin-left: 4px;
+}
+
+/* ==============================================================================
+   18. HERO BANNER DA RECEPÇÃO & AÇÃO RÁPIDA NA DASHBOARD
+   ============================================================================== */
+.ws-dash-hero-banner {
+    background: linear-gradient(135deg, rgba(13, 27, 62, 0.95) 0%, rgba(8, 16, 32, 0.98) 100%);
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.ws-dash-hero-banner::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.ws-dash-hero-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ws-dash-hero-sub {
+    font-size: 12.5px;
+    color: #94A3B8;
+    margin: 0;
+}
+
+.ws-dash-hero-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.ws-btn-hero-action {
+    background: #0066FF;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(0, 102, 255, 0.35);
+}
+
+.ws-btn-hero-action:hover {
+    background: #0052cc;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 102, 255, 0.45);
+}
+
+.ws-btn-hero-action.success {
+    background: #10B981;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.ws-btn-hero-action.success:hover {
+    background: #059669;
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+}
+
+/* ==============================================================================
+   19. RODAPÉ SUTIL DO ERP COM NOME DA OFICINA
+   ============================================================================== */
+.ws-erp-footer-subtle {
+    margin-top: 36px;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11.5px;
+    color: #64748B;
+    user-select: none;
+}
+
+.ws-erp-footer-subtle strong {
+    color: #94A3B8;
+    font-weight: 600;
+}
+
+.ws-erp-footer-subtle .footer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10.5px;
+}
+
+/* ==============================================================================
+   20. RESPONSIVIDADE PARA TABLET DE 10 POLEGADAS (PORTRAIT & LANDSCAPE)
+   ============================================================================== */
+
+/* TABLET 10" EM PÉ (PORTRAIT: ~768px a 992px) */
+@media screen and (min-width: 768px) and (max-width: 992px) {
+    .ws-erp-layout {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ws-erp-sidebar {
+        width: 100% !important;
+        height: auto !important;
+        position: relative !important;
+        border-right: none !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px 14px;
+        overflow-x: auto;
+    }
+
+    .ws-menu-sector {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 0;
+        margin-right: 12px;
+    }
+
+    .ws-menu-sector-title {
+        display: none;
+    }
+
+    .ws-erp-content {
+        padding: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .ws-dash-hero-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+    }
+
+    .ws-dash-hero-actions {
+        width: 100%;
+    }
+
+    .ws-btn-hero-action {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .ws-stats-grid,
+    .ws-dash-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+
+    .ws-vehicle-card-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .ws-modal-card {
+        width: 94% !important;
+        max-width: 94% !important;
+        padding: 18px !important;
+    }
+
+    .ws-erp-footer-subtle {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+}
+
+/* TABLET 10" DEITADO (LANDSCAPE: ~993px a 1280px) */
+@media screen and (min-width: 993px) and (max-width: 1280px) {
+    .ws-erp-sidebar {
+        width: 230px !important;
+        min-width: 230px !important;
+    }
+
+    .ws-erp-content {
+        padding: 20px !important;
+    }
+
+    .ws-stats-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 14px !important;
+    }
+
+    .ws-dash-grid {
+        grid-template-columns: 2fr 1.2fr !important;
+        gap: 16px !important;
+    }
+
+    .ws-dash-hero-banner {
+        padding: 18px 20px;
+    }
+
+    .ws-modal-card {
+        max-width: 580px !important;
+    }
+}
+
+
