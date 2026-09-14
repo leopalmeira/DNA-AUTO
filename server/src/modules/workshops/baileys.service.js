@@ -744,6 +744,8 @@ class BaileysWorkshopService {
                 message: 'WhatsApp já conectado e operacional.',
                 session: current
             };
+        }
+
         if (evoConfig.isConfigured) {
             try {
                 const evoRes = await evolutionService.createOrConnectInstance(workshopId, cleanPhone);
