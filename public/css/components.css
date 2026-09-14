@@ -3179,4 +3179,297 @@ body.is-owner-app #app-container > .main-layout > #view-content {
 }
 
 
+/* ==============================================================================
+   CENTRAL DE ATENDIMENTO WHATSAPP — RESPONSIVO PARA TABLET RETRATO & MOBILE
+   ============================================================================== */
 
+/* Container principal do chat (2 colunas em desktop, master-detail em tablet) */
+.ws-chat-container {
+    display: flex;
+    height: calc(100vh - 200px);
+    min-height: 520px;
+    max-height: 760px;
+    background: #070c18;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+}
+
+/* Coluna lateral (lista de conversas) */
+.ws-chat-sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    background: #090f1d;
+    transition: transform 0.25s ease, width 0.25s ease;
+}
+
+/* Coluna direita (janela de chat ativa) */
+.ws-chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #050913;
+    min-width: 0;
+}
+
+/* Botão Voltar (tablet/mobile, oculto em desktop) */
+.ws-chat-back-btn {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.05);
+    border: none;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+.ws-chat-back-btn:hover { background: rgba(255,255,255,0.10); color: #fff; }
+
+/* Balões de mensagem */
+.ws-chat-bubble {
+    max-width: 78%;
+    padding: 10px 14px;
+    font-size: 13px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.ws-chat-bubble-incoming {
+    align-self: flex-start;
+    background: #1e293b;
+    color: #f8fafc;
+    border-radius: 12px 12px 12px 2px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+.ws-chat-bubble-outgoing {
+    align-self: flex-end;
+    background: #065f46;
+    color: #ffffff;
+    border-radius: 12px 12px 2px 12px;
+    border: 1px solid rgba(37,211,102,0.3);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+/* Miniaturas de imagem/vídeo nas mensagens */
+.ws-chat-media-thumb {
+    width: 100%;
+    max-width: 240px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    object-fit: cover;
+    max-height: 180px;
+    display: block;
+}
+
+/* Player de áudio inline */
+.ws-chat-audio-player {
+    width: 100%;
+    max-width: 260px;
+    height: 36px;
+    border-radius: 8px;
+    accent-color: #25D366;
+    margin-bottom: 4px;
+}
+
+/* Preview do anexo pendente (antes de enviar) */
+#ws-chat-media-preview {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    background: rgba(37,211,102,0.08);
+    border: 1px dashed rgba(37,211,102,0.4);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #a7f3d0;
+    flex-wrap: wrap;
+}
+#ws-chat-media-preview.active { display: flex; }
+
+.ws-chat-media-preview-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.ws-chat-media-preview-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.ws-chat-media-preview-cancel {
+    background: none;
+    border: none;
+    color: #f87171;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 4px;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+/* Barra de ações de mídia (📷 🎥 🎙️) */
+.ws-chat-media-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ws-chat-media-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    color: #94a3b8;
+    font-size: 14px;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+}
+.ws-chat-media-btn:hover {
+    background: rgba(37,211,102,0.15);
+    border-color: rgba(37,211,102,0.4);
+    color: #25D366;
+}
+.ws-chat-media-btn.recording {
+    background: rgba(239,68,68,0.2);
+    border-color: rgba(239,68,68,0.6);
+    color: #f87171;
+    animation: ws-pulse-red 1s ease infinite;
+}
+
+@keyframes ws-pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+    50%       { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+}
+
+/* Abas da sidebar (Conversas / Serviços em Potencial) */
+.ws-chat-sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: #060a14;
+    flex-shrink: 0;
+}
+
+.ws-chat-sidebar-tab {
+    flex: 1;
+    padding: 9px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    color: #64748b;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background: transparent;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+}
+.ws-chat-sidebar-tab.active {
+    color: #25D366;
+    border-bottom-color: #25D366;
+    background: rgba(37,211,102,0.06);
+}
+.ws-chat-sidebar-tab:hover:not(.active) {
+    color: #94a3b8;
+    background: rgba(255,255,255,0.04);
+}
+
+/* Card de veículo em potencial na sidebar */
+.ws-potential-vehicle-card {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    cursor: default;
+    transition: background 0.15s;
+}
+.ws-potential-vehicle-card:hover {
+    background: rgba(255,255,255,0.03);
+}
+
+/* ── TABLET RETRATO (≤ 900px) ─────────────────────────────────────────── */
+@media screen and (max-width: 900px) {
+    .ws-chat-container {
+        height: calc(100vh - 160px);
+        max-height: none;
+        min-height: 480px;
+        border-radius: 8px;
+    }
+
+    /* Em tablet retrato: sidebar e main ficam full-width,
+       controlados via classe .ws-mobile-show-chat */
+    .ws-chat-sidebar {
+        width: 100%;
+        border-right: none;
+    }
+
+    /* Quando conversa está aberta, esconde sidebar e mostra chat */
+    .ws-chat-container.ws-mobile-show-chat .ws-chat-sidebar {
+        display: none;
+    }
+    .ws-chat-container.ws-mobile-show-chat .ws-chat-main {
+        display: flex;
+    }
+
+    /* Quando nenhuma conversa está aberta, mostra sidebar full width */
+    .ws-chat-container:not(.ws-mobile-show-chat) .ws-chat-main {
+        display: none;
+    }
+
+    .ws-chat-back-btn {
+        display: inline-flex;
+    }
+
+    .ws-chat-bubble {
+        max-width: 90%;
+    }
+
+    .ws-chat-media-thumb {
+        max-width: 200px;
+        max-height: 160px;
+    }
+}
+
+/* ── MOBILE PEQUENO (≤ 540px) ─────────────────────────────────────────── */
+@media screen and (max-width: 540px) {
+    .ws-chat-container {
+        height: calc(100vh - 140px);
+        border-radius: 6px;
+    }
+
+    .ws-chat-bubble {
+        font-size: 12px;
+        max-width: 95%;
+        padding: 8px 11px;
+    }
+
+    .ws-chat-media-actions .ws-chat-media-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 13px;
+    }
+}

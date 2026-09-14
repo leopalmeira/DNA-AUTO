@@ -2268,7 +2268,9 @@ const WorkshopView = {
     // CENTRAL DE ATENDIMENTO WHATSAPP (CHAT AO VIVO & MENSAGERIA UNIFICADA)
     // ──────────────────────────────────────────────────────────────────────────
     renderWhatsAppChatView() {
-        // Dispara o carregamento das conversas
+        this.chatSidebarActiveTab = this.chatSidebarActiveTab || 'conversas';
+        this.chatMobileViewMode = this.chatMobileViewMode || 'list'; // 'list' | 'chat'
+
         setTimeout(() => this.loadChatConversations(true), 60);
         this.startChatPolling();
 
@@ -2277,62 +2279,82 @@ const WorkshopView = {
         const displayPhone = session.display_phone || session.phone_number || this.officialPhone || '+55 (19) 3245-6789';
 
         return `
-            <div style="padding: 16px 20px;">
-                <!-- Cabeçalho da Central de Atendimento -->
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
-                    <div>
-                        <div style="display:flex; align-items:center; gap:10px;">
-                            <div style="width:38px; height:38px; border-radius:10px; background:rgba(37,211,102,0.15); display:flex; align-items:center; justify-content:center; border:1px solid rgba(37,211,102,0.4);">
-                                <span style="font-size:20px;">💬</span>
-                            </div>
-                            <div>
-                                <h2 style="font-size:20px; font-weight:900; color:#ffffff; margin:0 0 2px;">Central de Atendimento WhatsApp</h2>
-                                <span style="font-size:12px; color:#94a3b8;">
-                                    Linha Oficial da Oficina: <strong style="color:#25D366; font-family:var(--font-mono);">${displayPhone}</strong>
-                                    ${isConnected ? '• <span style="color:#10B981; font-weight:800;">● Conectado (Recebimento Automático Ativo)</span>' : '• <span style="color:#f59e0b; font-weight:800;">● Aparelho Aguardando Conexão</span>'}
-                                </span>
-                            </div>
+            <div style="padding: 12px 16px;">
+                <!-- Cabeçalho -->
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:36px; height:36px; border-radius:10px; background:rgba(37,211,102,0.15); display:flex; align-items:center; justify-content:center; border:1px solid rgba(37,211,102,0.4); flex-shrink:0;">
+                            <span style="font-size:18px;">💬</span>
+                        </div>
+                        <div>
+                            <h2 style="font-size:17px; font-weight:900; color:#ffffff; margin:0 0 2px;">Central de Atendimento WhatsApp</h2>
+                            <span style="font-size:11.5px; color:#94a3b8;">
+                                Linha: <strong style="color:#25D366; font-family:var(--font-mono);">${displayPhone}</strong>
+                                ${isConnected
+                                    ? '&nbsp;• <span style="color:#10B981; font-weight:800;">● Conectado</span>'
+                                    : '&nbsp;• <span style="color:#f59e0b; font-weight:800;">● Aguardando</span>'}
+                            </span>
                         </div>
                     </div>
-                    <div style="display:flex; gap:10px;">
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="WorkshopView.loadChatConversations(false)" style="font-size:12px; font-weight:700; cursor:pointer;">
-                            🔄 Atualizar Conversas
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="WorkshopView.loadChatConversations(false)" style="font-size:11.5px; font-weight:700; cursor:pointer;">
+                            🔄 Atualizar
                         </button>
-                        <button type="button" class="btn btn-sm btn-primary" onclick="WorkshopView.openNewChatModal()" style="background:#25D366; color:#000; font-weight:800; font-size:12px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="WorkshopView.openNewChatModal()" style="background:#25D366; color:#000; font-weight:800; font-size:11.5px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
                             <span>➕</span> <span>Nova Conversa</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- Janela Central de Chat em 2 Colunas -->
-                <div class="panel-box" style="display:flex; height: calc(100vh - 200px); min-height: 560px; max-height: 740px; background:#070c18; border:1px solid rgba(255,255,255,0.08); border-radius:12px; overflow:hidden; padding:0; box-shadow:0 12px 40px rgba(0,0,0,0.5);">
-                    <!-- Coluna Esquerda: Lista de Conversas (340px) -->
-                    <div style="width:340px; flex-shrink:0; border-right:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; background:#090f1d;">
-                        <!-- Barra de Busca de Clientes -->
-                        <div style="padding:12px; border-bottom:1px solid rgba(255,255,255,0.08); background:#060a14;">
-                            <input type="text" id="ws-chat-search-input" class="form-control" placeholder="🔍 Buscar cliente, telefone ou placa..." oninput="WorkshopView.filterChatConversations(this.value)" style="background:#0b1120; border-color:rgba(255,255,255,0.12); font-size:12px; padding:8px 12px; width:100%; border-radius:8px; color:#ffffff;" />
+                <!-- Janela Principal: Sidebar + Chat -->
+                <div id="ws-chat-container" class="ws-chat-container panel-box" style="padding:0; margin-bottom:0;">
+
+                    <!-- Sidebar Esquerda -->
+                    <div class="ws-chat-sidebar">
+
+                        <!-- Abas: Conversas | Serviços em Potencial -->
+                        <div class="ws-chat-sidebar-tabs">
+                            <button class="ws-chat-sidebar-tab active" id="ws-tab-conversas" onclick="WorkshopView.switchChatSidebarTab('conversas')">
+                                💬 Conversas
+                            </button>
+                            <button class="ws-chat-sidebar-tab" id="ws-tab-servicos" onclick="WorkshopView.switchChatSidebarTab('servicos')">
+                                ⚡ Serviços em Potencial
+                            </button>
                         </div>
 
-                        <!-- Lista Scrollável de Conversas -->
-                        <div id="ws-chat-threads-list" style="flex:1; overflow-y:auto;">
-                            <div style="padding:30px; text-align:center; color:#64748b; font-size:12px;">
-                                Carregando conversas do WhatsApp...
+                        <!-- Painel: Lista de Conversas -->
+                        <div id="ws-sidebar-conversas" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+                            <div style="padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.07); background:#060a14;">
+                                <input type="text" id="ws-chat-search-input" class="form-control"
+                                    placeholder="🔍 Buscar cliente, telefone ou placa..."
+                                    oninput="WorkshopView.filterChatConversations(this.value)"
+                                    style="background:#0b1120; border-color:rgba(255,255,255,0.12); font-size:12px; padding:7px 11px; width:100%; border-radius:8px; color:#ffffff;" />
                             </div>
+                            <div id="ws-chat-threads-list" style="flex:1; overflow-y:auto;">
+                                <div style="padding:28px; text-align:center; color:#64748b; font-size:12px;">
+                                    Carregando conversas...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Painel: Serviços em Potencial -->
+                        <div id="ws-sidebar-servicos" style="flex:1; overflow-y:auto; display:none;">
+                            ${this.renderChatPotentialServices()}
                         </div>
                     </div>
 
                     <!-- Coluna Direita: Conversa Ativa -->
-                    <div id="ws-chat-active-window" style="flex:1; display:flex; flex-direction:column; background:#050913;">
-                        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; text-align:center; color:#64748b;">
-                            <div style="width:68px; height:68px; border-radius:50%; background:rgba(37,211,102,0.1); border:1px solid rgba(37,211,102,0.3); display:flex; align-items:center; justify-content:center; margin-bottom:16px;">
-                                <span style="font-size:34px;">💬</span>
+                    <div id="ws-chat-active-window" class="ws-chat-main">
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 24px; text-align:center; color:#64748b;">
+                            <div style="width:64px; height:64px; border-radius:50%; background:rgba(37,211,102,0.1); border:1px solid rgba(37,211,102,0.3); display:flex; align-items:center; justify-content:center; margin-bottom:14px;">
+                                <span style="font-size:30px;">💬</span>
                             </div>
-                            <h3 style="color:#ffffff; font-size:17px; font-weight:800; margin:0 0 6px;">Central de Atendimento ao Cliente</h3>
-                            <p style="font-size:12.5px; max-width:380px; margin:0 0 20px; line-height:1.5;">
-                                Selecione uma conversa ao lado para responder aos seus clientes ou inicie um novo contato direto pelo WhatsApp da oficina.
+                            <h3 style="color:#ffffff; font-size:16px; font-weight:800; margin:0 0 6px;">Central de Atendimento</h3>
+                            <p style="font-size:12px; max-width:320px; margin:0 0 18px; line-height:1.5;">
+                                Selecione uma conversa para responder clientes ou inicie um novo atendimento. Envie mensagens, fotos, vídeos e áudios direto pela plataforma.
                             </p>
-                            <button type="button" class="btn btn-sm btn-primary" onclick="WorkshopView.openNewChatModal()" style="background:#25D366; color:#000; font-weight:800; border:none; padding:8px 18px; cursor:pointer;">
-                                Iniciar Conversa com Cliente
+                            <button type="button" class="btn btn-sm" onclick="WorkshopView.openNewChatModal()" style="background:#25D366; color:#000; font-weight:800; border:none; padding:8px 18px; cursor:pointer;">
+                                Iniciar Conversa
                             </button>
                         </div>
                     </div>
@@ -2340,6 +2362,99 @@ const WorkshopView = {
             </div>
         `;
     },
+
+    switchChatSidebarTab(tab) {
+        this.chatSidebarActiveTab = tab;
+        const tabConversas = document.getElementById('ws-tab-conversas');
+        const tabServicos  = document.getElementById('ws-tab-servicos');
+        const panelConversas = document.getElementById('ws-sidebar-conversas');
+        const panelServicos  = document.getElementById('ws-sidebar-servicos');
+
+        if (tab === 'conversas') {
+            if (tabConversas)   { tabConversas.classList.add('active'); }
+            if (tabServicos)    { tabServicos.classList.remove('active'); }
+            if (panelConversas) { panelConversas.style.display = 'flex'; }
+            if (panelServicos)  { panelServicos.style.display = 'none'; }
+        } else {
+            if (tabConversas)   { tabConversas.classList.remove('active'); }
+            if (tabServicos)    { tabServicos.classList.add('active'); }
+            if (panelConversas) { panelConversas.style.display = 'none'; }
+            if (panelServicos)  {
+                panelServicos.style.display = 'block';
+                panelServicos.innerHTML = this.renderChatPotentialServices();
+            }
+        }
+    },
+
+    renderChatPotentialServices() {
+        const alerts = (this.alertsData || []).filter(a => a.urgency === 'CRITICAL' || a.urgency === 'WARNING');
+
+        if (alerts.length === 0) {
+            return `<div style="padding:32px 16px; text-align:center; color:#64748b; font-size:12px; line-height:1.6;">
+                <div style="font-size:28px; margin-bottom:10px;">🟢</div>
+                <strong style="color:#10B981; display:block; margin-bottom:6px;">Nenhuma manutenção urgente</strong>
+                Todos os veículos monitorados estão com serviços em dia no momento.
+            </div>`;
+        }
+
+        return `
+            <div style="padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.07); background:#060a14; font-size:11px; color:#94a3b8; font-weight:700;">
+                ⚡ ${alerts.length} VEÍCULO${alerts.length > 1 ? 'S' : ''} COM ATENÇÃO
+            </div>
+            ${alerts.map(a => {
+                const isCritical = a.urgency === 'CRITICAL';
+                const urgencyColor = isCritical ? '#ef4444' : '#fbbf24';
+                const urgencyBg    = isCritical ? 'rgba(239,68,68,0.15)' : 'rgba(245,158,11,0.12)';
+                const urgencyIcon  = isCritical ? '🔴' : '🟡';
+                const msg = a.whatsappMessage || `Olá ${a.ownerName}! Seu ${a.vehicleModel} (${a.licensePlate}) precisa de atenção no componente: ${a.component}.`;
+
+                return `
+                    <div class="ws-potential-vehicle-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px;">
+                            <div style="flex:1; min-width:0;">
+                                <span style="background:${urgencyBg}; color:${urgencyColor}; font-size:10px; font-weight:800; padding:1px 6px; border-radius:4px; display:inline-block; margin-bottom:4px;">${urgencyIcon} ${isCritical ? 'CRÍTICO' : 'ATENÇÃO'}</span>
+                                <div style="font-size:12.5px; font-weight:800; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${a.vehicleModel || 'Veículo'}</div>
+                                <div style="font-size:10.5px; color:#00d4ff; font-family:var(--font-mono); font-weight:700;">${a.licensePlate}</div>
+                            </div>
+                        </div>
+                        <div style="font-size:11px; color:#94a3b8; margin-bottom:4px;">
+                            👤 ${a.ownerName || 'Proprietário'} &nbsp;•&nbsp; ${a.component}
+                        </div>
+                        <div style="font-size:10.5px; color:${urgencyColor}; margin-bottom:8px; font-weight:700;">
+                            ${a.statusText || ''}
+                        </div>
+                        <button type="button"
+                            onclick="WorkshopView.startChatFromAlert(${JSON.stringify(a.ownerPhone || '').replace(/"/g, '&quot;')}, ${JSON.stringify(a.ownerName || '').replace(/"/g, '&quot;')}, ${JSON.stringify(a.licensePlate || '').replace(/"/g, '&quot;')}, ${JSON.stringify(msg).replace(/"/g, '&quot;')})"
+                            style="width:100%; background:rgba(37,211,102,0.12); border:1px solid rgba(37,211,102,0.35); color:#25D366; font-size:11px; font-weight:800; padding:6px 10px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:5px; transition:all 0.15s;">
+                            💬 Iniciar Atendimento
+                        </button>
+                    </div>
+                `;
+            }).join('')}
+        `;
+    },
+
+    startChatFromAlert(phone, name, plate, msgText) {
+        if (!phone) {
+            alert('Número de WhatsApp não cadastrado para este proprietário.');
+            return;
+        }
+        this.switchChatSidebarTab('conversas');
+        // Abre o modal de nova conversa pré-preenchido
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (!modalRoot) return;
+        this.openNewChatModal();
+        setTimeout(() => {
+            const nameEl  = document.getElementById('ws-newchat-name');
+            const phoneEl = document.getElementById('ws-newchat-phone');
+            const msgEl   = document.getElementById('ws-newchat-msg');
+            if (nameEl)  nameEl.value  = name  || '';
+            if (phoneEl) phoneEl.value = phone || '';
+            if (msgEl)   msgEl.value   = msgText || '';
+        }, 120);
+    },
+
+
 
     async loadChatConversations(autoSelectFirst = false) {
         try {
@@ -2435,7 +2550,12 @@ const WorkshopView = {
 
     async selectChatConversation(phoneNumber) {
         this.activeChatPhone = phoneNumber;
+        this.pendingChatMedia = null; // limpa mídia pendente ao trocar conversa
         this.renderChatConversationsList();
+
+        // Em mobile/tablet, alterna para o painel de chat
+        const chatContainer = document.getElementById('ws-chat-container');
+        if (chatContainer) chatContainer.classList.add('ws-mobile-show-chat');
 
         const activeWindow = document.getElementById('ws-chat-active-window');
         if (!activeWindow) return;
@@ -2447,58 +2567,161 @@ const WorkshopView = {
         };
 
         const templates = this.whatsAppTemplates || [];
+        const safeName  = (conv.client_name || 'Cliente').replace(/'/g, "\\'");
+        const safePlate = (conv.vehicle_plate || '').replace(/'/g, "\\'");
+        const safeModel = (conv.vehicle_model || '').replace(/'/g, "\\'");
+        const cleanPhone = (conv.phone_number || '').replace(/\D/g, '');
+        const whatsAppWebUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}`;
 
         activeWindow.innerHTML = `
             <!-- Barra Superior do Chat Ativo -->
-            <div style="padding:12px 18px; background:#080e1a; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <div style="width:38px; height:38px; border-radius:50%; background:#10b981; color:#000; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:15px;">
+            <div style="padding:10px 14px; background:#080e1a; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; flex-shrink:0;">
+                <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                    <!-- Botão Voltar (tablet/mobile) -->
+                    <button class="ws-chat-back-btn" onclick="WorkshopView.closeChatMobile()" title="Voltar para lista">
+                        ← Voltar
+                    </button>
+                    <div style="width:36px; height:36px; border-radius:50%; background:#10b981; color:#000; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:14px; flex-shrink:0;">
                         ${(conv.client_name || 'C').charAt(0).toUpperCase()}
                     </div>
-                    <div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <strong style="color:#ffffff; font-size:14px;">${conv.client_name || conv.display_phone}</strong>
-                            ${conv.vehicle_plate ? `<span class="mono" style="font-size:10px; background:rgba(0,212,255,0.15); color:#00d4ff; padding:2px 7px; border-radius:4px; font-weight:800;">${conv.vehicle_plate}</span>` : ''}
+                    <div style="min-width:0;">
+                        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                            <strong style="color:#ffffff; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${conv.client_name || conv.display_phone}</strong>
+                            ${conv.vehicle_plate ? `<span class="mono" style="font-size:10px; background:rgba(0,212,255,0.15); color:#00d4ff; padding:1px 6px; border-radius:4px; font-weight:800;">${conv.vehicle_plate}</span>` : ''}
                         </div>
-                        <span style="font-size:11.5px; color:#25D366; font-family:var(--font-mono); font-weight:700;">${conv.display_phone || conv.phone_number}</span>
+                        <span style="font-size:11px; color:#25D366; font-family:var(--font-mono); font-weight:700;">${conv.display_phone || conv.phone_number}</span>
                     </div>
                 </div>
-                <div style="display:flex; gap:8px;">
-                    <button type="button" class="btn btn-xs btn-secondary" onclick="WorkshopView.openSmartScheduleModal(null, '${conv.vehicle_plate || ''}', '${conv.vehicle_model || ''}', '${conv.client_name || ''}', 'Revisão Preventiva')" style="font-size:11px; padding:5px 10px;">
+                <div style="display:flex; gap:6px; flex-shrink:0; flex-wrap:wrap;">
+                    <a href="${whatsAppWebUrl}" target="_blank" rel="noopener" style="text-decoration:none;">
+                        <button type="button" class="btn btn-xs btn-secondary" style="font-size:10.5px; padding:4px 8px; display:inline-flex; align-items:center; gap:4px;" title="Abrir no WhatsApp Web">
+                            🌐 WA Web
+                        </button>
+                    </a>
+                    <button type="button" class="btn btn-xs btn-secondary" onclick="WorkshopView.openSmartScheduleModal(null, '${safePlate}', '${safeModel}', '${safeName}', 'Revisão Preventiva')" style="font-size:10.5px; padding:4px 8px;">
                         📅 Agendar
                     </button>
-                    <button type="button" class="btn btn-xs btn-secondary" onclick="WorkshopView.openUnifiedVehicleEntryModal('${conv.vehicle_plate || ''}')" style="font-size:11px; padding:5px 10px;">
-                        🔧 Entrada / OS
+                    <button type="button" class="btn btn-xs btn-secondary" onclick="WorkshopView.openUnifiedVehicleEntryModal('${safePlate}')" style="font-size:10.5px; padding:4px 8px;">
+                        🔧 OS
                     </button>
                 </div>
             </div>
 
             <!-- Área de Mensagens (Stream de Balões) -->
-            <div id="ws-chat-messages-container" style="flex:1; overflow-y:auto; padding:18px 22px; display:flex; flex-direction:column; gap:12px; background:#060a12;">
+            <div id="ws-chat-messages-container" style="flex:1; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:10px; background:#060a12;">
                 <div style="text-align:center; padding:20px; color:#64748b; font-size:12px;">Carregando mensagens...</div>
             </div>
 
-            <!-- Barra Inferior de Envio de Resposta -->
-            <div style="background:#080e1a; border-top:1px solid rgba(255,255,255,0.08); padding:12px 18px;">
-                <!-- Seletor Rápido de Template -->
-                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-                    <span style="font-size:11px; color:#94a3b8; font-weight:700;">Modelo Rápido:</span>
-                    <select class="form-control" onchange="WorkshopView.applyChatTemplate(this.value, '${conv.client_name}', '${conv.vehicle_plate || ''}')" style="max-width:320px; background:#050811; border-color:rgba(255,210,28,0.3); font-size:11.5px; color:#FFD21C; padding:4px 8px; height:28px;">
-                        <option value="">-- Selecione uma resposta rápida --</option>
+            <!-- Barra Inferior de Envio -->
+            <div style="background:#080e1a; border-top:1px solid rgba(255,255,255,0.08); padding:10px 14px; flex-shrink:0;">
+                <!-- Template rápido -->
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+                    <span style="font-size:10.5px; color:#94a3b8; font-weight:700; white-space:nowrap;">Modelo:</span>
+                    <select class="form-control" onchange="WorkshopView.applyChatTemplate(this.value, '${safeName}', '${safePlate}')"
+                        style="flex:1; min-width:0; background:#050811; border-color:rgba(255,210,28,0.3); font-size:11.5px; color:#FFD21C; padding:3px 8px; height:26px;">
+                        <option value="">-- Resposta rápida --</option>
                         ${templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
                     </select>
                 </div>
 
-                <form onsubmit="WorkshopView.sendChatMessage(event)" style="display:flex; gap:10px; align-items:flex-end;">
-                    <textarea id="ws-chat-input" rows="2" placeholder="Digite sua resposta para o cliente... (Pressione Enter para enviar, Shift+Enter para nova linha)" onkeydown="WorkshopView.handleChatKeydown(event)" style="flex:1; background:#050811; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:10px 14px; color:#ffffff; font-size:13px; line-height:1.4; resize:none;" required></textarea>
-                    <button type="submit" id="ws-chat-send-btn" class="btn btn-primary" style="background:#25D366; color:#000; font-weight:800; font-size:13px; padding:10px 22px; border:none; border-radius:8px; cursor:pointer; height:44px; display:inline-flex; align-items:center; gap:6px;">
-                        <span>✈️</span> <span>ENVIAR</span>
-                    </button>
-                </form>
+                <!-- Preview de mídia pendente -->
+                <div id="ws-chat-media-preview">
+                    <span class="ws-chat-media-preview-icon" id="ws-media-preview-icon">📎</span>
+                    <span class="ws-chat-media-preview-name" id="ws-media-preview-name">arquivo.png</span>
+                    <button class="ws-chat-media-preview-cancel" onclick="WorkshopView.cancelPendingMedia()" title="Remover mídia">✕</button>
+                </div>
+
+                <!-- Input + Botões de Mídia + Enviar -->
+                <div style="display:flex; gap:8px; align-items:flex-end;">
+                    <!-- Botões de Mídia -->
+                    <div class="ws-chat-media-actions">
+                        <!-- Upload de Foto -->
+                        <label for="ws-chat-photo-input" class="ws-chat-media-btn" title="Enviar Foto">
+                            📷
+                            <input type="file" id="ws-chat-photo-input" accept="image/*"
+                                onchange="WorkshopView.handleChatMediaSelect(this, 'IMAGE')"
+                                style="display:none;" />
+                        </label>
+                        <!-- Upload de Vídeo -->
+                        <label for="ws-chat-video-input" class="ws-chat-media-btn" title="Enviar Vídeo">
+                            🎥
+                            <input type="file" id="ws-chat-video-input" accept="video/*"
+                                onchange="WorkshopView.handleChatMediaSelect(this, 'VIDEO')"
+                                style="display:none;" />
+                        </label>
+                        <!-- Gravar Áudio -->
+                        <button type="button" id="ws-chat-audio-btn" class="ws-chat-media-btn" title="Gravar Áudio"
+                            onclick="WorkshopView.toggleVoiceRecording()">
+                            🎙️
+                        </button>
+                    </div>
+
+                    <form onsubmit="WorkshopView.sendChatMessage(event)" style="flex:1; display:flex; gap:8px; align-items:flex-end;">
+                        <textarea id="ws-chat-input" rows="2"
+                            placeholder="Digite sua resposta... (Enter para enviar, Shift+Enter nova linha)"
+                            onkeydown="WorkshopView.handleChatKeydown(event)"
+                            style="flex:1; background:#050811; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:9px 13px; color:#ffffff; font-size:13px; line-height:1.4; resize:none; min-width:0;"></textarea>
+                        <button type="submit" id="ws-chat-send-btn" class="btn btn-primary"
+                            style="background:#25D366; color:#000; font-weight:800; font-size:13px; padding:9px 18px; border:none; border-radius:8px; cursor:pointer; height:42px; display:inline-flex; align-items:center; gap:5px; flex-shrink:0;">
+                            <span>✈️</span> <span>ENVIAR</span>
+                        </button>
+                    </form>
+                </div>
             </div>
         `;
 
         await this.refreshActiveChatMessagesSilent();
+    },
+
+    closeChatMobile() {
+        const chatContainer = document.getElementById('ws-chat-container');
+        if (chatContainer) chatContainer.classList.remove('ws-mobile-show-chat');
+        this.activeChatPhone = null;
+        this.pendingChatMedia = null;
+        this.renderChatConversationsList();
+    },
+
+
+
+    renderChatMessageBubble(m) {
+        const isIncoming = m.direction === 'INCOMING';
+        const dateObj = new Date(m.created_at);
+        const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        const mt = (m.media_type || 'TEXT').toUpperCase();
+        const mu = m.media_url || '';
+
+        let mediaHtml = '';
+        if (mt === 'IMAGE' && mu) {
+            mediaHtml = `<img src="${mu}" class="ws-chat-media-thumb" alt="Foto" onclick="window.open('${mu}','_blank')" />`;
+        } else if (mt === 'VIDEO' && mu) {
+            mediaHtml = `<video class="ws-chat-media-thumb" controls style="max-width:240px;"><source src="${mu}">Vídeo não suportado.</video>`;
+        } else if (mt === 'AUDIO' && mu) {
+            mediaHtml = `<audio class="ws-chat-audio-player" controls><source src="${mu}">Áudio não suportado.</audio>`;
+        }
+
+        const textHtml = m.message && m.message !== '📷 [Foto]' && m.message !== '🎥 [Vídeo]' && m.message !== '🎙️ [Áudio]'
+            ? `<div style="overflow-wrap:anywhere; word-break:break-word;">${m.message}</div>`
+            : (mediaHtml ? '' : `<div>${m.message || ''}</div>`);
+
+        if (isIncoming) {
+            return `
+                <div class="ws-chat-bubble ws-chat-bubble-incoming">
+                    <span style="font-size:10.5px; font-weight:800; color:#38bdf8; display:block; margin-bottom:4px;">${m.client_name || 'Cliente'}</span>
+                    ${mediaHtml}
+                    ${textHtml}
+                    <span style="font-size:10px; color:#94a3b8; display:block; text-align:right; margin-top:4px; font-family:var(--font-mono);">${timeStr}</span>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="ws-chat-bubble ws-chat-bubble-outgoing">
+                    <span style="font-size:10.5px; font-weight:800; color:#a7f3d0; display:block; margin-bottom:4px;">Oficina (${this.officialWorkshopName})</span>
+                    ${mediaHtml}
+                    ${textHtml}
+                    <span style="font-size:10px; color:#d1fae5; display:flex; justify-content:flex-end; align-items:center; gap:4px; margin-top:4px; font-family:var(--font-mono);">${timeStr} <span>✓✓</span></span>
+                </div>
+            `;
+        }
     },
 
     async refreshActiveChatMessagesSilent() {
@@ -2514,47 +2737,13 @@ const WorkshopView = {
                 container.innerHTML = `
                     <div style="margin:auto; text-align:center; color:#64748b; font-size:12.5px;">
                         Nenhuma mensagem com este cliente ainda.<br/>
-                        <span style="font-size:11px; color:#475569;">Digite uma mensagem abaixo para iniciar o atendimento.</span>
+                        <span style="font-size:11px; color:#475569;">Digite ou envie uma mídia para iniciar o atendimento.</span>
                     </div>
                 `;
                 return;
             }
 
-            container.innerHTML = messages.map(m => {
-                const isIncoming = m.direction === 'INCOMING';
-                const dateObj = new Date(m.created_at);
-                const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-                if (isIncoming) {
-                    return `
-                        <div style="align-self:flex-start; max-width:75%;">
-                            <div style="background:#1e293b; color:#f8fafc; border-radius:12px 12px 12px 2px; padding:10px 14px; font-size:13px; line-height:1.45; border:1px solid rgba(255,255,255,0.08); box-shadow:0 2px 6px rgba(0,0,0,0.35);">
-                                <span style="font-size:10.5px; font-weight:800; color:#38bdf8; display:block; margin-bottom:4px;">
-                                    ${m.client_name || 'Cliente'}
-                                </span>
-                                <div>${m.message}</div>
-                                <span style="font-size:10px; color:#94a3b8; display:block; text-align:right; margin-top:4px; font-family:var(--font-mono);">${timeStr}</span>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    return `
-                        <div style="align-self:flex-end; max-width:75%;">
-                            <div style="background:#065f46; color:#ffffff; border-radius:12px 12px 2px 12px; padding:10px 14px; font-size:13px; line-height:1.45; border:1px solid rgba(37,211,102,0.3); box-shadow:0 2px 6px rgba(0,0,0,0.35);">
-                                <span style="font-size:10.5px; font-weight:800; color:#a7f3d0; display:block; margin-bottom:4px;">
-                                    Oficina (${this.officialWorkshopName})
-                                </span>
-                                <div>${m.message}</div>
-                                <span style="font-size:10px; color:#d1fae5; display:flex; justify-content:flex-end; align-items:center; gap:4px; margin-top:4px; font-family:var(--font-mono);">
-                                    ${timeStr} <span>✓✓</span>
-                                </span>
-                            </div>
-                        </div>
-                    `;
-                }
-            }).join('');
-
-            // Rola até o final
+            container.innerHTML = messages.map(m => this.renderChatMessageBubble(m)).join('');
             container.scrollTop = container.scrollHeight;
         } catch (_) {}
     },
@@ -2592,34 +2781,179 @@ const WorkshopView = {
 
     async sendChatMessage(e) {
         if (e) e.preventDefault();
-        const input = document.getElementById('ws-chat-input');
-        const text = (input?.value || '').trim();
-        if (!text || !this.activeChatPhone) return;
+        const input   = document.getElementById('ws-chat-input');
+        const text    = (input?.value || '').trim();
+        const pending = this.pendingChatMedia;
+
+        if (!this.activeChatPhone || (!text && !pending)) return;
 
         const sendBtn = document.getElementById('ws-chat-send-btn');
-        if (sendBtn) sendBtn.disabled = true;
+        if (sendBtn) { sendBtn.disabled = true; sendBtn.innerHTML = '<span>⏳</span> <span>ENVIANDO...</span>'; }
 
         const conv = (this.chatConversations || []).find(c => c.phone_number === this.activeChatPhone) || {};
 
         try {
+            let mediaUrl   = null;
+            let mediaType  = 'TEXT';
+            let mediaCaption = text || null;
+
+            // 1. Faz upload da mídia se houver arquivo pendente
+            if (pending && pending.file) {
+                const formData = new FormData();
+                formData.append('file', pending.file);
+                const uploadRes = await API.uploadWhatsAppChatMedia(this.currentWorkshopId, formData);
+                mediaUrl  = uploadRes.media_url || null;
+                mediaType = uploadRes.media_type || pending.mediaType || 'IMAGE';
+            } else if (pending && pending.blob) {
+                // Blob de áudio gravado
+                const formData = new FormData();
+                formData.append('file', pending.blob, 'voice_note.ogg');
+                const uploadRes = await API.uploadWhatsAppChatMedia(this.currentWorkshopId, formData);
+                mediaUrl  = uploadRes.media_url || null;
+                mediaType = 'AUDIO';
+            }
+
+            // 2. Envia mensagem com ou sem mídia
             await API.sendWhatsAppChatMessage(this.currentWorkshopId, {
                 phone_number: this.activeChatPhone,
-                message: text,
+                message: text || '',
                 client_name: conv.client_name || 'Cliente',
-                vehicle_plate: conv.vehicle_plate || null
+                vehicle_plate: conv.vehicle_plate || null,
+                media_type:    mediaType !== 'TEXT' ? mediaType : undefined,
+                media_url:     mediaUrl  || undefined,
+                media_caption: mediaCaption || undefined
             });
 
-            if (input) input.value = '';
+            if (input)  input.value = '';
+            this.cancelPendingMedia();
             await this.refreshActiveChatMessagesSilent();
             await this.loadChatConversations(false);
         } catch (err) {
-            alert('Erro ao enviar mensagem: ' + err.message);
+            // Fallback: abre WhatsApp Web se socket falhar
+            const cleanPhone = (this.activeChatPhone || '').replace(/\D/g, '');
+            const fallbackMsg = encodeURIComponent(text || '');
+            const fallbackUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${fallbackMsg}`;
+            const useFallback = confirm(`Erro ao enviar pela plataforma: ${err.message}\n\nDeseja abrir o WhatsApp Web como alternativa?`);
+            if (useFallback) window.open(fallbackUrl, '_blank');
         } finally {
-            if (sendBtn) sendBtn.disabled = false;
+            if (sendBtn) { sendBtn.disabled = false; sendBtn.innerHTML = '<span>✈️</span> <span>ENVIAR</span>'; }
+        }
+    },
+
+    // ── Seleção de Foto / Vídeo para upload ───────────────────────────────────
+    handleChatMediaSelect(input, mediaType) {
+        const file = input?.files?.[0];
+        if (!file) return;
+
+        this.pendingChatMedia = { file, mediaType };
+
+        const icons = { IMAGE: '📷', VIDEO: '🎥', AUDIO: '🎙️' };
+        const preview = document.getElementById('ws-chat-media-preview');
+        const iconEl  = document.getElementById('ws-media-preview-icon');
+        const nameEl  = document.getElementById('ws-media-preview-name');
+
+        if (preview) preview.classList.add('active');
+        if (iconEl)  iconEl.textContent  = icons[mediaType] || '📎';
+        if (nameEl)  nameEl.textContent  = file.name;
+
+        // Foca no textarea para o usuário digitar legenda opcional
+        const txtInput = document.getElementById('ws-chat-input');
+        if (txtInput) txtInput.focus();
+
+        // Limpa o input de arquivo para permitir selecionar mesmo arquivo novamente
+        input.value = '';
+    },
+
+    cancelPendingMedia() {
+        this.pendingChatMedia = null;
+        // Interrompe gravação se ativa
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+            this.mediaRecorder.stop();
+        }
+        this.isRecordingVoice = false;
+
+        const preview = document.getElementById('ws-chat-media-preview');
+        if (preview) preview.classList.remove('active');
+
+        const audioBtn = document.getElementById('ws-chat-audio-btn');
+        if (audioBtn) {
+            audioBtn.classList.remove('recording');
+            audioBtn.title = 'Gravar Áudio';
+            audioBtn.innerHTML = '🎙️';
+        }
+    },
+
+    // ── Gravação de Áudio com MediaRecorder API ────────────────────────────────
+    async toggleVoiceRecording() {
+        if (this.isRecordingVoice) {
+            this.stopVoiceRecording();
+        } else {
+            await this.startVoiceRecording();
+        }
+    },
+
+    async startVoiceRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.audioChunks = [];
+
+            const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+                ? 'audio/webm;codecs=opus'
+                : MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
+                    ? 'audio/ogg;codecs=opus'
+                    : 'audio/webm';
+
+            this.mediaRecorder = new MediaRecorder(stream, { mimeType });
+
+            this.mediaRecorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) this.audioChunks.push(e.data);
+            };
+
+            this.mediaRecorder.onstop = () => {
+                const blob = new Blob(this.audioChunks, { type: mimeType });
+                this.pendingChatMedia = { blob, mediaType: 'AUDIO' };
+
+                const preview = document.getElementById('ws-chat-media-preview');
+                const iconEl  = document.getElementById('ws-media-preview-icon');
+                const nameEl  = document.getElementById('ws-media-preview-name');
+                if (preview) preview.classList.add('active');
+                if (iconEl)  iconEl.textContent = '🎙️';
+                if (nameEl)  nameEl.textContent = `Áudio gravado (${Math.round(blob.size / 1024)} KB)`;
+
+                // Para os tracks do microfone
+                stream.getTracks().forEach(t => t.stop());
+            };
+
+            this.mediaRecorder.start();
+            this.isRecordingVoice = true;
+
+            const audioBtn = document.getElementById('ws-chat-audio-btn');
+            if (audioBtn) {
+                audioBtn.classList.add('recording');
+                audioBtn.title = 'Parar Gravação';
+                audioBtn.innerHTML = '⏹️';
+            }
+        } catch (err) {
+            alert('Não foi possível acessar o microfone. Verifique as permissões do navegador.\n\n' + err.message);
+        }
+    },
+
+    stopVoiceRecording() {
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+            this.mediaRecorder.stop();
+        }
+        this.isRecordingVoice = false;
+
+        const audioBtn = document.getElementById('ws-chat-audio-btn');
+        if (audioBtn) {
+            audioBtn.classList.remove('recording');
+            audioBtn.title = 'Gravar Áudio';
+            audioBtn.innerHTML = '🎙️';
         }
     },
 
     startChatPolling() {
+
         this.stopChatPolling();
         this.chatPollingTimer = setInterval(() => {
             if (this.currentSection === 'whatsapp-atendimento') {
