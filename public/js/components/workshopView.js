@@ -408,8 +408,15 @@ const WorkshopView = {
                                     <span>💬</span> <span>COMUNICAÇÃO & CONTATO</span>
                                 </div>
                                 <div class="ws-erp-menu-item ${this.currentSection === 'whatsapp-central' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-central')">
-                                    <div class="ws-erp-menu-left"><span>💬</span> <span>WhatsApp</span></div>
+                                    <div class="ws-erp-menu-left"><span>📱</span> <span>WhatsApp (Conexão)</span></div>
                                     <span class="badge-proof" id="ws-menu-wpp-badge" style="font-size:9.5px; padding:2px 7px; background:rgba(37,211,102,0.15); color:#25D366; font-weight:700; border-radius:12px;">Online</span>
+                                </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'whatsapp-atendimento' ? 'active' : ''}" onclick="WorkshopView.switchSection('whatsapp-atendimento')" style="position:relative;">
+                                    <div class="ws-erp-menu-left">
+                                        <span style="display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:4px; background:rgba(37,211,102,0.2); color:#25D366; font-size:12px; font-weight:900;">💬</span>
+                                        <span style="font-weight:700; color:#ffffff;">Atendimento WhatsApp</span>
+                                    </div>
+                                    <span class="badge-proof" id="ws-menu-chat-badge" style="display:none; font-size:9.5px; padding:2px 7px; background:#25D366; color:#000; font-weight:800; border-radius:12px;"></span>
                                 </div>
                                 <div class="ws-erp-menu-item ${this.currentSection === 'notificacoes-feed' ? 'active' : ''}" onclick="WorkshopView.switchSection('notificacoes-feed')">
                                     <div class="ws-erp-menu-left"><span>🔔</span> <span>Notificações</span></div>
@@ -578,6 +585,10 @@ const WorkshopView = {
             case 'whatsapp-enviadas':
             case 'whatsapp-confirmados':
                 return this.renderWhatsAppCenterView();
+
+            case 'whatsapp-atendimento':
+            case 'whatsapp-chat':
+                return this.renderWhatsAppChatView();
 
             // Módulo 9: Peças / Estoque
             case 'pecas-lista':
@@ -2253,6 +2264,484 @@ const WorkshopView = {
         ];
     },
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // CENTRAL DE ATENDIMENTO WHATSAPP (CHAT AO VIVO & MENSAGERIA UNIFICADA)
+    // ──────────────────────────────────────────────────────────────────────────
+    renderWhatsAppChatView() {
+        // Dispara o carregamento das conversas
+        setTimeout(() => this.loadChatConversations(true), 60);
+        this.startChatPolling();
+
+        const session = this.whatsAppData || { status: 'DISCONNECTED' };
+        const isConnected = session.status === 'CONNECTED';
+        const displayPhone = session.display_phone || session.phone_number || this.officialPhone || '+55 (19) 3245-6789';
+
+        return `
+            <div style="padding: 16px 20px;">
+                <!-- Cabeçalho da Central de Atendimento -->
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:38px; height:38px; border-radius:10px; background:rgba(37,211,102,0.15); display:flex; align-items:center; justify-content:center; border:1px solid rgba(37,211,102,0.4);">
+                                <span style="font-size:20px;">💬</span>
+                            </div>
+                            <div>
+                                <h2 style="font-size:20px; font-weight:900; color:#ffffff; margin:0 0 2px;">Central de Atendimento WhatsApp</h2>
+                                <span style="font-size:12px; color:#94a3b8;">
+                                    Linha Oficial da Oficina: <strong style="color:#25D366; font-family:var(--font-mono);">${displayPhone}</strong>
+                                    ${isConnected ? '• <span style="color:#10B981; font-weight:800;">● Conectado (Recebimento Automático Ativo)</span>' : '• <span style="color:#f59e0b; font-weight:800;">● Aparelho Aguardando Conexão</span>'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="WorkshopView.loadChatConversations(false)" style="font-size:12px; font-weight:700; cursor:pointer;">
+                            🔄 Atualizar Conversas
+                        </button>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="WorkshopView.openNewChatModal()" style="background:#25D366; color:#000; font-weight:800; font-size:12px; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                            <span>➕</span> <span>Nova Conversa</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Janela Central de Chat em 2 Colunas -->
+                <div class="panel-box" style="display:flex; height: calc(100vh - 200px); min-height: 560px; max-height: 740px; background:#070c18; border:1px solid rgba(255,255,255,0.08); border-radius:12px; overflow:hidden; padding:0; box-shadow:0 12px 40px rgba(0,0,0,0.5);">
+                    <!-- Coluna Esquerda: Lista de Conversas (340px) -->
+                    <div style="width:340px; flex-shrink:0; border-right:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; background:#090f1d;">
+                        <!-- Barra de Busca de Clientes -->
+                        <div style="padding:12px; border-bottom:1px solid rgba(255,255,255,0.08); background:#060a14;">
+                            <input type="text" id="ws-chat-search-input" class="form-control" placeholder="🔍 Buscar cliente, telefone ou placa..." oninput="WorkshopView.filterChatConversations(this.value)" style="background:#0b1120; border-color:rgba(255,255,255,0.12); font-size:12px; padding:8px 12px; width:100%; border-radius:8px; color:#ffffff;" />
+                        </div>
+
+                        <!-- Lista Scrollável de Conversas -->
+                        <div id="ws-chat-threads-list" style="flex:1; overflow-y:auto;">
+                            <div style="padding:30px; text-align:center; color:#64748b; font-size:12px;">
+                                Carregando conversas do WhatsApp...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coluna Direita: Conversa Ativa -->
+                    <div id="ws-chat-active-window" style="flex:1; display:flex; flex-direction:column; background:#050913;">
+                        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; text-align:center; color:#64748b;">
+                            <div style="width:68px; height:68px; border-radius:50%; background:rgba(37,211,102,0.1); border:1px solid rgba(37,211,102,0.3); display:flex; align-items:center; justify-content:center; margin-bottom:16px;">
+                                <span style="font-size:34px;">💬</span>
+                            </div>
+                            <h3 style="color:#ffffff; font-size:17px; font-weight:800; margin:0 0 6px;">Central de Atendimento ao Cliente</h3>
+                            <p style="font-size:12.5px; max-width:380px; margin:0 0 20px; line-height:1.5;">
+                                Selecione uma conversa ao lado para responder aos seus clientes ou inicie um novo contato direto pelo WhatsApp da oficina.
+                            </p>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="WorkshopView.openNewChatModal()" style="background:#25D366; color:#000; font-weight:800; border:none; padding:8px 18px; cursor:pointer;">
+                                Iniciar Conversa com Cliente
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async loadChatConversations(autoSelectFirst = false) {
+        try {
+            const res = await API.getWhatsAppChatConversations(this.currentWorkshopId);
+            this.chatConversations = res.conversations || [];
+
+            // Atualiza badge de não lidas no menu lateral
+            const totalUnread = this.chatConversations.reduce((acc, c) => acc + (c.unread_count || 0), 0);
+            const menuBadge = document.getElementById('ws-menu-chat-badge');
+            if (menuBadge) {
+                if (totalUnread > 0) {
+                    menuBadge.style.display = 'inline-block';
+                    menuBadge.textContent = `${totalUnread} ${totalUnread === 1 ? 'nova' : 'novas'}`;
+                } else {
+                    menuBadge.style.display = 'none';
+                }
+            }
+
+            this.renderChatConversationsList();
+
+            if (autoSelectFirst && !this.activeChatPhone && this.chatConversations.length > 0) {
+                this.selectChatConversation(this.chatConversations[0].phone_number);
+            } else if (this.activeChatPhone) {
+                // Se já estiver com conversa aberta, atualiza mensagens silenciosamente
+                this.refreshActiveChatMessagesSilent();
+            }
+        } catch (err) {
+            console.warn('Erro ao carregar conversas do WhatsApp:', err.message);
+        }
+    },
+
+    renderChatConversationsList() {
+        const container = document.getElementById('ws-chat-threads-list');
+        if (!container) return;
+
+        const query = (this.chatSearchQuery || '').toLowerCase().trim();
+        const filtered = (this.chatConversations || []).filter(c => {
+            if (!query) return true;
+            return (c.client_name || '').toLowerCase().includes(query) ||
+                   (c.phone_number || '').includes(query) ||
+                   (c.display_phone || '').includes(query) ||
+                   (c.vehicle_plate || '').toLowerCase().includes(query);
+        });
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div style="padding:32px 20px; text-align:center; color:#64748b; font-size:12px; line-height:1.5;">
+                    Nenhuma conversa encontrada.<br/>
+                    <span style="font-size:11px; color:#475569;">Quando clientes enviarem mensagens pelo WhatsApp, elas aparecerão aqui automaticamente.</span>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = filtered.map(c => {
+            const isSelected = this.activeChatPhone === c.phone_number;
+            const initial = (c.client_name || 'C').charAt(0).toUpperCase();
+            const dateObj = new Date(c.last_message_at);
+            const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            const isOutgoing = c.last_message_direction === 'OUTGOING';
+
+            return `
+                <div class="ws-chat-thread-item" onclick="WorkshopView.selectChatConversation('${c.phone_number}')" style="display:flex; align-items:center; gap:12px; padding:12px 14px; border-bottom:1px solid rgba(255,255,255,0.05); cursor:pointer; transition:all 0.15s ease; ${isSelected ? 'background:rgba(37,211,102,0.12); border-left:3px solid #25D366;' : 'background:transparent;'}">
+                    <div style="width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, #1e293b, #0f172a); border:1px solid rgba(255,255,255,0.12); display:flex; align-items:center; justify-content:center; font-weight:800; color:#38bdf8; font-size:15px; flex-shrink:0;">
+                        ${initial}
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                            <strong style="color:#ffffff; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                ${c.client_name || c.display_phone}
+                            </strong>
+                            <span style="font-size:10.5px; color:#64748b; font-family:var(--font-mono); flex-shrink:0; margin-left:6px;">${timeStr}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+                            <span style="font-size:11.5px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                                ${isOutgoing ? '<span style="color:#25D366; font-size:10px;">✓✓</span> ' : ''}${c.last_message || ''}
+                            </span>
+                            <div style="display:flex; align-items:center; gap:4px; flex-shrink:0;">
+                                ${c.vehicle_plate ? `<span class="mono" style="font-size:9.5px; background:rgba(0,212,255,0.12); color:#00d4ff; padding:1px 5px; border-radius:4px; font-weight:800;">${c.vehicle_plate}</span>` : ''}
+                                ${c.unread_count > 0 ? `<span style="background:#25D366; color:#000; font-weight:900; font-size:10px; border-radius:10px; padding:1px 6px;">${c.unread_count}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    },
+
+    filterChatConversations(query) {
+        this.chatSearchQuery = query;
+        this.renderChatConversationsList();
+    },
+
+    async selectChatConversation(phoneNumber) {
+        this.activeChatPhone = phoneNumber;
+        this.renderChatConversationsList();
+
+        const activeWindow = document.getElementById('ws-chat-active-window');
+        if (!activeWindow) return;
+
+        const conv = (this.chatConversations || []).find(c => c.phone_number === phoneNumber) || {
+            phone_number: phoneNumber,
+            display_phone: phoneNumber,
+            client_name: 'Cliente'
+        };
+
+        const templates = this.whatsAppTemplates || [];
+
+        activeWindow.innerHTML = `
+            <!-- Barra Superior do Chat Ativo -->
+            <div style="padding:12px 18px; background:#080e1a; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div style="width:38px; height:38px; border-radius:50%; background:#10b981; color:#000; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:15px;">
+                        ${(conv.client_name || 'C').charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <strong style="color:#ffffff; font-size:14px;">${conv.client_name || conv.display_phone}</strong>
+                            ${conv.vehicle_plate ? `<span class="mono" style="font-size:10px; background:rgba(0,212,255,0.15); color:#00d4ff; padding:2px 7px; border-radius:4px; font-weight:800;">${conv.vehicle_plate}</span>` : ''}
+                        </div>
+                        <span style="font-size:11.5px; color:#25D366; font-family:var(--font-mono); font-weight:700;">${conv.display_phone || conv.phone_number}</span>
+                    </div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn btn-xs btn-secondary" onclick="WorkshopView.openSmartScheduleModal(null, '${conv.vehicle_plate || ''}', '${conv.vehicle_model || ''}', '${conv.client_name || ''}', 'Revisão Preventiva')" style="font-size:11px; padding:5px 10px;">
+                        📅 Agendar
+                    </button>
+                    <button type="button" class="btn btn-xs btn-secondary" onclick="WorkshopView.openUnifiedVehicleEntryModal('${conv.vehicle_plate || ''}')" style="font-size:11px; padding:5px 10px;">
+                        🔧 Entrada / OS
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área de Mensagens (Stream de Balões) -->
+            <div id="ws-chat-messages-container" style="flex:1; overflow-y:auto; padding:18px 22px; display:flex; flex-direction:column; gap:12px; background:#060a12;">
+                <div style="text-align:center; padding:20px; color:#64748b; font-size:12px;">Carregando mensagens...</div>
+            </div>
+
+            <!-- Barra Inferior de Envio de Resposta -->
+            <div style="background:#080e1a; border-top:1px solid rgba(255,255,255,0.08); padding:12px 18px;">
+                <!-- Seletor Rápido de Template -->
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <span style="font-size:11px; color:#94a3b8; font-weight:700;">Modelo Rápido:</span>
+                    <select class="form-control" onchange="WorkshopView.applyChatTemplate(this.value, '${conv.client_name}', '${conv.vehicle_plate || ''}')" style="max-width:320px; background:#050811; border-color:rgba(255,210,28,0.3); font-size:11.5px; color:#FFD21C; padding:4px 8px; height:28px;">
+                        <option value="">-- Selecione uma resposta rápida --</option>
+                        ${templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}
+                    </select>
+                </div>
+
+                <form onsubmit="WorkshopView.sendChatMessage(event)" style="display:flex; gap:10px; align-items:flex-end;">
+                    <textarea id="ws-chat-input" rows="2" placeholder="Digite sua resposta para o cliente... (Pressione Enter para enviar, Shift+Enter para nova linha)" onkeydown="WorkshopView.handleChatKeydown(event)" style="flex:1; background:#050811; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:10px 14px; color:#ffffff; font-size:13px; line-height:1.4; resize:none;" required></textarea>
+                    <button type="submit" id="ws-chat-send-btn" class="btn btn-primary" style="background:#25D366; color:#000; font-weight:800; font-size:13px; padding:10px 22px; border:none; border-radius:8px; cursor:pointer; height:44px; display:inline-flex; align-items:center; gap:6px;">
+                        <span>✈️</span> <span>ENVIAR</span>
+                    </button>
+                </form>
+            </div>
+        `;
+
+        await this.refreshActiveChatMessagesSilent();
+    },
+
+    async refreshActiveChatMessagesSilent() {
+        if (!this.activeChatPhone) return;
+        const container = document.getElementById('ws-chat-messages-container');
+        if (!container) return;
+
+        try {
+            const res = await API.getWhatsAppChatMessages(this.currentWorkshopId, this.activeChatPhone);
+            const messages = res.messages || [];
+
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div style="margin:auto; text-align:center; color:#64748b; font-size:12.5px;">
+                        Nenhuma mensagem com este cliente ainda.<br/>
+                        <span style="font-size:11px; color:#475569;">Digite uma mensagem abaixo para iniciar o atendimento.</span>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = messages.map(m => {
+                const isIncoming = m.direction === 'INCOMING';
+                const dateObj = new Date(m.created_at);
+                const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+                if (isIncoming) {
+                    return `
+                        <div style="align-self:flex-start; max-width:75%;">
+                            <div style="background:#1e293b; color:#f8fafc; border-radius:12px 12px 12px 2px; padding:10px 14px; font-size:13px; line-height:1.45; border:1px solid rgba(255,255,255,0.08); box-shadow:0 2px 6px rgba(0,0,0,0.35);">
+                                <span style="font-size:10.5px; font-weight:800; color:#38bdf8; display:block; margin-bottom:4px;">
+                                    ${m.client_name || 'Cliente'}
+                                </span>
+                                <div>${m.message}</div>
+                                <span style="font-size:10px; color:#94a3b8; display:block; text-align:right; margin-top:4px; font-family:var(--font-mono);">${timeStr}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div style="align-self:flex-end; max-width:75%;">
+                            <div style="background:#065f46; color:#ffffff; border-radius:12px 12px 2px 12px; padding:10px 14px; font-size:13px; line-height:1.45; border:1px solid rgba(37,211,102,0.3); box-shadow:0 2px 6px rgba(0,0,0,0.35);">
+                                <span style="font-size:10.5px; font-weight:800; color:#a7f3d0; display:block; margin-bottom:4px;">
+                                    Oficina (${this.officialWorkshopName})
+                                </span>
+                                <div>${m.message}</div>
+                                <span style="font-size:10px; color:#d1fae5; display:flex; justify-content:flex-end; align-items:center; gap:4px; margin-top:4px; font-family:var(--font-mono);">
+                                    ${timeStr} <span>✓✓</span>
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            // Rola até o final
+            container.scrollTop = container.scrollHeight;
+        } catch (_) {}
+    },
+
+    handleChatKeydown(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            this.sendChatMessage(e);
+        }
+    },
+
+    applyChatTemplate(templateId, clientName, plate) {
+        if (!templateId) return;
+        const template = (this.whatsAppTemplates || []).find(t => t.id === templateId);
+        if (!template) return;
+
+        const filled = template.content
+            .replace(/{cliente}/gi, clientName || 'Cliente')
+            .replace(/{veiculo}/gi, 'seu veículo')
+            .replace(/{marca}/gi, '')
+            .replace(/{modelo}/gi, '')
+            .replace(/{placa}/gi, plate || '')
+            .replace(/{oficina}/gi, this.officialWorkshopName || 'DNA AUTO')
+            .replace(/{servico}/gi, 'Revisão')
+            .replace(/{valor}/gi, '350,00')
+            .replace(/{data}/gi, new Date().toLocaleDateString('pt-BR'))
+            .replace(/{link}/gi, 'https://dnaauto.com.br');
+
+        const input = document.getElementById('ws-chat-input');
+        if (input) {
+            input.value = filled;
+            input.focus();
+        }
+    },
+
+    async sendChatMessage(e) {
+        if (e) e.preventDefault();
+        const input = document.getElementById('ws-chat-input');
+        const text = (input?.value || '').trim();
+        if (!text || !this.activeChatPhone) return;
+
+        const sendBtn = document.getElementById('ws-chat-send-btn');
+        if (sendBtn) sendBtn.disabled = true;
+
+        const conv = (this.chatConversations || []).find(c => c.phone_number === this.activeChatPhone) || {};
+
+        try {
+            await API.sendWhatsAppChatMessage(this.currentWorkshopId, {
+                phone_number: this.activeChatPhone,
+                message: text,
+                client_name: conv.client_name || 'Cliente',
+                vehicle_plate: conv.vehicle_plate || null
+            });
+
+            if (input) input.value = '';
+            await this.refreshActiveChatMessagesSilent();
+            await this.loadChatConversations(false);
+        } catch (err) {
+            alert('Erro ao enviar mensagem: ' + err.message);
+        } finally {
+            if (sendBtn) sendBtn.disabled = false;
+        }
+    },
+
+    startChatPolling() {
+        this.stopChatPolling();
+        this.chatPollingTimer = setInterval(() => {
+            if (this.currentSection === 'whatsapp-atendimento') {
+                this.loadChatConversations(false);
+            } else {
+                this.stopChatPolling();
+            }
+        }, 4000);
+    },
+
+    stopChatPolling() {
+        if (this.chatPollingTimer) {
+            clearInterval(this.chatPollingTimer);
+            this.chatPollingTimer = null;
+        }
+    },
+
+    openNewChatModal() {
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (!modalRoot) return;
+
+        const vehicles = this.vehiclesList || [];
+
+        modalRoot.innerHTML = `
+            <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
+                <div class="ws-erp-modal-window" style="max-width:540px;">
+                    <div class="ws-erp-modal-header" style="background:#080e1a; border-bottom:1px solid rgba(255,255,255,0.08); padding:16px 20px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:20px;">💬</span>
+                            <div>
+                                <strong style="color:#ffffff; font-size:15px; display:block;">Iniciar Nova Conversa WhatsApp</strong>
+                                <span style="font-size:11.5px; color:#25D366;">Atendimento Direto pela Plataforma</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
+                    </div>
+
+                    <div class="ws-erp-modal-body" style="padding:20px;">
+                        <!-- Atalho de Seleção por Veículo/Cliente já Cadastrado -->
+                        <div class="form-group" style="margin-bottom:14px;">
+                            <label class="form-label" style="font-size:12px; color:#cbd5e1; font-weight:700;">Selecionar Cliente / Carro do Pátio:</label>
+                            <select id="ws-newchat-veh-select" class="form-control" onchange="WorkshopView.onSelectVehicleForNewChat(this.value)" style="background:#060a12; border-color:rgba(255,255,255,0.15); font-size:12px;">
+                                <option value="">-- Ou digite manualmente abaixo --</option>
+                                ${vehicles.map(v => `<option value="${v.id}" data-name="${v.owner_name || ''}" data-phone="${v.owner_phone || ''}" data-plate="${v.license_plate}">${v.license_plate} - ${v.brand} ${v.model} (${v.owner_name || 'Sem proprietário'})</option>`).join('')}
+                            </select>
+                        </div>
+
+                        <form onsubmit="WorkshopView.submitStartNewChat(event)">
+                            <div class="form-group" style="margin-bottom:12px;">
+                                <label class="form-label" style="font-size:12px; color:#cbd5e1; font-weight:700;">Nome do Cliente:</label>
+                                <input type="text" id="ws-newchat-name" class="form-control" placeholder="Nome do Cliente" style="background:#060a12; border-color:rgba(255,255,255,0.15); font-size:13px;" required />
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:12px;">
+                                <label class="form-label" style="font-size:12px; color:#cbd5e1; font-weight:700;">Número do WhatsApp:</label>
+                                <input type="text" id="ws-newchat-phone" class="form-control" placeholder="+55 (__) _____-____" style="background:#060a12; border-color:rgba(255,255,255,0.15); font-size:13px; font-weight:700; color:#25D366;" required />
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:16px;">
+                                <label class="form-label" style="font-size:12px; color:#cbd5e1; font-weight:700;">Mensagem Inicial:</label>
+                                <textarea id="ws-newchat-msg" class="form-control" rows="4" placeholder="Olá! Entramos em contato a respeito do seu veículo..." style="background:#060a12; border-color:rgba(37,211,102,0.3); font-size:13px; line-height:1.4;" required></textarea>
+                            </div>
+
+                            <div style="display:flex; justify-content:flex-end; gap:8px;">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="WorkshopView.closeModal()">CANCELAR</button>
+                                <button type="submit" class="btn btn-sm btn-primary" style="background:#25D366; color:#000; font-weight:800; border:none; padding:8px 20px; cursor:pointer;">
+                                    <span>💬</span> <span>INICIAR CONVERSA</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    onSelectVehicleForNewChat(vehicleId) {
+        if (!vehicleId) return;
+        const select = document.getElementById('ws-newchat-veh-select');
+        const opt = select?.selectedOptions[0];
+        if (!opt) return;
+
+        const nameInput = document.getElementById('ws-newchat-name');
+        const phoneInput = document.getElementById('ws-newchat-phone');
+        const msgInput = document.getElementById('ws-newchat-msg');
+
+        if (nameInput) nameInput.value = opt.getAttribute('data-name') || '';
+        if (phoneInput) phoneInput.value = opt.getAttribute('data-phone') || '';
+        if (msgInput) msgInput.value = `Olá ${opt.getAttribute('data-name') || 'Cliente'}! Entramos em contato da oficina ${this.officialWorkshopName} sobre seu veículo placa ${opt.getAttribute('data-plate')}.`;
+    },
+
+    async submitStartNewChat(e) {
+        e.preventDefault();
+        const name = (document.getElementById('ws-newchat-name')?.value || '').trim();
+        const phone = (document.getElementById('ws-newchat-phone')?.value || '').trim();
+        const msg = (document.getElementById('ws-newchat-msg')?.value || '').trim();
+
+        if (!phone || !msg) {
+            alert('Telefone e mensagem são obrigatórios.');
+            return;
+        }
+
+        try {
+            await API.sendWhatsAppChatMessage(this.currentWorkshopId, {
+                phone_number: phone,
+                client_name: name,
+                message: msg
+            });
+
+            this.closeModal();
+            this.activeChatPhone = phone.replace(/\D/g, '');
+            if (this.currentSection !== 'whatsapp-atendimento') {
+                this.switchSection('whatsapp-atendimento');
+            } else {
+                await this.loadChatConversations(false);
+                this.selectChatConversation(this.activeChatPhone);
+            }
+        } catch (err) {
+            alert('Erro ao iniciar conversa: ' + err.message);
+        }
+    },
+
     // Handlers da Central do WhatsApp
     switchWhatsAppTab(tabName) {
         this.whatsAppActiveTab = tabName;
@@ -2488,6 +2977,44 @@ const WorkshopView = {
 
         const txt = document.getElementById('ws-whatsapp-message-text');
         if (txt) txt.value = filled;
+    },
+
+    async sendWhatsAppInPlatform(clientName, clientPhone, vehicleName, plate, serviceName) {
+        const msgInput = document.getElementById('ws-whatsapp-message-text');
+        const message = (msgInput?.value || '').trim();
+
+        if (!message) {
+            alert('Por favor, digite a mensagem a ser enviada.');
+            return;
+        }
+
+        const modalBody = document.getElementById('ws-whatsapp-modal-body');
+        const sendBtn = modalBody?.querySelector('button[style*="25D366"]');
+        if (sendBtn) {
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span>⏳</span> <span>ENVIANDO...</span>';
+        }
+
+        try {
+            const res = await API.sendWhatsAppMessage(this.currentWorkshopId, {
+                recipient_name: clientName,
+                recipient_phone: clientPhone,
+                message: message,
+                vehicle_info: `${vehicleName} (${plate})`,
+                license_plate: plate,
+                service_type: serviceName || 'Atendimento Oficial'
+            });
+
+            alert(`✅ Mensagem transmitida com sucesso para ${clientName} (${clientPhone})!\n\nProtocolo: ${res.protocol || res.message_id || 'DNA-WPP-OK'}\n\nA mensagem já está registrada no histórico e na Central de Atendimento.`);
+            this.closeModal();
+            await this.loadWhatsAppStatus(false);
+        } catch (err) {
+            alert('Erro ao enviar mensagem pelo WhatsApp: ' + err.message);
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<span>📱</span> <span>ENVIAR</span>';
+            }
+        }
     },
 
     // Modal de Configuração da Evolution API v2

@@ -758,7 +758,9 @@ router.post('/:id/whatsapp/send-message', async (req, res) => {
             vehicle_info,
             vehicle_id,
             client_id,
-            service_type
+            service_type,
+            license_plate,
+            plate
         } = req.body;
 
         if (!recipient_phone || !message) {
@@ -780,7 +782,8 @@ router.post('/:id/whatsapp/send-message', async (req, res) => {
             message,
             vehicleId: vehicle_id,
             clientId: client_id,
-            serviceType: service_type || 'Atendimento Oficina'
+            serviceType: service_type || 'Atendimento Oficina',
+            licensePlate: license_plate || plate || null
         });
 
         const sentPayload = {
@@ -820,6 +823,136 @@ router.post('/:id/whatsapp/send-message', async (req, res) => {
     } catch (err) {
         console.error('Erro no envio de WhatsApp in-platform:', err);
         res.status(500).json({ error: err.message || 'Erro ao processar envio do WhatsApp.' });
+    }
+});
+
+// ──────────────────────────────────────────────────────────────────────────
+// 7.1 Central de Atendimento: Listar Conversas Ativas
+// ──────────────────────────────────────────────────────────────────────────
+router.get('/:id/whatsapp/chat/conversations', (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const conversations = baileysService.getChatConversations(workshopId);
+        res.json({
+            success: true,
+            conversations,
+            total: conversations.length
+        });
+    } catch (err) {
+        console.error('Erro ao listar conversas do chat:', err);
+        res.status(500).json({ error: 'Erro ao listar conversas da Central de Atendimento.' });
+    }
+});
+
+// 7.2 Central de Atendimento: Histórico de Mensagens de um Cliente/Telefone
+router.get('/:id/whatsapp/chat/messages/:phone', (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const phoneNumber = req.params.phone;
+        const messages = baileysService.getChatMessages(workshopId, phoneNumber);
+        res.json({
+            success: true,
+            phone_number: phoneNumber,
+            messages,
+            total: messages.length
+        });
+    } catch (err) {
+        console.error('Erro ao buscar mensagens da conversa:', err);
+        res.status(500).json({ error: 'Erro ao buscar mensagens da Central de Atendimento.' });
+    }
+});
+
+// 7.3 Central de Atendimento: Enviar Resposta para Cliente
+router.post('/:id/whatsapp/chat/send', async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const { phone_number, message, client_name, vehicle_plate } = req.body;
+
+        if (!phone_number || !message || !message.trim()) {
+            return res.status(400).json({ error: 'Telefone e mensagem são obrigatórios.' });
+        }
+
+        const queueRes = await baileysService.enqueueMessage({
+            workshopId,
+            recipientPhone: phone_number,
+            recipientName: client_name || 'Cliente',
+            message: message.trim(),
+            licensePlate: vehicle_plate || null,
+            serviceType: 'Atendimento WhatsApp'
+        });
+
+        res.json({
+            success: true,
+            message: 'Resposta enviada com sucesso.',
+            chat: {
+                workshop_id: workshopId,
+                phone_number,
+                client_name,
+                vehicle_plate,
+                message: message.trim(),
+                direction: 'OUTGOING',
+                created_at: new Date().toISOString()
+            }
+        });
+    } catch (err) {
+        console.error('Erro ao enviar mensagem pelo chat:', err);
+        res.status(500).json({ error: err.message || 'Erro ao enviar resposta pelo chat.' });
+    }
+});
+
+// 7.4 Central de Atendimento: Marcar Conversa como Lida
+router.post('/:id/whatsapp/chat/mark-read', (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const { phone_number } = req.body;
+        if (!phone_number) {
+            return res.status(400).json({ error: 'Número de telefone é obrigatório.' });
+        }
+        const result = baileysService.markChatAsRead(workshopId, phone_number);
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao marcar conversa como lida.' });
+    }
+});
+
+// 7.5 Webhook Universal para Evolution API (Captura de Mensagens de Clientes)
+router.post('/whatsapp/webhook', (req, res) => {
+    try {
+        const event = req.body?.event;
+        const data = req.body?.data;
+
+        if ((event === 'messages.upsert' || event === 'MESSAGES_UPSERT') && data) {
+            const key = data.key || {};
+            if (!key.fromMe && key.remoteJid && key.remoteJid.endsWith('@s.whatsapp.net')) {
+                const senderPhone = key.remoteJid.replace('@s.whatsapp.net', '');
+                const text = data.message?.conversation ||
+                             data.message?.extendedTextMessage?.text ||
+                             data.message?.imageMessage?.caption || '';
+
+                if (text && text.trim()) {
+                    const instance = req.body?.instance || 'default';
+                    const workshopId = instance.startsWith('ws_') ? instance : 'ws_veloce';
+                    const contactInfo = baileysService.identifyContactByPhone(senderPhone, workshopId);
+
+                    baileysService.saveChatMessage({
+                        workshopId,
+                        phoneNumber: senderPhone,
+                        clientName: contactInfo.clientName,
+                        vehiclePlate: contactInfo.vehiclePlate,
+                        vehicleModel: contactInfo.vehicleModel,
+                        direction: 'INCOMING',
+                        message: text.trim(),
+                        isRead: 0
+                    });
+                    console.log(`📥 [Evolution Webhook] Mensagem recebida de ${senderPhone}: "${text.trim()}"`);
+                }
+            }
+        }
+
+        res.json({ success: true, message: 'Webhook processado com sucesso.' });
+    } catch (err) {
+        console.warn('Erro no webhook Evolution API:', err.message);
+        res.json({ success: true, error: err.message });
     }
 });
 

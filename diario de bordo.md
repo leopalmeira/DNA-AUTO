@@ -523,6 +523,33 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - `public/js/components/workshopView.js`: Banner de motor ativo, modal `openEvolutionSettingsModal()`, ação de teste `testEvolutionConnectionAction()` e submissão `submitEvolutionConfig()`.
   - `test/api.test.js`: Criação do Teste 40 com 40/40 testes de integração aprovados com 100% de sucesso.
 
+### 📅 Ciclo 27 — Central de Atendimento WhatsApp (Live Chat Integrado) & Correção de Envio de Mensagens In-Platform
+- **Demandas Atendidas:**
+  1. **Correção do Envio de Mensagens In-Platform:**
+     - **Problema:** Ao tentar enviar mensagens pela oficina através do modal "Enviar WhatsApp" (ex: aviso de revisão para Guilherme Rezende / Honda CG 150 Titan LPO0905), a mensagem não era disparada devido à ausência do manipulador de envio direto `sendWhatsAppInPlatform` no frontend.
+     - **Solução Implementada:** Implementação completa de `WorkshopView.sendWhatsAppInPlatform()` integrando com `API.sendWorkshopWhatsAppMessage()`, validação de carga, feedback visual com protocolo oficial DNA AUTO e fechamento automático do modal.
+  2. **Persistência Imediata e Resiliência de Envio (Fallback Híbrido):**
+     - O serviço `baileys.service.js` agora grava imediatamente a mensagem de saída no histórico de chat no momento do enfileiramento (`enqueueMessage`), garantindo que o mecânico veja a mensagem instantaneamente na tela.
+     - Implementado fallback automático de envio: caso a Evolution API falhe por timeout ou URL inacessível, o sistema tenta automaticamente o despacho via socket Baileys nativo.
+     - Integração de `sock.onWhatsApp(phone)` para resolver dinamicamente o JID oficial de números de celular brasileiros (com ou sem o 9º dígito).
+  3. **Central de Atendimento WhatsApp (Live Chat Bidirecional no ERP):**
+     - Criação da tabela relacional `whatsapp_chat_messages` no banco de dados SQLite para registro de mensagens de entrada (`INCOMING`) e de saída (`OUTGOING`), com controle de leitura (`is_read`), identificação automática do contato, veículo e placa.
+     - Listener em tempo real no socket Baileys (`sock.ev.on('messages.upsert')`) e webhook universal (`POST /whatsapp/webhook`) para recepcionar mensagens que os clientes respondem pelo WhatsApp.
+     - Nova tela de **Central de Atendimento WhatsApp** (`renderWhatsAppChatView`):
+       - Layout moderno estilo WhatsApp Web com 2 colunas responsivas.
+       - Coluna lateral esquerda: busca dinâmica em tempo real, lista de conversas ativas agrupadas por cliente/número, badge de mensagens não lidas, última mensagem trocada e data/hora.
+       - Coluna principal: cabeçalho com dados do cliente e tag do veículo/placa, área de balões de mensagens com distinção visual entre cliente (fundo escuro/borda ciano) e oficina (fundo verde escuro), tags de horário e status.
+       - Barra inferior de resposta com seletor de templates rápidos inteligentes, campo de texto expansível com envio por Enter (Shift+Enter para nova linha) e botão de envio de alta visibilidade.
+       - Polling automático suave em segundo plano (a cada 4s) para atualização das conversas e novas mensagens em tempo real.
+  4. **Item "Atendimento WhatsApp" no Menu Lateral:**
+     - Posicionado sob o setor `COMUNICAÇÃO & CONTATO`, logo abaixo do botão WhatsApp existente, com o logotipo oficial do WhatsApp (`fab fa-whatsapp text-emerald-400`) para fácil identificação e badge dinâmico de mensagens não lidas.
+- **Implementações Técnicas:**
+  - `server/src/modules/workshops/baileys.service.js`: Criação da tabela `whatsapp_chat_messages`, métodos `saveChatMessage()`, `getChatConversations()`, `getChatMessages()`, `markChatAsRead()`, `identifyContactByPhone()`, listener `messages.upsert` e envio resiliente com fallback.
+  - `server/src/modules/workshops/workshops.routes.js`: Endpoints `GET /:id/whatsapp/chat/conversations`, `GET /:id/whatsapp/chat/messages/:phone`, `POST /:id/whatsapp/chat/send`, `POST /:id/whatsapp/chat/mark-read`, e webhook `POST /whatsapp/webhook`.
+  - `public/js/api.js`: Adição dos métodos `getWhatsAppChatConversations()`, `getWhatsAppChatMessages()`, `sendWhatsAppChatMessage()`, `markWhatsAppChatRead()`.
+  - `public/js/components/workshopView.js`: Inclusão do item `Atendimento WhatsApp` no menu lateral, roteamento na `renderActiveSection()`, implementação da view e lógica de chat bidirecional e função `sendWhatsAppInPlatform()`.
+  - `test/api.test.js`: Criação do Teste 41 cobrindo ciclo de vida completo do chat (envio da oficina, resposta simulada do cliente, consulta de conversas e mensagens, e resposta direta pela central), com 41/41 testes aprovados com 100% de sucesso.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes
@@ -530,5 +557,7 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 2. **Registro Contínuo:** Todo novo ciclo ou alteração relevante de engenharia deve ser imediatamente documentado no `diario de bordo.md`, no `DIARIO_DE_BORDO.md` e refletido no `README.md`.
 3. **Comunicação:** Atendimento sempre no idioma português.
 4. **Validação de Testes:** O comando `npm test` deve sempre permanecer com 100% dos testes aprovados antes de qualquer publicação.
+5. **Autonomia de Testes do Usuário:** Toda parte de testes em navegadores reais na interface do WhatsApp é realizada diretamente pelo usuário, respeitando estritamente suas diretrizes operacionais.
+
 
 

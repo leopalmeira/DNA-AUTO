@@ -364,7 +364,28 @@ const API = {
             method: 'POST',
             body: JSON.stringify({ api_url: apiUrl, api_key: apiKey })
         });
+    },
+
+    // Central de Atendimento WhatsApp (Chat ao Vivo)
+    getWhatsAppChatConversations(workshopId) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/chat/conversations`);
+    },
+    getWhatsAppChatMessages(workshopId, phoneNumber) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/chat/messages/${encodeURIComponent(phoneNumber)}`);
+    },
+    sendWhatsAppChatMessage(workshopId, payload) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/chat/send`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+    markWhatsAppChatRead(workshopId, phoneNumber) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/chat/mark-read`, {
+            method: 'POST',
+            body: JSON.stringify({ phone_number: phoneNumber })
+        });
     }
 };
+
 
 

@@ -84,6 +84,22 @@ class BaileysWorkshopService {
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 );
+
+                CREATE TABLE IF NOT EXISTS whatsapp_chat_messages (
+                    id TEXT PRIMARY KEY,
+                    workshop_id TEXT NOT NULL REFERENCES workshops(id) ON DELETE CASCADE,
+                    phone_number TEXT NOT NULL,
+                    client_name TEXT,
+                    vehicle_plate TEXT,
+                    vehicle_model TEXT,
+                    direction TEXT NOT NULL, -- 'INCOMING' | 'OUTGOING'
+                    message TEXT NOT NULL,
+                    status TEXT NOT NULL DEFAULT 'DELIVERED',
+                    is_read INTEGER NOT NULL DEFAULT 0,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+                CREATE INDEX IF NOT EXISTS idx_wchat_workshop_phone ON whatsapp_chat_messages(workshop_id, phone_number);
+                CREATE INDEX IF NOT EXISTS idx_wchat_created_at ON whatsapp_chat_messages(created_at);
             `);
         } catch (e) {
             console.error('Erro ao inicializar tabelas do WhatsApp:', e);
@@ -173,14 +189,28 @@ class BaileysWorkshopService {
             `).all();
 
             for (const sess of connectedInDb) {
-                this.activeSessions.set(sess.workshop_id, {
+                const sessionFolder = path.join(SESSIONS_DIR, `ws_${sess.workshop_id}`);
+                const credsFile = path.join(sessionFolder, 'creds.json');
+                const phone = sess.phone_number || sess.whatsapp_official;
+
+                const sessionState = {
                     status: 'CONNECTED',
-                    phoneNumber: sess.phone_number || sess.whatsapp_official,
+                    phoneNumber: phone,
                     lastConnectedAt: sess.last_connected_at || sess.updated_at,
                     pairingCode: null,
                     qrCodeDataUrl: null,
                     sock: null
-                });
+                };
+                this.activeSessions.set(sess.workshop_id, sessionState);
+
+                // Se houver credenciais salvas em disco e biblioteca disponível, reconecta o socket em background
+                if (fs.existsSync(credsFile) && typeof makeWASocket === 'function') {
+                    setTimeout(() => {
+                        this.initBaileysSocket(sess.workshop_id, phone, sessionFolder, 'qr').catch(e => {
+                            console.warn(`Aviso na auto-reconexão Baileys (${sess.workshop_id}):`, e.message);
+                        });
+                    }, 1000);
+                }
             }
         } catch (e) {
             console.warn('Erro ao restaurar sessões do banco:', e.message);
@@ -212,6 +242,165 @@ class BaileysWorkshopService {
             return `+55 (${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
         }
         return phone;
+    }
+
+    identifyContactByPhone(rawPhone, workshopId) {
+        const clean = this.normalizePhoneNumber(rawPhone);
+        const dddAndNumber = clean.startsWith('55') ? clean.slice(2) : clean;
+        const eightDigits = dddAndNumber.length === 11 ? dddAndNumber.slice(0, 2) + dddAndNumber.slice(3) : dddAndNumber;
+        const nineDigits = dddAndNumber.length === 10 ? dddAndNumber.slice(0, 2) + '9' + dddAndNumber.slice(2) : dddAndNumber;
+
+        // 1. Busca em owners com joins em veículos
+        try {
+            const owner = db.prepare(`
+                SELECT o.name, v.license_plate, v.brand, v.model
+                FROM owners o
+                LEFT JOIN ownership_transfers ot ON ot.new_owner_id = o.id
+                LEFT JOIN vehicles v ON (v.current_owner_id = o.id OR ot.vehicle_id = v.id)
+                WHERE replace(replace(replace(replace(o.phone, ' ', ''), '-', ''), '(', ''), ')', '') LIKE ?
+                   OR replace(replace(replace(replace(o.phone, ' ', ''), '-', ''), '(', ''), ')', '') LIKE ?
+                   OR replace(replace(replace(replace(o.phone, ' ', ''), '-', ''), '(', ''), ')', '') LIKE ?
+                ORDER BY o.created_at DESC LIMIT 1
+            `).get(`%${dddAndNumber}%`, `%${eightDigits}%`, `%${nineDigits}%`);
+
+            if (owner && owner.name) {
+                return {
+                    clientName: owner.name,
+                    vehiclePlate: owner.license_plate || null,
+                    vehicleModel: owner.model ? `${owner.brand || ''} ${owner.model}`.trim() : null
+                };
+            }
+        } catch (_) {}
+
+        // 2. Busca em whatsapp_messages anteriores
+        try {
+            const prevMsg = db.prepare(`
+                SELECT wm.*, v.license_plate, v.brand, v.model, COALESCE(o.name, 'Cliente') as owner_name
+                FROM whatsapp_messages wm
+                LEFT JOIN vehicles v ON wm.vehicle_id = v.id
+                LEFT JOIN owners o ON wm.client_id = o.id
+                WHERE wm.workshop_id = ? AND (wm.phone_number LIKE ? OR wm.phone_number LIKE ?)
+                ORDER BY wm.created_at DESC LIMIT 1
+            `).get(workshopId, `%${dddAndNumber}%`, `%${clean}%`);
+
+            if (prevMsg) {
+                return {
+                    clientName: prevMsg.owner_name && prevMsg.owner_name !== 'Cliente' ? prevMsg.owner_name : this.formatDisplayPhone(clean),
+                    vehiclePlate: prevMsg.license_plate || null,
+                    vehicleModel: prevMsg.model ? `${prevMsg.brand || ''} ${prevMsg.model}`.trim() : null
+                };
+            }
+        } catch (_) {}
+
+        return {
+            clientName: this.formatDisplayPhone(clean),
+            vehiclePlate: null,
+            vehicleModel: null
+        };
+    }
+
+    saveChatMessage({ workshopId, phoneNumber, clientName, vehiclePlate, vehicleModel, direction, message, status = 'DELIVERED', isRead = 0 }) {
+        const cleanPhone = this.normalizePhoneNumber(phoneNumber);
+        const msgId = `wchat_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        const finalName = clientName || this.formatDisplayPhone(cleanPhone);
+
+        db.prepare(`
+            INSERT INTO whatsapp_chat_messages (
+                id, workshop_id, phone_number, client_name, vehicle_plate, vehicle_model,
+                direction, message, status, is_read, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        `).run(
+            msgId, workshopId, cleanPhone,
+            finalName,
+            vehiclePlate || null,
+            vehicleModel || null,
+            direction,
+            message,
+            status,
+            isRead
+        );
+
+        return {
+            id: msgId,
+            workshop_id: workshopId,
+            phone_number: cleanPhone,
+            display_phone: this.formatDisplayPhone(cleanPhone),
+            client_name: finalName,
+            vehicle_plate: vehiclePlate,
+            vehicle_model: vehicleModel,
+            direction,
+            message,
+            status,
+            is_read: isRead,
+            created_at: new Date().toISOString()
+        };
+    }
+
+    getChatConversations(workshopId) {
+        const rows = db.prepare(`
+            SELECT 
+                c.phone_number,
+                c.client_name,
+                c.vehicle_plate,
+                c.vehicle_model,
+                c.message as last_message,
+                c.direction as last_message_direction,
+                c.created_at as last_message_at,
+                (
+                    SELECT COUNT(*) 
+                    FROM whatsapp_chat_messages sub 
+                    WHERE sub.workshop_id = c.workshop_id 
+                      AND sub.phone_number = c.phone_number 
+                      AND sub.direction = 'INCOMING' 
+                      AND sub.is_read = 0
+                ) as unread_count
+            FROM whatsapp_chat_messages c
+            INNER JOIN (
+                SELECT phone_number, MAX(created_at) as max_date
+                FROM whatsapp_chat_messages
+                WHERE workshop_id = ?
+                GROUP BY phone_number
+            ) latest ON c.phone_number = latest.phone_number AND c.created_at = latest.max_date
+            WHERE c.workshop_id = ?
+            ORDER BY c.created_at DESC
+        `).all(workshopId, workshopId);
+
+        return rows.map(r => ({
+            ...r,
+            display_phone: this.formatDisplayPhone(r.phone_number),
+            unread_count: Number(r.unread_count) || 0
+        }));
+    }
+
+    getChatMessages(workshopId, phoneNumber) {
+        const cleanPhone = this.normalizePhoneNumber(phoneNumber);
+        const dddAndNumber = cleanPhone.startsWith('55') ? cleanPhone.slice(2) : cleanPhone;
+
+        // Marca mensagens recebidas deste telefone como lidas
+        db.prepare(`
+            UPDATE whatsapp_chat_messages
+            SET is_read = 1
+            WHERE workshop_id = ? AND (phone_number = ? OR phone_number LIKE ?) AND direction = 'INCOMING'
+        `).run(workshopId, cleanPhone, `%${dddAndNumber}%`);
+
+        return db.prepare(`
+            SELECT * FROM whatsapp_chat_messages
+            WHERE workshop_id = ? AND (phone_number = ? OR phone_number LIKE ?)
+            ORDER BY created_at ASC
+        `).all(workshopId, cleanPhone, `%${dddAndNumber}%`).map(m => ({
+            ...m,
+            display_phone: this.formatDisplayPhone(m.phone_number)
+        }));
+    }
+
+    markChatAsRead(workshopId, phoneNumber) {
+        const cleanPhone = this.normalizePhoneNumber(phoneNumber);
+        db.prepare(`
+            UPDATE whatsapp_chat_messages
+            SET is_read = 1
+            WHERE workshop_id = ? AND phone_number = ? AND direction = 'INCOMING'
+        `).run(workshopId, cleanPhone);
+        return { success: true };
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -417,6 +606,44 @@ class BaileysWorkshopService {
                             sessionState.sock = null;
                             db.prepare(`UPDATE whatsapp_sessions SET status = 'DISCONNECTED', updated_at = CURRENT_TIMESTAMP WHERE workshop_id = ?`).run(workshopId);
                         }
+                    }
+                });
+
+                // Captura de mensagens recebidas de clientes (Central de Atendimento)
+                sock.ev.on('messages.upsert', async (m) => {
+                    try {
+                        const messages = m.messages || [];
+                        for (const msg of messages) {
+                            if (msg.key.fromMe) continue;
+
+                            const remoteJid = msg.key.remoteJid || '';
+                            if (!remoteJid.endsWith('@s.whatsapp.net')) continue;
+
+                            const senderPhone = remoteJid.replace('@s.whatsapp.net', '');
+                            const text = msg.message?.conversation ||
+                                         msg.message?.extendedTextMessage?.text ||
+                                         msg.message?.imageMessage?.caption ||
+                                         '';
+
+                            if (!text || !text.trim()) continue;
+
+                            const contactInfo = this.identifyContactByPhone(senderPhone, workshopId);
+
+                            this.saveChatMessage({
+                                workshopId,
+                                phoneNumber: senderPhone,
+                                clientName: contactInfo.clientName,
+                                vehiclePlate: contactInfo.vehiclePlate,
+                                vehicleModel: contactInfo.vehicleModel,
+                                direction: 'INCOMING',
+                                message: text.trim(),
+                                isRead: 0
+                            });
+
+                            console.log(`📥 [Baileys] Mensagem recebida de ${senderPhone} (${contactInfo.clientName}): "${text.trim()}"`);
+                        }
+                    } catch (upsertErr) {
+                        console.warn('Erro ao processar messages.upsert no Baileys:', upsertErr.message);
                     }
                 });
 
@@ -706,7 +933,7 @@ class BaileysWorkshopService {
     // ──────────────────────────────────────────────────────────────────────────
     // 6. FILA DE ENVIO E DESPACHO DE MENSAGENS
     // ──────────────────────────────────────────────────────────────────────────
-    async enqueueMessage({ workshopId, recipientPhone, recipientName, message, vehicleId, clientId, serviceType }) {
+    async enqueueMessage({ workshopId, recipientPhone, recipientName, message, vehicleId, clientId, serviceType, licensePlate }) {
         if (!recipientPhone || !message) {
             throw new Error('Telefone do destinatário e mensagem são obrigatórios.');
         }
@@ -721,16 +948,30 @@ class BaileysWorkshopService {
             ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING', CURRENT_TIMESTAMP)
         `).run(messageId, workshopId, clientId || null, vehicleId || null, cleanRecipient, message);
 
+        // Registra imediatamente na Central de Atendimento (chat bidirecional)
+        const chatMsg = this.saveChatMessage({
+            workshopId,
+            phoneNumber: cleanRecipient,
+            clientName: recipientName || 'Cliente',
+            vehiclePlate: licensePlate || null,
+            direction: 'OUTGOING',
+            message,
+            status: 'DELIVERED',
+            isRead: 1
+        });
+
         // Adiciona à fila de envio sequencial
         const queueItem = {
             id: messageId,
+            chatMessageId: chatMsg ? chatMsg.id : null,
             workshopId,
             recipientPhone: cleanRecipient,
             recipientName: recipientName || 'Cliente',
             message,
             vehicleId,
             clientId,
-            serviceType
+            serviceType,
+            licensePlate: licensePlate || null
         };
 
         this.messageQueue.push(queueItem);
@@ -761,22 +1002,40 @@ class BaileysWorkshopService {
 
                 const session = this.activeSessions.get(item.workshopId);
                 const evoConfig = evolutionService.getConfig();
+                let sentSuccessfully = false;
 
-                // Envio prioritário pela Evolution API se configurada
+                // 1. Envio prioritário pela Evolution API se configurada
                 if (evoConfig.isConfigured) {
                     try {
                         await evolutionService.sendTextMessage(item.workshopId, item.recipientPhone, item.message);
+                        sentSuccessfully = true;
                     } catch (evoErr) {
-                        console.warn('⚠️ Envio via Evolution API falhou:', evoErr.message);
+                        console.warn('⚠️ Envio via Evolution API falhou, acionando fallback nativo:', evoErr.message);
                     }
-                // Envio real pelo socket Baileys se ativo
-                } else if (session && session.sock && session.status === 'CONNECTED') {
-                    const jid = `${item.recipientPhone}@s.whatsapp.net`;
-                    await session.sock.sendMessage(jid, { text: item.message });
                 }
 
-                // Pausa de 1 segundo para cadência e segurança anti-spam
-                await new Promise(r => setTimeout(r, 1000));
+                // 2. Fallback para Baileys socket caso Evolution não tenha enviado ou não esteja configurada
+                if (!sentSuccessfully && session && session.sock && session.status === 'CONNECTED') {
+                    let jid = `${item.recipientPhone}@s.whatsapp.net`;
+                    // Consulta o JID exato no WhatsApp para garantir entrega com ou sem 9º dígito no Brasil
+                    if (session.sock.onWhatsApp) {
+                        try {
+                            const [result] = await session.sock.onWhatsApp(item.recipientPhone);
+                            if (result && result.exists && result.jid) {
+                                jid = result.jid;
+                            }
+                        } catch (_) {}
+                    }
+                    try {
+                        await session.sock.sendMessage(jid, { text: item.message });
+                        sentSuccessfully = true;
+                    } catch (sockErr) {
+                        console.warn('⚠️ Envio via socket Baileys falhou:', sockErr.message);
+                    }
+                }
+
+                // Pausa curta para cadência e segurança anti-spam
+                await new Promise(r => setTimeout(r, 600));
 
                 // Marca como SENT no banco
                 db.prepare(`

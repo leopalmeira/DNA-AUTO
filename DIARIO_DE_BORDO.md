@@ -990,9 +990,45 @@ DNA-AUTO/
 5. **Validação Automatizada:**
    - Adicionado Teste 40 em `test/api.test.js`, garantindo que toda a suíte de 40 testes de integração execute com 100% de aprovação.
 
+### 📅 Ciclo 27 — Central de Atendimento WhatsApp (Live Chat Integrado) & Correção de Envio de Mensagens In-Platform
+
+#### 1. Diagnóstico do Problema & Causa Raiz
+- **Envio de Mensagens In-Platform:**
+  - **Problema Identificado:** No modal "Enviar WhatsApp" da oficina (ex: alerta de revisão para Guilherme Rezende / Honda CG 150 Titan LPO0905), ao clicar no botão verde "ENVIAR", nenhuma ação ocorria.
+  - **Causa Raiz:** O manipulador `WorkshopView.sendWhatsAppInPlatform()` não estava definido no arquivo `public/js/components/workshopView.js`, fazendo com que o evento de clique disparasse um erro silencioso sem acionar a API de envio.
+- **Centralização do Atendimento & Mensagens Recebidas:**
+  - **Necessidade:** O cliente que recebia a notificação da oficina respondia pelo WhatsApp, mas a oficina não tinha como visualizar as respostas dentro do ERP nem responder em tempo real sem usar o celular pessoal.
+  - **Diretriz do Usuário:** Toda a verificação e testes na interface do WhatsApp devem ser feitos pelo próprio usuário sem uso de ferramentas de automação de navegador pelo assistente.
+
+#### 2. Soluções Implementadas
+1. **Manipulador de Envio In-Platform (`WorkshopView.sendWhatsAppInPlatform`):**
+   - Implementação completa da função conectada ao `API.sendWorkshopWhatsAppMessage()`.
+   - Captura dos valores do modal, feedback visual de envio com indicador de carregamento, alerta com protocolo oficial DNA AUTO e fechamento automático do modal com atualização do pátio.
+2. **Persistência Imediata e Fallback Resiliente:**
+   - Em `server/src/modules/workshops/baileys.service.js`, gravação síncrona imediata da mensagem de saída em `whatsapp_chat_messages` no ato do enfileiramento (`enqueueMessage`), assegurando disponibilidade instantânea no chat.
+   - Fallback de envio automático: se a Evolution API falhar, o sistema desvia imediatamente para o socket nativo Baileys.
+   - Consulta de JID oficial via `sock.onWhatsApp(phone)` para resolver automaticamente celulares brasileiros com ou sem o 9º dígito.
+3. **Módulo de Chat Bidirecional e Tabela `whatsapp_chat_messages`:**
+   - Criação da tabela relacional no SQLite com campos: `id`, `workshop_id`, `phone_number`, `client_name`, `vehicle_plate`, `vehicle_model`, `direction` ('INCOMING'/'OUTGOING'), `message`, `status`, `is_read`, `created_at`.
+   - Listener de eventos em tempo real no Baileys (`sock.ev.on('messages.upsert')`) para capturar respostas recebidas dos clientes.
+   - Webhook universal (`POST /api/v1/workshops/whatsapp/webhook`) para recepcionar mensagens da Evolution API.
+4. **Interface da Central de Atendimento WhatsApp (`renderWhatsAppChatView`):**
+   - Tela com layout moderno em 2 colunas estilo WhatsApp Web:
+     - **Coluna Esquerda:** Campo de busca reativa, lista de conversas ativas agrupadas, indicador de mensagens não lidas, identificação de veículo/placa, prévia da última mensagem e data/hora.
+     - **Coluna Direita:** Cabeçalho do cliente com placa do veículo, histórico de mensagens em balões estilizados (mensagens do cliente à esquerda e da oficina à direita em verde corporativo), tags de horário e status.
+     - **Barra de Resposta:** Seletor de templates rápidos inteligentes, campo de texto expansível com envio por Enter (Shift+Enter para quebra de linha) e botão de envio rápido.
+     - Polling inteligente a cada 4 segundos atualizando as mensagens e conversas em tempo real sem travar a interface.
+5. **Item no Menu Lateral:**
+   - Adicionado no setor `COMUNICAÇÃO & CONTATO`, logo abaixo do menu WhatsApp existente, com o logotipo oficial do WhatsApp (`fab fa-whatsapp text-emerald-400`) e contador dinâmico de não lidas.
+
+#### 3. Validação de Qualidade
+- Criação do **Teste 41** em `test/api.test.js` testando todo o ciclo do chat (envio, recebimento simulado, contagem de não lidas, histórico e resposta direta).
+- Bateria completa de **41/41 testes automatizados de integração passando com 100% de sucesso**.
+
 ---
 
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
+
 
 
 

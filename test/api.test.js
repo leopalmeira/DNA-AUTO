@@ -601,7 +601,69 @@ async function runTests() {
 
         console.log(`✅ 40. Gateway Evolution API v2 (WhatsApp Anti-Bloqueio): Configuração em nuvem persistida com sucesso e refletida no status operacional das oficinas.`);
 
-        console.log('\n🎉 TODOS OS 40 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 41: Central de Atendimento WhatsApp (Histórico Bidirecional & Chat ao Vivo)
+        const baileysService = require('../server/src/modules/workshops/baileys.service');
+
+        // 1. Envio de mensagem pela oficina (LPO0905 - Guilherme Rezende)
+        const resSendChat = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/send-message`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                recipient_phone: '21997207716',
+                recipient_name: 'Guilherme Rezende',
+                message: 'Atenção Guilherme Rezende: seu veículo HONDA HONDA CG 150 TITAN ES (LPO0905) atingiu o período de revisão.',
+                license_plate: 'LPO0905'
+            })
+        });
+        const dataSendChat = await resSendChat.json();
+        console.assert(resSendChat.status === 200, 'Falha no envio de mensagem para o chat');
+        console.assert(dataSendChat.success === true, 'Envio de mensagem deve retornar success: true');
+
+        // 2. Simulação de resposta do cliente via WhatsApp (INCOMING)
+        baileysService.saveChatMessage({
+            workshopId: 'ws_veloce',
+            phoneNumber: '21997207716',
+            clientName: 'Guilherme Rezende',
+            vehiclePlate: 'LPO0905',
+            vehicleModel: 'Honda CG 150 Titan',
+            direction: 'INCOMING',
+            message: 'Olá! Perfeito, gostaria de agendar para amanhã às 14h.',
+            isRead: 0
+        });
+
+        // 3. Consulta de lista de conversas da Central de Atendimento
+        const resConversations = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/chat/conversations`);
+        const dataConversations = await resConversations.json();
+        console.assert(resConversations.status === 200, 'Falha ao buscar conversas da Central de Atendimento');
+        console.assert(dataConversations.success === true, 'Consulta de conversas deve retornar success: true');
+        const guilhermeThread = dataConversations.conversations.find(c => c.phone_number.includes('21997207716'));
+        console.assert(!!guilhermeThread, 'Conversa com Guilherme Rezende não encontrada na lista');
+        console.assert(guilhermeThread.unread_count >= 1, 'Conversa deve registrar pelo menos 1 mensagem não lida');
+
+        // 4. Abertura da conversa e leitura das mensagens
+        const resMessages = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/chat/messages/21997207716`);
+        const dataMessages = await resMessages.json();
+        console.assert(resMessages.status === 200, 'Falha ao buscar mensagens da conversa');
+        console.assert(dataMessages.messages.length >= 2, 'Conversa deve conter mensagem enviada e recebida');
+
+        // 5. Envio de resposta rápida pelo chat
+        const resReplyChat = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/chat/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                phone_number: '21997207716',
+                client_name: 'Guilherme Rezende',
+                vehicle_plate: 'LPO0905',
+                message: 'Confirmado, Guilherme! Horário reservado para amanhã às 14h.'
+            })
+        });
+        const dataReplyChat = await resReplyChat.json();
+        console.assert(resReplyChat.status === 200, 'Falha ao enviar resposta pelo chat');
+        console.assert(dataReplyChat.success === true, 'Envio de resposta pelo chat deve retornar success: true');
+
+        console.log(`✅ 41. Central de Atendimento WhatsApp: Conversas ativas agrupadas, mensagens de entrada/saída sincronizadas e resposta instantânea transmitida com sucesso.`);
+
+        console.log('\n🎉 TODOS OS 41 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

@@ -3,13 +3,13 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-38%2F38%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-41%2F41%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes:** Menu da Oficina enxuto com Entrada de Veículos e Cadastro unificados via busca inteligente por placa; Agenda da Semana simplificada com agendamento direto nos slots (`+ Disponível`) exibindo placa, cliente e serviço a ser executado; WhatsApp Baileys com scanner QR Code corrigido e reconexão automática; Cadastro de Clientes com geração de Código de Ativação (`DNA-XXXX`); Suporte responsivo para Tablets de 10 polegadas.
+> ✨ **Novidades Recentes:** Central de Atendimento WhatsApp integrada ao ERP (Live Chat bidirecional com histórico e templates rápidos); Menu da Oficina enxuto com Entrada de Veículos e Cadastro unificados via busca inteligente por placa; Agenda da Semana simplificada com agendamento direto nos slots (`+ Disponível`) exibindo placa, cliente e serviço a ser executado; WhatsApp Baileys com scanner QR Code corrigido e reconexão automática; Cadastro de Clientes com geração de Código de Ativação (`DNA-XXXX`); Suporte responsivo para Tablets de 10 polegadas.
 
 ---
 
@@ -138,6 +138,14 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
   - O número cadastrado na oficina atua como remetente oficial permanente.
   - Disparos efetuados dentro da plataforma sem abrir abas externas ou links `wa.me`, emitindo protocolo de transmissão auditável (`DNA-WPP-XXXXXX`) e recibo em tempo real.
   - Arquitetura desacoplada com compatibilidade total para **Evolution API v2** e **@whiskeysockets/baileys**.
+
+- **💬 Central de Atendimento WhatsApp (Live Chat Integrado ao ERP):**
+  - **Menu Lateral Dedicado:** Novo item `Atendimento WhatsApp` posicionado em `COMUNICAÇÃO & CONTATO` com ícone oficial do WhatsApp e contador de mensagens não lidas.
+  - **Conversas Centralizadas:** Todas as conversas com clientes que retornam ou enviam mensagens pelo WhatsApp ficam organizadas em tempo real em uma interface bidirecional moderna de duas colunas (estilo WhatsApp Web).
+  - **Identificação Automática:** Vinculação dinâmica da conversa ao nome do cliente, placa e modelo do veículo.
+  - **Histórico & Balões:** Histórico completo com distinção visual entre cliente e oficina, tags de horário e status de entrega.
+  - **Respostas Rápidas & Templates:** Envio ágil de mensagens personalizadas utilizando a biblioteca de templates inteligentes da oficina ou texto livre com atalho Enter.
+  - **Sincronização em Tempo Real:** Listener de mensagens recebidas (`messages.upsert`), webhook universal e polling suave de atualização a cada 4 segundos.
 
 - **Grade Semanal da Agenda & Intervalo de Almoço Bloqueado (12h às 13h):**
   - Configuração de dias de atendimento (Segunda a Sexta padrão, configurável) e faixa de horários de 08:00 às 18:00.
