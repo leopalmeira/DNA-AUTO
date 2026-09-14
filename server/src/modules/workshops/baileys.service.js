@@ -94,6 +94,9 @@ class BaileysWorkshopService {
                     vehicle_model TEXT,
                     direction TEXT NOT NULL, -- 'INCOMING' | 'OUTGOING'
                     message TEXT NOT NULL,
+                    media_type TEXT DEFAULT 'TEXT', -- 'TEXT' | 'IMAGE' | 'AUDIO' | 'VIDEO'
+                    media_url TEXT,
+                    media_caption TEXT,
                     status TEXT NOT NULL DEFAULT 'DELIVERED',
                     is_read INTEGER NOT NULL DEFAULT 0,
                     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -101,6 +104,11 @@ class BaileysWorkshopService {
                 CREATE INDEX IF NOT EXISTS idx_wchat_workshop_phone ON whatsapp_chat_messages(workshop_id, phone_number);
                 CREATE INDEX IF NOT EXISTS idx_wchat_created_at ON whatsapp_chat_messages(created_at);
             `);
+
+            // Migrações seguras caso a tabela já exista
+            try { db.exec(`ALTER TABLE whatsapp_chat_messages ADD COLUMN media_type TEXT DEFAULT 'TEXT'`); } catch (_) {}
+            try { db.exec(`ALTER TABLE whatsapp_chat_messages ADD COLUMN media_url TEXT`); } catch (_) {}
+            try { db.exec(`ALTER TABLE whatsapp_chat_messages ADD COLUMN media_caption TEXT`); } catch (_) {}
         } catch (e) {
             console.error('Erro ao inicializar tabelas do WhatsApp:', e);
         }
@@ -192,6 +200,15 @@ class BaileysWorkshopService {
                 const sessionFolder = path.join(SESSIONS_DIR, `ws_${sess.workshop_id}`);
                 const credsFile = path.join(sessionFolder, 'creds.json');
                 const phone = sess.phone_number || sess.whatsapp_official;
+                const evoConfig = evolutionService.getConfig();
+                const hasCreds = fs.existsSync(credsFile);
+
+                // Se não há credenciais em disco e Evolution API não está configurada,
+                // a sessão foi encerrada na reinicialização do container
+                if (!hasCreds && !evoConfig.isConfigured) {
+                    db.prepare(`UPDATE whatsapp_sessions SET status = 'DISCONNECTED' WHERE workshop_id = ?`).run(sess.workshop_id);
+                    continue;
+                }
 
                 const sessionState = {
                     status: 'CONNECTED',
@@ -204,7 +221,7 @@ class BaileysWorkshopService {
                 this.activeSessions.set(sess.workshop_id, sessionState);
 
                 // Se houver credenciais salvas em disco e biblioteca disponível, reconecta o socket em background
-                if (fs.existsSync(credsFile) && typeof makeWASocket === 'function') {
+                if (hasCreds && typeof makeWASocket === 'function') {
                     setTimeout(() => {
                         this.initBaileysSocket(sess.workshop_id, phone, sessionFolder, 'qr').catch(e => {
                             console.warn(`Aviso na auto-reconexão Baileys (${sess.workshop_id}):`, e.message);
@@ -299,7 +316,7 @@ class BaileysWorkshopService {
         };
     }
 
-    saveChatMessage({ workshopId, phoneNumber, clientName, vehiclePlate, vehicleModel, direction, message, status = 'DELIVERED', isRead = 0 }) {
+    saveChatMessage({ workshopId, phoneNumber, clientName, vehiclePlate, vehicleModel, direction, message, mediaType = 'TEXT', mediaUrl = null, mediaCaption = null, status = 'DELIVERED', isRead = 0 }) {
         const cleanPhone = this.normalizePhoneNumber(phoneNumber);
         const msgId = `wchat_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         const finalName = clientName || this.formatDisplayPhone(cleanPhone);
@@ -307,8 +324,8 @@ class BaileysWorkshopService {
         db.prepare(`
             INSERT INTO whatsapp_chat_messages (
                 id, workshop_id, phone_number, client_name, vehicle_plate, vehicle_model,
-                direction, message, status, is_read, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                direction, message, media_type, media_url, media_caption, status, is_read, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `).run(
             msgId, workshopId, cleanPhone,
             finalName,
@@ -316,6 +333,9 @@ class BaileysWorkshopService {
             vehicleModel || null,
             direction,
             message,
+            mediaType || 'TEXT',
+            mediaUrl || null,
+            mediaCaption || null,
             status,
             isRead
         );
@@ -330,6 +350,9 @@ class BaileysWorkshopService {
             vehicle_model: vehicleModel,
             direction,
             message,
+            media_type: mediaType || 'TEXT',
+            media_url: mediaUrl || null,
+            media_caption: mediaCaption || null,
             status,
             is_read: isRead,
             created_at: new Date().toISOString()
@@ -344,6 +367,8 @@ class BaileysWorkshopService {
                 c.vehicle_plate,
                 c.vehicle_model,
                 c.message as last_message,
+                c.media_type as last_media_type,
+                c.media_url as last_media_url,
                 c.direction as last_message_direction,
                 c.created_at as last_message_at,
                 (
@@ -527,7 +552,9 @@ class BaileysWorkshopService {
                 }
             } catch (_) {}
 
-            const browserConfig = Browsers ? Browsers.windows('Desktop') : ['Windows', 'Desktop', '10.0.22631'];
+            const browserConfig = Browsers
+                ? Browsers.ubuntu('Chrome')   // multi-device estável — NÃO derruba o celular
+                : ['Ubuntu', 'Chrome', '130.0.0.0'];
 
             const sock = makeWASocket({
                 version: waVersion,
@@ -538,7 +565,8 @@ class BaileysWorkshopService {
                 connectTimeoutMs: 60000,
                 defaultQueryTimeoutMs: 60000,
                 keepAliveIntervalMs: 25000,
-                syncFullHistory: false
+                syncFullHistory: false,
+                markOnlineOnConnect: false  // não marca como "online" no celular ao conectar
             });
 
             sessionState.sock = sock;
@@ -609,7 +637,6 @@ class BaileysWorkshopService {
                     }
                 });
 
-                // Captura de mensagens recebidas de clientes (Central de Atendimento)
                 sock.ev.on('messages.upsert', async (m) => {
                     try {
                         const messages = m.messages || [];
@@ -620,32 +647,60 @@ class BaileysWorkshopService {
                             if (!remoteJid.endsWith('@s.whatsapp.net')) continue;
 
                             const senderPhone = remoteJid.replace('@s.whatsapp.net', '');
-                            const text = msg.message?.conversation ||
-                                         msg.message?.extendedTextMessage?.text ||
-                                         msg.message?.imageMessage?.caption ||
-                                         '';
+                            const msgContent = msg.message || {};
 
-                            if (!text || !text.trim()) continue;
+                            // ── Detecta tipo de mídia ──────────────────────────────
+                            let text      = '';
+                            let mediaType = 'TEXT';
+                            let mediaUrl  = null;
+
+                            if (msgContent.conversation) {
+                                text = msgContent.conversation;
+                            } else if (msgContent.extendedTextMessage?.text) {
+                                text = msgContent.extendedTextMessage.text;
+                            } else if (msgContent.imageMessage) {
+                                text      = msgContent.imageMessage.caption || '📷 [Foto]';
+                                mediaType = 'IMAGE';
+                                mediaUrl  = msgContent.imageMessage.url || null;
+                            } else if (msgContent.videoMessage) {
+                                text      = msgContent.videoMessage.caption || '🎥 [Vídeo]';
+                                mediaType = 'VIDEO';
+                                mediaUrl  = msgContent.videoMessage.url || null;
+                            } else if (msgContent.audioMessage || msgContent.pttMessage) {
+                                text      = '🎙️ [Áudio]';
+                                mediaType = 'AUDIO';
+                                mediaUrl  = (msgContent.audioMessage || msgContent.pttMessage)?.url || null;
+                            } else if (msgContent.documentMessage) {
+                                text      = msgContent.documentMessage.fileName || '📄 [Documento]';
+                                mediaType = 'TEXT';
+                            } else if (msgContent.stickerMessage) {
+                                text      = '🎭 [Sticker]';
+                            }
+
+                            if (!text.trim()) continue;
 
                             const contactInfo = this.identifyContactByPhone(senderPhone, workshopId);
 
                             this.saveChatMessage({
                                 workshopId,
-                                phoneNumber: senderPhone,
-                                clientName: contactInfo.clientName,
+                                phoneNumber:  senderPhone,
+                                clientName:   contactInfo.clientName,
                                 vehiclePlate: contactInfo.vehiclePlate,
                                 vehicleModel: contactInfo.vehicleModel,
-                                direction: 'INCOMING',
-                                message: text.trim(),
+                                direction:    'INCOMING',
+                                message:      text.trim(),
+                                mediaType,
+                                mediaUrl,
                                 isRead: 0
                             });
 
-                            console.log(`📥 [Baileys] Mensagem recebida de ${senderPhone} (${contactInfo.clientName}): "${text.trim()}"`);
+                            console.log(`📥 [Baileys] Mensagem ${mediaType} recebida de ${senderPhone} (${contactInfo.clientName})`);
                         }
                     } catch (upsertErr) {
                         console.warn('Erro ao processar messages.upsert no Baileys:', upsertErr.message);
                     }
                 });
+
 
                 // Se o modo for 'code' (Pairing Code por número), solicita o código nativo
                 // NUNCA chamar no modo 'qr', pois chamar requestPairingCode invalida o escaneamento do QR Code no WhatsApp!
@@ -676,9 +731,12 @@ class BaileysWorkshopService {
             throw new Error('Número de WhatsApp inválido. Informe o DDD e o número completo.');
         }
 
-        // Se já estiver conectada com o mesmo número, retorna status online
+        // Se já estiver conectada com o mesmo número E houver socket ativo ou Evolution configurada, retorna status online
         const current = await this.getSessionStatus(workshopId);
-        if (current.is_connected && current.phone_number === cleanPhone) {
+        const memSession = this.activeSessions.get(workshopId);
+        const hasLiveSocket = memSession && memSession.sock && memSession.status === 'CONNECTED';
+        const evoConfig = evolutionService.getConfig();
+        if ((hasLiveSocket || evoConfig.isConfigured) && current.is_connected && current.phone_number === cleanPhone) {
             return {
                 success: true,
                 status: 'CONNECTED',
@@ -686,9 +744,6 @@ class BaileysWorkshopService {
                 message: 'WhatsApp já conectado e operacional.',
                 session: current
             };
-        }
-
-        const evoConfig = evolutionService.getConfig();
         if (evoConfig.isConfigured) {
             try {
                 const evoRes = await evolutionService.createOrConnectInstance(workshopId, cleanPhone);
@@ -933,20 +988,21 @@ class BaileysWorkshopService {
     // ──────────────────────────────────────────────────────────────────────────
     // 6. FILA DE ENVIO E DESPACHO DE MENSAGENS
     // ──────────────────────────────────────────────────────────────────────────
-    async enqueueMessage({ workshopId, recipientPhone, recipientName, message, vehicleId, clientId, serviceType, licensePlate }) {
-        if (!recipientPhone || !message) {
-            throw new Error('Telefone do destinatário e mensagem são obrigatórios.');
+    async enqueueMessage({ workshopId, recipientPhone, recipientName, message, vehicleId, clientId, serviceType, licensePlate, mediaType = 'TEXT', mediaUrl = null, mediaCaption = null }) {
+        if (!recipientPhone || (!message && !mediaUrl)) {
+            throw new Error('Telefone do destinatário e mensagem ou arquivo de mídia são obrigatórios.');
         }
 
         const cleanRecipient = this.normalizePhoneNumber(recipientPhone);
         const messageId = `wmsg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+        const finalMessage = message || (mediaType === 'IMAGE' ? '📷 Foto' : mediaType === 'AUDIO' ? '🎙️ Áudio' : mediaType === 'VIDEO' ? '🎥 Vídeo' : '');
 
         // Registra mensagem no banco como PENDING
         db.prepare(`
             INSERT INTO whatsapp_messages (
                 id, workshop_id, client_id, vehicle_id, phone_number, message, status, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING', CURRENT_TIMESTAMP)
-        `).run(messageId, workshopId, clientId || null, vehicleId || null, cleanRecipient, message);
+        `).run(messageId, workshopId, clientId || null, vehicleId || null, cleanRecipient, finalMessage);
 
         // Registra imediatamente na Central de Atendimento (chat bidirecional)
         const chatMsg = this.saveChatMessage({
@@ -955,7 +1011,10 @@ class BaileysWorkshopService {
             clientName: recipientName || 'Cliente',
             vehiclePlate: licensePlate || null,
             direction: 'OUTGOING',
-            message,
+            message: finalMessage,
+            mediaType: mediaType || 'TEXT',
+            mediaUrl: mediaUrl || null,
+            mediaCaption: mediaCaption || message || null,
             status: 'DELIVERED',
             isRead: 1
         });
@@ -967,7 +1026,10 @@ class BaileysWorkshopService {
             workshopId,
             recipientPhone: cleanRecipient,
             recipientName: recipientName || 'Cliente',
-            message,
+            message: finalMessage,
+            mediaType: mediaType || 'TEXT',
+            mediaUrl: mediaUrl || null,
+            mediaCaption: mediaCaption || message || null,
             vehicleId,
             clientId,
             serviceType,
@@ -1027,7 +1089,40 @@ class BaileysWorkshopService {
                         } catch (_) {}
                     }
                     try {
-                        await session.sock.sendMessage(jid, { text: item.message });
+                        const cleanRelPath = (item.mediaUrl || '').replace(/^\/+/, '');
+                        const filePath = path.resolve(__dirname, '../../..', cleanRelPath);
+
+                        if (item.mediaType === 'IMAGE' && item.mediaUrl) {
+                            if (fs.existsSync(filePath)) {
+                                await session.sock.sendMessage(jid, {
+                                    image: fs.readFileSync(filePath),
+                                    caption: item.message || ''
+                                });
+                            } else {
+                                await session.sock.sendMessage(jid, { text: item.message });
+                            }
+                        } else if (item.mediaType === 'VIDEO' && item.mediaUrl) {
+                            if (fs.existsSync(filePath)) {
+                                await session.sock.sendMessage(jid, {
+                                    video: fs.readFileSync(filePath),
+                                    caption: item.message || ''
+                                });
+                            } else {
+                                await session.sock.sendMessage(jid, { text: item.message });
+                            }
+                        } else if (item.mediaType === 'AUDIO' && item.mediaUrl) {
+                            if (fs.existsSync(filePath)) {
+                                await session.sock.sendMessage(jid, {
+                                    audio: fs.readFileSync(filePath),
+                                    mimetype: 'audio/mp4',
+                                    ptt: true
+                                });
+                            } else {
+                                await session.sock.sendMessage(jid, { text: item.message });
+                            }
+                        } else {
+                            await session.sock.sendMessage(jid, { text: item.message });
+                        }
                         sentSuccessfully = true;
                     } catch (sockErr) {
                         console.warn('⚠️ Envio via socket Baileys falhou:', sockErr.message);
@@ -1037,13 +1132,21 @@ class BaileysWorkshopService {
                 // Pausa curta para cadência e segurança anti-spam
                 await new Promise(r => setTimeout(r, 600));
 
-                // Marca como SENT no banco
-                db.prepare(`
-                    UPDATE whatsapp_messages
-                    SET status = 'SENT',
-                        sent_at = CURRENT_TIMESTAMP
-                    WHERE id = ?
-                `).run(item.id);
+                if (sentSuccessfully) {
+                    db.prepare(`
+                        UPDATE whatsapp_messages
+                        SET status = 'SENT',
+                            sent_at = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                    `).run(item.id);
+                } else {
+                    db.prepare(`
+                        UPDATE whatsapp_messages
+                        SET status = 'FAILED',
+                            error = 'WhatsApp desconectado ou socket indisponível'
+                        WHERE id = ?
+                    `).run(item.id);
+                }
             } catch (err) {
                 console.error(`Erro ao enviar mensagem ${item.id}:`, err.message);
                 db.prepare(`
