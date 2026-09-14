@@ -287,6 +287,27 @@
     font-weight: 600;
 }
 
+/* Tabela Encurtada Ajustada para Tablets (Zero Scroll Lateral) */
+.table-responsive-tablet-fit {
+    width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box;
+}
+
+.erp-table-tablet-fit {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+    border-collapse: collapse;
+}
+
+.erp-table-tablet-fit th,
+.erp-table-tablet-fit td {
+    white-space: normal !important;
+    word-break: break-word;
+    box-sizing: border-box;
+}
+
 /* Formulários */
 .form-group {
     margin-bottom: 16px;
@@ -3122,5 +3143,40 @@ body.is-owner-app #app-container > .main-layout > #view-content {
         max-width: 580px !important;
     }
 }
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* TABELA COMPACTA SEM ROLAGEM HORIZONTAL (OTIMIZADA PARA TABLET E DESKTOP)   */
+/* ────────────────────────────────────────────────────────────────────────── */
+.table-responsive-tablet-fit {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box;
+}
+
+.erp-table-tablet-fit {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: fixed !important;
+    border-collapse: collapse;
+}
+
+.erp-table-tablet-fit th,
+.erp-table-tablet-fit td {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    padding: 10px 8px !important;
+    vertical-align: middle !important;
+}
+
+@media screen and (max-width: 900px) {
+    .erp-table-tablet-fit th,
+    .erp-table-tablet-fit td {
+        padding: 8px 5px !important;
+        font-size: 11px !important;
+    }
+}
+
 
 

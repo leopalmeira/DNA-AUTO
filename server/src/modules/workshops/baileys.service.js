@@ -9,13 +9,14 @@ try {
     pino = () => ({ level: 'silent', info: () => {}, error: () => {}, warn: () => {}, debug: () => {} });
 }
 
-let makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers;
+let makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, fetchLatestBaileysVersion;
 try {
     const baileys = require('@whiskeysockets/baileys');
     makeWASocket = baileys.makeWASocket || baileys.default;
     useMultiFileAuthState = baileys.useMultiFileAuthState;
     DisconnectReason = baileys.DisconnectReason;
     Browsers = baileys.Browsers;
+    fetchLatestBaileysVersion = baileys.fetchLatestBaileysVersion;
 } catch (err) {
     console.warn('⚠️ @whiskeysockets/baileys não carregou nativamente:', err.message);
 }
@@ -311,15 +312,26 @@ class BaileysWorkshopService {
 
         try {
             const { state, saveCreds } = await useMultiFileAuthState(sessionFolder);
-            const browserConfig = Browsers ? Browsers.ubuntu('Chrome') : ['Ubuntu', 'Chrome', '22.04.4'];
+
+            let waVersion = [2, 3000, 1043857760];
+            try {
+                if (typeof fetchLatestBaileysVersion === 'function') {
+                    const latest = await fetchLatestBaileysVersion();
+                    if (latest && latest.version) waVersion = latest.version;
+                }
+            } catch (_) {}
+
+            const browserConfig = Browsers ? Browsers.windows('Desktop') : ['Windows', 'Desktop', '10.0.22631'];
 
             const sock = makeWASocket({
+                version: waVersion,
                 auth: state,
                 printQRInTerminal: false,
                 logger: pino({ level: 'silent' }),
                 browser: browserConfig,
-                connectTimeoutMs: 30000,
-                defaultQueryTimeoutMs: 30000,
+                connectTimeoutMs: 60000,
+                defaultQueryTimeoutMs: 60000,
+                keepAliveIntervalMs: 25000,
                 syncFullHistory: false
             });
 
@@ -488,11 +500,11 @@ class BaileysWorkshopService {
         // Inicializa o socket Baileys com o modo selecionado
         await this.initBaileysSocket(workshopId, cleanPhone, sessionFolder, mode);
 
-        // Se estiver no modo QR, aguarda até 3 segundos para receber o primeiro evento de QR
+        // Se estiver no modo QR, aguarda até 8 segundos para receber o evento nativo de QR oficial do WhatsApp
         if (mode === 'qr' && !sessionState.qrCodeDataUrl && sessionState.status === 'PAIRING') {
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 20; i++) {
                 if (sessionState.qrCodeDataUrl || sessionState.status === 'CONNECTED') break;
-                await new Promise(r => setTimeout(r, 350));
+                await new Promise(r => setTimeout(r, 400));
             }
         }
 
@@ -505,10 +517,11 @@ class BaileysWorkshopService {
             sessionState.pairingCode = `${p1}${p2}`;
         }
 
-        if (!sessionState.qrCodeDataUrl) {
+        // APENAS em modo de teste automatizado (NODE_ENV === 'test') geramos mock para assertions locais
+        // Em produção / ambiente real, NUNCA enviamos mock para não causar "Não é permitido" no WhatsApp do celular
+        if (process.env.NODE_ENV === 'test' && !sessionState.qrCodeDataUrl) {
             try {
-                // QR Code simulado para ambiente local sem internet (usado em testes automatizados)
-                sessionState.qrCodeDataUrl = await QRCode.toDataURL(`DNA-AUTO-BAILEYS-SESSION:${workshopId}:${cleanPhone}:${Date.now()}`, {
+                sessionState.qrCodeDataUrl = await QRCode.toDataURL(`DNA-AUTO-TEST-SESSION:${workshopId}:${cleanPhone}`, {
                     width: 320,
                     margin: 2,
                     color: { dark: '#000000', light: '#ffffff' }

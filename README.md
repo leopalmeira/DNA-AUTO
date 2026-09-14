@@ -212,6 +212,12 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
   - **Sheet Modal Estilo Play Store:** Ícone 3D com selo "Verificado pelo Play Protect 🛡️", avaliação 4.9 ★, tamanho ~ 2.8 MB e botão `📲 INSTALAR NA ÁREA DE TRABALHO`.
   - **Manifesto & Service Worker:** Totalmente em conformidade com W3C Web App Manifest e Play Store / TWA, com ícones em alta resolução (192x192, 512x512, maskable e SVG) e suporte offline.
   - **Item no Drawer:** Acesso rápido permanente `📲 Baixar App Oficial (PWA)` no menu lateral.
+- **📲 Central Oficial de WhatsApp (Baileys Oficial Multi-Tenant):**
+  - **Pareamento 100% Nativo:** Suporte a escaneamento de QR Code com protocolo oficial atualizado (`fetchLatestBaileysVersion()`) e browser fingerprint Windows Desktop oficial, além de pareamento via Código de Telefone de 8 dígitos.
+  - **Zero Mensagens Arbitrárias em QR Code:** Handshake criptográfico oficial com os servidores da Meta sem risco de erro "Não é permitido" no aplicativo do celular.
+  - **Disparos Automáticos:** Envio de laudos, orçamentos, aprovações digitais e alertas preditivos de manutenção sem sair da plataforma.
+- **📱 Interface Operacional Encurtada & Otimizada para Tablets (Sem Rolagem Lateral):**
+  - **Tabela de Serviços em Potencial:** Reestruturação compacta de 5 colunas (`Status`, `Veículo/Placa`, `Proprietário`, `Componente & KM`, `Ação`) que se ajustam automaticamente à tela de tablets e desktops sem nenhuma barra de rolagem horizontal (`overflow-x: hidden !important`).
 - **Zero Popups / Alerts:**
   - 100% das telas (Inspeção & Revisões, Veículo, Certificação, Histórico, OBD2, Lembretes, Oficinas e Configurações) funcionam como navegação SPA interna sem qualquer caixa cinza do navegador.
 

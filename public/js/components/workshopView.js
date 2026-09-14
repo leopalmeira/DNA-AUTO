@@ -1359,65 +1359,73 @@ const WorkshopView = {
         ];
 
         return `
-            <div class="panel-box" style="border-color:rgba(245,158,11,0.35);">
-                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div class="panel-box" style="border-color:rgba(245,158,11,0.35); padding:16px 14px;">
+                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                     <span style="display:flex; align-items:center; gap:8px;">
-                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                         Serviços em Potencial (Semáforo de Manutenção Preventiva)
                     </span>
-                    <span class="badge-proof" style="background:rgba(239,68,68,0.15); color:#ef4444; font-weight:800; font-size:11px;">
+                    <span class="badge-proof" style="background:rgba(239,68,68,0.15); color:#ef4444; font-weight:800; font-size:10.5px; padding:3px 8px;">
                         4 Oportunidades Identificadas
                     </span>
                 </div>
 
-                <p style="font-size:12.5px; color:#94a3b8; margin-bottom:16px;">
+                <p style="font-size:12px; color:#94a3b8; margin-bottom:12px;">
                     O sistema cruza odômetro e histórico de manutenções para avisar quando componentes críticos estão próximos da troca.
                 </p>
 
-                <!-- TABELA SEMÁFORO EXATA DO BLUEPRINT -->
-                <div class="table-responsive">
-                    <table class="erp-table">
+                <!-- TABELA ENCURTADA SEM ROLAGEM HORIZONTAL (100% AJUSTADA AO TABLET E COMPUTADOR) -->
+                <div class="table-responsive-tablet-fit" style="overflow-x:hidden !important; width:100% !important; max-width:100% !important;">
+                    <table class="erp-table erp-table-tablet-fit" style="table-layout:fixed !important; width:100% !important; min-width:0 !important;">
+                        <colgroup>
+                            <col style="width:17%;">
+                            <col style="width:23%;">
+                            <col style="width:20%;">
+                            <col style="width:26%;">
+                            <col style="width:14%;">
+                        </colgroup>
                         <thead>
                             <tr>
-                                <th>Status Semáforo</th>
-                                <th>Veículo / Placa</th>
-                                <th>Proprietário / Telefone</th>
-                                <th>Componente Monitorado</th>
-                                <th>KM Atual</th>
-                                <th>Previsão / Margem</th>
-                                <th>Ação Direta</th>
+                                <th style="font-size:11px; padding:8px 6px;">Status</th>
+                                <th style="font-size:11px; padding:8px 6px;">Veículo / Placa</th>
+                                <th style="font-size:11px; padding:8px 6px;">Proprietário</th>
+                                <th style="font-size:11px; padding:8px 6px;">Componente & KM</th>
+                                <th style="font-size:11px; padding:8px 6px; text-align:center;">Ação</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${radarVehicles.map(r => `
                                 <tr>
-                                    <td>
-                                        <span class="mono" style="background:${r.status === 'CRITICAL' ? 'rgba(239,68,68,0.2)' : r.status === 'WARNING' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)'}; color:${r.statusColor}; padding:3px 8px; border-radius:4px; font-weight:800; font-size:11px;">
-                                            ${r.statusLabel}
+                                    <td style="padding:8px 6px;">
+                                        <span class="mono" style="background:${r.status === 'CRITICAL' ? 'rgba(239,68,68,0.2)' : r.status === 'WARNING' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)'}; color:${r.statusColor}; padding:2px 6px; border-radius:4px; font-weight:800; font-size:10.5px; display:inline-block; line-height:1.2;">
+                                            ${r.status === 'CRITICAL' ? '🔴 CRÍTICO' : r.status === 'WARNING' ? '🟡 ATENÇÃO' : '🟢 EM DIA'}
                                         </span>
+                                        <div style="font-size:9.5px; color:#94a3b8; margin-top:3px; line-height:1.2;">
+                                            ${r.status === 'CRITICAL' ? (r.dueKm === 'Imediato' ? 'Falha ativa' : `Troca ${r.dueKm}`) : r.status === 'WARNING' ? `Troca ${r.dueKm}` : 'Saúde 100%'}
+                                        </div>
                                     </td>
-                                    <td>
-                                        <strong style="color:#ffffff;">${r.model}</strong>
-                                        <div class="mono" style="color:var(--brand-cyan); font-size:11px;">${r.plate}</div>
+                                    <td style="padding:8px 6px;">
+                                        <strong style="color:#ffffff; font-size:11.5px; display:block; line-height:1.2; word-break:break-word;">${r.model}</strong>
+                                        <span class="mono" style="color:var(--brand-cyan); font-size:10.5px; font-weight:700;">${r.plate}</span>
                                     </td>
-                                    <td>
-                                        <strong style="color:#ffffff;">${r.owner}</strong>
-                                        <div style="font-size:11px; color:#25D366;">${r.phone}</div>
+                                    <td style="padding:8px 6px;">
+                                        <strong style="color:#ffffff; font-size:11.5px; display:block; line-height:1.2; word-break:break-word;">${r.owner}</strong>
+                                        <span style="font-size:10.5px; color:#25D366; font-family:var(--font-mono);">${r.phone}</span>
                                     </td>
-                                    <td>
-                                        <strong style="color:${r.statusColor}; font-size:12px;">${r.component}</strong>
-                                        <div style="font-size:10.5px; color:#64748b;">${r.diff}</div>
+                                    <td style="padding:8px 6px;">
+                                        <strong style="color:${r.statusColor}; font-size:11.5px; display:block; line-height:1.2; word-break:break-word;">${r.component}</strong>
+                                        <div style="font-size:9.5px; color:#94a3b8; margin-top:2px; line-height:1.2;">
+                                            Atual: <strong style="color:#ffffff;">${r.currentKm}</strong> • <span style="color:${r.statusColor}; font-weight:700;">${r.diff}</span>
+                                        </div>
                                     </td>
-                                    <td class="mono" style="color:#ffffff; font-weight:700;">${r.currentKm}</td>
-                                    <td class="mono" style="color:#FFD21C; font-weight:700;">${r.dueKm}</td>
-                                    <td>
+                                    <td style="padding:8px 4px; text-align:center;">
                                         ${r.status !== 'OK' ? `
-                                            <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('${r.owner}', '${r.phone}', '${r.model}', '${r.plate}', '${r.component}')" style="background:#25D366; color:#000; font-weight:800; font-size:11px; padding:5px 12px; border:none; display:inline-flex; align-items:center; gap:4px;">
-                                                <span>💬</span> <span>WhatsApp Avisar</span>
+                                            <button class="btn btn-sm" onclick="WorkshopView.openWhatsAppModal('${r.owner}', '${r.phone}', '${r.model}', '${r.plate}', '${r.component}')" style="background:#25D366; color:#000; font-weight:800; font-size:10.5px; padding:6px 2px; width:100%; border:none; text-align:center; border-radius:4px; cursor:pointer;" title="Avisar cliente no WhatsApp">
+                                                💬 Avisar
                                             </button>
                                         ` : `
-                                            <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal()" style="font-size:11px; padding:5px 10px; background:#0284c7; border:none; font-weight:700;">
-                                                <span>🔧</span> <span>Agendar OS</span>
+                                            <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal()" style="font-size:10.5px; padding:6px 2px; width:100%; background:#0284c7; border:none; font-weight:700; text-align:center; border-radius:4px; cursor:pointer;" title="Agendar Ordem de Serviço">
+                                                🔧 Agendar
                                             </button>
                                         `}
                                     </td>
@@ -1768,10 +1776,6 @@ const WorkshopView = {
                                 ${currentMode === 'qr' ? 'GERAR QR CODE OFICIAL →' : 'GERAR CÓDIGO DE PAREAMENTO →'}
                             </button>
                         </form>
-
-                        <div style="margin-top:24px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06); font-size:11.5px; color:#64748b; line-height:1.5;">
-                            "Conexão multi-tenant segura e direta via socket oficial Baileys."
-                        </div>
                     </div>
                 </div>
             `;
@@ -1787,7 +1791,7 @@ const WorkshopView = {
                 <div style="padding:20px;">
                     <div class="panel-box" style="max-width:620px; margin:20px auto; padding:30px 26px; text-align:center; background:#0a0f1d; border:1px solid rgba(0,212,255,0.45); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.6);">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-                            <span style="font-size:11px; font-weight:800; color:var(--brand-cyan); text-transform:uppercase; letter-spacing:0.5px;">CONEXÃO BAILEYS • OFICINA EXCLUSIVA</span>
+                            <span style="font-size:11px; font-weight:800; color:var(--brand-cyan); text-transform:uppercase; letter-spacing:0.5px;">CONEXÃO WHATSAPP • OFICINA</span>
                             <button class="btn btn-xs btn-secondary" onclick="WorkshopView.disconnectWhatsAppNow()">Cancelar</button>
                         </div>
 
@@ -1814,8 +1818,8 @@ const WorkshopView = {
                                 ` : `
                                     <div style="padding:40px 20px; text-align:center;">
                                         <div class="pulse-dot" style="margin:0 auto 12px;"></div>
-                                        <strong style="color:#38bdf8; font-size:14px; display:block;">Gerando QR Code oficial do Baileys...</strong>
-                                        <span style="font-size:11.5px; color:#94a3b8;">Aguardando conexão com os servidores do WhatsApp</span>
+                                        <strong style="color:#38bdf8; font-size:14px; display:block;">Gerando QR Code oficial do WhatsApp...</strong>
+                                        <span style="font-size:11.5px; color:#94a3b8;">Aguardando conexão direta com os servidores do WhatsApp</span>
                                     </div>
                                 `}
 

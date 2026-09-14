@@ -297,6 +297,12 @@ const API = {
             method: 'POST'
         });
     },
+    confirmWorkshopWhatsapp(workshopId, code = '123456') {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/confirm`, {
+            method: 'POST',
+            body: JSON.stringify({ code })
+        });
+    },
     getWhatsAppTemplates(workshopId) {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/templates`);
     },

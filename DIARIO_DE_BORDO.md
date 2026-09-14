@@ -874,7 +874,40 @@ DNA-AUTO/
 ### 3. Validação de Qualidade
 - Execução de toda a suíte de testes com **39/39 testes automatizados de integração passando com 100% de sucesso**.
 
+## 🚀 Ciclo 23 — Correção Definitiva do Pareamento WhatsApp (Sem Erro "Não é Permitido") e Tabela Encurtada sem Rolagem Lateral no Tablet
+
+### 1. Diagnóstico do Problema & Causa Raiz
+- **WhatsApp Pareamento ("Não é permitido"):**
+  - **Causa Raiz 1 (QR Code de String Arbitrária):** Quando a negociação de websocket com o WhatsApp Web demorava mais de 2,8 segundos no host na nuvem, o backend caía no fallback com uma string de texto arbitrário (`DNA-AUTO-BAILEYS-SESSION:${workshopId}:${cleanPhone}:${Date.now()}`). O aplicativo móvel do WhatsApp no celular, ao ler essa string que não continha o hash criptográfico assinado da Meta (`2@...`), emitia imediatamente o erro *"Não é permitido"* ou *"Código QR inválido"*.
+  - **Causa Raiz 2 (Versão do Protocolo e Fingerprint de Navegador):** A ausência da chamada `fetchLatestBaileysVersion()` forçava versões antigas do Baileys, além do fingerprint de navegador configurado para `Ubuntu Chrome`, frequentemente bloqueado por regras heurísticas anti-bot da Meta em instâncias de nuvem (Render).
+  - **Solicitação do Usuário:** Remover o texto `"Conexão multi-tenant segura e direta via socket oficial Baileys."` e resolver definitivamente a conexão.
+- **Tabela "Serviços em Potencial" com Rolagem Lateral no Tablet:**
+  - **Causa Raiz:** A tabela em `renderMaintenanceCenterView()` continha 7 colunas largas com `white-space: nowrap` e `min-width: 680px`. Em telas de tablets (largura ~600px a 768px), o layout estourava horizontalmente, exigindo rolagem lateral e ocultando dados importantes.
+  - **Solicitação do Usuário:** "nessa tela nao pode rolar para o lado deve mostrar tudo na mesma tela pode ficar mais encurtada porque no tablet fica ruim de ve".
+
+### 2. Soluções Implementadas
+1. **Baileys com Versão Oficial Atualizada e Fingerprint Windows Desktop:**
+   - Inclusão de `fetchLatestBaileysVersion()` para recuperar a versão mais recente do protocolo WhatsApp antes de abrir a conexão.
+   - Configuração de browser fingerprint para Windows Desktop (`Browsers.windows('Desktop')`), compatível com o cliente oficial de desktop.
+   - Aumento do tempo de espera por handshake para até 8s (20 ciclos de 400ms).
+   - Eliminação da geração de QR de fallback em produção real: em modo QR real, o sistema aguarda exclusivamente o hash nativo da Meta (`update.qr`), exibindo feedback de carregamento no modal com polling contínuo até que a imagem seja apresentada.
+2. **Remoção de Texto Técnico do Modal WhatsApp:**
+   - Remoção do texto `"Conexão multi-tenant segura e direta via socket oficial Baileys."`.
+   - Atualização do cabeçalho da conexão para `CONEXÃO WHATSAPP • OFICINA`.
+3. **Tabela Encurtada de 5 Colunas sem Rolagem Lateral no Tablet:**
+   - Redução estratégica de 7 colunas para 5 colunas compactas e integradas:
+     1. **Status (17%)**: Badge semáforo compacto (`🔴 CRÍTICO`, `🟡 ATENÇÃO`, `🟢 EM DIA`) com subtexto conciso.
+     2. **Veículo / Placa (23%)**: Modelo com quebra de linha natural e placa destacada.
+     3. **Proprietário (20%)**: Nome e WhatsApp em verde.
+     4. **Componente & KM (26%)**: Componente na cor do alerta + KM atual e margem de troca no mesmo bloco.
+     5. **Ação (14%)**: Botão de toque rápido (`💬 Avisar` no WhatsApp ou `🔧 Agendar` OS).
+   - Inclusão das classes CSS `.table-responsive-tablet-fit` e `.erp-table-tablet-fit` com `overflow-x: hidden !important`, `table-layout: fixed !important` e largura de 100%.
+
+### 3. Validação de Qualidade
+- Bateria completa de **39/39 testes automatizados de integração passando com 100% de sucesso**.
+
 ---
 
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
+
 

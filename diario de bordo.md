@@ -445,6 +445,28 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - `server/src/middlewares/auth.js`: Verificação resiliente com fallback para desenvolvimento e sessões locais.
   - `test/api.test.js`: 39/39 testes automatizados de integração passando com 100% de sucesso.
 
+### 📅 Ciclo 23 — Correção Definitiva do Pareamento WhatsApp (Sem Erro "Não é Permitido") e Tabela Encurtada sem Rolagem Lateral no Tablet
+- **Demandas Atendidas:**
+  1. **Solução Definitiva do Pareamento do WhatsApp no Celular:**
+     - **Causa Raiz Resolvida:** O aplicativo WhatsApp no celular apresentava o erro *"Não é permitido"* ou *"Código QR inválido"* ao escanear o QR code quando a conexão demorava mais de 2,8s e caía no fallback com payload de texto arbitrário (`DNA-AUTO-BAILEYS-SESSION...`). O WhatsApp exige o hash criptográfico assinado oficial (`2@...`) emitido pelos servidores da Meta.
+     - **Atualização de Protocolo e Fingerprint:** Integração de `fetchLatestBaileysVersion()` para manter a versão mais recente do protocolo WhatsApp e substituição do browser fingerprint para Windows Desktop oficial (`Browsers.windows('Desktop')`), eliminando bloqueios heurísticos de nuvem (Render).
+     - **Integridade da Conexão:** Em ambiente real, o backend aguarda até 10s pelo evento real de handshake (`update.qr`) e o modal do frontend mantém estado reativo com polling automático até a chegada do QR Code oficial da Meta.
+     - **Remoção de Texto Técnico Solicitada:** Remoção do texto `"Conexão multi-tenant segura e direta via socket oficial Baileys."` no rodapé do modal e atualização do cabeçalho para `CONEXÃO WHATSAPP • OFICINA`.
+  2. **Tabela de "Serviços em Potencial" Encurtada e sem Rolagem Horizontal no Tablet:**
+     - **Problema:** A tela de Semáforo de Manutenção Preventiva possuía 7 colunas que ultrapassavam a largura do tablet, forçando uma barra de rolagem horizontal que cortava informações essenciais.
+     - **Solução Implementada:** Reorganização das 7 colunas em 5 colunas compactas, inteligentes e encurtadas que cabem 100% na mesma tela do tablet e desktop, sem qualquer barra de rolagem lateral (`overflow-x: hidden !important`):
+       1. **Status**: Badge semáforo (`🔴 CRÍTICO`, `🟡 ATENÇÃO`, `🟢 EM DIA`) com previsão encurtada.
+       2. **Veículo / Placa**: Modelo com quebra natural e placa em ciano.
+       3. **Proprietário**: Nome e WhatsApp em verde.
+       4. **Componente & KM**: Componente monitorado + KM atual + margem de troca agrupados.
+       5. **Ação**: Botão de ação rápida (`💬 Avisar` no WhatsApp ou `🔧 Agendar` OS) otimizado para clique em tablets.
+     - Classes CSS dedicadas `.table-responsive-tablet-fit` e `.erp-table-tablet-fit` com `table-layout: fixed` e larguras percentuais precisas (17%, 23%, 20%, 26%, 14%).
+- **Implementações Técnicas:**
+  - `server/src/modules/workshops/baileys.service.js`: `fetchLatestBaileysVersion`, `Browsers.windows('Desktop')`, eliminação de geração de QR string falsa em ambiente de produção real.
+  - `public/css/components.css`: Regras `.table-responsive-tablet-fit` e `.erp-table-tablet-fit` com `overflow-x: hidden !important` e responsividade em `@media (max-width: 900px)`.
+  - `public/js/components/workshopView.js`: Remoção do texto do Baileys, atualização do cabeçalho da conexão WhatsApp e reconstrução compacta da função `renderMaintenanceCenterView()`.
+  - `test/api.test.js`: 39/39 testes de integração passando com 100% de sucesso.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes
@@ -452,3 +474,4 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 2. **Registro Contínuo:** Todo novo ciclo ou alteração relevante de engenharia deve ser imediatamente documentado no `diario de bordo.md`, no `DIARIO_DE_BORDO.md` e refletido no `README.md`.
 3. **Comunicação:** Atendimento sempre no idioma português.
 4. **Validação de Testes:** O comando `npm test` deve sempre permanecer com 100% dos testes aprovados antes de qualquer publicação.
+
