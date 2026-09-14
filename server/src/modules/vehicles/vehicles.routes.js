@@ -82,28 +82,95 @@ router.get('/search', async (req, res) => {
             return res.status(400).json({ error: 'Termo de pesquisa obrigatório.' });
         }
 
-        const vehicle = db.prepare(`
+        const cleanPlate = query.replace(/[^A-Z0-9]/g, '');
+
+        let vehicle = db.prepare(`
             SELECT v.*,
                    vd.dna_code, vd.status as dna_status, vd.activated_at as dna_activated_at,
                    vd.activation_modality,
                    w.trade_name as activated_by_workshop_name,
+                   COALESCE(
+                       o.name,
+                       (SELECT client_name FROM client_activations WHERE UPPER(REPLACE(license_plate, '-', '')) = UPPER(REPLACE(v.license_plate, '-', '')) OR vehicle_id = v.id ORDER BY created_at DESC LIMIT 1),
+                       (SELECT owner_name FROM workshop_appointments WHERE UPPER(REPLACE(license_plate, '-', '')) = UPPER(REPLACE(v.license_plate, '-', '')) OR vehicle_id = v.id ORDER BY created_at DESC LIMIT 1),
+                       'Proprietário Particular'
+                   ) as owner_name,
+                   COALESCE(
+                       o.phone,
+                       (SELECT whatsapp FROM client_activations WHERE UPPER(REPLACE(license_plate, '-', '')) = UPPER(REPLACE(v.license_plate, '-', '')) OR vehicle_id = v.id ORDER BY created_at DESC LIMIT 1),
+                       (SELECT owner_phone FROM workshop_appointments WHERE UPPER(REPLACE(license_plate, '-', '')) = UPPER(REPLACE(v.license_plate, '-', '')) OR vehicle_id = v.id ORDER BY created_at DESC LIMIT 1),
+                       '(11) 98888-0000'
+                   ) as owner_phone,
+                   COALESCE(
+                       (SELECT MAX(mileage) FROM mileage_records mr WHERE mr.vehicle_id = v.id),
+                       (SELECT MAX(mileage) FROM service_records sr WHERE sr.vehicle_id = v.id),
+                       0
+                   ) as current_mileage,
                    (SELECT COUNT(*) FROM service_records sr WHERE sr.vehicle_id = v.id) as services_count,
                    (SELECT MAX(mileage) FROM mileage_records mr WHERE mr.vehicle_id = v.id) as latest_mileage
             FROM vehicles v
             LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
             LEFT JOIN workshops w ON vd.activated_by_workshop_id = w.id
+            LEFT JOIN ownership_transfers ot ON ot.vehicle_id = v.id AND ot.status = 'COMPLETED'
+            LEFT JOIN owners o ON o.id = ot.new_owner_id
             WHERE UPPER(v.license_plate) = ?
                OR UPPER(REPLACE(v.license_plate, '-', '')) = ?
                OR UPPER(v.chassis_vin) = ?
                OR UPPER(vd.dna_code) = ?
-        `).get(query, query.replace('-', ''), query, query);
+        `).get(query, cleanPlate, query, query);
 
         if (!vehicle) {
-            // Se for formato de placa (7 caracteres alfanuméricos), consultar API Placas oficial
-            const clean = query.replace(/[^A-Z0-9]/g, '');
-            if (clean.length === 7) {
+            // Verificar se o veículo já consta em cadastros de clientes ou agendamentos
+            if (cleanPlate.length === 7) {
+                const clientAct = db.prepare(`
+                    SELECT ca.*, w.trade_name as workshop_name
+                    FROM client_activations ca
+                    LEFT JOIN workshops w ON ca.workshop_id = w.id
+                    WHERE UPPER(REPLACE(ca.license_plate, '-', '')) = ?
+                    ORDER BY ca.created_at DESC
+                    LIMIT 1
+                `).get(cleanPlate);
+
+                if (clientAct) {
+                    return res.json({
+                        found: true,
+                        hasDna: false,
+                        fromClientActivation: true,
+                        vehicle: {
+                            license_plate: clientAct.license_plate,
+                            owner_name: clientAct.client_name,
+                            owner_phone: clientAct.whatsapp,
+                            model: 'Cliente Cadastrado',
+                            brand: ''
+                        }
+                    });
+                }
+
+                const appRow = db.prepare(`
+                    SELECT * FROM workshop_appointments
+                    WHERE UPPER(REPLACE(license_plate, '-', '')) = ?
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                `).get(cleanPlate);
+
+                if (appRow) {
+                    return res.json({
+                        found: true,
+                        hasDna: false,
+                        fromAppointment: true,
+                        vehicle: {
+                            license_plate: appRow.license_plate,
+                            owner_name: appRow.owner_name,
+                            owner_phone: appRow.owner_phone,
+                            model: appRow.vehicle_model || 'Veículo Agendado',
+                            brand: ''
+                        }
+                    });
+                }
+
+                // Se não encontrado localmente e tem formato de placa, consultar API Placas oficial
                 try {
-                    const extRes = await apiPlacasService.consultarPlaca(clean);
+                    const extRes = await apiPlacasService.consultarPlaca(cleanPlate);
                     if (extRes.found && extRes.vehicle) {
                         return res.json({
                             found: true,
@@ -130,6 +197,7 @@ router.get('/search', async (req, res) => {
             vehicle
         });
     } catch (err) {
+        console.error('Erro ao pesquisar veículo:', err);
         res.status(500).json({ error: 'Erro ao pesquisar veículo.' });
     }
 });

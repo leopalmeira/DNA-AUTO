@@ -530,7 +530,38 @@ async function runTests() {
         console.assert(resInvalidActivate.status === 404, 'Código inválido deve retornar 404');
         console.log(`✅ 38. Cadastro de Cliente pela Oficina & Ativação no App: Código [${generatedCode}] gerado e ativado pelo cliente com sucesso.`);
 
-        console.log('\n🎉 TODOS OS 38 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 39: Agendamento Direto na Grade com Auto-Preenchimento de Cliente (/vehicles/search + /appointments)
+        const resSearchSched = await fetch(`${BASE_URL}/vehicles/search?q=BRA2E19`);
+        const dataSearchSched = await resSearchSched.json();
+        console.assert(dataSearchSched.found === true, 'Veículo BRA2E19 não localizado para agendamento');
+        console.assert(!!dataSearchSched.vehicle.owner_name, 'Proprietário não retornado na busca para ficha');
+        console.assert(!!dataSearchSched.vehicle.owner_phone, 'Telefone do proprietário não retornado na busca');
+
+        const resDirectApp = await fetch(`${BASE_URL}/workshops/ws_veloce/appointments`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+                license_plate: 'BRA2E19',
+                vehicle_model: `${dataSearchSched.vehicle.brand} ${dataSearchSched.vehicle.model}`,
+                owner_name: dataSearchSched.vehicle.owner_name,
+                owner_phone: dataSearchSched.vehicle.owner_phone,
+                service_title: 'Troca de pastilhas de freio e óleo',
+                appointment_date: '2026-04-15',
+                appointment_time: '10:00',
+                notes: 'Agendamento direto via grade semanal com auto-preenchimento DNA AUTO'
+            })
+        });
+        const dataDirectApp = await resDirectApp.json();
+        console.assert(resDirectApp.status === 201 || resDirectApp.status === 200, 'Falha ao salvar agendamento direto');
+        console.assert(dataDirectApp.appointment.license_plate === 'BRA2E19', 'Placa do agendamento divergente');
+        console.assert(dataDirectApp.appointment.service_title === 'Troca de pastilhas de freio e óleo', 'Serviço do agendamento divergente');
+        console.assert(dataDirectApp.appointment.owner_name === dataSearchSched.vehicle.owner_name, 'Nome do proprietário não coincide');
+        console.log(`✅ 39. Agendamento Direto na Grade Operacional: Placa [BRA2E19] localizada no DNA AUTO, cliente [${dataSearchSched.vehicle.owner_name}] auto-preenchido e serviço [${dataDirectApp.appointment.service_title}] confirmado.`);
+
+        console.log('\n🎉 TODOS OS 39 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

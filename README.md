@@ -129,8 +129,8 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
   - Clique direto em horários livres para disponibilização e agendamento instantâneo de veículos.
 
 - **Painel Executivo e KPIs em Tempo Real:**
-  - 6 Cards Corporativos com métricas operacionais atualizadas: *Faturamento do Mês (R$)*, *Ordens de Serviço Ativas*, *Carros no Box*, *Alertas Preditivos OBD2*, *Ativações DNA do Mês* e *Comissões a Receber*.
-  - 6 Atalhos Rápidos de Balcão: *Nova Entrada (Check-in)*, *Lançar Peça / Serviço*, *Nova Ordem de Serviço*, *Alerta Preditivo*, *Agendar Manutenção* e *Cadastrar Carro*.
+  - 6 Cards Corporativos com métricas operacionais atualizadas: *Faturamento do Mês (R$ - Protegido por Senha)*, *Ordens de Serviço Ativas*, *Carros no Box*, *Serviços em Potencial*, *Ativações DNA do Mês (com quantidade de equipamentos ativados e faturamento em vendas)* e *Repasse a DNA AUTO (referente a equipamentos ativados)*.
+  - 6 Atalhos Rápidos de Balcão: *Entrada de Veículos / Cadastro*, *Recepção / Pátio*, *Cadastrar Cliente & Código*, *Lançar Peça / Serviço*, *Nova Ordem de Serviço* e *Agendar Manutenção*.
 
 - **Módulo de Recepção com Duplo Fluxo Operacional:**
   - **Pesquisa Instantânea Multi-Critério:** Localização de veículos cadastrados por placa, chassi, modelo ou nome do cliente.

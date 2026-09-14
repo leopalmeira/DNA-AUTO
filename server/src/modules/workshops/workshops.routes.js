@@ -456,17 +456,21 @@ router.post('/:id/appointments', (req, res) => {
             notes || 'Agendamento confirmado via plataforma DNA AUTO'
         );
 
-        res.json({
+        res.status(201).json({
             success: true,
             message: 'Agendamento confirmado com sucesso!',
             appointment: {
                 id,
                 workshop_id: workshopId,
-                license_plate,
-                vehicle_model,
+                license_plate: license_plate.toUpperCase().trim(),
+                vehicle_model: vehicle_model || 'Veículo Cadastrado',
+                owner_name: owner_name || 'Cliente da Oficina',
+                owner_phone: owner_phone || '',
+                service_title: service_title || 'Manutenção Preventiva',
                 appointment_date,
                 appointment_time,
-                status: 'CONFIRMED'
+                status: 'CONFIRMED',
+                notes: notes || 'Agendamento confirmado via plataforma DNA AUTO'
             }
         });
     } catch (err) {

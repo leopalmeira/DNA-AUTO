@@ -694,26 +694,32 @@ const WorkshopView = {
                     <div class="ws-dash-kpi-subtext text-danger">2 urgentes, 2 preventivos</div>
                 </div>
 
-                <!-- 5. Ativações DNA do Mês -->
-                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('servicos-os')">
+                <!-- 5. Ativações DNA do Mês (Equipamentos Ativados & Faturado em Vendas) -->
+                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('servicos-os')" title="Equipamentos ativados e faturamento obtido pela oficina no mês">
                     <div class="ws-dash-kpi-header">
                         <span class="ws-dash-kpi-label">Ativações DNA do Mês</span>
                     </div>
-                    <div class="ws-dash-kpi-value-row">
+                    <div class="ws-dash-kpi-value-row" style="display:flex; align-items:baseline; gap:6px;">
                         <span class="ws-dash-kpi-value">23</span>
+                        <span style="font-size:11.5px; color:#10b981; font-weight:700;">equipamentos ativados</span>
                     </div>
-                    <div class="ws-dash-kpi-subtext">Meta: 30 (76% atingida)</div>
+                    <div class="ws-dash-kpi-subtext" style="color:#38bdf8; font-size:11.5px; font-weight:600; margin-top:2px;">
+                        Faturado em vendas: <strong style="color:#ffffff; font-family:var(--font-mono); font-size:12px;">R$ 6.670,00</strong>
+                    </div>
                 </div>
 
-                <!-- 6. Comissões a Receber -->
-                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('configuracoes-dados')">
-                    <div class="ws-dash-kpi-header">
-                        <span class="ws-dash-kpi-label">Comissões a Receber</span>
+                <!-- 6. Repasse a DNA AUTO (Referente a Equipamentos Ativados) -->
+                <div class="ws-dash-kpi-card" onclick="WorkshopView.openRepasseDnaModal()" style="cursor:pointer;" title="Clique para ver o demonstrativo de repasse à DNA AUTO">
+                    <div class="ws-dash-kpi-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="ws-dash-kpi-label">Repasse a DNA AUTO</span>
+                        <span style="font-size:10px; color:#FFD21C; background:rgba(255,210,28,0.12); padding:1px 6px; border-radius:4px; font-weight:700;">Extrato</span>
                     </div>
                     <div class="ws-dash-kpi-value-row">
-                        <span class="ws-dash-kpi-value">R$ 3.240,00</span>
+                        <span class="ws-dash-kpi-value" style="color:#FFD21C;">R$ 3.240,00</span>
                     </div>
-                    <div class="ws-dash-kpi-subtext">Previsão pgto: 05/05</div>
+                    <div class="ws-dash-kpi-subtext" style="font-size:11px; color:#94a3b8;">
+                        Referente a equipamentos ativados • Venc: 05/05
+                    </div>
                 </div>
             </div>
 
@@ -2940,9 +2946,26 @@ const WorkshopView = {
         this.openDirectSlotScheduleModal(isoDate, time);
     },
 
+    _plateSearchTimeout: null,
+    _lastDirectPlateSearched: null,
+
+    handleDirectPlateInput(val) {
+        const input = document.getElementById('ws-direct-plate');
+        if (input) input.value = (val || '').toUpperCase();
+        const clean = (val || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        clearTimeout(this._plateSearchTimeout);
+        if (clean.length >= 7 && clean !== this._lastDirectPlateSearched) {
+            this._plateSearchTimeout = setTimeout(() => {
+                this.autoFillDirectScheduleByPlate(clean);
+            }, 250);
+        }
+    },
+
     openDirectSlotScheduleModal(isoDate, time) {
         this.selectedSlotDate = isoDate;
         this.selectedSlotTime = time;
+        this._lastDirectPlateSearched = null;
 
         const modalRoot = document.getElementById('ws-erp-modal-root');
         if (!modalRoot) return;
@@ -2956,15 +2979,15 @@ const WorkshopView = {
 
         modalRoot.innerHTML = `
             <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
-                <div class="ws-erp-modal-window" style="max-width:520px;">
+                <div class="ws-erp-modal-window" style="max-width:540px;">
                     <div class="ws-erp-modal-header" style="background:#0a0f1d; border-bottom:1px solid rgba(255,255,255,0.08); padding:16px 20px;">
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <div style="width:38px; height:38px; border-radius:8px; background:rgba(16,185,129,0.12); display:flex; align-items:center; justify-content:center; border:1px solid rgba(16,185,129,0.3);">
+                            <div style="width:40px; height:40px; border-radius:10px; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; border:1px solid rgba(16,185,129,0.35);">
                                 <span style="font-size:20px;">📅</span>
                             </div>
                             <div>
                                 <strong style="color:#ffffff; font-size:16px; display:block;">Agendar Veículo na Oficina</strong>
-                                <span style="font-size:11.5px; color:#10b981; font-weight:700;">${formattedDate} às ${time}</span>
+                                <span style="font-size:12px; color:#10b981; font-weight:700;">${formattedDate} às ${time}</span>
                             </div>
                         </div>
                         <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
@@ -2972,26 +2995,27 @@ const WorkshopView = {
 
                     <form onsubmit="WorkshopView.submitDirectSlotSchedule(event, '${isoDate}', '${time}')" style="padding:20px;">
                         <!-- CAMPO PLACA DO CARRO COM BUSCA AUTOMÁTICA -->
-                        <div style="background:#060a14; border:1px solid rgba(0,212,255,0.3); border-radius:8px; padding:12px; margin-bottom:14px;">
+                        <div style="background:#060a14; border:1px solid rgba(0,212,255,0.3); border-radius:10px; padding:14px; margin-bottom:14px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
                                 <label class="form-label" style="font-size:11.5px; color:#38bdf8; font-weight:800; text-transform:uppercase;">Placa do Carro *</label>
                                 <span style="font-size:10.5px; color:#64748b;">(Mercosul ou padrão antigo)</span>
                             </div>
                             <div style="display:flex; gap:8px;">
                                 <input type="text" id="ws-direct-plate" class="form-control" placeholder="Ex: BRA2E19" maxlength="8"
-                                       style="text-transform:uppercase; font-size:17px; font-weight:900; letter-spacing:2px; font-family:var(--font-mono); color:#FFD21C; text-align:center; background:#040711;"
+                                       style="text-transform:uppercase; font-size:18px; font-weight:900; letter-spacing:2px; font-family:var(--font-mono); color:#FFD21C; text-align:center; background:#040711;"
+                                       oninput="WorkshopView.handleDirectPlateInput(this.value)"
                                        onblur="WorkshopView.autoFillDirectScheduleByPlate(this.value)"
-                                       oninput="this.value=this.value.toUpperCase()" required />
-                                <button type="button" class="btn btn-sm btn-cyan" onclick="WorkshopView.autoFillDirectScheduleByPlate(document.getElementById('ws-direct-plate').value)" style="white-space:nowrap; font-weight:700;">
+                                       autocomplete="off" required />
+                                <button type="button" class="btn btn-sm btn-cyan" onclick="WorkshopView.autoFillDirectScheduleByPlate(document.getElementById('ws-direct-plate').value)" style="white-space:nowrap; font-weight:700; padding:0 16px;">
                                     🔍 Buscar
                                 </button>
                             </div>
-                            <span id="ws-direct-plate-feedback" style="display:block; font-size:11px; color:#94a3b8; margin-top:5px;">
-                                Digite a placa para buscar e auto-preencher os dados do cliente se já cadastrado.
-                            </span>
+                            <div id="ws-direct-plate-feedback" style="display:block; font-size:11.5px; color:#94a3b8; margin-top:6px; min-height:18px;">
+                                Digite a placa para buscar no banco DNA AUTO e auto-preencher os dados do cliente.
+                            </div>
                         </div>
 
-                        <!-- DADOS DO CLIENTE E VEÍCULO -->
+                        <!-- DADOS DO CLIENTE E VEÍCULO (PREENCHIMENTO AUTOMÁTICO SE EXISTIR) -->
                         <div class="form-group" style="margin-bottom:12px;">
                             <label class="form-label" style="font-size:11.5px;">Nome do Cliente *</label>
                             <input type="text" id="ws-direct-client" class="form-control" placeholder="Ex: João Silva" required />
@@ -3008,10 +3032,13 @@ const WorkshopView = {
                             </div>
                         </div>
 
-                        <!-- SERVIÇO A SER EXECUTADO -->
-                        <div class="form-group" style="margin-bottom:12px;">
-                            <label class="form-label" style="font-size:11.5px; color:#FFD21C; font-weight:800;">Serviço a Ser Executado *</label>
-                            <input type="text" id="ws-direct-service" class="form-control" placeholder="Ex: Revisão periódica, Troca de óleo, Troca de pastilhas" required />
+                        <!-- SERVIÇO A SER FEITO (FOCO DIRETO SE JÁ CADASTRADO) -->
+                        <div class="form-group" style="margin-bottom:14px; background:rgba(255,210,28,0.05); border:1px solid rgba(255,210,28,0.3); border-radius:8px; padding:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                <label class="form-label" style="font-size:12px; color:#FFD21C; font-weight:800; margin:0;">Serviço a Ser Feito *</label>
+                                <span style="font-size:10.5px; color:#94a3b8;">(Basta colocar o serviço e confirmar)</span>
+                            </div>
+                            <input type="text" id="ws-direct-service" class="form-control" placeholder="Ex: Revisão periódica, Troca de óleo, Troca de pastilhas" style="background:#040711; font-weight:600;" required />
                         </div>
 
                         <div class="form-group" style="margin-bottom:16px;">
@@ -3029,6 +3056,12 @@ const WorkshopView = {
                 </div>
             </div>
         `;
+
+        // Foco automático imediato no campo de placa
+        setTimeout(() => {
+            const plateInput = document.getElementById('ws-direct-plate');
+            if (plateInput) plateInput.focus();
+        }, 80);
     },
 
     async autoFillDirectScheduleByPlate(plate) {
@@ -3036,36 +3069,102 @@ const WorkshopView = {
         const clean = plate.toUpperCase().replace(/[^A-Z0-9]/g, '');
         if (clean.length < 3) return;
 
+        this._lastDirectPlateSearched = clean;
+
         const feedback = document.getElementById('ws-direct-plate-feedback');
-        if (feedback) feedback.innerHTML = '<span style="color:#38bdf8;">🔍 Buscando veículo na base...</span>';
+        if (feedback) feedback.innerHTML = '<span style="color:#38bdf8;">⏳ Consultando banco de dados DNA AUTO...</span>';
 
-        let veh = (this.vehiclesList || []).find(v => (v.license_plate || '').replace(/[^A-Z0-9]/g, '') === clean);
+        let veh = null;
 
+        // 1. Tentar encontrar na lista de veículos da oficina
+        veh = (this.vehiclesList || []).find(v => (v.license_plate || '').replace(/[^A-Z0-9]/g, '') === clean);
+
+        // 2. Tentar encontrar em agendamentos anteriores da oficina
         if (!veh) {
-            try {
-                const res = await API.searchVehicle(clean);
-                if (res && res.found && res.vehicle) {
-                    veh = res.vehicle;
-                }
-            } catch (_) {}
+            const prevApp = (this.appointmentsData || []).find(a => (a.license_plate || '').replace(/[^A-Z0-9]/g, '') === clean);
+            if (prevApp) {
+                veh = {
+                    license_plate: prevApp.license_plate,
+                    owner_name: prevApp.owner_name,
+                    owner_phone: prevApp.owner_phone,
+                    model: prevApp.vehicle_model,
+                    brand: ''
+                };
+            }
         }
+
+        // 3. Consultar a API do DNA AUTO (veículos, donos, transferências, ativações de clientes)
+        try {
+            const res = await API.searchVehicle(clean);
+            if (res && res.found && res.vehicle) {
+                veh = {
+                    ...(veh || {}),
+                    ...res.vehicle,
+                    owner_name: res.vehicle.owner_name && res.vehicle.owner_name !== 'Proprietário Particular'
+                        ? res.vehicle.owner_name
+                        : (veh?.owner_name || res.vehicle.owner_name || ''),
+                    owner_phone: res.vehicle.owner_phone && res.vehicle.owner_phone !== '(11) 98888-0000'
+                        ? res.vehicle.owner_phone
+                        : (veh?.owner_phone || res.vehicle.owner_phone || '')
+                };
+            }
+        } catch (_) {}
 
         const clientInput = document.getElementById('ws-direct-client');
         const phoneInput = document.getElementById('ws-direct-phone');
         const modelInput = document.getElementById('ws-direct-model');
+        const serviceInput = document.getElementById('ws-direct-service');
 
         if (veh) {
-            if (clientInput && !clientInput.value) clientInput.value = veh.owner_name || veh.client_name || '';
-            if (phoneInput && !phoneInput.value) phoneInput.value = veh.owner_phone || veh.client_phone || '';
-            if (modelInput && !modelInput.value) modelInput.value = `${veh.brand || ''} ${veh.model || ''}`.trim();
+            const ownerName = (veh.owner_name && veh.owner_name !== 'Proprietário Particular') ? veh.owner_name : (veh.client_name || '');
+            const ownerPhone = (veh.owner_phone && veh.owner_phone !== '(11) 98888-0000') ? veh.owner_phone : (veh.client_phone || veh.whatsapp || '');
+            const carModel = `${veh.brand || ''} ${veh.model || veh.vehicle_model || ''}`.trim();
+
+            if (clientInput && ownerName) clientInput.value = ownerName;
+            if (phoneInput && ownerPhone) phoneInput.value = ownerPhone;
+            if (modelInput && carModel) modelInput.value = carModel;
+
+            const isExistingCustomer = !!ownerName;
 
             if (feedback) {
-                feedback.innerHTML = `<span style="color:#10b981; font-weight:700;">✓ Veículo ${veh.brand || ''} ${veh.model || ''} (${veh.owner_name || 'Cliente'}) localizado!</span>`;
+                if (isExistingCustomer) {
+                    feedback.innerHTML = `
+                        <div style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); border-radius:6px; padding:6px 10px; margin-top:4px;">
+                            <span style="color:#10b981; font-weight:800; font-size:12px;">✅ Cliente cadastrado no DNA AUTO localizado!</span>
+                            <div style="color:#e2e8f0; font-size:11px; margin-top:2px;">
+                                🚗 <strong>${carModel || 'Veículo Cadastrado'}</strong> • 👤 <strong>${ownerName}</strong> ${ownerPhone ? `• 📞 ${ownerPhone}` : ''}
+                            </div>
+                            <div style="color:#38bdf8; font-size:10.5px; margin-top:2px;">
+                                👉 Ficha auto-preenchida. <strong>Agora basta digitar o serviço a ser feito abaixo.</strong>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    feedback.innerHTML = `
+                        <div style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); border-radius:6px; padding:6px 10px; margin-top:4px;">
+                            <span style="color:#38bdf8; font-weight:800; font-size:12px;">ℹ️ Veículo ${carModel || clean} identificado.</span>
+                            <div style="color:#94a3b8; font-size:11px; margin-top:2px;">Preencha o nome do cliente e o serviço a ser executado.</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Se o cliente já está cadastrado, direciona o foco imediatamente para o campo de serviço
+            if (isExistingCustomer && serviceInput) {
+                serviceInput.focus();
+                serviceInput.select();
+            } else if (!isExistingCustomer && clientInput) {
+                clientInput.focus();
             }
         } else {
             if (feedback) {
-                feedback.innerHTML = `<span style="color:#fbbf24;">Placa nova ou não cadastrada. Preencha os dados do cliente e serviço.</span>`;
+                feedback.innerHTML = `
+                    <div style="background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.25); border-radius:6px; padding:6px 10px; margin-top:4px;">
+                        <span style="color:#fbbf24; font-weight:700;">ℹ️ Placa nova / não cadastrada. Preencha os dados do cliente e o serviço.</span>
+                    </div>
+                `;
             }
+            if (clientInput) clientInput.focus();
         }
     },
 
@@ -5161,5 +5260,63 @@ const WorkshopView = {
             input.type = 'password';
             if (btnEl) btnEl.textContent = '👁️';
         }
+    },
+
+    // Demonstrativo de Repasse a DNA AUTO (Referente a Equipamentos Ativados)
+    openRepasseDnaModal() {
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (!modalRoot) return;
+
+        modalRoot.innerHTML = `
+            <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
+                <div class="ws-erp-modal-window" style="max-width:520px; padding:0; overflow:hidden; border:1px solid rgba(255,210,28,0.3); box-shadow:0 10px 40px rgba(0,0,0,0.85);">
+                    <div class="ws-erp-modal-header" style="background:#0a0f1d; border-bottom:1px solid rgba(255,255,255,0.08); padding:16px 20px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:38px; height:38px; border-radius:8px; background:rgba(255,210,28,0.15); display:flex; align-items:center; justify-content:center; font-size:18px;">
+                                💼
+                            </div>
+                            <div>
+                                <strong style="color:#ffffff; font-size:16px; display:block;">Demonstrativo de Repasse • DNA AUTO</strong>
+                                <span style="font-size:11.5px; color:#FFD21C; font-weight:700;">Referente a Equipamentos Ativados</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
+                    </div>
+                    <div class="ws-erp-modal-body" style="padding:20px;">
+                        <p style="font-size:13px; color:#cbd5e1; margin-bottom:14px; line-height:1.5;">
+                            Acompanhamento mensal da venda de equipamentos e valor devido de repasse à DNA AUTO:
+                        </p>
+                        <div style="background:#060a14; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:16px; margin-bottom:16px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:8px;">
+                                <span style="color:#94a3b8; font-size:13px;">Equipamentos Ativados no Mês</span>
+                                <strong style="color:#ffffff; font-size:14px; font-family:var(--font-mono);">23 unidades</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:8px;">
+                                <span style="color:#94a3b8; font-size:13px;">Faturamento Bruto da Oficina (Venda de Equipamentos)</span>
+                                <strong style="color:#10b981; font-size:14px; font-family:var(--font-mono);">R$ 6.670,00</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:8px;">
+                                <span style="color:#e2e8f0; font-size:13px; font-weight:700;">Repasse Devido à DNA AUTO</span>
+                                <strong style="color:#FFD21C; font-size:16px; font-weight:900; font-family:var(--font-mono);">R$ 3.240,00</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; padding-top:4px;">
+                                <span style="color:#38bdf8; font-size:13px; font-weight:700;">Lucro Retido na Oficina (Margem das Vendas)</span>
+                                <strong style="color:#38bdf8; font-size:14px; font-family:var(--font-mono);">R$ 3.430,00</strong>
+                            </div>
+                        </div>
+                        <div style="background:rgba(255,210,28,0.06); border:1px solid rgba(255,210,28,0.2); border-radius:8px; padding:12px; margin-bottom:16px; font-size:12px; color:#e2e8f0; line-height:1.5;">
+                            📅 <strong>Previsão de Fechamento / Vencimento:</strong> 05/05/2026.<br/>
+                            O repasse refere-se unicamente aos equipamentos ativados pela oficina no ciclo operacional.
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; gap:10px;">
+                            <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()">Fechar</button>
+                            <button type="button" class="btn btn-primary" onclick="alert('Demonstrativo de repasse gerado com sucesso!'); WorkshopView.closeModal();" style="font-weight:700; background:#FFD21C; color:#040711; border:none; padding:8px 16px;">
+                                📄 Baixar Demonstrativo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 };

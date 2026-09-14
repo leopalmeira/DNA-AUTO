@@ -407,6 +407,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - `public/js/components/workshopView.js`: Implementação de `isRevenueUnlocked`, `renderRevenueKpiCard()`, `openPasswordModalForRevenue()`, `submitRevenuePassword()`, `lockRevenueCard()`, atualização de cabeçalhos e menu lateral.
   - `test/api.test.js`: Validação com 38/38 testes de integração com 100% de sucesso.
 
+### 📅 Ciclo 21 — Auto-Preenchimento na Grade da Agenda, Repasse a DNA AUTO e Faturamento de Equipamentos Ativados
+- **Demandas Atendidas:**
+  1. **Agendamento com Auto-Preenchimento via Placa no `+ Disponível`:**
+     - Ao clicar em qualquer horário vago `+ Disponível` na grade interativa semanal, o modal de agendamento é aberto com foco automático imediato no campo de placa (`#ws-direct-plate`).
+     - Ao digitar a placa (busca reativa automática com 7 caracteres alfanuméricos ou ao sair do campo), o sistema pesquisa automaticamente no banco de dados do DNA AUTO (`/vehicles/search`).
+     - Se o carro já for cadastrado de algum cliente, preenche automaticamente o **Nome do Cliente**, **Telefone/WhatsApp** e **Modelo do Veículo**.
+     - Exibe card visual em verde confirmando a identificação do cliente e veículo na base DNA AUTO.
+     - Posiciona o cursor e foco automaticamente no campo **Serviço a Ser Feito**, restando ao mecânico apenas digitar o serviço desejado e confirmar o agendamento em 1 clique.
+  2. **Repasse à DNA AUTO (Substituição de "Comissões a Receber"):**
+     - O sexto card de KPI da Dashboard da oficina foi atualizado de "Comissões a Receber" para **"Repasse a DNA AUTO"** (`R$ 3.240,00`), com o subtexto explicativo: `Referente a equipamentos ativados • Venc: 05/05`.
+     - Ao clicar no card, abre o modal de demonstrativo interativo (`openRepasseDnaModal`) detalhando a quantidade de unidades, o faturamento bruto das vendas pela oficina (`R$ 6.670,00`), o valor de repasse devido à DNA AUTO (`R$ 3.240,00`) e a margem de lucro retido da oficina (`R$ 3.430,00`).
+  3. **Ativações DNA do Mês com Quantidade de Equipamentos e Faturamento de Vendas:**
+     - O quinto card de KPI da Dashboard foi aprimorado para apresentar com total clareza a quantidade de equipamentos ativados (`23 equipamentos ativados`) e quanto a oficina faturou com a venda desses equipamentos no mês (`Faturado em vendas: R$ 6.670,00`).
+- **Implementações Técnicas:**
+  - `server/src/modules/vehicles/vehicles.routes.js`: Enriquecimento do endpoint `GET /vehicles/search` para realizar lookup relacional em `owners`, `ownership_transfers`, `client_activations` e `workshop_appointments`, retornando sempre o proprietário, telefone e quilometragem mais recentes.
+  - `server/src/modules/workshops/workshops.routes.js`: Retorno completo dos dados no agendamento (`POST /:id/appointments`) com status HTTP 201.
+  - `public/js/components/workshopView.js`: Implementação de `handleDirectPlateInput`, `autoFillDirectScheduleByPlate` com foco automático em `#ws-direct-service`, cards de KPI atualizados para Repasse e Venda de Equipamentos, e novo modal `openRepasseDnaModal()`.
+  - `test/api.test.js`: Criação do Teste 39 validando o fluxo de consulta para agendamento com auto-preenchimento e criação de agendamento na grade, com 39/39 testes aprovados (100% verde).
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

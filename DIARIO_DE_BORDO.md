@@ -817,5 +817,35 @@ DNA-AUTO/
 - Substituição das chamadas de ficha digital por atalhos diretos `🔧 Novo Serviço` e `Nova OS` nas tabelas operacionais da Dashboard e da Recepção/Pátio.
 
 ---
+
+## 🚀 Ciclo 21 — Auto-Preenchimento na Grade da Agenda, Repasse a DNA AUTO e Faturamento de Equipamentos Ativados
+
+### 1. Auto-Preenchimento Imediato na Grade Operacional (`+ Disponível`)
+- Ao clicar no botão `+ Disponível` de qualquer horário/dia da grade da agenda:
+  - Foco imediato automático colocado no campo da placa (`#ws-direct-plate`).
+  - Ao digitar a placa (busca disparada automaticamente ao atingir 7 caracteres alfanuméricos ou ao sair do campo), o backend executa pesquisa relacional em tempo real (`GET /vehicles/search`).
+  - Se o veículo já estiver cadastrado no DNA AUTO (em `vehicles`, `owners`, `ownership_transfers` ou `client_activations`), os dados do cliente (Nome, Telefone/WhatsApp e Modelo do Veículo) são preenchidos instantaneamente.
+  - Exibição de card visual verde confirmando o cliente e o carro localizado.
+  - **Foco e cursor transferidos automaticamente para o campo "Serviço a Ser Feito"**, de modo que o mecânico só precisa digitar o serviço pretendido e confirmar o agendamento em 1 clique.
+
+### 2. Repasse a DNA AUTO (Substituição de "Comissões a Receber")
+- O sexto card de KPI da Dashboard da oficina foi atualizado de "Comissões a Receber" para **"Repasse a DNA AUTO"** (`R$ 3.240,00`).
+- Subtexto contextualizado: `Referente a equipamentos ativados • Venc: 05/05`.
+- Modal interativo (`openRepasseDnaModal`) com demonstrativo transparente de repasse mensal:
+  - Quantidade de unidades ativadas no ciclo (23 unidades).
+  - Faturamento bruto das vendas pela oficina (`R$ 6.670,00`).
+  - Repasse devido à DNA AUTO (`R$ 3.240,00`).
+  - Margem líquida retida pela oficina (`R$ 3.430,00`).
+
+### 3. Ativações DNA do Mês com Quantidade de Equipamentos e Faturamento de Vendas
+- O quinto card de KPI da Dashboard foi aprimorado para apresentar simultaneamente:
+  - Quantidade de equipamentos ativados: `23 equipamentos ativados`.
+  - Quanto a oficina faturou com a venda desses equipamentos no mês: `Faturado em vendas: R$ 6.670,00`.
+
+### 4. Qualidade e Testes de Integração
+- Criação do **Teste 39** em `test/api.test.js` validando o fluxo de consulta para agendamento com auto-preenchimento relacional e inserção de agendamento na grade com status HTTP 201.
+- Suíte completa de testes aprovada com 39/39 testes verdes (100%).
+
+---
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
 
