@@ -122,16 +122,22 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
   - **9. 🔔 Notificações:** Central de notificações operacionais em feed cronológico com 4 abas (*Todas*, *Urgentes*, *Agenda*, *WhatsApp*).
   - **10. ⚙️ Configurações:** Parâmetros da oficina, expediente, horários de atendimento e dados corporativos.
 
-- **Módulo Oficial Baileys (@whiskeysockets/baileys):**
-  - **Experiência Transparente para o Lojista:** Zero complexidade técnica. Fluxo direto: digitar número -> código de pareamento de 8 dígitos formatado (`ABCD-1234`) ou QR Code -> `🟢 Online`.
-  - **Isolamento por Oficina:** Sessões salvas em pastas independentes (`server/sessions/ws_${workshopId}`) e no SQLite.
-  - **Templates Inteligentes:** 9 modelos automáticos com substituição de variáveis (`{cliente}`, `{veiculo}`, `{placa}`, `{oficina}`, etc.).
-  - **Botão [ 📱 WhatsApp ] no Pátio:** Disparo em 1 clique diretamente das tabelas de veículos sem sair do sistema.
+- **Módulo Oficial WhatsApp (Gateway Evolution API v2 & Baileys Socket):**
+  - **Evolution API v2 (Recomendado para Produção / Nuvem):**
+    - Repositório oficial open-source: `https://github.com/EvolutionAPI/evolution-api` (4.5k+ stars no GitHub, líder no Brasil).
+    - **Solução definitiva anti-bloqueio:** Elimina a mensagem "Não é permitido" da Meta em servidores na nuvem (como Render/AWS), gerenciando o QR Code oficial e reconexão automática contínua.
+    - **Painel de Configuração no ERP:** Botão `⚙️ Conectar Evolution API v2` no topo da Central de WhatsApp da Oficina, com teste de conexão em tempo real e salvamento persistente.
+    - **Deploy Rápido da Evolution API:** Pode ser hospedada gratuitamente no Render (Web Service Docker com imagem `atendai/evolution-api:v2.1.2`), Railway ou VPS.
+  - **Driver Baileys Embutido (@whiskeysockets/baileys):**
+    - Fallback nativo automático: quando nenhuma Evolution API for informada, o sistema utiliza o socket Baileys embutido.
+    - **Isolamento por Oficina:** Sessões salvas em pastas independentes (`server/sessions/ws_${workshopId}`) e no SQLite.
+    - **Templates Inteligentes:** 9 modelos automáticos com substituição de variáveis (`{cliente}`, `{veiculo}`, `{placa}`, `{oficina}`, etc.).
+    - **Botão [ 📱 WhatsApp ] no Pátio:** Disparo em 1 clique diretamente das tabelas de veículos sem sair do sistema.
 
 - **WhatsApp 100% In-Platform (Sem Sair da Tela do Sistema):**
   - O número cadastrado na oficina atua como remetente oficial permanente.
   - Disparos efetuados dentro da plataforma sem abrir abas externas ou links `wa.me`, emitindo protocolo de transmissão auditável (`DNA-WPP-XXXXXX`) e recibo em tempo real.
-  - Compatibilidade com drivers abertos **@whiskeysockets/baileys** e **Evolution API**.
+  - Arquitetura desacoplada com compatibilidade total para **Evolution API v2** e **@whiskeysockets/baileys**.
 
 - **Grade Semanal da Agenda & Intervalo de Almoço Bloqueado (12h às 13h):**
   - Configuração de dias de atendimento (Segunda a Sexta padrão, configurável) e faixa de horários de 08:00 às 18:00.

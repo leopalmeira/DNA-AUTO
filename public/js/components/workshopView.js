@@ -1746,12 +1746,35 @@ const WorkshopView = {
         const isPairing = status === 'PAIRING';
         const displayPhone = session.display_phone || session.phone_number || this.officialPhone || '+55 (19) 3245-6789';
 
+        const isEvolution = session.provider === 'EVOLUTION_API_V2' || session.evolution_configured;
+
+        // Banner de Integração Evolution API v2
+        const evolutionHeader = `
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px; background:#070C18; border:1px solid ${isEvolution ? 'rgba(16,185,129,0.35)' : 'rgba(0,212,255,0.25)'}; border-radius:10px; padding:12px 18px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span style="font-size:22px;">${isEvolution ? '🚀' : '⚡'}</span>
+                    <div>
+                        <div style="font-size:12.5px; color:#ffffff; font-weight:800;">
+                            Motor de WhatsApp: <span style="color:${isEvolution ? '#10B981' : '#00D4FF'};">${isEvolution ? 'Evolution API v2 (Habilitada)' : 'Baileys Socket Embutido'}</span>
+                        </div>
+                        <div style="font-size:11px; color:#94a3b8;">
+                            ${isEvolution ? 'Conexão em nuvem ativa com reconexão automática e imunidade ao erro "Não é permitido".' : 'Para parear apenas escaneando sem bloqueio do WhatsApp, conecte sua Evolution API.'}
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-xs ${isEvolution ? 'btn-secondary' : 'btn-cyan'}" onclick="WorkshopView.openEvolutionSettingsModal()" style="font-size:11.5px; font-weight:800; padding:6px 14px; cursor:pointer;">
+                    ⚙️ ${isEvolution ? 'Configurações Evolution API' : 'Conectar Evolution API v2'}
+                </button>
+            </div>
+        `;
+
         // 1. ESTADO: DESCONECTADO
         if (!isConnected && !isPairing) {
             const currentMode = this.whatsAppConnectMode || 'qr';
             return `
                 <div style="padding:20px;">
-                    <div class="panel-box" style="max-width:560px; margin:30px auto; padding:36px 30px; text-align:center; background:#0a0f1d; border:1px solid rgba(37,211,102,0.35); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.6);">
+                    ${evolutionHeader}
+                    <div class="panel-box" style="max-width:560px; margin:20px auto; padding:36px 30px; text-align:center; background:#0a0f1d; border:1px solid rgba(37,211,102,0.35); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.6);">
                         <div style="width:64px; height:64px; margin:0 auto 16px; border-radius:50%; background:rgba(37,211,102,0.12); display:flex; align-items:center; justify-content:center; border:1px solid rgba(37,211,102,0.4);">
                             <span style="font-size:32px;">📱</span>
                         </div>
@@ -1789,7 +1812,8 @@ const WorkshopView = {
 
             return `
                 <div style="padding:20px;">
-                    <div class="panel-box" style="max-width:620px; margin:20px auto; padding:30px 26px; text-align:center; background:#0a0f1d; border:1px solid rgba(0,212,255,0.45); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.6);">
+                    ${evolutionHeader}
+                    <div class="panel-box" style="max-width:620px; margin:10px auto; padding:30px 26px; text-align:center; background:#0a0f1d; border:1px solid rgba(0,212,255,0.45); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,0.6);">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
                             <span style="font-size:11px; font-weight:800; color:var(--brand-cyan); text-transform:uppercase; letter-spacing:0.5px;">CONEXÃO WHATSAPP • OFICINA</span>
                             <button class="btn btn-xs btn-secondary" onclick="WorkshopView.disconnectWhatsAppNow()">Cancelar</button>
@@ -1809,17 +1833,30 @@ const WorkshopView = {
                         </div>
 
                         ${currentMode === 'qr' ? `
-                            <!-- MODO QR CODE OFICIAL BAILEYS -->
+                            <!-- MODO QR CODE OFICIAL -->
                             <div style="background:#060a14; border:1px solid rgba(0,212,255,0.3); border-radius:12px; padding:22px 18px; margin-bottom:18px;">
+                                ${isEvolution ? `
+                                    <div style="margin-bottom:10px;">
+                                        <span style="display:inline-flex; align-items:center; gap:5px; font-size:11px; color:#10B981; font-weight:800; background:rgba(16,185,129,0.12); padding:3px 10px; border-radius:6px; border:1px solid rgba(16,185,129,0.3);">
+                                            <span>✓</span> QR Code gerado pela Evolution API v2 (Anti-Bloqueio)
+                                        </span>
+                                    </div>
+                                ` : ''}
+
                                 ${session.qr_code_url ? `
                                     <div style="background:#ffffff; padding:12px; border-radius:12px; display:inline-block; margin-bottom:14px; box-shadow:0 8px 24px rgba(0,0,0,0.5);">
-                                        <img src="${session.qr_code_url}" alt="QR Code WhatsApp Baileys" style="width:210px; height:210px; display:block;" />
+                                        <img src="${session.qr_code_url}" alt="QR Code WhatsApp" style="width:210px; height:210px; display:block;" />
+                                    </div>
+                                    <div style="margin-bottom:10px;">
+                                        <button type="button" class="btn btn-xs btn-secondary" onclick="WorkshopView.startWhatsAppConnect(null)" style="font-size:11px; padding:4px 10px;">
+                                            🔄 Atualizar QR Code
+                                        </button>
                                     </div>
                                 ` : `
                                     <div style="padding:40px 20px; text-align:center;">
                                         <div class="pulse-dot" style="margin:0 auto 12px;"></div>
                                         <strong style="color:#38bdf8; font-size:14px; display:block;">Gerando QR Code oficial do WhatsApp...</strong>
-                                        <span style="font-size:11.5px; color:#94a3b8;">Aguardando conexão direta com os servidores do WhatsApp</span>
+                                        <span style="font-size:11.5px; color:#94a3b8;">Aguardando conexão com os servidores do WhatsApp</span>
                                     </div>
                                 `}
 
@@ -2451,6 +2488,160 @@ const WorkshopView = {
 
         const txt = document.getElementById('ws-whatsapp-message-text');
         if (txt) txt.value = filled;
+    },
+
+    // Modal de Configuração da Evolution API v2
+    async openEvolutionSettingsModal() {
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (!modalRoot) return;
+
+        let currentConfig = { api_url: '', has_key: false, is_configured: false };
+        try {
+            currentConfig = await API.getEvolutionConfig();
+        } catch (e) {
+            console.warn('Erro ao obter config Evolution:', e);
+        }
+
+        modalRoot.innerHTML = `
+            <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
+                <div class="ws-erp-modal-window" style="max-width:620px; background:#0a0f1d; border:1px solid rgba(0,212,255,0.3); border-radius:14px; box-shadow:0 16px 48px rgba(0,0,0,0.7); overflow:hidden;">
+                    <div class="ws-erp-modal-header" style="background:#070C18; border-bottom:1px solid rgba(255,255,255,0.08); padding:16px 22px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:36px; height:36px; border-radius:8px; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; border:1px solid rgba(16,185,129,0.4);">
+                                <span style="font-size:20px;">🚀</span>
+                            </div>
+                            <div>
+                                <h3 style="color:#ffffff; font-size:16px; font-weight:800; margin:0;">Evolution API v2 • WhatsApp Gateway</h3>
+                                <span style="font-size:11px; color:#10B981; font-weight:700;">Repositório Oficial GitHub (4.5k+ ★) • Anti-Bloqueio</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()" style="border-radius:6px; cursor:pointer;">✕</button>
+                    </div>
+
+                    <div class="ws-erp-modal-body" style="padding:22px;">
+                        <!-- Explicação da Solução -->
+                        <div style="background:#050913; border:1px solid rgba(0,212,255,0.2); border-radius:10px; padding:14px 16px; margin-bottom:18px; font-size:12px; color:#cbd5e1; line-height:1.6;">
+                            <div style="font-weight:800; color:#00D4FF; margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                                <span>🛡️</span> Por que a Evolution API v2 resolve o "Não é permitido"?
+                            </div>
+                            <div>
+                                O WhatsApp bloqueia conexões diretas de IPs compartilhados de datacenters na nuvem (como Render e AWS). A <strong>Evolution API v2</strong> funciona como um gateway dedicado de alta performance — o mesmo padrão utilizado em sistemas como <em>EduFocus</em> — permitindo <strong>escanear o QR Code oficial de primeira e manter o pareamento contínuo</strong>.
+                            </div>
+                        </div>
+
+                        <form onsubmit="WorkshopView.submitEvolutionConfig(event)">
+                            <div class="form-group" style="margin-bottom:14px;">
+                                <label class="form-label" style="font-size:12px; font-weight:700; color:#e2e8f0; margin-bottom:6px; display:block;">
+                                    URL da Evolution API <span style="color:#ef4444;">*</span>
+                                </label>
+                                <input type="url" id="ws-evo-api-url" class="form-control" placeholder="https://sua-evolution-api.onrender.com" value="${currentConfig.api_url || ''}" style="background:#050811; border-color:rgba(255,255,255,0.18); font-size:13px; padding:10px 14px; width:100%; border-radius:8px; color:#ffffff;" required />
+                                <span style="font-size:10.5px; color:#64748b; margin-top:4px; display:block;">
+                                    Exemplo no Render ou VPS: <code style="color:#38bdf8;">https://evolution-sua-oficina.onrender.com</code>
+                                </span>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom:18px;">
+                                <label class="form-label" style="font-size:12px; font-weight:700; color:#e2e8f0; margin-bottom:6px; display:block;">
+                                    Chave Global / API Key <span style="color:#ef4444;">*</span>
+                                </label>
+                                <input type="password" id="ws-evo-api-key" class="form-control" placeholder="${currentConfig.has_key ? '•••••••••••••••• (Chave já configurada)' : 'Digite a chave AUTH_KEY / APIKEY configurada'}" style="background:#050811; border-color:rgba(255,255,255,0.18); font-size:13px; padding:10px 14px; width:100%; border-radius:8px; color:#ffffff;" ${currentConfig.has_key ? '' : 'required'} />
+                                <span style="font-size:10.5px; color:#64748b; margin-top:4px; display:block;">
+                                    Chave definida na variável de ambiente <code style="color:#38bdf8;">AUTHENTICATION_API_KEY</code> na sua Evolution API.
+                                </span>
+                            </div>
+
+                            <div id="ws-evo-test-result" style="display:none; margin-bottom:16px; padding:10px 14px; border-radius:8px; font-size:12px;"></div>
+
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08);">
+                                <button type="button" class="btn btn-sm btn-secondary" onclick="WorkshopView.testEvolutionConnectionAction()" style="font-size:12px; font-weight:700; padding:8px 16px; cursor:pointer;">
+                                    🔍 Testar Conexão
+                                </button>
+                                <div style="display:flex; gap:8px;">
+                                    <button type="button" class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()" style="font-size:12px; cursor:pointer;">Cancelar</button>
+                                    <button type="submit" id="ws-evo-save-btn" class="btn btn-sm btn-primary" style="background:#10B981; color:#000; font-weight:800; font-size:12px; padding:8px 20px; border:none; cursor:pointer;">
+                                        💾 Salvar e Ativar
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    async testEvolutionConnectionAction() {
+        const url = (document.getElementById('ws-evo-api-url')?.value || '').trim();
+        const key = (document.getElementById('ws-evo-api-key')?.value || '').trim();
+        const resDiv = document.getElementById('ws-evo-test-result');
+
+        if (!url) {
+            alert('Informe a URL da Evolution API para testar.');
+            return;
+        }
+
+        if (resDiv) {
+            resDiv.style.display = 'block';
+            resDiv.style.background = 'rgba(56,189,248,0.12)';
+            resDiv.style.border = '1px solid rgba(56,189,248,0.3)';
+            resDiv.style.color = '#38bdf8';
+            resDiv.innerHTML = '⏳ Testando conexão com a Evolution API...';
+        }
+
+        try {
+            const test = await API.testEvolutionConnection(url, key);
+            if (resDiv) {
+                if (test.online) {
+                    resDiv.style.background = 'rgba(16,185,129,0.15)';
+                    resDiv.style.border = '1px solid rgba(16,185,129,0.4)';
+                    resDiv.style.color = '#10b981';
+                    resDiv.innerHTML = `<strong>✅ Conexão bem-sucedida!</strong> Evolution API v${test.version || '2.x'} respondendo com sucesso.`;
+                } else {
+                    resDiv.style.background = 'rgba(239,68,68,0.15)';
+                    resDiv.style.border = '1px solid rgba(239,68,68,0.4)';
+                    resDiv.style.color = '#ef4444';
+                    resDiv.innerHTML = `<strong>❌ Erro de Conexão:</strong> ${test.error || 'Não foi possível alcançar a Evolution API.'}`;
+                }
+            }
+        } catch (err) {
+            if (resDiv) {
+                resDiv.style.display = 'block';
+                resDiv.style.background = 'rgba(239,68,68,0.15)';
+                resDiv.style.border = '1px solid rgba(239,68,68,0.4)';
+                resDiv.style.color = '#ef4444';
+                resDiv.innerHTML = `<strong>❌ Falha:</strong> ${err.message}`;
+            }
+        }
+    },
+
+    async submitEvolutionConfig(e) {
+        if (e) e.preventDefault();
+        const url = (document.getElementById('ws-evo-api-url')?.value || '').trim();
+        const key = (document.getElementById('ws-evo-api-key')?.value || '').trim();
+        const saveBtn = document.getElementById('ws-evo-save-btn');
+
+        if (!url) {
+            alert('A URL da Evolution API é obrigatória.');
+            return;
+        }
+
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = 'SALVANDO...';
+        }
+
+        try {
+            const res = await API.saveEvolutionConfig({ api_url: url, api_key: key });
+            alert('✅ Configurações da Evolution API salvas com sucesso!\n\nO DNA AUTO agora utilizará a Evolution API v2 para pareamento imediato por QR Code.');
+            this.closeModal();
+            await this.loadWhatsAppStatus(true);
+        } catch (err) {
+            alert('Erro ao salvar Evolution API: ' + err.message);
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '💾 Salvar e Ativar';
+            }
+        }
     },
 
     // ──────────────────────────────────────────────────────────────────────────

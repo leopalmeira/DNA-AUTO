@@ -964,7 +964,36 @@ DNA-AUTO/
 
 ---
 
+## 📅 Ciclo 26 — Integração do Gateway Evolution API v2 para Pareamento Imediato de WhatsApp e Anti-Bloqueio
+
+### 1. Desafio & Análise de Causa Raiz
+- **Sintoma Relatado:** Ao tentar parear o WhatsApp escaneando o QR Code pelo painel em produção no Render (`dna-auto.onrender.com/autocente#workshop`), o aplicativo WhatsApp no celular apresentava recusa e não permitia o pareamento, além de sofrer quedas frequentes ao recarregar a página.
+- **Causa Raiz Identificada:** 
+  1. O WhatsApp Web emprega firewalls e regras de heurística que bloqueiam handshakes brutos de sockets Baileys originados de faixas de IP compartilhadas de datacenters na nuvem (como os IPs da AWS Oregon no Render), gerando a recusa imediata de pareamento.
+  2. O disco do plano gratuito do Render é efêmero (`sessions/` é apagada nas reinicializações e cold starts a cada 15 min).
+  3. No ecossistema brasileiro de código aberto, projetos de grande escala (como citado pelo usuário com referência ao projeto *EduFocus*) utilizam gateways dedicados e desacoplados como a **Evolution API v2** (`EvolutionAPI/evolution-api`, 4.5k+ stars), que gerenciam instâncias isoladas, renovação de tokens e criptografia de ponta a ponta sem sofrer esses bloqueios.
+
+### 2. Solução Implementada
+1. **Cliente Nativo Evolution API v2 (`server/src/modules/workshops/evolution.service.js`):**
+   - Implementado serviço completo com auto-descoberta, gerenciamento de instâncias (`createOrConnectInstance`), verificação de status (`getConnectionState`), transmissão direta de mensagens de texto (`sendTextMessage`) e teste de conectividade (`testConnection`).
+   - Persistência das credenciais no SQLite na tabela `system_integrations` com fallback automático para variáveis de ambiente (`EVOLUTION_API_URL` e `EVOLUTION_API_KEY`).
+2. **Integração no Baileys Service (`server/src/modules/workshops/baileys.service.js`):**
+   - Criação de fluxo prioritário: quando a Evolution API v2 estiver configurada, todas as operações de geração de QR Code e envio de notificações são direcionadas para o gateway em nuvem. Caso não esteja configurada, mantém o socket local Baileys como fallback transparente.
+3. **Novas Rotas REST no Backend (`server/src/modules/workshops/workshops.routes.js`):**
+   - `GET /api/v1/workshops/whatsapp/evolution-config`
+   - `POST /api/v1/workshops/whatsapp/evolution-config`
+   - `POST /api/v1/workshops/whatsapp/evolution-test`
+4. **Camada Frontend (`public/js/api.js` e `public/js/components/workshopView.js`):**
+   - Adicionados métodos de cliente no `API`.
+   - Banner de motor ativo no topo da Central de WhatsApp da Oficina (`🚀 Evolution API v2 (Habilitada)` ou `⚡ Baileys Socket Embutido`).
+   - Modal interativo de configuração `WorkshopView.openEvolutionSettingsModal()` com teste de conexão em tempo real (`testEvolutionConnectionAction`), feedback visual imediato e salvamento com 1 clique (`submitEvolutionConfig`).
+5. **Validação Automatizada:**
+   - Adicionado Teste 40 em `test/api.test.js`, garantindo que toda a suíte de 40 testes de integração execute com 100% de aprovação.
+
+---
+
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
+
 
 
 

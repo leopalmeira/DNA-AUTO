@@ -282,7 +282,22 @@ const API = {
         });
     },
 
-    // Módulo Oficial WhatsApp Baileys
+    // Módulo Oficial WhatsApp (Evolution API v2 + Baileys)
+    getEvolutionConfig() {
+        return this.request('/workshops/whatsapp/evolution-config');
+    },
+    saveEvolutionConfig(apiUrl, apiKey) {
+        return this.request('/workshops/whatsapp/evolution-config', {
+            method: 'POST',
+            body: JSON.stringify({ api_url: apiUrl, api_key: apiKey })
+        });
+    },
+    testEvolutionConnection(apiUrl, apiKey) {
+        return this.request('/workshops/whatsapp/evolution-test', {
+            method: 'POST',
+            body: JSON.stringify({ api_url: apiUrl, api_key: apiKey })
+        });
+    },
     getWhatsAppStatus(workshopId) {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/status`);
     },
@@ -332,6 +347,24 @@ const API = {
             method: 'POST',
             body: JSON.stringify({ activation_code: code })
         });
+    },
+
+    // Evolution API v2 (WhatsApp Anti-Bloqueio em Nuvem)
+    getEvolutionConfig() {
+        return this.request('/workshops/whatsapp/evolution-config');
+    },
+    saveEvolutionConfig(data) {
+        return this.request('/workshops/whatsapp/evolution-config', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    testEvolutionConnection(apiUrl, apiKey) {
+        return this.request('/workshops/whatsapp/evolution-test', {
+            method: 'POST',
+            body: JSON.stringify({ api_url: apiUrl, api_key: apiKey })
+        });
     }
 };
+
 

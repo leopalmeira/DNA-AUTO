@@ -4,6 +4,7 @@ const db = require('../../database/db');
 const { authenticateToken, authorizeRoles } = require('../../middlewares/auth');
 const { logAudit } = require('../../middlewares/audit');
 const baileysService = require('./baileys.service');
+const evolutionService = require('./evolution.service');
 
 // Listagem de oficinas com métricas consolidadas
 router.get('/', (req, res) => {
@@ -591,8 +592,51 @@ router.put('/:id/settings', (req, res) => {
 });
 
 // ==============================================================================
-// MÓDULO OFICIAL WHATSAPP BAILEYS (MULTI-TENANT POR OFICINA)
+// MÓDULO OFICIAL WHATSAPP (EVOLUTION API v2 + BAILEYS MULTI-TENANT)
 // ==============================================================================
+
+// 0. Configurações Globais da Evolution API v2
+router.get('/whatsapp/evolution-config', (req, res) => {
+    try {
+        const config = evolutionService.getConfig();
+        res.json({
+            success: true,
+            is_configured: config.isConfigured,
+            api_url: config.apiUrl,
+            has_key: !!config.apiKey
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao consultar configurações da Evolution API.' });
+    }
+});
+
+router.post('/whatsapp/evolution-config', async (req, res) => {
+    try {
+        const { api_url, api_key } = req.body;
+        const config = evolutionService.saveConfig(api_url, api_key);
+        const testResult = await evolutionService.testConnection(api_url, api_key);
+        res.json({
+            success: true,
+            config: {
+                api_url: config.apiUrl,
+                is_configured: config.isConfigured
+            },
+            test: testResult
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao salvar configurações da Evolution API: ' + err.message });
+    }
+});
+
+router.post('/whatsapp/evolution-test', async (req, res) => {
+    try {
+        const { api_url, api_key } = req.body;
+        const testResult = await evolutionService.testConnection(api_url, api_key);
+        res.json(testResult);
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao testar conexão: ' + err.message });
+    }
+});
 
 // 1. Status da Sessão WhatsApp da Oficina
 router.get('/:id/whatsapp/status', async (req, res) => {

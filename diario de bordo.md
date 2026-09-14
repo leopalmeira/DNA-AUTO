@@ -502,6 +502,27 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - `public/js/components/workshopView.js`: Adição de QR Code visual gerado dinamicamente no modal de conclusão, atualização do link copiado e mensagem formatada para WhatsApp.
   - `test/api.test.js`: 39/39 testes de integração automatizados aprovados com 100% de sucesso.
 
+### 📅 Ciclo 26 — Integração do Gateway Evolution API v2 para Pareamento Imediato de WhatsApp e Anti-Bloqueio
+- **Demandas Atendidas:**
+  1. **Solução Definitiva do Pareamento do WhatsApp ("Não é permitido" / Queda de Conexão):**
+     - **Causa Raiz Resolvida:** Em servidores de nuvem como o Render (hospedados em datacenters AWS Oregon), as faixas de IP compartilhadas sofrem bloqueios ativos de heurística pelo firewall da Meta ao tentar handshake direto de socket Baileys sem proxy residencial. Além disso, o sistema de arquivos efêmero do Render gratuito descarta pastas locais (`sessions/`) quando a aplicação entra em suspensão (sleep).
+     - **Seleção do Melhor Repositório Open-Source:** Integração com a **Evolution API v2** (`EvolutionAPI/evolution-api`, 4.5k+ stars no GitHub), a ferramenta brasileira open-source de referência absoluta em mensageria WhatsApp (o mesmo padrão robusto adotado em soluções educacionais e corporativas como *EduFocus*).
+  2. **Arquitetura Híbrida Inteligente (Evolution API Gateway + Baileys Fallback):**
+     - O DNA AUTO agora atua de forma desacoplada: conecta-se via API REST ao microserviço da Evolution API v2 para provisionamento automático de instâncias, geração de QR Code oficial e envio de mensagens em alta disponibilidade com reconexão em segundo plano.
+     - Caso a Evolution API não esteja preenchida, o sistema mantém o fallback automático e funcional do Baileys socket embutido.
+  3. **Painel de Configuração e Teste em Tempo Real no ERP da Oficina:**
+     - No topo da Central de WhatsApp da Oficina (`WorkshopView`), foi adicionado um banner visual de status exibindo o motor ativo (`🚀 Evolution API v2 (Habilitada)` ou `⚡ Baileys Socket Embutido`).
+     - Botão `⚙️ Conectar Evolution API v2` que abre modal de alta estética permitindo informar a URL da API (ex: no Render, Railway ou VPS) e a Chave de Autenticação (Global API Key).
+     - Botão integrado `🔍 Testar Conexão` que valida em tempo real a conectividade com a Evolution API e exibe feedback imediato de sucesso ou erro antes de salvar.
+     - Persistência segura no banco de dados SQLite (`system_integrations`) e suporte nativo a variáveis de ambiente (`EVOLUTION_API_URL` e `EVOLUTION_API_KEY`).
+- **Implementações Técnicas:**
+  - `server/src/modules/workshops/evolution.service.js`: Criação do serviço completo `EvolutionApiService` com `getConfig()`, `saveConfig()`, `testConnection()`, `createOrConnectInstance()`, `getConnectionState()`, `sendTextMessage()` e `logoutInstance()`.
+  - `server/src/modules/workshops/baileys.service.js`: Integração com `evolutionService`, priorizando o gateway em nuvem para status, conexão por QR code e fila de mensagens.
+  - `server/src/modules/workshops/workshops.routes.js`: Rotas `GET /whatsapp/evolution-config`, `POST /whatsapp/evolution-config` e `POST /whatsapp/evolution-test`.
+  - `public/js/api.js`: Métodos clientes `getEvolutionConfig()`, `saveEvolutionConfig()` e `testEvolutionConnection()`.
+  - `public/js/components/workshopView.js`: Banner de motor ativo, modal `openEvolutionSettingsModal()`, ação de teste `testEvolutionConnectionAction()` e submissão `submitEvolutionConfig()`.
+  - `test/api.test.js`: Criação do Teste 40 com 40/40 testes de integração aprovados com 100% de sucesso.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

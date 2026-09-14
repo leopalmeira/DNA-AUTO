@@ -29,6 +29,8 @@ if (!fs.existsSync(SESSIONS_DIR)) {
     } catch (_) {}
 }
 
+const evolutionService = require('./evolution.service');
+
 class BaileysWorkshopService {
     constructor() {
         // Map de instâncias ativas: workshopId -> { sock, status, pairingCode, qrCodeDataUrl, phoneNumber, lastConnectedAt }
@@ -263,6 +265,18 @@ class BaileysWorkshopService {
             WHERE workshop_id = ?
         `).get(workshopId) || { total: 0, sent: 0, pending: 0, failed: 0 };
 
+        const evoConfig = evolutionService.getConfig();
+        let provider = 'BAILEYS_SOCKET';
+        if (evoConfig.isConfigured) {
+            provider = 'EVOLUTION_API_V2';
+            try {
+                const evoState = await evolutionService.getConnectionState(workshopId);
+                if (evoState && evoState.is_connected) {
+                    status = 'CONNECTED';
+                }
+            } catch (_) {}
+        }
+
         return {
             workshop_id: workshopId,
             status,
@@ -276,6 +290,9 @@ class BaileysWorkshopService {
             qr_code: qrCodeDataUrl,
             last_connected_at: lastConnectedAt,
             workshop_name: workshop ? workshop.trade_name : 'Oficina Credenciada',
+            provider,
+            evolution_configured: evoConfig.isConfigured,
+            evolution_url: evoConfig.apiUrl,
             stats: {
                 total_messages: stats.total || 0,
                 sent: stats.sent || 0,
@@ -442,6 +459,47 @@ class BaileysWorkshopService {
                 message: 'WhatsApp já conectado e operacional.',
                 session: current
             };
+        }
+
+        const evoConfig = evolutionService.getConfig();
+        if (evoConfig.isConfigured) {
+            try {
+                const evoRes = await evolutionService.createOrConnectInstance(workshopId, cleanPhone);
+                if (evoRes && (evoRes.qr_code_url || evoRes.pairing_code || evoRes.code)) {
+                    const sessionState = {
+                        status: 'PAIRING',
+                        phoneNumber: cleanPhone,
+                        pairingCode: evoRes.pairing_code,
+                        qrCodeDataUrl: evoRes.qr_code_url,
+                        lastConnectedAt: null,
+                        sock: null,
+                        mode: mode,
+                        provider: 'EVOLUTION_API_V2'
+                    };
+                    this.activeSessions.set(workshopId, sessionState);
+                    db.prepare(`
+                        INSERT INTO whatsapp_sessions (id, workshop_id, phone_number, status, updated_at)
+                        VALUES (?, ?, ?, 'PAIRING', CURRENT_TIMESTAMP)
+                        ON CONFLICT(workshop_id) DO UPDATE SET
+                            phone_number = excluded.phone_number,
+                            status = 'PAIRING',
+                            updated_at = CURRENT_TIMESTAMP
+                    `).run(`sess_${workshopId}`, workshopId, cleanPhone);
+
+                    return {
+                        success: true,
+                        status: 'PAIRING',
+                        provider: 'EVOLUTION_API_V2',
+                        phone_number: cleanPhone,
+                        qr_code_url: evoRes.qr_code_url,
+                        pairing_code: evoRes.pairing_code,
+                        code: evoRes.code,
+                        message: 'QR Code gerado pela Evolution API v2 com sucesso!'
+                    };
+                }
+            } catch (evoErr) {
+                console.warn('⚠️ Erro ao inicializar via Evolution API, acionando fallback nativo:', evoErr.message);
+            }
         }
 
         const sessionFolder = path.join(SESSIONS_DIR, `ws_${workshopId}`);
@@ -702,9 +760,17 @@ class BaileysWorkshopService {
                 db.prepare(`UPDATE whatsapp_messages SET status = 'PROCESSING' WHERE id = ?`).run(item.id);
 
                 const session = this.activeSessions.get(item.workshopId);
+                const evoConfig = evolutionService.getConfig();
 
+                // Envio prioritário pela Evolution API se configurada
+                if (evoConfig.isConfigured) {
+                    try {
+                        await evolutionService.sendTextMessage(item.workshopId, item.recipientPhone, item.message);
+                    } catch (evoErr) {
+                        console.warn('⚠️ Envio via Evolution API falhou:', evoErr.message);
+                    }
                 // Envio real pelo socket Baileys se ativo
-                if (session && session.sock && session.status === 'CONNECTED') {
+                } else if (session && session.sock && session.status === 'CONNECTED') {
                     const jid = `${item.recipientPhone}@s.whatsapp.net`;
                     await session.sock.sendMessage(jid, { text: item.message });
                 }

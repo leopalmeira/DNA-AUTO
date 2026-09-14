@@ -562,7 +562,46 @@ async function runTests() {
         console.assert(dataDirectApp.appointment.owner_name === dataSearchSched.vehicle.owner_name, 'Nome do proprietário não coincide');
         console.log(`✅ 39. Agendamento Direto na Grade Operacional: Placa [BRA2E19] localizada no DNA AUTO, cliente [${dataSearchSched.vehicle.owner_name}] auto-preenchido e serviço [${dataDirectApp.appointment.service_title}] confirmado.`);
 
-        console.log('\n🎉 TODOS OS 39 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 40: Gateway de WhatsApp em Nuvem Evolution API v2 (Anti-Bloqueio)
+        const resEvoGet = await fetch(`${BASE_URL}/workshops/whatsapp/evolution-config`);
+        const dataEvoGet = await resEvoGet.json();
+        console.assert(resEvoGet.status === 200, 'Falha ao consultar configuração da Evolution API');
+        console.assert(dataEvoGet.success === true, 'GET da Evolution API deve retornar success: true');
+
+        const resEvoSave = await fetch(`${BASE_URL}/workshops/whatsapp/evolution-config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                api_url: 'https://evolution-mock.dnaauto.com.br',
+                api_key: 'evo_sec_test_token_99'
+            })
+        });
+        const dataEvoSave = await resEvoSave.json();
+        console.assert(resEvoSave.status === 200, 'Falha ao salvar configuração da Evolution API');
+        console.assert(dataEvoSave.success === true, 'Salvar Evolution API deve retornar success: true');
+        console.assert(dataEvoSave.config.is_configured === true, 'Evolution API deve ser marcada como configurada');
+
+        const resWsStatusWithEvo = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/status`);
+        const dataWsStatusWithEvo = await resWsStatusWithEvo.json();
+        console.assert(dataWsStatusWithEvo.evolution_configured === true, 'Status do WhatsApp da oficina deve indicar Evolution API configurada');
+        console.assert(dataWsStatusWithEvo.evolution_url === 'https://evolution-mock.dnaauto.com.br', 'URL da Evolution API deve refletir nas sessões');
+
+        // Teste de conexão (verificando formato da resposta)
+        const resEvoTest = await fetch(`${BASE_URL}/workshops/whatsapp/evolution-test`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                api_url: 'http://127.0.0.1:9999',
+                api_key: 'test_key'
+            })
+        });
+        const dataEvoTest = await resEvoTest.json();
+        console.assert(resEvoTest.status === 200, 'Endpoint de teste da Evolution API deve responder HTTP 200');
+        console.assert(typeof dataEvoTest.online === 'boolean', 'Teste da Evolution deve retornar booleano online');
+
+        console.log(`✅ 40. Gateway Evolution API v2 (WhatsApp Anti-Bloqueio): Configuração em nuvem persistida com sucesso e refletida no status operacional das oficinas.`);
+
+        console.log('\n🎉 TODOS OS 40 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);
