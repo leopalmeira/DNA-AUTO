@@ -51,9 +51,9 @@ const App = {
 
             // Identificar qual módulo exibir sem desconectar no F5:
             // A. Se a URL possui hash específico
-            if (hash === '#workshop') {
+            if (hash === '#workshop' || hash === '#oficina' || hash === '#erp') {
                 this.switchView('workshop');
-            } else if (hash === '#owner') {
+            } else if (hash === '#owner' || hash === '#app' || hash === '#meucarro') {
                 this.switchView('owner');
             } else if (hash === '#admin') {
                 this.switchView('admin');
@@ -66,9 +66,9 @@ const App = {
             } else if ((hash === '#autocente' || hash === '#autocenter') && savedUser.role_code !== 'WORKSHOP') {
                 this.switchView('landing-workshop');
             // B. Se a URL possui pathname específico
-            } else if (pathname === '/workshop') {
+            } else if (pathname === '/workshop' || pathname === '/oficina' || pathname === '/erp') {
                 this.switchView('workshop');
-            } else if (pathname === '/owner') {
+            } else if (pathname === '/owner' || pathname === '/app' || pathname === '/meucarro') {
                 this.switchView('owner');
             } else if (pathname === '/admin') {
                 this.switchView('admin');
@@ -101,45 +101,52 @@ const App = {
     // ── Roteador Central SPA por Pathname e Hash ──
     handleRoute() {
         const pathname = (window.location.pathname.toLowerCase().replace(/\/+$/, '')) || '/';
-        const hash = window.location.hash.toLowerCase();
+        const rawHash = window.location.hash.toLowerCase();
+        const hash = rawHash.split('?')[0];
 
-        // 1. Prioridade absoluta para o Hash de navegação do SPA
-        if (hash === '#workshop') {
-            this.switchView('workshop');
-        } else if (hash === '#owner') {
+        // Extrai código de ativação se houver (ex: /app?code=DNA-8421 ou #owner?code=DNA-8421)
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '');
+        const activationCode = urlParams.get('code') || hashParams.get('code') || urlParams.get('c') || hashParams.get('c');
+
+        // 1. App do Cliente / Dono do Veículo (Mobile PWA)
+        if (hash === '#owner' || hash === '#app' || hash === '#meucarro' || pathname === '/app' || pathname === '/owner' || pathname === '/meucarro') {
             this.switchView('owner');
-        } else if (hash === '#admin') {
+            if (activationCode) {
+                setTimeout(() => {
+                    if (window.OwnerView && typeof window.OwnerView.openActivationModal === 'function') {
+                        window.OwnerView.openActivationModal(activationCode);
+                    }
+                }, 300);
+            }
+            return;
+        }
+
+        // 2. ERP Operacional da Oficina (Painel do Mecânico / Recepção / Pátio)
+        if (hash === '#workshop' || hash === '#oficina' || hash === '#erp' || pathname === '/oficina' || pathname === '/workshop' || pathname === '/erp') {
+            this.switchView('workshop');
+            return;
+        }
+
+        // 3. Matriz Administrativa / Franquia DNA AUTO
+        if (hash === '#admin' || pathname === '/admin') {
             this.switchView('admin');
-        } else if (hash === '#login') {
+            return;
+        }
+
+        // 4. Outras telas e landings
+        if (hash === '#login' || pathname === '/login') {
             this.switchView('login');
-        } else if (hash === '#dossier') {
+        } else if (hash === '#dossier' || pathname === '/dossier') {
             this.switchView('dossier');
-        } else if (hash === '#sales') {
+        } else if (hash === '#sales' || pathname === '/sales') {
             this.switchView('sales');
-        } else if (hash === '#cliente') {
+        } else if (hash === '#cliente' || pathname === '/cliente') {
             this.switchView('landing-client');
-        } else if (hash === '#autocente' || hash === '#autocenter') {
+        } else if (hash === '#autocente' || hash === '#autocenter' || pathname === '/autocente' || pathname === '/autocenter') {
             this.switchView('landing-workshop');
-        } else if (hash === '#landing' || hash === '#home') {
+        } else if (hash === '#landing' || hash === '#home' || pathname === '/' || !pathname) {
             this.switchView('landing-home');
-
-        // 2. Se não houver hash, avaliar o pathname da URL
-        } else if (pathname === '/workshop') {
-            this.switchView('workshop');
-        } else if (pathname === '/owner') {
-            this.switchView('owner');
-        } else if (pathname === '/admin') {
-            this.switchView('admin');
-        } else if (pathname === '/cliente') {
-            this.switchView('landing-client');
-        } else if (pathname === '/autocente' || pathname === '/autocenter') {
-            this.switchView('landing-workshop');
-        } else if (pathname === '/login') {
-            this.switchView('login');
-        } else if (pathname === '/dossier') {
-            this.switchView('dossier');
-        } else if (pathname === '/sales') {
-            this.switchView('sales');
         } else {
             this.switchView('landing-home');
         }

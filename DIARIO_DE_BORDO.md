@@ -931,6 +931,37 @@ DNA-AUTO/
 ### 3. Validação de Qualidade
 - Bateria completa de **39/39 testes automatizados de integração passando com 100% de sucesso**.
 
+## 🚀 Ciclo 25 — Arquitetura de Acesso Direto Unificado: Rotas `/app` e `/oficina` com QR Code e Links Diretos
+
+### 1. Diagnóstico Arquitetural: Por que NÃO criar 2 serviços no Render?
+- **Solicitação do Usuário:** *"no render crie o app para a oficina e o app para o cliente dessa forma fica mais facil para as paginas de qrcode serem direcionados para a tela dos apps de cliente ou o app da oficina ERP acho que fica melhor assim né"*
+- **Análise Técnica e Bloqueadores Críticos de Separar em 2 Serviços no Render:**
+  1. **Isolamento de Banco SQLite:** O Render executa serviços em containers Docker isolados com discos locais efêmeros/separados. Se criados dois serviços (`dna-auto-oficina` e `dna-auto-cliente`), o banco SQLite da oficina não sincronizaria com o do cliente. O cliente receberia erro "Código não encontrado" para qualquer veículo registrado pela oficina.
+  2. **Isolamento do Baileys WhatsApp:** A conexão via socket WhatsApp só pode existir em uma única instância Node.js ativa.
+  3. **Plano Gratuito / Dupla Latência:** Dois serviços no plano gratuito do Render entrariam em modo de suspensão ("cold start") separadamente, gerando o dobro de tempo de espera (50s a cada 15min) e consumindo o dobro da cota gratuita.
+
+### 2. Solução Superior Implementada: Sistema Unificado com Rotas Limpas Dedicadas
+1. **Rotas Dedicadas de Alta Precisão no SPA:**
+   - 📱 **App do Cliente / Dono de Carro (PWA):** `https://dna-auto.onrender.com/app` (também suporta `/meucarro` e `/owner`).
+     - Abre diretamente a interface mobile nativa do cliente, sem passar pela landing page de vendas nem exigir login manual do mecânico.
+   - 🏢 **ERP Operacional da Oficina:** `https://dna-auto.onrender.com/oficina` (também suporta `/workshop` e `/erp`).
+     - Abre diretamente o painel de gestão do pátio e recepção em tela cheia.
+   - ⚙️ **Matriz Administrativa:** `https://dna-auto.onrender.com/admin`.
+   - 🌐 **Portal Institucional / Landing:** `https://dna-auto.onrender.com/`.
+2. **Integração de QR Code e Ativação Instantânea:**
+   - Suporte nativo ao parâmetro de código `?code=DNA-XXXX` na URL (ex: `/app?code=DNA-8421`).
+   - Ao acessar via link de QR Code ou WhatsApp, o app do cliente abre imediatamente com o modal de ativação acionado e o código preenchido.
+3. **QR Code Dinâmico no Balcão da Oficina:**
+   - No modal de conclusão de código da oficina (`workshopView.js`), agora é exibido um **QR Code visual em tempo real** apontando para `${window.location.origin}/app?code=${code}`.
+   - O cliente na recepção da oficina pode apontar a câmera do celular para a tela do computador ou tablet da oficina e abrir o aplicativo instantaneamente.
+4. **WhatsApp com Link Direto:**
+   - O botão `📱 Enviar via WhatsApp` agora envia a URL dinâmica do app com o código embutido, facilitando o acesso do cliente com 1 toque.
+5. **Restauração do Modal do Cliente (`OwnerView.renderActivationModal`):**
+   - Implementado componente completo de modal de ativação em `ownerView.js`, garantindo que o acionamento via URL, QR Code ou manual funcione com 100% de confiabilidade.
+
+### 3. Validação de Qualidade
+- Bateria completa de **39/39 testes automatizados de integração passando com 100% de sucesso**.
+
 ---
 
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*

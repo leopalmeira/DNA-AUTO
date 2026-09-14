@@ -5174,6 +5174,8 @@ const WorkshopView = {
             });
 
             const code = res.activation_code || 'DNA-8421';
+            const directAppUrl = `${window.location.origin}/app?code=${code}`;
+            const qrCodeImg = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(directAppUrl)}&color=00D4FF&bgcolor=0B1220`;
 
             if (container) {
                 container.innerHTML = `
@@ -5181,25 +5183,39 @@ const WorkshopView = {
                         <div style="width:52px; height:52px; margin:0 auto 12px; border-radius:50%; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; border:1px solid rgba(16,185,129,0.4);">
                             <span style="font-size:26px;">🎉</span>
                         </div>
-                        <h4 style="color:#ffffff; font-size:17px; font-weight:800; margin:0 0 6px;">Código Gerado com Sucesso!</h4>
-                        <p style="color:#94a3b8; font-size:12.5px; margin:0 0 16px;">
-                            Passe este código para o cliente <strong>${clientName}</strong> ativar no app mobile.
+                        <h4 style="color:#ffffff; font-size:17px; font-weight:800; margin:0 0 4px;">Código Gerado com Sucesso!</h4>
+                        <p style="color:#94a3b8; font-size:12px; margin:0 0 14px;">
+                            O cliente <strong>${clientName}</strong> pode escanear o QR Code abaixo ou receber o link direto no WhatsApp.
                         </p>
 
-                        <div style="background:#050811; border:2px dashed #FFD21C; border-radius:12px; padding:18px; margin-bottom:16px;">
-                            <span style="font-size:11px; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:4px;">CÓDIGO DE ATIVAÇÃO DO VEÍCULO</span>
-                            <div style="font-size:32px; font-weight:900; letter-spacing:4px; font-family:var(--font-mono); color:#FFD21C; text-shadow:0 0 12px rgba(255,210,28,0.3);">
+                        <!-- QR Code Direto para o App do Cliente -->
+                        <div style="background:#070C18; border:1.5px solid rgba(0,212,255,0.4); border-radius:14px; padding:14px; margin-bottom:14px; display:flex; flex-direction:column; align-items:center; box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+                            <span style="font-size:11px; font-weight:800; color:#00D4FF; letter-spacing:0.5px; text-transform:uppercase; margin-bottom:10px; display:inline-flex; align-items:center; gap:6px;">
+                                <span>📷</span> Aponte a câmera do celular para abrir o App
+                            </span>
+                            <div style="background:#0B1220; padding:10px; border-radius:12px; border:1px solid rgba(0,212,255,0.3); display:inline-block;">
+                                <img src="${qrCodeImg}" alt="QR Code App DNA AUTO" style="width:150px; height:150px; display:block; border-radius:6px;" onerror="this.style.display='none';" />
+                            </div>
+                            <div style="margin-top:10px; font-size:11px; color:#94A3B8;">
+                                Link direto: <code style="color:#38bdf8; font-size:10.5px;">${directAppUrl}</code>
+                            </div>
+                        </div>
+
+                        <!-- Card com Código em Destaque -->
+                        <div style="background:#050811; border:2px dashed #FFD21C; border-radius:12px; padding:14px; margin-bottom:16px;">
+                            <span style="font-size:10.5px; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:2px;">CÓDIGO DE ATIVAÇÃO MANUAL</span>
+                            <div style="font-size:28px; font-weight:900; letter-spacing:4px; font-family:var(--font-mono); color:#FFD21C; text-shadow:0 0 12px rgba(255,210,28,0.3);">
                                 ${code}
                             </div>
-                            <div style="font-size:12px; color:#38bdf8; margin-top:6px;">
+                            <div style="font-size:11.5px; color:#38bdf8; margin-top:4px;">
                                 Placa: <strong class="mono">${plate}</strong> • Cliente: <strong>${clientName}</strong>
                             </div>
                         </div>
 
                         <div style="display:flex; flex-direction:column; gap:8px;">
                             <div style="display:flex; gap:8px;">
-                                <button type="button" class="btn btn-secondary" onclick="WorkshopView.copyActivationCode('${code}')" style="flex:1; font-weight:700; font-size:12px; padding:10px;">
-                                    📋 Copiar Código
+                                <button type="button" class="btn btn-secondary" onclick="WorkshopView.copyActivationCode('${code}', '${directAppUrl}')" style="flex:1; font-weight:700; font-size:12px; padding:10px;">
+                                    📋 Copiar Link / Código
                                 </button>
                                 <button type="button" class="btn btn-primary" onclick="WorkshopView.sendActivationWhatsApp('${clientPhone}', '${clientName}', '${plate}', '${code}')" style="flex:1; font-weight:800; font-size:12px; padding:10px; background:#25D366; color:#000; border:none; display:inline-flex; align-items:center; justify-content:center; gap:6px;">
                                     <span>📱</span> <span>Enviar via WhatsApp</span>
@@ -5218,18 +5234,20 @@ const WorkshopView = {
         }
     },
 
-    copyActivationCode(code) {
+    copyActivationCode(code, directUrl) {
+        const textToCopy = directUrl ? `${directUrl} (Código: ${code})` : code;
         if (navigator.clipboard) {
-            navigator.clipboard.writeText(code);
+            navigator.clipboard.writeText(textToCopy);
         }
-        alert(`📋 Código ${code} copiado para a área de transferência!`);
+        alert(`📋 Link e código (${code}) copiados com sucesso!`);
     },
 
     sendActivationWhatsApp(phone, name, plate, code) {
         const workshopName = this.officialWorkshopName || 'DNA AUTO Centro Automotivo';
-        const msg = `Olá ${name}! Seu veículo placa ${plate} foi cadastrado no sistema da oficina ${workshopName}.\n\nPara ativar o acompanhamento digital em tempo real no app DNA AUTO, use o seu código exclusivo:\n👉 *${code}*\n\nAcesse: https://dnaauto.com.br/#owner e insira seu código para ver a saúde e histórico do seu veículo!`;
+        const directUrl = `${window.location.origin}/app?code=${code}`;
+        const msg = `Olá ${name}! Seu veículo placa *${plate}* foi cadastrado no sistema da oficina *${workshopName}*.\n\n📲 Para acompanhar o status, laudo e histórico do seu veículo em tempo real no App DNA AUTO, toque no link direto:\n${directUrl}\n\nSeu código de ativação exclusivo: *${code}*`;
         
-        const cleanPhone = phone.replace(/\D/g, '');
+        const cleanPhone = (phone || '').replace(/\D/g, '');
         const targetPhone = cleanPhone.startsWith('55') ? cleanPhone : '55' + cleanPhone;
         const url = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodeURIComponent(msg)}`;
         window.open(url, '_blank');

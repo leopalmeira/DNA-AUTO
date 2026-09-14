@@ -1972,14 +1972,65 @@ const OwnerView = {
         `;
     },
 
-    openActivationModal() {
+    presetActivationCode: '',
+
+    openActivationModal(code = '') {
+        this.presetActivationCode = (code || '').toUpperCase();
         this.isActivationModalOpen = true;
         this.render();
+        if (this.presetActivationCode) {
+            setTimeout(() => {
+                const input = document.getElementById('dna-client-activation-code');
+                if (input) {
+                    input.value = this.presetActivationCode;
+                    input.focus();
+                }
+            }, 80);
+        }
     },
 
     closeActivationModal() {
         this.isActivationModalOpen = false;
+        this.presetActivationCode = '';
         this.render();
+    },
+
+    renderActivationModal() {
+        const defaultVal = this.presetActivationCode || '';
+        return `
+            <div class="dna-photo-modal-overlay" onclick="if(event.target === this) OwnerView.closeActivationModal();" style="z-index:999999;">
+                <div class="dna-photo-modal-sheet" style="max-width:380px; text-align:center; padding:24px 20px;">
+                    <div style="width:56px; height:56px; margin:0 auto 12px; border-radius:50%; background:rgba(0, 212, 255, 0.15); display:flex; align-items:center; justify-content:center; border:1.5px solid #00D4FF; box-shadow:0 0 20px rgba(0,212,255,0.25);">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2.2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                    </div>
+
+                    <h3 style="font-size:18px; font-weight:800; color:#FFFFFF; margin:0 0 6px;">Ativar Meu Veículo no App</h3>
+                    <p style="font-size:12.5px; color:#94A3B8; margin:0 0 18px; line-height:1.4;">
+                        Digite o código exclusivo fornecido pela sua oficina (ou recebido via WhatsApp/QR Code) para sincronizar o histórico do seu veículo.
+                    </p>
+
+                    <div style="margin-bottom:16px;">
+                        <input type="text" id="dna-client-activation-code" 
+                            value="${defaultVal}" 
+                            placeholder="Ex: DNA-8421" 
+                            maxlength="12"
+                            style="width:100%; text-align:center; font-size:22px; font-weight:900; letter-spacing:3px; padding:12px; background:#0B1220; border:2px solid #00D4FF; border-radius:12px; color:#FFD21C; font-family:monospace; text-transform:uppercase; outline:none; box-shadow:0 0 16px rgba(0,212,255,0.25);"
+                            oninput="this.value = this.value.toUpperCase();"
+                            onkeydown="if(event.key==='Enter') OwnerView.submitClientActivation();"
+                        />
+                    </div>
+
+                    <button id="dna-btn-submit-activation" class="dna-photo-btn-primary" onclick="OwnerView.submitClientActivation()" style="width:100%; margin-bottom:8px; justify-content:center; font-size:13.5px; padding:13px; background:linear-gradient(135deg, #00D4FF 0%, #0066FF 100%); color:#000; font-weight:900; border:none; border-radius:10px; cursor:pointer;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Validar e Ativar Meu Carro</span>
+                    </button>
+
+                    <button class="dna-photo-btn-secondary" onclick="OwnerView.closeActivationModal()" style="width:100%; justify-content:center; font-size:12px; color:#94A3B8; background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px; cursor:pointer;">
+                        <span>Voltar ao Aplicativo</span>
+                    </button>
+                </div>
+            </div>
+        `;
     },
 
     async submitClientActivation() {

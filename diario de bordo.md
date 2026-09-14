@@ -482,6 +482,26 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - `server/src/modules/workshops/workshops.routes.js`: Suporte universal no endpoint `POST /:id/clients/register-activation` para os campos `client_phone`, `whatsapp`, `vehicle_model` e `model`, com persistência e atualização do modelo do veículo na base.
   - `test/api.test.js`: 39/39 testes de integração automatizados aprovados com 100% de sucesso.
 
+### 📅 Ciclo 25 — Arquitetura de Acesso Direto Unificado: Rotas `/app` e `/oficina` com QR Code e Links Diretos
+- **Demandas Atendidas:**
+  1. **Análise Estrutural e Arquitetural (Unificação vs 2 Apps no Render):**
+     - Avaliação técnica demonstrando por que **não** se deve criar 2 serviços separados no Render: o banco de dados SQLite local ficaria isolado em containers diferentes (o cliente nunca encontraria os carros ou códigos cadastrados pela oficina), além de dobrar a dormência de instâncias gratuitas no Render.
+  2. **Rotas Limpas e Dedicadas no Sistema Unificado:**
+     - `https://dna-auto.onrender.com/app` (ou `/meucarro`, `/owner`): Direciona imediatamente para o **Aplicativo Mobile do Cliente (PWA)** em tela cheia, sem passar por landing page de vendas.
+     - `https://dna-auto.onrender.com/oficina` (ou `/workshop`, `/erp`): Direciona imediatamente para o **ERP Operacional da Oficina**.
+     - `https://dna-auto.onrender.com/app?code=DNA-XXXX`: Abre o app do cliente já com o modal de ativação acionado e o código do veículo preenchido automaticamente!
+  3. **QR Code Dinâmico no Balcão da Oficina:**
+     - Ao gerar o código na oficina, o modal exibe imediatamente um **QR Code de Alta Resolução** apontando para a URL direta `/app?code=DNA-XXXX`. O cliente na recepção só precisa apontar a câmera do celular para a tela para abrir seu app.
+  4. **Link Clicável no WhatsApp e Ativação Instantânea:**
+     - Mensagem do WhatsApp agora envia o link direto com a URL de origem ativa (`window.location.origin/app?code=DNA-XXXX`).
+  5. **Implementação do Modal de Ativação do Cliente (`OwnerView.renderActivationModal`):**
+     - Estrutura completa de modal no app do cliente para receber o código via QR Code, URL ou digitação manual, com foco automático e validação contra o backend.
+- **Implementações Técnicas:**
+  - `public/js/app.js`: Roteador central `init()` e `handleRoute()` atualizados com suporte a `/app`, `/oficina`, `/erp`, extração de query params `?code=...` e redirecionamento de ativação.
+  - `public/js/components/ownerView.js`: Implementação de `renderActivationModal()`, suporte a `presetActivationCode` e auto-foco no input.
+  - `public/js/components/workshopView.js`: Adição de QR Code visual gerado dinamicamente no modal de conclusão, atualização do link copiado e mensagem formatada para WhatsApp.
+  - `test/api.test.js`: 39/39 testes de integração automatizados aprovados com 100% de sucesso.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

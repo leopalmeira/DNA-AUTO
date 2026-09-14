@@ -77,6 +77,17 @@ O DNA AUTO conta com uma arquitetura limpa de páginas públicas, separando rigo
   - **Componentes:** Seção dos 3 problemas reais (Cliente Esquece, Timing, Oportunidade), diagrama visual da solução, mockup do Radar de Manutenção com dados demonstrativos transparentes, simulação de contato WhatsApp, 4 benefícios chave, 3 passos para credenciamento, FAQ em acordeão e CTAs duplos diretos para o **ERP da Oficina** (`#workshop`) e **Credenciamento Oficial**.
   - **Mobile:** Barra de CTA fixa inferior para smartphones.
 
+### 1.1 🚀 Rotas de Acesso Direto & Arquitetura QR Code (Single Service no Render)
+O DNA AUTO adota uma arquitetura unificada de alta performance onde **um único serviço no Render** atende com perfeição tanto a oficina quanto os proprietários, garantindo banco de dados 100% sincronizado em tempo real:
+* 📱 **App do Cliente / Dono de Carro (PWA):** `https://dna-auto.onrender.com/app` (ou `/meucarro`, `/owner`)
+  - Abre diretamente o aplicativo móvel nativo sem passar pela landing page de vendas.
+  - **Suporte a QR Code & WhatsApp:** Ao acessar `https://dna-auto.onrender.com/app?code=DNA-XXXX`, o app abre com o modal de ativação acionado e o código do veículo já preenchido.
+* 🏢 **ERP Operacional da Oficina:** `https://dna-auto.onrender.com/oficina` (ou `/workshop`, `/erp`)
+  - Abre diretamente o painel de gestão do pátio, recepção e manutenção preventiva em tela cheia.
+  - **QR Code no Balcão:** Ao cadastrar um cliente e gerar o código, o sistema renderiza na hora um QR Code na tela da oficina para o cliente escanear com a câmera do celular.
+* ⚙️ **Matriz Administrativa:** `https://dna-auto.onrender.com/admin`
+* 🌐 **Portal Institucional:** `https://dna-auto.onrender.com/`
+
 ### 2. 🛡️ Painel Administrativo Matriz (`/admin`)
 - **Acesso Restrito:** Perfil `ADMIN` com visualização hierárquica da rede.
 - **Módulos Disponíveis:**
