@@ -770,4 +770,29 @@ DNA-AUTO/
 - Bateria atualizada para **38 testes automatizados**, cobrindo todas as rotas de ativação e registro de clientes, além de todos os fluxos anteriores com **100% de sucesso**.
 
 ---
+
+## 🚀 Ciclo 19 — Unificação de Entrada & Cadastro e Simplificação da Agenda da Semana
+
+### 1. Menu Operacional Enxuto & Unificação
+- Consolidação dos fluxos de "Nova Entrada" e "Cadastrar Carro" em um único item corporativo no Setor 1 da Sidebar:
+  - `🏠 Dashboard`
+  - `🚗 Entrada de Veículos / Cadastro`
+- Eliminação de redundâncias visuais e melhoria na ergonomia do operador da oficina.
+
+### 2. Fluxo Dinâmico e Inteligente de Consulta por Placa
+- Modal `openUnifiedVehicleEntryModal`:
+  - Campo de placa em destaque (`font-mono`, uppercase, 20px).
+  - Consulta assíncrona automática (`API.searchVehicle` + cache em memória).
+  - **Veículo Existente:** Exibe os dados técnicos e do cliente cadastrados, preenche o odômetro e permite entrada rápida no pátio informando motivo/serviço inicial.
+  - **Veículo Novo:** Carrega dinamicamente o formulário completo de dados técnicos (marca, modelo, versão, ano, cor), dados do proprietário (nome, WhatsApp) e hodômetro de entrada, gerando automaticamente o Passaporte DNA Nível 4 perpétuo.
+
+### 3. Agenda da Semana Simplificada (`+ Disponível`)
+- Ao clicar no botão `+ Disponível` de qualquer dia/horário da grade semanal:
+  - Abre modal direto (`openDirectSlotScheduleModal`) com dia e horário pré-fixados.
+  - Campo de placa com auto-preenchimento automático dos dados do cliente e modelo caso já estejam cadastrados.
+  - Campo obrigatório de **Serviço a ser executado**.
+  - O card na grade semanal exibe com clareza: **Placa**, **Nome do Cliente** e **Serviço**, garantindo visibilidade imediata para a equipe da oficina.
+
+---
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
+

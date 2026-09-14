@@ -379,18 +379,8 @@ const WorkshopView = {
                                 <div class="ws-erp-menu-item ${this.currentSection === 'dashboard' ? 'active' : ''}" onclick="WorkshopView.switchSection('dashboard')">
                                     <div class="ws-erp-menu-left"><span>🏠</span> <span>Dashboard</span></div>
                                 </div>
-                                <div class="ws-erp-menu-item ${this.currentSection === 'recepcao-checkin' ? 'active' : ''}" onclick="WorkshopView.switchSection('recepcao-checkin')">
-                                    <div class="ws-erp-menu-left"><span>📥</span> <span>Recepção / Pátio</span></div>
-                                    <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(56,189,248,0.15); color:#38bdf8; border-radius:12px;">4</span>
-                                </div>
-                                <div class="ws-erp-menu-item ws-menu-item-highlight" onclick="WorkshopView.openQuickEntryModal()">
-                                    <div class="ws-erp-menu-left"><span>⚡</span> <span style="color:#38bdf8; font-weight:700;">Nova Entrada Rápida</span></div>
-                                </div>
-                                <div class="ws-erp-menu-item" onclick="WorkshopView.openManualVehicleModal()">
-                                    <div class="ws-erp-menu-left"><span>🚗</span> <span>Cadastrar Carro</span></div>
-                                </div>
-                                <div class="ws-erp-menu-item ws-menu-item-accent" onclick="WorkshopView.openClientActivationModal()">
-                                    <div class="ws-erp-menu-left"><span>👥</span> <span style="color:#FFD21C; font-weight:700;">Cadastrar Cliente & Código</span></div>
+                                <div class="ws-erp-menu-item ws-menu-item-highlight" onclick="WorkshopView.openUnifiedVehicleEntryModal()">
+                                    <div class="ws-erp-menu-left"><span>🚗</span> <span style="color:#38bdf8; font-weight:700;">Entrada de Veículos / Cadastro</span></div>
                                 </div>
                             </div>
 
@@ -678,13 +668,13 @@ const WorkshopView = {
                     </p>
                 </div>
                 <div class="ws-dash-hero-cta-group">
-                    <button class="btn ws-dash-cta-btn ws-dash-cta-primary" onclick="WorkshopView.openQuickEntryModal()" title="Registrar Entrada Rápida de Veículo no Pátio">
+                    <button class="btn ws-dash-cta-btn ws-dash-cta-primary" onclick="WorkshopView.openUnifiedVehicleEntryModal()" title="Entrada de Veículos / Cadastro">
                         <span style="font-size:16px;">⚡</span>
-                        <span>Nova Entrada Rápida</span>
+                        <span>Entrada de Veículos / Cadastro</span>
                     </button>
-                    <button class="btn ws-dash-cta-btn ws-dash-cta-secondary" onclick="WorkshopView.openManualVehicleModal()" title="Cadastrar Veículo na Frota">
+                    <button class="btn ws-dash-cta-btn ws-dash-cta-secondary" onclick="WorkshopView.switchSection('recepcao-checkin')" title="Ver Pátio da Oficina">
                         <span style="font-size:16px;">🚗</span>
-                        <span>Cadastrar Carro</span>
+                        <span>Ver Recepção / Pátio</span>
                     </button>
                     <button class="btn ws-dash-cta-btn ws-dash-cta-accent" onclick="WorkshopView.openClientActivationModal()" title="Cadastrar Cliente com Código para o App Mobile">
                         <span style="font-size:16px;">👥</span>
@@ -770,13 +760,13 @@ const WorkshopView = {
             </div>
 
             <div class="ws-dash-actions-grid" id="tour-step-actions">
-                <button class="ws-dash-action-btn primary" onclick="WorkshopView.openQuickEntryModal()" title="Registrar Entrada Rápida de Veículo no Pátio">
+                <button class="ws-dash-action-btn primary" onclick="WorkshopView.openUnifiedVehicleEntryModal()" title="Entrada de Veículos / Cadastro">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
-                    <span>Nova Entrada Rápida</span>
+                    <span>Entrada de Veículos / Cadastro</span>
                 </button>
-                <button class="ws-dash-action-btn" onclick="WorkshopView.openManualVehicleModal()" title="Cadastrar Veículo Completo">
+                <button class="ws-dash-action-btn" onclick="WorkshopView.switchSection('recepcao-checkin')" title="Ver Recepção / Pátio da Oficina">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9L1.4 12c-.2.4-.4.9-.4 1.4V16c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
-                    <span>Cadastrar Carro</span>
+                    <span>Recepção / Pátio</span>
                 </button>
                 <button class="ws-dash-action-btn" onclick="WorkshopView.openClientActivationModal()" style="border-color:rgba(255,210,28,0.35);" title="Cadastrar Cliente com Código para o App">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#FFD21C" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
@@ -2816,19 +2806,22 @@ const WorkshopView = {
                                         if (booked) {
                                             return `
                                                 <td>
-                                                    <div class="ws-agenda-slot-booked">
-                                                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                                                            <strong style="color:#ffffff; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${booked.vehicle_model}</strong>
-                                                            <span class="mono" style="color:var(--brand-cyan); font-size:10px; font-weight:800;">${booked.license_plate}</span>
-                                                        </div>
-                                                        <div style="font-size:10px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:2px 0;">
-                                                            👤 ${booked.owner_name} • ${booked.service_title}
-                                                        </div>
-                                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:3px;">
-                                                            <span class="badge-proof ${booked.status === 'CONFIRMED' ? 'badge-proven' : 'badge-pending'}" style="font-size:9px; padding:1px 5px;">
-                                                                ${booked.status === 'CONFIRMED' ? '🟢 CONFIRMADO' : '🟡 AGUARDANDO'}
+                                                    <div class="ws-agenda-slot-booked" style="background:#080e1a; border:1px solid rgba(0,212,255,0.35); padding:8px; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.35);">
+                                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                                            <span class="mono" style="background:#040711; color:var(--brand-cyan); font-size:11px; font-weight:900; letter-spacing:0.5px; padding:1px 6px; border-radius:3px; border:1px solid rgba(0,212,255,0.3);">${booked.license_plate}</span>
+                                                            <span class="badge-proof ${booked.status === 'CONFIRMED' ? 'badge-proven' : 'badge-pending'}" style="font-size:8.5px; padding:1px 4px;">
+                                                                ${booked.status === 'CONFIRMED' ? '🟢 OK' : '🟡 PEND'}
                                                             </span>
-                                                            <button class="btn btn-xs btn-primary" onclick="WorkshopView.openNewServiceModal('${booked.vehicle_id || ''}')" style="font-size:9.5px; padding:2px 6px;">
+                                                        </div>
+                                                        <div style="font-size:11px; font-weight:700; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${booked.owner_name}">
+                                                            👤 ${booked.owner_name}
+                                                        </div>
+                                                        <div style="font-size:10.5px; color:#FFD21C; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin:2px 0 4px 0;" title="${booked.service_title}">
+                                                            🔧 ${booked.service_title}
+                                                        </div>
+                                                        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(255,255,255,0.06); padding-top:4px;">
+                                                            <span style="font-size:9.5px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:85px;" title="${booked.vehicle_model}">${booked.vehicle_model}</span>
+                                                            <button class="btn btn-xs btn-primary" onclick="WorkshopView.openNewServiceModal('${booked.vehicle_id || ''}')" style="font-size:9px; padding:2px 6px; font-weight:700;">
                                                                 Iniciar OS
                                                             </button>
                                                         </div>
@@ -2981,10 +2974,181 @@ const WorkshopView = {
     openSlotBooking(isoDate, time) {
         this.selectedSlotDate = isoDate;
         this.selectedSlotTime = time;
-        this.openSmartScheduleModal('veh_civic', 'BRA2E19', 'Honda Civic Touring 1.5 Turbo', 'Carlos Henrique', 'Revisão Agendada');
-        setTimeout(() => {
-            this.selectSlot(isoDate, time);
-        }, 50);
+        this.openDirectSlotScheduleModal(isoDate, time);
+    },
+
+    openDirectSlotScheduleModal(isoDate, time) {
+        this.selectedSlotDate = isoDate;
+        this.selectedSlotTime = time;
+
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (!modalRoot) return;
+
+        // Formata data amigável
+        const [y, m, d] = (isoDate || '').split('-');
+        const dateObj = new Date(`${isoDate}T12:00:00`);
+        const daysOfWeek = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+        const dayName = daysOfWeek[dateObj.getDay()] || '';
+        const formattedDate = d && m && y ? `${d}/${m}/${y} (${dayName})` : isoDate;
+
+        modalRoot.innerHTML = `
+            <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
+                <div class="ws-erp-modal-window" style="max-width:520px;">
+                    <div class="ws-erp-modal-header" style="background:#0a0f1d; border-bottom:1px solid rgba(255,255,255,0.08); padding:16px 20px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:38px; height:38px; border-radius:8px; background:rgba(16,185,129,0.12); display:flex; align-items:center; justify-content:center; border:1px solid rgba(16,185,129,0.3);">
+                                <span style="font-size:20px;">📅</span>
+                            </div>
+                            <div>
+                                <strong style="color:#ffffff; font-size:16px; display:block;">Agendar Veículo na Oficina</strong>
+                                <span style="font-size:11.5px; color:#10b981; font-weight:700;">${formattedDate} às ${time}</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
+                    </div>
+
+                    <form onsubmit="WorkshopView.submitDirectSlotSchedule(event, '${isoDate}', '${time}')" style="padding:20px;">
+                        <!-- CAMPO PLACA DO CARRO COM BUSCA AUTOMÁTICA -->
+                        <div style="background:#060a14; border:1px solid rgba(0,212,255,0.3); border-radius:8px; padding:12px; margin-bottom:14px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <label class="form-label" style="font-size:11.5px; color:#38bdf8; font-weight:800; text-transform:uppercase;">Placa do Carro *</label>
+                                <span style="font-size:10.5px; color:#64748b;">(Mercosul ou padrão antigo)</span>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="ws-direct-plate" class="form-control" placeholder="Ex: BRA2E19" maxlength="8"
+                                       style="text-transform:uppercase; font-size:17px; font-weight:900; letter-spacing:2px; font-family:var(--font-mono); color:#FFD21C; text-align:center; background:#040711;"
+                                       onblur="WorkshopView.autoFillDirectScheduleByPlate(this.value)"
+                                       oninput="this.value=this.value.toUpperCase()" required />
+                                <button type="button" class="btn btn-sm btn-cyan" onclick="WorkshopView.autoFillDirectScheduleByPlate(document.getElementById('ws-direct-plate').value)" style="white-space:nowrap; font-weight:700;">
+                                    🔍 Buscar
+                                </button>
+                            </div>
+                            <span id="ws-direct-plate-feedback" style="display:block; font-size:11px; color:#94a3b8; margin-top:5px;">
+                                Digite a placa para buscar e auto-preencher os dados do cliente se já cadastrado.
+                            </span>
+                        </div>
+
+                        <!-- DADOS DO CLIENTE E VEÍCULO -->
+                        <div class="form-group" style="margin-bottom:12px;">
+                            <label class="form-label" style="font-size:11.5px;">Nome do Cliente *</label>
+                            <input type="text" id="ws-direct-client" class="form-control" placeholder="Ex: João Silva" required />
+                        </div>
+
+                        <div class="form-grid-2" style="margin-bottom:12px;">
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:11.5px;">Telefone / WhatsApp</label>
+                                <input type="text" id="ws-direct-phone" class="form-control" placeholder="Ex: (11) 98765-4321" />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" style="font-size:11.5px;">Modelo do Carro</label>
+                                <input type="text" id="ws-direct-model" class="form-control" placeholder="Ex: Honda Civic 2021" />
+                            </div>
+                        </div>
+
+                        <!-- SERVIÇO A SER EXECUTADO -->
+                        <div class="form-group" style="margin-bottom:12px;">
+                            <label class="form-label" style="font-size:11.5px; color:#FFD21C; font-weight:800;">Serviço a Ser Executado *</label>
+                            <input type="text" id="ws-direct-service" class="form-control" placeholder="Ex: Revisão periódica, Troca de óleo, Troca de pastilhas" required />
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:16px;">
+                            <label class="form-label" style="font-size:11.5px;">Observações (Opcional)</label>
+                            <input type="text" id="ws-direct-notes" class="form-control" placeholder="Ex: Cliente aguardará no local" />
+                        </div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
+                            <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" style="background:#10b981; color:#ffffff; font-weight:800; border:none; padding:10px 18px; display:inline-flex; align-items:center; gap:6px;">
+                                <span>📅</span> <span>Confirmar Agendamento</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+    },
+
+    async autoFillDirectScheduleByPlate(plate) {
+        if (!plate) return;
+        const clean = plate.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (clean.length < 3) return;
+
+        const feedback = document.getElementById('ws-direct-plate-feedback');
+        if (feedback) feedback.innerHTML = '<span style="color:#38bdf8;">🔍 Buscando veículo na base...</span>';
+
+        let veh = (this.vehiclesList || []).find(v => (v.license_plate || '').replace(/[^A-Z0-9]/g, '') === clean);
+
+        if (!veh) {
+            try {
+                const res = await API.searchVehicle(clean);
+                if (res && res.found && res.vehicle) {
+                    veh = res.vehicle;
+                }
+            } catch (_) {}
+        }
+
+        const clientInput = document.getElementById('ws-direct-client');
+        const phoneInput = document.getElementById('ws-direct-phone');
+        const modelInput = document.getElementById('ws-direct-model');
+
+        if (veh) {
+            if (clientInput && !clientInput.value) clientInput.value = veh.owner_name || veh.client_name || '';
+            if (phoneInput && !phoneInput.value) phoneInput.value = veh.owner_phone || veh.client_phone || '';
+            if (modelInput && !modelInput.value) modelInput.value = `${veh.brand || ''} ${veh.model || ''}`.trim();
+
+            if (feedback) {
+                feedback.innerHTML = `<span style="color:#10b981; font-weight:700;">✓ Veículo ${veh.brand || ''} ${veh.model || ''} (${veh.owner_name || 'Cliente'}) localizado!</span>`;
+            }
+        } else {
+            if (feedback) {
+                feedback.innerHTML = `<span style="color:#fbbf24;">Placa nova ou não cadastrada. Preencha os dados do cliente e serviço.</span>`;
+            }
+        }
+    },
+
+    async submitDirectSlotSchedule(e, isoDate, time) {
+        e.preventDefault();
+        const plate = document.getElementById('ws-direct-plate')?.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const clientName = document.getElementById('ws-direct-client')?.value.trim();
+        const clientPhone = document.getElementById('ws-direct-phone')?.value.trim() || '';
+        const vehicleModel = document.getElementById('ws-direct-model')?.value.trim() || 'Veículo Agendado';
+        const serviceTitle = document.getElementById('ws-direct-service')?.value.trim();
+        const notes = document.getElementById('ws-direct-notes')?.value.trim() || 'Agendado na grade semanal';
+
+        if (!plate || !clientName || !serviceTitle) {
+            alert('Por favor, preencha a placa, o nome do cliente e o serviço a ser executado.');
+            return;
+        }
+
+        try {
+            const newApp = {
+                license_plate: plate,
+                vehicle_model: vehicleModel,
+                owner_name: clientName,
+                owner_phone: clientPhone,
+                service_title: serviceTitle,
+                appointment_date: isoDate,
+                appointment_time: time,
+                notes
+            };
+
+            await API.createWorkshopAppointment(this.currentWorkshopId, newApp);
+
+            if (!this.appointmentsData) this.appointmentsData = [];
+            this.appointmentsData.push({
+                ...newApp,
+                id: 'app_' + Date.now(),
+                status: 'CONFIRMED'
+            });
+
+            this.closeModal();
+            alert(`🟢 AGENDAMENTO CONFIRMADO COM SUCESSO!\n\n📅 Data: ${isoDate} às ${time}\n🚗 Placa: ${plate} (${vehicleModel})\n👤 Cliente: ${clientName}\n🔧 Serviço: ${serviceTitle}`);
+
+            const vp = document.getElementById('ws-erp-active-viewport');
+            if (vp) vp.innerHTML = this.renderAgendaView();
+        } catch (err) {
+            alert('Erro ao confirmar agendamento: ' + err.message);
+        }
     },
 
     // Alternar dia de atendimento da oficina
@@ -3151,9 +3315,9 @@ const WorkshopView = {
 
             <!-- AÇÕES DE CADASTRO E PESQUISA COMPLETA -->
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
-                <button class="ws-dash-action-btn primary" onclick="WorkshopView.openManualVehicleModal()">
+                <button class="ws-dash-action-btn primary" onclick="WorkshopView.openUnifiedVehicleEntryModal()">
                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"></path></svg>
-                    <span>Nova Entrada de Veículo no Pátio</span>
+                    <span>Entrada de Veículos / Cadastro</span>
                 </button>
             </div>
 
@@ -3848,130 +4012,7 @@ const WorkshopView = {
     // Modal de Cadastro Manual de Veículo
     // Modal de Cadastro Manual de Veículo (Vinculado a Proprietário, KM de Entrada e Foto com DNA Automático)
     openManualVehicleModal(defaultPlate = '') {
-        const modalRoot = document.getElementById('ws-erp-modal-root');
-        if (!modalRoot) return;
-
-        const currentYear = new Date().getFullYear();
-
-        modalRoot.innerHTML = `
-            <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
-                <div class="ws-erp-modal-window" style="max-width:620px; max-height:92vh; overflow-y:auto;">
-                    <div class="ws-erp-modal-header" style="background:#0b111e; border-bottom:1px solid rgba(255,255,255,0.08); padding:14px 20px;">
-                        <div>
-                            <strong style="color:#ffffff; font-size:16px; display:block;">Cadastrar Entrada de Veículo na Oficina</strong>
-                            <span style="font-size:12px; color:var(--text-dim);">Vínculo com proprietário, hodômetro de entrada e Passaporte Digital DNA Permanente</span>
-                        </div>
-                        <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
-                    </div>
-
-                    <form onsubmit="WorkshopView.submitManualRegisterForm(event)" style="padding:18px 22px;">
-                        <!-- SEÇÃO 1: DADOS TÉCNICOS DO VEÍCULO -->
-                        <div style="font-size:11px; font-weight:800; color:#FFD21C; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-                            <span>🚗 1. DADOS TÉCNICOS DO VEÍCULO</span>
-                        </div>
-
-                        <div class="form-grid-2" style="margin-bottom:10px;">
-                            <div class="form-group">
-                                <label class="form-label">Placa do Veículo *</label>
-                                <input type="text" id="manual-veh-plate" class="form-control" value="${defaultPlate || 'BRA2E19'}" maxlength="8" placeholder="Ex: BRA2E19" style="text-transform:uppercase; font-weight:800; font-family:var(--font-mono); color:var(--brand-cyan);" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Marca / Montadora *</label>
-                                <input type="text" id="manual-veh-brand" class="form-control" placeholder="Ex: Honda" value="Honda" required />
-                            </div>
-                        </div>
-
-                        <div class="form-grid-2" style="margin-bottom:10px;">
-                            <div class="form-group">
-                                <label class="form-label">Modelo do Carro *</label>
-                                <input type="text" id="manual-veh-model" class="form-control" placeholder="Ex: Civic Touring" value="Civic Touring" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Versão / Motor</label>
-                                <input type="text" id="manual-veh-version" class="form-control" placeholder="Ex: 1.5 Turbo" value="1.5 Turbo" />
-                            </div>
-                        </div>
-
-                        <div class="form-grid-2" style="margin-bottom:16px;">
-                            <div class="form-group">
-                                <label class="form-label">Ano Fabricação/Modelo *</label>
-                                <input type="number" id="manual-veh-year" class="form-control" value="2021" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Cor do Veículo</label>
-                                <input type="text" id="manual-veh-color" class="form-control" placeholder="Ex: Prata Platinum" value="Prata Platinum" />
-                            </div>
-                        </div>
-
-                        <!-- SEÇÃO 2: DADOS DO PROPRIETÁRIO / CLIENTE -->
-                        <div style="font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; display:flex; align-items:center; gap:6px; border-top:1px solid rgba(255,255,255,0.06); padding-top:14px;">
-                            <span>👤 2. DADOS DO PROPRIETÁRIO / CLIENTE</span>
-                        </div>
-
-                        <div class="form-grid-2" style="margin-bottom:16px;">
-                            <div class="form-group">
-                                <label class="form-label">Nome Completo do Proprietário *</label>
-                                <input type="text" id="manual-veh-owner-name" class="form-control" placeholder="Ex: Carlos Henrique" value="Carlos Henrique" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Telefone / WhatsApp *</label>
-                                <input type="text" id="manual-veh-owner-phone" class="form-control" placeholder="Ex: (11) 98765-4321" value="(11) 98765-4321" required />
-                            </div>
-                        </div>
-
-                        <!-- SEÇÃO 3: HODÔMETRO DE ENTRADA & FOTO DO VEÍCULO -->
-                        <div style="font-size:11px; font-weight:800; color:#10b981; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px; display:flex; align-items:center; gap:6px; border-top:1px solid rgba(255,255,255,0.06); padding-top:14px;">
-                            <span>📸 3. HODÔMETRO DE ENTRADA & FOTO DO VEÍCULO</span>
-                        </div>
-
-                        <div class="form-grid-2" style="margin-bottom:12px;">
-                            <div class="form-group">
-                                <label class="form-label" style="color:#10b981; font-weight:800;">Hodômetro na Entrada (KM) *</label>
-                                <input type="number" id="manual-veh-km" class="form-control" placeholder="Ex: 87542" value="87542" style="font-size:15px; font-weight:800; font-family:var(--font-mono);" required />
-                                <span style="font-size:11px; color:var(--text-dim); margin-top:3px; display:block;">Gravado na entrada e pré-preenchido no modal de serviço.</span>
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Foto do Veículo</label>
-                                <div style="display:flex; gap:8px; align-items:center;">
-                                    <input type="file" id="manual-veh-photo-file" accept="image/*" onchange="WorkshopView.handleVehiclePhotoUpload(event)" style="display:none;" />
-                                    <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('manual-veh-photo-file').click()" style="display:inline-flex; align-items:center; gap:6px;">
-                                        📷 Escolher Imagem
-                                    </button>
-                                    <span id="manual-veh-photo-name" style="font-size:11px; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">Nenhuma foto</span>
-                                </div>
-                                <input type="hidden" id="manual-veh-photo-data" value="" />
-                                <input type="text" id="manual-veh-photo-url" class="form-control" placeholder="Ou cole a URL da foto..." oninput="WorkshopView.updatePhotoPreview(this.value)" style="margin-top:6px; font-size:11px; padding:4px 8px;" />
-                            </div>
-                        </div>
-
-                        <!-- PRÉ-VISUALIZAÇÃO DA FOTO DO CARRO -->
-                        <div id="manual-veh-photo-preview-box" style="display:none; margin-bottom:14px; text-align:center; padding:8px; background:#080d16; border-radius:6px; border:1px dashed rgba(255,255,255,0.15);">
-                            <img id="manual-veh-photo-preview" src="" alt="Prévia do Veículo" style="max-height:130px; max-width:100%; border-radius:5px; object-fit:cover;" />
-                        </div>
-
-                        <!-- BADGE DNA AUTOMÁTICO -->
-                        <div style="margin-top:8px; padding:12px 14px; background:rgba(0,212,255,0.06); border-radius:6px; border:1px solid rgba(0,212,255,0.25); display:flex; align-items:center; gap:12px;">
-                            <div style="font-size:24px;">🧬</div>
-                            <div>
-                                <strong style="color:#00e5ff; font-size:12.5px; display:block;">Passaporte Digital DNA Automático Permanente (Nível 4)</strong>
-                                <span style="font-size:11.5px; color:#cbd5e1; display:block; line-height:1.35;">
-                                    Ao cadastrar, o veículo recebe o DNA ativo perpétuo e <strong>já fica marcado como padrão</strong> no modal de serviço, sem necessidade de procurar ou escolher o carro manualmente.
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- AÇÕES -->
-                        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
-                            <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" style="font-weight:800; background:#10b981; border:none; padding:8px 18px;">
-                                ✅ Salvar Entrada & Iniciar Serviço
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        `;
+        this.openUnifiedVehicleEntryModal(defaultPlate);
     },
 
     handleVehiclePhotoUpload(e) {
@@ -4463,155 +4504,322 @@ const WorkshopView = {
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // ENTRADA RÁPIDA DE VEÍCULOS NO PÁTIO (DASHBOARD & RECEPÇÃO)
+    // ENTRADA DE VEÍCULOS & CADASTRO UNIFICADO COM CONSULTA INTELIGENTE POR PLACA
     // ──────────────────────────────────────────────────────────────────────────
-    openQuickEntryModal() {
+    openUnifiedVehicleEntryModal(defaultPlate = '') {
         const modalRoot = document.getElementById('ws-erp-modal-root');
         if (!modalRoot) return;
 
         modalRoot.innerHTML = `
             <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
-                <div class="ws-erp-modal-window" style="max-width:580px; max-height:90vh; overflow-y:auto;">
+                <div class="ws-erp-modal-window" style="max-width:640px; max-height:92vh; overflow-y:auto;">
                     <div class="ws-erp-modal-header" style="background:#0a0f1d; border-bottom:1px solid rgba(255,255,255,0.08); padding:16px 20px;">
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <div style="width:38px; height:38px; border-radius:8px; background:rgba(0,212,255,0.12); display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,212,255,0.3);">
-                                <span style="font-size:20px;">⚡</span>
+                            <div style="width:40px; height:40px; border-radius:8px; background:rgba(0,212,255,0.12); display:flex; align-items:center; justify-content:center; border:1px solid rgba(0,212,255,0.3);">
+                                <span style="font-size:22px;">🚗</span>
                             </div>
                             <div>
-                                <strong style="color:#ffffff; font-size:16px; display:block;">Entrada Rápida de Veículo no Pátio</strong>
-                                <span style="font-size:11.5px; color:#94a3b8;">Cadastre o carro e cliente em poucos segundos com preenchimento ágil</span>
+                                <strong style="color:#ffffff; font-size:16px; display:block;">Entrada de Veículos / Cadastro</strong>
+                                <span style="font-size:11.5px; color:#94a3b8;">Consulte a placa no banco de dados para entrada imediata ou cadastre um novo veículo</span>
                             </div>
                         </div>
                         <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
                     </div>
 
-                    <form onsubmit="WorkshopView.submitQuickEntryForm(event)" style="padding:20px;">
-                        <!-- BUSCA / AUTO-PREENCHIMENTO POR PLACA -->
-                        <div style="background:#060a14; border:1px solid rgba(0,212,255,0.3); border-radius:10px; padding:14px; margin-bottom:16px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                <label class="form-label" style="font-size:12px; color:#38bdf8; font-weight:800; text-transform:uppercase;">Placa do Veículo *</label>
-                                <span style="font-size:11px; color:#64748b;">(Mercosul ou Antiga)</span>
+                    <div style="padding:20px;">
+                        <!-- BUSCA POR PLACA EM DESTAQUE -->
+                        <div style="background:#060a14; border:1px solid rgba(0,212,255,0.35); border-radius:10px; padding:16px; margin-bottom:16px; box-shadow:0 4px 14px rgba(0,0,0,0.3);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <label class="form-label" style="font-size:12px; color:#38bdf8; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">Placa do Veículo *</label>
+                                <span style="font-size:11px; color:#64748b;">Mercosul ou Cinza Antiga</span>
                             </div>
-                            <div style="display:flex; gap:8px;">
-                                <input type="text" id="ws-quick-plate" class="form-control" placeholder="ABC1D23" maxlength="8" style="text-transform:uppercase; font-size:18px; font-weight:900; letter-spacing:2px; font-family:var(--font-mono); color:#FFD21C; text-align:center; background:#040711;" onblur="WorkshopView.autoFillQuickEntryByPlate(this.value)" required />
-                                <button type="button" class="btn btn-sm btn-cyan" onclick="WorkshopView.autoFillQuickEntryByPlate(document.getElementById('ws-quick-plate').value)" style="white-space:nowrap; font-weight:700;">
-                                    🔍 Buscar
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" id="ws-unified-plate" class="form-control"
+                                       placeholder="Ex: BRA2E19" maxlength="8" value="${defaultPlate || ''}"
+                                       style="text-transform:uppercase; font-size:20px; font-weight:900; letter-spacing:3px; font-family:var(--font-mono); color:#FFD21C; text-align:center; background:#040711; border-color:rgba(255,210,28,0.4);"
+                                       onkeydown="if(event.key==='Enter'){event.preventDefault(); WorkshopView.lookupPlateInUnifiedEntry(this.value);}"
+                                       onblur="WorkshopView.lookupPlateInUnifiedEntry(this.value)"
+                                       oninput="this.value=this.value.toUpperCase()" />
+                                <button type="button" class="btn btn-cyan" onclick="WorkshopView.lookupPlateInUnifiedEntry(document.getElementById('ws-unified-plate').value)" style="white-space:nowrap; font-weight:800; padding:8px 18px;">
+                                    🔍 Consultar Placa
                                 </button>
                             </div>
-                            <span id="ws-quick-plate-feedback" style="display:block; font-size:11px; color:#94a3b8; margin-top:4px;">
-                                Digite a placa e o sistema buscará os dados já salvos automaticamente.
-                            </span>
-                        </div>
-
-                        <!-- DADOS DO CARRO -->
-                        <div class="form-grid-2" style="margin-bottom:12px;">
-                            <div class="form-group">
-                                <label class="form-label" style="font-size:11.5px;">Marca / Montadora *</label>
-                                <input type="text" id="ws-quick-brand" class="form-control" placeholder="Ex: Toyota, Honda, VW" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" style="font-size:11.5px;">Modelo do Veículo *</label>
-                                <input type="text" id="ws-quick-model" class="form-control" placeholder="Ex: Corolla XEi, Civic" required />
+                            <div id="ws-unified-plate-status" style="margin-top:8px; font-size:11.5px; color:#94a3b8;">
+                                Digite a placa e o sistema verificará se o veículo já existe no banco da oficina ou se precisará ser cadastrado.
                             </div>
                         </div>
 
-                        <div class="form-grid-2" style="margin-bottom:12px;">
-                            <div class="form-group">
-                                <label class="form-label" style="font-size:11.5px;">Hodômetro Atual (KM) *</label>
-                                <input type="number" id="ws-quick-km" class="form-control" placeholder="Ex: 85000" style="font-weight:700; font-family:var(--font-mono);" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" style="font-size:11.5px;">Ano / Cor</label>
-                                <input type="text" id="ws-quick-year-color" class="form-control" placeholder="Ex: 2022 • Prata" />
+                        <!-- CONTAINER DINÂMICO: PREENCHIDO COM BASE NO STATUS DA PLACA -->
+                        <div id="ws-unified-entry-content">
+                            <div style="background:#080c16; border:1px dashed rgba(255,255,255,0.1); border-radius:8px; padding:24px; text-align:center; color:#64748b;">
+                                <span style="font-size:32px; display:block; margin-bottom:8px;">🔍</span>
+                                <strong style="color:#94a3b8; font-size:13px; display:block;">Aguardando inserção da placa</strong>
+                                <span style="font-size:11.5px;">Digite a placa acima para consultar no banco ou cadastrar o veículo.</span>
                             </div>
                         </div>
-
-                        <!-- DADOS DO CLIENTE -->
-                        <div style="font-size:11.5px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin:16px 0 10px 0; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px; display:flex; align-items:center; gap:6px;">
-                            <span>👤 DADOS DO CLIENTE</span>
-                        </div>
-
-                        <div class="form-grid-2" style="margin-bottom:12px;">
-                            <div class="form-group">
-                                <label class="form-label" style="font-size:11.5px;">Nome do Cliente *</label>
-                                <input type="text" id="ws-quick-client-name" class="form-control" placeholder="Ex: Carlos Oliveira" required />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" style="font-size:11.5px;">WhatsApp do Cliente *</label>
-                                <input type="text" id="ws-quick-client-phone" class="form-control" placeholder="(19) 98765-4321" required />
-                            </div>
-                        </div>
-
-                        <div class="form-group" style="margin-bottom:16px;">
-                            <label class="form-label" style="font-size:11.5px;">Motivo da Entrada / Observações Iniciais</label>
-                            <input type="text" id="ws-quick-reason" class="form-control" placeholder="Ex: Revisão 60k, Barulho na suspensão, Troca de óleo" />
-                        </div>
-
-                        <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
-                            <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" style="background:#10b981; color:#ffffff; font-weight:800; border:none; padding:10px 20px; display:inline-flex; align-items:center; gap:6px;">
-                                <span>⚡</span> <span>Confirmar Entrada</span>
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         `;
+
+        if (defaultPlate) {
+            setTimeout(() => {
+                this.lookupPlateInUnifiedEntry(defaultPlate);
+            }, 50);
+        }
     },
 
-    async autoFillQuickEntryByPlate(plate) {
+    async lookupPlateInUnifiedEntry(plate) {
         if (!plate) return;
         const clean = plate.toUpperCase().replace(/[^A-Z0-9]/g, '');
         if (clean.length < 3) return;
 
-        const feedback = document.getElementById('ws-quick-plate-feedback');
-        if (feedback) feedback.innerHTML = '<span style="color:#38bdf8;">🔍 Buscando dados do veículo...</span>';
+        const statusEl = document.getElementById('ws-unified-plate-status');
+        const contentEl = document.getElementById('ws-unified-entry-content');
+        if (statusEl) statusEl.innerHTML = `<span style="color:#38bdf8;">🔍 Verificando placa <strong>${clean}</strong> no banco de dados da oficina...</span>`;
 
-        try {
-            const res = await API.searchVehicle(clean);
-            if (res && res.found && res.vehicle) {
-                const v = res.vehicle;
-                const brandInput = document.getElementById('ws-quick-brand');
-                const modelInput = document.getElementById('ws-quick-model');
-                const kmInput = document.getElementById('ws-quick-km');
-                const clientNameInput = document.getElementById('ws-quick-client-name');
-                const clientPhoneInput = document.getElementById('ws-quick-client-phone');
-                const yearColorInput = document.getElementById('ws-quick-year-color');
+        let foundVehicle = null;
 
-                if (brandInput && !brandInput.value) brandInput.value = v.brand || '';
-                if (modelInput && !modelInput.value) modelInput.value = v.model || '';
-                if (kmInput && !kmInput.value) kmInput.value = v.current_mileage || v.mileage || '';
-                if (clientNameInput && !clientNameInput.value) clientNameInput.value = v.owner_name || '';
-                if (clientPhoneInput && !clientPhoneInput.value) clientPhoneInput.value = v.owner_phone || '';
-                if (yearColorInput && !yearColorInput.value) yearColorInput.value = `${v.manufacture_year || ''} • ${v.color || ''}`.trim();
+        // 1. Procura na lista local de veículos da oficina
+        foundVehicle = (this.vehiclesList || []).find(v => (v.license_plate || '').replace(/[^A-Z0-9]/g, '') === clean);
 
-                if (feedback) feedback.innerHTML = `<span style="color:#10b981; font-weight:700;">✓ Veículo ${v.brand} ${v.model} localizado na base!</span>`;
-            } else {
-                if (feedback) feedback.innerHTML = `<span style="color:#fbbf24;">Placa nova. Preencha os campos para cadastrar a primeira entrada.</span>`;
+        // 2. Se não achou na memória local, consulta o backend
+        if (!foundVehicle) {
+            try {
+                const res = await API.searchVehicle(clean);
+                if (res && res.found && res.vehicle) {
+                    foundVehicle = res.vehicle;
+                }
+            } catch (_) {}
+        }
+
+        if (foundVehicle) {
+            // VEÍCULO ENCONTRADO NO BANCO DE DADOS
+            if (statusEl) {
+                statusEl.innerHTML = `<span style="color:#10b981; font-weight:700;">✓ Veículo localizado no banco de dados! Preencha a entrada abaixo:</span>`;
             }
-        } catch (_) {
-            if (feedback) feedback.innerHTML = `<span style="color:#94a3b8;">Placa pronta para cadastro.</span>`;
+            if (contentEl) {
+                this.renderUnifiedFoundVehicleContent(foundVehicle);
+            }
+        } else {
+            // VEÍCULO NÃO EXISTE NO BANCO DE DADOS
+            if (statusEl) {
+                statusEl.innerHTML = `<span style="color:#fbbf24; font-weight:700;">⚠️ Placa nova não cadastrada. Preencha os campos abaixo para cadastrar:</span>`;
+            }
+            if (contentEl) {
+                this.renderUnifiedNewVehicleContent(clean);
+            }
         }
     },
 
-    async submitQuickEntryForm(e) {
-        e.preventDefault();
-        const plate = document.getElementById('ws-quick-plate').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-        const brand = document.getElementById('ws-quick-brand').value.trim();
-        const model = document.getElementById('ws-quick-model').value.trim();
-        const km = document.getElementById('ws-quick-km').value;
-        const ownerName = document.getElementById('ws-quick-client-name').value.trim();
-        const ownerPhone = document.getElementById('ws-quick-client-phone').value.trim();
-        const yearColor = document.getElementById('ws-quick-year-color')?.value.trim() || '';
-        const reason = document.getElementById('ws-quick-reason')?.value.trim() || 'Entrada no Pátio';
+    renderUnifiedFoundVehicleContent(v) {
+        const contentEl = document.getElementById('ws-unified-entry-content');
+        if (!contentEl) return;
 
-        let year = new Date().getFullYear();
-        let color = 'Não informada';
-        if (yearColor.includes('•')) {
-            const parts = yearColor.split('•');
-            year = parseInt(parts[0], 10) || year;
-            color = parts[1].trim() || color;
+        const currentKm = v.current_mileage || v.mileage || v.latest_mileage || 50000;
+        const ownerName = v.owner_name || v.client_name || 'Cliente da Oficina';
+        const ownerPhone = v.owner_phone || v.client_phone || '(11) 98765-4321';
+        const dnaCode = v.dna_code || 'DNA-BR-ATIVO';
+        const plate = (v.license_plate || '').toUpperCase();
+
+        contentEl.innerHTML = `
+            <form onsubmit="WorkshopView.submitUnifiedExistingEntry(event, '${v.id || ''}', '${plate}')" style="display:flex; flex-direction:column; gap:14px;">
+                <!-- CARD DE RESUMO DO VEÍCULO ENCONTRADO -->
+                <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                        <div>
+                            <span class="mono" style="background:#040711; color:var(--brand-cyan); padding:2px 8px; border-radius:4px; font-weight:900; font-size:13px; border:1px solid rgba(0,212,255,0.3);">${plate}</span>
+                            <strong style="color:#ffffff; font-size:15px; margin-left:8px;">${v.brand || ''} ${v.model || 'Veículo'}</strong>
+                            <span style="font-size:11.5px; color:#94a3b8; display:block; margin-top:2px;">${v.manufacture_year || ''} • ${v.color || ''}</span>
+                        </div>
+                        <span class="badge-proof badge-proven" style="font-size:10px; padding:3px 8px;">
+                            🟢 CADASTRADO NO BANCO
+                        </span>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06); font-size:11.5px;">
+                        <div>
+                            <span style="color:#94a3b8; display:block;">Proprietário:</span>
+                            <strong style="color:#ffffff;">👤 ${ownerName}</strong>
+                        </div>
+                        <div>
+                            <span style="color:#94a3b8; display:block;">WhatsApp / Telefone:</span>
+                            <strong style="color:#25D366; font-family:var(--font-mono);">💬 ${ownerPhone}</strong>
+                        </div>
+                        <div>
+                            <span style="color:#94a3b8; display:block;">Passaporte DNA:</span>
+                            <strong class="mono" style="color:var(--brand-cyan);">${dnaCode}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DADOS DA NOVA ENTRADA NO PÁTIO -->
+                <div style="font-size:11.5px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px;">
+                    <span>⚡ DADOS DA ENTRADA NO PÁTIO</span>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" style="color:#10b981; font-weight:800; font-size:12px;">Hodômetro Atual de Entrada (KM) *</label>
+                        <input type="number" id="ws-unified-entry-km" class="form-control" value="${currentKm}" style="font-weight:900; font-size:15px; font-family:var(--font-mono); color:#10b981;" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:12px;">Motivo da Entrada / Serviço Solicitado *</label>
+                        <input type="text" id="ws-unified-entry-reason" class="form-control" placeholder="Ex: Revisão preventiva, Barulho de freio, Troca de óleo" required />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" style="font-size:12px;">Observações Técnicas Iniciais</label>
+                    <input type="text" id="ws-unified-entry-notes" class="form-control" placeholder="Ex: Cliente deixou o carro às 09h para retirar no final do dia" />
+                </div>
+
+                <input type="hidden" id="ws-unified-entry-brand" value="${v.brand || ''}" />
+                <input type="hidden" id="ws-unified-entry-model" value="${v.model || ''}" />
+                <input type="hidden" id="ws-unified-entry-owner" value="${ownerName}" />
+                <input type="hidden" id="ws-unified-entry-phone" value="${ownerPhone}" />
+
+                <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px; margin-top:6px;">
+                    <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" style="background:#10b981; color:#ffffff; font-weight:800; border:none; padding:10px 22px; display:inline-flex; align-items:center; gap:6px;">
+                        <span>⚡</span> <span>Confirmar Entrada no Pátio</span>
+                    </button>
+                </div>
+            </form>
+        `;
+    },
+
+    renderUnifiedNewVehicleContent(plate) {
+        const contentEl = document.getElementById('ws-unified-entry-content');
+        if (!contentEl) return;
+
+        contentEl.innerHTML = `
+            <form onsubmit="WorkshopView.submitUnifiedNewEntry(event, '${plate}')" style="display:flex; flex-direction:column; gap:14px;">
+                <div style="background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.3); border-radius:8px; padding:12px 14px; font-size:12px; color:#fbbf24;">
+                    <strong>ℹ️ Veículo Não Cadastrado:</strong> Preencha os campos abaixo para cadastrar o veículo, vincular o cliente e dar entrada imediata no pátio com Passaporte DNA ativo.
+                </div>
+
+                <!-- SEÇÃO 1: DADOS DO VEÍCULO -->
+                <div style="font-size:11px; font-weight:800; color:#FFD21C; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px;">
+                    <span>🚗 1. DADOS DO VEÍCULO</span>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:11.5px;">Marca / Montadora *</label>
+                        <input type="text" id="ws-new-brand" class="form-control" placeholder="Ex: Toyota, Honda, VW, Jeep" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:11.5px;">Modelo do Veículo *</label>
+                        <input type="text" id="ws-new-model" class="form-control" placeholder="Ex: Corolla XEi, Civic, Compass" required />
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:11.5px;">Ano Fabricação/Modelo *</label>
+                        <input type="number" id="ws-new-year" class="form-control" value="2022" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:11.5px;">Cor do Veículo</label>
+                        <input type="text" id="ws-new-color" class="form-control" placeholder="Ex: Prata Platinum" value="Prata" />
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 2: DADOS DO PROPRIETÁRIO -->
+                <div style="font-size:11px; font-weight:800; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                    <span>👤 2. DADOS DO CLIENTE / PROPRIETÁRIO</span>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:11.5px;">Nome do Cliente *</label>
+                        <input type="text" id="ws-new-owner-name" class="form-control" placeholder="Ex: Carlos Henrique" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:11.5px;">WhatsApp do Cliente *</label>
+                        <input type="text" id="ws-new-owner-phone" class="form-control" placeholder="(11) 98765-4321" required />
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 3: ENTRADA NO PÁTIO -->
+                <div style="font-size:11px; font-weight:800; color:#10b981; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                    <span>⚡ 3. ENTRADA NO PÁTIO & HODÔMETRO</span>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label" style="color:#10b981; font-weight:800; font-size:11.5px;">Hodômetro de Entrada (KM) *</label>
+                        <input type="number" id="ws-new-km" class="form-control" placeholder="Ex: 65000" style="font-weight:900; font-family:var(--font-mono);" required />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size:11.5px;">Motivo da Entrada / Serviço</label>
+                        <input type="text" id="ws-new-reason" class="form-control" placeholder="Ex: Revisão periódica, Troca de óleo" />
+                    </div>
+                </div>
+
+                <div style="padding:10px 12px; background:rgba(0,212,255,0.06); border-radius:6px; border:1px solid rgba(0,212,255,0.2); font-size:11px; color:#cbd5e1;">
+                    🧬 <strong>Passaporte DNA Permanente (Nível 4)</strong> será gerado automaticamente com ativação imediata para este veículo.
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:14px; margin-top:4px;">
+                    <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" style="background:#10b981; color:#ffffff; font-weight:800; border:none; padding:10px 20px; display:inline-flex; align-items:center; gap:6px;">
+                        <span>✅</span> <span>Cadastrar Veículo & Confirmar Entrada</span>
+                    </button>
+                </div>
+            </form>
+        `;
+    },
+
+    async submitUnifiedExistingEntry(e, vehicleId, plate) {
+        e.preventDefault();
+        const km = document.getElementById('ws-unified-entry-km')?.value;
+        const reason = document.getElementById('ws-unified-entry-reason')?.value.trim() || 'Entrada no Pátio';
+        const notes = document.getElementById('ws-unified-entry-notes')?.value.trim() || '';
+        const brand = document.getElementById('ws-unified-entry-brand')?.value || '';
+        const model = document.getElementById('ws-unified-entry-model')?.value || '';
+        const owner = document.getElementById('ws-unified-entry-owner')?.value || '';
+        const phone = document.getElementById('ws-unified-entry-phone')?.value || '';
+
+        try {
+            const yardVeh = {
+                id: vehicleId || 'veh_' + plate,
+                license_plate: plate,
+                brand,
+                model,
+                current_mileage: Number(km),
+                mileage: Number(km),
+                owner_name: owner,
+                owner_phone: phone,
+                entry_reason: reason,
+                entry_notes: notes,
+                dna_status: 'ACTIVE'
+            };
+
+            this.lastRegisteredVehicle = yardVeh;
+            if (!this.vehiclesList) this.vehiclesList = [];
+            this.vehiclesList = [yardVeh, ...this.vehiclesList.filter(v => v.license_plate !== plate)];
+
+            this.closeModal();
+            alert(`✅ ENTRADA CONFIRMADA NO PÁTIO!\n\n🚗 Veículo: ${brand} ${model} (${plate})\n👤 Cliente: ${owner} (${phone})\n⏱️ Odômetro: ${Number(km).toLocaleString('pt-BR')} km\n🔧 Motivo: ${reason}`);
+
+            await this.render();
+        } catch (err) {
+            alert('Erro ao registrar entrada: ' + err.message);
         }
+    },
+
+    async submitUnifiedNewEntry(e, plate) {
+        e.preventDefault();
+        const brand = document.getElementById('ws-new-brand')?.value.trim();
+        const model = document.getElementById('ws-new-model')?.value.trim();
+        const year = parseInt(document.getElementById('ws-new-year')?.value, 10) || new Date().getFullYear();
+        const color = document.getElementById('ws-new-color')?.value.trim() || 'Não informada';
+        const ownerName = document.getElementById('ws-new-owner-name')?.value.trim();
+        const ownerPhone = document.getElementById('ws-new-owner-phone')?.value.trim();
+        const km = document.getElementById('ws-new-km')?.value;
+        const reason = document.getElementById('ws-new-reason')?.value.trim() || 'Entrada no Pátio';
 
         try {
             const res = await API.registerVehicle({
@@ -4639,16 +4847,14 @@ const WorkshopView = {
                 owner_name: ownerName,
                 owner_phone: ownerPhone,
                 dna_code: dnaCode,
-                dna_status: 'ACTIVE'
+                dna_status: 'ACTIVE',
+                entry_reason: reason
             };
 
             this.lastRegisteredVehicle = newVeh;
             if (!this.vehiclesList) this.vehiclesList = [];
             this.vehiclesList = [newVeh, ...this.vehiclesList.filter(v => v.license_plate !== plate)];
 
-            this.closeModal();
-
-            // Gera também código de ativação do cliente para facilitar
             try {
                 await API.registerClientActivation(this.currentWorkshopId, {
                     license_plate: plate,
@@ -4658,11 +4864,27 @@ const WorkshopView = {
                 });
             } catch (_) {}
 
-            alert(`✅ Entrada confirmada com sucesso!\n\n🚗 Veículo: ${brand} ${model} (${plate})\n👤 Cliente: ${ownerName} (${ownerPhone})\n⏱️ Odômetro: ${Number(km).toLocaleString('pt-BR')} km\nMotivo: ${reason}`);
+            this.closeModal();
+            alert(`🎉 VEÍCULO CADASTRADO E ENTRADA CONFIRMADA!\n\n🚗 Veículo: ${brand} ${model} (${plate})\n👤 Cliente: ${ownerName} (${ownerPhone})\n⏱️ Odômetro: ${Number(km).toLocaleString('pt-BR')} km\n🧬 DNA Gerado: ${dnaCode}\n🔧 Motivo: ${reason}`);
+
             await this.render();
         } catch (err) {
-            alert('Erro ao registrar entrada rápida: ' + err.message);
+            alert('Erro ao cadastrar novo veículo: ' + err.message);
         }
+    },
+
+    // Wrappers de compatibilidade para chamadas legadas
+    openQuickEntryModal() {
+        this.openUnifiedVehicleEntryModal();
+    },
+
+    autoFillQuickEntryByPlate(plate) {
+        this.lookupPlateInUnifiedEntry(plate);
+    },
+
+    submitQuickEntryForm(e) {
+        e.preventDefault();
+        this.openUnifiedVehicleEntryModal();
     },
 
     // ──────────────────────────────────────────────────────────────────────────

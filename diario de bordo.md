@@ -367,8 +367,27 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Modal de validação com auto-formatação e feedback imediato.
   7. `public/css/components.css`:
      - Media queries dedicadas para tablets de 10 polegadas (Portrait 768px-992px e Landscape 993px-1280px).
-  8. `test/api.test.js`:
-     - Adicionado Teste 38 validando geração de código de ativação e validação pelo cliente. Bateria com 38/38 testes aprovados (100%).
+### 📅 Ciclo 19 — Unificação de Entrada & Cadastro no Menu Operacional e Simplificação da Agenda da Semana
+- **Demandas Atendidas:**
+  1. **Menu "OPERAÇÃO & ENTRADA" Enxuto:** Unificação dos botões e fluxos de "Nova Entrada" e "Cadastrar Carro" em um único item limpo: `Entrada de Veículos / Cadastro`, deixando a seção com apenas `Dashboard` e `Entrada de Veículos / Cadastro`.
+  2. **Fluxo Inteligente de Consulta por Placa:** No modal unificado, ao digitar a placa:
+     - Se o veículo já estiver cadastrado no banco de dados, exibe os dados do veículo, cliente e passaporte DNA com preenchimento do hodômetro e confirmação de entrada no pátio.
+     - Se for uma placa nova não cadastrada, abre dinamicamente o formulário completo para cadastrar o veículo e o proprietário, gerando o passaporte DNA permanente e dando entrada imediata.
+  3. **Agenda da Semana Simplificada (`+ Disponível`):** Ao clicar no botão `+ Disponível` de qualquer horário e dia na grade semanal interativa:
+     - Abre modal direto fixado para o dia e horário selecionados com campo para digitação da placa.
+     - Busca automática pelo veículo: se já cadastrado, preenche automaticamente o Nome do Cliente, telefone e modelo do carro.
+     - Campo obrigatório para o "Serviço a ser executado".
+     - Exibição limpa na grade destacando os três pontos chave: **Placa**, **Nome do Cliente** e **Serviço a ser executado**, tornando a agenda da oficina direta e intuitiva para o dia a dia.
+- **Implementações Técnicas Realizadas:**
+  1. `public/js/components/workshopView.js`:
+     - Menu lateral simplificado no Setor 1 para `Dashboard` e `Entrada de Veículos / Cadastro`.
+     - Novo método `openUnifiedVehicleEntryModal(defaultPlate)` com busca em tempo real via `lookupPlateInUnifiedEntry()`.
+     - Renderização condicional `renderUnifiedFoundVehicleContent()` (carro existente no banco) e `renderUnifiedNewVehicleContent()` (cadastro de novo veículo com DNA permanente).
+     - Novo método `openDirectSlotScheduleModal(isoDate, time)` e busca por placa `autoFillDirectScheduleByPlate()` para a grade semanal.
+     - Visualização aprimorada de slots ocupados na grade semanal destacando Placa, Cliente e Serviço.
+     - Wrappers de compatibilidade garantindo que chamadas legadas naveguem para os novos modais unificados.
+  2. `test/api.test.js`:
+     - Bateria completa com 38/38 testes de integração passando com 100% de sucesso (`npm test`).
 
 ---
 

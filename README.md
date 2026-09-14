@@ -9,7 +9,7 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes:** WhatsApp Baileys com scanner QR Code corrigido e reconexão automática; Entrada Rápida de Veículos na Oficina; Cadastro de Clientes com geração de Código de Ativação (`DNA-XXXX`); Menu da Oficina setorizado; Rodapé sutil; Suporte completo e responsivo para Tablets de 10 polegadas (em pé e deitado).
+> ✨ **Novidades Recentes:** Menu da Oficina enxuto com Entrada de Veículos e Cadastro unificados via busca inteligente por placa; Agenda da Semana simplificada com agendamento direto nos slots (`+ Disponível`) exibindo placa, cliente e serviço a ser executado; WhatsApp Baileys com scanner QR Code corrigido e reconexão automática; Cadastro de Clientes com geração de Código de Ativação (`DNA-XXXX`); Suporte responsivo para Tablets de 10 polegadas.
 
 ---
 
