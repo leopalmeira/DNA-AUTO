@@ -467,6 +467,21 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - `public/js/components/workshopView.js`: Remoção do texto do Baileys, atualização do cabeçalho da conexão WhatsApp e reconstrução compacta da função `renderMaintenanceCenterView()`.
   - `test/api.test.js`: 39/39 testes de integração passando com 100% de sucesso.
 
+### 📅 Ciclo 24 — Botão de Busca e Auto-Preenchimento Inteligente no Cadastro de Cliente & Código de Ativação
+- **Demandas Atendidas:**
+  1. **Botão de Busca e Auto-Preenchimento Automático por Placa:**
+     - No modal `Cadastrar Cliente & Código de Ativação`, o campo de placa foi enriquecido com o botão dedicado `[ 🔍 BUSCAR ]`.
+     - O sistema realiza o auto-preenchimento tanto ao clicar no botão quanto **de forma 100% automática** ao digitar os 7 caracteres da placa (com debounce suave de 250ms), ao pressionar Enter ou ao sair do campo (`blur`).
+  2. **Fluxo Rápido: Só Falta o Nome e WhatsApp do Cliente:**
+     - A busca cruza em sequência: a frota da oficina em memória (`this.vehiclesList`), o banco de dados do DNA AUTO (`/vehicles/search`) e a consulta oficial da API de placas / FIPE (`API.lookupPlate`).
+     - Ao localizar o veículo, preenche automaticamente o campo **Modelo / Veículo** (`#ws-act-model`) com marca, modelo e ano (ex: `Honda Civic Touring 1.5 Turbo 2021`).
+     - Se o veículo já tiver histórico de cliente na base, preenche também o **Nome do Cliente** e o **WhatsApp**.
+     - Se o veículo for identificado mas for um novo cliente, exibe o feedback verde: `✓ Veículo localizado: [Modelo]. Preencha o nome e WhatsApp do cliente abaixo:`, posicionando o cursor/foco automaticamente no campo de Nome para que o mecânico apenas digite o nome e telefone para gerar o código em 1 clique.
+- **Implementações Técnicas:**
+  - `public/js/components/workshopView.js`: Implementação de `handleActivationPlateInput(value)`, `autoFillClientActivationByPlate(plate)`, campo integrado com botão `🔍 BUSCAR`, feedback visual em tempo real e foco inteligente.
+  - `server/src/modules/workshops/workshops.routes.js`: Suporte universal no endpoint `POST /:id/clients/register-activation` para os campos `client_phone`, `whatsapp`, `vehicle_model` e `model`, com persistência e atualização do modelo do veículo na base.
+  - `test/api.test.js`: 39/39 testes de integração automatizados aprovados com 100% de sucesso.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes
@@ -474,4 +489,5 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 2. **Registro Contínuo:** Todo novo ciclo ou alteração relevante de engenharia deve ser imediatamente documentado no `diario de bordo.md`, no `DIARIO_DE_BORDO.md` e refletido no `README.md`.
 3. **Comunicação:** Atendimento sempre no idioma português.
 4. **Validação de Testes:** O comando `npm test` deve sempre permanecer com 100% dos testes aprovados antes de qualquer publicação.
+
 

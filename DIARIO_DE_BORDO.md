@@ -906,8 +906,34 @@ DNA-AUTO/
 ### 3. Validação de Qualidade
 - Bateria completa de **39/39 testes automatizados de integração passando com 100% de sucesso**.
 
+## 🚀 Ciclo 24 — Botão de Busca e Auto-Preenchimento Inteligente no Cadastro de Cliente & Código de Ativação
+
+### 1. Diagnóstico do Problema & Causa Raiz
+- **Necessidade Operacional:** Na rotina de atendimento do mecânico, ao cadastrar um cliente e gerar o código de ativação do app no modal `Cadastrar Cliente & Código de Ativação`, o mecânico tinha que digitar todos os dados manualmente (Placa, Nome, WhatsApp e Modelo).
+- **Solicitação do Usuário:** *"nessa pagina de cadastro do cliente ao colocar a placa so ficaria faltando colocar o nome da pessoa e o whatsapp dele quando colocasse a placa e dentro do campo ter o botao de buscar para cadastrar ou auto preencher aotomatico fica ate melhor"*.
+
+### 2. Soluções Implementadas
+1. **Botão de Busca Integrado e Gatilho Automático por Placa:**
+   - O campo de placa foi transformado em um grupo de entrada estilizado com o botão `[ 🔍 BUSCAR ]`.
+   - Implementação de detector reativo com debounce de 250ms: ao digitar os 7 caracteres da placa (ou ao colar), o sistema dispara a busca de forma 100% automática sem exigir clique.
+   - O botão `[ 🔍 BUSCAR ]` permanece disponível para acionamento manual imediato, além de suporte a tecla `Enter` e evento `blur`.
+2. **Auto-Preenchimento do Modelo e Dados do Cliente:**
+   - A busca consulta em cascata inteligente:
+     1. Frota local da oficina (`this.vehiclesList`).
+     2. Banco de dados DNA AUTO (`/api/v1/vehicles/search`).
+     3. Consulta oficial FIPE/Denatran (`API.lookupPlate`).
+   - Ao identificar o veículo, preenche automaticamente o campo `#ws-act-model` com o modelo completo e ano (ex: `Honda Civic Touring 1.5 Turbo 2021`).
+   - Se o veículo já possuir vínculo anterior com cliente na base, preenche também o Nome (`#ws-act-name`) e o WhatsApp (`#ws-act-phone`).
+   - Se for um cliente novo, exibe o feedback visual `✓ Veículo localizado: [Modelo]. Preencha o nome e WhatsApp do cliente abaixo:`, posicionando o foco imediatamente no campo de Nome para que o mecânico apenas digite o nome e telefone.
+3. **Persistência Completa no Backend:**
+   - Atualização do endpoint `POST /workshops/:id/clients/register-activation` para aceitar indistintamente `client_phone`, `whatsapp`, `model` e `vehicle_model`, gravando e atualizando o modelo do veículo no banco de dados.
+
+### 3. Validação de Qualidade
+- Bateria completa de **39/39 testes automatizados de integração passando com 100% de sucesso**.
+
 ---
 
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
+
 
 

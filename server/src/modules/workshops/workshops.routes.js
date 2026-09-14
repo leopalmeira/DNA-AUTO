@@ -868,9 +868,9 @@ router.post('/:id/clients/register-activation', async (req, res) => {
         const workshopId = req.params.id;
         const plate = (req.body.license_plate || req.body.plate || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
         const clientName = (req.body.client_name || req.body.name || '').trim();
-        const rawPhone = (req.body.whatsapp || req.body.phone || '').trim();
+        const rawPhone = (req.body.whatsapp || req.body.phone || req.body.client_phone || '').trim();
         const brand = (req.body.brand || '').trim();
-        const model = (req.body.model || '').trim();
+        const model = (req.body.model || req.body.vehicle_model || '').trim();
 
         if (!plate || plate.length < 7) {
             return res.status(400).json({ error: 'Placa do veículo é obrigatória (formato Mercosul ou padrão).' });
@@ -899,13 +899,15 @@ router.post('/:id/clients/register-activation', async (req, res) => {
                 vehId,
                 plate,
                 `93H${plate}${Date.now().toString().slice(-8)}`,
-                brand || 'Veículo',
+                brand || (model ? model.split(' ')[0] : 'Veículo'),
                 model || 'Padrão',
                 '1.0',
                 currentYear,
                 currentYear
             );
             vehicle = db.prepare(`SELECT * FROM vehicles WHERE id = ?`).get(vehId);
+        } else if (model && (!vehicle.model || vehicle.model === 'Padrão' || vehicle.model === 'Veículo')) {
+            db.prepare(`UPDATE vehicles SET model = ?, brand = COALESCE(NULLIF(brand, 'Veículo'), ?), updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(model, brand || model.split(' ')[0], vehicle.id);
         }
 
         // 2. Verifica ou cria Proprietário

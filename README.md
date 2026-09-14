@@ -218,6 +218,9 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
   - **Disparos Automáticos:** Envio de laudos, orçamentos, aprovações digitais e alertas preditivos de manutenção sem sair da plataforma.
 - **📱 Interface Operacional Encurtada & Otimizada para Tablets (Sem Rolagem Lateral):**
   - **Tabela de Serviços em Potencial:** Reestruturação compacta de 5 colunas (`Status`, `Veículo/Placa`, `Proprietário`, `Componente & KM`, `Ação`) que se ajustam automaticamente à tela de tablets e desktops sem nenhuma barra de rolagem horizontal (`overflow-x: hidden !important`).
+- **🔑 Cadastro Ágil de Clientes com Busca de Placa & Auto-Preenchimento:**
+  - **Auto-Preenchimento por Placa:** Botão dedicado `[ 🔍 BUSCAR ]` e detecção automática ao digitar a placa (7 dígitos) que pesquisa na frota da oficina, banco DNA AUTO e API FIPE.
+  - **Fluxo Operacional Rápido:** Preenche automaticamente o modelo do veículo (e nome/WhatsApp se já existente), restando ao mecânico apenas preencher o nome e telefone do cliente novo para gerar o código em 1 clique.
 - **Zero Popups / Alerts:**
   - 100% das telas (Inspeção & Revisões, Veículo, Certificação, Histórico, OBD2, Lembretes, Oficinas e Configurações) funcionam como navegação SPA interna sem qualquer caixa cinza do navegador.
 

@@ -4976,8 +4976,22 @@ const WorkshopView = {
                     <div id="ws-activation-modal-content" style="padding:20px;">
                         <form onsubmit="WorkshopView.submitClientActivationForm(event)" style="display:flex; flex-direction:column; gap:14px;">
                             <div class="form-group">
-                                <label class="form-label" style="font-size:12px; color:#FFD21C; font-weight:800;">Placa do Veículo *</label>
-                                <input type="text" id="ws-act-plate" class="form-control" placeholder="ABC1D23" maxlength="8" style="text-transform:uppercase; font-size:16px; font-weight:900; letter-spacing:1.5px; font-family:var(--font-mono); text-align:center;" required />
+                                <label class="form-label" style="font-size:12px; color:#FFD21C; font-weight:800; display:flex; justify-content:space-between; align-items:center;">
+                                    <span>PLACA DO VEÍCULO *</span>
+                                    <span style="font-size:10.5px; color:#94a3b8; font-weight:normal;">Busca & Auto-preenchimento</span>
+                                </label>
+                                <div style="display:flex; gap:8px;">
+                                    <input type="text" id="ws-act-plate" class="form-control" placeholder="ABC1D23" maxlength="8"
+                                           style="text-transform:uppercase; font-size:17px; font-weight:900; letter-spacing:2px; font-family:var(--font-mono); color:#FFD21C; background:#050811; text-align:center; border-color:rgba(255,210,28,0.4);"
+                                           oninput="WorkshopView.handleActivationPlateInput(this.value)"
+                                           onkeydown="if(event.key==='Enter'){event.preventDefault(); WorkshopView.autoFillClientActivationByPlate(this.value);}"
+                                           onblur="WorkshopView.autoFillClientActivationByPlate(this.value)"
+                                           required />
+                                    <button type="button" id="ws-act-search-btn" class="btn btn-cyan" onclick="WorkshopView.autoFillClientActivationByPlate(document.getElementById('ws-act-plate').value)" style="white-space:nowrap; font-weight:800; padding:8px 16px; font-size:12px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;" title="Consultar placa no DNA AUTO">
+                                        <span>🔍</span> <span>BUSCAR</span>
+                                    </button>
+                                </div>
+                                <div id="ws-act-plate-feedback" style="font-size:11px; margin-top:6px; min-height:16px;"></div>
                             </div>
 
                             <div class="form-group">
@@ -5012,6 +5026,120 @@ const WorkshopView = {
         `;
     },
 
+    activationPlateDebounce: null,
+
+    handleActivationPlateInput(value) {
+        const input = document.getElementById('ws-act-plate');
+        if (input) input.value = (value || '').toUpperCase();
+        const clean = (value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (this.activationPlateDebounce) {
+            clearTimeout(this.activationPlateDebounce);
+        }
+        if (clean.length === 7) {
+            this.activationPlateDebounce = setTimeout(() => {
+                this.autoFillClientActivationByPlate(clean);
+            }, 250);
+        }
+    },
+
+    async autoFillClientActivationByPlate(plate) {
+        const clean = (plate || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (!clean || clean.length < 3) return;
+
+        const feedback = document.getElementById('ws-act-plate-feedback');
+        const searchBtn = document.getElementById('ws-act-search-btn');
+        const nameInput = document.getElementById('ws-act-name');
+        const phoneInput = document.getElementById('ws-act-phone');
+        const modelInput = document.getElementById('ws-act-model');
+
+        if (feedback) {
+            feedback.innerHTML = `<span style="color:#38bdf8; display:inline-flex; align-items:center; gap:5px;"><span class="pulse-dot" style="width:6px; height:6px;"></span> <span>Consultando placa <strong>${clean}</strong> no DNA AUTO...</span></span>`;
+        }
+        if (searchBtn) {
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = `<span>⏳</span> <span>BUSCANDO</span>`;
+        }
+
+        let foundVehicle = null;
+
+        // 1. Procura na lista local de veículos da oficina
+        foundVehicle = (this.vehiclesList || []).find(v => (v.license_plate || '').replace(/[^A-Z0-9]/g, '') === clean);
+
+        // 2. Se não achou na memória, pesquisa no backend do DNA AUTO
+        if (!foundVehicle) {
+            try {
+                const res = await API.searchVehicle(clean);
+                if (res && res.found && res.vehicle) {
+                    foundVehicle = res.vehicle;
+                }
+            } catch (_) {}
+        }
+
+        // 3. Se ainda não achou, consulta dados oficiais da placa (API Placas / FIPE)
+        let plateData = null;
+        if (!foundVehicle) {
+            try {
+                plateData = await API.lookupPlate(clean);
+            } catch (_) {}
+        }
+
+        if (searchBtn) {
+            searchBtn.disabled = false;
+            searchBtn.innerHTML = `<span>🔍</span> <span>BUSCAR</span>`;
+        }
+
+        if (foundVehicle) {
+            const brand = foundVehicle.brand && foundVehicle.brand !== 'Veículo' ? foundVehicle.brand : '';
+            const model = foundVehicle.model && foundVehicle.model !== 'Padrão' ? foundVehicle.model : '';
+            const fullModel = `${brand} ${model}`.trim() || 'Veículo Identificado';
+
+            if (modelInput && fullModel) {
+                modelInput.value = fullModel;
+            }
+
+            const ownerName = foundVehicle.owner_name && foundVehicle.owner_name !== 'Proprietário Particular' ? foundVehicle.owner_name : '';
+            const ownerPhone = foundVehicle.owner_phone && foundVehicle.owner_phone !== '(11) 98888-0000' ? foundVehicle.owner_phone : '';
+
+            if (ownerName && nameInput && !nameInput.value) {
+                nameInput.value = ownerName;
+            }
+            if (ownerPhone && phoneInput && !phoneInput.value) {
+                phoneInput.value = ownerPhone;
+            }
+
+            if (ownerName) {
+                if (feedback) {
+                    feedback.innerHTML = `<span style="color:#10b981; font-weight:700;">✓ Cliente e veículo identificados no DNA AUTO! Dados preenchidos automaticamente.</span>`;
+                }
+            } else {
+                if (feedback) {
+                    feedback.innerHTML = `<span style="color:#10b981; font-weight:700;">✓ Veículo localizado: <strong>${fullModel}</strong>. Preencha o nome e WhatsApp do cliente abaixo:</span>`;
+                }
+                if (nameInput && !nameInput.value) {
+                    nameInput.focus();
+                }
+            }
+        } else if (plateData && (plateData.brand || plateData.model)) {
+            const officialModel = `${plateData.brand || ''} ${plateData.model || ''} ${plateData.model_year || plateData.year || ''}`.trim();
+            if (modelInput) {
+                modelInput.value = officialModel;
+            }
+            if (feedback) {
+                feedback.innerHTML = `<span style="color:#10b981; font-weight:700;">✓ Modelo identificado: <strong>${officialModel}</strong>. Preencha o nome e WhatsApp do cliente abaixo:</span>`;
+            }
+            if (nameInput && !nameInput.value) {
+                nameInput.focus();
+            }
+        } else {
+            if (feedback) {
+                feedback.innerHTML = `<span style="color:#fbbf24; font-weight:600;">ℹ️ Placa nova. Preencha o nome, WhatsApp e modelo do cliente para gerar o código.</span>`;
+            }
+            if (nameInput && !nameInput.value) {
+                nameInput.focus();
+            }
+        }
+    },
+
     async submitClientActivationForm(e) {
         e.preventDefault();
         const plate = document.getElementById('ws-act-plate').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -5040,7 +5168,9 @@ const WorkshopView = {
                 license_plate: plate,
                 client_name: clientName,
                 client_phone: clientPhone,
-                vehicle_model: vehicleModel
+                whatsapp: clientPhone,
+                vehicle_model: vehicleModel,
+                model: vehicleModel
             });
 
             const code = res.activation_code || 'DNA-8421';
