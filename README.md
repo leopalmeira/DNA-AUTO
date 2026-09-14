@@ -374,6 +374,7 @@ A aplicação está configurada para deploy contínuo no [Render](https://render
 | `POST` | `/api/v1/auth/login` | Pública | Autenticação de usuário e retorno do token JWT. |
 | `POST` | `/api/v1/auth/register-workshop` | Pública | Credenciamento de novas oficinas com CNPJ/CPF. |
 | `POST` | `/api/v1/auth/forgot-password` | Pública | Redefinição de senha de usuários cadastrados. |
+| `POST` | `/api/v1/auth/verify-manager-password` | JWT/Pública | Validação de senha de gestor para acesso ao faturamento. |
 | `GET` | `/api/v1/vehicles/search?q={placa}` | Pública | Pesquisa rápida de veículo (local e API Placas). |
 | `POST` | `/api/v1/vehicles/activate-dna` | JWT | Ativação do código de DNA vitalício para o carro. |
 | `POST` | `/api/v1/vehicles/register` | JWT Oficina/Admin | Cadastro de novo veículo com geração automática de DNA permanente. |

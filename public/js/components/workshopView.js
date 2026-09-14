@@ -75,13 +75,13 @@ const WorkshopView = {
         },
         {
             targetId: 'tour-step-obd2',
-            title: '5. Radar Preditivo OBD2 (Faturamento)',
+            title: '5. Serviços em Potencial (Oportunidades)',
             desc: 'O sistema cruza a quilometragem do carro do cliente e avisa com semáforos (🔴 🟡 🟢) quando correias, óleo e freios estão perto da troca.'
         },
         {
             targetId: 'tour-step-menu',
             title: '6. Menu Corporativo em Seções',
-            desc: 'Navegue entre os módulos operacionais separados por seções claras (Balcão, Serviços, Preditiva OBD2, Clientes e Configurações).'
+            desc: 'Navegue entre os módulos operacionais separados por seções claras (Balcão, Serviços, Oportunidades, Clientes e Configurações).'
         }
     ],
 
@@ -396,11 +396,8 @@ const WorkshopView = {
                                 <div class="ws-erp-menu-item ${this.currentSection === 'agenda-oficina' ? 'active' : ''}" onclick="WorkshopView.switchSection('agenda-oficina')">
                                     <div class="ws-erp-menu-left"><span>📅</span> <span>Agenda da Semana</span></div>
                                 </div>
-                                <div class="ws-erp-menu-item ${this.currentSection === 'veiculos-cadastrados' ? 'active' : ''}" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
-                                    <div class="ws-erp-menu-left"><span>📋</span> <span>Ficha Digital do Veículo</span></div>
-                                </div>
                                 <div class="ws-erp-menu-item ${this.currentSection === 'manutencao-alertas' ? 'active' : ''}" onclick="WorkshopView.switchSection('manutencao-alertas')">
-                                    <div class="ws-erp-menu-left"><span>⚠️</span> <span>Radar Preditivo OBD2</span></div>
+                                    <div class="ws-erp-menu-left"><span>⚡</span> <span>Serviços em Potencial</span></div>
                                     <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(239,68,68,0.15); color:#ef4444; border-radius:12px;">4</span>
                                 </div>
                             </div>
@@ -630,13 +627,17 @@ const WorkshopView = {
         const pendingWhatsApp = (this.whatsAppData?.stats?.pending) || 0;
 
         return `
-            <!-- TOPBAR: TÍTULO DASHBOARD + BUSCA RÁPIDA INTEGRADA (BLUEPRINT OFICIAL) -->
+            <!-- TOPBAR: TÍTULO DASHBOARD + ENTRADA RÁPIDA + BUSCA RÁPIDA -->
             <div class="ws-dash-topbar" id="tour-step-greeting">
                 <div class="ws-dash-title-group">
                     <h1 class="ws-dash-title">Dashboard</h1>
                 </div>
 
-                <div class="ws-dash-search-container">
+                <div class="ws-dash-search-container" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <button class="btn btn-primary ws-dash-topbar-entry-btn" onclick="WorkshopView.openUnifiedVehicleEntryModal()" style="font-weight:800; display:inline-flex; align-items:center; gap:7px; background:linear-gradient(135deg, #0284c7, #0ea5e9); border:none; box-shadow:0 2px 10px rgba(14,165,233,0.35); padding:9px 18px; border-radius:8px; font-size:13px; cursor:pointer;" title="Dar entrada no veículo por placa ou cadastrar novo carro">
+                        <span style="font-size:16px;">⚡</span>
+                        <span>Entrada de Veículos / Cadastro</span>
+                    </button>
                     <div class="ws-dash-search-box">
                         <svg class="ws-search-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#64748b" stroke-width="2">
                             <circle cx="11" cy="11" r="8"></circle>
@@ -655,48 +656,10 @@ const WorkshopView = {
             <!-- CONTAINER DE RESULTADO DINÂMICO DA BUSCA NA DASHBOARD -->
             <div id="ws-dashboard-search-result" style="margin-bottom:18px; display:none;"></div>
 
-            <!-- HERO BANNER DE BOAS-VINDAS & ENTRADA RÁPIDA DE CLIENTES -->
-            <div class="ws-dash-hero-banner" id="tour-step-hero">
-                <div class="ws-dash-hero-info">
-                    <div class="ws-dash-hero-tag">
-                        <span class="pulse-dot"></span>
-                        <span>RECEPÇÃO & PÁTIO EM TEMPO REAL</span>
-                    </div>
-                    <h2 class="ws-dash-hero-headline">Painel Operacional da Oficina</h2>
-                    <p class="ws-dash-hero-description">
-                        Cadastre veículos e clientes com facilidade, dê entrada no pátio em 1 clique e gere códigos de ativação para seus clientes acompanharem pelo app.
-                    </p>
-                </div>
-                <div class="ws-dash-hero-cta-group">
-                    <button class="btn ws-dash-cta-btn ws-dash-cta-primary" onclick="WorkshopView.openUnifiedVehicleEntryModal()" title="Entrada de Veículos / Cadastro">
-                        <span style="font-size:16px;">⚡</span>
-                        <span>Entrada de Veículos / Cadastro</span>
-                    </button>
-                    <button class="btn ws-dash-cta-btn ws-dash-cta-secondary" onclick="WorkshopView.switchSection('recepcao-checkin')" title="Ver Pátio da Oficina">
-                        <span style="font-size:16px;">🚗</span>
-                        <span>Ver Recepção / Pátio</span>
-                    </button>
-                    <button class="btn ws-dash-cta-btn ws-dash-cta-accent" onclick="WorkshopView.openClientActivationModal()" title="Cadastrar Cliente com Código para o App Mobile">
-                        <span style="font-size:16px;">👥</span>
-                        <span>Cadastrar Cliente & Código</span>
-                    </button>
-                </div>
-            </div>
-
             <!-- RESUMO OPERACIONAL DE HOJE (6 KPIS EXATOS DO BLUEPRINT EM GRID 3x2) -->
             <div class="ws-dash-kpi-grid" id="tour-step-kpis">
-                <!-- 1. Faturamento do Mês -->
-                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('servicos-os')">
-                    <div class="ws-dash-kpi-header">
-                        <span class="ws-dash-kpi-label">Faturamento do Mês</span>
-                    </div>
-                    <div class="ws-dash-kpi-value-row">
-                        <span class="ws-dash-kpi-value">R$ 48.750,00</span>
-                    </div>
-                    <div class="ws-dash-kpi-badge-row">
-                        <span class="ws-dash-trend-badge success">↑ 12%</span>
-                    </div>
-                </div>
+                <!-- 1. Faturamento do Mês (Protegido por Senha do Gestor) -->
+                ${this.renderRevenueKpiCard()}
 
                 <!-- 2. Ordens de Serviço Ativas -->
                 <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('servicos-os')">
@@ -720,19 +683,19 @@ const WorkshopView = {
                     <div class="ws-dash-kpi-subtext">Capacidade: 8 boxes (75%)</div>
                 </div>
 
-                <!-- 4. Alertas Preditivos OBD2 -->
+                <!-- 4. Serviços em Potencial -->
                 <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('manutencao-alertas')">
                     <div class="ws-dash-kpi-header">
-                        <span class="ws-dash-kpi-label">Alertas Preditivos OBD2</span>
+                        <span class="ws-dash-kpi-label">Serviços em Potencial</span>
                     </div>
                     <div class="ws-dash-kpi-value-row">
                         <span class="ws-dash-kpi-value text-danger">4</span>
                     </div>
-                    <div class="ws-dash-kpi-subtext text-danger">2 críticos, 2 atenção</div>
+                    <div class="ws-dash-kpi-subtext text-danger">2 urgentes, 2 preventivos</div>
                 </div>
 
                 <!-- 5. Ativações DNA do Mês -->
-                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('veiculos-cadastrados')">
+                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('servicos-os')">
                     <div class="ws-dash-kpi-header">
                         <span class="ws-dash-kpi-label">Ativações DNA do Mês</span>
                     </div>
@@ -831,7 +794,7 @@ const WorkshopView = {
                                 <td>
                                     <div style="display:flex; gap:6px;">
                                         <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Carlos Henrique', '(11) 98765-4321', 'Honda Civic Touring', 'BRA2E19', 'Troca Pastilhas e Óleo')" style="background:#25D366; color:#000; font-weight:800; padding:5px 10px; border-radius:14px; font-size:11px;">💬 WhatsApp</button>
-                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_civic_touring', 'BRA2E19')" style="font-size:11px; padding:5px 10px; border-radius:6px;">📋 Ficha Digital</button>
+                                        <button class="btn btn-xs btn-primary" onclick="WorkshopView.openNewServiceModal('veh_civic_touring')" style="font-size:11px; padding:5px 10px; border-radius:6px; background:#0284c7; border:none; font-weight:700;">🔧 Novo Serviço</button>
                                     </div>
                                 </td>
                             </tr>
@@ -857,7 +820,7 @@ const WorkshopView = {
                                 <td>
                                     <div style="display:flex; gap:6px;">
                                         <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Maria Fernandes', '(11) 97654-3210', 'Toyota Corolla Altis', 'FDT3C45', 'Revisão Preventiva 40k')" style="background:#25D366; color:#000; font-weight:800; padding:5px 10px; border-radius:14px; font-size:11px;">💬 WhatsApp</button>
-                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_corolla_altis', 'FDT3C45')" style="font-size:11px; padding:5px 10px; border-radius:6px;">📋 Ficha Digital</button>
+                                        <button class="btn btn-xs btn-primary" onclick="WorkshopView.openNewServiceModal('veh_corolla_altis')" style="font-size:11px; padding:5px 10px; border-radius:6px; background:#0284c7; border:none; font-weight:700;">🔧 Novo Serviço</button>
                                     </div>
                                 </td>
                             </tr>
@@ -877,13 +840,13 @@ const WorkshopView = {
                                 </td>
                                 <td>
                                     <span class="mono" style="background:#1e293b; padding:2px 6px; border-radius:4px; font-size:10.5px; color:#38bdf8; font-weight:700;">Box 01</span>
-                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">Diagnóstico OBD2 (Sonda Lambda)</div>
+                                    <div style="font-size:11.5px; color:#cbd5e1; margin-top:2px;">Diagnóstico Eletrônico (Sonda Lambda)</div>
                                 </td>
                                 <td><span class="badge-proof badge-pending" style="font-size:10px;">🟠 EM DIAGNÓSTICO</span></td>
                                 <td>
                                     <div style="display:flex; gap:6px;">
                                         <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Roberto Silva', '(11) 96543-2109', 'Jeep Compass', 'QWE7A32', 'Diagnóstico Sonda Lambda')" style="background:#25D366; color:#000; font-weight:800; padding:5px 10px; border-radius:14px; font-size:11px;">💬 WhatsApp</button>
-                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_compass_long', 'QWE7A32')" style="font-size:11px; padding:5px 10px; border-radius:6px;">📋 Ficha Digital</button>
+                                        <button class="btn btn-xs btn-primary" onclick="WorkshopView.openNewServiceModal('veh_compass_long')" style="font-size:11px; padding:5px 10px; border-radius:6px; background:#0284c7; border:none; font-weight:700;">🔧 Novo Serviço</button>
                                     </div>
                                 </td>
                             </tr>
@@ -909,7 +872,7 @@ const WorkshopView = {
                                 <td>
                                     <div style="display:flex; gap:6px;">
                                         <button class="btn btn-xs" onclick="WorkshopView.openWhatsAppModal('Patrícia Souza', '(11) 95432-1098', 'Honda HR-V', 'XY29D10', 'Alinhamento e Balanceamento')" style="background:#25D366; color:#000; font-weight:800; padding:5px 10px; border-radius:14px; font-size:11px;">💬 WhatsApp</button>
-                                        <button class="btn btn-xs btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('veh_hrv_exl', 'XY29D10')" style="font-size:11px; padding:5px 10px; border-radius:6px;">📋 Ficha Digital</button>
+                                        <button class="btn btn-xs btn-primary" onclick="WorkshopView.openNewServiceModal('veh_hrv_exl')" style="font-size:11px; padding:5px 10px; border-radius:6px; background:#0284c7; border:none; font-weight:700;">🔧 Novo Serviço</button>
                                     </div>
                                 </td>
                             </tr>
@@ -1318,7 +1281,7 @@ const WorkshopView = {
     },
 
     // ──────────────────────────────────────────────────────────────────────────
-    // SEÇÃO 7: RADAR PREDITIVO OBD2 (SEMÁFORO DE TELEMETRIA DO BLUEPRINT)
+    // SEÇÃO 7: SERVIÇOS EM POTENCIAL (SEMÁFORO DE MANUTENÇÃO PREVENTIVA)
     // ──────────────────────────────────────────────────────────────────────────
     renderMaintenanceCenterView() {
         const radarVehicles = [
@@ -1357,7 +1320,7 @@ const WorkshopView = {
                 component: 'Sensor O2 Sonda Lambda',
                 dueKm: 'Imediato',
                 status: 'CRITICAL',
-                statusLabel: '🔴 CRÍTICO (DTC P0135)',
+                statusLabel: '🔴 CRÍTICO (Falha Detectada)',
                 statusColor: '#ef4444',
                 diff: 'Falha Ativa Detectada'
             },
@@ -1394,15 +1357,15 @@ const WorkshopView = {
                 <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                     <span style="display:flex; align-items:center; gap:8px;">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-                        Radar Preditivo OBD2 (Semáforo de Manutenção Preventiva)
+                        Serviços em Potencial (Semáforo de Manutenção Preventiva)
                     </span>
                     <span class="badge-proof" style="background:rgba(239,68,68,0.15); color:#ef4444; font-weight:800; font-size:11px;">
-                        4 Alertas Preditivos no Pátio
+                        4 Oportunidades Identificadas
                     </span>
                 </div>
 
                 <p style="font-size:12.5px; color:#94a3b8; margin-bottom:16px;">
-                    O sistema cruza odômetro real via OBD2 e histórico de manutenções para avisar quando componentes críticos estão próximos da troca.
+                    O sistema cruza odômetro e histórico de manutenções para avisar quando componentes críticos estão próximos da troca.
                 </p>
 
                 <!-- TABELA SEMÁFORO EXATA DO BLUEPRINT -->
@@ -1447,8 +1410,8 @@ const WorkshopView = {
                                                 <span>💬</span> <span>WhatsApp Avisar</span>
                                             </button>
                                         ` : `
-                                            <button class="btn btn-sm btn-cyan" onclick="WorkshopView.openDigitalVehicleSheet('${r.plate}', '${r.plate}')" style="font-size:11px; padding:5px 10px;">
-                                                <span>📋</span> <span>Ver Ficha</span>
+                                            <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal()" style="font-size:11px; padding:5px 10px; background:#0284c7; border:none; font-weight:700;">
+                                                <span>🔧</span> <span>Agendar OS</span>
                                             </button>
                                         `}
                                     </td>
@@ -3231,8 +3194,8 @@ const WorkshopView = {
                         <button class="ws-yard-btn-whatsapp" onclick="WorkshopView.openWhatsAppModal('João Silva', '(11) 98765-4321', 'Honda Civic 2021', 'BRA2E19', 'Revisão 80k')">
                             <span>💬</span> WhatsApp
                         </button>
-                        <button class="ws-yard-btn-dossier" onclick="WorkshopView.openDigitalVehicleSheet('veh_civic_touring', 'BRA2E19')">
-                            Ficha Digital
+                        <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal('veh_civic_touring')" style="font-size:11px; padding:6px 12px; background:#0284c7; border:none; font-weight:700; border-radius:6px;">
+                            <span>🔧</span> Nova OS
                         </button>
                     </div>
                 </div>
@@ -3256,8 +3219,8 @@ const WorkshopView = {
                         <button class="ws-yard-btn-whatsapp" onclick="WorkshopView.openWhatsAppModal('Maria Oliveira', '(11) 97654-3210', 'Toyota Corolla', 'FDT3C45', 'Revisão')">
                             <span>💬</span> WhatsApp
                         </button>
-                        <button class="ws-yard-btn-dossier" onclick="WorkshopView.openDigitalVehicleSheet('veh_corolla_altis', 'FDT3C45')">
-                            Ficha Digital
+                        <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal('veh_corolla_altis')" style="font-size:11px; padding:6px 12px; background:#0284c7; border:none; font-weight:700; border-radius:6px;">
+                            <span>🔧</span> Nova OS
                         </button>
                     </div>
                 </div>
@@ -3281,8 +3244,8 @@ const WorkshopView = {
                         <button class="ws-yard-btn-whatsapp" onclick="WorkshopView.openWhatsAppModal('Carlos Souza', '(11) 96543-2109', 'Jeep Compass', 'QWE7A32', 'Diagnóstico')">
                             <span>💬</span> WhatsApp
                         </button>
-                        <button class="ws-yard-btn-dossier" onclick="WorkshopView.openDigitalVehicleSheet('veh_compass_long', 'QWE7A32')">
-                            Ficha Digital
+                        <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal('veh_compass_long')" style="font-size:11px; padding:6px 12px; background:#0284c7; border:none; font-weight:700; border-radius:6px;">
+                            <span>🔧</span> Nova OS
                         </button>
                     </div>
                 </div>
@@ -3306,8 +3269,8 @@ const WorkshopView = {
                         <button class="ws-yard-btn-whatsapp" onclick="WorkshopView.openWhatsAppModal('Ana Costa', '(11) 95432-1098', 'Honda HR-V', 'XY29D10', 'Retirada Pronta')">
                             <span>💬</span> WhatsApp
                         </button>
-                        <button class="ws-yard-btn-dossier" onclick="WorkshopView.openDigitalVehicleSheet('veh_hrv_exl', 'XY29D10')">
-                            Ficha Digital
+                        <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal('veh_hrv_exl')" style="font-size:11px; padding:6px 12px; background:#0284c7; border:none; font-weight:700; border-radius:6px;">
+                            <span>🔧</span> Nova OS
                         </button>
                     </div>
                 </div>
@@ -3561,9 +3524,6 @@ const WorkshopView = {
                                                 </button>
                                                 <button class="btn btn-sm btn-primary" onclick="WorkshopView.openNewServiceModal('${v.id}')" style="font-size:11px; padding:4px 9px; font-weight:800; background:#10b981; border:none;">
                                                     🔧 Novo Serviço
-                                                </button>
-                                                <button class="btn btn-sm btn-cyan" onclick="DossierView.render('${v.dna_code || v.license_plate}')" style="font-size:11px; padding:4px 8px;">
-                                                    Ver Dossiê
                                                 </button>
                                             </div>
                                         </td>
@@ -5040,5 +5000,166 @@ const WorkshopView = {
         const targetPhone = cleanPhone.startsWith('55') ? cleanPhone : '55' + cleanPhone;
         const url = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodeURIComponent(msg)}`;
         window.open(url, '_blank');
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // PROTEÇÃO POR SENHA DO CARD DE FATURAMENTO DA OFICINA
+    // ──────────────────────────────────────────────────────────────────────────
+    isRevenueUnlocked: false,
+
+    renderRevenueKpiCard() {
+        if (this.isRevenueUnlocked) {
+            return `
+                <div class="ws-dash-kpi-card ws-kpi-financial-unlocked" id="kpi-faturamento-card" onclick="WorkshopView.lockRevenueCard()" style="cursor:pointer;" title="Clique para ocultar faturamento">
+                    <div class="ws-dash-kpi-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="ws-dash-kpi-label">Faturamento do Mês</span>
+                        <span style="font-size:10.5px; padding:2px 7px; background:rgba(239,68,68,0.15); color:#ef4444; border-radius:4px; font-weight:700; display:inline-flex; align-items:center; gap:3px;">🔒 Ocultar</span>
+                    </div>
+                    <div class="ws-dash-kpi-value-row">
+                        <span class="ws-dash-kpi-value" style="color:#10b981;">R$ 48.750,00</span>
+                    </div>
+                    <div class="ws-dash-kpi-badge-row">
+                        <span class="ws-dash-trend-badge success">↑ 12%</span>
+                    </div>
+                </div>
+            `;
+        }
+        return `
+            <div class="ws-dash-kpi-card ws-kpi-financial-locked" id="kpi-faturamento-card" onclick="WorkshopView.openPasswordModalForRevenue()" style="cursor:pointer; border:1px dashed rgba(56,189,248,0.35); background:rgba(15,23,42,0.75);" title="Clique e digite a senha do gestor para visualizar o faturamento">
+                <div class="ws-dash-kpi-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="ws-dash-kpi-label">Faturamento do Mês</span>
+                    <span style="font-size:10.5px; padding:2px 7px; background:rgba(255,210,28,0.15); color:#ffd21c; border-radius:4px; font-weight:700; display:inline-flex; align-items:center; gap:3px;">🔒 Protegido</span>
+                </div>
+                <div class="ws-dash-kpi-value-row" style="margin:4px 0;">
+                    <span class="ws-dash-kpi-value" style="filter:blur(6px); color:#64748b; font-family:monospace; user-select:none; letter-spacing:2px;">R$ 48.750,00</span>
+                </div>
+                <div class="ws-dash-kpi-badge-row">
+                    <span style="font-size:11.5px; color:#38bdf8; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+                        🔑 Digitar senha para ver
+                    </span>
+                </div>
+            </div>
+        `;
+    },
+
+    lockRevenueCard() {
+        this.isRevenueUnlocked = false;
+        const el = document.getElementById('kpi-faturamento-card');
+        if (el) {
+            el.outerHTML = this.renderRevenueKpiCard();
+        }
+    },
+
+    toggleLockRevenue(event) {
+        if (event) event.stopPropagation();
+        this.lockRevenueCard();
+    },
+
+    openPasswordModalForRevenue() {
+        const modalRoot = document.getElementById('ws-erp-modal-root');
+        if (!modalRoot) return;
+
+        modalRoot.innerHTML = `
+            <div class="ws-erp-modal-overlay" onclick="if(event.target===this) WorkshopView.closeModal()">
+                <div class="ws-erp-modal-window" style="max-width:440px; padding:0; overflow:hidden; border:1px solid rgba(0,212,255,0.3); box-shadow:0 10px 40px rgba(0,0,0,0.85);">
+                    <div class="ws-erp-modal-header" style="background:#0a0f1d; border-bottom:1px solid rgba(255,255,255,0.08); padding:16px 20px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:36px; height:36px; border-radius:8px; background:rgba(255,210,28,0.15); display:flex; align-items:center; justify-content:center; font-size:18px;">
+                                🔐
+                            </div>
+                            <div>
+                                <h3 style="margin:0; font-size:16px; color:#ffffff; font-weight:800;">Acesso ao Faturamento</h3>
+                                <p style="margin:0; font-size:11.5px; color:#94a3b8;">Informação restrita à gestão da oficina</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-sm btn-secondary" onclick="WorkshopView.closeModal()">✕</button>
+                    </div>
+                    <div class="ws-erp-modal-body" style="padding:20px;">
+                        <p style="font-size:13px; color:#cbd5e1; margin-bottom:16px; line-height:1.5;">
+                            Para proteger os números financeiros da oficina no dia a dia da bancada, digite a <strong>senha de acesso</strong> para liberar o card de faturamento.
+                        </p>
+                        <form onsubmit="event.preventDefault(); WorkshopView.submitRevenuePassword();">
+                            <div class="form-group" style="margin-bottom:18px;">
+                                <label style="display:block; font-size:12px; font-weight:700; color:#e2e8f0; margin-bottom:6px;">Senha do Gestor / Oficina</label>
+                                <div style="position:relative;">
+                                    <input type="password" id="ws-revenue-password-input" class="form-control" placeholder="Digite a senha..." style="width:100%; padding:10px 42px 10px 12px; font-size:14px; background:#0f172a; border:1px solid rgba(255,255,255,0.15); color:#fff; border-radius:6px;" autofocus autocomplete="current-password" />
+                                    <button type="button" onclick="WorkshopView.togglePasswordVisibility('ws-revenue-password-input', this)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; color:#94a3b8; cursor:pointer; font-size:14px;" title="Ver/Ocultar senha">👁️</button>
+                                </div>
+                                <div id="ws-revenue-password-error" style="display:none; color:#ef4444; font-size:12px; margin-top:8px; font-weight:600;"></div>
+                            </div>
+                            <div style="display:flex; justify-content:flex-end; gap:10px;">
+                                <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()">Cancelar</button>
+                                <button type="submit" class="btn btn-primary" id="ws-revenue-submit-btn" style="font-weight:800; background:#0284c7; border:none; padding:8px 18px; display:inline-flex; align-items:center; gap:6px;">
+                                    <span>🔓</span> <span>Desbloquear Faturamento</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => {
+            const input = document.getElementById('ws-revenue-password-input');
+            if (input) input.focus();
+        }, 100);
+    },
+
+    async submitRevenuePassword() {
+        const input = document.getElementById('ws-revenue-password-input');
+        const errEl = document.getElementById('ws-revenue-password-error');
+        const btn = document.getElementById('ws-revenue-submit-btn');
+        if (!input) return;
+
+        const password = input.value.trim();
+        if (!password) {
+            if (errEl) {
+                errEl.textContent = 'Por favor, digite a senha.';
+                errEl.style.display = 'block';
+            }
+            return;
+        }
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳</span> <span>Validando...</span>';
+        }
+
+        try {
+            const res = await API.verifyManagerPassword(password);
+            if (res && res.verified) {
+                this.isRevenueUnlocked = true;
+                this.closeModal();
+                const card = document.getElementById('kpi-faturamento-card');
+                if (card) {
+                    card.outerHTML = this.renderRevenueKpiCard();
+                }
+            } else {
+                throw new Error('Senha incorreta.');
+            }
+        } catch (err) {
+            if (errEl) {
+                errEl.textContent = err.message || 'Senha incorreta. Verifique e tente novamente.';
+                errEl.style.display = 'block';
+            }
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🔓</span> <span>Desbloquear Faturamento</span>';
+            }
+            input.focus();
+            input.select();
+        }
+    },
+
+    togglePasswordVisibility(inputId, btnEl) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            if (btnEl) btnEl.textContent = '🙈';
+        } else {
+            input.type = 'password';
+            if (btnEl) btnEl.textContent = '👁️';
+        }
     }
 };

@@ -389,6 +389,24 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   2. `test/api.test.js`:
      - Bateria completa com 38/38 testes de integração passando com 100% de sucesso (`npm test`).
 
+### 📅 Ciclo 20 — Despoluição da Dashboard, Proteção por Senha do Faturamento, Serviços em Potencial e Limpeza de Ações
+- **Demandas Atendidas:**
+  1. **Despoluição da Dashboard:** Remoção do banner volumoso `RECEPÇÃO & PÁTIO EM TEMPO REAL / Painel Operacional da Oficina`. No topo da tela, inclusão de botão direto de alto contraste `[⚡ Entrada de Veículos / Cadastro]` ao lado da barra de busca, proporcionando acesso rápido de 1 clique para o mecânico na rotina da oficina.
+  2. **Card de Faturamento Protegido por Senha:** O card de faturamento do mês (`R$ 48.750,00`) agora inicia bloqueado e com valor borrado (`🔒 Protegido`). O mecânico ou gestor clica para abrir um modal seguro e digita a senha de acesso (`verify-manager-password`), liberando os dados financeiros com opção de ocultar a qualquer momento.
+  3. **Renomeação de Radar Preditivo para "Serviços em Potencial":**
+     - O item do menu lateral foi renomeado para `⚡ Serviços em Potencial`.
+     - O card da dashboard foi renomeado para `Serviços em Potencial` com o subtexto `2 urgentes, 2 preventivos`.
+     - A seção de semáforo preventivo foi atualizada para `Serviços em Potencial (Semáforo de Manutenção Preventiva)` e todas as menções à sigla "OBD/OBD2" foram eliminadas da interface.
+  4. **Remoção de "Ficha Digital do Veículo" e "Ver Dossiê":**
+     - Remoção do item `Ficha Digital do Veículo` do menu lateral no Setor 2 (`OFICINA & SERVIÇOS`).
+     - Remoção do botão `Ver Dossiê` na tabela de veículos cadastrados.
+     - Substituição dos botões de `Ficha Digital` na tabela da Dashboard e na Recepção/Pátio por botões operacionais diretos: `🔧 Novo Serviço` e `Nova OS`.
+- **Implementações Técnicas:**
+  - `server/src/modules/auth/auth.routes.js`: Nova rota `POST /api/v1/auth/verify-manager-password` validando senhas de gestor/oficina e senhas mestras.
+  - `public/js/api.js`: Novo método `verifyManagerPassword(password)`.
+  - `public/js/components/workshopView.js`: Implementação de `isRevenueUnlocked`, `renderRevenueKpiCard()`, `openPasswordModalForRevenue()`, `submitRevenuePassword()`, `lockRevenueCard()`, atualização de cabeçalhos e menu lateral.
+  - `test/api.test.js`: Validação com 38/38 testes de integração com 100% de sucesso.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

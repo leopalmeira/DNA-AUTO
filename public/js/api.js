@@ -71,6 +71,12 @@ const API = {
             body: JSON.stringify({ email, newPassword })
         });
     },
+    verifyManagerPassword(password) {
+        return this.request('/auth/verify-manager-password', {
+            method: 'POST',
+            body: JSON.stringify({ password })
+        });
+    },
     getMe() {
         return this.request('/auth/me');
     },

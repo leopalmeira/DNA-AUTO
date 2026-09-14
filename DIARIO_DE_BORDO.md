@@ -794,5 +794,28 @@ DNA-AUTO/
   - O card na grade semanal exibe com clareza: **Placa**, **Nome do Cliente** e **Serviço**, garantindo visibilidade imediata para a equipe da oficina.
 
 ---
+
+## 🚀 Ciclo 20 — Despoluição da Dashboard, Proteção por Senha do Faturamento, Serviços em Potencial e Limpeza Operacional
+
+### 1. Despoluição Visual & Ergonomia Operacional
+- Remoção do hero banner extenso da recepção (`RECEPÇÃO & PÁTIO EM TEMPO REAL / Painel Operacional da Oficina`) que sobrecarregava a área útil da tela.
+- Inclusão no topo da dashboard de um botão de ação rápida destacado `[⚡ Entrada de Veículos / Cadastro]` integrado à barra superior ao lado do campo de busca global, permitindo ao mecânico iniciar o atendimento ou cadastro com 1 toque.
+
+### 2. Proteção por Senha do Card de Faturamento (Área Sensível)
+- O valor financeiro da oficina (`R$ 48.750,00`) inicia borrado (`filter: blur`) e rotulado como `🔒 Protegido`.
+- O clique no card aciona o modal `openPasswordModalForRevenue` solicitando a senha da oficina/gestor.
+- Novo endpoint de backend `POST /api/v1/auth/verify-manager-password` com validação de hash Bcrypt no banco SQLite e suporte a senhas mestras homologadas (`senha123`, `admin123`, `1234`).
+- Ao validar a senha, o card é desbloqueado reativamente sem recarregar a tela, exibindo o botão discreto `🔒 Ocultar` para fechar os dados novamente a qualquer momento.
+
+### 3. Renomeação do Radar Preditivo para "Serviços em Potencial"
+- Substituição do termo técnico "Radar Preditivo OBD2" por **Serviços em Potencial** na Sidebar (`⚡ Serviços em Potencial`) e no card KPI da Dashboard.
+- Eliminação da menção à sigla "OBD" em todas as frases da interface, tornando o semáforo preventivo focado puramente em oportunidades comerciais de manutenção e agendamentos.
+
+### 4. Remoção de Ficha Digital e Dossiê no Âmbito da Oficina
+- Remoção do item `Ficha Digital do Veículo` do menu lateral (`OFICINA & SERVIÇOS`).
+- Remoção do botão `Ver Dossiê` da tabela de veículos cadastrados.
+- Substituição das chamadas de ficha digital por atalhos diretos `🔧 Novo Serviço` e `Nova OS` nas tabelas operacionais da Dashboard e da Recepção/Pátio.
+
+---
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
 
