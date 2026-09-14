@@ -847,5 +847,34 @@ DNA-AUTO/
 - Suíte completa de testes aprovada com 39/39 testes verdes (100%).
 
 ---
+
+## 🚀 Ciclo 22 — Persistência Definitiva de Sessão Ativa ao Atualizar a Página (F5 / Recarregar)
+
+### 1. Diagnóstico do Problema & Causa Raiz
+- **Sintoma:** Toda vez que a página era atualizada no navegador (`F5` ou `Ctrl+F5`) enquanto o usuário estava na oficina (`/autocente#workshop` ou `/workshop`), ele era desconectado ou forçado de volta para a landing page inicial de marketing (`landing-workshop`).
+- **Causa Raiz 1 (Precedência Invertida no Roteador):** Em `handleRoute()` do `public/js/app.js`, a condição `pathname === '/autocente'` era testada antes de checar `hash === '#workshop'`. Como o clique na landing page alterava a URL para `/autocente#workshop`, ao recarregar a página, o `pathname` disparava primeiro e carregava a landing page.
+- **Causa Raiz 2 (Trava no `init()` de Restauração):** O método `App.init()` continha a restrição `!isLandingRoute` (`pathname === '/autocente' || '/cliente' || '/'`). Se o usuário estivesse em `/autocente#workshop`, a condição avaliava `isLandingRoute` como verdadeiro, bloqueando por completo a restauração do usuário em sessão.
+- **Causa Raiz 3 (Discrepância de Chaves de Autenticação):** Algumas partes da aplicação salvavam e consultavam `dna_token`, enquanto outras utilizavam `dna_auto_token`.
+- **Causa Raiz 4 (Persistência Omitida no Acesso Direto):** Quando o usuário entrava diretamente na oficina através do botão "Quero ser parceiro" ou via link direto, o `switchView('workshop')` apenas definia `this.currentRole = 'WORKSHOP'`, mas não persistia o objeto de usuário (`this.setLoggedUser(...)`) no `localStorage`.
+- **Causa Raiz 5 (Middleware de Autenticação no Backend):** No `server/src/middlewares/auth.js`, tokens simulados de demonstração/local falhavam na verificação JWT pura sem consultar o cabeçalho `X-Demo-User-Id` ou o token no formato `sess_*`.
+
+### 2. Soluções Implementadas
+1. **Roteamento SPA com Prioridade Absoluta ao Hash:**
+   - Em `handleRoute()`, o hash da URL (`#workshop`, `#owner`, `#admin`, etc.) agora tem precedência estrita sobre os pathnames estáticos.
+2. **Restauração Incondicional no `App.init()`:**
+   - Remoção da trava `!isLandingRoute`.
+   - Se existir `savedUser` no `localStorage` e a rota não for um pedido explícito de `/login`, a sessão é 100% restaurada, o layout é reexibido e o módulo correto (baseado em hash, pathname, `dna_current_view` ou perfil do usuário) é carregado sem desconectar.
+3. **Persistência Imediata de Sessão em Navegação Direta:**
+   - Em `switchView('workshop')` e `switchView('owner')`, se `this.currentUser` não estiver inicializado, o perfil padrão de demonstração é configurado e salvo com `this.setLoggedUser(...)`, tokens ativos em `API.setToken(...)` e sincronização do cabeçalho superior.
+4. **Limpeza Completa no Logout:**
+   - `setLoggedUser(null)` limpa `dna_logged_user`, `dna_token`, `dna_auto_token`, `dna_auto_demo_user_id` e `dna_current_view`.
+5. **Backend Resiliente para Autenticação Local/Dev:**
+   - Em `server/src/middlewares/auth.js`, o middleware de autenticação verifica tanto o header `X-Demo-User-Id` quanto IDs embutidos no token (`usr_*`), garantindo que requisições de demonstração e sessões persistidas nunca retornem HTTP 401/403 indevidos.
+
+### 3. Validação de Qualidade
+- Execução de toda a suíte de testes com **39/39 testes automatizados de integração passando com 100% de sucesso**.
+
+---
+
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
 

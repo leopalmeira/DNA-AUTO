@@ -4,18 +4,24 @@
 
 const API = {
     baseUrl: '/api/v1',
-    token: localStorage.getItem('dna_auto_token') || null,
+    token: localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token') || null,
     currentDemoUserId: localStorage.getItem('dna_auto_demo_user_id') || 'usr_admin',
 
     setToken(token) {
         this.token = token;
-        if (token) localStorage.setItem('dna_auto_token', token);
-        else localStorage.removeItem('dna_auto_token');
+        if (token) {
+            localStorage.setItem('dna_token', token);
+            localStorage.setItem('dna_auto_token', token);
+        } else {
+            localStorage.removeItem('dna_token');
+            localStorage.removeItem('dna_auto_token');
+        }
     },
 
     setDemoUser(userId) {
         this.currentDemoUserId = userId;
         if (userId) localStorage.setItem('dna_auto_demo_user_id', userId);
+        else localStorage.removeItem('dna_auto_demo_user_id');
     },
 
     async request(endpoint, options = {}) {

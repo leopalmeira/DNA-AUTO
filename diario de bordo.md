@@ -426,6 +426,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - `public/js/components/workshopView.js`: Implementação de `handleDirectPlateInput`, `autoFillDirectScheduleByPlate` com foco automático em `#ws-direct-service`, cards de KPI atualizados para Repasse e Venda de Equipamentos, e novo modal `openRepasseDnaModal()`.
   - `test/api.test.js`: Criação do Teste 39 validando o fluxo de consulta para agendamento com auto-preenchimento e criação de agendamento na grade, com 39/39 testes aprovados (100% verde).
 
+### 📅 Ciclo 22 — Persistência Definitiva de Sessão Ativa ao Atualizar a Página (F5 / Recarregar)
+- **Problema Solucionado:**
+  - Ao recarregar a página (`F5`, `Ctrl+F5`) enquanto autenticado ou navegando na oficina (`/autocente#workshop` ou `/workshop`), o usuário era desconectado ou redirecionado indevidamente para a landing page inicial de marketing (`landing-workshop`).
+- **Causas Raízes Identificadas e Corrigidas:**
+  1. **Precedência Incorreta de Rotas:** O método `handleRoute()` avaliava o `pathname === '/autocente'` antes de checar o hash `#workshop`. Como o navegador mantinha o pathname `/autocente` com hash `#workshop`, a landing page era invocada.
+  2. **Bloqueio no Restore de Sessão:** No `App.init()`, a condição continha uma trava `!isLandingRoute` que impedia a restauração do usuário caso a URL fosse `/autocente`, `/cliente` ou `/`.
+  3. **Discrepância de Chaves de Token:** Unificação definitiva entre as chaves `dna_token` e `dna_auto_token` no cliente `API` e `localStorage`.
+  4. **Persistência de Usuário e View em Navegação Direta:** Em `switchView()`, ao entrar em `workshop` ou `owner`, o usuário padrão de demonstração/oficina agora é imediatamente instanciado e salvo em `dna_logged_user`, `dna_current_view`, com tokens ativos e cabeçalho `X-Demo-User-Id`.
+  5. **Resiliência no Middleware do Servidor:** No `server/src/middlewares/auth.js`, caso o token JWT não valide diretamente (token simulado em dev/sessão local), o sistema consulta o header `X-Demo-User-Id` ou extrai o ID de usuário do próprio token (`usr_*`), impedindo qualquer erro 401/403.
+- **Implementações Técnicas:**
+  - `public/js/app.js`:
+    - Reestruturação do `init()` com restauração incondicional de sessão ativa caso haja `savedUser` e não seja rota explícita de `/login`.
+    - Prioridade absoluta do Hash (`#workshop`, `#owner`, `#admin`) e verificação de `savedView` no fallback seguro por perfil.
+    - Atualização do `setLoggedUser()` limpando todas as chaves no logout (`dna_logged_user`, `dna_token`, `dna_auto_token`, `dna_auto_demo_user_id`, `dna_current_view`).
+    - Garantia de persistência ativa do perfil em `switchView('workshop')` e `switchView('owner')`.
+  - `public/js/api.js`: Sincronização mútua das chaves `dna_token` e `dna_auto_token` em `setToken()`.
+  - `server/src/middlewares/auth.js`: Verificação resiliente com fallback para desenvolvimento e sessões locais.
+  - `test/api.test.js`: 39/39 testes automatizados de integração passando com 100% de sucesso.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

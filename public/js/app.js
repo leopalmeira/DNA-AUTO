@@ -12,33 +12,7 @@ const App = {
         console.log('🚀 Inicializando DNA AUTO Platform...');
         this.setupModals();
 
-        // 1. Verificar se há sessão ativa salva no navegador
-        const savedUser = this.getLoggedUser();
-        let savedToken = localStorage.getItem('dna_token');
-        const pathname = (window.location.pathname.toLowerCase().replace(/\/+$/, '')) || '/';
-        const hash = window.location.hash.toLowerCase();
-        const isExplicitLogin = pathname === '/login' || hash === '#login';
-        const isExplicitAdmin = pathname === '/admin' || hash === '#admin';
-        const isLandingRoute = pathname === '/' || pathname === '/cliente' || pathname === '/autocente' || pathname === '/autocenter' || hash === '#cliente' || hash === '#autocente' || hash === '#autocenter' || hash === '#landing' || hash === '#home';
-
-        // Se houver usuário salvo e não estiver acessando explicitamente tela deslogada ou landing
-        if (savedUser && savedUser.role_code && !isExplicitLogin && !isLandingRoute) {
-            if (!savedToken) {
-                savedToken = 'sess_' + savedUser.role_code.toLowerCase() + '_' + (savedUser.id || Date.now());
-                localStorage.setItem('dna_token', savedToken);
-            }
-            API.setToken(savedToken);
-            console.log('👤 Restaurando sessão ativa:', savedUser.name, `[${savedUser.role_code}]`);
-
-            // Restaura imediatamente a visualização do perfil correspondente
-            this.loginAs(savedUser.role_code, savedUser, false);
-            return;
-        }
-
-        // 2. Roteamento reativo inicial
-        this.handleRoute();
-
-        // 3. Ouvintes reativos para navegação SPA e histórico (Voltar/Avançar)
+        // 1. Ouvintes reativos para navegação SPA e histórico (Voltar/Avançar)
         window.addEventListener('popstate', () => {
             this.handleRoute();
         });
@@ -46,6 +20,82 @@ const App = {
         window.addEventListener('hashchange', () => {
             this.handleRoute();
         });
+
+        // 2. Verificar se há sessão ativa salva no navegador
+        const savedUser = this.getLoggedUser();
+        let savedToken = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+        const savedView = localStorage.getItem('dna_current_view');
+        const pathname = (window.location.pathname.toLowerCase().replace(/\/+$/, '')) || '/';
+        const hash = window.location.hash.toLowerCase();
+        const isExplicitLogin = pathname === '/login' || hash === '#login';
+
+        // Se houver usuário salvo na sessão e não for um pedido explícito de tela de login
+        if (savedUser && savedUser.role_code && !isExplicitLogin) {
+            if (!savedToken) {
+                savedToken = 'sess_' + savedUser.role_code.toLowerCase() + '_' + (savedUser.id || Date.now());
+                localStorage.setItem('dna_token', savedToken);
+                localStorage.setItem('dna_auto_token', savedToken);
+            }
+            API.setToken(savedToken);
+            if (savedUser.id) API.setDemoUser(savedUser.id);
+            console.log('👤 Restaurando sessão ativa:', savedUser.name, `[${savedUser.role_code}]`);
+
+            // Restaura o usuário e sincroniza interface
+            this.currentUser = savedUser;
+            this.currentRole = savedUser.role_code;
+            this.syncProfileState(savedUser.role_code);
+            this.setupNavigation();
+            if (typeof LoginView !== 'undefined' && LoginView.restoreLayout) {
+                LoginView.restoreLayout();
+            }
+
+            // Identificar qual módulo exibir sem desconectar no F5:
+            // A. Se a URL possui hash específico
+            if (hash === '#workshop') {
+                this.switchView('workshop');
+            } else if (hash === '#owner') {
+                this.switchView('owner');
+            } else if (hash === '#admin') {
+                this.switchView('admin');
+            } else if (hash === '#dossier') {
+                this.switchView('dossier');
+            } else if (hash === '#sales') {
+                this.switchView('sales');
+            } else if (hash === '#cliente' && savedUser.role_code !== 'WORKSHOP') {
+                this.switchView('landing-client');
+            } else if ((hash === '#autocente' || hash === '#autocenter') && savedUser.role_code !== 'WORKSHOP') {
+                this.switchView('landing-workshop');
+            // B. Se a URL possui pathname específico
+            } else if (pathname === '/workshop') {
+                this.switchView('workshop');
+            } else if (pathname === '/owner') {
+                this.switchView('owner');
+            } else if (pathname === '/admin') {
+                this.switchView('admin');
+            } else if (pathname === '/dossier') {
+                this.switchView('dossier');
+            } else if (pathname === '/sales') {
+                this.switchView('sales');
+            // C. Se havia uma view salva anteriormente condizente com o perfil
+            } else if (savedView === 'workshop' && savedUser.role_code === 'WORKSHOP') {
+                this.switchView('workshop');
+            } else if (savedView === 'owner' && savedUser.role_code === 'OWNER') {
+                this.switchView('owner');
+            } else if (savedView === 'admin' && savedUser.role_code === 'ADMIN') {
+                this.switchView('admin');
+            // D. Fallback seguro baseado no perfil do usuário autenticado (Mantém conectado no F5!)
+            } else if (savedUser.role_code === 'WORKSHOP') {
+                this.switchView('workshop');
+            } else if (savedUser.role_code === 'ADMIN') {
+                this.switchView('admin');
+            } else {
+                this.switchView('owner');
+            }
+            return;
+        }
+
+        // 3. Roteamento padrão caso não haja sessão autenticada ativa
+        this.handleRoute();
     },
 
     // ── Roteador Central SPA por Pathname e Hash ──
@@ -53,24 +103,43 @@ const App = {
         const pathname = (window.location.pathname.toLowerCase().replace(/\/+$/, '')) || '/';
         const hash = window.location.hash.toLowerCase();
 
-        if (pathname === '/cliente' || hash === '#cliente') {
-            this.switchView('landing-client');
-        } else if (pathname === '/autocente' || pathname === '/autocenter' || hash === '#autocente' || hash === '#autocenter') {
-            this.switchView('landing-workshop');
-        } else if (pathname === '/owner' || hash === '#owner') {
-            this.switchView('owner');
-        } else if (pathname === '/workshop' || hash === '#workshop') {
+        // 1. Prioridade absoluta para o Hash de navegação do SPA
+        if (hash === '#workshop') {
             this.switchView('workshop');
-        } else if (pathname === '/admin' || hash === '#admin') {
+        } else if (hash === '#owner') {
+            this.switchView('owner');
+        } else if (hash === '#admin') {
             this.switchView('admin');
-        } else if (pathname === '/login' || hash === '#login') {
+        } else if (hash === '#login') {
             this.switchView('login');
-        } else if (pathname === '/dossier' || hash === '#dossier') {
+        } else if (hash === '#dossier') {
             this.switchView('dossier');
-        } else if (pathname === '/sales' || hash === '#sales') {
+        } else if (hash === '#sales') {
             this.switchView('sales');
-        } else if (hash === '#landing') {
+        } else if (hash === '#cliente') {
+            this.switchView('landing-client');
+        } else if (hash === '#autocente' || hash === '#autocenter') {
+            this.switchView('landing-workshop');
+        } else if (hash === '#landing' || hash === '#home') {
             this.switchView('landing-home');
+
+        // 2. Se não houver hash, avaliar o pathname da URL
+        } else if (pathname === '/workshop') {
+            this.switchView('workshop');
+        } else if (pathname === '/owner') {
+            this.switchView('owner');
+        } else if (pathname === '/admin') {
+            this.switchView('admin');
+        } else if (pathname === '/cliente') {
+            this.switchView('landing-client');
+        } else if (pathname === '/autocente' || pathname === '/autocenter') {
+            this.switchView('landing-workshop');
+        } else if (pathname === '/login') {
+            this.switchView('login');
+        } else if (pathname === '/dossier') {
+            this.switchView('dossier');
+        } else if (pathname === '/sales') {
+            this.switchView('sales');
         } else {
             this.switchView('landing-home');
         }
@@ -121,6 +190,9 @@ const App = {
         } else {
             localStorage.removeItem('dna_logged_user');
             localStorage.removeItem('dna_token');
+            localStorage.removeItem('dna_auto_token');
+            localStorage.removeItem('dna_auto_demo_user_id');
+            localStorage.removeItem('dna_current_view');
         }
     },
 
@@ -179,14 +251,47 @@ const App = {
             return;
         }
 
-        // Se estiver acessando o app do cliente sem login prévio, define perfil padrão para visualização
-        if (viewName === 'owner' && !this.currentRole) {
+        // Se estiver acessando o app do cliente sem login prévio, define perfil padrão e persiste a sessão
+        if (viewName === 'owner' && (!this.currentUser || this.currentUser.role_code !== 'OWNER')) {
+            const defaultOwner = {
+                id: 'usr_owner_carlos',
+                name: 'Carlos Alberto Silva',
+                email: 'carlos.silva@email.com',
+                role_code: 'OWNER',
+                role_name: 'Cliente Proprietário'
+            };
+            this.currentUser = defaultOwner;
             this.currentRole = 'OWNER';
+            this.setLoggedUser(defaultOwner);
+            const token = localStorage.getItem('dna_token') || 'sess_owner_usr_owner_carlos';
+            API.setToken(token);
+            API.setDemoUser('usr_owner_carlos');
+            this.syncProfileState('OWNER');
         }
 
-        // Se estiver acessando a oficina sem login prévio, define perfil de demonstração
-        if (viewName === 'workshop' && !this.currentRole) {
+        // Se estiver acessando a oficina sem login prévio, define perfil padrão da oficina e persiste a sessão
+        if (viewName === 'workshop' && (!this.currentUser || this.currentUser.role_code !== 'WORKSHOP')) {
+            const defaultWorkshop = {
+                id: 'usr_workshop_marcos',
+                name: 'Marcos Silveira',
+                email: 'marcos@veloce.com.br',
+                role_code: 'WORKSHOP',
+                role_name: 'Proprietário de Oficina',
+                workshop: {
+                    id: 'ws_veloce',
+                    workshop_id: 'ws_veloce',
+                    workshop_name: 'Veloce Auto Center Premium',
+                    trade_name: 'Veloce Auto Center Premium',
+                    cnpj: '12.345.678/0001-90'
+                }
+            };
+            this.currentUser = defaultWorkshop;
             this.currentRole = 'WORKSHOP';
+            this.setLoggedUser(defaultWorkshop);
+            const token = localStorage.getItem('dna_token') || 'sess_workshop_usr_workshop_marcos';
+            API.setToken(token);
+            API.setDemoUser('usr_workshop_marcos');
+            this.syncProfileState('WORKSHOP');
         }
 
         const isLandingGroup = ['landing', 'landing-home', 'landing-client', 'landing-workshop'].includes(viewName);
