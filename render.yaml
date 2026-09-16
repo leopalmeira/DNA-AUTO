@@ -15,3 +15,21 @@ services:
         value: https://dna-auto.onrender.com
       - key: WDAPI_TOKEN
         value: be14254e5b6a32f36acabc0542e822dd
+
+  - type: web
+    name: cliente-app
+    runtime: static
+    buildCommand: echo "Building cliente.app"
+    staticPublishPath: ./cliente.app
+    envVars:
+      - key: API_URL
+        value: https://dna-auto.onrender.com
+
+  - type: web
+    name: oficina-app
+    runtime: static
+    buildCommand: echo "Building oficina.app"
+    staticPublishPath: ./oficina.app
+    envVars:
+      - key: API_URL
+        value: https://dna-auto.onrender.com

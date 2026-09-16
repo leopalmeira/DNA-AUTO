@@ -16,9 +16,8 @@ app.use(cors());
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
-// Servir Uploads e Frontend Estático (sem cache para refletir modificações instantaneamente)
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-app.use(express.static(path.join(__dirname, '..', '..', 'public'), {
+// Configuração padrão de cache para frontend estático
+const staticHeaders = {
     etag: false,
     maxAge: 0,
     setHeaders: (res) => {
@@ -26,7 +25,13 @@ app.use(express.static(path.join(__dirname, '..', '..', 'public'), {
         res.set('Pragma', 'no-cache');
         res.set('Expires', '0');
     }
-}));
+};
+
+// Servir Uploads e Frontend Estático
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+app.use(express.static(path.join(__dirname, '..', '..', 'public'), staticHeaders));
+app.use('/cliente.app', express.static(path.join(__dirname, '..', '..', 'cliente.app'), staticHeaders));
+app.use('/oficina.app', express.static(path.join(__dirname, '..', '..', 'oficina.app'), staticHeaders));
 
 // Registro dos Módulos da API REST
 const authRoutes = require('./modules/auth/auth.routes');
@@ -127,18 +132,18 @@ app.post('/api/v1/clients/activate', (req, res) => {
 });
 
 // ── Rotas Dedicadas para Arquivos Separados (App do Cliente & Painel da Oficina) ──
-app.get(['/cliente', '/cliente.html', '/app', '/meucarro'], (req, res) => {
+app.get(['/cliente', '/cliente.html', '/app', '/meucarro', '/cliente.app'], (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
-    res.sendFile(path.join(__dirname, '..', '..', 'public', 'cliente.html'));
+    res.sendFile(path.join(__dirname, '..', '..', 'cliente.app', 'index.html'));
 });
 
-app.get(['/oficina', '/oficina.html', '/painel', '/workshop', '/erp'], (req, res) => {
+app.get(['/oficina', '/oficina.html', '/painel', '/workshop', '/erp', '/oficina.app', '/oficinal.app'], (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
-    res.sendFile(path.join(__dirname, '..', '..', 'public', 'oficina.html'));
+    res.sendFile(path.join(__dirname, '..', '..', 'oficina.app', 'index.html'));
 });
 
 // Fallback para SPA no Frontend

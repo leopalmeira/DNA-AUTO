@@ -1,0 +1,115 @@
+/* ==============================================================================
+   DNA AUTO — DESIGN SYSTEM TOKENS & IDENTIDADE VISUAL
+   Conceito: CERTIFICAÇÃO DE REGISTROS VEICULARES (High-End Automotive Tech)
+   Paleta Oficial: Amarelo DNA AUTO #FFD21C, Azul #0066FF & Obsidiana Profunda #05080D
+   ============================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700;800&display=swap');
+
+:root {
+    /* 1. PALETA CROMÁTICA OFICIAL (MAPA DE LAYOUT) */
+    --color-primary-dark: #0F172A;
+    --color-primary-surface: #1E293B;
+    --color-primary-blue: #0066FF;
+    --color-primary-glow: rgba(0, 102, 255, 0.45);
+    --color-cyan-neon: #00D4FF;
+    --color-cyan-glow: rgba(0, 212, 255, 0.4);
+    --color-gold: #FFD21C;
+    --color-gold-glow: rgba(255, 210, 28, 0.35);
+
+    /* 2. SEMÁFORO DE STATUS */
+    --color-success: #10B981;
+    --color-attention: #F59E0B;
+    --color-warning: #F97316;
+    --color-error: #EF4444;
+
+    /* 3. NEUTROS */
+    --color-neutral-white: #FFFFFF;
+    --color-neutral-gray: #94A3B8;
+    --color-neutral-dim: #64748B;
+
+    /* 4. FUNDO OFICIAL (Dark Automotive) */
+    --bg-main: #05080D;
+    --bg-darker: #030508;
+    --bg-surface: #0A0F16;
+    --bg-surface-elevated: #101722;
+    --bg-surface-hover: #16212D;
+    --bg-surface-active: #1B2734;
+    --bg-glass: rgba(10, 15, 22, 0.82);
+
+    /* 5. SUPERFÍCIES & BORDAS DE PRECISÃO */
+    --surface-1: #111923;
+    --surface-2: #16212D;
+    --surface-3: #1B2734;
+    --border-subtle: #16212D;
+    --border-highlight: #1B2734;
+    --border-strong: #28384B;
+    --border-focus: #FFD21C;
+
+    /* 6. COR PRINCIPAL: AMARELO DNA AUTO (#FFD21C) & AZUL (#0066FF) */
+    --brand-primary: #FFD21C;
+    --brand-primary-hover: #FFE052;
+    --brand-primary-active: #E6BC0E;
+    --brand-blue: #0066FF;
+    --brand-glow: rgba(255, 210, 28, 0.28);
+    --brand-glow-lg: 0 0 35px rgba(255, 210, 28, 0.35);
+
+    /* Acentos Complementares */
+    --brand-cyan: #00D4FF;
+    --brand-cyan-glow: rgba(0, 212, 255, 0.2);
+
+    /* 4. STATUS DO CERTIFICADO (Oficial DNA AUTO) */
+    /* Certificado: Verde Elegante */
+    --proof-level-4: #10b981; 
+    --proof-level-4-bg: rgba(16, 185, 129, 0.12);
+    --proof-level-4-border: rgba(16, 185, 129, 0.35);
+
+    /* Confirmado pela Oficina: Azul Aço */
+    --proof-level-3: #0284c7;
+    --proof-level-3-bg: rgba(2, 132, 199, 0.12);
+    --proof-level-3-border: rgba(2, 132, 199, 0.35);
+
+    /* Em Análise / Documentado: Amarelo/Âmbar Institucional */
+    --proof-level-2: #FFD21C;
+    --proof-level-2-bg: rgba(255, 210, 28, 0.12);
+    --proof-level-2-border: rgba(255, 210, 28, 0.35);
+
+    /* Pendente: Cinza Técnico */
+    --proof-level-1: #64748b;
+    --proof-level-1-bg: rgba(100, 116, 139, 0.12);
+    --proof-level-1-border: rgba(100, 116, 139, 0.35);
+
+    /* Problema Encontrado: Vermelho Discreto */
+    --status-rejected: #ef4444;
+    --status-rejected-bg: rgba(239, 68, 68, 0.12);
+    --status-rejected-border: rgba(239, 68, 68, 0.35);
+
+    /* 5. TIPOGRAFIA */
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    /* 6. HIERARQUIA DE TEXTO */
+    --text-title: #ffffff;      /* Branco para títulos */
+    --text-main: #e2e8f0;       /* Cinza claro para informações */
+    --text-muted: #94a3b8;      /* Cinza médio para textos secundários */
+    --text-dim: #64748b;        /* Cinza técnico discreto */
+    --text-brand: #FFD21C;      /* Destaques DNA AUTO */
+
+    /* 7. SOMBRAS & ELEVAÇÕES */
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.45);
+    --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.55);
+    --shadow-lg: 0 14px 40px rgba(0, 0, 0, 0.7);
+    --shadow-yellow-glow: 0 0 25px rgba(255, 210, 28, 0.22);
+
+    /* 8. TRANSIÇÕES */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* 9. GEOMETRIA & RAIO DE BORDA (Precisão Automotiva) */
+    --radius-xs: 4px;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-full: 9999px;
+}

@@ -16,8 +16,8 @@
 ## 🌐 Acesso Rápido ao Sistema
 
 * **🏠 Home / Entrada Oficial:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/) *(Portal limpo para direcionamento de perfil)*
-* **📱 App do Cliente (Arquivo Separado Dedicado):** [https://dna-auto.onrender.com/cliente](https://dna-auto.onrender.com/cliente) ou [https://dna-auto.onrender.com/cliente.html](https://dna-auto.onrender.com/cliente.html) *(Exclusivo para proprietários de veículos, Garagem Digital, Dossiê e Ativação)*
-* **🏭 Painel da Oficina (Arquivo Separado Dedicado):** [https://dna-auto.onrender.com/oficina](https://dna-auto.onrender.com/oficina) ou [https://dna-auto.onrender.com/oficina.html](https://dna-auto.onrender.com/oficina.html) *(Exclusivo para gestão da oficina mecânica, recepção rápida, WhatsApp, agendamentos e laudos Nível 4)*
+* **📱 App do Cliente (cliente.app):** [https://dna-auto.onrender.com/cliente.app](https://dna-auto.onrender.com/cliente.app) ou [https://dna-auto.onrender.com/cliente](https://dna-auto.onrender.com/cliente) *(Pasta dedicada `cliente.app/`, Garagem Digital, Dossiê 360°, Telemetria e Ativação)*
+* **🏭 Painel da Oficina (oficina.app):** [https://dna-auto.onrender.com/oficina.app](https://dna-auto.onrender.com/oficina.app) ou [https://dna-auto.onrender.com/oficina](https://dna-auto.onrender.com/oficina) *(Pasta dedicada `oficina.app/`, Recepção por placa, OS Nível 4, WhatsApp integrado e Agenda)*
 * **🚗 Landing do Cliente (Proprietário):** [https://dna-auto.onrender.com/cliente](https://dna-auto.onrender.com/cliente)
 * **🔧 Landing da Oficina (Auto Center):** [https://dna-auto.onrender.com/autocente](https://dna-auto.onrender.com/autocente)
 * **🛡️ Painel Administrativo Matriz:** [https://dna-auto.onrender.com/admin](https://dna-auto.onrender.com/admin)

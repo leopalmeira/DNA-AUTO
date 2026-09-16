@@ -663,7 +663,7 @@ async function runTests() {
 
         console.log(`✅ 41. Central de Atendimento WhatsApp: Conversas ativas agrupadas, mensagens de entrada/saída sincronizadas e resposta instantânea transmitida com sucesso.`);
 
-        // Teste 42: Rota dedicada e arquivo separado do App do Cliente (/cliente e /app)
+        // Teste 42: Rota dedicada e arquivo separado do App do Cliente (/cliente, /app e /cliente.app)
         const resClientApp = await fetch(`http://localhost:${PORT}/cliente`);
         const htmlClient = await resClientApp.text();
         console.assert(resClientApp.status === 200, 'Falha ao acessar rota /cliente');
@@ -672,9 +672,12 @@ async function runTests() {
 
         const resClientAppAlias = await fetch(`http://localhost:${PORT}/app`);
         console.assert(resClientAppAlias.status === 200, 'Falha ao acessar alias /app');
-        console.log(`✅ 42. Rota e Arquivo Separado do App do Cliente: /cliente e /app entregam cliente.html dedicado com sucesso.`);
 
-        // Teste 43: Rota dedicada e arquivo separado do Painel da Oficina (/oficina e /painel)
+        const resClientAppDir = await fetch(`http://localhost:${PORT}/cliente.app`);
+        console.assert(resClientAppDir.status === 200, 'Falha ao acessar /cliente.app');
+        console.log(`✅ 42. Rota e Arquivo Separado do App do Cliente: /cliente, /app e /cliente.app entregam cliente.app dedicado com sucesso.`);
+
+        // Teste 43: Rota dedicada e arquivo separado do Painel da Oficina (/oficina, /painel e /oficina.app)
         const resWorkshopApp = await fetch(`http://localhost:${PORT}/oficina`);
         const htmlWorkshop = await resWorkshopApp.text();
         console.assert(resWorkshopApp.status === 200, 'Falha ao acessar rota /oficina');
@@ -683,7 +686,10 @@ async function runTests() {
 
         const resWorkshopAppAlias = await fetch(`http://localhost:${PORT}/painel`);
         console.assert(resWorkshopAppAlias.status === 200, 'Falha ao acessar alias /painel');
-        console.log(`✅ 43. Rota e Arquivo Separado do Painel da Oficina: /oficina e /painel entregam oficina.html dedicado com sucesso.`);
+
+        const resWorkshopAppDir = await fetch(`http://localhost:${PORT}/oficina.app`);
+        console.assert(resWorkshopAppDir.status === 200, 'Falha ao acessar /oficina.app');
+        console.log(`✅ 43. Rota e Arquivo Separado do Painel da Oficina: /oficina, /painel e /oficina.app entregam oficina.app dedicado com sucesso.`);
 
         console.log('\n🎉 TODOS OS 43 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {

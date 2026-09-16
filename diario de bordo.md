@@ -559,9 +559,9 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Permite divulgação e acesso direto a ambos os ambientes tanto localmente quanto no deploy do Render.
   3. **Resiliência e Compatibilidade:**
      - Inclusão de proteções de contexto em `workshopView.js` e objeto de compatibilidade `window.App` para que ambos os arquivos funcionem de modo independente sem depender do orquestrador global `app.js`.
-  4. **Validação de Qualidade:**
-     - Adicionados os Testes 42 e 43 em `test/api.test.js`, garantindo que as rotas `/cliente` e `/oficina` entreguem seus arquivos dedicados com 100% de integridade.
-     - Suíte de testes expandida para 43 testes de integração com 100% de aprovação (43/43).
+  5. **Pastas Autônomas Dedicadas (`cliente.app/` e `oficina.app/`) & Multi-Serviço no Render (`render.yaml`):**
+     - Criação das pastas de topo `cliente.app/` e `oficina.app/` com arquivos totalmente autocontidos (HTML, CSS, JS, manifest e ícones).
+     - Configuração de serviços estáticos (`cliente-app` e `oficina-app`) no `render.yaml` e rotas estáticas dedicadas no servidor Node.js.
 
 ---
 

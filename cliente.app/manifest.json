@@ -1,0 +1,23 @@
+{
+  "name": "DNA AUTO - App do Cliente",
+  "short_name": "DNA Cliente",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0B0F19",
+  "theme_color": "#0B0F19",
+  "description": "Garagem digital, laudo de inspeção 360°, histórico de revisões e telemetria Mini OBD2 do seu carro.",
+  "icons": [
+    {
+      "src": "./img/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./img/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

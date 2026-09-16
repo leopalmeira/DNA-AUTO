@@ -1064,6 +1064,11 @@ DNA-AUTO/
      - Teste 43: Validação de entrega íntegra do HTML de `oficina.html` nas rotas `/oficina` e `/painel`.
    - Suíte de 43 testes de integração executada com 100% de aprovação (43/43).
 
+5. **Pastas Autônomas Dedicadas (`cliente.app/` e `oficina.app/`) & Suporte Multi-Serviço no Render (`render.yaml`):**
+   - Criação das pastas de topo [`cliente.app/`](file:///c:/Users/User/Desktop/DNA-AUTO/cliente.app) e [`oficina.app/`](file:///c:/Users/User/Desktop/DNA-AUTO/oficina.app), totalmente autocontidas com seus respectivos `index.html`, `manifest.json`, `css/`, `js/` e `img/`.
+   - Atualização do [`render.yaml`](file:///c:/Users/User/Desktop/DNA-AUTO/render.yaml) definindo os serviços estáticos independentes `cliente-app` (porta de entrada: `./cliente.app`) e `oficina-app` (porta de entrada: `./oficina.app`), além do serviço web backend `dna-auto`.
+   - Adaptação dinâmica em `api.js` (`baseUrl`) para chavear automaticamente para `https://dna-auto.onrender.com/api/v1` quando executado a partir de domínios estáticos do Render.
+
 ---
 
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
