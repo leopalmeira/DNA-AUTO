@@ -548,7 +548,20 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - `server/src/modules/workshops/workshops.routes.js`: Endpoints `GET /:id/whatsapp/chat/conversations`, `GET /:id/whatsapp/chat/messages/:phone`, `POST /:id/whatsapp/chat/send`, `POST /:id/whatsapp/chat/mark-read`, e webhook `POST /whatsapp/webhook`.
   - `public/js/api.js`: Adição dos métodos `getWhatsAppChatConversations()`, `getWhatsAppChatMessages()`, `sendWhatsAppChatMessage()`, `markWhatsAppChatRead()`.
   - `public/js/components/workshopView.js`: Inclusão do item `Atendimento WhatsApp` no menu lateral, roteamento na `renderActiveSection()`, implementação da view e lógica de chat bidirecional e função `sendWhatsAppInPlatform()`.
-  - `test/api.test.js`: Criação do Teste 41 cobrindo ciclo de vida completo do chat (envio da oficina, resposta simulada do cliente, consulta de conversas e mensagens, e resposta direta pela central), com 41/41 testes aprovados com 100% de sucesso.
+### 📅 Ciclo 28 — Separação Completa dos Arquivos de Entrada: App do Cliente (`cliente.html`) e Painel da Oficina (`oficina.html`)
+- **Demandas Atendidas:**
+  1. **Arquivos Separados e Dedicados para Cliente e Oficina:**
+     - Criação do arquivo autônomo `public/cliente.html` exclusivo para o proprietário do veículo: visualização da Garagem Digital, Ficha Técnica, Dossiê 360°, Telemetria Mini OBD2, Declaração de Nota Fiscal, Troca de Foto e Ativação via Código da Oficina.
+     - Criação do arquivo autônomo `public/oficina.html` exclusivo para oficinas mecânicas: cockpit executivo, recepção ágil por placa, agendamentos, ordens de serviço nível 4, geração de cartazes e Central de Atendimento WhatsApp.
+  2. **Rotas Dedicadas no Servidor com Anti-Cache Estrito (`server.js`):**
+     - `/cliente`, `/cliente.html`, `/app`, `/meucarro` -> entregam diretamente `public/cliente.html`.
+     - `/oficina`, `/oficina.html`, `/painel`, `/workshop`, `/erp` -> entregam diretamente `public/oficina.html`.
+     - Permite divulgação e acesso direto a ambos os ambientes tanto localmente quanto no deploy do Render.
+  3. **Resiliência e Compatibilidade:**
+     - Inclusão de proteções de contexto em `workshopView.js` e objeto de compatibilidade `window.App` para que ambos os arquivos funcionem de modo independente sem depender do orquestrador global `app.js`.
+  4. **Validação de Qualidade:**
+     - Adicionados os Testes 42 e 43 em `test/api.test.js`, garantindo que as rotas `/cliente` e `/oficina` entreguem seus arquivos dedicados com 100% de integridade.
+     - Suíte de testes expandida para 43 testes de integração com 100% de aprovação (43/43).
 
 ---
 

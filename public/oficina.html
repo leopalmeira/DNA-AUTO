@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA AUTO | ERP & Painel Operacional da Oficina Credenciada</title>
+    <meta name="description" content="Painel de controle profissional para oficinas e auto centers credenciados: recepção de veículos, ficha técnica, agendamentos, WhatsApp oficial e laudos Nível 4.">
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Ícones e Favicon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/img/icons/icon-192x192.png">
+    <link rel="icon" type="image/svg+xml" href="/img/icons/dna-logo.svg">
+    <link rel="shortcut icon" href="/img/icons/favicon.png">
+
+    <!-- Folhas de Estilo Corporativas TOTVS / DNA AUTO -->
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/dossier.css">
+    <link rel="stylesheet" href="/css/print.css">
+
+    <style>
+        body.is-workshop-erp {
+            background: #080c14;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        #app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #view-content {
+            flex: 1;
+            width: 100%;
+        }
+        .standalone-ws-top-banner {
+            background: linear-gradient(90deg, #091220, #0B192C);
+            border-bottom: 1px solid rgba(0, 102, 255, 0.25);
+            padding: 6px 16px;
+            font-size: 11.5px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #94A3B8;
+        }
+        .standalone-ws-top-banner a {
+            color: #38BDF8;
+            text-decoration: none;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+    </style>
+</head>
+<body class="is-workshop-erp">
+    <div id="app-container">
+        <!-- Barra de Status Exclusiva da Oficina Credenciada -->
+        <div class="standalone-ws-top-banner">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="pulse-dot" style="width:6px; height:6px; background:#10B981;"></span>
+                <span>DNA AUTO ERP • <strong>Painel Operacional da Oficina</strong></span>
+                <span style="background:rgba(0,102,255,0.2); color:#38BDF8; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700;">OFICINA CREDENCIADA</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:16px;">
+                <a href="/cliente" title="Visualizar a experiência do Cliente / Garagem Digital" target="_blank">
+                    <span>📱 Ver App do Cliente</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Viewport Principal do ERP da Oficina -->
+        <main class="content-viewport" id="view-content">
+            <div style="padding:60px 20px; text-align:center; color:var(--text-muted); background:#080c14; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                <div class="pulse-dot" style="margin:0 auto 16px; width:12px; height:12px;"></div>
+                <strong style="color:#ffffff; font-size:16px; display:block; margin-bottom:6px;">Carregando ERP DNA AUTO...</strong>
+                <span style="font-size:12px; color:var(--text-dim);">Sincronizando odômetro OBD2, serviços e agenda operacional</span>
+            </div>
+        </main>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAIS OPERACIONAIS DA OFICINA (NOVO SERVIÇO, ATIVAÇÃO DNA, CARTAZ, ETC.) -->
+    <!-- ========================================================================= -->
+
+    <!-- Modal 1: Oferta / Ativação de DNA ao Cliente -->
+    <div id="dna-offer-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Ativar DNA Permanente no Veículo</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="dna-offer-vehicle-id" />
+                <div class="alert-box alert-warning">
+                    ⚠️ <strong>Veículo Identificado:</strong> <span id="dna-offer-model-label"></span> (<span id="dna-offer-plate-label" class="mono"></span>) ainda não possui DNA AUTO.
+                </div>
+
+                <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+                    Ao ativar o DNA, o veículo recebe um código permanente e passa a integrar a rede DNA AUTO. Selecione a modalidade comercial autorizada para este atendimento:
+                </p>
+
+                <div class="form-group">
+                    <label>Condição Comercial da Ativação:</label>
+                    <select id="dna-offer-modality" class="form-control">
+                        <option value="CAMPAIGN">🎉 Campanha Promocional da Oficina (R$ 79,00)</option>
+                        <option value="DISCOUNT_50">🏷️ Cupom de 50% de Desconto (R$ 74,50)</option>
+                        <option value="COURTESY">🎁 Cortesia Fidelidade da Oficina (R$ 0,00)</option>
+                        <option value="NORMAL">💳 Preço Padrão de Tabela (R$ 149,00)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Plano Vinculado:</label>
+                    <select id="dna-offer-plan" class="form-control">
+                        <option value="plan_workshop_promo">Campanha Oficina Credenciada (Comissão R$ 19,75)</option>
+                        <option value="plan_discount_50">Desconto 50% Especial</option>
+                        <option value="plan_courtesy">Cortesia Fidelidade</option>
+                        <option value="plan_normal">Ativação Normal</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close-btn">Cancelar</button>
+                <button class="btn btn-cyan" onclick="WorkshopView.confirmDnaActivation()">CONFIRMAR E GERAR DNA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Cadastro de Novo Serviço Comprovado (Nível 4) -->
+    <div id="new-service-modal" class="modal-overlay">
+        <div class="modal-container wide">
+            <div class="modal-header">
+                <h3>🔧 Registrar Novo Serviço Comprovado (Nível 4)</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <form id="new-service-form">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Veículo com DNA:</label>
+                            <select name="vehicle_id" id="srv-vehicle-id" class="form-control" onchange="WorkshopView.onServiceVehicleChange(this.value)" required>
+                                <option value="veh_civic_touring">Honda Civic Touring (BRA2E19) - DNA Ativo</option>
+                                <option value="veh_corolla_xei">Toyota Corolla XEi (ABC1D23) - DNA Ativo</option>
+                                <option value="veh_gol_msi">VW Gol MSI (KXZ9012) - DNA Ativo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Data do Serviço:</label>
+                            <input type="date" name="service_date" id="srv-service-date" class="form-control" value="2026-03-08" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Quilometragem no Odômetro:</label>
+                            <input type="number" name="mileage" id="srv-mileage" class="form-control" value="128500" required />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Título do Serviço:</label>
+                            <input type="text" name="service_title" class="form-control" placeholder="Ex: Substituição de Discos e Pastilhas Dianteiras" required />
+                        </div>
+                        <div class="form-group">
+                            <label>Categoria:</label>
+                            <select name="category" class="form-control">
+                                <option value="Freios">Freios</option>
+                                <option value="Lubrificação e Filtros">Lubrificação e Filtros</option>
+                                <option value="Motor e Arrefecimento">Motor e Arrefecimento</option>
+                                <option value="Suspensão e Direção">Suspensão e Direção</option>
+                                <option value="Câmbio e Transmissão">Câmbio e Transmissão</option>
+                                <option value="Elétrica e Ignição">Elétrica e Ignição</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Técnico Responsável:</label>
+                            <input type="text" name="responsible_technician_name" class="form-control" value="Roberto Mecânico Chefe" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descrição Detalhada do Serviço:</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="Procedimentos executados, torques aplicados e observações técnicas..."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Valor Mão de Obra (R$):</label>
+                            <input type="number" name="labor_cost_cents" class="form-control" value="25000" placeholder="Ex: 25000 para R$ 250,00" />
+                        </div>
+                        <div class="form-group">
+                            <label>Garantia (Meses):</label>
+                            <input type="number" name="warranty_months" class="form-control" value="6" />
+                        </div>
+                        <div class="form-group">
+                            <label>Número da NF-e:</label>
+                            <input type="text" name="invoice_number" class="form-control" value="NF-e 009284" />
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>📷 Registro Fotográfico (Peça Nova/Instalada/Odômetro):</label>
+                            <input type="file" name="photos" class="form-control" accept="image/*" multiple />
+                        </div>
+                        <div class="form-group">
+                            <label>🧾 Anexar Nota Fiscal (PDF ou Imagem):</label>
+                            <input type="file" name="invoice" class="form-control" accept="image/*,application/pdf" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary modal-close-btn">Cancelar</button>
+                    <button type="submit" class="btn btn-success">✅ SALVAR COMO SERVIÇO COMPROVADO</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 3: Transferência Segura do Veículo -->
+    <div id="transfer-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Transferência de Propriedade do Veículo</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="transfer-vehicle-id" />
+                <div class="alert-box alert-info">
+                    🛡️ <strong>Regra Fundamental do DNA AUTO:</strong> O DNA pertence ao veículo. Ao transferir, o novo proprietário assume a titularidade, mas o histórico completo e o código do DNA permanecem intactos.
+                </div>
+
+                <div style="border-bottom:1px solid var(--border-subtle); padding-bottom:16px; margin-bottom:16px;">
+                    <h4 style="font-size:14px; font-weight:700; margin-bottom:8px;">Passo 1: Vendedor Solicita Código</h4>
+                    <div class="form-group">
+                        <label>Quilometragem no momento da venda:</label>
+                        <input type="number" id="transfer-mileage-input" class="form-control" value="125200" />
+                    </div>
+                    <button class="btn btn-primary" onclick="if(window.OwnerView) OwnerView.handleRequestTransferCode()">
+                        GERAR CÓDIGO TEMPORÁRIO (6 DÍGITOS)
+                    </button>
+
+                    <div id="transfer-code-result" style="display:none; margin-top:14px; background:var(--bg-surface-elevated); padding:16px; border-radius:var(--radius-md); text-align:center;">
+                        <span style="font-size:12px; color:var(--text-muted);">CÓDIGO DE TRANSFERÊNCIA GERADO:</span>
+                        <div id="transfer-generated-code" class="mono" style="font-size:32px; font-weight:800; color:var(--brand-cyan); letter-spacing:4px; margin:8px 0;"></div>
+                        <p style="font-size:11px; color:var(--text-dim);">Envie este código ao comprador para confirmação dentro do prazo de 48 horas.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="font-size:14px; font-weight:700; margin-bottom:8px;">Passo 2: Comprador Confirma e Assume o Carro</h4>
+                    <div class="form-group">
+                        <label>Código de 6 Dígitos:</label>
+                        <input type="text" id="buyer-transfer-code-input" class="form-control mono" placeholder="Ex: 829401" maxlength="6" />
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Novo Proprietário:</label>
+                        <input type="text" id="buyer-name-input" class="form-control" placeholder="Ex: Ana Carolina Martins" />
+                    </div>
+                    <button class="btn btn-success" onclick="if(window.OwnerView) OwnerView.handleConfirmTransferByBuyer()">
+                        ASSUMIR VEÍCULO E PRESERVAR HISTÓRICO
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close-btn">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4: Cartaz Imprimível da Oficina -->
+    <div id="poster-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header" style="flex-direction:column; align-items:stretch; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                    <h3 style="margin:0; font-size:16px; font-weight:800; color:var(--text-highlight);">Cartaz Digital e Imprimível para Oficinas</h3>
+                    <button class="modal-close-btn" style="font-size:24px; padding:0 6px;">&times;</button>
+                </div>
+                <div style="display:flex; gap:8px; width:100%;">
+                    <button class="btn btn-primary btn-sm" style="flex:1; justify-content:center; font-weight:700; height:38px;" onclick="PosterGenerator.printPoster()">
+                        🖨️ IMPRIMIR CARTAZ A4
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" id="poster-modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Modal 5: Emissão do Relatório Oficial para Venda -->
+    <div id="sale-report-modal" class="modal-overlay">
+        <div class="modal-container wide">
+            <div class="modal-header" style="flex-direction:column; align-items:stretch; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                    <h3 style="margin:0; font-size:16px; font-weight:800; color:var(--text-highlight);">Relatório Oficial DNA AUTO para Venda</h3>
+                    <button class="modal-close-btn" style="font-size:24px; padding:0 6px;">&times;</button>
+                </div>
+                <div style="display:flex; gap:8px; width:100%;">
+                    <button class="btn btn-cyan btn-sm" style="flex:1; justify-content:center; font-weight:700; height:38px;" onclick="SaleReportModal.printReport()">
+                        🖨️ IMPRIMIR / SALVAR PDF
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" id="sale-report-modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Modal 6: Zoom de Foto -->
+    <div id="photo-zoom-modal" class="modal-overlay">
+        <div class="modal-container" style="max-width:800px; background:#000;">
+            <div class="modal-header" style="border-color:#222;">
+                <h3 id="photo-zoom-title" style="color:#fff;">Registro Fotográfico</h3>
+                <button class="modal-close-btn" style="color:#fff;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:0; text-align:center;">
+                <img id="photo-zoom-img" src="" alt="Zoom" style="max-width:100%; max-height:75vh; object-fit:contain; display:block; margin:0 auto;" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts do ERP da Oficina -->
+    <script src="/js/components/qrcode.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/components/dossierView.js"></script>
+    <script src="/js/components/posterGenerator.js"></script>
+    <script src="/js/components/saleReportModal.js"></script>
+    <script src="/js/components/pwaInstall.js"></script>
+    <script src="/js/components/workshopView.js"></script>
+
+    <!-- Inicializador Autônomo do ERP da Oficina -->
+    <script>
+        // Objeto de Compatibilidade App
+        window.App = {
+            currentRole: 'WORKSHOP',
+            currentUser: {
+                id: 'usr_workshop_marcos',
+                name: 'Marcos Silveira',
+                email: 'marcos@veloce.com.br',
+                role_code: 'WORKSHOP',
+                role_name: 'Proprietário de Oficina',
+                workshop: {
+                    id: 'ws_veloce',
+                    workshop_id: 'ws_veloce',
+                    trade_name: 'Veloce Auto Center Premium',
+                    workshop_name: 'Veloce Auto Center Premium',
+                    cnpj: '12.345.678/0001-90'
+                }
+            },
+            logout() {
+                localStorage.removeItem('dna_logged_user');
+                localStorage.removeItem('dna_token');
+                localStorage.removeItem('dna_auto_token');
+                localStorage.removeItem('dna_current_view');
+                window.location.href = '/';
+            },
+            switchView(view) {
+                if (view === 'owner') window.location.href = '/cliente';
+                else if (view === 'landing' || view === 'landing-home') window.location.href = '/';
+                else if (view === 'login') window.location.href = '/#login';
+                else WorkshopView.render();
+            }
+        };
+
+        // Inicialização dos Modais
+        function setupModals() {
+            document.querySelectorAll('.modal-close-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const modal = btn.closest('.modal-overlay');
+                    if (modal) modal.classList.remove('active');
+                });
+            });
+
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) overlay.classList.remove('active');
+                });
+            });
+
+            const newServiceForm = document.getElementById('new-service-form');
+            if (newServiceForm) {
+                newServiceForm.addEventListener('submit', (e) => {
+                    WorkshopView.submitNewService(e);
+                });
+            }
+        }
+
+        // Inicializar ERP da Oficina
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupModals();
+
+            // Sincronizar usuário salvo ou usar o perfil padrão da Veloce Auto Center
+            let savedUser = null;
+            try {
+                const raw = localStorage.getItem('dna_logged_user');
+                if (raw) savedUser = JSON.parse(raw);
+            } catch (_) {}
+
+            if (savedUser && savedUser.role_code === 'WORKSHOP') {
+                window.App.currentUser = savedUser;
+            } else {
+                localStorage.setItem('dna_logged_user', JSON.stringify(window.App.currentUser));
+            }
+
+            const token = localStorage.getItem('dna_token') || 'sess_workshop_usr_workshop_marcos';
+            API.setToken(token);
+            API.setDemoUser(window.App.currentUser.id || 'usr_workshop_marcos');
+
+            // Renderizar ERP da Oficina
+            await WorkshopView.render();
+        });
+    </script>
+</body>
+</html>

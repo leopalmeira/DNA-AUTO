@@ -245,7 +245,7 @@ const WorkshopView = {
         const container = document.getElementById('view-content');
         const data = this.dashboardData || {};
         const ws = data.workshop || { trade_name: 'Veloce Auto Center Premium', cnpj: '12.345.678/0001-90', id: 'ws_veloce' };
-        const userName = (App.currentUser && App.currentUser.name) || 'Marcos Silveira';
+        const userName = (typeof App !== 'undefined' && App.currentUser && App.currentUser.name) || 'Marcos Silveira';
 
         // Métricas de Notificações
         const criticalAlerts = (this.alertsData || []).filter(a => a.urgency === 'CRITICAL').length;
@@ -291,7 +291,7 @@ const WorkshopView = {
                         </button>
 
                         <!-- Botão Sair -->
-                        <button class="ws-erp-logout-btn" onclick="App.logout()" title="Encerrar Sessão">
+                        <button class="ws-erp-logout-btn" onclick="if(typeof App !== 'undefined' && App.logout) App.logout(); else { localStorage.removeItem('dna_logged_user'); localStorage.removeItem('dna_token'); window.location.href='/'; }" title="Encerrar Sessão">
                             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
                             <span>Sair</span>
                         </button>
@@ -628,7 +628,7 @@ const WorkshopView = {
         const data = this.dashboardData || {};
         const stats = data.stats || {};
         const ws = data.workshop || {};
-        const userName = (App.currentUser && App.currentUser.name) || 'Marcos Silveira';
+        const userName = (typeof App !== 'undefined' && App.currentUser && App.currentUser.name) || 'Marcos Silveira';
 
         const criticalAlerts = (this.alertsData || []).filter(a => a.urgency === 'CRITICAL').length;
         const upcomingAlerts = (this.alertsData || []).filter(a => a.urgency === 'WARNING').length;

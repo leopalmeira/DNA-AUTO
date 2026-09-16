@@ -1027,6 +1027,45 @@ DNA-AUTO/
 
 ---
 
+### 📅 Ciclo 28 — Separação e Modularização dos Arquivos de Entrada: App do Cliente (`cliente.html`) e Painel da Oficina (`oficina.html`)
+
+#### 1. Contexto e Demanda
+- **Demanda:** O usuário solicitou que os arquivos do App do Cliente e do Painel da Oficina ficassem completamente separados e independentes, disponibilizados tanto para acesso direto via Render quanto commitados no GitHub.
+- **Motivação Arquitetural:**
+  - Evitar que o proprietário do veículo recebesse a carga de scripts de ERP da oficina (como `workshopView.js` com centenas de kilobytes de lógica de oficina).
+  - Permitir links de acesso diretos e dedicados para divulgação comercial:
+    - Cliente: `https://dna-auto.onrender.com/cliente` (ou `cliente.html`, `/app`)
+    - Oficina: `https://dna-auto.onrender.com/oficina` (ou `oficina.html`, `/painel`)
+  - Manter compatibilidade com a SPA global (`index.html`), permitindo que ambos os modos operem em harmonia.
+
+#### 2. Implementação Técnica
+1. **Geração do Arquivo do App do Cliente (`public/cliente.html`):**
+   - Criação de interface mobile-first autônoma contendo exclusivamente a Garagem Digital, Ficha do Carro, Inspeção 360°, Telemetria OBD2, Dossiê e Ativação com Código de 4 dígitos da Oficina.
+   - Carregamento estrito apenas das dependências necessárias (`ownerView.js`, `dossierView.js`, `saleReportModal.js`, `pwaInstall.js`, `qrcode.js`).
+   - Modais embutidos: Declaração de Serviço com Nota Fiscal (`#owner-declare-modal`), Transferência de Propriedade (`#transfer-modal`), Zoom de Fotos (`#photo-zoom-modal`) e Relatório para Venda (`#sale-report-modal`).
+   - Suporte a deep-link por parâmetro de URL (ex: `?code=DNA-8421`) abrindo automaticamente o modal de validação do carro.
+   - Fallback e compatibilidade com `window.App` para chamadas de logout e alternância de telas.
+
+2. **Geração do Arquivo do Painel da Oficina (`public/oficina.html`):**
+   - Criação de interface corporativa ERP estilo TOTVS autônoma, focada em produtividade mecânica: Cockpit, Busca Rápida de Veículos, Entrada por Placa/Chassi, Ordens de Serviço Nível 4, Central de Atendimento WhatsApp, Agendamentos e Cartazes QR Code.
+   - Carregamento estrito das dependências operacionais (`workshopView.js`, `posterGenerator.js`, `saleReportModal.js`, `dossierView.js`, `qrcode.js`).
+   - Modais embutidos: Novo Serviço Nível 4 (`#new-service-modal`), Ativação de DNA (`#dna-offer-modal`), Transferência de Veículo (`#transfer-modal`), Cartaz da Oficina (`#poster-modal`), Relatório de Venda e Zoom.
+   - Resiliência em `workshopView.js`: adição de verificações seguras (`typeof App !== 'undefined'`) para evitar erros caso `App` não esteja definido.
+
+3. **Configuração de Rotas Dedicadas no Backend (`server/src/server.js`):**
+   - Configuração de endpoints explícitos com cabeçalhos anti-cache estritos (`Cache-Control: no-store, no-cache, must-revalidate`):
+     - `GET /cliente`, `/cliente.html`, `/app`, `/meucarro` -> Entrega `public/cliente.html`
+     - `GET /oficina`, `/oficina.html`, `/painel`, `/workshop`, `/erp` -> Entrega `public/oficina.html`
+   - O fallback SPA para `index.html` permanece ativo para todas as demais rotas públicas.
+
+4. **Bateria de Testes Automatizados:**
+   - Adição dos Testes 42 e 43 em `test/api.test.js`:
+     - Teste 42: Validação de entrega íntegra do HTML de `cliente.html` nas rotas `/cliente` e `/app`.
+     - Teste 43: Validação de entrega íntegra do HTML de `oficina.html` nas rotas `/oficina` e `/painel`.
+   - Suíte de 43 testes de integração executada com 100% de aprovação (43/43).
+
+---
+
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
 
 

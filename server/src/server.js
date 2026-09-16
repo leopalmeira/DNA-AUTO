@@ -126,6 +126,21 @@ app.post('/api/v1/clients/activate', (req, res) => {
     }
 });
 
+// ── Rotas Dedicadas para Arquivos Separados (App do Cliente & Painel da Oficina) ──
+app.get(['/cliente', '/cliente.html', '/app', '/meucarro'], (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.sendFile(path.join(__dirname, '..', '..', 'public', 'cliente.html'));
+});
+
+app.get(['/oficina', '/oficina.html', '/painel', '/workshop', '/erp'], (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.sendFile(path.join(__dirname, '..', '..', 'public', 'oficina.html'));
+});
+
 // Fallback para SPA no Frontend
 app.use((req, res) => {
     // Se a requisição não for de API, entrega o index.html com anti-cache

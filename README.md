@@ -3,23 +3,23 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-41%2F41%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-43%2F43%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes:** Central de Atendimento WhatsApp integrada ao ERP (Live Chat bidirecional com histórico e templates rápidos); Menu da Oficina enxuto com Entrada de Veículos e Cadastro unificados via busca inteligente por placa; Agenda da Semana simplificada com agendamento direto nos slots (`+ Disponível`) exibindo placa, cliente e serviço a ser executado; WhatsApp Baileys com scanner QR Code corrigido e reconexão automática; Cadastro de Clientes com geração de Código de Ativação (`DNA-XXXX`); Suporte responsivo para Tablets de 10 polegadas.
+> ✨ **Novidades Recentes:** Separação completa dos arquivos de entrada do **App do Cliente** (`cliente.html` / `/cliente` / `/app`) e do **Painel da Oficina** (`oficina.html` / `/oficina` / `/painel`); Upload e envio de mídias (fotos, vídeos e áudios) na Central de Atendimento WhatsApp; Central de Atendimento WhatsApp integrada ao ERP (Live Chat bidirecional com histórico e templates rápidos); Menu da Oficina enxuto com Entrada de Veículos e Cadastro unificados via busca inteligente por placa; Agenda da Semana simplificada com agendamento direto nos slots (`+ Disponível`); WhatsApp Baileys com scanner QR Code corrigido e reconexão automática; Cadastro de Clientes com geração de Código de Ativação (`DNA-XXXX`).
 
 ---
 
 ## 🌐 Acesso Rápido ao Sistema
 
 * **🏠 Home / Entrada Oficial:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/) *(Portal limpo para direcionamento de perfil)*
-* **🚗 Landing do Cliente (Proprietário):** [https://dna-auto.onrender.com/cliente](https://dna-auto.onrender.com/cliente) *(Exclusiva para donos de carro)*
-* **🔧 Landing da Oficina (Auto Center):** [https://dna-auto.onrender.com/autocente](https://dna-auto.onrender.com/autocente) *(Exclusiva para donos de oficinas mecânicas)*
-* **📱 App do Cliente (Proprietário):** [https://dna-auto.onrender.com/#owner](https://dna-auto.onrender.com/#owner)
-* **🏭 Painel ERP da Oficina:** [https://dna-auto.onrender.com/#workshop](https://dna-auto.onrender.com/#workshop)
+* **📱 App do Cliente (Arquivo Separado Dedicado):** [https://dna-auto.onrender.com/cliente](https://dna-auto.onrender.com/cliente) ou [https://dna-auto.onrender.com/cliente.html](https://dna-auto.onrender.com/cliente.html) *(Exclusivo para proprietários de veículos, Garagem Digital, Dossiê e Ativação)*
+* **🏭 Painel da Oficina (Arquivo Separado Dedicado):** [https://dna-auto.onrender.com/oficina](https://dna-auto.onrender.com/oficina) ou [https://dna-auto.onrender.com/oficina.html](https://dna-auto.onrender.com/oficina.html) *(Exclusivo para gestão da oficina mecânica, recepção rápida, WhatsApp, agendamentos e laudos Nível 4)*
+* **🚗 Landing do Cliente (Proprietário):** [https://dna-auto.onrender.com/cliente](https://dna-auto.onrender.com/cliente)
+* **🔧 Landing da Oficina (Auto Center):** [https://dna-auto.onrender.com/autocente](https://dna-auto.onrender.com/autocente)
 * **🛡️ Painel Administrativo Matriz:** [https://dna-auto.onrender.com/admin](https://dna-auto.onrender.com/admin)
 * **🚗 Dossiê Demonstrativo (Honda Civic):** [https://dna-auto.onrender.com/#dossier](https://dna-auto.onrender.com/#dossier)
 * **📂 Repositório Oficial:** [https://github.com/leopalmeira/DNA-AUTO](https://github.com/leopalmeira/DNA-AUTO)

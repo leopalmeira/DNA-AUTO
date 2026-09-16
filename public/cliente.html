@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DNA AUTO | App do Cliente - Garagem Digital & Certificação Veicular</title>
+    <meta name="description" content="Aplicativo oficial do proprietário: acompanhe manutenções, inspeções técnicas 360°, laudos, telemetria OBD2 e o DNA oficial do seu veículo.">
+    
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Configurações PWA Mobile -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0B0F19">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DNA AUTO">
+    <link rel="apple-touch-icon" href="/img/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/img/icons/icon-192x192.png">
+    <link rel="icon" type="image/svg+xml" href="/img/icons/dna-logo.svg">
+    <link rel="shortcut icon" href="/img/icons/favicon.png">
+
+    <!-- Folhas de Estilo -->
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/dossier.css">
+    <link rel="stylesheet" href="/css/owner-app.css">
+    <link rel="stylesheet" href="/css/print.css">
+
+    <style>
+        body.is-owner-app {
+            background: #0B0F19;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+        #app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #view-content {
+            flex: 1;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .standalone-top-banner {
+            background: linear-gradient(90deg, rgba(0, 102, 255, 0.15), rgba(0, 212, 255, 0.15));
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 6px 14px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #94A3B8;
+        }
+        .standalone-top-banner a {
+            color: #00D4FF;
+            text-decoration: none;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+    </style>
+</head>
+<body class="is-owner-app">
+    <div id="app-container">
+        <!-- Barra de Status Exclusiva do App do Cliente -->
+        <div class="standalone-top-banner">
+            <div style="display:flex; align-items:center; gap:6px;">
+                <span class="pulse-dot" style="width:6px; height:6px;"></span>
+                <span>DNA AUTO • <strong>App do Cliente</strong></span>
+            </div>
+            <div>
+                <a href="/oficina" title="Acessar o Painel Operacional da Oficina">
+                    <span>Área da Oficina</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Área Central de Renderização do Aplicativo do Cliente -->
+        <main class="content-viewport" id="view-content">
+            <div style="padding:60px 20px; text-align:center; color:#94A3B8;">
+                <div class="pulse-dot" style="margin:0 auto 16px; width:12px; height:12px;"></div>
+                <strong style="color:#ffffff; font-size:16px; display:block; margin-bottom:6px;">Carregando Garagem Digital...</strong>
+                <span style="font-size:12px;">Sincronizando veículo, revisões e laudo com o servidor</span>
+            </div>
+        </main>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAIS DO CLIENTE (TRANSFERÊNCIA, NOTAS FISCAIS, LAUDO E RELATÓRIO)       -->
+    <!-- ========================================================================= -->
+
+    <!-- Modal: Transferência Segura do Veículo -->
+    <div id="transfer-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Transferência de Propriedade do Veículo</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="transfer-vehicle-id" />
+                <div class="alert-box alert-info">
+                    🛡️ <strong>Regra Fundamental do DNA AUTO:</strong> O DNA pertence ao veículo. Ao transferir, o novo proprietário assume a titularidade, mas o histórico completo e o código do DNA permanecem intactos.
+                </div>
+
+                <div style="border-bottom:1px solid var(--border-subtle); padding-bottom:16px; margin-bottom:16px;">
+                    <h4 style="font-size:14px; font-weight:700; margin-bottom:8px;">Passo 1: Vendedor Solicita Código</h4>
+                    <div class="form-group">
+                        <label>Quilometragem no momento da venda:</label>
+                        <input type="number" id="transfer-mileage-input" class="form-control" value="125200" />
+                    </div>
+                    <button class="btn btn-primary" onclick="OwnerView.handleRequestTransferCode()">
+                        GERAR CÓDIGO TEMPORÁRIO (6 DÍGITOS)
+                    </button>
+
+                    <div id="transfer-code-result" style="display:none; margin-top:14px; background:var(--bg-surface-elevated); padding:16px; border-radius:var(--radius-md); text-align:center;">
+                        <span style="font-size:12px; color:var(--text-muted);">CÓDIGO DE TRANSFERÊNCIA GERADO:</span>
+                        <div id="transfer-generated-code" class="mono" style="font-size:32px; font-weight:800; color:var(--brand-cyan); letter-spacing:4px; margin:8px 0;"></div>
+                        <p style="font-size:11px; color:var(--text-dim);">Envie este código ao comprador para confirmação dentro do prazo de 48 horas.</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="font-size:14px; font-weight:700; margin-bottom:8px;">Passo 2: Comprador Confirma e Assume o Carro</h4>
+                    <div class="form-group">
+                        <label>Código de 6 Dígitos:</label>
+                        <input type="text" id="buyer-transfer-code-input" class="form-control mono" placeholder="Ex: 829401" maxlength="6" />
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Novo Proprietário:</label>
+                        <input type="text" id="buyer-name-input" class="form-control" placeholder="Ex: Ana Carolina Martins" />
+                    </div>
+                    <button class="btn btn-success" onclick="OwnerView.handleConfirmTransferByBuyer()">
+                        ASSUMIR VEÍCULO E PRESERVAR HISTÓRICO
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary modal-close-btn">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Zoom de Foto -->
+    <div id="photo-zoom-modal" class="modal-overlay">
+        <div class="modal-container" style="max-width:800px; background:#000;">
+            <div class="modal-header" style="border-color:#222;">
+                <h3 id="photo-zoom-title" style="color:#fff;">Registro Fotográfico</h3>
+                <button class="modal-close-btn" style="color:#fff;">&times;</button>
+            </div>
+            <div class="modal-body" style="padding:0; text-align:center;">
+                <img id="photo-zoom-img" src="" alt="Zoom" style="max-width:100%; max-height:75vh; object-fit:contain; display:block; margin:0 auto;" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Emissão do Relatório Oficial para Venda -->
+    <div id="sale-report-modal" class="modal-overlay">
+        <div class="modal-container wide">
+            <div class="modal-header" style="flex-direction:column; align-items:stretch; gap:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                    <h3 style="margin:0; font-size:16px; font-weight:800; color:var(--text-highlight);">Relatório Oficial DNA AUTO para Venda</h3>
+                    <button class="modal-close-btn" style="font-size:24px; padding:0 6px;">&times;</button>
+                </div>
+                <div style="display:flex; gap:8px; width:100%;">
+                    <button class="btn btn-cyan btn-sm" style="flex:1; justify-content:center; font-weight:700; height:38px;" onclick="SaleReportModal.printReport()">
+                        🖨️ IMPRIMIR / SALVAR PDF
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" id="sale-report-modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Declaração de Serviço com Peças e Nota Fiscal pelo Dono -->
+    <div id="owner-declare-modal" class="modal-overlay">
+        <div class="modal-container wide">
+            <div class="modal-header">
+                <h3>Declarar Serviço Realizado (Peças & Nota Fiscal)</h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="owner-declare-form" onsubmit="OwnerView.submitDeclaredService(event)">
+                    <input type="hidden" id="owner-declare-vehicle-id" name="vehicle_id" value="veh_civic_touring" />
+                    
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">CNPJ da Oficina / Mecânica Responsável *</label>
+                            <input type="text" id="owner-declare-cnpj" name="workshop_cnpj" class="form-control" required placeholder="Ex: 12.345.678/0001-90" value="12.345.678/0001-90" />
+                            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">
+                                Dica: informe o CNPJ da Veloce (12.345.678/0001-90) para validação imediata no teste.
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">Nome Fantasia da Oficina (opcional)</label>
+                            <input type="text" id="owner-declare-wsname" name="workshop_name" class="form-control" placeholder="Ex: Veloce Auto Center Premium" value="Veloce Auto Center Premium" />
+                        </div>
+                    </div>
+
+                    <div class="form-grid-3">
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">Título do Serviço *</label>
+                            <input type="text" name="service_title" class="form-control" required placeholder="Ex: Troca de Amortecedores e Coxins" value="Revisão de Amortecedores e Alinhamento 3D" />
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">Data da Manutenção *</label>
+                            <input type="date" name="service_date" class="form-control" required value="2026-03-01" />
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">Quilometragem (Km) *</label>
+                            <input type="number" name="mileage" class="form-control" required value="128500" />
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom:14px;">
+                        <label style="display:block; margin-bottom:4px; font-weight:600;">Descrição Detalhada do Serviço</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="Descreva os serviços executados...">Troca preventiva do par de amortecedores dianteiros com batentes, coifas e alinhamento computadorizado.</textarea>
+                    </div>
+
+                    <!-- Tabela Dinâmica de Peças Utilizadas -->
+                    <div style="margin-bottom:16px; background:var(--bg-surface); padding:14px; border-radius:8px; border:1px solid var(--border-subtle);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <strong style="font-size:13px; color:#fff;">Peças Utilizadas no Serviço</strong>
+                            <button type="button" class="btn btn-sm btn-cyan" onclick="OwnerView.addPartRow()">+ Adicionar Peça</button>
+                        </div>
+                        <div id="owner-parts-container">
+                            <div class="part-row">
+                                <input type="text" class="form-control part-name" placeholder="Nome da Peça (Ex: Amortecedor Dianteiro)" value="Amortecedor Dianteiro Direito Cofap" required />
+                                <input type="text" class="form-control part-mfr" placeholder="Marca (Ex: Cofap)" value="Cofap TurboGás" />
+                                <input type="text" class="form-control part-num" placeholder="Part Number" value="GP32948" />
+                                <input type="number" class="form-control part-qty" placeholder="Qtd" value="1" min="1" />
+                                <button type="button" class="part-delete-btn" onclick="this.closest('.part-row').remove()">&times;</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Anexo da Foto da Nota Fiscal -->
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">Foto / PDF da Nota Fiscal (DANFE / NFS-e)</label>
+                            <input type="file" name="invoice" class="form-control" accept="image/*,.pdf" />
+                            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">A nota fiscal comprova a autenticidade e permite a validação pelo mecânico.</div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">Valor Total da Nota (R$)</label>
+                            <input type="number" step="0.01" name="total_cost_cents" class="form-control" placeholder="Ex: 850.00" value="850.00" />
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px;">
+                        <button type="button" class="btn btn-secondary modal-close-btn">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" style="padding:10px 24px;">ENVIAR PARA VALIDAÇÃO DA OFICINA</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts do App do Cliente -->
+    <script src="/js/components/qrcode.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/components/dossierView.js"></script>
+    <script src="/js/components/saleReportModal.js"></script>
+    <script src="/js/components/ownerView.js"></script>
+    <script src="/js/components/pwaInstall.js"></script>
+
+    <!-- Inicializador Autônomo do App do Cliente -->
+    <script>
+        // Objeto de Compatibilidade App
+        window.App = {
+            currentRole: 'OWNER',
+            currentUser: {
+                id: 'usr_owner_carlos',
+                name: 'Carlos Alberto Silva',
+                email: 'carlos.silva@email.com',
+                role_code: 'OWNER',
+                role_name: 'Cliente Proprietário'
+            },
+            logout() {
+                localStorage.removeItem('dna_logged_user');
+                localStorage.removeItem('dna_token');
+                localStorage.removeItem('dna_auto_token');
+                localStorage.removeItem('dna_current_view');
+                window.location.href = '/';
+            },
+            switchView(view) {
+                if (view === 'workshop') window.location.href = '/oficina';
+                else if (view === 'landing' || view === 'landing-home') window.location.href = '/';
+                else if (view === 'login') window.location.href = '/#login';
+                else OwnerView.render();
+            }
+        };
+
+        // Inicialização dos Modais
+        function setupModals() {
+            document.querySelectorAll('.modal-close-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const modal = btn.closest('.modal-overlay');
+                    if (modal) modal.classList.remove('active');
+                });
+            });
+
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) overlay.classList.remove('active');
+                });
+            });
+        }
+
+        // Inicializar App do Cliente
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupModals();
+
+            // Garantir usuário e token padrão
+            let savedUser = null;
+            try {
+                const raw = localStorage.getItem('dna_logged_user');
+                if (raw) savedUser = JSON.parse(raw);
+            } catch (_) {}
+
+            if (savedUser && savedUser.role_code === 'OWNER') {
+                window.App.currentUser = savedUser;
+            } else {
+                localStorage.setItem('dna_logged_user', JSON.stringify(window.App.currentUser));
+            }
+
+            const token = localStorage.getItem('dna_token') || 'sess_owner_usr_owner_carlos';
+            API.setToken(token);
+            API.setDemoUser(window.App.currentUser.id || 'usr_owner_carlos');
+
+            // Renderizar App do Cliente
+            await OwnerView.render();
+
+            // Verificar se foi passado código de ativação na URL (ex: ?code=DNA-8421)
+            const urlParams = new URLSearchParams(window.location.search);
+            const hashParams = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '');
+            const activationCode = urlParams.get('code') || hashParams.get('code') || urlParams.get('c');
+
+            if (activationCode) {
+                setTimeout(() => {
+                    OwnerView.openActivationModal(activationCode);
+                }, 300);
+            }
+        });
+    </script>
+</body>
+</html>

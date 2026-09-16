@@ -373,6 +373,12 @@ const API = {
     getWhatsAppChatMessages(workshopId, phoneNumber) {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/chat/messages/${encodeURIComponent(phoneNumber)}`);
     },
+    uploadWhatsAppChatMedia(workshopId, formData) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/chat/upload-media`, {
+            method: 'POST',
+            body: formData
+        });
+    },
     sendWhatsAppChatMessage(workshopId, payload) {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/chat/send`, {
             method: 'POST',

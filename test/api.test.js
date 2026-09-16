@@ -663,7 +663,29 @@ async function runTests() {
 
         console.log(`✅ 41. Central de Atendimento WhatsApp: Conversas ativas agrupadas, mensagens de entrada/saída sincronizadas e resposta instantânea transmitida com sucesso.`);
 
-        console.log('\n🎉 TODOS OS 41 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 42: Rota dedicada e arquivo separado do App do Cliente (/cliente e /app)
+        const resClientApp = await fetch(`http://localhost:${PORT}/cliente`);
+        const htmlClient = await resClientApp.text();
+        console.assert(resClientApp.status === 200, 'Falha ao acessar rota /cliente');
+        console.assert(htmlClient.includes('App do Cliente'), 'HTML de /cliente deve conter título do App do Cliente');
+        console.assert(htmlClient.includes('ownerView.js'), 'HTML de /cliente deve carregar ownerView.js');
+
+        const resClientAppAlias = await fetch(`http://localhost:${PORT}/app`);
+        console.assert(resClientAppAlias.status === 200, 'Falha ao acessar alias /app');
+        console.log(`✅ 42. Rota e Arquivo Separado do App do Cliente: /cliente e /app entregam cliente.html dedicado com sucesso.`);
+
+        // Teste 43: Rota dedicada e arquivo separado do Painel da Oficina (/oficina e /painel)
+        const resWorkshopApp = await fetch(`http://localhost:${PORT}/oficina`);
+        const htmlWorkshop = await resWorkshopApp.text();
+        console.assert(resWorkshopApp.status === 200, 'Falha ao acessar rota /oficina');
+        console.assert(htmlWorkshop.includes('Painel Operacional da Oficina'), 'HTML de /oficina deve conter título da Oficina');
+        console.assert(htmlWorkshop.includes('workshopView.js'), 'HTML de /oficina deve carregar workshopView.js');
+
+        const resWorkshopAppAlias = await fetch(`http://localhost:${PORT}/painel`);
+        console.assert(resWorkshopAppAlias.status === 200, 'Falha ao acessar alias /painel');
+        console.log(`✅ 43. Rota e Arquivo Separado do Painel da Oficina: /oficina e /painel entregam oficina.html dedicado com sucesso.`);
+
+        console.log('\n🎉 TODOS OS 43 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);
@@ -674,7 +696,14 @@ async function runTests() {
             seedBase(db);
             console.log('🧹 Base de dados restaurada para estado limpo (sem mocks) com sucesso.');
         } catch (_) {}
-        server.close();
+        if (server) {
+            server.close(() => {
+                process.exit(0);
+            });
+            setTimeout(() => process.exit(0), 1000);
+        } else {
+            process.exit(0);
+        }
     }
 }
 

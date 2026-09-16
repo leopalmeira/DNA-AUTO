@@ -1,10 +1,35 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const db = require('../../database/db');
 const { authenticateToken, authorizeRoles } = require('../../middlewares/auth');
 const { logAudit } = require('../../middlewares/audit');
 const baileysService = require('./baileys.service');
 const evolutionService = require('./evolution.service');
+
+// Diretório para upload de fotos, áudios e vídeos do WhatsApp da Central de Atendimento
+const WHATSAPP_UPLOADS_DIR = path.resolve(__dirname, '../../..', 'uploads', 'whatsapp');
+if (!fs.existsSync(WHATSAPP_UPLOADS_DIR)) {
+    fs.mkdirSync(WHATSAPP_UPLOADS_DIR, { recursive: true });
+}
+
+const whatsappStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, WHATSAPP_UPLOADS_DIR);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname) || '';
+        cb(null, 'wpp-' + uniqueSuffix + ext);
+    }
+});
+
+const uploadWhatsAppMedia = multer({
+    storage: whatsappStorage,
+    limits: { fileSize: 30 * 1024 * 1024 } // 30MB
+});
 
 // Listagem de oficinas com métricas consolidadas
 router.get('/', (req, res) => {
@@ -862,21 +887,80 @@ router.get('/:id/whatsapp/chat/messages/:phone', (req, res) => {
     }
 });
 
+// 7.2.1 Central de Atendimento: Upload de Mídia (Fotos, Áudios, Vídeos)
+router.post('/:id/whatsapp/chat/upload-media', (req, res, next) => {
+    uploadWhatsAppMedia.single('file')(req, res, (err) => {
+        if (err) {
+            console.error('Erro no upload de mídia WhatsApp:', err);
+            return res.status(400).json({ error: err.message || 'Erro ao processar upload do arquivo de mídia.' });
+        }
+        next();
+    });
+}, (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'Nenhum arquivo enviado para upload.' });
+        }
+
+        const mime = (req.file.mimetype || '').toLowerCase();
+        let media_type = 'DOCUMENT';
+        if (mime.startsWith('image/')) {
+            media_type = 'IMAGE';
+        } else if (mime.startsWith('video/')) {
+            media_type = 'VIDEO';
+        } else if (mime.startsWith('audio/') || mime.includes('ogg') || mime.includes('webm') || mime.includes('wav') || mime.includes('mp4') || mime.includes('m4a')) {
+            media_type = 'AUDIO';
+        }
+
+        const mediaUrl = `/uploads/whatsapp/${req.file.filename}`;
+
+        res.json({
+            success: true,
+            media_url: mediaUrl,
+            media_type,
+            file_name: req.file.originalname,
+            file_size: req.file.size,
+            mime_type: req.file.mimetype
+        });
+    } catch (err) {
+        console.error('Erro no processamento de mídia:', err);
+        res.status(500).json({ error: 'Erro ao processar arquivo enviado.' });
+    }
+});
+
 // 7.3 Central de Atendimento: Enviar Resposta para Cliente
 router.post('/:id/whatsapp/chat/send', async (req, res) => {
     try {
         const workshopId = req.params.id;
-        const { phone_number, message, client_name, vehicle_plate } = req.body;
+        const {
+            phone_number,
+            message,
+            client_name,
+            vehicle_plate,
+            media_type,
+            media_url,
+            media_caption
+        } = req.body;
 
-        if (!phone_number || !message || !message.trim()) {
-            return res.status(400).json({ error: 'Telefone e mensagem são obrigatórios.' });
+        const cleanMsg = (message || media_caption || '').trim();
+        if (!phone_number || (!cleanMsg && !media_url)) {
+            return res.status(400).json({ error: 'Telefone e mensagem ou anexo de mídia são obrigatórios.' });
         }
+
+        const fallbackDisplayMsg = cleanMsg || (
+            media_type === 'IMAGE' ? '📷 [Foto]' :
+            media_type === 'VIDEO' ? '🎥 [Vídeo]' :
+            media_type === 'AUDIO' ? '🎙️ [Áudio]' : '📎 [Arquivo]'
+        );
 
         const queueRes = await baileysService.enqueueMessage({
             workshopId,
             recipientPhone: phone_number,
             recipientName: client_name || 'Cliente',
-            message: message.trim(),
+            message: fallbackDisplayMsg,
+            mediaType: media_type || (media_url ? 'IMAGE' : 'TEXT'),
+            mediaUrl: media_url || null,
+            mediaCaption: media_caption || cleanMsg || null,
             licensePlate: vehicle_plate || null,
             serviceType: 'Atendimento WhatsApp'
         });
@@ -889,7 +973,10 @@ router.post('/:id/whatsapp/chat/send', async (req, res) => {
                 phone_number,
                 client_name,
                 vehicle_plate,
-                message: message.trim(),
+                message: fallbackDisplayMsg,
+                media_type: media_type || (media_url ? 'IMAGE' : 'TEXT'),
+                media_url: media_url || null,
+                media_caption: media_caption || null,
                 direction: 'OUTGOING',
                 created_at: new Date().toISOString()
             }
