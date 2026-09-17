@@ -143,7 +143,7 @@ const PwaInstall = {
                 <!-- Card de Apresentação do Aplicativo -->
                 <div class="dna-pwa-app-card">
                     <div class="dna-pwa-icon-wrapper">
-                        <img src="/img/icons/icon-192x192.png" alt="DNA AUTO App" class="dna-pwa-app-icon" />
+                        <img src="./img/icons/icon-192x192.png" onerror="this.src='/img/icons/icon-192x192.png'" alt="DNA AUTO App" class="dna-pwa-app-icon" />
                         <span class="dna-pwa-verified-badge" title="Verificado pelo Play Protect">🛡️</span>
                     </div>
                     <div class="dna-pwa-app-meta">

@@ -607,6 +607,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Inclusão dos Testes 44 e 45 em `test/api.test.js`.
      - **45 testes automatizados de integração aprovados com 100% de sucesso**.
 
+### 📅 Ciclo 31 — Atualização do Logo Oficial do Aplicativo PWA (Cliente e Oficina) em Alta Resolução
+- **Demandas Atendidas:**
+  1. **Novo Logo Oficial para Download do Aplicativo:**
+     - Integração do logotipo oficial moderno enviado pelo usuário: fundo preto, cantos arredondados, contorno neon ciano, emblema estilizado "D", inscrição "DNA AUTO" e silhueta frontal de supercarro com faróis de LED neon azuis.
+     - Aplicação uniforme tanto para o aplicativo do cliente (`cliente.app` / `public/cliente.html`) quanto para o painel operacional da oficina (`oficina.app` / `public/oficina.html`).
+  2. **Geração de Ícones Multi-Resolução em Alta Definição:**
+     - `icon-512x512.png` (512x512)
+     - `maskable-icon-512x512.png` (512x512 para Android adaptativo)
+     - `icon-192x192.png` (192x192 para tela de início mobile e desktop)
+     - `apple-touch-icon.png` (180x180 para iOS/Safari)
+     - `favicon.png` (64x64 para abas do navegador)
+     - `dna-app-logo.jpg` (1024x1024 original)
+     - Sincronizado nas três pastas: `public/img/icons/`, `cliente.app/img/icons/` e `oficina.app/img/icons/`.
+  3. **Atualização dos Manifestos e Componentes Visuais:**
+     - Manifestos `manifest.json` do cliente e da oficina atualizados com propósitos e tamanhos corretos.
+     - Modal de instalação do aplicativo (`pwaInstall.js`) e tela de Splash (`ownerView.js`) atualizados para exibir o novo ícone oficial com brilho neon e bordas arredondadas.
+  4. **Qualidade & Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

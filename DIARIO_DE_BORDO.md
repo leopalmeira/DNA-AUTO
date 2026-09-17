@@ -1136,6 +1136,30 @@ DNA-AUTO/
    - Adicionado **Teste 45**: Validação do catálogo de oficinas credenciadas com geolocalização e avaliação padrão ouro.
    - **Resultado:** 45 de 45 testes automatizados de integração aprovados com 100% de sucesso.
 
+### 📅 Ciclo 31 — Atualização do Logo Oficial do Aplicativo PWA (Cliente e Oficina) em Alta Resolução
+
+#### 1. Contexto e Demanda
+- **Objetivo:** Definir e integrar a nova identidade visual oficial de ícone e logo enviada pelo usuário para o download/instalação da aplicação PWA (Progressive Web App) tanto para o **App do Cliente** (`cliente.app` / `/cliente`) quanto para o **Painel da Oficina** (`oficina.app` / `/oficina`).
+- **Características Visuais do Logo:** Fundo preto com bordas arredondadas iluminadas em ciano/azul neon, símbolo estilizado "D", tipografia moderna "DNA AUTO" e silhueta frontal de supercarro esportivo com faróis de LED neon azuis.
+
+#### 2. Implementações Técnicas
+1. **Geração e Redimensionamento de Alta Definição:**
+   - Script de renderização bicúbica de alta qualidade processando a matriz original de 1024x1024 pixels.
+   - Geração e distribuição automática em todas as pastas do projeto (`public/img/icons/`, `cliente.app/img/icons/` e `oficina.app/img/icons/`):
+     - `icon-512x512.png` (512x512 pixels — Play Store & Chrome PWA Splash)
+     - `maskable-icon-512x512.png` (512x512 pixels — Adaptive Icons no Android)
+     - `icon-192x192.png` (192x192 pixels — Ícone de tela inicial móvel e desktop)
+     - `apple-touch-icon.png` (180x180 pixels — Tela de início no iOS/Safari)
+     - `favicon.png` (64x64 pixels — Favicon de alta nitidez para abas do navegador)
+     - `dna-app-logo.jpg` (1024x1024 pixels — Imagem original em alta resolução mantida como asset)
+2. **Atualização dos Manifestos Web (`manifest.json`):**
+   - Atualizados `cliente.app/manifest.json`, `oficina.app/manifest.json` e `public/manifest.json` para declarar as fontes, tamanhos e propósitos (`any`, `maskable`).
+3. **Modal de Instalação PWA & Tela Splash:**
+   - `pwaInstall.js` (em todas as pastas): atualização do card de apresentação do aplicativo para carregar o novo ícone com suporte a caminhos relativos e absolutos.
+   - `ownerView.js`: tela de Splash atualizada com o novo logo oficial do app com bordas arredondadas e brilho neon.
+4. **Qualidade & Testes:**
+   - Suíte com **45 testes automatizados aprovados com 100% de sucesso** (inclusive Teste 36 de conformidade PWA).
+
 ---
 
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*

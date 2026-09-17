@@ -2577,16 +2577,11 @@ const OwnerView = {
                 </div>
 
                 <div class="dna-splash-content">
-                    <div class="dna-splash-logo-glow">
-                        <svg viewBox="0 0 120 120" width="48" height="48" fill="none" stroke="#00D4FF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M 54 62 C 51 55 51 46 57 41 C 62 36 67 40 65 50 C 63 56 64 64 64 64" />
-                            <path d="M 45 66 C 41 53 41 39 50 30 C 58 21 68 21 75 30 C 82 40 82 55 77 66" />
-                            <path d="M 36 68 C 30 52 31 32 43 20 C 54 9 72 9 83 20 C 93 32 94 52 88 68" />
-                            <path d="M 22 84 L 32 84 C 36 78 42 75 48 75 L 72 75 C 78 75 84 78 88 84 L 98 84" stroke-width="8" />
-                        </svg>
+                    <div class="dna-splash-logo-glow" style="width:84px; height:84px; padding:0; background:transparent; border:none; box-shadow:none;">
+                        <img src="./img/icons/icon-192x192.png" onerror="this.src='/img/icons/icon-192x192.png'" alt="DNA AUTO" style="width:84px; height:84px; border-radius:22px; box-shadow:0 0 30px rgba(0, 212, 255, 0.65), 0 0 10px rgba(0, 212, 255, 0.4); border:1px solid rgba(0, 212, 255, 0.5);" />
                     </div>
 
-                    <h1 class="dna-splash-title">DNA <span style="color:#00D4FF;">AUTO</span></h1>
+                    <h1 class="dna-splash-title" style="margin-top:14px;">DNA <span style="color:#00D4FF;">AUTO</span></h1>
                     <p class="dna-splash-slogan">Seu veículo sempre protegido.</p>
 
                     <div class="dna-splash-hero-car">
