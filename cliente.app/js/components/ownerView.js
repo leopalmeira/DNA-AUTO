@@ -22,17 +22,33 @@ const OwnerView = {
     // Estado do Fluxo de Autenticação & Onboarding (Imagem 1 - 12 Telas)
     authScreen: (typeof localStorage !== 'undefined' && (localStorage.getItem('dna_owner_session') === 'active' || localStorage.getItem('dna_owner_auth_screen') === 'app' || localStorage.getItem('dna_logged_user'))) ? null : 'splash',
     authData: {
-        name: 'João Silva',
-        phone: '(11) 98765-4321',
-        license_plate: 'BRA2E19',
-        email: 'joao@email.com',
+        name: '',
+        phone: '',
+        license_plate: '',
+        email: '',
         password: '',
         workshop_code: '',
-        vehicle_brand: 'Honda',
-        vehicle_model: 'Civic Touring 1.5 Turbo',
-        vehicle_year: '2021',
-        fipe_value: 'R$ 125.870,00',
-        photo_url: 'https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80'
+        vehicle_brand: '',
+        vehicle_model: '',
+        vehicle_year: '',
+        fipe_value: '',
+        fipe_code: '',
+        fipe_ref: '',
+        fipe_score: null,
+        fipe_cents: 0,
+        engine_displacement: '',
+        transmission_type: '',
+        fuel_type: '',
+        color: '',
+        segment: '',
+        sub_segmento: '',
+        city: '',
+        state: '',
+        chassis_vin: '',
+        renavam: '',
+        photo_url: '',
+        logo: '',
+        specs: {}
     },
     isPasswordVisible: false,
     radarChecklist: { plate: false, fipe: false, specs: false },
@@ -434,69 +450,93 @@ const OwnerView = {
     },
 
     // Radar com Scanner de Placa & FIPE Animado (Tela 04)
-    startPlateSearch() {
+    async startPlateSearch() {
         this.radarChecklist = { plate: false, fipe: false, specs: false };
         this.authScreen = 'plate_search';
         this.render();
 
-        const plate = this.authData.license_plate;
+        const plate = (this.authData.license_plate || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
-        // Passo 1: Verificando Placa
-        setTimeout(() => {
-            this.radarChecklist.plate = true;
-            this.render();
-        }, 600);
+        // Limpar dados anteriores de veículo para não haver vazamento
+        this.authData.vehicle_brand = '';
+        this.authData.vehicle_model = '';
+        this.authData.vehicle_year = '';
+        this.authData.fipe_value = '';
+        this.authData.fipe_code = '';
+        this.authData.fipe_ref = '';
+        this.authData.fipe_cents = 0;
+        this.authData.fipe_score = null;
+        this.authData.color = '';
+        this.authData.fuel_type = '';
+        this.authData.transmission_type = '';
+        this.authData.engine_displacement = '';
+        this.authData.segment = '';
+        this.authData.sub_segmento = '';
+        this.authData.city = '';
+        this.authData.state = '';
+        this.authData.chassis_vin = '';
+        this.authData.renavam = '';
+        this.authData.photo_url = '';
+        this.authData.logo = '';
+        this.authData.specs = {};
 
-        // Passo 2: FIPE & Backend
-        setTimeout(async () => {
-            try {
-                const res = await API.request(`/integrations/plate-lookup/${encodeURIComponent(plate)}`);
-                if (res && res.vehicle) {
-                    const veh = res.vehicle;
-                    this.authData.vehicle_brand = veh.brand || this.authData.vehicle_brand;
-                    this.authData.vehicle_model = veh.version || veh.model || this.authData.vehicle_model;
-                    this.authData.vehicle_year = veh.model_year || veh.manufacture_year || this.authData.vehicle_year;
+        // Passo 1: Animação de verificação de placa no radar
+        await new Promise(r => setTimeout(r, 450));
+        this.radarChecklist.plate = true;
+        this.render();
 
-                    // Extração precisa do valor real FIPE da API oficial
-                    let fipeFormatted = null;
-                    if (veh.fipe) {
-                        fipeFormatted = veh.fipe.market_value_formatted || veh.fipe.texto_valor || null;
-                        if (veh.fipe.fipe_code) this.authData.fipe_code = veh.fipe.fipe_code;
-                        if (veh.fipe.reference_month) this.authData.fipe_ref = veh.fipe.reference_month;
-                        if (veh.fipe.market_value_cents) this.authData.fipe_cents = veh.fipe.market_value_cents;
-                    }
-                    if (!fipeFormatted && veh.market_value_formatted) {
-                        fipeFormatted = veh.market_value_formatted;
-                    }
-                    if (fipeFormatted) {
-                        this.authData.fipe_value = fipeFormatted;
-                    }
+        // Passo 2: Consulta oficial e sequencial ao backend
+        try {
+            const res = await API.request(`/integrations/plate-lookup/${encodeURIComponent(plate)}`);
+            if (res && res.vehicle) {
+                const veh = res.vehicle;
+                this.authData.vehicle_brand = veh.brand || 'Montadora Homologada';
+                this.authData.vehicle_model = veh.version || veh.version_label || veh.model || 'Modelo Homologado';
+                this.authData.vehicle_year = veh.model_year || veh.manufacture_year || 2020;
+                this.authData.manufacture_year = veh.manufacture_year || this.authData.vehicle_year;
 
-                    // Preenche todos os dados reais do veículo fornecidos pela API
-                    if (veh.color && veh.color !== 'Não informada') this.authData.color = veh.color;
-                    if (veh.fuel_type) this.authData.fuel_type = veh.fuel_type;
-                    if (veh.transmission_type) this.authData.transmission_type = veh.transmission_type;
-                    if (veh.chassis_vin) this.authData.chassis_vin = veh.chassis_vin;
-                    if (veh.renavam) this.authData.renavam = veh.renavam;
-                    if (veh.photo_url) this.authData.photo_url = veh.photo_url;
+                // FIPE oficial extraída com maior score
+                if (veh.fipe) {
+                    this.authData.fipe_value = veh.fipe.market_value_formatted || veh.fipe.texto_valor || 'Consultada';
+                    this.authData.fipe_code = veh.fipe.fipe_code || '';
+                    this.authData.fipe_ref = veh.fipe.reference_month || '';
+                    this.authData.fipe_cents = veh.fipe.market_value_cents || 0;
+                    this.authData.fipe_score = veh.fipe.score || null;
                 }
-            } catch (_) {}
 
-            this.radarChecklist.fipe = true;
-            this.render();
-        }, 1300);
+                // Todas as especificações técnicas capturadas do JSON da API Placas
+                this.authData.color = (veh.color && veh.color !== 'Não informada') ? veh.color : 'Prata';
+                this.authData.fuel_type = veh.fuel_type || 'Flex';
+                this.authData.transmission_type = veh.transmission_type || 'Manual';
+                this.authData.engine_displacement = veh.engine_displacement || (veh.specs && veh.specs.cilindradas_formatada) || '';
+                this.authData.segment = veh.segment || (veh.specs && veh.specs.segmento) || 'Auto';
+                this.authData.sub_segmento = veh.sub_segmento || (veh.specs && veh.specs.sub_segmento) || '';
+                this.authData.city = (veh.origin && veh.origin.city) || (veh.specs && veh.specs.municipio) || '';
+                this.authData.state = (veh.origin && veh.origin.state) || (veh.specs && veh.specs.uf) || '';
+                this.authData.chassis_vin = veh.chassis_vin || '';
+                this.authData.renavam = veh.renavam || '';
+                this.authData.photo_url = veh.photo_url || '';
+                this.authData.logo = veh.logo || '';
+                this.authData.specs = veh.specs || {};
+            }
+        } catch (err) {
+            console.warn('⚠️ Consulta da placa:', err.message);
+        }
 
-        // Passo 3: Dados Técnicos
-        setTimeout(() => {
-            this.radarChecklist.specs = true;
-            this.render();
-        }, 1900);
+        // Marca Passo 2 (FIPE) como concluído
+        await new Promise(r => setTimeout(r, 400));
+        this.radarChecklist.fipe = true;
+        this.render();
+
+        // Marca Passo 3 (Especificações Técnicas) como concluído
+        await new Promise(r => setTimeout(r, 400));
+        this.radarChecklist.specs = true;
+        this.render();
 
         // Conclusão e Exibição do Veículo Encontrado (Tela 05)
-        setTimeout(() => {
-            this.authScreen = 'vehicle_found';
-            this.render();
-        }, 2600);
+        await new Promise(r => setTimeout(r, 450));
+        this.authScreen = 'vehicle_found';
+        this.render();
     },
 
     // Validar Código da Oficina ou Prosseguir
@@ -783,8 +823,20 @@ const OwnerView = {
         this.vehicleData.manufacture_year = realVeh.manufacture_year || this.vehicleData.manufacture_year;
         this.vehicleData.model_year = realVeh.model_year || this.vehicleData.model_year;
         this.vehicleData.color = realVeh.color || this.vehicleData.color;
+        this.vehicleData.fuel_type = realVeh.fuel_type || this.vehicleData.fuel_type;
+        this.vehicleData.transmission_type = realVeh.transmission || realVeh.transmission_type || this.vehicleData.transmission_type;
+        this.vehicleData.engine_displacement = realVeh.engine_displacement || this.vehicleData.engine_displacement;
+        this.vehicleData.segment = realVeh.segment || this.vehicleData.segment;
+        this.vehicleData.sub_segment = realVeh.sub_segment || this.vehicleData.sub_segment;
         this.vehicleData.chassis_vin = realVeh.chassis_vin || this.vehicleData.chassis_vin;
         this.vehicleData.renavam = realVeh.renavam || this.vehicleData.renavam;
+        if (realVeh.fipe_price_cents) {
+            this.vehicleData.fipe_price_cents = realVeh.fipe_price_cents;
+            this.vehicleData.fipe_value = 'R$ ' + (realVeh.fipe_price_cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        }
+        if (realVeh.fipe_code) this.vehicleData.fipe_code = realVeh.fipe_code;
+        if (realVeh.fipe_ref) this.vehicleData.fipe_ref = realVeh.fipe_ref;
+        if (realVeh.fipe_score) this.vehicleData.fipe_score = realVeh.fipe_score;
         if (realVeh.photo_url) this.vehicleData.photo_url = realVeh.photo_url;
         if (realVeh.dna_code) this.vehicleData.dna_code = realVeh.dna_code;
         if (realVeh.current_mileage) this.vehicleData.current_mileage = realVeh.current_mileage;
@@ -2893,6 +2945,7 @@ const OwnerView = {
     // 05. Dados do Veículo Encontrados
     renderVehicleFoundAuth() {
         const d = this.authData;
+        const originStr = [d.city, d.state].filter(Boolean).join(' - ') || 'Nacional';
         return `
             <div class="dna-auth-screen">
                 <div class="dna-auth-header">
@@ -2903,27 +2956,68 @@ const OwnerView = {
                     <span class="dna-auth-step-pill">Passo 3 de 4</span>
                 </div>
 
-                <div style="margin-bottom:16px;">
+                <div style="margin-bottom:14px;">
                     <h2 style="font-size:20px; font-weight:900; color:#FFFFFF; margin:0 0 4px;">Dados do Veículo Encontrados</h2>
-                    <p style="font-size:12px; color:#94A3B8; margin:0;">Confira os dados oficiais identificados pela placa:</p>
+                    <p style="font-size:12px; color:#94A3B8; margin:0;">Identificação oficial direta na base nacional de emplacamento:</p>
                 </div>
 
-                <div class="dna-vehicle-found-card">
-                    <div class="dna-found-car-thumb">
-                        <img src="${d.photo_url || 'https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80'}" alt="Veículo Localizado" />
-                    </div>
-
-                    <div style="text-align:center;">
-                        <div class="dna-found-plate-badge">
-                            <span style="background:#003399; color:#FFF; font-size:9px; padding:1px 4px; border-radius:2px;">BR</span>
+                <div class="dna-vehicle-found-card" style="background:rgba(15,23,42,0.92); border:1px solid rgba(0,212,255,0.3); border-radius:16px; padding:16px; margin-bottom:14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                        <div class="dna-plate-mercosul" style="background:#FFFFFF; color:#0B0F19; border-radius:5px; padding:2px 8px; font-family:var(--font-mono, monospace); font-weight:900; font-size:13px; border:1.5px solid #000; display:inline-flex; align-items:center; gap:6px;">
+                            <span style="background:#003399; color:#FFF; font-size:9px; padding:1px 3px; border-radius:2px;">BR</span>
                             <span>${d.license_plate}</span>
                         </div>
-                        <h3 style="font-size:17px; font-weight:900; color:#FFFFFF; margin:4px 0 2px;">${d.vehicle_brand} ${d.vehicle_model}</h3>
-                        <div style="font-size:12px; color:#94A3B8; font-weight:700; margin-bottom:12px;">Ano: ${d.vehicle_year} • Combustível: ${d.fuel_type || 'Flex'} • Cor: ${d.color || 'Prata'}</div>
+                        ${d.logo ? `<img src="${d.logo}" alt="${d.vehicle_brand}" style="height:28px; max-width:50px; object-fit:contain;" />` : ''}
+                    </div>
 
-                        <div class="dna-fipe-badge">
-                            <span>Tabela FIPE Oficial:</span>
-                            <strong>${d.fipe_value || 'Consultando...'}</strong>
+                    <div class="dna-found-car-thumb" style="width:100%; height:130px; border-radius:10px; overflow:hidden; margin-bottom:12px; background:#0B0F19; display:flex; align-items:center; justify-content:center;">
+                        <img src="${d.photo_url || 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800&auto=format&fit=crop&q=80'}" alt="${d.vehicle_brand} ${d.vehicle_model}" style="width:100%; height:100%; object-fit:cover;" />
+                    </div>
+
+                    <div style="text-align:left; margin-bottom:12px;">
+                        <div style="font-size:11px; font-weight:800; color:#00D4FF; text-transform:uppercase; letter-spacing:0.5px;">${d.vehicle_brand} • ${originStr}</div>
+                        <h3 style="font-size:17px; font-weight:900; color:#FFFFFF; margin:2px 0 8px; line-height:1.25;">${d.vehicle_model}</h3>
+                    </div>
+
+                    <!-- Grid de Especificações Técnicas Reais -->
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:14px;">
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+                            <span style="font-size:10px; color:#64748B; display:block;">Ano Modelo / Fab</span>
+                            <strong style="font-size:12px; color:#F8FAFC;">${d.vehicle_year || '---'}</strong>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+                            <span style="font-size:10px; color:#64748B; display:block;">Motorização</span>
+                            <strong style="font-size:12px; color:#F8FAFC;">${d.engine_displacement || 'Original'}</strong>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+                            <span style="font-size:10px; color:#64748B; display:block;">Câmbio</span>
+                            <strong style="font-size:12px; color:#F8FAFC;">${d.transmission_type || 'Manual'}</strong>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+                            <span style="font-size:10px; color:#64748B; display:block;">Combustível</span>
+                            <strong style="font-size:12px; color:#F8FAFC;">${d.fuel_type || 'Flex'}</strong>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+                            <span style="font-size:10px; color:#64748B; display:block;">Cor Oficial</span>
+                            <strong style="font-size:12px; color:#F8FAFC;">${d.color || 'Não informada'}</strong>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:6px 10px;">
+                            <span style="font-size:10px; color:#64748B; display:block;">Segmento</span>
+                            <strong style="font-size:12px; color:#F8FAFC;">${d.segment || 'Auto'}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Card Tabela FIPE Oficial com Score -->
+                    <div style="background:linear-gradient(135deg, rgba(0,230,118,0.12) 0%, rgba(0,212,255,0.08) 100%); border:1px solid rgba(0,230,118,0.4); border-radius:12px; padding:10px 14px; text-align:center;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+                            <span style="font-size:10.5px; font-weight:800; color:#00E676; text-transform:uppercase;">Tabela FIPE Oficial</span>
+                            ${d.fipe_score ? `<span style="font-size:9.5px; font-weight:800; background:rgba(0,230,118,0.2); color:#00E676; padding:1px 6px; border-radius:4px;">Score: ${d.fipe_score}</span>` : ''}
+                        </div>
+                        <div style="font-size:22px; font-weight:900; color:#00E676; font-family:var(--font-mono, monospace); letter-spacing:-0.5px;">
+                            ${d.fipe_value || 'Sob Consulta'}
+                        </div>
+                        <div style="font-size:10px; color:#94A3B8; margin-top:2px;">
+                            ${d.fipe_code ? `Cód. FIPE: ${d.fipe_code}` : ''} ${d.fipe_ref ? `• Ref: ${d.fipe_ref}` : ''}
                         </div>
                     </div>
                 </div>
@@ -3009,7 +3103,7 @@ const OwnerView = {
                         </div>
                     </div>
                     <strong style="color:#FFFFFF; font-size:13.5px; display:block;">${d.vehicle_brand} ${d.vehicle_model} (${d.vehicle_year})</strong>
-                    <span style="font-size:11px; color:#94A3B8;">FIPE: ${d.fipe_value || 'R$ 125.870,00'}</span>
+                    <span style="font-size:11px; color:#00E676; font-weight:800;">FIPE: ${d.fipe_value || 'Valor oficial consultado'}</span>
                 </div>
 
                 <!-- Resumo da Oficina -->

@@ -600,12 +600,49 @@ router.post('/register-from-api', authenticateToken, async (req, res) => {
             ? candidatePhoto
             : modelPhotoFromApi;
 
+        const engineDisp = (vData.engine_displacement || (vData.specs && vData.specs.cilindradas_formatada)) || null;
+        const vehType = (vData.vehicle_type || (vData.specs && vData.specs.tipo_veiculo)) || 'Automóvel';
+        const segment = (vData.segment || (vData.specs && vData.specs.segmento)) || 'Auto';
+        const subSegment = (vData.sub_segmento || (vData.specs && vData.specs.sub_segmento)) || null;
+        const bodywork = (vData.bodywork || (vData.specs && vData.specs.carroceria)) || null;
+        const passengerCap = (vData.passenger_capacity || (vData.specs && vData.specs.quantidade_passageiro)) || 5;
+        const grossWeight = (vData.gross_weight || (vData.specs && vData.specs.peso_bruto_total)) || null;
+        const maxTraction = (vData.max_traction || (vData.specs && vData.specs.cap_maxima_tracao)) || null;
+        const axesCount = (vData.axes_count || (vData.specs && vData.specs.eixos)) || '2';
+        const state = (vData.origin && vData.origin.state) || (vData.specs && vData.specs.uf) || 'SP';
+        const city = (vData.origin && vData.origin.city) || (vData.specs && vData.specs.municipio) || 'São Paulo';
+        const plateOld = vData.plate_old_format || cleanPlate;
+        const plateMerc = vData.plate_mercosul_format || cleanPlate;
+        const chassisStatus = (vData.specs && vData.specs.situacao_chassi) || 'N';
+        const vehicleStatus = (vData.specs && vData.specs.situacao_veiculo) || 'S';
+        const legalDesc = (vData.legal_status && vData.legal_status.detran_status) || 'REGULAR';
+        const brandLogo = vData.logo || vData.brand_logo_url || null;
+        const fipeScore = (vData.fipe && vData.fipe.score) || null;
+        const fipeModelText = (vData.fipe && vData.fipe.model_match) || vData.model || null;
+        const fipeBrandText = (vData.fipe && vData.fipe.brand_match) || vData.brand || null;
+        const fipeFuelText = (vData.fipe && vData.fipe.fuel_match) || vData.fuel_type || null;
+        const allFipeJson = (vData.fipe && vData.fipe.all_options) ? JSON.stringify(vData.fipe.all_options) : null;
+
+        const rawJsonStr = vData.raw_json ? JSON.stringify(vData.raw_json) : null;
+        const extraJsonStr = vData.raw_extra ? JSON.stringify(vData.raw_extra) : null;
+
         db.transaction(() => {
             db.prepare(`
                 INSERT INTO vehicles (
-                    id, license_plate, chassis_vin, renavam, brand, model, version_label,
-                    manufacture_year, model_year, fuel_type, transmission_type, color, photo_url
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    id, license_plate, chassis_vin, renavam, brand, model, submodel, version_label,
+                    manufacture_year, model_year, fuel_type, transmission_type, color, photo_url,
+                    engine_displacement, vehicle_type, segment, sub_segment, bodywork, passenger_capacity,
+                    gross_weight, max_traction, axes_count, state, city, plate_old_format, plate_mercosul_format,
+                    chassis_status, vehicle_status, legal_status_desc, brand_logo_url, fipe_score,
+                    raw_json, extra_json, created_at
+                ) VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?,
+                    ?, ?, CURRENT_TIMESTAMP
+                )
             `).run(
                 vehicleId,
                 cleanPlate,
@@ -613,20 +650,46 @@ router.post('/register-from-api', authenticateToken, async (req, res) => {
                 renavam,
                 vData.brand || 'Veículo',
                 vData.model || 'Oficial',
-                vData.version || 'Versão Padrão',
+                vData.submodel || null,
+                vData.version || vData.version_label || 'Versão Padrão',
                 Number(vData.manufacture_year) || 2020,
                 Number(vData.model_year) || Number(vData.manufacture_year) || 2020,
                 vData.fuel_type || 'Flex',
                 vData.transmission_type || 'Manual',
                 vData.color || 'Não informada',
-                finalPhoto
+                finalPhoto,
+                engineDisp,
+                vehType,
+                segment,
+                subSegment,
+                bodywork,
+                passengerCap,
+                grossWeight,
+                maxTraction,
+                String(axesCount),
+                state,
+                city,
+                plateOld,
+                plateMerc,
+                chassisStatus,
+                vehicleStatus,
+                legalDesc,
+                brandLogo,
+                fipeScore,
+                rawJsonStr,
+                extraJsonStr
             );
 
-            // Inserir cotação FIPE oficial
+            // Inserir cotação FIPE oficial com score
             db.prepare(`
-                INSERT INTO fipe_values (id, vehicle_id, fipe_code, reference_month_year, fipe_price_cents)
-                VALUES (?, ?, ?, ?, ?)
-            `).run('fipe_' + Date.now(), vehicleId, fipeCode, fipeRef, fipeCents);
+                INSERT INTO fipe_values (
+                    id, vehicle_id, fipe_code, reference_month_year, fipe_price_cents,
+                    score, model_text, brand_text, fuel_text, all_fipe_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).run(
+                'fipe_' + Date.now(), vehicleId, fipeCode, fipeRef, fipeCents,
+                fipeScore, fipeModelText, fipeBrandText, fipeFuelText, allFipeJson
+            );
 
             // Vincular dados do proprietário (Nome e Telefone/WhatsApp)
             if (cleanOwnerName) {

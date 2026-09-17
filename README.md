@@ -9,7 +9,7 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 30):** Implementação completa do **App do Cliente (11 telas)** e do **Fluxo de Onboarding & Login (12 telas)** com fidelidade aos mockups oficiais: Welcome/Splash, Login com toggle de senha, Cadastro completo, Scanner Radar animado com checklist dinâmico e FIPE, Ficha veicular com foto oficial e placa Mercosul, Ativação de código da oficina (`DNA-XXXX`), Home com card do carro e underglow ciano, Grid 2x2 de indicadores operacionais, Barra inferior de 5 abas (`Início`, `Veículo`, `Serviços`, `Alertas`, `Mais`), Rede de Oficinas Credenciadas com busca e filtros, endpoints `/auth/register-owner` e `/workshops/network` integrados ao SQLite e 45 testes automatizados 100% aprovados.
+> ✨ **Novidades Recentes (Ciclo 36):** Captura integral de **100% dos dados da API Placas Oficial (WDAPI2)**: mapeamento completo de dados da raiz, especificações técnicas detalhadas do objeto `extra` (cilindradas, câmbio, segmento, sub-segmento, eixos, tração, peso bruto, capacidade de passageiros, município/UF faturado), seleção automática da **Tabela FIPE oficial pelo maior score de precisão**, preservação do payload bruto (`raw_json`), migração automática de colunas no SQLite, eliminação da corrida assíncrona (`startPlateSearch` sequencial) e erradicação definitiva de defaults/mocks de 125 mil no onboarding mobile do cliente. 45 testes automatizados aprovados (100%).
 
 ---
 

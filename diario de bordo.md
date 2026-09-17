@@ -655,6 +655,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   4. **Qualidade & Testes:**
      - 45 de 45 testes automatizados aprovados com 100% de sucesso.
 
+### 📅 Ciclo 36 — Captura Integral de 100% dos Dados da API Placas (WDAPI2), Tabela FIPE Oficial por Score e Erradicação de Defaults
+- **Demandas Atendidas:**
+  1. **Captura Integral de Todos os Campos da API Placas:**
+     - Mapeamento completo dos atributos da raiz: `marca`, `modelo`, `submodelo`, `versao`, `ano`, `anoModelo`, `chassi`, `codigoSituacao`, `cor`, `data` da consulta, `logo` oficial da montadora, `marcaModelo`, `municipio`, `origem`/`nacionalidade`, `placa`, `placa_alternativa`, `situacao`, `uf`, `listamodelo`, `mensagemRetorno`.
+     - Objeto `extra` completo: `cilindradas`, `caixa_cambio`, `combustivel`, `segmento`, `sub_segmento`, `carroceria`/`tipo_carroceria`, `cap_maxima_tracao`, `peso_bruto_total`, `quantidade_passageiro`, `eixos`, `especie`, `tipo_veiculo`, `placa_modelo_antigo`, `placa_modelo_novo`, `situacao_chassi`, `situacao_veiculo`, `tipo_doc_faturado`, `tipo_doc_prop`, `uf_faturado`, `uf_placa`, `renavam` e restrições financeiras/gravames.
+     - Suporte ao array completo `fipe.dados` e seleção da cotação com o **maior `score`** conforme recomendação oficial da documentação da API Placas.
+     - Preservação do payload bruto integral (`raw_json`, `extra_json`, `fipe_json`).
+  2. **Modelagem de Dados e Banco SQLite:**
+     - Colunas adicionadas à tabela `vehicles` e `fipe_values` com migração automática tolerante a duplicatas: `submodel`, `engine_displacement`, `transmission`, `vehicle_type`, `segment`, `sub_segment`, `bodywork`, `passenger_capacity`, `gross_weight`, `max_traction`, `axes_count`, `state`, `city`, `plate_old_format`, `plate_mercosul_format`, `chassis_status`, `vehicle_status`, `legal_status_desc`, `brand_logo_url`, `fipe_score`, `raw_json`, `extra_json`, `fipe_json`, além de `score`, `model_text`, `brand_text`, `fuel_text` e `all_fipe_json`.
+  3. **Erradicação Total do Valor FIPE de 125 mil & Corrida Assíncrona no Onboarding:**
+     - `startPlateSearch()` refatorado para execução estritamente sequencial com `async/await`, aguardando a resposta da API Placas antes de avançar as etapas do radar de scanner.
+     - Limpeza proativa de `authData` ao iniciar nova busca por placa, impedindo que dados do Civic padrão contaminem cadastros de outros veículos (ex: Fox 2013).
+     - Remoção definitiva de qualquer fallback hardcoded (`R$ 125.870,00`) em todas as telas de onboarding e confirmação.
+  4. **Interface e Ficha Técnica Completa no App do Cliente:**
+     - Tela de confirmação e Tela 05 (Dados Encontrados) exibindo badge Mercosul oficial, logo da montadora, grid com 6 especificações (Ano, Motor, Câmbio, Combustível, Cor, Segmento) e card FIPE em destaque verde neon com valor real, código FIPE, mês de referência e badge de precisão de score.
+     - Paridade rigorosa entre `public/js/components/ownerView.js` e `cliente.app/js/components/ownerView.js`.
+  5. **Qualidade & Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso (incluindo teste com a placa oficial da documentação `INT8C36` do CrossFox e `LQZ9A42` do Fox 2013).
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

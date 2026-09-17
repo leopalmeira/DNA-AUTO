@@ -75,17 +75,30 @@ router.get('/plate-lookup/:plate', async (req, res) => {
                 vehicle: {
                     id: existingVehicle.id,
                     license_plate: existingVehicle.license_plate,
+                    plate_old_format: existingVehicle.plate_old_format || existingVehicle.license_plate,
+                    plate_mercosul_format: existingVehicle.plate_mercosul_format || existingVehicle.license_plate,
                     brand: existingVehicle.brand,
                     model: existingVehicle.model,
+                    submodel: existingVehicle.submodel || null,
                     version: existingVehicle.version_label || 'Padrão Homologado',
+                    version_label: existingVehicle.version_label || 'Padrão Homologado',
                     manufacture_year: existingVehicle.manufacture_year,
                     model_year: existingVehicle.model_year,
                     color: existingVehicle.color,
                     fuel_type: existingVehicle.fuel_type,
-                    transmission_type: existingVehicle.transmission_type || 'Automático',
+                    transmission_type: existingVehicle.transmission || existingVehicle.transmission_type || 'Manual',
+                    engine_displacement: existingVehicle.engine_displacement || null,
+                    vehicle_type: existingVehicle.vehicle_type || 'Automóvel',
+                    segment: existingVehicle.segment || 'Auto',
+                    sub_segmento: existingVehicle.sub_segment || null,
+                    bodywork: existingVehicle.bodywork || null,
                     photo_url: existingVehicle.photo_url,
-                    logo: existingVehicle.photo_url,
-                    origin: getPlateOriginState(cleanPlate),
+                    logo: existingVehicle.brand_logo_url || existingVehicle.photo_url,
+                    origin: {
+                        state: existingVehicle.state || origin.state,
+                        city: existingVehicle.city || origin.city,
+                        country: 'Nacional'
+                    },
                     chassis_vin: existingVehicle.chassis_vin,
                     chassis_vin_masked: maskedChassis,
                     renavam: existingVehicle.renavam || maskedRenavam,
@@ -94,12 +107,13 @@ router.get('/plate-lookup/:plate', async (req, res) => {
                     dna_code: existingVehicle.dna_code || null,
                     fipe: {
                         fipe_code: existingVehicle.fipe_code || '004495-4',
-                        reference_month: existingVehicle.fipe_ref || 'Janeiro de 2026',
+                        reference_month: existingVehicle.fipe_ref || 'Setembro de 2026',
                         market_value_formatted: 'R$ ' + fipeAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
-                        market_value_cents: existingVehicle.fipe_price_cents || 13800000
+                        market_value_cents: existingVehicle.fipe_price_cents || 13800000,
+                        score: existingVehicle.fipe_score || null
                     },
                     legal_status: {
-                        detran_status: 'REGULAR (Licenciado 2025/2026)',
+                        detran_status: existingVehicle.legal_status_desc || 'REGULAR (Licenciado 2025/2026)',
                         ipva_status: existingVehicle.ipva_status || 'QUITADO',
                         ipva_estimated_amount: 'R$ ' + ipvaEstimated.toLocaleString('pt-BR', { minimumFractionDigits: 2 }),
                         fines_count: existingVehicle.fines_count || 0,
@@ -128,7 +142,8 @@ router.get('/plate-lookup/:plate', async (req, res) => {
             return res.json({
                 found: true,
                 source: external.source || 'API Placas Oficial (Senatran / FIPE)',
-                vehicle: external.vehicle
+                vehicle: external.vehicle,
+                raw: external.raw || null
             });
         }
 

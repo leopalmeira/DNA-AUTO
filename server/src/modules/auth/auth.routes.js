@@ -262,25 +262,53 @@ router.post('/register-owner', async (req, res) => {
             if (!vehicle) {
                 // Consulta a API de Placas oficial para obter dados reais de FIPE e Detran
                 let apiData = null;
+                let rawFullData = null;
                 try {
                     const apiRes = await apiPlacasService.consultarPlaca(cleanPlate);
                     if (apiRes && apiRes.found && apiRes.vehicle) {
                         apiData = apiRes.vehicle;
+                        rawFullData = apiRes.raw || null;
                     }
                 } catch (_) {}
 
                 const vehicleId = `veh_${Date.now()}`;
-                const carBrand = (apiData && apiData.brand) || vehicle_brand || brand || 'Honda';
-                const carModel = (apiData && (apiData.version || apiData.model)) || vehicle_model || model || 'Civic';
-                const carYear = (apiData && (apiData.model_year || apiData.manufacture_year)) || parseInt(vehicle_year || year) || 2021;
+                const carBrand = (apiData && apiData.brand) || vehicle_brand || brand || 'Montadora Homologada';
+                const carModel = (apiData && (apiData.version || apiData.model)) || vehicle_model || model || 'Modelo Homologado';
+                const carSubmodel = (apiData && (apiData.submodel || (apiData.specs && apiData.specs.submodelo))) || null;
+                const carVersion = (apiData && (apiData.version || apiData.version_label)) || carModel;
+                const carYear = (apiData && (apiData.model_year || apiData.manufacture_year)) || parseInt(vehicle_year || year) || 2020;
+                const carFabYear = (apiData && apiData.manufacture_year) || carYear;
                 const carColor = (apiData && apiData.color && apiData.color !== 'Não informada') ? apiData.color : (color || 'Prata');
                 const carFuel = (apiData && apiData.fuel_type) || fuel_type || 'Flex';
-                const carTrans = (apiData && apiData.transmission_type) || transmission_type || 'Manual';
+                const carTrans = (apiData && (apiData.transmission_type || apiData.transmission)) || transmission_type || 'Manual';
                 const vin = (apiData && (apiData.chassis_vin || apiData.chassis_vin_masked)) || chassis_vin || `9BWZZZ377VT${Date.now().toString().slice(-6)}`;
                 const renavam = (apiData && (apiData.renavam || apiData.renavam_masked)) || reqRenavam || `00${Date.now().toString().slice(-9)}`;
                 
+                const engineDisp = (apiData && (apiData.engine_displacement || (apiData.specs && apiData.specs.cilindradas_formatada))) || null;
+                const vehType = (apiData && (apiData.vehicle_type || (apiData.specs && apiData.specs.tipo_veiculo))) || 'Automóvel';
+                const segment = (apiData && (apiData.segment || (apiData.specs && apiData.specs.segmento))) || 'Auto';
+                const subSegment = (apiData && (apiData.sub_segmento || (apiData.specs && apiData.specs.sub_segmento))) || null;
+                const bodywork = (apiData && (apiData.bodywork || (apiData.specs && apiData.specs.carroceria))) || null;
+                const passengerCap = (apiData && (apiData.passenger_capacity || (apiData.specs && apiData.specs.quantidade_passageiro))) || 5;
+                const grossWeight = (apiData && (apiData.gross_weight || (apiData.specs && apiData.specs.peso_bruto_total))) || null;
+                const maxTraction = (apiData && (apiData.max_traction || (apiData.specs && apiData.specs.cap_maxima_tracao))) || null;
+                const axesCount = (apiData && (apiData.axes_count || (apiData.specs && apiData.specs.eixos))) || '2';
+                const state = (apiData && (apiData.origin && apiData.origin.state)) || (apiData && apiData.specs && apiData.specs.uf) || 'SP';
+                const city = (apiData && (apiData.origin && apiData.origin.city)) || (apiData && apiData.specs && apiData.specs.municipio) || 'São Paulo';
+                const plateOld = (apiData && apiData.plate_old_format) || cleanPlate;
+                const plateMerc = (apiData && apiData.plate_mercosul_format) || cleanPlate;
+                const chassisStatus = (apiData && apiData.specs && apiData.specs.situacao_chassi) || 'N';
+                const vehicleStatus = (apiData && apiData.specs && apiData.specs.situacao_veiculo) || 'S';
+                const legalDesc = (apiData && apiData.legal_status && apiData.legal_status.detran_status) || 'REGULAR';
+                const brandLogo = (apiData && (apiData.logo || apiData.brand_logo_url)) || null;
+                const fipeScore = (apiData && apiData.fipe && apiData.fipe.score) || null;
+
+                const rawJsonStr = rawFullData ? JSON.stringify(rawFullData) : null;
+                const extraJsonStr = (rawFullData && rawFullData.extra) ? JSON.stringify(rawFullData.extra) : null;
+                const fipeJsonStr = (rawFullData && rawFullData.fipe) ? JSON.stringify(rawFullData.fipe) : null;
+
                 let photoUrl = (apiData && apiData.photo_url) || null;
-                if (!photoUrl) {
+                if (!photoUrl || photoUrl.includes('images.unsplash.com')) {
                     try {
                         const { getDefaultPhotoForVehicle } = require('../../services/vehiclePhoto.service');
                         photoUrl = getDefaultPhotoForVehicle(carBrand, carModel);
@@ -290,18 +318,47 @@ router.post('/register-owner', async (req, res) => {
                 }
 
                 db.prepare(`
-                    INSERT INTO vehicles (id, license_plate, chassis_vin, renavam, brand, model, version_label, manufacture_year, model_year, fuel_type, transmission_type, color, photo_url, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-                `).run(vehicleId, cleanPlate, vin, renavam, carBrand, carModel, carModel, carYear, carYear, carFuel, carTrans, carColor, photoUrl);
+                    INSERT INTO vehicles (
+                        id, license_plate, chassis_vin, renavam, brand, model, submodel, version_label,
+                        manufacture_year, model_year, fuel_type, transmission_type, color, photo_url,
+                        engine_displacement, vehicle_type, segment, sub_segment, bodywork, passenger_capacity,
+                        gross_weight, max_traction, axes_count, state, city, plate_old_format, plate_mercosul_format,
+                        chassis_status, vehicle_status, legal_status_desc, brand_logo_url, fipe_score,
+                        raw_json, extra_json, fipe_json, created_at
+                    ) VALUES (
+                        ?, ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?, ?, ?,
+                        ?, ?, ?, ?, ?,
+                        ?, ?, ?, datetime('now')
+                    )
+                `).run(
+                    vehicleId, cleanPlate, vin, renavam, carBrand, carModel, carSubmodel, carVersion,
+                    carFabYear, carYear, carFuel, carTrans, carColor, photoUrl,
+                    engineDisp, vehType, segment, subSegment, bodywork, passengerCap,
+                    grossWeight, maxTraction, String(axesCount), state, city, plateOld, plateMerc,
+                    chassisStatus, vehicleStatus, legalDesc, brandLogo, fipeScore,
+                    rawJsonStr, extraJsonStr, fipeJsonStr
+                );
 
-                // Inserir cotação FIPE oficial real
+                // Inserir cotação FIPE oficial real com score
                 let fipeCents = reqFipeCents || 7500000;
                 let fipeCode = reqFipeCode || '004495-4';
                 let fipeRef = reqFipeRef || 'Setembro de 2026';
+                let fipeModelText = carModel;
+                let fipeBrandText = carBrand;
+                let fipeFuelText = carFuel;
+                let allFipeJson = null;
+
                 if (apiData && apiData.fipe) {
                     if (apiData.fipe.market_value_cents) fipeCents = apiData.fipe.market_value_cents;
                     if (apiData.fipe.fipe_code) fipeCode = apiData.fipe.fipe_code;
                     if (apiData.fipe.reference_month) fipeRef = apiData.fipe.reference_month;
+                    if (apiData.fipe.model_match) fipeModelText = apiData.fipe.model_match;
+                    if (apiData.fipe.brand_match) fipeBrandText = apiData.fipe.brand_match;
+                    if (apiData.fipe.fuel_match) fipeFuelText = apiData.fipe.fuel_match;
+                    if (apiData.fipe.all_options) allFipeJson = JSON.stringify(apiData.fipe.all_options);
                 } else if (fipe_value && typeof fipe_value === 'string') {
                     const num = fipe_value.replace(/[^0-9]/g, '');
                     if (num) fipeCents = parseInt(num, 10);
@@ -309,9 +366,14 @@ router.post('/register-owner', async (req, res) => {
 
                 try {
                     db.prepare(`
-                        INSERT INTO fipe_values (id, vehicle_id, fipe_code, reference_month_year, fipe_price_cents)
-                        VALUES (?, ?, ?, ?, ?)
-                    `).run(`fipe_${Date.now()}`, vehicleId, fipeCode, fipeRef, fipeCents);
+                        INSERT INTO fipe_values (
+                            id, vehicle_id, fipe_code, reference_month_year, fipe_price_cents,
+                            score, model_text, brand_text, fuel_text, all_fipe_json
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `).run(
+                        `fipe_${Date.now()}`, vehicleId, fipeCode, fipeRef, fipeCents,
+                        fipeScore, fipeModelText, fipeBrandText, fipeFuelText, allFipeJson
+                    );
                 } catch (_) {}
 
                 // Gerar DNA permanente

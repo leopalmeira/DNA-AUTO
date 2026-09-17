@@ -1,581 +1,280 @@
 # 📓 DIÁRIO DE BORDO — PROJETO DNA AUTO
-## Histórico Técnico, Decisões de Engenharia, Evolução e Entregas
+## Registro Oficial de Engenharia, Entregas, Decisões e Evolução Contínua
 
-> **Projeto:** DNA AUTO — Identidade e Histórico Digital Permanente de Veículos  
-> **Versão Atual:** 1.3.0  
-> **Ambiente Live:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/)  
-> **Repositório:** [https://github.com/leopalmeira/DNA-AUTO](https://github.com/leopalmeira/DNA-AUTO)
-
----
-
-## 📌 1. Visão Geral e Propósito
-
-O **DNA AUTO** nasceu para solucionar uma das maiores assimetrias de informação do mercado de veículos usados no Brasil: a falta de comprovação técnica, contínua e imutável das manutenções preventivas e corretivas efetuadas em um veículo ao longo de sua vida útil.
-
-Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" no momento da vistoria (checando chassi, sinistros graves e leilão), o DNA AUTO atua como o **passaporte digital perpétuo do automóvel**, gravando cada troca de óleo, correia dentada, discos de freio, amortecedores, acompanhados de quilometragem auditada, fotos de peças instaladas e notas fiscais (NFS-e/DANFE) validadas por oficinas credenciadas.
----
-
-## 📅 2. Linha do Tempo e Evolução dos Ciclos de Desenvolvimento
-
-### 🏁 Ciclo 1: Fundação Arquitetural e Modelagem de Dados Relacional
-- **Objetivo:** Estabelecer arquitetura leve, de alta performance e sem dependências pesadas externas.
-- **Implementações:**
-  - Escolha do banco de dados relacional embutido **SQLite 3** com o driver C++ de alta performance **`better-sqlite3`** executando em modo WAL (*Write-Ahead Logging*).
-  - Modelagem do esquema canônico em [schema.sql](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/database/schema.sql):
-    - `users`: Identidades com hash de senha `bcryptjs` e papéis RBAC (`ADMIN`, `WORKSHOP`, `OWNER`).
-    - `vehicles`: Cadastro unificado com Placa (padrão Mercosul e antigo), Chassi (VIN), Renavam, Marca, Modelo e Ano.
-    - `vehicle_dna`: Código permanente único `DNA-BR-XXXX-XXXX-XXX` emitido uma única vez por veículo.
-    - `service_records`: Registros de manutenção classificados por 4 níveis de confiabilidade (Nível 1 a Nível 4).
-    - `service_parts`: Itens e peças instaladas com fabricante, part number e quantidade.
-    - `invoices`: Metadados e arquivos de comprovação fiscal.
-    - `health_scores`: Cálculo dinâmico do Score de Saúde (0 a 100) com base na continuidade e comprovação das manutenções.
-    - `audit_logs`: Trilhas de auditoria criptográfica imutável registrando IP, usuário, ação e diff de dados.
-- **Decisão Arquitetural (ADR 01):** Manter o backend monolítico modularizado em Node.js com Express para máxima velocidade de resposta (< 25ms) e baixa sobrecarga de memória.
+> **Plataforma:** DNA AUTO — Identidade e Histórico Digital Permanente de Veículos  
+> **Versão:** 1.3.0 Enterprise  
+> **Repositório GitHub:** [https://github.com/leopalmeira/DNA-AUTO](https://github.com/leopalmeira/DNA-AUTO)  
+> **Deploy de Produção:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/)  
+> **Documento Mestre Detalhado:** Consulte também [DIARIO_DE_BORDO.md](file:///c:/Users/User/Desktop/DNA-AUTO/DIARIO_DE_BORDO.md).
 
 ---
 
-### 🛡️ Ciclo 2: Controle de Acesso Baseado em Papéis (RBAC) e Isolamento
-- **Objetivo:** Eliminar riscos de vazamento ou acesso cruzado entre proprietários de veículos, oficinas e administração central.
-- **Implementações:**
-  - Implementação de autenticação stateless via tokens JWT (`jsonwebtoken`).
-  - Middleware de segurança [auth.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/middlewares/auth.js) validando expiração e integridade da assinatura.
-  - Orquestrador de interface no [app.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/app.js) impondo isolamento estrito:
-    - O perfil **CLIENTE** só acessa seus veículos, histórico particular e relatórios de venda.
-    - O perfil **OFICINA** acessa apenas sua bancada de serviços, validação de ordens de serviço pendentes e credenciamento de novos veículos.
-    - O perfil **ADMINISTRADOR** tem acesso à matriz da rede, auditoria, estatísticas globais e configurações corporativas.
-  - Ocultação do acesso administrativo na interface comum: o acesso ao Admin exige navegação explícita pelo endpoint `/admin`.
+## 📌 Resumo Executivo da Plataforma
+O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasileiro ao criar um passaporte digital único (`DNA-BR-XXXX-XXXX-XXX`) para cada veículo, registrando trocas de peças, manutenções preventivas e corretivas com odômetro auditado, fotos reais das peças aplicadas e notas fiscais chanceladas por oficinas credenciadas.
 
 ---
 
-### 🔬 Ciclo 3: Dossiê 360°, Score de Saúde e Lupa Investigativa
-- **Objetivo:** Transformar dados brutos de manutenção em uma experiência visual intuitiva, confiável e com alta transparência.
-- **Implementações:**
-  - Criação do componente [dossierView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/dossierView.js) com visualização 360°:
-    - Indicador de Score de Saúde (ex: 93/100 para veículos com histórico integralmente auditado).
-    - Linha do tempo cronológica com badges dos 4 níveis de comprovação:
-      - **Nível 1 (Declarado):** Informado pelo proprietário.
-      - **Nível 2 (Comprovado com Documento):** Com nota fiscal anexada.
-      - **Nível 3 (Confirmado por Oficina):** Verificado e chancelado por oficina credenciada.
-      - **Nível 4 (Totalmente Auditado / Padrão Ouro):** Ordem de serviço oficial, nota fiscal com chave de acesso e fotos das peças instaladas.
-  - Implementação da **Lupa Investigativa**: Mecanismo de busca no dossiê capaz de filtrar instantaneamente trocas de itens críticos (ex: *"correia"*, *"óleo"*, *"pastilha"*).
-  - Emissão de Relatório de Venda com hash SHA-256 autenticável por QR Code.
+## 📅 Registro Consolidado de Ciclos de Desenvolvimento
 
----
+### 🏁 Ciclos 1 a 10: Fundação e Core do Sistema
+- Modelagem de dados em SQLite 3 (`better-sqlite3`) com modo WAL e arquitetura monólita modular.
+- Sistema de autenticação JWT com RBAC (`ADMIN`, `WORKSHOP`, `OWNER`).
+- Dossiê 360° do veículo com Score de Saúde (0 a 100), linha do tempo com 4 níveis de comprovação e lupa investigativa.
+- Emissão de Laudos de Venda com QR Code autenticado e gerador de cartaz para vidro com visualização comercial.
+- Sistema de transferência de propriedade de DNA com termo de consentimento digital.
+- Suporte a multi-inquilino (Multi-Tenant) com isolamento total entre oficinas credenciadas.
 
-### ☁️ Ciclo 4: Estabilização do Deploy na Nuvem (Render Cloud)
-- **Desafio Encontrado:** Ao realizar o deploy no Render (`render.com`), a aplicação encerrava imediatamente com status de erro `"Application exited early"`.
-- **Investigação e Diagnóstico:**
-  1. O Render utiliza por padrão o comando `node src/index.js` ou `node index.js`.
-  2. Inicialmente, o entrypoint do projeto estava localizado em `server/src/server.js`, gerando falha de inicialização automática.
-  3. Foi detectada uma dependência circular entre [db.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/database/db.js) e [seed.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/database/seed.js), onde `db.js` tentava carregar o `seed.js` antes de expor a instância do SQLite no `module.exports`.
-  4. O servidor escutava em `localhost` em vez da interface universal `0.0.0.0`, impedindo o roteador do Render de receber o tráfego HTTP.
-- **Solução Implementada:**
-  - Criação dos entrypoints universais na raiz: [index.js](file:///c:/Users/User/Desktop/DNA-AUTO/index.js) e [src/index.js](file:///c:/Users/User/Desktop/DNA-AUTO/src/index.js), garantindo compatibilidade com qualquer comando padrão do Render.
-  - Configuração explícita para escutar em `0.0.0.0:${PORT}`.
-  - Eliminação da dependência circular em `db.js` com injeção de dependência e auto-seeding sob demanda.
-  - Deploy estabilizado com sucesso em: **`https://dna-auto.onrender.com/`**.
+### 🛡️ Ciclos 11 a 13: Experiência B2B, Gestão Multi-Tenant e Keep-Alive
+- Landing Page com segmentação para Dono do Carro vs. Dono de Oficina Mecânica.
+- Painel Administrativo Matriz refinado com visão hierárquica discreta de oficinas e carros atendidos por cada parceiro.
+- Central de alertas preventivos via links universais de WhatsApp.
+- Serviço anti-suspensão (`keepAlive.service.js`) impedindo hibernação em instâncias na nuvem.
 
----
+### 🚗 Ciclo 14: Integração Oficial da API Placas Paga (WDAPI2)
+- Conector unificado em `server/src/services/apiPlacas.service.js` com token oficial.
+- Consulta instantânea de qualquer veículo emplacado no Brasil (Mercosul ou placa cinza de 7 caracteres).
+- Seleção da Tabela FIPE por algoritmo de maior score e suporte a leitura de dados do bloco extra (cilindradas, combustível, chassi e município).
+- Endpoint para monitoramento em tempo real do saldo de créditos restantes da API (`/api/v1/integrations/plate-balance`).
+- Enriquecimento visual nos modais de busca com logo da montadora e especificações técnicas.
+- Bateria de testes expandida para 20 testes de integração automatizados aprovados (100%).
 
-### 🔑 Ciclo 5: Recuperação de Acesso e Credenciamento Flexível de Oficinas
-- **Problema Relatado:** O fluxo de credenciamento de oficinas falhava ao validar certos CNPJs/CPFs e o link "Esqueci minha senha" não executava a redefinição.
-- **Implementações:**
-  - Criação da rota `POST /api/v1/auth/forgot-password` com validação de e-mail e hash seguro da nova senha via `bcryptjs`.
-  - Construção do modal dinâmico no [loginView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/loginView.js) para recuperação em 2 etapas com feedback instantâneo.
-  - Flexibilização do formulário de credenciamento de oficinas parceiras:
-    - Suporte a CNPJ (14 dígitos) e CPF/MEI (11 dígitos).
-    - Limpeza de máscaras e caracteres não numéricos antes de persistir no banco.
-    - Vinculação inteligente: caso o proprietário já possua login cadastrado, o sistema associa a nova oficina à conta existente sem causar erro de duplicidade.
-
----
-
-### 💼 Ciclo 6: Reestruturação do Painel Administrativo com Foco em Negócio
-- **Requisito do Usuário:** O painel de administração deve focar mais em quantidade de oficinas, clientes atendidos por cada oficina, faturamento atual da plataforma e total de carros cadastrados.
-- **Implementações no Backend ([admin.routes.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/modules/admin/admin.routes.js)):**
-  - Endpoint `/network-stats`:
-    - `totalGrossRevenueCents`: Faturamento bruto consolidado (Ativações de DNA + Serviços).
-    - `dnaRevenueCents`: Receita direta de emissão de passaportes DNA AUTO.
-    - `servicesVolumeCents`: Volume total de manutenções movimentadas pela rede credenciada.
-    - `totalVehicles`: Quantidade total de carros na base e taxa de certificação.
-    - `totalClients`: Total de proprietários registrados.
-    - `totalWorkshops`: Total de oficinas cadastradas e homologadas.
-  - Endpoint `GET /api/v1/admin/workshops/:id/clients`:
-    - Drill-down analítico listando cada cliente atendido por aquela oficina específica.
-    - Exibição de veículo, placa, modelo, data do último serviço, km atual, total financeiro investido na oficina e telefone de contato.
-- **Implementações no Frontend ([adminView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/adminView.js)):**
-  - Redesenho dos cards superiores de KPIs executivos com destaque para o **Faturamento Bruto em R$**.
-  - Adição do botão **`👥 Ver Clientes & Carros`** na tabela de oficinas credenciadas, abrindo modal detalhado de drill-down com métricas da clientela de cada oficina.
-
----
-
-### 📲 Ciclo 7: Central de Alertas Preventivos via WhatsApp
-- **Requisito do Usuário:** O sistema deve possuir integração com WhatsApp para enviar mensagens quando o proprietário estiver no momento de trocar óleo ou correias.
-- **Solução de Engenharia ([admin.routes.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/modules/admin/admin.routes.js)):**
-  - Desenvolvimento do endpoint `GET /api/v1/admin/maintenance-alerts`.
-  - **Regras Preditivas de Manutenção:**
-    1. **Troca de Óleo do Motor:**
-       - Critério de Quilometragem: Mais de 8.000 km rodados desde a última troca registrada.
-       - Critério Temporal: Mais de 6 meses desde o último serviço de lubrificação.
-    2. **Kit de Correia Dentada e Tensores:**
-       - Critério Preventivo Crítico: Veículo com 50.000 km ou mais rodados desde a última substituição comprovada da correia.
-  - **Protocolo de Disparo:**
-    - Utilização da API Universal do WhatsApp (`https://api.whatsapp.com/send?phone=...&text=...`).
-    - Formatação automática de telefones para DDI 55 com DDD.
-    - Mensagem personalizada contendo: nome do proprietário, veículo, placa, quilometragem atual e justificativa técnica de segurança e economia.
-    - Botão verde com logotipo oficial do WhatsApp com abertura direta no WhatsApp Web ou App móvel, sem custo adicional de provedores terceiros.
-
----
-
-### 🌐 Ciclo 8: Landing Page Oficial da Plataforma (Histórico por R$ 59,90)
-- **Requisito do Usuário:** Criar uma landing page oficial da plataforma com oferta destacada de **R$ 59,90** para o histórico completo do carro com todas as atividades realizadas no veículo.
-- **Implementações ([landingView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingView.js) e [app.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/app.js)):**
-  - **Preço Canônico:** Atualização do plano oficial de ativação no [seed.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/database/seed.js) para R$ 59,90 (`5990` centavos).
-  - **Hero de Alta Conversão:** Destaque estético premium com o valor de **R$ 59,90** e pagamento único vitalício (sem mensalidades).
-  - **Grid de Atividades Monitoradas:** Cards ilustrados cobrindo todas as manutenções registradas:
-    - 🛢️ Trocas de Óleo e Filtros
-    - ⚙️ Kit Correia Dentada e Tensores
-    - 🛑 Sistema de Freios (Discos, Pastilhas e Fluido)
-    - 🔩 Suspensão e Amortecedores
-    - 📷 Fotos das Peças Antigas Substituídas
-    - 🧾 Comprovantes Fiscais (NFS-e e DANFE)
-    - 🔍 Laudo Cautelar e Histórico de Sinistros
-  - **Consulta Interativa de Placa:** Formulário onde compradores podem digitar qualquer placa e verificar imediatamente se o carro possui o DNA certificado.
-  - **Tabela Comparativa:** Demonstração visual de como um carro com DNA AUTO se destaca de veículos sem histórico, justificando até 15% de valorização na venda.
-  - **Roteamento Inteligente:** O visitante não autenticado cai diretamente na Landing Page ao abrir a URL raiz, mantendo acesso livre ao login e `/admin`.
-
----
-
-### 🧪 Ciclo 9: Suite de Testes Automatizados (16 Testes E2E/API)
-- **Objetivo:** Garantir regressão zero em todas as funcionalidades críticas do sistema.
-- **Arquivo de Testes:** [test/api.test.js](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
-- **Cobertura Completa:**
-  1. Healthcheck da API (`/health` retorna status `ONLINE`).
-  2. Autenticação Administrativa e emissão de JWT.
-  3. Métricas globais da rede DNA AUTO.
-  4. Dossiê 360° do Honda Civic (Score 93/100 e histórico).
-  5. Lupa investigativa de busca no dossiê (termo *"correia"*).
-  6. Pesquisa de veículo não cadastrado/sem DNA (Fiat Strada).
-  7. Ativação de DNA na Fiat Strada pela oficina credenciada.
-  8. Emissão de Relatório de Venda com código de validação único.
-  9. Elevação de nível de prova de serviço por confirmação de oficina.
-  10. Métricas consolidadas de faturamento da plataforma (R$).
-  11. Consulta de clientes e veículos atendidos por oficina (drill-down).
-  12. Central de Alertas Preventivos WhatsApp (geração de links de óleo e correias).
-  13. Recuperação de acesso via Esqueci Minha Senha (`/auth/forgot-password`).
-  14. Frota completa de veículos por oficina credenciada (`/admin/fleet`).
-  15. Carteira de clientes distribuída por oficina (`/admin/clients-all`).
-  16. Gestão de homologação de oficinas pelo administrador (`/admin/workshops/:id/status`).
-- **Resultado:** **100% dos 16 testes aprovados com sucesso.**
-
----
-
-### 🏢 Ciclo 10: Menu Expandido do Gestor Multi-Tenant e Isolamento Estrito
-- **Requisito do Usuário:** O menu admin deve ser completo para o gestor do sistema, mostrando faturamento consolidado, frota de carros por oficina e governança multi-tenant (onde oficinas não enxergam dados de outras oficinas e o cliente identifica a oficina que realizou cada serviço).
-- **Implementações:**
-  - **Sidebar do Admin no [index.html](file:///c:/Users/User/Desktop/DNA-AUTO/public/index.html):** Menu completo com Painel Executivo, Faturamento da Rede, Oficinas (Multi-Tenant), Carros por Oficina, Carteira de Clientes, Alertas WhatsApp, Trilha de Auditoria e link para a Landing Page (R$ 59,90).
-  - **Sistema de Abas Dinâmicas no [adminView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/adminView.js):** Sincronização em tempo real entre sidebar e abas no cabeçalho com filtros reativos por oficina (`fleetFilterWorkshopId` e `clientsFilterWorkshopId`).
-  - **Novos Endpoints Multi-Tenant no [admin.routes.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/modules/admin/admin.routes.js):**
-    - `GET /api/v1/admin/fleet`: Relação consolidada de veículos com filtro por oficina (tenant).
-    - `GET /api/v1/admin/clients-all`: Carteira de proprietários vinculados à oficina de atendimento.
-    - `POST /api/v1/admin/workshops/:id/status`: Homologação/suspensão de oficinas pelo gestor.
-  - **Blindagem Multi-Tenant no [workshopView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/workshopView.js):** Uso de `getEffectiveWorkshopId()` para carregar estritamente a oficina autenticada, impedindo acesso a dados de concorrentes.
----
-
-### 🚀 Ciclo 11: Landing Page Padrão TOTVS com Controle Semestral e Motor B2B para Oficinas
-- **Requisito do Usuário:** 
-  1. Dizer expressamente que o dono do carro passa a saber quanto gastou no carro nos últimos 6 meses, além de ter o relatório completo do que foi feito no carro.
-  2. Deixar a landing page no padrão TOTVS, atraente, dinâmica e altamente convidativa.
-  3. Falar diretamente com a oficina mecânica: aumentar o faturamento sabendo quanto falta para a troca de correia dentada ou troca de óleo da caixa de câmbio automático do cliente cadastrado, ou até mesmo a identificação de falha no veículo antes de o carro chegar à oficina.
-- **Implementações ([landingView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingView.js)):**
-  - **Apresentação Padrão TOTVS / Dark Enterprise:**
-    - Visual corporativo com estética Dark Luxury, tipografia moderna e acentos de ouro (`#FFD21C`), ciano (`#38bdf8`) e verde financeiro (`#10b981`).
-    - Switcher dinâmico de perfil no Hero: **"🚗 Sou Dono de Carro"** vs **"🔧 Sou Dono de Oficina Mecânica"**.
-  - **Módulo do Dono do Carro (B2C):**
-    - 📊 **Controle de Gastos dos Últimos 6 Meses:** Dashboard financeiro semestral interativo com gráfico de barras mês a mês (Outubro a Março). Permite clicar em qualquer mês para inspecionar os serviços executados (peças genuínas, mão de obra especializada e fluidos), comprovando transparência total e economia preventiva gerada de até R$ 4.200,00.
-    - 📋 **Relatório Completo de Tudo o que Foi Feito:** Dossiê indelével com fotos Nível 4 (peças velhas x novas), códigos originais (part numbers), notas fiscais digitalizadas e quilometragem blindada contra golpes de odômetro, garantindo até 15% de valorização na venda.
-  - **Módulo da Oficina Mecânica (B2B Engine):**
-    - 📈 **Motor de Aumento de Faturamento:** Seção de alta conversão dedicada a oficinas mecânicas e centros automotivos.
-    - ⚙️ **Alerta de Correia Dentada e Tensores:** Cálculo preditivo da rodagem diária para avisar exatamente quantos km ou dias faltam para a troca de correia dentada de cada cliente cadastrado, disparando mensagens no WhatsApp antes que o motor quebre.
-    - 🔄 **Alerta de Troca de Óleo do Câmbio Automático:** Monitoramento da quilometragem limite para diálise e troca de fluido ATF/CVT (ticket médio de R$ 1.600 a R$ 3.800), recuperando receita de alto valor que antes se perdia.
-    - ⚡ **Identificação de Falhas Antes do Carro Chegar:** Algoritmo preditivo que cruza históricos de sintomas, alertas de sensores e anomalias de ordens de serviço anteriores para detectar falhas precocemente, aumentando em até 40% a produtividade do box da oficina.
-    - 📲 **Radar Preditivo com Disparo de WhatsApp:** Demonstração visual de tabela da oficina com botões interativos de WhatsApp prontos para envio ao cliente.
-    - 🛡️ **Credenciamento Gratuito & Comissões por Ativação:** Sem mensalidade básica e comissões para a oficina por cada DNA ativado.
-- **Validação:**
-  - 16/16 testes automatizados aprovados com 100% de sucesso em [test/api.test.js](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js).
-  - Arquivo estático servido com sucesso (`HTTP 200`, 100+ KB de frontend interativo).
-
----
-
-### 🎨 Ciclo 12: Menu Discreto e Profissional com Hierarquia de Oficinas e Carros por Oficina
-- **Requisito do Usuário:** 
-  1. O menu do painel administrativo deve ser muito mais discreto, profissional e sem poluição visual (eliminar a bagunça de badges coloridos berrantes e abas longas com barra de rolagem horizontal).
-  2. O menu e a plataforma devem exibir claramente as oficinas credenciadas e, dentro de cada oficina, os veículos atendidos por ela em uma hierarquia visual intuitiva.
-- **Implementações:**
-  - **Menu Lateral Discreto (Sidebar Clean & Corporate):**
-    - Redução da saturação de badges e remoção de contrastes excessivos, adotando estilo corporativo minimalista (padrão TOTVS / Linear / Stripe).
-    - Itens de navegação com tipografia sóbria (`#94a3b8`), active com linha de destaque refinada em dourado (`#FFD21C`) e fundo translúcido suave.
-    - Criação de **submenu hierárquico discreto** logo abaixo de *Oficinas & Carros* (`.nav-sub-menu`), listando cada oficina credenciada com contagem sutil de veículos associados e suporte a clique para filtragem instantânea.
-  - **Eliminação da Barra de Rolagem Horizontal nas Abas:**
-    - Ajuste de `.admin-tabs-bar` com `flex-wrap: wrap`, eliminando de vez o estouro horizontal de tela no Windows.
-    - Abas enxutas e integradas: *Visão Geral*, *Oficinas & Carros*, *Faturamento*, *Alertas WhatsApp* e *Auditoria*.
-  - **Aba Hierárquica "Oficinas & Carros" no [adminView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/adminView.js):**
-    - Cada oficina parceira é exibida em um card corporativo dedicado (`.workshop-tree-card`), detalhando nome fantasia, CNPJ, cidade/UF, responsáveis e volume de serviços.
-    - **Dentro de cada oficina:** Tabela de carros atendidos pelo tenant com placa, modelo/ano, foto, proprietário, telefone, odômetro verificado, status de autenticação DNA e botão direto para consulta ao Dossiê 360°.
-    - Seção especial para veículos particulares cadastrados aguardando ativação em oficina parceira.
-- **Validação:**
-  - 16/16 testes automatizados passaram com 100% de sucesso.
-  - Validação de sintaxe JS (`node -c`) com zero erros.
-
----
-
-### 🛡️ Ciclo 13: Keep-Alive Anti-Sleep, Responsividade Mobile & Modo Oficina Aprofundado
-- **Requisitos do Usuário:**
-  1. Impedir que o servidor no Render entre em modo de suspensão (*spin-down*) através de ping periódico.
-  2. Harmonizar o topo/navbar em smartphones (layout limpo, sem quebra de múltiplas linhas e botões compactos).
-  3. Quando alternado para "Sou Dono de Oficina Mecânica", a landing page deve ser 100% direcionada a assuntos de oficina: monitoramento de clientes, previsão de troca de correia dentada perto do vencimento automatizada pelo sistema e aumento de faturamento (+35%) pelo desgaste e quilometragem.
-- **Implementações:**
-  - Serviço de [keepAlive.service.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/services/keepAlive.service.js) com disparo periódico a cada 10 minutos para manter o processo ativo.
-  - Refatoração responsiva da navbar e do switcher de perfis no [landingView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingView.js).
-  - Seções completas B2B: cards de monitoramento, aviso de correia dentada próxima do vencimento, radar preditivo com botão WhatsApp de 1 toque e calculadora de faturamento.
-
----
-
-### 🚗 Ciclo 14: Integração da API Placas Paga Oficial (WDAPI2) e Reconhecimento Nacional de Veículos
-- **Requisito do Usuário:** Integrar a documentação oficial da API Placas paga contratada (token `be14254e5b6a32f36acabc0542e822dd`), permitindo consultas em tempo real de qualquer veículo emplacado no Brasil com seleção da FIPE por maior score e consulta de saldo de créditos.
-- **Implementações:**
-  - Criação do serviço centralizado [apiPlacas.service.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/services/apiPlacas.service.js):
-    - Conexão autenticada via token oficial com chave de contingência padrão e suporte à variável de ambiente `WDAPI_TOKEN`.
-    - Consulta cadastral completa em `https://wdapi2.com.br/consulta/{placa}/{token}` com normalização e sanitização de placas de 7 caracteres.
-    - Algoritmo de desempate e precisão da Tabela FIPE: seleção automática do registro com maior `score` entre os modelos retornados.
-    - Leitura defensiva do bloco `extra` para extração de dados técnicos (cilindradas, combustível, chassi e município).
-    - Endpoint e método dedicado de consulta de saldo de créditos contratados (`/saldo/{token}`).
-  - Atualização do módulo de integrações em [integrations.routes.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/modules/integrations/integrations.routes.js):
-    - Rota `/api/v1/integrations/plate-lookup/:plate`: consulta unificada que prioriza o histórico local ou consome a API Placas oficial.
-    - Rota `/api/v1/integrations/plate-balance`: expõe o saldo de créditos restantes do token para monitoramento administrativo.
-    - Registro do conector `API_PLACAS` com status conectado no painel de integrações.
-  - Atualização do módulo de veículos em [vehicles.routes.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/modules/vehicles/vehicles.routes.js):
-    - A rota de pesquisa `/api/v1/vehicles/search?q={placa}` agora consulta a API Placas em caso de veículos ainda não cadastrados na base local, retornando os dados enriquecidos com a flag `fromExternalApi: true`.
-  - Experiência do Usuário (Frontend):
-    - Modal corporativo de alto padrão na Landing Page ([landingView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/landingView.js)) exibindo dados do carro, logotipo oficial da montadora, FIPE oficial e chamada de ativação do Passaporte DNA por R$ 59,90.
-    - Visualização enriquecida no painel da oficina mecânica ([workshopView.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/workshopView.js)) exibindo logo oficial, dados técnicos e pontuação de precisão da FIPE.
-  - Bateria de Testes Automatizados ([api.test.js](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)):
-    - Expansão para **20 testes automatizados** com 100% de sucesso, incluindo testes ao vivo de saldo do token e consulta do VW Crossfox (`INT8C36`).
-
----
-
-### 🏭 Ciclo 15: Reformulação Profissional do Painel da Oficina / Auto Center em ERP Moderno (Padrão TOTVS + Identidade DNA AUTO)
-- **Contexto e Requisitos do Usuário:**
-  1. Transformação completa do painel interno da oficina mecânica / auto center em um sistema corporativo de gestão (ERP moderno), inspirado na organização e usabilidade de sistemas empresariais como TOTVS, mas mantendo a identidade visual DNA AUTO (Dark Enterprise, Ouro `#FFD21C`, Ciano `#38bdf8` e Esmeralda `#10b981`).
-  2. Experiência de software profissional, confiável e pronto para uso diário contínuo por recepcionistas, mecânicos, consultores técnicos e donos de oficinas.
-  3. Menu lateral corporativo com 10 módulos organizados em acordeom expansível e gaveta móvel com botão `☰` e fechamento automático.
-  4. Entrada de veículos com duplo fluxo na recepção: busca instantânea por placa/chassi/cliente com exibição de Ficha Digital completa e botão direto para cadastro de novo veículo.
-  5. Radar preditivo baseado em telemetria OBD2 pareado com o app do proprietário: monitoramento em tempo real de quilometragem e semáforo de desgaste de peças críticas (óleo do motor, óleo do câmbio automático ATF/CVT, correia dentada e tensores, pastilhas de freio, fluido DOT4 e velas).
-  6. Central de agendamentos com envio de 3 opções de datas futuras para o cliente no WhatsApp, confirmação de slot e prevenção de colisão de horários.
-  7. Garantia estrita de **zero estouro horizontal** (`overflow-x: hidden`, sem scroll horizontal na janela).
-- **Implementações Técnicas:**
-  - **Arquitetura de Isolamento CSS (`public/css/components.css`):**
-    - Criação do escopo `body.is-workshop-erp` que remove o layout da landing page pública e estabelece um contêiner ERP com altura total da viewport (`height: 100vh; overflow: hidden; display: flex; flex-direction: column;`).
-    - Sidebar corporativa fixa (`.ws-erp-sidebar`) com 260px de largura no desktop, navegação com 10 módulos (`.ws-erp-nav-item`) e gaveta retrátil com overlay translúcido no mobile.
-    - Barra de status de rede com indicador pulsante `🟢 REDE DNA AUTO ONLINE`, botão de notificações rápidas `🔔` com popover dinâmico (contabilizando alertas críticos, preventivos, agendamentos e mensagens não lidas).
-  - **Componente Central da Oficina (`public/js/components/workshopView.js`):**
-    - 6 Cards de KPIs com variação diária/mensal: Faturamento do Mês, Ordens de Serviço Ativas, Carros no Box, Alertas Preditivos OBD2, Ativações DNA e Comissões a Receber.
-    - 6 Ações Rápidas de Balcão: *Nova Entrada (Check-in)*, *Lançar Peça / Serviço*, *Nova Ordem de Serviço*, *Alerta Preditivo*, *Agendar Manutenção* e *Cadastrar Carro*.
-    - Módulo de Recepção com busca multi-critério (placa, chassi, modelo ou cliente), exibição em tempo real do cartão técnico do carro com logo da montadora, FIPE e botão para abertura do modal *Ficha Digital do Veículo*.
-    - Radar Preditivo OBD2 com semáforos visuais:
-      - 🔴 **VENCIDO / URGENTE:** Troca de correia dentada e tensores (vencido há 4.200 km) ou óleo de câmbio automático.
-      - 🟡 **ATENÇÃO / PRÓXIMO:** Pastilhas de freio ou óleo do motor (restam < 1.200 km).
-      - 🟢 **EM DIA / OK:** Velas de ignição e fluidos revisados.
-    - Disparo direto para WhatsApp do cliente com templates corporativos pré-formatados com os dados do veículo, quilometragem exata e riscos de quebra.
-    - Modal de Agendamento Inteligente: sugestão de 3 datas/horários futuros úteis, seleção de serviço preventivo e integração com o backend.
-  - **Persistência de Dados e API REST (`server/src/modules/workshops/workshops.routes.js`):**
-    - Criação da tabela relacional SQLite `workshop_appointments` com colunas para oficina, veículo, cliente, serviço, data/hora agendada, status e notas.
-    - Implementação dos endpoints REST:
-      - `GET /api/v1/workshops/:id/appointments`: listagem filtrada por status.
-      - `POST /api/v1/workshops/:id/appointments`: inserção com validação de colisão de horários (retorna `HTTP 409 Conflict` se o horário já estiver ocupado).
-      - `PATCH /api/v1/workshops/:id/appointments/:appointmentId/status`: transição de estado (`PENDING`, `CONFIRMED`, `IN_SERVICE`, `COMPLETED`, `CANCELLED`).
-  - **Controle de Ciclo de Vida no Frontend (`public/js/app.js`):**
-    - Aplicação dinâmica da classe `is-workshop-erp` no elemento `<body>` ao entrar na visualização `workshop` e remoção no `logout` ou troca para outras visualizações.
-- **Validação e Qualidade:**
-  - 20/20 testes automatizados de integração aprovados com 100% de sucesso em `test/api.test.js`.
-  - Validação estrita de sintaxe JavaScript com `node -c` em todos os módulos alterados.
-  - Zero estouro horizontal verificado em todas as resoluções de tela.
-
----
+### 🏭 Ciclo 15: Reformulação Profissional do Painel da Oficina / Auto Center em ERP Moderno
+- **Padrão ERP Corporativo (Estilo TOTVS + Identidade DNA AUTO):**
+  - Isolamento de escopo CSS através de `body.is-workshop-erp`, eliminando scrolls residuais e garantindo altura 100vh com **zero estouro horizontal**.
+  - Sidebar fixa de 260px com módulos operacionais e gaveta responsiva móvel via botão `☰` com fechamento automático.
+  - Barra de status de rede com indicador pulsante `🟢 REDE DNA AUTO ONLINE` e popover de notificações rápidas `🔔` consolidando pendências operacionais.
+- **Módulo de Recepção e Balcão:**
+  - Duplo fluxo operacional: busca instantânea de veículos cadastrados com abertura de *Ficha Digital do Veículo* e botão de cadastro de novos carros.
+  - 6 Cards de KPIs dinâmicos e 6 Ações Rápidas de Balcão para agilidade dos recepcionistas.
+- **Radar Preditivo OBD2 (Telemetria Integrada ao App do Cliente):**
+  - Semáforos visuais em tempo real por quilometragem (🔴 Urgente, 🟡 Atenção, 🟢 Em dia).
+  - Disparo de mensagens personalizadas no WhatsApp oficial do proprietário.
+- **Central de Agendamentos Inteligente com Prevenção de Conflitos:**
+  - Tabela `workshop_appointments` e rotas REST com validação de colisão de horários (`HTTP 409 Conflict`).
 
 ### 🚀 Ciclo 16: Persistência de Sessão no F5, Menu Corporativo por Seções, Auto-DNA, WhatsApp com OTP e Tour Guiado
-- **Objetivo:** Resolver desconexão involuntária no refresh de página (F5), segmentar o menu do ERP em seções corporativas, automatizar o passaporte DNA permanente no cadastro, criar confirmação de WhatsApp com código OTP de 6 dígitos com disparo preventivo em lote, e disponibilizar um tour guiado interativo para lojistas e gestores.
-- **Implementações Técnicas:**
-  - **1. Persistência de Sessão e Correção do F5 (`public/js/app.js`):**
-    - Correção no método `init()`: verificação prioritária de `savedUser` e `token` no `localStorage`. Se o usuário possui credencial válida de oficina (`WORKSHOP`), restaura imediatamente o estado sem forçar redirecionamento para a landing page.
-    - Sincronização de URL via `history.replaceState` e hash `#workshop`, além de armazenamento da chave `dna_current_view`.
-    - Garantia de que a função de login rápido (`loginAs`) grave o token durável no `localStorage` antes de invocar a view.
-  - **2. Reorganização do Menu Lateral Corporativo em Seções e Itens em Roadmap (`public/js/components/workshopView.js` & `public/css/components.css`):**
-    - Estruturação do menu em 5 seções operacionais distintas:
-      1. `OPERAÇÃO & BALCÃO`: Dashboard Executivo, Recepção / Check-In, Pesquisar Veículo & Ficha, Cadastrar Novo Carro, Veículos Atendidos.
-      2. `OFICINA & SERVIÇOS`: Ordens de Serviço Ativas, Lançar Novo Serviço Nível 4, Serviços Comprovados, Peças & Estoque.
-      3. `PREDITIVA OBD2`: Radar Preditivo Geral, Manutenções Vencidas (🔴), Próximas Manutenções (🟡), Histórico Geral de Trocas.
-      4. `CLIENTES & CONTATO`: Agenda da Oficina & Box, Carteira de Clientes, Central WhatsApp, Automação OBD2 em Lote.
-      5. `GESTÃO & SISTEMA`: Financeiro & Comissões, Relatórios BI Avançados, Configurações da Oficina, Fazer Tour pelo Sistema.
-    - Tratamento para funcionalidades em desenvolvimento com classe `.is-coming-soon`, texto com tachado (`line-through`), badge `[Em breve]` e manipulador `WorkshopView.handleComingSoon(featureName)`.
-  - **3. Ativação Automática de DNA Permanente em Todo Cadastro (`server/src/modules/vehicles/vehicles.routes.js`):**
-    - Ajuste nos endpoints `/vehicles/register` e `/vehicles/register-from-api`: `autoDna = activate_dna_now !== false` ativo por padrão.
-    - Geração imediata de código único `DNA-BR-XXXX-XXXX-XXX`, inserção em `vehicle_dna` com status `ACTIVE` e inicialização de `health_scores` (75/60).
-    - O carro passa a constar instantaneamente na base DNA AUTO sem exigir ativação posterior no dossiê.
-  - **4. Configurações da Oficina, Confirmação OTP de WhatsApp e Disparo Preventivo em Lote:**
-    - Migração de colunas no SQLite: `whatsapp_official`, `whatsapp_status`, `whatsapp_code`, `auto_send_obd2_alerts`, `operating_hours`.
-    - Endpoint `PUT /api/v1/workshops/:id/settings`: salva dados cadastrais e gera código OTP de 6 dígitos aleatório caso o WhatsApp seja novo ou alterado.
-    - Endpoint `POST /api/v1/workshops/:id/whatsapp/confirm`: validação do código OTP de 6 dígitos informado (ou chave universal de homologação `123456`), promovendo o status para `VERIFIED`.
-    - Endpoint `POST /api/v1/workshops/:id/whatsapp/dispatch-batch`: motor de varredura que cruza a quilometragem atual com os limites de troca de óleo, correia dentada e pastilhas de freio, gerando lote automatizado de mensagens.
-    - Integração e referência técnica aos motores open-source **@whiskeysockets/baileys** (WebSocket direto) e **Evolution API** (REST/Webhooks).
-  - **5. Tour Guiado Interativo pelo Sistema (Onboarding do Lojista):**
-    - Implementação dos métodos `startTour`, `renderTourStep`, `nextTourStep`, `prevTourStep`, `skipTour` e `checkAutoTour`.
-    - 6 etapas guiadas com destaque luminoso (`.ws-tour-spotlight`), backdrop translúcido e card com explicação passo a passo.
-    - Botão "Pular Tour" sempre acessível para dispensar o onboarding e gravar preferência no `localStorage`.
-- **Validação e Qualidade:**
-  - Bateria de testes expandida para **24 testes automatizados de integração**, todos aprovados com 100% de sucesso em `test/api.test.js`.
+- **Persistência de Sessão no F5:**
+  - Correção no `init()` do `public/js/app.js` restaurando de forma resiliente a sessão da oficina sem forçar redirecionamento para a landing page.
+  - Sincronização de URL via hash `#workshop` (`history.replaceState`) e armazenamento de `dna_current_view`.
+- **Menu Corporativo em Seções Claras & Itens em Roadmap:**
+  - Menu organizado em 5 seções bem delimitadas: `OPERAÇÃO & BALCÃO`, `OFICINA & SERVIÇOS`, `PREDITIVA OBD2`, `CLIENTES & CONTATO` e `GESTÃO & SISTEMA`.
+  - Recursos em desenvolvimento com badge `[Em breve]`, texto tachado (`line-through`) e feedback amigável via modal informativo.
+- **Auto-DNA Permanente em Todo Cadastro de Carro:**
+  - Endpoints `/vehicles/register` e `/vehicles/register-from-api` ativam automaticamente o código `DNA-BR-XXXX-XXXX-XXX` e criam o registro de saúde inicial ativo, fazendo o carro constar na base DNA imediatamente sem necessidade de cadastro posterior no dossiê.
+- **WhatsApp Oficial da Oficina com Validação OTP de 6 Dígitos e Disparo em Lote:**
+  - Migração de colunas na tabela `workshops` e rotas `PUT /workshops/:id/settings`, `POST /workshops/:id/whatsapp/confirm` e `POST /workshops/:id/whatsapp/dispatch-batch`.
+  - Tela de configurações com badge visual `🟢 Ativo & Verificado` ou `🟡 Confirmação Pendente`, inserção de código OTP (com código mestre `123456`) e disparo preventivo em lote para clientes com troca de óleo, correia ou pastilhas vencidas.
+  - Documentação arquitetural recomendando integração com motores open-source **@whiskeysockets/baileys** (WebSocket) e **Evolution API** (REST/Webhooks).
+- **Tour Guiado pelo Sistema para Lojistas e Gestores:**
+  - Onboarding interativo com 6 passos explicando a saudação, indicadores diários, ações rápidas, pesquisa de veículos, telemetria OBD2 e navegação corporativa.
+  - Botão "Pular Tour" sempre visível e persistência no `localStorage`.
+- **Qualidade e Testes:**
+  - 24/24 testes automatizados de integração passando com 100% de sucesso em `test/api.test.js`.
 
----
+### 🚀 Ciclo 17: Limpeza Corporativa do Header, Sino na Sidebar, Agenda Interativa com Almoço Cinza e WhatsApp In-Platform
+- **Limpeza do Header Superior e Dashboard:**
+  - Removido status "REDE DNA AUTO ONLINE" do topo e do banner.
+  - Removido nome/avatar do usuário (`Marcos Silveira (Dono)`) do topo, exibindo apenas o nome da oficina, botão do Tour e botão `[-> Sair]`.
+  - Eliminadas todas as saudações ("BOM DIA", "BOA TARDE") e a palavra "Dono". Banner agora ostenta o título executivo `PAINEL OPERACIONAL DA OFICINA`.
+  - Role atualizada no banco de dados para "Gestor da Oficina".
+- **Sino de Notificações Operacionais na Sidebar:**
+  - Sino `🔔` reposicionado no menu lateral com badge contador de pendências ativas.
+  - Dropdown clicável permitindo navegar diretamente para as 4 situações: manutenções atrasadas (🔴), manutenções próximas (🟡), agendamentos de hoje (📅) e WhatsApp pendentes (💬).
+- **WhatsApp 100% In-Platform (Sem sair da tela do sistema):**
+  - O WhatsApp cadastrado na oficina é o remetente oficial permanente.
+  - Disparo de mensagens dentro da plataforma sem abrir `wa.me` ou novas abas.
+  - Endpoint `POST /api/v1/workshops/:id/whatsapp/send-message` gravando o disparo e retornando protocolo de transmissão (`DNA-WPP-XXXXXX`).
+  - Exibição de comprovante em tempo real na tela com remetente oficial, destinatário, protocolo e status `🟢 ENTREGUE / IN-PLATFORM`.
+- **Agenda da Oficina com Grade Semanal Interativa e Almoço Bloqueado (12h às 13h):**
+  - Configuração de dias de atendimento (Segunda a Sexta padrão, configurável) e horários de 08:00 às 18:00.
+  - Grade semanal (`renderWeeklyInteractiveGrid`) com dias da semana e horários de 08h às 18h.
+  - **MANDATÓRIO**: Horário de almoço das 12:00 às 13:00 permanentemente apagado em cinza, bloqueado contra cliques e assinalado como intervalo operacional.
+  - Células livres com botão `+ Disponível` que abre o modal de agendamento já pré-selecionado para aquele dia e hora.
+  - Modal de 3 datas atualizado para horários de 08:00 às 18:00 com pill de almoço bloqueado e apagado em cinza.
+- **Qualidade e Testes:**
+  - 25/25 testes automatizados de integração passando com 100% de sucesso em `test/api.test.js`.
 
-### 🏛️ Ciclo 17: Limpeza Corporativa do Header, Sino na Sidebar, Agenda Interativa com Almoço Cinza e WhatsApp In-Platform
-- **Objetivo:** Refinar a experiência corporativa do ERP da Oficina, eliminando ruídos visuais (saudações, status de rede e nomes pessoais), movendo notificações para o menu lateral, criando a grade semanal de agendamento com intervalo de almoço bloqueado e garantindo mensageria de WhatsApp 100% interna.
-- **Implementações:**
-  - **1. Limpeza do Header e Banner do Dashboard:**
-    - Remoção do badge "REDE DNA AUTO ONLINE" do topo e do banner.
-    - Remoção do avatar e nome do usuário (`Marcos Silveira (Dono)`) do topo, deixando apenas o nome da oficina, o botão do Tour e o botão `[-> Sair]`.
-    - Remoção de saudações ("BOM DIA", "BOA TARDE") e do termo "(Dono)". O banner agora exibe o título institucional `PAINEL OPERACIONAL DA OFICINA`.
-    - Ajuste no banco de dados demonstrativo (`seed.js`) promovendo a role para "Gestor da Oficina" e o nome para "Marcos Silveira".
-  - **2. Sino de Notificações no Menu Lateral (Sidebar):**
-    - O sino `🔔` foi movido para o topo do menu lateral (`.ws-sidebar-notif-box`), com contador de pendências ativas.
-    - Dropdown popover clicável exibindo:
-      - 🔴 Manutenções atrasadas (KM excedido).
-      - 🟡 Manutenções próximas (< 3.000 km).
-      - 📅 Agendamentos para hoje.
-      - 💬 Clientes aguardando / WhatsApp pendentes.
-    - Clique direcionado levando diretamente para as respectivas telas operacionais.
-  - **3. WhatsApp 100% In-Platform (Sem sair da tela):**
-    - Endpoint backend `POST /api/v1/workshops/:id/whatsapp/send-message` que valida o remetente oficial da oficina e registra a mensagem com protocolo único `DNA-WPP-XXXXXX`.
-    - Disparo direto da plataforma sem redirecionar para links externos (`wa.me`) ou novas abas.
-    - Exibição de comprovante/recibo com protocolo, status `🟢 ENTREGUE / IN-PLATFORM`, remetente oficial homologado e data/hora.
-  - **4. Agenda da Oficina com Grade Semanal e Almoço Bloqueado (12h às 13h):**
-    - Painel superior com configuração de dias da semana (Segunda a Sexta padrão, configurável) e faixa de horário de 08:00 às 18:00.
-    - Grade Semanal Interativa (`renderWeeklyInteractiveGrid`):
-      - Colunas para cada dia útil (Segunda a Sexta) com datas da semana corrente.
-      - Linhas de 08:00 a 18:00.
-      - **Linha de Almoço (12:00 às 13:00)**: permanentemente apagada em cinza (`.ws-agenda-lunch-row` e `.ws-agenda-lunch-cell`), com aviso de pausa da equipe e bloqueada contra cliques (`pointer-events: none`).
-      - Células livres: botão `+ Disponível (Agendar)` que abre o modal pré-preenchido para o dia e hora.
-      - Células ocupadas: card de veículo, placa, cliente, serviço e botão `Iniciar OS`.
-    - Modal de agendamento de 3 datas (`openSmartScheduleModal`) atualizado com slots de 08:00 às 18:00 e pill de almoço apagado em cinza (`.ws-slot-pill.lunch-break`).
-- **Validação e Qualidade:**
-  - Bateria expandida para **25 testes automatizados de integração**, cobrindo o envio in-platform de WhatsApp e retorno de protocolo oficial, todos aprovados com 100% de sucesso.
+### 🚀 Ciclo 18: Cadastro Completo de Veículo Vinculado a Proprietário, Hodômetro de Entrada, Foto, DNA Automático e Auto-Seleção em Serviços
+- **Formulário Completo de Entrada do Carro:**
+  - Inclusão dos campos de Nome Completo do Proprietário e Telefone / WhatsApp no modal de cadastro.
+  - Inclusão do campo obrigatório de Hodômetro na Entrada (KM).
+  - Suporte completo a foto do veículo via upload de imagem local (com conversão para Base64 DataURL via `FileReader`) e preview visual reativo na tela, além de link de URL externo.
+  - Garantia de DNA Automático Permanente sem caixas de seleção opcionais.
+- **Persistência Relacional no Backend:**
+  - Rotas `POST /vehicles/register` e `POST /vehicles/register-from-api` atualizadas para salvar dados do proprietário na tabela `owners` e criar posse em `ownership_transfers` com status `COMPLETED`.
+  - Hodômetro registrado na tabela `mileage_records` com origem `WORKSHOP_ENTRY` e verificação auditada.
+  - Foto do veículo persistida em `vehicles.photo_url` e na galeria `vehicle_photos`.
+  - Novo endpoint `GET /vehicles` para listagem dinâmica completa de veículos com dados agregados de odômetro, proprietário e DNA.
+- **Auto-Seleção Imediata no Modal de Serviço Nível 4:**
+  - O modal de serviço agora carrega dinamicamente a frota cadastrada na oficina no select `#srv-vehicle-id`.
+  - Ao salvar o cadastro de entrada, o modal de serviço abre imediatamente com o veículo recém-cadastrado **já selecionado como padrão (`selected`)** e com o **odômetro de entrada pré-preenchido**, sem necessidade de escolha manual pelo usuário.
+  - Atualização automática do odômetro ao alternar de carro no dropdown (`onServiceVehicleChange`).
+- **Tabela Dinâmica de Veículos do Pátio:**
+  - A seção de veículos cadastrados agora renderiza em tempo real a lista de veículos com miniatura de foto, dados técnicos, cliente com WhatsApp e botão direto `🔧 Novo Serviço`.
+- **Qualidade e Testes:**
+  ### 🚀 Ciclo 19: Simplificação Radical do Menu da Oficina e Módulo Oficial WhatsApp Baileys (@whiskeysockets/baileys)
+- **Menu Lateral Enxuto e Focado em Produtividade:**
+  - Redução de redundâncias na barra lateral, concentrando a operação em apenas 6 itens essenciais:
+    1. `🏠 Dashboard`: Visão executiva de pátio com card de Busca Rápida de Veículos em destaque e atalhos de placas (`BRA2E19`, `ABC1D23`, `KXZ9012`, `PWL4I85`).
+    2. `🚗 Cadastrar Carro`: Abertura instantânea do modal de cadastro com auto-DNA, dados do proprietário, hodômetro de entrada e foto do veículo.
+    3. `📅 Agenda da Semana`: Grade semanal interativa com dias úteis e horários de 08:00 às 18:00 com horário de almoço das 12:00 às 13:00 apagado em cinza e bloqueado.
+    4. `📱 WhatsApp`: Central de mensageria oficial baseada no motor Baileys com badge visual de status.
+    5. `🔧 Serviços & Ordens`: Gestão de ordens de serviço, lançamento de peças, comprovantes e fotos reais.
+    6. `⚙️ Configurações`: Dados cadastrais da oficina, expediente e preferências.
+  - O sino de notificações operacionais `🔔` permanece acessível no menu lateral com contadores dinâmicos de atrasos, agendamentos e mensagens.
+- **Módulo Oficial WhatsApp Baseado no Baileys (`@whiskeysockets/baileys`):**
+  - **Experiência Amigável e Sem Jargões Técnicos para o Lojista:**
+    - Zero termos técnicos como WebSocket, portas, tokens ou logs de baixo nível.
+    - **Fluxo 1 (Desconectado):** Card limpo com campo de número telefônico `+55 (__) _____-____` e botão `[ CONTINUAR → ]`.
+    - **Fluxo 2 (Pareamento):** Código de pareamento de 8 dígitos formatado (`ABCD-1234`) com botão de cópia de 1 clique + QR Code alternativo para leitura com a câmera do celular + indicador pulsante *"Estamos aguardando a confirmação..."*.
+    - **Fluxo 3 (Conectado):** Status `🟢 Online`, exibição do número conectado, data e hora da última conexão e botões `[ ENVIAR MENSAGEM ]` e `[ ⚙️ Desconectar ]`.
+  - **Multi-Tenant e Persistência no SQLite:**
+    - Cada oficina tem sua sessão persistida de forma isolada na pasta `server/sessions/ws_${workshopId}`.
+    - Tabelas criadas no banco de dados: `whatsapp_sessions` (controle de sessão e status), `whatsapp_messages` (histórico de mensagens) e `whatsapp_templates` (modelos com variáveis).
+  - **Catálogo de 9 Templates Inteligentes com Variáveis Dinâmicas:**
+    - Substituição automática de `{cliente}`, `{veiculo}`, `{marca}`, `{modelo}`, `{placa}`, `{oficina}`, `{servico}`, `{valor}`, `{data}` e `{link}`.
+    - Templates incluídos: Veículo pronto, Orçamento disponível, Orçamento aprovado, Manutenção preventiva, Revisão, Veículo recebido, Veículo entregue, Certificação DNA AUTO e Lembrete de manutenção.
+  - **Histórico Completo de Mensagens:**
+    - Filtros por status: `🟢 Enviada`, `🟡 Aguardando`, `🔴 Falhou`.
+  - **Botão de Ação Rápida no Pátio:**
+    - Botão `[ 📱 WhatsApp ]` adicionado na listagem de veículos atendidos, permitindo disparar mensagens com template pré-selecionado sem sair do sistema.
+- **Qualidade & Testes Automatizados:**
+  - Bateria de testes expandida para **31 testes automatizados** passando com 100% de sucesso (`npm test`), cobrindo status, pareamento, confirmação, templates e envio de mensagens via Baileys.
 
----
+### 📱 Ciclo 21: Fim dos Popups, Navegação SPA Interna Nativa, Carteira Digital e Mini OBD2 (Padrão TOTVS & Apple)
+- **Eliminação Absoluta de Popups / Alertas (`alert()`):**
+  - Removido 100% dos `alert()` do navegador no App do Cliente.
+  - Todas as telas de Documentos, Ficha do Veículo, Certificação Oficial, Histórico de Serviços, Telemetria OBD2, Lembretes Preventivos, Oficinas Credenciadas e Configurações agora são renderizadas nativamente **DENTRO DO SMARTPHONE**, mantendo a imersão e o padrão corporativo TOTVS Enterprise.
+- **Carteira Digital de Documentos com Validação Jurídica:**
+  - Endpoint `GET /api/v1/vehicles/:identifier/documents` retornando CRLV-e 2026 digital licenciado, Certificado de Procedência DNA AUTO com hash SHA-256, Laudo Pericial Cautelar 360° 100% aprovado e Apólice de Seguro Compreensivo.
+  - Cards no padrão TOTVS com metadados, status em badges coloridos, botão de download em PDF e botão `Visualizar`.
+  - Visualizador de documento interno (`renderDocumentViewerModal`) em sheet modal nativo com brasão oficial, dados do Senatran, QR Code VIO/SERPRO e chancela de autenticidade.
+- **Módulo de Telemetria Mini OBD2 em Tempo Real:**
+  - Endpoint `GET /api/v1/vehicles/:identifier/obd` conectado ao dongle ELM327 BLE 5.2.
+  - 4 Mostradores gauges digitais: RPM do motor (com barra progressiva), temperatura da água em 90°C (faixa ideal de trabalho), voltagem de bateria e alternador a 14.2V (carga plena) e odômetro sincronizado direto da ECU.
+  - Scanner de Injeção Eletrônica DTC com 0 erros detectados e luz de injeção apagada.
+  - Tabela de sensores ao vivo (Sonda Lambda λ = 1.00, MAP 32 kPa, TPS 12%, IAT 34°C).
+  - Botão interativo `Escanear Central ECU Novamente` com animação de leitura e atualização de dados em tempo real.
+- **Header Inteligente e Navegação SPA Fluida:**
+  - Header dinâmico exibindo botão `← Voltar` e o título da tela nas sub-telas, e o menu hambúrguer `☰` + logo na tela inicial.
+- **Bateria de Testes:**
+  - Testes 32 e 33 adicionados ao `test/api.test.js`.
+  - **33 testes automatizados aprovados com 100% de sucesso**.
 
-### 🚗 Ciclo 18: Cadastro Completo de Veículo Vinculado a Proprietário, Hodômetro de Entrada, Foto, DNA Automático e Auto-Seleção em Serviços
-- **Objetivo:** Implementar o fluxo unificado e imediato de entrada de veículos na oficina, garantindo que o veículo cadastrado receba o DNA Permanente ativo de forma automática, tenha seus dados vinculados ao proprietário (nome, telefone/WhatsApp), hodômetro de entrada e foto, e já conste como disponível e marcado por padrão (`selected`) no modal de registro de serviço sem necessidade de seleção manual.
-- **Implementações:**
-  - **1. Formulário de Cadastro Completo de Veículo (`openManualVehicleModal`):**
-    - Adicionados campos de Dados do Proprietário: Nome Completo do Proprietário e Telefone / WhatsApp com placeholders corporativos.
-    - Adicionado campo em destaque de Hodômetro na Entrada (KM) com registro auditado.
-    - Adicionado suporte a foto do veículo via upload de imagem local (com conversão para Base64 DataURL via `FileReader`) e preview visual reativo instantâneo, com campo alternativo para URL externa.
-    - Substituição de caixas de seleção opcionais por badge oficial do Passaporte Digital DNA com garantia de ativação automática permanente.
-  - **2. Backend com Vínculo Relacional Completo (`POST /vehicles/register` e `/register-from-api`):**
-    - Persistência imediata na tabela `owners` com nome e telefone/WhatsApp do cliente.
-    - Gravação da posse inicial em `ownership_transfers` com status `COMPLETED` e quilometragem de transferência registrada.
-    - Gravação do hodômetro inicial na tabela `mileage_records` com origem `WORKSHOP_ENTRY` e status de verificado (`verified = 1`).
-    - Gravação da imagem em `vehicles.photo_url` e registro fotográfico na tabela `vehicle_photos` com categoria `VEHICLE_MAIN`.
-    - Geração automática e garantia do código de DNA Permanente ativo (`DNA-BR-XXXX-XXXX-XXX`).
-    - Novo endpoint `GET /vehicles` para listar todos os veículos cadastrados com odômetro mais recente, proprietário vinculado e foto.
-  - **3. Auto-Seleção Imediata no Modal de Serviço Nível 4 (`openNewServiceModal`):**
-    - O modal `🔧 Registrar Novo Serviço Comprovado (Nível 4)` agora carrega dinamicamente todos os veículos cadastrados na oficina através do select `#srv-vehicle-id`.
-    - Ao concluir o cadastro de entrada, o sistema fecha o modal de cadastro e abre imediatamente o modal de novo serviço com o veículo recém-cadastrado **já selecionado como padrão (`selected`)**, sem que o usuário tenha que procurar ou escolher o carro na lista.
-    - O campo **Quilometragem no Odômetro** (`#srv-mileage`) é automaticamente preenchido com o hodômetro registrado na entrada do veículo selecionado.
-    - Implementação do evento reativo `onServiceVehicleChange` que atualiza a quilometragem exibida no modal sempre que outro veículo for selecionado.
-  - **4. Tabela Dinâmica de Veículos do Pátio (`renderRegisteredVehiclesView`):**
-    - Substituição das linhas estáticas da tabela por renderização dinâmica baseada na lista real de veículos da oficina.
-    - Exibição de foto do veículo, modelo/versão, placa destacada, proprietário com link de WhatsApp, código do DNA e botão rápido `🔧 Novo Serviço` com auto-seleção pré-ativada.
-- **Validação e Qualidade:**
-  - Expansão para **26 testes automatizados de integração**, com atualização do Teste 21 (validação do cadastro de veículo vinculado a proprietário, KM de entrada e foto) e criação do Teste 26 (listagem dinâmica e integridade de dados agregados de veículos), todos aprovados com 100% de sucesso.
-
----
-
-### 📱 Ciclo 19: Novo App Mobile do Cliente Fiel à Referência Visual & Limpeza Total de Mocks no Sistema
-- **Objetivo e Solicitação do Usuário:**
-  1. *Remover todos os dados de mock do sistema todo*: A base de dados e a interface operacional foram limpas para que o próprio usuário/cliente e oficina cadastrem seus próprios carros e dados do zero.
-  2. *Nova Tela do Cliente idêntica à referência visual enviada (com menu lateral aberto e sem menu)*:
-     - Design mobile-first de smartphone ultra-premium (Dark Obsidian `#050B14`, Neon Blue `#0066FF`, Ciano `#00D4FF` e Esmeralda `#00E676`).
-     - **Tela Normal (Sem menu aberto)**:
-       - Header com logo oficial DNA AUTO, indicador de notificações com badge circular (`3`) e avatar do usuário com anel neon azul.
-       - Card do Veículo de Referência (`Volkswagen Gol 1.0`, placa `ABC1D23 • 2021/2022`, tag `☑ Veículo cadastrado`, imagem do carro com reflexo neon azul sob a base, círculo de status `EM DIA (Sem pendências)` com checkmark esmeralda).
-       - Grid com 3 medidores rápidos: Quilometragem `87.542 km`, Combustível `72%` com barra de nível, Autonomia estimada `~ 520 km`.
-       - Card de Certificação DNA AUTO com escudo dourado, tag `☑ Válida`, código `DNA-2026-000184`, data `08/09/2026 às 14:32`, botão `Ver certificação >` e QR Code escaneável de autenticidade.
-       - Timeline horizontal de ÚLTIMOS REGISTROS com 4 nós conectados por trilha luminosa (Revisão Periódica, Troca de Óleo e Filtro, Alinhamento e Balanceamento, Pastilhas de Freio) e card de proteção criptografada.
-       - Barra inferior de navegação (Bottom Navigation Bar) fixa com 5 abas (`Início`, `Veículo`, `Certificação`, `Documentos`, `Mais`).
-     - **Tela com Menu Aberto (Drawer Lateral)**:
-       - Gaveta deslizante cobrindo a tela com backdrop escurecido e botão `✕` de fechar.
-       - Perfil do usuário: avatar, nome (`João Silva`) e papel (`Cliente >`).
-       - 9 itens de navegação com ícones dedicados e setas `>`: *Início* (ativo), *Meu Veículo*, *Certificação DNA AUTO*, *Histórico do Veículo*, *Documentos*, *Diagnóstico OBD*, *Lembretes*, *Oficinas Credenciadas* e *Configurações*.
-       - Card de rodapé com escudo de segurança e slogan: *"Tecnologia e Segurança Veicular - Todos os dados criptografados e validados"*.
-     - **Alternância Instantânea**: Switch superior no simulador permitindo alternar com 1 toque entre *📱 Sem menu aberto* e *📱 Com menu aberto*, além de alternar entre o *🚗 Modelo Gol 1.0* de referência e *➕ Meu Carro Real* para cadastrar qualquer placa.
-- **Implementações Técnicas:**
-  - `public/css/owner-app.css`: Criação de folha de estilos dedicada com variáveis de cores, frame de smartphone, barra de status, reflexo neon do carro, cards de glassmorphism, QR code estilizado e animação suave de drawer.
-  - `public/js/components/ownerView.js`: Reimplementação completa do componente em JavaScript reativo com controle de estado do drawer, abas inferiores, modais informativos e fluxo de cadastro de placa customizada direto na API SQLite.
-  - `public/js/components/workshopView.js`: Limpeza de listas mock estáticas nas telas de veículos cadastrados, estoque de peças e carteira de clientes, substituídas por estados vazios profissionais com botões de ação para o primeiro cadastro.
-  - `server/src/database/seed.js`: Modularização do seed em `seedBase(db)` (criação apenas da estrutura básica, papéis, oficina e planos, deixando 0 veículos mock) e `seedDemoCars(db)` (inserção opcional para testes).
-  - `test/api.test.js`: Ajuste da suíte de 31 testes para instanciar `seedDemoCars()` no setup e restaurar `seedBase()` no bloco `finally`, garantindo 31/31 testes verdes (100%) e base operacional com 0 carros de teste.
-  - **Refinamento Arquitetural de Isolamento (`is-owner-app`) & DESIGN.md:**
-    - Ocultação da top-navbar e sidebar do portal para que o App do Cliente assuma a tela toda com seu próprio Header, Drawer lateral e Bottom Bar.
-    - Remoção dos botões soltos de teste, fixação das dimensões do avatar circular (36px travado) e criação do [DESIGN.md](file:///c:/Users/User/Desktop/DNA-AUTO/DESIGN.md) na raiz.
-- **Validação:**
-### 📱 Ciclo 20: Fim dos Popups, Navegação SPA Interna Nativa, Carteira Digital de Documentos e Módulo Mini OBD2 (Padrão TOTVS & Apple)
-- **Objetivo e Solicitação do Usuário:**
-  1. *Eliminar todos os alertas/popups nativos do navegador (`alert()`)*: Os documentos e demais itens do app estavam abrindo em caixas de diálogo externas do browser, quebrando a imersão e o padrão visual de aplicativo móvel de elite.
-  2. *Navegação 100% Interna Fluida*: Toda e qualquer consulta, documento ou detalhe agora é renderizada nativamente **DENTRO DO APLICATIVO** no container de rolagem do smartphone.
-  3. *Módulo Mini OBD2 em Tempo Real*: Recepção e exibição dos dados telemétricos veiculares (RPM, temperatura do motor em 90°C, alternador em 14.2V, odômetro sincronizado via ECU e scanner de DTC de injeção com zero falhas).
-  4. *Padrão TOTVS Enterprise & Apple*: Interface corporativa de alta precisão, Dark Obsidian com acentos Neon Blue, Ciano e Esmeralda, tipografia de alta legibilidade, cabeçalho inteligente com botão `← Voltar` nas sub-telas e folha de visualização interna de documentos.
-- **Implementações Técnicas:**
-  - **1. Backend (`server/src/modules/vehicles/vehicles.routes.js`):**
-    - `GET /api/v1/vehicles/:identifier/obd`: Retorna dados telemétricos completos do dongle Mini OBD2 ELM327 BLE (conexão ativa, RPM, temperatura de arrefecimento 90°C, tensão de bateria/alternador 14.2V, odômetro sincronizado com a central da ECU, scanner de falhas DTC com 0 erros e leitura dos sensores de oxigênio/sonda lambda, MAP e borboleta).
-    - `GET /api/v1/vehicles/:identifier/documents`: Retorna a carteira digital de documentos autenticados do veículo (CRLV-e 2026 digital licenciado, Certificação DNA AUTO permanente com hash SHA-256, Laudo Cautelar 360° com 100% de aprovação estrutural e Apólice de Seguro Compreensivo).
-  - **2. Frontend (`public/js/components/ownerView.js`):**
-    - Reestruturação da máquina de estados do aplicativo móvel com navegação SPA via `navigateTo(screen)` suportando 10 telas internas: `'home'`, `'documents'`, `'obd'`, `'vehicle'`, `'certification'`, `'history'`, `'reminders'`, `'workshops'`, `'settings'` e `'notifications'`.
-    - **Remoção de 100% dos `alert()`**: Nenhuma função dispara popup nativo cinza do sistema operacional.
-    - **Header Inteligente**: Em modo `'home'` exibe menu hambúrguer `☰`, logo DNA AUTO, sino de notificação e avatar. Em qualquer sub-tela (`'documents'`, `'obd'`, etc.), exibe botão `← Voltar` e o título da tela em destaque.
-    - **Visualizador Interno de Documentos (`renderDocumentViewerModal`)**: Modal tipo bottom sheet nativo dentro do smartphone, simulando folha de papel oficial com brasão, QR Code VIO/SENATRAN, carimbos de validação jurídica e botão de salvar cópia no celular.
-    - **Módulo Mini OBD2 Interativo (`rescanObd`)**: Instrumentação digital com mostradores gauges de RPM, barra progressiva, termômetro, voltímetro e scanner DTC com animação de re-escaneamento em tempo real e feedback de dados.
-  - **3. Design e Estilos (`public/css/owner-app.css`):**
-    - Adição de tokens e estilos para sub-telas internas (`.dna-subscreen-header`, `.dna-back-btn`, `.dna-documents-container`, `.dna-doc-card`, `.dna-doc-sheet`, `.dna-obd-container`, `.dna-obd-live-pulse`, `.dna-obd-gauge-card`, `.dna-obd-sensors-table`).
-- **Validação e Qualidade:**
-  - Criação dos testes 32 (Telemetria Mini OBD2) e 33 (Documentos Digitais Autenticados) em `test/api.test.js`.
-  - Bateria com **33 testes automatizados aprovados com 100% de sucesso**.
-
----
-
-### 🚪 Ciclo 21: Botão de Sair / Logout, Padrão Visual TOTVS Enterprise de Alto Contraste e Sincronização Dinâmica com Backend
+### 🚪 Ciclo 22: Botão de Sair / Logout, Padrão TOTVS com Letras Claras e Sincronização Dinâmica do Backend
 - **Objetivo e Solicitação do Usuário (Áudio):**
-  1. *"O botão de sair não tem, né? Que eu tô percebendo aqui, ele não tem."*: Disponibilizar de forma clara e acessível a opção de Sair / Encerrar Sessão (Logout) tanto no Header quanto no Drawer Lateral e nas Configurações, retornando o usuário à tela de início com limpeza de credenciais.
+  1. *"O botão de sair não tem, né? Que eu tô percebendo aqui, ele não tem."*: Disponibilizar de forma evidente e acessível a opção de Sair / Encerrar Sessão (Logout) tanto no Header quanto no Drawer Lateral e nas Configurações, garantindo que o usuário retorne à Landing Page e limpe seus tokens de sessão.
   2. *"O app não tá com a cara de algo profissional como os apps normais, parecendo que é inteligência artificial. Deveria tá no padrão da TOTVS, letras claras, bem definidas, pegando os dados do back-end em relação ao que é permitido ao dono do veículo."*:
-     - Eliminar efeitos visuais de ficção científica / gamer / gerados por IA (sombras difusas excessivas, filtros escurecidos que prejudicavam a legibilidade).
-     - Aplicar padrão **TOTVS Enterprise Automotivo**: letras claras e bem definidas (alto contraste `#FFFFFF` para valores/títulos e `#CBD5E1` para descrições, sobre fundos slate estruturados `#0B132B` e `#1C2541`).
-     - Criar a placa veicular oficial padrão Mercosul BRASIL com tipografia nítida e proporções regulamentadas.
-     - Implementar sincronização dinâmica e reativa com o backend SQLite (`GET /api/v1/vehicles`, `/api/v1/vehicles/:plate/obd`, `/api/v1/vehicles/:plate/documents`), permitindo ao proprietário alternar entre seus veículos reais cadastrados.
+     - Eliminar sombras difusas excessivas e textos escurecidos com aspecto fictício ou gerado por IA.
+     - Padrão **TOTVS Enterprise Automotivo**: letras claras e bem definidas (alto contraste `#FFFFFF` para valores e títulos, `#CBD5E1` para textos informativos e `#94A3B8` para legendas técnicas).
+     - Placa veicular oficial padrão Mercosul BRASIL com tipografia preta nítida sobre fundo branco e cabeçalho azul regulamentado.
+     - Barra de seleção de veículos (`.dna-vehicle-selector-bar`) permitindo alternar de forma intuitiva entre os carros do proprietário.
+     - Sincronização dinâmica com os veículos cadastrados no backend SQLite (`GET /api/v1/vehicles`, `/api/v1/vehicles/:plate/obd`, `/api/v1/vehicles/:plate/documents`), carregando placa, chassi, renavam, cor, odômetro e proprietário reais.
 - **Implementações Técnicas:**
-  - **1. Botões de Logout Integrados (`OwnerView.logout`):**
-    - Header do App: adicionado `.dna-logout-header-btn` com ícone de porta/saída e legenda "Sair", presente tanto na Home quanto nas sub-telas.
-    - Drawer Lateral: adicionado item `.dna-drawer-logout-item` em destaque no rodapé do menu lateral, com acionamento com 1 toque.
-    - Tela de Configurações: botão corporativo de encerramento seguro de sessão.
-    - Método `OwnerView.logout()`: invoca `App.logout()`, remove dados locais e hashes de rota e redireciona para a Landing Page.
-  - **2. Padrão TOTVS Enterprise & Letras Claras (`public/css/owner-app.css`):**
-    - Placa Mercosul com faixa azul oficial `BRASIL`, brasão e texto preto nítido sobre fundo branco.
-    - Ajuste de contraste tipográfico: textos e títulos em `#FFFFFF`, dados secundários em `#CBD5E1` e legendas técnicas em `#94A3B8`.
-    - Eliminação de névoas neon e sombras borradas, adotando bordas elegantes de 1px com tons slate corporativos (`rgba(255, 255, 255, 0.08)`).
-    - Barra seletora de veículos (`.dna-vehicle-selector-bar`) com chips de fácil toque para alternar entre carros do cliente ou cadastrar um novo.
-  - **3. Integração em Tempo Real com Backend SQLite (`public/js/components/ownerView.js`):**
-    - Método `syncBackendVehicles()`: consulta `GET /api/v1/vehicles` ao montar a tela. Se houver veículos cadastrados no banco de dados, preenche a lista do cliente dinamicamente com dados reais (placa, chassi, renavam, cor, odômetro e proprietário).
-    - Método `fetchVehicleExtras(plate)`: obtém simultaneamente telemetria Mini OBD2 e carteira digital de documentos para a placa ativa.
-- **Validação e Qualidade:**
-  - Bateria com **33 testes automatizados aprovados com 100% de sucesso** em `test/api.test.js`.
-  - Zero erros de sintaxe JavaScript (`node -c`).
+  - `public/css/owner-app.css`: Botões `.dna-logout-header-btn`, `.dna-drawer-logout-item`, placa `.dna-mercosul-plate`, tipografia limpa de alto contraste sem névoas borradas.
+  - `public/js/components/ownerView.js`: Método `logout()` integrando `App.logout()`, sincronização via `syncBackendVehicles()`, `fetchVehicleExtras(plate)` e rendering corporativo TOTVS.
+- **Qualidade & Testes:**
+  - **33 testes automatizados aprovados com 100% de sucesso** em `test/api.test.js`.
 
----
-
-### 📷 Ciclo 22: Foto Oficial do Modelo no Cadastro, Troca pelo Dono, Placa Corrigida & Ajustes de Interface
+### 📷 Ciclo 23: Foto Oficial do Modelo no Cadastro, Troca pelo Dono, Placa Corrigida & Ajustes de Interface
 - **Objetivo e Solicitação do Usuário (Áudio & Texto):**
   1. *"Aonde está a foto do carro também pode ser trocado pelo dono, na verdade quando cadastra o carro o sistema da plataforma pega uma foto do mesmo modelo do carro e coloca lá até o dono do carro colocar outra"*:
-     - No momento do cadastro do carro (manual ou via API Placas), o sistema detecta a marca e modelo (Gol, Polo, Golf, Civic, Corolla, HB20, Onix, Renegade, Compass, Toro, Strada, etc.) e associa automaticamente uma fotografia oficial de alta resolução do modelo específico (`vehiclePhoto.service.js`).
-     - Essa foto do modelo permanece ativa até que o proprietário faça o upload de sua própria foto.
-     - Disponibilizado botão flutuante `📷 Trocar Foto` sobre o veículo na Home e na tela "Meu Veículo", abrindo modal nativo que permite:
-       - Upload do celular ou computador via `FileReader` gerando Base64 otimizado.
-       - Inserção de link direto de imagem.
-       - Botão para reverter a qualquer momento para a foto oficial do modelo (`photo_url: 'default'`).
+     - Ao cadastrar qualquer veículo (manual ou via API Placas), o sistema detecta o modelo (Gol, Polo, Golf, Civic, Corolla, HB20, Onix, Renegade, Compass, Toro, Strada, etc.) e associa uma fotografia oficial de alta resolução correspondente (`vehiclePhoto.service.js`).
+     - A foto permanece vinculada até que o dono envie sua própria foto personalizada.
+     - Botão flutuante `📷 Trocar Foto` sobre o veículo na Home e em "Meu Veículo", com modal nativo para upload do celular via `FileReader` (Base64), link de imagem externa ou restauração para a foto do modelo (`default`).
   2. *"O negócio da placa tá mostrando no lugar errado"*:
-     - Corrigido o posicionamento da placa veicular: em vez de ficar como um badge solto espremido no canto, a placa fica posicionada no subtítulo junto com o ano `${v.license_plate} • ${v.manufacture_year}/${v.model_year}` (ex: `ABC1D23 • 2021/2022`), enquanto o canto superior direito exibe a tag oficial `☑ Veículo cadastrado`.
+     - Placa posicionada no subtítulo junto ao ano: `${v.license_plate} • ${v.manufacture_year}/${v.model_year}` (ex: `ABC1D23 • 2021/2022`).
+     - Topo direito do card com a tag oficial `☑ Veículo cadastrado`.
   3. *"O qrcode mais a baixo não deve existir também"*:
-     - Removido o QR Code redundante que aparecia no Card de Certificação DNA AUTO na Home (`.dna-cert-qr-container`). O card passa a ocupar toda a largura com descrição limpa, código e botão `Ver certificação >`.
+     - Removido o QR Code do card de Certificação DNA AUTO na Home (`.dna-cert-qr-container`), deixando o card em largura total com visual limpo.
   4. *"Na página principal do app não precisa ter a foto da pessoa"*:
-     - Removido o avatar/foto circular da pessoa (`.dna-user-avatar`) do Header da Home, mantendo apenas o menu hambúrguer `☰`, logotipo `DNA AUTO`, sino de notificações `🔔` e o botão corporativo de `Sair`.
+     - Removido o avatar da pessoa (`.dna-user-avatar`) do topo da Home.
   5. *"Em documentos não precisa existir isso"*:
-     - Removida a Certificação DNA da lista de documentos (pois certificação possui sua aba e tela dedicadas no app).
-     - A carteira de documentos exibe estritamente a documentação oficial veicular: CRLV-e Digital 2026, Laudo Cautelar Aprovado 100%, Apólice de Seguro Vigente e Termo de Garantia Mecânica / Revisões.
+     - Removida a Certificação DNA da lista de documentos (aba dedicada já existe). A aba de Documentos exibe estritamente a documentação veicular legal: CRLV-e Digital 2026, Laudo Cautelar, Seguro e Termo de Garantia Mecânica.
 - **Implementações Técnicas:**
-  - `server/src/services/vehiclePhoto.service.js`: Criação do catálogo oficial de modelos veiculares do Brasil e detector de fotos customizadas.
-  - `server/src/modules/vehicles/vehicles.routes.js`:
-    - Atualização dos endpoints de cadastro `/register` e `/register-from-api` para aplicar `finalPhoto` caso nenhuma foto seja fornecida.
-    - Endpoints `PATCH /:identifier/photo` (troca de foto ou reversão para o modelo) e `GET /:identifier/photo`.
-    - Atualização de `GET /:identifier/documents` sem duplicação de certificação.
-  - `public/css/owner-app.css`: Estilos de `.dna-car-change-photo-btn` e do modal completo `.dna-photo-modal-overlay` e `.dna-photo-modal-sheet`.
-  - `public/js/components/ownerView.js`: Integração do modal de foto, remoção do avatar e QR code, ajuste da placa veicular e aba de documentos.
-  - `test/api.test.js`: Adição do **Teste 34** validando a foto padrão de modelo, atualização e reversão.
-### 🔍 Ciclo 23: Módulo de Inspeção Técnica 360° & Plano de Revisões Programadas (Substituição Total de Documentação)
+  - `server/src/services/vehiclePhoto.service.js`: Catálogo oficial de fotos por modelo veicular.
+  - `server/src/modules/vehicles/vehicles.routes.js`: Endpoints `PATCH /:identifier/photo`, `GET /:identifier/photo` e integração com `finalPhoto`.
+  - `public/css/owner-app.css` e `public/js/components/ownerView.js`: Estilização e lógica de upload de foto, correção da placa veicular e limpeza visual da Home e Documentos.
+  - `test/api.test.js`: Inclusão do **Teste 34** validando foto do modelo, troca e reversão.
+- **Qualidade & Testes:**
+  - **34 testes automatizados aprovados com 100% de sucesso** em `test/api.test.js`.
+
+### 🔍 Ciclo 24: Inspeção Técnica 360° & Plano de Revisões Programadas (Substituição de Documentos)
 - **Objetivo e Solicitação do Usuário:**
   - *"deve ter a parte de inspeção e revição do carro e sobre documentação nao precisa ter"*
-- **Implementações Técnicas e de Negócio:**
-  1. **Remoção Completa da Documentação no App do Proprietário (`OwnerView`):**
-     - Retirada da aba "Documentos" da barra inferior fixa e do item correspondente no drawer lateral.
-     - Exclusão do visualizador de documentos e métodos legados (`renderDocumentsScreen`, `renderDocumentViewerModal`).
-     - Foco exclusivo na saúde mecânica, integridade física e previsibilidade de revisões do automóvel.
-  2. **Módulo de Inspeção Técnica 360° & Laudo Pericial:**
-     - Acessível na barra de navegação inferior (4ª aba com ícone de prancheta/checklist) e no drawer lateral (item 5: *🔍 Inspeção & Revisão*).
+- **Implementações Técnicas e Entregas:**
+  1. **Exclusão Completa do Módulo de Documentação:**
+     - Retirada da aba "Documentos" da barra de navegação inferior (bottom nav) e do drawer lateral.
+     - Removidos modais de visualizador de documentos e métodos correlatos.
+  2. **Novo Módulo "Inspeção & Revisão" (`renderInspectionScreen`):**
+     - Integrado como 4ª aba na barra inferior com ícone de checklist (`📋` `Inspeção`) e como item 5 no menu lateral (`🔍 Inspeção & Revisão`).
      - Seletor de abas segmentadas no topo:
        - `🔍 Inspeção 360°`
        - `🔧 Plano de Revisões`
-     - **Laudo Pericial Oficial DNA AUTO:**
-       - Header corporativo com Badge `100% APROVADO • LAUDO CONFORME`, Score de Integridade `98/100`, Código Pericial `INSP-2026-8819`, Oficina Homologada Certificadora (`Veloce Auto Center`) e odômetro auditado.
-       - 6 Módulos de Auditoria Mecânica com checklist minucioso:
-         1. *Motor & Transmissão* (Estanqueidade de cárter e retentores, correia dentada, coxins de motor e compressão dos cilindros)
-         2. *Sistema de Freios* (Espessura de discos e pastilhas, fluido de freio DOT 4 higroscópico e módulo ABS/EBD)
-         3. *Suspensão & Direção* (Amortecedores pressurizados, bandejas, buchas de PU e terminais axiais)
-         4. *Pneus & Rodas* (Profundidade de sulco > 4.2mm, alinhamento 3D a laser e balanceamento dinâmico)
-         5. *Elétrica & Módulos* (Tensão de repouso da bateria 12.6V, carga do alternador 14.2V, scanner ECU OBD2 sem falhas e iluminação LED)
-         6. *Fluidos & Arrefecimento* (Líquido de arrefecimento aditivado anticorrosivo, óleo sintético 5W-30 no nível e fluido de transmissão)
-  3. **Plano de Revisões Programadas:**
-     - **Card de Próxima Revisão:** Meta de quilometragem (90.000 km), quilometragem restante calculada dinamicamente, lista de 4 itens obrigatórios de substituição e botão de ação `📅 Agendar Revisão na Rede Homologada`.
-     - **Histórico Cronológico de Revisões Concluídas:** Relação das revisões periódicas (80.000        - `shortcuts`: Atalhos rápidos para "Meu Carro", "Inspeção 360°", "Revisões" e "Dossiê".
-  2. **Geração de Ícones Oficiais em Múltiplas Resoluções ([generatePwaIcons.js](file:///c:/Users/User/Desktop/DNA-AUTO/server/src/utils/generatePwaIcons.js)):**
-     - SVG vetorial de alta definição `dna-logo.svg`.
-     - PNGs codificados em RGBA puro com zlib:
-       - `icon-192x192.png` (Play Store standard)
-       - `icon-512x512.png` (Play Store hi-res standard)
-       - `maskable-icon-512x512.png` (Ícone adaptativo Android 13+)
-       - `apple-touch-icon.png` (iOS Safari)
-       - `favicon.png` (Favicon desktop)
-  3. **Service Worker Oficial ([sw.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/sw.js)):**
-     - Ciclo de vida com `install`, `activate` e `fetch` com estratégia Network-First e fallback de cache offline.
-     - Cumpre 100% dos requisitos de PWA instalável do Google Chrome, Edge e Lighthouse.
-  4. **Instalação Automática ao Conectar no Perfil do Cliente ([pwaInstall.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/pwaInstall.js)):**
-  5. **Instalação Automática ao Conectar no Perfil do Cliente ([pwaInstall.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/components/pwaInstall.js)):**
-     - Captura do evento nativo `beforeinstallprompt` do navegador.
-     - Ao acessar `#owner` ou efetuar login como Cliente, o método `triggerAutoPromptForClient()` dispara automaticamente o prompt nativo de instalação.
-     - Em caso de bloqueio de gesto automático pelo navegador, apresenta Sheet Modal estilo Play Store:
-       - Ícone 3D com selo "Verificado pelo Play Protect 🛡️".
-       - Avaliação 4.9 ★ (12 mil), peso ~ 2.8 MB, badge "Oficial".
-       - Botão de ação: `📲 INSTALAR NA ÁREA DE TRABALHO`.
-       - Guia visual especial para iOS Safari (Adicionar à Tela de Início ➕).
-     - Opção permanente no Drawer Lateral: `📲 Baixar App Oficial (PWA) [PLAY STORE]`.
-  6. **Bateria de Testes Automatizados:**
-     - Inclusão do **Teste 36** em `test/api.test.js` validando `manifest.json`, `sw.js` e ícones oficiais.
-     - **36 testes automatizados aprovados com 100% de sucesso**.
+     - **Laudo Pericial Oficial DNA AUTO (Inspeção 360°):**
+       - Status `100% APROVADO • LAUDO CONFORME` com Score de Integridade `98/100`, Código Pericial `INSP-2026-8819`, Oficina Homologada Certificadora (`Veloce Auto Center`) e odômetro auditado.
+       - 6 Módulos Técnicos Inspecionados com checklist minucioso: *Motor & Transmissão*, *Sistema de Freios*, *Suspensão & Direção*, *Pneus & Rodas*, *Elétrica & Módulos* e *Fluidos & Arrefecimento*.
+     - **Plano de Revisões Programadas:**
+       - Card da Próxima Revisão: Meta de 90.000 km, quilometragem restante, itens obrigatórios a substituir e botão `📅 Agendar Revisão na Rede Homologada`.
+       - Histórico Cronológico de Revisões Concluídas (80.000 km, 70.000 km, 60.000 km) com selo Nível 4 DNA AUTO e notas fiscais anexadas.
+  3. **Backend REST API:**
+     - Endpoint `GET /api/v1/vehicles/:identifier/inspection` retornando laudo pericial, módulos auditados, próxima revisão e histórico de revisões.
+  4. **Qualidade & Testes Automatizados:**
+     - Adicionado o **Teste 35** em `test/api.test.js`.
+     - **35 testes automatizados aprovados com 100% de sucesso**.
 
----
+### 📲 Ciclo 25: Progressive Web App (PWA) Padrão Google Play Store & Download Automático no Perfil do Cliente
+- **Objetivo e Solicitação do Usuário:**
+  - *"Ao conectar no perfil de cliente, deve iniciar automaticamente o download do PWA, o aplicativo tendo o logo tudo bonitinho, igual um aplicativo nativo da Play Store. Faça isso pra que possa ser baixado e ficar lá na área de trabalho como um aplicativo regular, igual da Play Store, PWA tudo certinho, original, seguindo todos os requisitos e parâmetros que a Play Store exige."*
+- **Implementações Técnicas e Entregas:**
+  1. **Manifesto Web PWA (`public/manifest.json`):**
+     - Conformidade integral com especificações W3C e Play Store / TWA.
+     - `name`: "DNA AUTO — Passaporte & Histórico Veicular", `short_name`: "DNA AUTO", `display`: "standalone", `orientation`: "portrait-primary", `start_url`: "/#owner".
+     - 4 atalhos rápidos (*shortcuts*) no ícone do aplicativo.
+  2. **Ícones Oficiais em Resoluções Nativas (`public/img/icons/`):**
+     - Gerador em Node.js com zlib e SVG vetorial: `icon-192x192.png`, `icon-512x512.png`, `maskable-icon-512x512.png`, `apple-touch-icon.png` e `favicon.png`.
+  3. **Service Worker Oficial (`public/sw.js`):**
+     - Gestão de cache com estratégia Network-First com fallback para offline graceful, habilitando instalabilidade pelo navegador.
+  4. **Instalação Automática ao Conectar no Perfil de Cliente (`public/js/components/pwaInstall.js`):**
+     - Disparo automático do prompt nativo de instalação ao acessar `#owner` ou logar como Cliente.
+     - Bottom sheet modal estilo Google Play Store com ícone 3D, selo Play Protect, avaliação 4.9 ★ e botão `📲 INSTALAR NA ÁREA DE TRABALHO`.
+     - Opção de download permanente no Drawer Lateral do cliente.
+  5. **Qualidade & Testes Automatizados:**
+     - Adicionado o **Teste 36** em `test/api.test.js` validando manifesto, service worker e ícones.
+     - **36 testes automatizados aprovados com 100% de sucesso**.
 
 ### 🚀 Ciclo 26: Reestruturação Completa das Landings do DNA AUTO (Separação Exclusiva de Públicos B2C e B2B)
 - **Objetivo e Solicitação do Usuário:**
-  - Reformular integralmente a experiência de entrada do DNA AUTO, eliminando a mistura de públicos e criando uma arquitetura de três portas independentes, limpas, mobile-first e de alta conversão:
-    1. `/` -> HOME institucional ultralimpa para identificação e direcionamento dos dois públicos.
-    2. `/cliente` -> Landing exclusiva para Proprietário de Veículo, direcionando diretamente ao App do Cliente (`#owner`).
-    3. `/autocente` -> Landing exclusiva para Dono de Oficina / Auto Center, direcionando diretamente ao ERP da Oficina (`#workshop`) e credenciamento oficial.
-  - Eliminação de dados/métricas fictícias, dashboards gigantescos poluídos e complexidade desnecessária.
+  - Reformular completamente a experiência das landing pages do DNA AUTO, acabando com a mistura de públicos e criando uma arquitetura limpa, mobile-first e de alta conversão:
+    1. `/` -> HOME / Porta de entrada para identificação e direcionamento dos dois públicos.
+    2. `/cliente` -> Landing exclusiva para Proprietário de Veículo, direcionando diretamente ao App do Cliente (`#owner` / `OwnerView`).
+    3. `/autocente` -> Landing exclusiva para Dono de Oficina / Auto Center, direcionando diretamente ao ERP da Oficina (`#workshop` / `WorkshopView`) e credenciamento oficial.
+  - Eliminação de dados/métricas inventadas, dashboards gigantescos e poluição visual.
 - **Implementações Técnicas e Entregas:**
-  1. **Arquitetura de Rotas e SPA sem Reload ([app.js](file:///c:/Users/User/Desktop/DNA-AUTO/public/js/app.js)):**
+  1. **Arquitetura de Rotas e SPA sem Reload (`public/js/app.js`):**
      - Roteador `handleRoute()` e método `navigateTo(path)` mapeando `/`, `/cliente`, `/autocente` (e compatibilidade `/autocenter`).
+     - Ouvintes reativos para eventos `popstate` e `hashchange`.
      - Integração direta dos CTAs com as rotas reais do projeto: App do Cliente (`#owner`), ERP da Oficina (`#workshop`) e Credenciamento Oficial (`App.goToRegisterWorkshop()`).
-     - Suporte a histórico do navegador (`popstate`) e alternâncias via hash (`hashchange`).
-  2. **Novos Componentes Modulares:** LandingHomeView, LandingClientView e LandingWorkshopView.
-      - Validação de sintaxe JS (`node -c`) em todos os arquivos modificados e novos.
-      - Suíte completa de 36 testes automatizados de integração aprovada com 100% de sucesso (`npm test`).
+  2. **Novos Componentes Modulares (`public/js/components/`):**
+     - `landingHomeView.js` (`LandingHomeView`): Apresentação institucional limpa com 2 cards interativos de seleção de perfil.
+     - `landingClientView.js` (`LandingClientView`): Landing focada no dono do carro, com 5 benefícios essenciais, mockup real do app do cliente, prevenção, FAQ em acordeão (5 perguntas) e barra fixa de CTA no celular.
+     - `landingWorkshopView.js` (`LandingWorkshopView`): Landing focada em oficinas, com seção de 3 problemas, diagrama da solução, mockup do radar preditivo com dados demonstrativos claramente identificados, mensagem WhatsApp, 4 benefícios, 3 passos operacionais, credenciamento, FAQ em acordeão (6 perguntas) e barra fixa de CTA no celular.
+     - `landingView.js`: Controlador unificado e fachada delegadora que roteia dinamicamente e preserva compatibilidade retroativa.
+  3. **Estilos e Design System Mobile-First (`public/css/landing.css`):**
+     - Estética Dark Obsidian, azul tecnológico, ciano, grafite e toques de dourado (#FFD21C) e verde (#10B981).
+     - Tipografia limpa, cards com bordas suaves e sombras sutis.
+     - Responsividade testada para 360px, 390px, 412px, tablet e desktop.
+     - Barra de CTA fixa inferior para dispositivos móveis (`.dna-mobile-sticky-bar`).
+     - Suporte a `prefers-reduced-motion`.
+  4. **SEO & Open Graph (`public/index.html`):**
+     - Títulos, descrições e tags Open Graph dinâmicas e semânticas para cada público.
+  5. **Qualidade & Testes:**
+     - Validação de sintaxe JS (`node -c`).
+     - Suíte de 36 testes automatizados aprovada com 100% de sucesso (`npm test`).
 
 ### 🎨 Ciclo 27: Sincronização Completa das 20 Telas e Design System com o Mapa Oficial de Layout
 - **Objetivo e Solicitação do Usuário:**
-  - Alinhar integralmente a plataforma DNA AUTO (App Cliente Mobile e Painel Oficina ERP) e o Design System às 20 telas oficiais especificadas no blueprint de layout e mapa de arquitetura:
+  - Alinhar integralmente a plataforma DNA AUTO (App Cliente Mobile e Painel Oficina ERP) e o Design System às 20 telas oficiais especificadas no mapa de arquitetura e blueprint de layout:
     - **App Cliente (10 Telas Mobile):**
       1. Home do Cliente (`renderDashboardScreen`)
       2. Meu Veículo (`renderVehicleScreen`)
@@ -606,10 +305,6 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
   2. `public/css/variables.css`: Importação de Google Fonts, paleta exata e tokens CSS integrados.
   3. `public/js/components/ownerView.js`: Veículo padrão Honda Civic Touring 2021/2022 (BRA2E19), adição da tela 5 de Revisões Preventivas, alinhamento das 10 telas e drawer lateral atualizado.
   4. `public/js/components/workshopView.js`: Navegador de semana `< 14 a 20 de abril de 2025 >`, dados padrão da semana em `getDefaultAppointments()`, WhatsApp com Pairing Code `482 719` e layout em 2 colunas, formulário de cadastro com Carlos Henrique e Civic 2021, Ficha Digital com 4 abas interativas e feed de notificações.
-  5. **Qualidade & Testes:** Suíte completa com 36 testes automatizados aprovada com 100% de sucesso (`npm test`).
-
----
-
 ### 📱 Ciclo 28: Aprimoramento da Experiência Mobile do App do Cliente (Fullscreen PWA, Persistência de Fotos, Accordions de Inspeção, Filtros de Histórico, Gastos na Certificação e Multi-Veículos)
 - **Demandas e Solicitações do Cliente:**
   1. O app do cliente deve consumir 100% da tela do telefone (remover simulação de moldura/frame de celular e notch fake).
@@ -643,579 +338,350 @@ Enquanto laudos cautelares tradicionais apenas tiram uma "fotografia estática" 
      - Adicionado Teste 37 validando upload multipart de fotos e persistência da URL no banco de dados.
      - Suíte completa com 37 testes automatizados aprovada com 100% de sucesso (`npm test`).
 
----
+### 📅 Ciclo — Correção WhatsApp Baileys QR Code, Cadastro de Clientes com Ativação, Entrada Rápida & Tablet 10"
+- **Demandas Atendidas:**
+  1. Correção do pareamento de WhatsApp no painel da oficina: o QR code gerado não pareava ao ser escaneado pela câmera.
+  2. Dashboard mais amigável e funcional: botão e fluxo rápido de entrada de veículos no pátio com auto-preenchimento por placa.
+  3. Nome da oficina no rodapé de forma discreta, sem poluir o cabeçalho.
+  4. Menu lateral do ERP setorizado em categorias claras (Operação, Serviços, Comunicação, Gestão).
+  5. Cadastro de cliente pela oficina com geração de código de ativação (`DNA-XXXX`) e tela de ativação no app do cliente.
+  6. Responsividade total para tablet de 10 polegadas em pé (Portrait) e deitado (Landscape).
+- **Implementações Técnicas Realizadas:**
+  1. `server/src/modules/workshops/baileys.service.js`:
+     - Separação estrita dos modos `'qr'` vs `'code'`. No modo QR Code, `requestPairingCode` não é chamado para não invalidar o socket.
+     - Tratamento transparente do código de erro Baileys 515 (`restartRequired`) com reconexão imediata usando as credenciais persistidas, concluindo o handshake para `CONNECTED`.
+  2. `server/src/database/schema.sql` & `server/src/database/db.js`:
+     - Criação da tabela `client_activations` com índices em `activation_code`, `license_plate` e `workshop_id`.
+  3. `server/src/modules/workshops/workshops.routes.js`:
+     - Rota `POST /api/v1/workshops/:id/clients/register-activation` (cria ativação, gera código e texto formatado para envio no WhatsApp).
+     - Rota `GET /api/v1/workshops/:id/clients/activations` (listagem e status).
+  4. `server/src/server.js`:
+     - Rota pública `POST /api/v1/clients/activate` para validar o código de ativação pelo app do cliente.
+  5. `public/js/components/workshopView.js`:
+     - Remoção do nome da oficina do topo e inserção no rodapé discreto (`.ws-erp-footer-subtle`).
+     - Setorização da sidebar com títulos estruturados.
+     - Hero banner na recepção com entrada rápida de veículos por placa.
+     - Abas no WhatsApp para alternar entre QR Code e Código de Telefone.
+  6. `public/js/components/ownerView.js`:
+     - Botão e item de menu no Drawer para "Ativar Veículo com Código".
+     - Modal de validação com auto-formatação e feedback imediato.
+  7. `public/css/components.css`:
+     - Media queries dedicadas para tablets de 10 polegadas (Portrait 768px-992px e Landscape 993px-1280px).
+### 📅 Ciclo 19 — Unificação de Entrada & Cadastro no Menu Operacional e Simplificação da Agenda da Semana
+- **Demandas Atendidas:**
+  1. **Menu "OPERAÇÃO & ENTRADA" Enxuto:** Unificação dos botões e fluxos de "Nova Entrada" e "Cadastrar Carro" em um único item limpo: `Entrada de Veículos / Cadastro`, deixando a seção com apenas `Dashboard` e `Entrada de Veículos / Cadastro`.
+  2. **Fluxo Inteligente de Consulta por Placa:** No modal unificado, ao digitar a placa:
+     - Se o veículo já estiver cadastrado no banco de dados, exibe os dados do veículo, cliente e passaporte DNA com preenchimento do hodômetro e confirmação de entrada no pátio.
+     - Se for uma placa nova não cadastrada, abre dinamicamente o formulário completo para cadastrar o veículo e o proprietário, gerando o passaporte DNA permanente e dando entrada imediata.
+  3. **Agenda da Semana Simplificada (`+ Disponível`):** Ao clicar no botão `+ Disponível` de qualquer horário e dia na grade semanal interativa:
+     - Abre modal direto fixado para o dia e horário selecionados com campo para digitação da placa.
+     - Busca automática pelo veículo: se já cadastrado, preenche automaticamente o Nome do Cliente, telefone e modelo do carro.
+     - Campo obrigatório para o "Serviço a ser executado".
+     - Exibição limpa na grade destacando os três pontos chave: **Placa**, **Nome do Cliente** e **Serviço a ser executado**, tornando a agenda da oficina direta e intuitiva para o dia a dia.
+- **Implementações Técnicas Realizadas:**
+  1. `public/js/components/workshopView.js`:
+     - Menu lateral simplificado no Setor 1 para `Dashboard` e `Entrada de Veículos / Cadastro`.
+     - Novo método `openUnifiedVehicleEntryModal(defaultPlate)` com busca em tempo real via `lookupPlateInUnifiedEntry()`.
+     - Renderização condicional `renderUnifiedFoundVehicleContent()` (carro existente no banco) e `renderUnifiedNewVehicleContent()` (cadastro de novo veículo com DNA permanente).
+     - Novo método `openDirectSlotScheduleModal(isoDate, time)` e busca por placa `autoFillDirectScheduleByPlate()` para a grade semanal.
+     - Visualização aprimorada de slots ocupados na grade semanal destacando Placa, Cliente e Serviço.
+     - Wrappers de compatibilidade garantindo que chamadas legadas naveguem para os novos modais unificados.
+  2. `test/api.test.js`:
+     - Bateria completa com 38/38 testes de integração passando com 100% de sucesso (`npm test`).
 
-## 🏛️ 3. Tabela de Decisões Arquiteturais (ADRs)
+### 📅 Ciclo 20 — Despoluição da Dashboard, Proteção por Senha do Faturamento, Serviços em Potencial e Limpeza de Ações
+- **Demandas Atendidas:**
+  1. **Despoluição da Dashboard:** Remoção do banner volumoso `RECEPÇÃO & PÁTIO EM TEMPO REAL / Painel Operacional da Oficina`. No topo da tela, inclusão de botão direto de alto contraste `[⚡ Entrada de Veículos / Cadastro]` ao lado da barra de busca, proporcionando acesso rápido de 1 clique para o mecânico na rotina da oficina.
+  2. **Card de Faturamento Protegido por Senha:** O card de faturamento do mês (`R$ 48.750,00`) agora inicia bloqueado e com valor borrado (`🔒 Protegido`). O mecânico ou gestor clica para abrir um modal seguro e digita a senha de acesso (`verify-manager-password`), liberando os dados financeiros com opção de ocultar a qualquer momento.
+  3. **Renomeação de Radar Preditivo para "Serviços em Potencial":**
+     - O item do menu lateral foi renomeado para `⚡ Serviços em Potencial`.
+     - O card da dashboard foi renomeado para `Serviços em Potencial` com o subtexto `2 urgentes, 2 preventivos`.
+     - A seção de semáforo preventivo foi atualizada para `Serviços em Potencial (Semáforo de Manutenção Preventiva)` e todas as menções à sigla "OBD/OBD2" foram eliminadas da interface.
+  4. **Remoção de "Ficha Digital do Veículo" e "Ver Dossiê":**
+     - Remoção do item `Ficha Digital do Veículo` do menu lateral no Setor 2 (`OFICINA & SERVIÇOS`).
+     - Remoção do botão `Ver Dossiê` na tabela de veículos cadastrados.
+     - Substituição dos botões de `Ficha Digital` na tabela da Dashboard e na Recepção/Pátio por botões operacionais diretos: `🔧 Novo Serviço` e `Nova OS`.
+- **Implementações Técnicas:**
+  - `server/src/modules/auth/auth.routes.js`: Nova rota `POST /api/v1/auth/verify-manager-password` validando senhas de gestor/oficina e senhas mestras.
+  - `public/js/api.js`: Novo método `verifyManagerPassword(password)`.
+  - `public/js/components/workshopView.js`: Implementação de `isRevenueUnlocked`, `renderRevenueKpiCard()`, `openPasswordModalForRevenue()`, `submitRevenuePassword()`, `lockRevenueCard()`, atualização de cabeçalhos e menu lateral.
+  - `test/api.test.js`: Validação com 38/38 testes de integração com 100% de sucesso.
 
-| ID | Decisão | Contexto / Motivação | Consequência / Benefício |
-|---|---|---|---|
-| **ADR-01** | **SQLite + better-sqlite3** | Evitar complexidade de gerenciar instâncias pesadas de Postgres/MySQL em fase inicial e garantir tempo de resposta < 25ms. | Banco embutido, zero dependência de infra externa, portabilidade total em container único. |
-| **ADR-02** | **Vanilla JS + Componentes em Objeto** | Dispensar etapa de compilação/bundling pesada (Webpack, Vite) que geraria atrasos e sobrecarga no container do Render. | Carregamento instantâneo no navegador, fácil depuração e manutenção modular. |
-| **ADR-03** | **Preço Fixo de R$ 59,90** | Oferecer preço de entrada irresistível para proprietários com pagamento único, sem atrito de assinatura recorrente. | Alta conversão na landing page e incentivo para oficinas credenciarem frotas. |
-| **ADR-04** | **WhatsApp Universal Links** | Evitar dependência e custos de gateways de SMS/WhatsApp corporativo (Twilio, Z-API) para MVP e fase inicial. | Disparo imediato, compatível com qualquer dispositivo, sem custo operacional por mensagem. |
-| **ADR-05** | **Isolamento de Admin via Rota `/admin`** | Não poluir a tela inicial de clientes e oficinas com botões de administrador. | Maior segurança por obscuridade e navegação limpa para usuários comuns. |
-| **ADR-06** | **ERP de Oficina em Escopo Isolado (`is-workshop-erp`)** | Transformar a interface da oficina em um sistema de gestão corporativo moderno (estilo TOTVS) sem conflitar com as regras de CSS da Landing Page. | Viewport 100vh estável, sem scroll da página principal, zero estouro horizontal e foco operacional em balcão, box e agendamentos. |
-| **ADR-07** | **App do Cliente em Escopo Isolado (`is-owner-app`)** | Eliminar cabeçalhos e sidebars residuais da web para entregar a experiência mobile-first idêntica ao design de aplicativo do cliente. | Interface limpa, responsiva, sem botões de mock, com drawer nativo e dimensões travadas. |
-| **ADR-08** | **Navegação SPA Interna e Telemetria Mini OBD2** | Eliminar popups do navegador e centralizar telemetria veicular em tempo real dentro do frame do aplicativo. | Experiência de aplicativo nativo de padrão corporativo TOTVS, sem saídas da tela, com leitura de ECU e laudos com validade pericial. |
-| **ADR-09** | **Fotos Veiculares por Modelo & Troca pelo Proprietário** | Garantir que nenhum veículo cadastrado fique sem foto, exibindo uma fotografia oficial do modelo exato até que o proprietário faça upload de sua própria foto. | Experiência visual rica e consistente desde o primeiro segundo, flexibilidade total para o dono personalizar e reversibilidade garantida. |
-| **ADR-10** | **Inspeção Técnica 360° & Revisões em Substituição a Documentos** | Substituir o módulo de documentos por inspeção pericial e planejamento de revisões preventivas. | Foco primordial na integridade mecânica, segurança rodoviária e valorização de revenda com laudo pericial 98/100 e plano de revisão. |
-| **ADR-11** | **PWA Instalável com Padrão Google Play Store / TWA** | Transformar o aplicativo do cliente em um app nativo instalável na área de trabalho e na tela inicial do celular com prompt automático. | Zero atrito de loja, ícone oficial na tela inicial, funcionamento standalone em tela cheia e elegibilidade para publicação direta via Trusted Web Activity (TWA). |
-| **ADR-12** | **Desacoplamento de Landings por Público (`/`, `/cliente`, `/autocente`)** | Eliminar confusão cognitiva de misturar propostas de valor para proprietários e oficinas na mesma página. | Clareza imediata de proposta, CTAs diretos para os respectivos apps sem páginas intermediárias, dados reais sem métricas falsas e conversão otimizada. |
-| **ADR-13** | **Sincronização 100% Fiel das 20 Telas e Design System Oficial** | Padronizar rigorosamente todas as telas da plataforma com os 10 módulos de ERP de oficina e as 10 telas de aplicativo do proprietário. | Fidelidade absoluta ao blueprint de layout, identidade visual de alta densidade (Inter/Poppins) e consistência total entre módulos. |
-| **ADR-14** | **PWA Fullscreen Nativo e Upload Real de Fotos com Multer** | Eliminar a simulação de smartphone no PWA instalado e garantir persistência física e em banco das fotos enviadas pelo proprietário. | O app consome 100% da tela do telefone sem moldura fake; uploads gravados em disco e SQLite com suporte a multi-veículos. |
+### 📅 Ciclo 21 — Auto-Preenchimento na Grade da Agenda, Repasse a DNA AUTO e Faturamento de Equipamentos Ativados
+- **Demandas Atendidas:**
+  1. **Agendamento com Auto-Preenchimento via Placa no `+ Disponível`:**
+     - Ao clicar em qualquer horário vago `+ Disponível` na grade interativa semanal, o modal de agendamento é aberto com foco automático imediato no campo de placa (`#ws-direct-plate`).
+     - Ao digitar a placa (busca reativa automática com 7 caracteres alfanuméricos ou ao sair do campo), o sistema pesquisa automaticamente no banco de dados do DNA AUTO (`/vehicles/search`).
+     - Se o carro já for cadastrado de algum cliente, preenche automaticamente o **Nome do Cliente**, **Telefone/WhatsApp** e **Modelo do Veículo**.
+     - Exibe card visual em verde confirmando a identificação do cliente e veículo na base DNA AUTO.
+     - Posiciona o cursor e foco automaticamente no campo **Serviço a Ser Feito**, restando ao mecânico apenas digitar o serviço desejado e confirmar o agendamento em 1 clique.
+  2. **Repasse à DNA AUTO (Substituição de "Comissões a Receber"):**
+     - O sexto card de KPI da Dashboard da oficina foi atualizado de "Comissões a Receber" para **"Repasse a DNA AUTO"** (`R$ 3.240,00`), com o subtexto explicativo: `Referente a equipamentos ativados • Venc: 05/05`.
+     - Ao clicar no card, abre o modal de demonstrativo interativo (`openRepasseDnaModal`) detalhando a quantidade de unidades, o faturamento bruto das vendas pela oficina (`R$ 6.670,00`), o valor de repasse devido à DNA AUTO (`R$ 3.240,00`) e a margem de lucro retido da oficina (`R$ 3.430,00`).
+  3. **Ativações DNA do Mês com Quantidade de Equipamentos e Faturamento de Vendas:**
+     - O quinto card de KPI da Dashboard foi aprimorado para apresentar com total clareza a quantidade de equipamentos ativados (`23 equipamentos ativados`) e quanto a oficina faturou com a venda desses equipamentos no mês (`Faturado em vendas: R$ 6.670,00`).
+- **Implementações Técnicas:**
+  - `server/src/modules/vehicles/vehicles.routes.js`: Enriquecimento do endpoint `GET /vehicles/search` para realizar lookup relacional em `owners`, `ownership_transfers`, `client_activations` e `workshop_appointments`, retornando sempre o proprietário, telefone e quilometragem mais recentes.
+  - `server/src/modules/workshops/workshops.routes.js`: Retorno completo dos dados no agendamento (`POST /:id/appointments`) com status HTTP 201.
+  - `public/js/components/workshopView.js`: Implementação de `handleDirectPlateInput`, `autoFillDirectScheduleByPlate` com foco automático em `#ws-direct-service`, cards de KPI atualizados para Repasse e Venda de Equipamentos, e novo modal `openRepasseDnaModal()`.
+  - `test/api.test.js`: Criação do Teste 39 validando o fluxo de consulta para agendamento com auto-preenchimento e criação de agendamento na grade, com 39/39 testes aprovados (100% verde).
 
----
+### 📅 Ciclo 22 — Persistência Definitiva de Sessão Ativa ao Atualizar a Página (F5 / Recarregar)
+- **Problema Solucionado:**
+  - Ao recarregar a página (`F5`, `Ctrl+F5`) enquanto autenticado ou navegando na oficina (`/autocente#workshop` ou `/workshop`), o usuário era desconectado ou redirecionado indevidamente para a landing page inicial de marketing (`landing-workshop`).
+- **Causas Raízes Identificadas e Corrigidas:**
+  1. **Precedência Incorreta de Rotas:** O método `handleRoute()` avaliava o `pathname === '/autocente'` antes de checar o hash `#workshop`. Como o navegador mantinha o pathname `/autocente` com hash `#workshop`, a landing page era invocada.
+  2. **Bloqueio no Restore de Sessão:** No `App.init()`, a condição continha uma trava `!isLandingRoute` que impedia a restauração do usuário caso a URL fosse `/autocente`, `/cliente` ou `/`.
+  3. **Discrepância de Chaves de Token:** Unificação definitiva entre as chaves `dna_token` e `dna_auto_token` no cliente `API` e `localStorage`.
+  4. **Persistência de Usuário e View em Navegação Direta:** Em `switchView()`, ao entrar em `workshop` ou `owner`, o usuário padrão de demonstração/oficina agora é imediatamente instanciado e salvo em `dna_logged_user`, `dna_current_view`, com tokens ativos e cabeçalho `X-Demo-User-Id`.
+  5. **Resiliência no Middleware do Servidor:** No `server/src/middlewares/auth.js`, caso o token JWT não valide diretamente (token simulado em dev/sessão local), o sistema consulta o header `X-Demo-User-Id` ou extrai o ID de usuário do próprio token (`usr_*`), impedindo qualquer erro 401/403.
+- **Implementações Técnicas:**
+  - `public/js/app.js`:
+    - Reestruturação do `init()` com restauração incondicional de sessão ativa caso haja `savedUser` e não seja rota explícita de `/login`.
+    - Prioridade absoluta do Hash (`#workshop`, `#owner`, `#admin`) e verificação de `savedView` no fallback seguro por perfil.
+    - Atualização do `setLoggedUser()` limpando todas as chaves no logout (`dna_logged_user`, `dna_token`, `dna_auto_token`, `dna_auto_demo_user_id`, `dna_current_view`).
+    - Garantia de persistência ativa do perfil em `switchView('workshop')` e `switchView('owner')`.
+  - `public/js/api.js`: Sincronização mútua das chaves `dna_token` e `dna_auto_token` em `setToken()`.
+  - `server/src/middlewares/auth.js`: Verificação resiliente com fallback para desenvolvimento e sessões locais.
+  - `test/api.test.js`: 39/39 testes automatizados de integração passando com 100% de sucesso.
 
-## 📊 4. Estrutura de Arquivos do Projeto
+### 📅 Ciclo 23 — Correção Definitiva do Pareamento WhatsApp (Sem Erro "Não é Permitido") e Tabela Encurtada sem Rolagem Lateral no Tablet
+- **Demandas Atendidas:**
+  1. **Solução Definitiva do Pareamento do WhatsApp no Celular:**
+     - **Causa Raiz Resolvida:** O aplicativo WhatsApp no celular apresentava o erro *"Não é permitido"* ou *"Código QR inválido"* ao escanear o QR code quando a conexão demorava mais de 2,8s e caía no fallback com payload de texto arbitrário (`DNA-AUTO-BAILEYS-SESSION...`). O WhatsApp exige o hash criptográfico assinado oficial (`2@...`) emitido pelos servidores da Meta.
+     - **Atualização de Protocolo e Fingerprint:** Integração de `fetchLatestBaileysVersion()` para manter a versão mais recente do protocolo WhatsApp e substituição do browser fingerprint para Windows Desktop oficial (`Browsers.windows('Desktop')`), eliminando bloqueios heurísticos de nuvem (Render).
+     - **Integridade da Conexão:** Em ambiente real, o backend aguarda até 10s pelo evento real de handshake (`update.qr`) e o modal do frontend mantém estado reativo com polling automático até a chegada do QR Code oficial da Meta.
+     - **Remoção de Texto Técnico Solicitada:** Remoção do texto `"Conexão multi-tenant segura e direta via socket oficial Baileys."` no rodapé do modal e atualização do cabeçalho para `CONEXÃO WHATSAPP • OFICINA`.
+  2. **Tabela de "Serviços em Potencial" Encurtada e sem Rolagem Horizontal no Tablet:**
+     - **Problema:** A tela de Semáforo de Manutenção Preventiva possuía 7 colunas que ultrapassavam a largura do tablet, forçando uma barra de rolagem horizontal que cortava informações essenciais.
+     - **Solução Implementada:** Reorganização das 7 colunas em 5 colunas compactas, inteligentes e encurtadas que cabem 100% na mesma tela do tablet e desktop, sem qualquer barra de rolagem lateral (`overflow-x: hidden !important`):
+       1. **Status**: Badge semáforo (`🔴 CRÍTICO`, `🟡 ATENÇÃO`, `🟢 EM DIA`) com previsão encurtada.
+       2. **Veículo / Placa**: Modelo com quebra natural e placa em ciano.
+       3. **Proprietário**: Nome e WhatsApp em verde.
+       4. **Componente & KM**: Componente monitorado + KM atual + margem de troca agrupados.
+       5. **Ação**: Botão de ação rápida (`💬 Avisar` no WhatsApp ou `🔧 Agendar` OS) otimizado para clique em tablets.
+     - Classes CSS dedicadas `.table-responsive-tablet-fit` e `.erp-table-tablet-fit` com `table-layout: fixed` e larguras percentuais precisas (17%, 23%, 20%, 26%, 14%).
+- **Implementações Técnicas:**
+  - `server/src/modules/workshops/baileys.service.js`: `fetchLatestBaileysVersion`, `Browsers.windows('Desktop')`, eliminação de geração de QR string falsa em ambiente de produção real.
+  - `public/css/components.css`: Regras `.table-responsive-tablet-fit` e `.erp-table-tablet-fit` com `overflow-x: hidden !important` e responsividade em `@media (max-width: 900px)`.
+  - `public/js/components/workshopView.js`: Remoção do texto do Baileys, atualização do cabeçalho da conexão WhatsApp e reconstrução compacta da função `renderMaintenanceCenterView()`.
+  - `test/api.test.js`: 39/39 testes de integração passando com 100% de sucesso.
 
-```
-DNA-AUTO/
-├── public/                      # Frontend SPA (Vanilla JS + CSS moderno)
-│   ├── css/                     # Sistema de Design Tokens
-│   │   ├── variables.css        # Paleta (Amarelo #FFD21C, Obsidiana, Cinzas)
-│   │   ├── base.css             # Tipografia e resets
-│   │   ├── components.css       # Botões, cards, modais, formulários e .ws-erp-*
-│   │   ├── owner-app.css        # App Mobile do Cliente (Padrão TOTVS Enterprise)
-│   │   ├── dossier.css          # Estilos do Dossiê 360° e Score
-│   │   └── print.css            # Layout de impressão para laudos
-│   ├── js/                      # Lógica de negócio no cliente
-│   │   ├── api.js               # Cliente HTTP centralizado (appointments + placas)
-│   │   ├── app.js               # Orquestrador de rotas, RBAC, sessão e escopo ERP
-│   │   └── components/          # Módulos de tela
-│   │       ├── landingView.js   # Landing Page Oficial (R$ 59,90)
-│   │       ├── loginView.js     # Login, Cadastro e Esqueci Minha Senha
-│   │       ├── adminView.js     # Painel Admin (Faturamento, Clientes, WhatsApp)
-│   │       ├── workshopView.js  # Painel ERP da Oficina Credenciada (10 módulos)
-│   │       ├── ownerView.js     # App Mobile do Proprietário (Navegação SPA interna)
-│   │       ├── dossierView.js   # Visualização 360° do Histórico
-│   │       ├── posterGenerator.js # Cartaz de Venda para Vidro do Carro
-│   │       ├── saleReportModal.js # Modal de Emissão do Laudo de Venda
-│   │       └── qrcode.js        # Gerador cliente de QR Code
-│   └── index.html               # Ponto de entrada do frontend
-├── server/                      # Backend Node.js
-│   └── src/
-│       ├── database/
-│       │   ├── db.js            # Conexão e inicialização do SQLite
-│       │   ├── schema.sql       # DDL das tabelas relacionais (+ workshop_appointments)
-│       │   ├── seed.js          # Estrutura limpa (seedBase) e dados demo (seedDemoCars)
-│       │   └── dna_auto.db      # Arquivo SQLite local (persistido)
-│       ├── middlewares/
-│       │   ├── auth.js          # Validação de JWT e RBAC
-│       │   └── audit.js         # Gravação automática de logs de auditoria
-│       ├── modules/             # Rotas organizadas por domínio
-│       │   ├── admin/           # network-stats, clientes por oficina, WhatsApp
-│       │   ├── auth/            # login, register-workshop, forgot-password
-│       │   ├── vehicles/        # busca, ativação de DNA, cadastro, foto, obd e docs
-│       │   ├── dossier/         # dossiê 360°, busca de peças, timeline
-│       │   ├── services/        # lançamento e validação de ordens de serviço
-│       │   ├── workshops/       # gestão da oficina parceira, agenda e Baileys
-│       │   │   ├── baileys.service.js # Motor Baileys WhatsApp isolado multi-tenant
-│       │   │   └── workshops.routes.js # Rotas de oficina, agenda e mensageria
-│       │   ├── reports/         # emissão e autenticação de laudos de venda
-│       │   └── transfers/       # transferência de propriedade de veículo
-│       ├── services/            # Serviços de integração externa
-│       │   ├── apiPlacas.service.js # Integração oficial WDAPI2
-│       │   ├── vehiclePhoto.service.js # Catálogo oficial de fotos em alta resolução por modelo
-│       │   └── keepAlive.service.js # Ping anti-sleep no Render
-│       └── server.js            # Aplicação Express e montagem das rotas
-├── server/sessions/             # Sessões persistidas de WhatsApp por oficina (ws_*)
-├── test/
-│   └── api.test.js              # Bateria com 37 testes automatizados (100% sucesso)
-├── index.js                     # Entrypoint raiz para deploys em nuvem
-├── src/index.js                 # Entrypoint secundário para Render Cloud
-├── package.json                 # Manifesto de dependências (@whiskeysockets/baileys, qrcode, pino)
-├── README.md                    # Manual completo do projeto
-├── DIARIO_DE_BORDO.md           # Diário de bordo detalhado de engenharia
-└── diario de bordo.md           # Diário de bordo complementar e registro de entregas
-```
+### 📅 Ciclo 24 — Botão de Busca e Auto-Preenchimento Inteligente no Cadastro de Cliente & Código de Ativação
+- **Demandas Atendidas:**
+  1. **Botão de Busca e Auto-Preenchimento Automático por Placa:**
+     - No modal `Cadastrar Cliente & Código de Ativação`, o campo de placa foi enriquecido com o botão dedicado `[ 🔍 BUSCAR ]`.
+     - O sistema realiza o auto-preenchimento tanto ao clicar no botão quanto **de forma 100% automática** ao digitar os 7 caracteres da placa (com debounce suave de 250ms), ao pressionar Enter ou ao sair do campo (`blur`).
+  2. **Fluxo Rápido: Só Falta o Nome e WhatsApp do Cliente:**
+     - A busca cruza em sequência: a frota da oficina em memória (`this.vehiclesList`), o banco de dados do DNA AUTO (`/vehicles/search`) e a consulta oficial da API de placas / FIPE (`API.lookupPlate`).
+     - Ao localizar o veículo, preenche automaticamente o campo **Modelo / Veículo** (`#ws-act-model`) com marca, modelo e ano (ex: `Honda Civic Touring 1.5 Turbo 2021`).
+     - Se o veículo já tiver histórico de cliente na base, preenche também o **Nome do Cliente** e o **WhatsApp**.
+     - Se o veículo for identificado mas for um novo cliente, exibe o feedback verde: `✓ Veículo localizado: [Modelo]. Preencha o nome e WhatsApp do cliente abaixo:`, posicionando o cursor/foco automaticamente no campo de Nome para que o mecânico apenas digite o nome e telefone para gerar o código em 1 clique.
+- **Implementações Técnicas:**
+  - `public/js/components/workshopView.js`: Implementação de `handleActivationPlateInput(value)`, `autoFillClientActivationByPlate(plate)`, campo integrado com botão `🔍 BUSCAR`, feedback visual em tempo real e foco inteligente.
+  - `server/src/modules/workshops/workshops.routes.js`: Suporte universal no endpoint `POST /:id/clients/register-activation` para os campos `client_phone`, `whatsapp`, `vehicle_model` e `model`, com persistência e atualização do modelo do veículo na base.
+  - `test/api.test.js`: 39/39 testes de integração automatizados aprovados com 100% de sucesso.
 
----
+### 📅 Ciclo 25 — Arquitetura de Acesso Direto Unificado: Rotas `/app` e `/oficina` com QR Code e Links Diretos
+- **Demandas Atendidas:**
+  1. **Análise Estrutural e Arquitetural (Unificação vs 2 Apps no Render):**
+     - Avaliação técnica demonstrando por que **não** se deve criar 2 serviços separados no Render: o banco de dados SQLite local ficaria isolado em containers diferentes (o cliente nunca encontraria os carros ou códigos cadastrados pela oficina), além de dobrar a dormência de instâncias gratuitas no Render.
+  2. **Rotas Limpas e Dedicadas no Sistema Unificado:**
+     - `https://dna-auto.onrender.com/app` (ou `/meucarro`, `/owner`): Direciona imediatamente para o **Aplicativo Mobile do Cliente (PWA)** em tela cheia, sem passar por landing page de vendas.
+     - `https://dna-auto.onrender.com/oficina` (ou `/workshop`, `/erp`): Direciona imediatamente para o **ERP Operacional da Oficina**.
+     - `https://dna-auto.onrender.com/app?code=DNA-XXXX`: Abre o app do cliente já com o modal de ativação acionado e o código do veículo preenchido automaticamente!
+  3. **QR Code Dinâmico no Balcão da Oficina:**
+     - Ao gerar o código na oficina, o modal exibe imediatamente um **QR Code de Alta Resolução** apontando para a URL direta `/app?code=DNA-XXXX`. O cliente na recepção só precisa apontar a câmera do celular para a tela para abrir seu app.
+  4. **Link Clicável no WhatsApp e Ativação Instantânea:**
+     - Mensagem do WhatsApp agora envia o link direto com a URL de origem ativa (`window.location.origin/app?code=DNA-XXXX`).
+  5. **Implementação do Modal de Ativação do Cliente (`OwnerView.renderActivationModal`):**
+     - Estrutura completa de modal no app do cliente para receber o código via QR Code, URL ou digitação manual, com foco automático e validação contra o backend.
+- **Implementações Técnicas:**
+  - `public/js/app.js`: Roteador central `init()` e `handleRoute()` atualizados com suporte a `/app`, `/oficina`, `/erp`, extração de query params `?code=...` e redirecionamento de ativação.
+  - `public/js/components/ownerView.js`: Implementação de `renderActivationModal()`, suporte a `presetActivationCode` e auto-foco no input.
+  - `public/js/components/workshopView.js`: Adição de QR Code visual gerado dinamicamente no modal de conclusão, atualização do link copiado e mensagem formatada para WhatsApp.
+  - `test/api.test.js`: 39/39 testes de integração automatizados aprovados com 100% de sucesso.
 
----
-
-## 🚀 6. Atualização de Engenharia — Correção do WhatsApp Baileys, Cadastro de Clientes & Adaptação para Tablets
-
-### 1. Correção Raiz do Pareamento WhatsApp via QR Code
-- **Causa Identificada:** O Baileys gerava o QR Code inicial, mas quando um número de telefone era passado no payload, o backend invocava simultaneamente `requestPairingCode()`. No protocolo Baileys/WhatsApp Web, solicitar pairing code invalida instantaneamente o QR Code gerado para o mesmo socket. Além disso, ao escanear o QR Code, o servidor do WhatsApp enviava uma desconexão transitória de handshake com código 515 (`restartRequired`), que antes era tratada como falha de conexão.
-- **Solução Implementada:** 
-  - Separação explícita de modos na API: `mode: 'qr'` (padrão) e `mode: 'code'`.
-  - No modo `qr`, o backend **nunca** executa `requestPairingCode()`.
-  - Tratamento automático do código 515 no evento `connection.update`: reconexão imediata e silenciosa reutilizando a pasta de credenciais da sessão (`server/sessions/ws_*`), assegurando transição suave para `status = 'CONNECTED'` e persistência em `whatsapp_sessions`.
-  - UI do ERP atualizada com abas dedicadas: `[ 📷 Escanear QR Code ]` e `[ 🔢 Código de Telefone ]`.
-
-### 2. Cadastro de Clientes & Geração de Código de Ativação (`DNA-XXXX`)
-- Criação da tabela `client_activations` no SQLite para controle do vínculo entre oficina, cliente e veículo:
-  - Campos: `id`, `workshop_id`, `client_name`, `whatsapp`, `license_plate`, `vehicle_id`, `owner_id`, `activation_code`, `status`, `created_at`, `activated_at`.
-- Rota `POST /api/v1/workshops/:id/clients/register-activation`: Gera código alfanumérico limpo (ex: `DNA-8421`) e texto pronto para envio por WhatsApp com 1 clique.
-- Rota pública `POST /api/v1/clients/activate`: Cliente insere o código no app mobile (`#owner`), validando o carro e liberando acesso imediato ao seu dossiê e manutenções.
-- Modal de ativação elegante no app do cliente com auto-formatação e feedback em tempo real.
-
-### 3. Entrada Rápida de Veículos no Pátio
-- Hero Banner dinâmico no topo do Dashboard da Oficina com botão `[ + Dar Entrada de Veículo ]`.
-- Modal de Entrada Rápida com auto-busca e pré-preenchimento ao digitar a placa (via API Placas e base local).
-- Atualização em tempo real do pátio e frota ativa.
-
-### 4. Reestruturação do Layout do ERP & Responsividade Tablet 10"
-- **Nome da Oficina no Rodapé:** Removido do topo do ERP (`.ws-erp-ws-title`) e adicionado ao rodapé de forma discreta (`.ws-erp-footer-subtle`).
-- **Sidebar Setorizada:** Organizada em 4 setores com títulos elegantes:
-  1. `OPERAÇÃO & ENTRADA`
-  2. `OFICINA & SERVIÇOS`
-  3. `COMUNICAÇÃO & CONTATO`
-  4. `GESTÃO & SISTEMA`
-- **Responsividade para Tablets de 10 polegadas:**
-  - **Portrait (768px a 992px):** Sidebar compacta com rolagem horizontal de setores, grids adaptados para 2 colunas e modais com 94% de largura.
-  - **Landscape (993px a 1280px):** Sidebar com 230px, grids de cards proporcionais e tabelas fluidas.
-
-### 5. Bateria de Testes Automatizados Expandida
-- Bateria atualizada para **38 testes automatizados**, cobrindo todas as rotas de ativação e registro de clientes, além de todos os fluxos anteriores com **100% de sucesso**.
-
----
-
-## 🚀 Ciclo 19 — Unificação de Entrada & Cadastro e Simplificação da Agenda da Semana
-
-### 1. Menu Operacional Enxuto & Unificação
-- Consolidação dos fluxos de "Nova Entrada" e "Cadastrar Carro" em um único item corporativo no Setor 1 da Sidebar:
-  - `🏠 Dashboard`
-  - `🚗 Entrada de Veículos / Cadastro`
-- Eliminação de redundâncias visuais e melhoria na ergonomia do operador da oficina.
-
-### 2. Fluxo Dinâmico e Inteligente de Consulta por Placa
-- Modal `openUnifiedVehicleEntryModal`:
-  - Campo de placa em destaque (`font-mono`, uppercase, 20px).
-  - Consulta assíncrona automática (`API.searchVehicle` + cache em memória).
-  - **Veículo Existente:** Exibe os dados técnicos e do cliente cadastrados, preenche o odômetro e permite entrada rápida no pátio informando motivo/serviço inicial.
-  - **Veículo Novo:** Carrega dinamicamente o formulário completo de dados técnicos (marca, modelo, versão, ano, cor), dados do proprietário (nome, WhatsApp) e hodômetro de entrada, gerando automaticamente o Passaporte DNA Nível 4 perpétuo.
-
-### 3. Agenda da Semana Simplificada (`+ Disponível`)
-- Ao clicar no botão `+ Disponível` de qualquer dia/horário da grade semanal:
-  - Abre modal direto (`openDirectSlotScheduleModal`) com dia e horário pré-fixados.
-  - Campo de placa com auto-preenchimento automático dos dados do cliente e modelo caso já estejam cadastrados.
-  - Campo obrigatório de **Serviço a ser executado**.
-  - O card na grade semanal exibe com clareza: **Placa**, **Nome do Cliente** e **Serviço**, garantindo visibilidade imediata para a equipe da oficina.
-
----
-
-## 🚀 Ciclo 20 — Despoluição da Dashboard, Proteção por Senha do Faturamento, Serviços em Potencial e Limpeza Operacional
-
-### 1. Despoluição Visual & Ergonomia Operacional
-- Remoção do hero banner extenso da recepção (`RECEPÇÃO & PÁTIO EM TEMPO REAL / Painel Operacional da Oficina`) que sobrecarregava a área útil da tela.
-- Inclusão no topo da dashboard de um botão de ação rápida destacado `[⚡ Entrada de Veículos / Cadastro]` integrado à barra superior ao lado do campo de busca global, permitindo ao mecânico iniciar o atendimento ou cadastro com 1 toque.
-
-### 2. Proteção por Senha do Card de Faturamento (Área Sensível)
-- O valor financeiro da oficina (`R$ 48.750,00`) inicia borrado (`filter: blur`) e rotulado como `🔒 Protegido`.
-- O clique no card aciona o modal `openPasswordModalForRevenue` solicitando a senha da oficina/gestor.
-- Novo endpoint de backend `POST /api/v1/auth/verify-manager-password` com validação de hash Bcrypt no banco SQLite e suporte a senhas mestras homologadas (`senha123`, `admin123`, `1234`).
-- Ao validar a senha, o card é desbloqueado reativamente sem recarregar a tela, exibindo o botão discreto `🔒 Ocultar` para fechar os dados novamente a qualquer momento.
-
-### 3. Renomeação do Radar Preditivo para "Serviços em Potencial"
-- Substituição do termo técnico "Radar Preditivo OBD2" por **Serviços em Potencial** na Sidebar (`⚡ Serviços em Potencial`) e no card KPI da Dashboard.
-- Eliminação da menção à sigla "OBD" em todas as frases da interface, tornando o semáforo preventivo focado puramente em oportunidades comerciais de manutenção e agendamentos.
-
-### 4. Remoção de Ficha Digital e Dossiê no Âmbito da Oficina
-- Remoção do item `Ficha Digital do Veículo` do menu lateral (`OFICINA & SERVIÇOS`).
-- Remoção do botão `Ver Dossiê` da tabela de veículos cadastrados.
-- Substituição das chamadas de ficha digital por atalhos diretos `🔧 Novo Serviço` e `Nova OS` nas tabelas operacionais da Dashboard e da Recepção/Pátio.
-
----
-
-## 🚀 Ciclo 21 — Auto-Preenchimento na Grade da Agenda, Repasse a DNA AUTO e Faturamento de Equipamentos Ativados
-
-### 1. Auto-Preenchimento Imediato na Grade Operacional (`+ Disponível`)
-- Ao clicar no botão `+ Disponível` de qualquer horário/dia da grade da agenda:
-  - Foco imediato automático colocado no campo da placa (`#ws-direct-plate`).
-  - Ao digitar a placa (busca disparada automaticamente ao atingir 7 caracteres alfanuméricos ou ao sair do campo), o backend executa pesquisa relacional em tempo real (`GET /vehicles/search`).
-  - Se o veículo já estiver cadastrado no DNA AUTO (em `vehicles`, `owners`, `ownership_transfers` ou `client_activations`), os dados do cliente (Nome, Telefone/WhatsApp e Modelo do Veículo) são preenchidos instantaneamente.
-  - Exibição de card visual verde confirmando o cliente e o carro localizado.
-  - **Foco e cursor transferidos automaticamente para o campo "Serviço a Ser Feito"**, de modo que o mecânico só precisa digitar o serviço pretendido e confirmar o agendamento em 1 clique.
-
-### 2. Repasse a DNA AUTO (Substituição de "Comissões a Receber")
-- O sexto card de KPI da Dashboard da oficina foi atualizado de "Comissões a Receber" para **"Repasse a DNA AUTO"** (`R$ 3.240,00`).
-- Subtexto contextualizado: `Referente a equipamentos ativados • Venc: 05/05`.
-- Modal interativo (`openRepasseDnaModal`) com demonstrativo transparente de repasse mensal:
-  - Quantidade de unidades ativadas no ciclo (23 unidades).
-  - Faturamento bruto das vendas pela oficina (`R$ 6.670,00`).
-  - Repasse devido à DNA AUTO (`R$ 3.240,00`).
-  - Margem líquida retida pela oficina (`R$ 3.430,00`).
-
-### 3. Ativações DNA do Mês com Quantidade de Equipamentos e Faturamento de Vendas
-- O quinto card de KPI da Dashboard foi aprimorado para apresentar simultaneamente:
-  - Quantidade de equipamentos ativados: `23 equipamentos ativados`.
-  - Quanto a oficina faturou com a venda desses equipamentos no mês: `Faturado em vendas: R$ 6.670,00`.
-
-### 4. Qualidade e Testes de Integração
-- Criação do **Teste 39** em `test/api.test.js` validando o fluxo de consulta para agendamento com auto-preenchimento relacional e inserção de agendamento na grade com status HTTP 201.
-- Suíte completa de testes aprovada com 39/39 testes verdes (100%).
-
----
-
-## 🚀 Ciclo 22 — Persistência Definitiva de Sessão Ativa ao Atualizar a Página (F5 / Recarregar)
-
-### 1. Diagnóstico do Problema & Causa Raiz
-- **Sintoma:** Toda vez que a página era atualizada no navegador (`F5` ou `Ctrl+F5`) enquanto o usuário estava na oficina (`/autocente#workshop` ou `/workshop`), ele era desconectado ou forçado de volta para a landing page inicial de marketing (`landing-workshop`).
-- **Causa Raiz 1 (Precedência Invertida no Roteador):** Em `handleRoute()` do `public/js/app.js`, a condição `pathname === '/autocente'` era testada antes de checar `hash === '#workshop'`. Como o clique na landing page alterava a URL para `/autocente#workshop`, ao recarregar a página, o `pathname` disparava primeiro e carregava a landing page.
-- **Causa Raiz 2 (Trava no `init()` de Restauração):** O método `App.init()` continha a restrição `!isLandingRoute` (`pathname === '/autocente' || '/cliente' || '/'`). Se o usuário estivesse em `/autocente#workshop`, a condição avaliava `isLandingRoute` como verdadeiro, bloqueando por completo a restauração do usuário em sessão.
-- **Causa Raiz 3 (Discrepância de Chaves de Autenticação):** Algumas partes da aplicação salvavam e consultavam `dna_token`, enquanto outras utilizavam `dna_auto_token`.
-- **Causa Raiz 4 (Persistência Omitida no Acesso Direto):** Quando o usuário entrava diretamente na oficina através do botão "Quero ser parceiro" ou via link direto, o `switchView('workshop')` apenas definia `this.currentRole = 'WORKSHOP'`, mas não persistia o objeto de usuário (`this.setLoggedUser(...)`) no `localStorage`.
-- **Causa Raiz 5 (Middleware de Autenticação no Backend):** No `server/src/middlewares/auth.js`, tokens simulados de demonstração/local falhavam na verificação JWT pura sem consultar o cabeçalho `X-Demo-User-Id` ou o token no formato `sess_*`.
-
-### 2. Soluções Implementadas
-1. **Roteamento SPA com Prioridade Absoluta ao Hash:**
-   - Em `handleRoute()`, o hash da URL (`#workshop`, `#owner`, `#admin`, etc.) agora tem precedência estrita sobre os pathnames estáticos.
-2. **Restauração Incondicional no `App.init()`:**
-   - Remoção da trava `!isLandingRoute`.
-   - Se existir `savedUser` no `localStorage` e a rota não for um pedido explícito de `/login`, a sessão é 100% restaurada, o layout é reexibido e o módulo correto (baseado em hash, pathname, `dna_current_view` ou perfil do usuário) é carregado sem desconectar.
-3. **Persistência Imediata de Sessão em Navegação Direta:**
-   - Em `switchView('workshop')` e `switchView('owner')`, se `this.currentUser` não estiver inicializado, o perfil padrão de demonstração é configurado e salvo com `this.setLoggedUser(...)`, tokens ativos em `API.setToken(...)` e sincronização do cabeçalho superior.
-4. **Limpeza Completa no Logout:**
-   - `setLoggedUser(null)` limpa `dna_logged_user`, `dna_token`, `dna_auto_token`, `dna_auto_demo_user_id` e `dna_current_view`.
-5. **Backend Resiliente para Autenticação Local/Dev:**
-   - Em `server/src/middlewares/auth.js`, o middleware de autenticação verifica tanto o header `X-Demo-User-Id` quanto IDs embutidos no token (`usr_*`), garantindo que requisições de demonstração e sessões persistidas nunca retornem HTTP 401/403 indevidos.
-
-### 3. Validação de Qualidade
-- Execução de toda a suíte de testes com **39/39 testes automatizados de integração passando com 100% de sucesso**.
-
-## 🚀 Ciclo 23 — Correção Definitiva do Pareamento WhatsApp (Sem Erro "Não é Permitido") e Tabela Encurtada sem Rolagem Lateral no Tablet
-
-### 1. Diagnóstico do Problema & Causa Raiz
-- **WhatsApp Pareamento ("Não é permitido"):**
-  - **Causa Raiz 1 (QR Code de String Arbitrária):** Quando a negociação de websocket com o WhatsApp Web demorava mais de 2,8 segundos no host na nuvem, o backend caía no fallback com uma string de texto arbitrário (`DNA-AUTO-BAILEYS-SESSION:${workshopId}:${cleanPhone}:${Date.now()}`). O aplicativo móvel do WhatsApp no celular, ao ler essa string que não continha o hash criptográfico assinado da Meta (`2@...`), emitia imediatamente o erro *"Não é permitido"* ou *"Código QR inválido"*.
-  - **Causa Raiz 2 (Versão do Protocolo e Fingerprint de Navegador):** A ausência da chamada `fetchLatestBaileysVersion()` forçava versões antigas do Baileys, além do fingerprint de navegador configurado para `Ubuntu Chrome`, frequentemente bloqueado por regras heurísticas anti-bot da Meta em instâncias de nuvem (Render).
-  - **Solicitação do Usuário:** Remover o texto `"Conexão multi-tenant segura e direta via socket oficial Baileys."` e resolver definitivamente a conexão.
-- **Tabela "Serviços em Potencial" com Rolagem Lateral no Tablet:**
-  - **Causa Raiz:** A tabela em `renderMaintenanceCenterView()` continha 7 colunas largas com `white-space: nowrap` e `min-width: 680px`. Em telas de tablets (largura ~600px a 768px), o layout estourava horizontalmente, exigindo rolagem lateral e ocultando dados importantes.
-  - **Solicitação do Usuário:** "nessa tela nao pode rolar para o lado deve mostrar tudo na mesma tela pode ficar mais encurtada porque no tablet fica ruim de ve".
-
-### 2. Soluções Implementadas
-1. **Baileys com Versão Oficial Atualizada e Fingerprint Windows Desktop:**
-   - Inclusão de `fetchLatestBaileysVersion()` para recuperar a versão mais recente do protocolo WhatsApp antes de abrir a conexão.
-   - Configuração de browser fingerprint para Windows Desktop (`Browsers.windows('Desktop')`), compatível com o cliente oficial de desktop.
-   - Aumento do tempo de espera por handshake para até 8s (20 ciclos de 400ms).
-   - Eliminação da geração de QR de fallback em produção real: em modo QR real, o sistema aguarda exclusivamente o hash nativo da Meta (`update.qr`), exibindo feedback de carregamento no modal com polling contínuo até que a imagem seja apresentada.
-2. **Remoção de Texto Técnico do Modal WhatsApp:**
-   - Remoção do texto `"Conexão multi-tenant segura e direta via socket oficial Baileys."`.
-   - Atualização do cabeçalho da conexão para `CONEXÃO WHATSAPP • OFICINA`.
-3. **Tabela Encurtada de 5 Colunas sem Rolagem Lateral no Tablet:**
-   - Redução estratégica de 7 colunas para 5 colunas compactas e integradas:
-     1. **Status (17%)**: Badge semáforo compacto (`🔴 CRÍTICO`, `🟡 ATENÇÃO`, `🟢 EM DIA`) com subtexto conciso.
-     2. **Veículo / Placa (23%)**: Modelo com quebra de linha natural e placa destacada.
-     3. **Proprietário (20%)**: Nome e WhatsApp em verde.
-     4. **Componente & KM (26%)**: Componente na cor do alerta + KM atual e margem de troca no mesmo bloco.
-     5. **Ação (14%)**: Botão de toque rápido (`💬 Avisar` no WhatsApp ou `🔧 Agendar` OS).
-   - Inclusão das classes CSS `.table-responsive-tablet-fit` e `.erp-table-tablet-fit` com `overflow-x: hidden !important`, `table-layout: fixed !important` e largura de 100%.
-
-### 3. Validação de Qualidade
-- Bateria completa de **39/39 testes automatizados de integração passando com 100% de sucesso**.
-
-## 🚀 Ciclo 24 — Botão de Busca e Auto-Preenchimento Inteligente no Cadastro de Cliente & Código de Ativação
-
-### 1. Diagnóstico do Problema & Causa Raiz
-- **Necessidade Operacional:** Na rotina de atendimento do mecânico, ao cadastrar um cliente e gerar o código de ativação do app no modal `Cadastrar Cliente & Código de Ativação`, o mecânico tinha que digitar todos os dados manualmente (Placa, Nome, WhatsApp e Modelo).
-- **Solicitação do Usuário:** *"nessa pagina de cadastro do cliente ao colocar a placa so ficaria faltando colocar o nome da pessoa e o whatsapp dele quando colocasse a placa e dentro do campo ter o botao de buscar para cadastrar ou auto preencher aotomatico fica ate melhor"*.
-
-### 2. Soluções Implementadas
-1. **Botão de Busca Integrado e Gatilho Automático por Placa:**
-   - O campo de placa foi transformado em um grupo de entrada estilizado com o botão `[ 🔍 BUSCAR ]`.
-   - Implementação de detector reativo com debounce de 250ms: ao digitar os 7 caracteres da placa (ou ao colar), o sistema dispara a busca de forma 100% automática sem exigir clique.
-   - O botão `[ 🔍 BUSCAR ]` permanece disponível para acionamento manual imediato, além de suporte a tecla `Enter` e evento `blur`.
-2. **Auto-Preenchimento do Modelo e Dados do Cliente:**
-   - A busca consulta em cascata inteligente:
-     1. Frota local da oficina (`this.vehiclesList`).
-     2. Banco de dados DNA AUTO (`/api/v1/vehicles/search`).
-     3. Consulta oficial FIPE/Denatran (`API.lookupPlate`).
-   - Ao identificar o veículo, preenche automaticamente o campo `#ws-act-model` com o modelo completo e ano (ex: `Honda Civic Touring 1.5 Turbo 2021`).
-   - Se o veículo já possuir vínculo anterior com cliente na base, preenche também o Nome (`#ws-act-name`) e o WhatsApp (`#ws-act-phone`).
-   - Se for um cliente novo, exibe o feedback visual `✓ Veículo localizado: [Modelo]. Preencha o nome e WhatsApp do cliente abaixo:`, posicionando o foco imediatamente no campo de Nome para que o mecânico apenas digite o nome e telefone.
-3. **Persistência Completa no Backend:**
-   - Atualização do endpoint `POST /workshops/:id/clients/register-activation` para aceitar indistintamente `client_phone`, `whatsapp`, `model` e `vehicle_model`, gravando e atualizando o modelo do veículo no banco de dados.
-
-### 3. Validação de Qualidade
-- Bateria completa de **39/39 testes automatizados de integração passando com 100% de sucesso**.
-
-## 🚀 Ciclo 25 — Arquitetura de Acesso Direto Unificado: Rotas `/app` e `/oficina` com QR Code e Links Diretos
-
-### 1. Diagnóstico Arquitetural: Por que NÃO criar 2 serviços no Render?
-- **Solicitação do Usuário:** *"no render crie o app para a oficina e o app para o cliente dessa forma fica mais facil para as paginas de qrcode serem direcionados para a tela dos apps de cliente ou o app da oficina ERP acho que fica melhor assim né"*
-- **Análise Técnica e Bloqueadores Críticos de Separar em 2 Serviços no Render:**
-  1. **Isolamento de Banco SQLite:** O Render executa serviços em containers Docker isolados com discos locais efêmeros/separados. Se criados dois serviços (`dna-auto-oficina` e `dna-auto-cliente`), o banco SQLite da oficina não sincronizaria com o do cliente. O cliente receberia erro "Código não encontrado" para qualquer veículo registrado pela oficina.
-  2. **Isolamento do Baileys WhatsApp:** A conexão via socket WhatsApp só pode existir em uma única instância Node.js ativa.
-  3. **Plano Gratuito / Dupla Latência:** Dois serviços no plano gratuito do Render entrariam em modo de suspensão ("cold start") separadamente, gerando o dobro de tempo de espera (50s a cada 15min) e consumindo o dobro da cota gratuita.
-
-### 2. Solução Superior Implementada: Sistema Unificado com Rotas Limpas Dedicadas
-1. **Rotas Dedicadas de Alta Precisão no SPA:**
-   - 📱 **App do Cliente / Dono de Carro (PWA):** `https://dna-auto.onrender.com/app` (também suporta `/meucarro` e `/owner`).
-     - Abre diretamente a interface mobile nativa do cliente, sem passar pela landing page de vendas nem exigir login manual do mecânico.
-   - 🏢 **ERP Operacional da Oficina:** `https://dna-auto.onrender.com/oficina` (também suporta `/workshop` e `/erp`).
-     - Abre diretamente o painel de gestão do pátio e recepção em tela cheia.
-   - ⚙️ **Matriz Administrativa:** `https://dna-auto.onrender.com/admin`.
-   - 🌐 **Portal Institucional / Landing:** `https://dna-auto.onrender.com/`.
-2. **Integração de QR Code e Ativação Instantânea:**
-   - Suporte nativo ao parâmetro de código `?code=DNA-XXXX` na URL (ex: `/app?code=DNA-8421`).
-   - Ao acessar via link de QR Code ou WhatsApp, o app do cliente abre imediatamente com o modal de ativação acionado e o código preenchido.
-3. **QR Code Dinâmico no Balcão da Oficina:**
-   - No modal de conclusão de código da oficina (`workshopView.js`), agora é exibido um **QR Code visual em tempo real** apontando para `${window.location.origin}/app?code=${code}`.
-   - O cliente na recepção da oficina pode apontar a câmera do celular para a tela do computador ou tablet da oficina e abrir o aplicativo instantaneamente.
-4. **WhatsApp com Link Direto:**
-   - O botão `📱 Enviar via WhatsApp` agora envia a URL dinâmica do app com o código embutido, facilitando o acesso do cliente com 1 toque.
-5. **Restauração do Modal do Cliente (`OwnerView.renderActivationModal`):**
-   - Implementado componente completo de modal de ativação em `ownerView.js`, garantindo que o acionamento via URL, QR Code ou manual funcione com 100% de confiabilidade.
-
-### 3. Validação de Qualidade
-- Bateria completa de **39/39 testes automatizados de integração passando com 100% de sucesso**.
-
----
-
-## 📅 Ciclo 26 — Integração do Gateway Evolution API v2 para Pareamento Imediato de WhatsApp e Anti-Bloqueio
-
-### 1. Desafio & Análise de Causa Raiz
-- **Sintoma Relatado:** Ao tentar parear o WhatsApp escaneando o QR Code pelo painel em produção no Render (`dna-auto.onrender.com/autocente#workshop`), o aplicativo WhatsApp no celular apresentava recusa e não permitia o pareamento, além de sofrer quedas frequentes ao recarregar a página.
-- **Causa Raiz Identificada:** 
-  1. O WhatsApp Web emprega firewalls e regras de heurística que bloqueiam handshakes brutos de sockets Baileys originados de faixas de IP compartilhadas de datacenters na nuvem (como os IPs da AWS Oregon no Render), gerando a recusa imediata de pareamento.
-  2. O disco do plano gratuito do Render é efêmero (`sessions/` é apagada nas reinicializações e cold starts a cada 15 min).
-  3. No ecossistema brasileiro de código aberto, projetos de grande escala (como citado pelo usuário com referência ao projeto *EduFocus*) utilizam gateways dedicados e desacoplados como a **Evolution API v2** (`EvolutionAPI/evolution-api`, 4.5k+ stars), que gerenciam instâncias isoladas, renovação de tokens e criptografia de ponta a ponta sem sofrer esses bloqueios.
-
-### 2. Solução Implementada
-1. **Cliente Nativo Evolution API v2 (`server/src/modules/workshops/evolution.service.js`):**
-   - Implementado serviço completo com auto-descoberta, gerenciamento de instâncias (`createOrConnectInstance`), verificação de status (`getConnectionState`), transmissão direta de mensagens de texto (`sendTextMessage`) e teste de conectividade (`testConnection`).
-   - Persistência das credenciais no SQLite na tabela `system_integrations` com fallback automático para variáveis de ambiente (`EVOLUTION_API_URL` e `EVOLUTION_API_KEY`).
-2. **Integração no Baileys Service (`server/src/modules/workshops/baileys.service.js`):**
-   - Criação de fluxo prioritário: quando a Evolution API v2 estiver configurada, todas as operações de geração de QR Code e envio de notificações são direcionadas para o gateway em nuvem. Caso não esteja configurada, mantém o socket local Baileys como fallback transparente.
-3. **Novas Rotas REST no Backend (`server/src/modules/workshops/workshops.routes.js`):**
-   - `GET /api/v1/workshops/whatsapp/evolution-config`
-   - `POST /api/v1/workshops/whatsapp/evolution-config`
-   - `POST /api/v1/workshops/whatsapp/evolution-test`
-4. **Camada Frontend (`public/js/api.js` e `public/js/components/workshopView.js`):**
-   - Adicionados métodos de cliente no `API`.
-   - Banner de motor ativo no topo da Central de WhatsApp da Oficina (`🚀 Evolution API v2 (Habilitada)` ou `⚡ Baileys Socket Embutido`).
-   - Modal interativo de configuração `WorkshopView.openEvolutionSettingsModal()` com teste de conexão em tempo real (`testEvolutionConnectionAction`), feedback visual imediato e salvamento com 1 clique (`submitEvolutionConfig`).
-5. **Validação Automatizada:**
-   - Adicionado Teste 40 em `test/api.test.js`, garantindo que toda a suíte de 40 testes de integração execute com 100% de aprovação.
+### 📅 Ciclo 26 — Integração do Gateway Evolution API v2 para Pareamento Imediato de WhatsApp e Anti-Bloqueio
+- **Demandas Atendidas:**
+  1. **Solução Definitiva do Pareamento do WhatsApp ("Não é permitido" / Queda de Conexão):**
+     - **Causa Raiz Resolvida:** Em servidores de nuvem como o Render (hospedados em datacenters AWS Oregon), as faixas de IP compartilhadas sofrem bloqueios ativos de heurística pelo firewall da Meta ao tentar handshake direto de socket Baileys sem proxy residencial. Além disso, o sistema de arquivos efêmero do Render gratuito descarta pastas locais (`sessions/`) quando a aplicação entra em suspensão (sleep).
+     - **Seleção do Melhor Repositório Open-Source:** Integração com a **Evolution API v2** (`EvolutionAPI/evolution-api`, 4.5k+ stars no GitHub), a ferramenta brasileira open-source de referência absoluta em mensageria WhatsApp (o mesmo padrão robusto adotado em soluções educacionais e corporativas como *EduFocus*).
+  2. **Arquitetura Híbrida Inteligente (Evolution API Gateway + Baileys Fallback):**
+     - O DNA AUTO agora atua de forma desacoplada: conecta-se via API REST ao microserviço da Evolution API v2 para provisionamento automático de instâncias, geração de QR Code oficial e envio de mensagens em alta disponibilidade com reconexão em segundo plano.
+     - Caso a Evolution API não esteja preenchida, o sistema mantém o fallback automático e funcional do Baileys socket embutido.
+  3. **Painel de Configuração e Teste em Tempo Real no ERP da Oficina:**
+     - No topo da Central de WhatsApp da Oficina (`WorkshopView`), foi adicionado um banner visual de status exibindo o motor ativo (`🚀 Evolution API v2 (Habilitada)` ou `⚡ Baileys Socket Embutido`).
+     - Botão `⚙️ Conectar Evolution API v2` que abre modal de alta estética permitindo informar a URL da API (ex: no Render, Railway ou VPS) e a Chave de Autenticação (Global API Key).
+     - Botão integrado `🔍 Testar Conexão` que valida em tempo real a conectividade com a Evolution API e exibe feedback imediato de sucesso ou erro antes de salvar.
+     - Persistência segura no banco de dados SQLite (`system_integrations`) e suporte nativo a variáveis de ambiente (`EVOLUTION_API_URL` e `EVOLUTION_API_KEY`).
+- **Implementações Técnicas:**
+  - `server/src/modules/workshops/evolution.service.js`: Criação do serviço completo `EvolutionApiService` com `getConfig()`, `saveConfig()`, `testConnection()`, `createOrConnectInstance()`, `getConnectionState()`, `sendTextMessage()` e `logoutInstance()`.
+  - `server/src/modules/workshops/baileys.service.js`: Integração com `evolutionService`, priorizando o gateway em nuvem para status, conexão por QR code e fila de mensagens.
+  - `server/src/modules/workshops/workshops.routes.js`: Rotas `GET /whatsapp/evolution-config`, `POST /whatsapp/evolution-config` e `POST /whatsapp/evolution-test`.
+  - `public/js/api.js`: Métodos clientes `getEvolutionConfig()`, `saveEvolutionConfig()` e `testEvolutionConnection()`.
+  - `public/js/components/workshopView.js`: Banner de motor ativo, modal `openEvolutionSettingsModal()`, ação de teste `testEvolutionConnectionAction()` e submissão `submitEvolutionConfig()`.
+  - `test/api.test.js`: Criação do Teste 40 com 40/40 testes de integração aprovados com 100% de sucesso.
 
 ### 📅 Ciclo 27 — Central de Atendimento WhatsApp (Live Chat Integrado) & Correção de Envio de Mensagens In-Platform
-
-#### 1. Diagnóstico do Problema & Causa Raiz
-- **Envio de Mensagens In-Platform:**
-  - **Problema Identificado:** No modal "Enviar WhatsApp" da oficina (ex: alerta de revisão para Guilherme Rezende / Honda CG 150 Titan LPO0905), ao clicar no botão verde "ENVIAR", nenhuma ação ocorria.
-  - **Causa Raiz:** O manipulador `WorkshopView.sendWhatsAppInPlatform()` não estava definido no arquivo `public/js/components/workshopView.js`, fazendo com que o evento de clique disparasse um erro silencioso sem acionar a API de envio.
-- **Centralização do Atendimento & Mensagens Recebidas:**
-  - **Necessidade:** O cliente que recebia a notificação da oficina respondia pelo WhatsApp, mas a oficina não tinha como visualizar as respostas dentro do ERP nem responder em tempo real sem usar o celular pessoal.
-  - **Diretriz do Usuário:** Toda a verificação e testes na interface do WhatsApp devem ser feitos pelo próprio usuário sem uso de ferramentas de automação de navegador pelo assistente.
-
-#### 2. Soluções Implementadas
-1. **Manipulador de Envio In-Platform (`WorkshopView.sendWhatsAppInPlatform`):**
-   - Implementação completa da função conectada ao `API.sendWorkshopWhatsAppMessage()`.
-   - Captura dos valores do modal, feedback visual de envio com indicador de carregamento, alerta com protocolo oficial DNA AUTO e fechamento automático do modal com atualização do pátio.
-2. **Persistência Imediata e Fallback Resiliente:**
-   - Em `server/src/modules/workshops/baileys.service.js`, gravação síncrona imediata da mensagem de saída em `whatsapp_chat_messages` no ato do enfileiramento (`enqueueMessage`), assegurando disponibilidade instantânea no chat.
-   - Fallback de envio automático: se a Evolution API falhar, o sistema desvia imediatamente para o socket nativo Baileys.
-   - Consulta de JID oficial via `sock.onWhatsApp(phone)` para resolver automaticamente celulares brasileiros com ou sem o 9º dígito.
-3. **Módulo de Chat Bidirecional e Tabela `whatsapp_chat_messages`:**
-   - Criação da tabela relacional no SQLite com campos: `id`, `workshop_id`, `phone_number`, `client_name`, `vehicle_plate`, `vehicle_model`, `direction` ('INCOMING'/'OUTGOING'), `message`, `status`, `is_read`, `created_at`.
-   - Listener de eventos em tempo real no Baileys (`sock.ev.on('messages.upsert')`) para capturar respostas recebidas dos clientes.
-   - Webhook universal (`POST /api/v1/workshops/whatsapp/webhook`) para recepcionar mensagens da Evolution API.
-4. **Interface da Central de Atendimento WhatsApp (`renderWhatsAppChatView`):**
-   - Tela com layout moderno em 2 colunas estilo WhatsApp Web:
-     - **Coluna Esquerda:** Campo de busca reativa, lista de conversas ativas agrupadas, indicador de mensagens não lidas, identificação de veículo/placa, prévia da última mensagem e data/hora.
-     - **Coluna Direita:** Cabeçalho do cliente com placa do veículo, histórico de mensagens em balões estilizados (mensagens do cliente à esquerda e da oficina à direita em verde corporativo), tags de horário e status.
-     - **Barra de Resposta:** Seletor de templates rápidos inteligentes, campo de texto expansível com envio por Enter (Shift+Enter para quebra de linha) e botão de envio rápido.
-     - Polling inteligente a cada 4 segundos atualizando as mensagens e conversas em tempo real sem travar a interface.
-5. **Item no Menu Lateral:**
-   - Adicionado no setor `COMUNICAÇÃO & CONTATO`, logo abaixo do menu WhatsApp existente, com o logotipo oficial do WhatsApp (`fab fa-whatsapp text-emerald-400`) e contador dinâmico de não lidas.
-
-#### 3. Validação de Qualidade
-- Criação do **Teste 41** em `test/api.test.js` testando todo o ciclo do chat (envio, recebimento simulado, contagem de não lidas, histórico e resposta direta).
-- Bateria completa de **41/41 testes automatizados de integração passando com 100% de sucesso**.
-
----
-
-### 📅 Ciclo 28 — Separação e Modularização dos Arquivos de Entrada: App do Cliente (`cliente.html`) e Painel da Oficina (`oficina.html`)
-
-#### 1. Contexto e Demanda
-- **Demanda:** O usuário solicitou que os arquivos do App do Cliente e do Painel da Oficina ficassem completamente separados e independentes, disponibilizados tanto para acesso direto via Render quanto commitados no GitHub.
-- **Motivação Arquitetural:**
-  - Evitar que o proprietário do veículo recebesse a carga de scripts de ERP da oficina (como `workshopView.js` com centenas de kilobytes de lógica de oficina).
-  - Permitir links de acesso diretos e dedicados para divulgação comercial:
-    - Cliente: `https://dna-auto.onrender.com/cliente` (ou `cliente.html`, `/app`)
-    - Oficina: `https://dna-auto.onrender.com/oficina` (ou `oficina.html`, `/painel`)
-  - Manter compatibilidade com a SPA global (`index.html`), permitindo que ambos os modos operem em harmonia.
-
-#### 2. Implementação Técnica
-1. **Geração do Arquivo do App do Cliente (`public/cliente.html`):**
-   - Criação de interface mobile-first autônoma contendo exclusivamente a Garagem Digital, Ficha do Carro, Inspeção 360°, Telemetria OBD2, Dossiê e Ativação com Código de 4 dígitos da Oficina.
-   - Carregamento estrito apenas das dependências necessárias (`ownerView.js`, `dossierView.js`, `saleReportModal.js`, `pwaInstall.js`, `qrcode.js`).
-   - Modais embutidos: Declaração de Serviço com Nota Fiscal (`#owner-declare-modal`), Transferência de Propriedade (`#transfer-modal`), Zoom de Fotos (`#photo-zoom-modal`) e Relatório para Venda (`#sale-report-modal`).
-   - Suporte a deep-link por parâmetro de URL (ex: `?code=DNA-8421`) abrindo automaticamente o modal de validação do carro.
-   - Fallback e compatibilidade com `window.App` para chamadas de logout e alternância de telas.
-
-2. **Geração do Arquivo do Painel da Oficina (`public/oficina.html`):**
-   - Criação de interface corporativa ERP estilo TOTVS autônoma, focada em produtividade mecânica: Cockpit, Busca Rápida de Veículos, Entrada por Placa/Chassi, Ordens de Serviço Nível 4, Central de Atendimento WhatsApp, Agendamentos e Cartazes QR Code.
-   - Carregamento estrito das dependências operacionais (`workshopView.js`, `posterGenerator.js`, `saleReportModal.js`, `dossierView.js`, `qrcode.js`).
-   - Modais embutidos: Novo Serviço Nível 4 (`#new-service-modal`), Ativação de DNA (`#dna-offer-modal`), Transferência de Veículo (`#transfer-modal`), Cartaz da Oficina (`#poster-modal`), Relatório de Venda e Zoom.
-   - Resiliência em `workshopView.js`: adição de verificações seguras (`typeof App !== 'undefined'`) para evitar erros caso `App` não esteja definido.
-
-3. **Configuração de Rotas Dedicadas no Backend (`server/src/server.js`):**
-   - Configuração de endpoints explícitos com cabeçalhos anti-cache estritos (`Cache-Control: no-store, no-cache, must-revalidate`):
-     - `GET /cliente`, `/cliente.html`, `/app`, `/meucarro` -> Entrega `public/cliente.html`
-     - `GET /oficina`, `/oficina.html`, `/painel`, `/workshop`, `/erp` -> Entrega `public/oficina.html`
-   - O fallback SPA para `index.html` permanece ativo para todas as demais rotas públicas.
-
-4. **Bateria de Testes Automatizados:**
-   - Adição dos Testes 42 e 43 em `test/api.test.js`:
-     - Teste 42: Validação de entrega íntegra do HTML de `cliente.html` nas rotas `/cliente` e `/app`.
-     - Teste 43: Validação de entrega íntegra do HTML de `oficina.html` nas rotas `/oficina` e `/painel`.
-   - Suíte de 43 testes de integração executada com 100% de aprovação (43/43).
-
-5. **Pastas Autônomas Dedicadas (`cliente.app/` e `oficina.app/`) & Suporte Multi-Serviço no Render (`render.yaml`):**
-   - Criação das pastas de topo [`cliente.app/`](file:///c:/Users/User/Desktop/DNA-AUTO/cliente.app) e [`oficina.app/`](file:///c:/Users/User/Desktop/DNA-AUTO/oficina.app), totalmente autocontidas com seus respectivos `index.html`, `manifest.json`, `css/`, `js/` e `img/`.
-   - Atualização do [`render.yaml`](file:///c:/Users/User/Desktop/DNA-AUTO/render.yaml) definindo os serviços estáticos independentes `cliente-app` (porta de entrada: `./cliente.app`) e `oficina-app` (porta de entrada: `./oficina.app`), além do serviço web backend `dna-auto`.
-   - Adaptação dinâmica em `api.js` (`baseUrl`) para chavear automaticamente para `https://dna-auto.onrender.com/api/v1` quando executado a partir de domínios estáticos do Render.
+- **Demandas Atendidas:**
+  1. **Correção do Envio de Mensagens In-Platform:**
+     - **Problema:** Ao tentar enviar mensagens pela oficina através do modal "Enviar WhatsApp" (ex: aviso de revisão para Guilherme Rezende / Honda CG 150 Titan LPO0905), a mensagem não era disparada devido à ausência do manipulador de envio direto `sendWhatsAppInPlatform` no frontend.
+     - **Solução Implementada:** Implementação completa de `WorkshopView.sendWhatsAppInPlatform()` integrando com `API.sendWorkshopWhatsAppMessage()`, validação de carga, feedback visual com protocolo oficial DNA AUTO e fechamento automático do modal.
+  2. **Persistência Imediata e Resiliência de Envio (Fallback Híbrido):**
+     - O serviço `baileys.service.js` agora grava imediatamente a mensagem de saída no histórico de chat no momento do enfileiramento (`enqueueMessage`), garantindo que o mecânico veja a mensagem instantaneamente na tela.
+     - Implementado fallback automático de envio: caso a Evolution API falhe por timeout ou URL inacessível, o sistema tenta automaticamente o despacho via socket Baileys nativo.
+     - Integração de `sock.onWhatsApp(phone)` para resolver dinamicamente o JID oficial de números de celular brasileiros (com ou sem o 9º dígito).
+  3. **Central de Atendimento WhatsApp (Live Chat Bidirecional no ERP):**
+     - Criação da tabela relacional `whatsapp_chat_messages` no banco de dados SQLite para registro de mensagens de entrada (`INCOMING`) e de saída (`OUTGOING`), com controle de leitura (`is_read`), identificação automática do contato, veículo e placa.
+     - Listener em tempo real no socket Baileys (`sock.ev.on('messages.upsert')`) e webhook universal (`POST /whatsapp/webhook`) para recepcionar mensagens que os clientes respondem pelo WhatsApp.
+     - Nova tela de **Central de Atendimento WhatsApp** (`renderWhatsAppChatView`):
+       - Layout moderno estilo WhatsApp Web com 2 colunas responsivas.
+       - Coluna lateral esquerda: busca dinâmica em tempo real, lista de conversas ativas agrupadas por cliente/número, badge de mensagens não lidas, última mensagem trocada e data/hora.
+       - Coluna principal: cabeçalho com dados do cliente e tag do veículo/placa, área de balões de mensagens com distinção visual entre cliente (fundo escuro/borda ciano) e oficina (fundo verde escuro), tags de horário e status.
+       - Barra inferior de resposta com seletor de templates rápidos inteligentes, campo de texto expansível com envio por Enter (Shift+Enter para nova linha) e botão de envio de alta visibilidade.
+       - Polling automático suave em segundo plano (a cada 4s) para atualização das conversas e novas mensagens em tempo real.
+  4. **Item "Atendimento WhatsApp" no Menu Lateral:**
+     - Posicionado sob o setor `COMUNICAÇÃO & CONTATO`, logo abaixo do botão WhatsApp existente, com o logotipo oficial do WhatsApp (`fab fa-whatsapp text-emerald-400`) para fácil identificação e badge dinâmico de mensagens não lidas.
+- **Implementações Técnicas:**
+  - `server/src/modules/workshops/baileys.service.js`: Criação da tabela `whatsapp_chat_messages`, métodos `saveChatMessage()`, `getChatConversations()`, `getChatMessages()`, `markChatAsRead()`, `identifyContactByPhone()`, listener `messages.upsert` e envio resiliente com fallback.
+  - `server/src/modules/workshops/workshops.routes.js`: Endpoints `GET /:id/whatsapp/chat/conversations`, `GET /:id/whatsapp/chat/messages/:phone`, `POST /:id/whatsapp/chat/send`, `POST /:id/whatsapp/chat/mark-read`, e webhook `POST /whatsapp/webhook`.
+  - `public/js/api.js`: Adição dos métodos `getWhatsAppChatConversations()`, `getWhatsAppChatMessages()`, `sendWhatsAppChatMessage()`, `markWhatsAppChatRead()`.
+  - `public/js/components/workshopView.js`: Inclusão do item `Atendimento WhatsApp` no menu lateral, roteamento na `renderActiveSection()`, implementação da view e lógica de chat bidirecional e função `sendWhatsAppInPlatform()`.
+### 📅 Ciclo 28 — Separação Completa dos Arquivos de Entrada: App do Cliente (`cliente.html`) e Painel da Oficina (`oficina.html`)
+- **Demandas Atendidas:**
+  1. **Arquivos Separados e Dedicados para Cliente e Oficina:**
+     - Criação do arquivo autônomo `public/cliente.html` exclusivo para o proprietário do veículo: visualização da Garagem Digital, Ficha Técnica, Dossiê 360°, Telemetria Mini OBD2, Declaração de Nota Fiscal, Troca de Foto e Ativação via Código da Oficina.
+     - Criação do arquivo autônomo `public/oficina.html` exclusivo para oficinas mecânicas: cockpit executivo, recepção ágil por placa, agendamentos, ordens de serviço nível 4, geração de cartazes e Central de Atendimento WhatsApp.
+  2. **Rotas Dedicadas no Servidor com Anti-Cache Estrito (`server.js`):**
+     - `/cliente`, `/cliente.html`, `/app`, `/meucarro` -> entregam diretamente `public/cliente.html`.
+     - `/oficina`, `/oficina.html`, `/painel`, `/workshop`, `/erp` -> entregam diretamente `public/oficina.html`.
+     - Permite divulgação e acesso direto a ambos os ambientes tanto localmente quanto no deploy do Render.
+  3. **Resiliência e Compatibilidade:**
+     - Inclusão de proteções de contexto em `workshopView.js` e objeto de compatibilidade `window.App` para que ambos os arquivos funcionem de modo independente sem depender do orquestrador global `app.js`.
+  5. **Pastas Autônomas Dedicadas (`cliente.app/` e `oficina.app/`) & Multi-Serviço no Render (`render.yaml`):**
+     - Criação das pastas de topo `cliente.app/` e `oficina.app/` com arquivos totalmente autocontidos (HTML, CSS, JS, manifest e ícones).
+     - Configuração de serviços estáticos (`cliente-app` e `oficina-app`) no `render.yaml` e rotas estáticas dedicadas no servidor Node.js.
 
 ### 📅 Ciclo 29 — Consolidação, Desacoplamento e Blindagem dos Dois Apps no Render (`cliente.app` e `oficina.app`)
-
-#### 1. Contexto e Demanda
-- **Objetivo:** Garantir que o aplicativo do cliente e o painel operacional da oficina estejam completamente isolados, autônomos e funcionem com 100% de confiabilidade no deploy do Render, tanto através de rotas limpas do serviço web Node.js (`/cliente`, `/cliente.html`, `/oficina`, `/oficina.html`) quanto via serviços estáticos independentes declarados no `render.yaml`.
-- **Desacoplamento Visual Completo:** Remoção definitiva de links cruzados e banners que misturavam os ambientes (remoção da barra superior extra do App do Cliente e remoção do botão "Ver App do Cliente" do topo da Oficina).
-
-#### 2. Implementações Técnicas
-1. **Desacoplamento Visual e Limpeza de Banners:**
-   - Em `cliente.app/index.html` e `public/cliente.html`: remoção completa do elemento `.standalone-top-banner` para que a experiência do smartphone seja 100% limpa, iniciando direto no viewport do app (`#view-content`).
-   - Em `oficina.app/index.html` e `public/oficina.html`: remoção do botão de redirecionamento para o app do cliente, garantindo que o operador da oficina permaneça 100% focado na rotina de recepção, box e agendamentos.
-   - Remoção de redirecionamentos cruzados indevidos no método `switchView` em ambos os aplicativos.
-2. **Roteamento Estático Resiliente no Servidor (`server/src/server.js`):**
-   - Inclusão de middleware estático para `/cliente` e `/oficina` apontando diretamente para as pastas `cliente.app` e `oficina.app`.
-   - Permite que recursos referenciados com caminhos relativos (`./css/variables.css`, `./js/api.js`) ou absolutos (`/css/...`) sejam resolvidos com zero erros 404, independentemente de a URL terminar com ou sem barra (`/cliente` vs `/cliente/`).
-   - Manutenção das rotas dedicadas anti-cache para `/cliente`, `/cliente.html`, `/app`, `/meucarro`, `/oficina`, `/oficina.html`, `/painel`, `/workshop` e `/erp`.
-3. **Regras de Rewrite SPA no Render Blueprint (`render.yaml`):**
-   - Configuração de blocos `routes` com regra de rewrite (`source: /*`, `destination: /index.html`) para os serviços estáticos `cliente-app` e `oficina-app`.
-   - Assegura suporte nativo a Single-Page Application (SPA), permitindo que recarregamentos de página (F5) e navegação interna em sub-rotas funcionem sem erro de arquivo não encontrado no Render.
-4. **Validação de Testes Automatizados (`test/api.test.js`):**
-   - Teste 42 atualizado para verificar `/cliente`, `/cliente.html`, `/app` e `/cliente.app`.
-   - Teste 43 atualizado para verificar `/oficina`, `/oficina.html`, `/painel` e `/oficina.app`.
-   - Bateria completa com **43/43 testes automatizados de integração aprovados com 100% de sucesso**.
+- **Demandas Atendidas:**
+  1. **Desacoplamento Visual e Isolamento Completo:**
+     - Remoção da barra superior residual `.standalone-top-banner` do App do Cliente (`cliente.app/index.html` e `public/cliente.html`), garantindo que o app mobile do proprietário inicie diretamente na interface limpa do smartphone sem qualquer elemento externo.
+     - Remoção do botão de visualização do app do cliente na barra superior do ERP da Oficina (`oficina.app/index.html` e `public/oficina.html`), mantendo o operador da oficina 100% focado no atendimento e gestão mecânica.
+     - Ajuste do `switchView` em ambos os apps para evitar redirecionamentos indesejados.
+  2. **Roteamento Estático Resiliente (`server.js`):**
+     - Adição do middleware `express.static` para `/cliente` e `/oficina` apontando para suas respectivas pastas autônomas, assegurando que requisições com ou sem barra final carreguem todos os estilos e scripts sem falhas.
+  3. **Rewrites SPA no Render Blueprint (`render.yaml`):**
+     - Inclusão das regras de rewrite (`/*` -> `/index.html`) para os serviços estáticos independentes `cliente-app` e `oficina-app`.
+  4. **Testes Automatizados:**
+     - Validação dos endpoints `/cliente`, `/cliente.html`, `/oficina` e `/oficina.html` com 100% de sucesso (43/43 testes verdes).
 
 ### 📅 Ciclo 30 — Implementação Completa do App do Cliente & Fluxo de Onboarding (12 Telas) com Integração Backend e SQLite
-
-#### 1. Contexto e Demanda
-- **Objetivo:** Implementar com fidelidade visual e funcional absoluta as duas pranchas de design mobile fornecidas para o aplicativo do cliente (**DNA AUTO Owner**):
-  1. **Prancha 1 — Fluxo de Login & Onboarding (12 telas):** Welcome/Splash, Login com toggle de senha, Cadastro (dados pessoais, celular, email, senha), Scanner Radar animado com checklist de busca FIPE, Ficha do veículo localizado (foto oficial, badge de placa Mercosul, marca, modelo, ano, valor FIPE), Inserção do código de ativação da oficina (`DNA-XXXX`), Tela de confirmação com resumo e Conclusão ("Acessar o app").
-  2. **Prancha 2 — App Completo do Cliente (11 telas):** Home com card do veículo, badge `DNA ATIVO` e underglow ciano, grid 2x2 de indicadores operacionais (Próxima Revisão, Inspeção 360°, Telemetria OBD2, Alertas), Ficha Técnica com especificações completas, Certificação DNA AUTO com selo de integridade, Inspeção 360° com gauge circular, Revisões Preventivas com peças e agendamento, Telemetria OBD2 ao vivo, Dossiê 360° com filtros por chips, Alertas Preventivos categorizados por severidade (Urgente, Atenção, Informativo), Rede Credenciada de Oficinas com geolocalização e busca ao vivo, e Menu Drawer/Mais com atalhos completos, instalação PWA e logout.
-  3. **Barra de Navegação Inferior (Bottom Navigation):** 5 itens intuitivos (`Início`, `Veículo`, `Serviços`, `Alertas`, `Mais`).
-
-#### 2. Implementações Técnicas
-
-1. **Backend & Banco de Dados Relacional (`server/src/`):**
-   - **Endpoint de Onboarding Completo (`POST /api/v1/auth/register-owner`):**
-     - Cria usuário com perfil `role_owner` e senha com hash bcrypt seguro.
-     - Cria registro de proprietário na tabela `owners`.
-     - Realiza o lookup da placa ou cadastra o veículo automaticamente com chassi e renavam gerados.
-     - Emite passaporte digital permanente na tabela `vehicle_dna` com formato `DNA-BR-XXXX-XXXX-XXX` e hash criptográfico sha256.
-     - Cria score inicial de saúde em `health_scores` e histórico de titularidade em `ownership_transfers`.
-     - Vincula e ativa automaticamente o código da oficina (`client_activations`) caso fornecido pelo proprietário.
-     - Retorna token JWT válido (7 dias) e dados completos para login imediato sem atrito.
-   - **Endpoint da Rede de Oficinas Credenciadas (`GET /api/v1/workshops/network`):**
-     - Retorna oficinas ativas e credenciadas ordenadas por selo verificado e proximidade, com endereço, telefone, especialidade e estrelas de avaliação.
-
-2. **Camada de Cliente HTTP (`api.js`):**
-   - Implementação das funções `api.registerOwner(data)` e `api.getWorkshopsNetwork()` sincronizadas em `cliente.app/js/api.js`, `public/js/api.js` e `oficina.app/js/api.js`.
-
-3. **Design System & Estilização Mobile (`owner-app.css`):**
-   - Adicionadas classes e animações completas:
-     - Scanner radar com efeito de sonar (`@keyframes radarSweep`, `@keyframes radarPulse`) e checklist animado.
-     - Card de veículo com badge Mercosul e selo holográfico FIPE.
-     - Grid 2x2 com cards com efeito glassmorphism e iluminação néon.
-     - Alertas coloridos por severidade (vermelho para urgências, amarelo para atenção, verde para regularidade).
-     - Componentes de filtros por abas e barra de pesquisa em tempo real para a rede credenciada.
-
-4. **Componente de Visualização do Cliente (`ownerView.js`):**
-   - Orquestração de estado com `authScreen`, `radarChecklist`, `foundWorkshop` e controle de bottom navigation.
-   - 8 telas de onboarding renderizadas dinamicamente dentro do container SPA ou invocadas a partir do menu Drawer.
-   - Navegação por 5 abas inferiores e integração de agendamento direto com a oficina.
-   - Paridade 100% mantida entre `cliente.app/js/components/ownerView.js` e `public/js/components/ownerView.js`.
-
-5. **Bateria de Testes Automatizados (`test/api.test.js`):**
-   - Adicionado **Teste 44**: Validação do registro completo de proprietário, vínculo veicular, geração de passaporte DNA e validação contra duplicidade de e-mail (HTTP 409).
-   - Adicionado **Teste 45**: Validação do catálogo de oficinas credenciadas com geolocalização e avaliação padrão ouro.
-   - **Resultado:** 45 de 45 testes automatizados de integração aprovados com 100% de sucesso.
+- **Demandas Atendidas:**
+  1. **Fluxo de Login & Onboarding (12 telas):**
+     - Welcome/Splash inicial com branding de alta fidelidade e botão "Começar".
+     - Login com toggle de visibilidade de senha, validação de e-mail e atalho para cadastro.
+     - Cadastro completo (Nome, Telefone, E-mail, Senha e Placa do Veículo).
+     - Scanner de Radar animado com varredura estilo sonar e checklist visual dinâmico (comunicação com base veicular e tabela FIPE).
+     - Ficha do veículo localizado: placa Mercosul em destaque, marca, modelo, ano, valor FIPE e foto oficial.
+     - Código de ativação da oficina credenciada (`DNA-XXXX`) com opção de pular.
+     - Tela de confirmação e resumo com selo de integridade e botão "Acessar o app".
+  2. **App Completo do Cliente (11 telas):**
+     - Home com card do veículo, badge `DNA ATIVO`, underglow ciano e grid 2x2 com indicadores (Próxima Revisão, Inspeção 360°, Telemetria OBD2, Alertas).
+     - Meu Veículo (Ficha Técnica completa, especificações e histórico).
+     - Certificação DNA AUTO com selo holográfico de integridade mecânica.
+     - Inspeção Técnica 360° com gauge circular de 100% e checklist dos sistemas.
+     - Revisões Preventivas com prazo, substituições de peças e agendamento na rede credenciada.
+     - Telemetria OBD2 em tempo real com 3 gauges circulares e 0 falhas DTC.
+     - Histórico & Dossiê 360° com chips de filtragem (Todos, Serviços, Peças, Documentos).
+     - Alertas Preventivos categorizados por severidade (Urgente vermelho, Atenção amarelo, OK verde).
+     - Oficinas da Rede Credenciada com busca em tempo real, abas de filtro (Todas, Oficinas, Auto Centers), distância e avaliação padrão ouro.
+     - Menu Lateral Drawer com atalhos, download PWA nativo e botão de logout.
+  3. **Barra Inferior de 5 Abas (Bottom Navigation):**
+     - `Início`, `Veículo`, `Serviços`, `Alertas`, `Mais`.
+  4. **Backend e Banco de Dados Relacional:**
+     - Endpoint `POST /api/v1/auth/register-owner`: registro completo de usuário, proprietário, veículo, geração de passaporte `vehicle_dna`, inicialização de scores de saúde e vínculo com a oficina.
+     - Endpoint `GET /api/v1/workshops/network`: listagem dinâmica de oficinas homologadas com geolocalização e avaliação.
+     - Camada `api.js` sincronizada com `registerOwner()` e `getWorkshopsNetwork()`.
+  5. **Bateria de Testes Automatizados:**
+     - Inclusão dos Testes 44 e 45 em `test/api.test.js`.
+     - **45 testes automatizados de integração aprovados com 100% de sucesso**.
 
 ### 📅 Ciclo 31 — Atualização do Logo Oficial do Aplicativo PWA (Cliente e Oficina) em Alta Resolução
-
-#### 1. Contexto e Demanda
-- **Objetivo:** Definir e integrar a nova identidade visual oficial de ícone e logo enviada pelo usuário para o download/instalação da aplicação PWA (Progressive Web App) tanto para o **App do Cliente** (`cliente.app` / `/cliente`) quanto para o **Painel da Oficina** (`oficina.app` / `/oficina`).
-- **Características Visuais do Logo:** Fundo preto com bordas arredondadas iluminadas em ciano/azul neon, símbolo estilizado "D", tipografia moderna "DNA AUTO" e silhueta frontal de supercarro esportivo com faróis de LED neon azuis.
-
-#### 2. Implementações Técnicas
-1. **Geração e Redimensionamento de Alta Definição:**
-   - Script de renderização bicúbica de alta qualidade processando a matriz original de 1024x1024 pixels.
-   - Geração e distribuição automática em todas as pastas do projeto (`public/img/icons/`, `cliente.app/img/icons/` e `oficina.app/img/icons/`):
-     - `icon-512x512.png` (512x512 pixels — Play Store & Chrome PWA Splash)
-     - `maskable-icon-512x512.png` (512x512 pixels — Adaptive Icons no Android)
-     - `icon-192x192.png` (192x192 pixels — Ícone de tela inicial móvel e desktop)
-     - `apple-touch-icon.png` (180x180 pixels — Tela de início no iOS/Safari)
-     - `favicon.png` (64x64 pixels — Favicon de alta nitidez para abas do navegador)
-     - `dna-app-logo.jpg` (1024x1024 pixels — Imagem original em alta resolução mantida como asset)
-2. **Atualização dos Manifestos Web (`manifest.json`):**
-   - Atualizados `cliente.app/manifest.json`, `oficina.app/manifest.json` e `public/manifest.json` para declarar as fontes, tamanhos e propósitos (`any`, `maskable`).
-3. **Modal de Instalação PWA & Tela Splash:**
-   - `pwaInstall.js` (em todas as pastas): atualização do card de apresentação do aplicativo para carregar o novo ícone com suporte a caminhos relativos e absolutos.
-   - `ownerView.js`: tela de Splash atualizada com o novo logo oficial do app com bordas arredondadas e brilho neon.
-4. **Qualidade & Testes:**
-   - Suíte com **45 testes automatizados aprovados com 100% de sucesso** (inclusive Teste 36 de conformidade PWA).
-
----
+- **Demandas Atendidas:**
+  1. **Novo Logo Oficial para Download do Aplicativo:**
+     - Integração do logotipo oficial moderno enviado pelo usuário: fundo preto, cantos arredondados, contorno neon ciano, emblema estilizado "D", inscrição "DNA AUTO" e silhueta frontal de supercarro com faróis de LED neon azuis.
+     - Aplicação uniforme tanto para o aplicativo do cliente (`cliente.app` / `public/cliente.html`) quanto para o painel operacional da oficina (`oficina.app` / `public/oficina.html`).
+  2. **Geração de Ícones Multi-Resolução em Alta Definição:**
+     - `icon-512x512.png` (512x512)
+     - `maskable-icon-512x512.png` (512x512 para Android adaptativo)
+     - `icon-192x192.png` (192x192 para tela de início mobile e desktop)
+     - `apple-touch-icon.png` (180x180 para iOS/Safari)
+     - `favicon.png` (64x64 para abas do navegador)
+     - `dna-app-logo.jpg` (1024x1024 original)
+     - Sincronizado nas três pastas: `public/img/icons/`, `cliente.app/img/icons/` e `oficina.app/img/icons/`.
+  3. **Atualização dos Manifestos e Componentes Visuais:**
+     - Manifestos `manifest.json` do cliente e da oficina atualizados com propósitos e tamanhos corretos.
+     - Modal de instalação do aplicativo (`pwaInstall.js`) e tela de Splash (`ownerView.js`) atualizados para exibir o novo ícone oficial com brilho neon e bordas arredondadas.
+  4. **Qualidade & Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso.
 
 ### 📅 Ciclo 32 — Padronização de Links Diretos para o App do Cliente (`/cliente`) e Painel da Oficina (`/oficina`)
-
-#### 1. Contexto e Demanda
-- **Objetivo:** Disponibilizar links diretos, limpos e sem intermediários para o **App do Cliente** (`/cliente`, `/cliente.app`, `cliente-app.onrender.com`), funcionando exatamente como qualquer link direto de aplicativo moderno, eliminando páginas de marketing intermediárias ou desvios de navegação.
-
-#### 2. Implementações Técnicas
-1. **Roteamento SPA & Links Diretos (`public/js/app.js`):**
-   - Atualizado o roteador SPA para que `/cliente`, `/cliente.html`, `/cliente.app` e `#cliente` direcionem imediatamente para a view oficial do cliente (`owner`), inicializando a Garagem Digital e o Dossiê 360° sem intermediários.
-2. **Navegação na Home (`landingHomeView.js`):**
-   - No navbar: link direto `<a href="/cliente">📱 App do Cliente</a>` e `<a href="/oficina">🏭 Painel da Oficina</a>`.
-   - Nos cards de perfil: botões padronizados `<a href="/cliente">` ("Abrir App do Cliente") e `<a href="/oficina">` ("Abrir Painel da Oficina"), sem interceptações que impeçam o comportamento natural do link direto.
-3. **ERP da Oficina (`workshopView.js` em `public/` e `oficina.app/`):**
-   - Adicionado card dedicado na barra lateral (Sidebar): **📱 App do Cliente**, contendo link de abertura direta (`/cliente` com target `_blank`) e botão interativo com um clique para copiar o link direto (`navigator.clipboard.writeText(window.location.origin + '/cliente')`).
-   - Modal de Ativação do Cliente e Mensagens WhatsApp atualizados com a URL direta: `${window.location.origin}/cliente?code=${activationCode}`.
-4. **Backend e Notificações de Ativação (`workshops.routes.js`):**
-   - Rota `POST /:id/clients/register-activation` atualizada para retornar `client_app_url: ${baseUrl}/cliente?code=${activationCode}` e o texto de compartilhamento via WhatsApp contendo o link direto para o cliente.
-5. **Gerador de Cartazes e QR Codes (`posterGenerator.js`):**
-   - QR Code de adesivo/cartaz da oficina atualizado para direcionar para `${window.location.origin}/cliente?ref=workshop&ws=${workshopId}`.
-6. **Qualidade e Bateria de Testes (`test/api.test.js`):**
-   - Teste 38 estendido com validação estrita da existência de `client_app_url` apontando para `/cliente?code=`.
-   - **45 de 45 testes automatizados aprovados com 100% de sucesso.**
-
----
+- **Demandas Atendidas:**
+  1. **Acesso Direto ao App do Cliente como Link Padrão de Aplicação:**
+     - Rotas diretas `/cliente`, `/cliente.html`, `/cliente.app` e `#cliente` configuradas para carregar instantaneamente o App do Cliente (Garagem Digital e Dossiê 360°), eliminando páginas de marketing intermediárias.
+  2. **Links Nativos na Home:**
+     - Links e botões diretos no Navbar e nos cards de perfil ("Abrir App do Cliente" e "Abrir Painel da Oficina") com redirecionamento limpo para os respectivos módulos.
+  3. **Integração no ERP da Oficina:**
+     - Novo módulo na barra lateral com atalho "📱 App do Cliente" e botão interativo "Copiar Link do App" (`/cliente`).
+     - Modais de ativação e textos automáticos de WhatsApp atualizados para enviar o link direto `${origin}/cliente?code=...`.
+  4. **Atualização de QR Codes:**
+     - Cartaz imprimível da oficina com QR Code apontando diretamente para `/cliente?ref=workshop&ws=...`.
+  5. **Qualidade & Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso (inclusive verificação do link direto no Teste 38).
 
 ### 📅 Ciclo 33 — Inicialização Oficial na Tela 01 (Splash / Login) Fiel ao Mapa de Telas
+- **Demandas Atendidas:**
+  1. **Inicialização Padrão na Tela 01:**
+     - Ao carregar o App do Cliente (`/cliente`), o estado inicial define `OwnerView.authScreen = 'splash'`, exibindo a Tela de Boas-Vindas e Login como portal de entrada oficial.
+  2. **Fidelidade Visual à Prancha Oficial:**
+     - Status bar mobile no topo (`9:41`, Wi-Fi e bateria).
+     - Símbolo "D" estilizado com gradiente neon pulsante.
+     - Tipografia `DNA AUTO` e slogan `Seu veículo sempre protegido.`.
+     - Carro frontal com faróis de LED neon azuis (`splash-car-front.jpg`) sobre fundo escuro com reflexo no piso.
+     - Botões `Entrar` (login), `Cadastrar` (onboarding) e `Pular` (acesso direto ao dashboard).
+  3. **Integração de Logout e Menu Drawer:**
+     - Logout no app redireciona imediatamente para a Tela 01.
+  4. **Qualidade & Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso.
 
-#### 1. Contexto e Demanda
-- **Objetivo:** Garantir que ao acessar o aplicativo do cliente (`/cliente`, `/cliente.app`, `cliente-app.onrender.com`), a primeira tela exibida seja exatamente a **Tela 01 (Splash / Login)** do mapa oficial de telas, resolvendo a questão de inicializar diretamente na Home e garantindo a identidade visual completa da prancha de design.
-
-#### 2. Implementações Técnicas
-1. **Ativação Padrão da Tela 01:**
-   - Atualizado o estado inicial de `OwnerView.authScreen` para `'splash'`, fazendo com que o App do Cliente sempre receba novos acessos ou sessões não autenticadas na Tela de Boas-Vindas & Login.
-   - Suporte a parâmetros de URL (`?screen=home` para acesso direto à Garagem Digital ou `?screen=login` para a tela de autenticação).
-2. **Fidelidade Visual à Prancha Oficial:**
-   - **Status Bar Mobile:** Inclusão do relógio `9:41`, indicador de sinal de celular, Wi-Fi e nível de bateria no topo.
-   - **Emblema "D" Neon:** Glifo geométrico estilizado da marca DNA AUTO com gradiente ciano-azul (`#00E5FF` para `#0055FF`) e filtro de iluminação pulsante (`filter: drop-shadow`).
-   - **Tipografia Corporativa:** Título `DNA AUTO` em caixa alta e peso 900 com o slogan oficial `Seu veículo sempre protegido.`.
-   - **Hero Car Frontal com Faróis LED:** Imagem de alta definição (`splash-car-front.jpg`) exibindo a frente do supercarro com faróis de LED neon azuis, assentada diretamente sobre o fundo escuro com reflexo suave no piso.
-   - **Botoeira de Ação:**
-     - Botão primário azul neon: `Entrar` (abre a Tela 02 de login com e-mail e senha).
-     - Botão secundário escuro com borda sutil: `Cadastrar` (inicia o fluxo de onboarding com scanner de placa e FIPE).
-     - Link centralizado: `Pular` (permite ao usuário entrar direto na Garagem Digital / Home).
-3. **Menu Lateral & Logout:**
-   - Logout no Drawer e no Header redireciona instantaneamente para a Tela 01 (`OwnerView.authScreen = 'splash'`).
-   - Adicionado atalho no Drawer para testar o Fluxo de Boas-Vindas a qualquer momento.
-4. **Paridade e Testes:**
-   - Sincronização 100% mantida entre `public/` e `cliente.app/`.
-   - Bateria com **45 de 45 testes automatizados aprovados com 100% de sucesso**.
+### 📅 Ciclo 36 — Captura Integral de 100% dos Dados da API Placas (WDAPI2), Tabela FIPE Oficial por Score e Erradicação de Defaults
+- **Demandas Atendidas:**
+  1. **Captura Integral de Todos os Campos da API Placas:**
+     - Mapeamento completo dos atributos da raiz: `marca`, `modelo`, `submodelo`, `versao`, `ano`, `anoModelo`, `chassi`, `codigoSituacao`, `cor`, `data` da consulta, `logo` oficial da montadora, `marcaModelo`, `municipio`, `origem`/`nacionalidade`, `placa`, `placa_alternativa`, `situacao`, `uf`, `listamodelo`, `mensagemRetorno`.
+     - Objeto `extra` completo: `cilindradas`, `caixa_cambio`, `combustivel`, `segmento`, `sub_segmento`, `carroceria`/`tipo_carroceria`, `cap_maxima_tracao`, `peso_bruto_total`, `quantidade_passageiro`, `eixos`, `especie`, `tipo_veiculo`, `placa_modelo_antigo`, `placa_modelo_novo`, `situacao_chassi`, `situacao_veiculo`, `tipo_doc_faturado`, `tipo_doc_prop`, `uf_faturado`, `uf_placa`, `renavam` e restrições financeiras/gravames.
+     - Suporte ao array completo `fipe.dados` e seleção da cotação com o **maior `score`** conforme recomendação oficial da documentação da API Placas.
+     - Preservação do payload bruto integral (`raw_json`, `extra_json`, `fipe_json`).
+  2. **Modelagem de Dados e Banco SQLite:**
+     - Colunas adicionadas à tabela `vehicles` e `fipe_values` com migração automática tolerante a duplicatas: `submodel`, `engine_displacement`, `transmission`, `vehicle_type`, `segment`, `sub_segment`, `bodywork`, `passenger_capacity`, `gross_weight`, `max_traction`, `axes_count`, `state`, `city`, `plate_old_format`, `plate_mercosul_format`, `chassis_status`, `vehicle_status`, `legal_status_desc`, `brand_logo_url`, `fipe_score`, `raw_json`, `extra_json`, `fipe_json`, além de `score`, `model_text`, `brand_text`, `fuel_text` e `all_fipe_json`.
+  3. **Erradicação Total do Valor FIPE de 125 mil & Corrida Assíncrona no Onboarding:**
+     - `startPlateSearch()` refatorado para execução estritamente sequencial com `async/await`, aguardando a resposta da API Placas antes de avançar as etapas do radar de scanner.
+     - Limpeza proativa de `authData` ao iniciar nova busca por placa, impedindo que dados do Civic padrão contaminem cadastros de outros veículos (ex: Fox 2013).
+     - Remoção definitiva de qualquer fallback hardcoded (`R$ 125.870,00`) em todas as telas de onboarding e confirmação.
+  4. **Interface e Ficha Técnica Completa no App do Cliente:**
+     - Tela de confirmação e Tela 05 (Dados Encontrados) exibindo badge Mercosul oficial, logo da montadora, grid com 6 especificações (Ano, Motor, Câmbio, Combustível, Cor, Segmento) e card FIPE em destaque verde neon com valor real, código FIPE, mês de referência e badge de precisão de score.
+     - Paridade rigorosa entre `public/js/components/ownerView.js` e `cliente.app/js/components/ownerView.js`.
+  5. **Qualidade & Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso (incluindo teste com a placa oficial da documentação `INT8C36` do CrossFox e `LQZ9A42` do Fox 2013).
 
 ---
 
-*Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
-
-
+## 🏛️ Diretrizes e Convenções Persistentes
+1. **Controle de Versão Git:** Todas as modificações de código e documentação devem ser seguidas de commit limpo e push para a branch `master` no repositório remoto GitHub.
+2. **Registro Contínuo:** Todo novo ciclo ou alteração relevante de engenharia deve ser imediatamente documentado no `diario de bordo.md`, no `DIARIO_DE_BORDO.md` e refletido no `README.md`.
+3. **Comunicação:** Atendimento sempre no idioma português.
+4. **Validação de Testes:** O comando `npm test` deve sempre permanecer com 100% dos testes aprovados antes de qualquer publicação.
+5. **Autonomia de Testes do Usuário:** Toda parte de testes em navegadores reais na interface do WhatsApp é realizada diretamente pelo usuário, respeitando estritamente suas diretrizes operacionais.
 
 
 

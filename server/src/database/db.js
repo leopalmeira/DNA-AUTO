@@ -85,3 +85,51 @@ try {
 } catch (e) {
     console.warn('Erro ao criar client_activations:', e.message);
 }
+
+// Garantir colunas completas para suporte a 100% dos dados da API Placas (WDAPI2)
+const vehicleColumns = [
+    { name: 'submodel', type: 'TEXT' },
+    { name: 'engine_displacement', type: 'TEXT' },
+    { name: 'transmission', type: 'TEXT' },
+    { name: 'vehicle_type', type: 'TEXT' },
+    { name: 'segment', type: 'TEXT' },
+    { name: 'sub_segment', type: 'TEXT' },
+    { name: 'bodywork', type: 'TEXT' },
+    { name: 'passenger_capacity', type: 'INTEGER' },
+    { name: 'gross_weight', type: 'TEXT' },
+    { name: 'max_traction', type: 'TEXT' },
+    { name: 'axes_count', type: 'TEXT' },
+    { name: 'state', type: 'TEXT' },
+    { name: 'city', type: 'TEXT' },
+    { name: 'plate_old_format', type: 'TEXT' },
+    { name: 'plate_mercosul_format', type: 'TEXT' },
+    { name: 'chassis_status', type: 'TEXT' },
+    { name: 'vehicle_status', type: 'TEXT' },
+    { name: 'legal_status_desc', type: 'TEXT' },
+    { name: 'brand_logo_url', type: 'TEXT' },
+    { name: 'fipe_score', type: 'INTEGER' },
+    { name: 'raw_json', type: 'TEXT' },
+    { name: 'extra_json', type: 'TEXT' },
+    { name: 'fipe_json', type: 'TEXT' }
+];
+
+for (const col of vehicleColumns) {
+    try {
+        db.exec(`ALTER TABLE vehicles ADD COLUMN ${col.name} ${col.type}`);
+    } catch (_) {}
+}
+
+const fipeColumns = [
+    { name: 'score', type: 'INTEGER' },
+    { name: 'model_text', type: 'TEXT' },
+    { name: 'brand_text', type: 'TEXT' },
+    { name: 'fuel_text', type: 'TEXT' },
+    { name: 'all_fipe_json', type: 'TEXT' }
+];
+
+for (const col of fipeColumns) {
+    try {
+        db.exec(`ALTER TABLE fipe_values ADD COLUMN ${col.name} ${col.type}`);
+    } catch (_) {}
+}
+
