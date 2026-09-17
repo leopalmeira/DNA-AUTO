@@ -24,6 +24,10 @@ services:
     envVars:
       - key: API_URL
         value: https://dna-auto.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
 
   - type: web
     name: oficina-app
@@ -33,3 +37,7 @@ services:
     envVars:
       - key: API_URL
         value: https://dna-auto.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

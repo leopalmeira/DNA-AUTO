@@ -673,11 +673,14 @@ async function runTests() {
         const resClientAppAlias = await fetch(`http://localhost:${PORT}/app`);
         console.assert(resClientAppAlias.status === 200, 'Falha ao acessar alias /app');
 
+        const resClientHtml = await fetch(`http://localhost:${PORT}/cliente.html`);
+        console.assert(resClientHtml.status === 200, 'Falha ao acessar /cliente.html');
+
         const resClientAppDir = await fetch(`http://localhost:${PORT}/cliente.app`);
         console.assert(resClientAppDir.status === 200, 'Falha ao acessar /cliente.app');
-        console.log(`✅ 42. Rota e Arquivo Separado do App do Cliente: /cliente, /app e /cliente.app entregam cliente.app dedicado com sucesso.`);
+        console.log(`✅ 42. Rota e Arquivo Separado do App do Cliente: /cliente, /cliente.html, /app e /cliente.app entregam cliente.app dedicado com sucesso.`);
 
-        // Teste 43: Rota dedicada e arquivo separado do Painel da Oficina (/oficina, /painel e /oficina.app)
+        // Teste 43: Rota dedicada e arquivo separado do Painel da Oficina (/oficina, /oficina.html, /painel e /oficina.app)
         const resWorkshopApp = await fetch(`http://localhost:${PORT}/oficina`);
         const htmlWorkshop = await resWorkshopApp.text();
         console.assert(resWorkshopApp.status === 200, 'Falha ao acessar rota /oficina');
@@ -687,9 +690,12 @@ async function runTests() {
         const resWorkshopAppAlias = await fetch(`http://localhost:${PORT}/painel`);
         console.assert(resWorkshopAppAlias.status === 200, 'Falha ao acessar alias /painel');
 
+        const resWorkshopHtml = await fetch(`http://localhost:${PORT}/oficina.html`);
+        console.assert(resWorkshopHtml.status === 200, 'Falha ao acessar /oficina.html');
+
         const resWorkshopAppDir = await fetch(`http://localhost:${PORT}/oficina.app`);
         console.assert(resWorkshopAppDir.status === 200, 'Falha ao acessar /oficina.app');
-        console.log(`✅ 43. Rota e Arquivo Separado do Painel da Oficina: /oficina, /painel e /oficina.app entregam oficina.app dedicado com sucesso.`);
+        console.log(`✅ 43. Rota e Arquivo Separado do Painel da Oficina: /oficina, /oficina.html, /painel e /oficina.app entregam oficina.app dedicado com sucesso.`);
 
         console.log('\n🎉 TODOS OS 43 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {

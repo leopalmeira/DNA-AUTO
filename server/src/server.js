@@ -32,6 +32,8 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 app.use(express.static(path.join(__dirname, '..', '..', 'public'), staticHeaders));
 app.use('/cliente.app', express.static(path.join(__dirname, '..', '..', 'cliente.app'), staticHeaders));
 app.use('/oficina.app', express.static(path.join(__dirname, '..', '..', 'oficina.app'), staticHeaders));
+app.use('/cliente', express.static(path.join(__dirname, '..', '..', 'cliente.app'), staticHeaders));
+app.use('/oficina', express.static(path.join(__dirname, '..', '..', 'oficina.app'), staticHeaders));
 
 // Registro dos Módulos da API REST
 const authRoutes = require('./modules/auth/auth.routes');

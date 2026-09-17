@@ -71,20 +71,6 @@
 </head>
 <body class="is-owner-app">
     <div id="app-container">
-        <!-- Barra de Status Exclusiva do App do Cliente -->
-        <div class="standalone-top-banner">
-            <div style="display:flex; align-items:center; gap:6px;">
-                <span class="pulse-dot" style="width:6px; height:6px;"></span>
-                <span>DNA AUTO • <strong>App do Cliente (cliente.app)</strong></span>
-            </div>
-            <div>
-                <a href="/oficina.app" title="Acessar o Painel Operacional da Oficina">
-                    <span>Área da Oficina</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                </a>
-            </div>
-        </div>
-
         <!-- Área Central de Renderização do Aplicativo do Cliente -->
         <main class="content-viewport" id="view-content">
             <div style="padding:60px 20px; text-align:center; color:#94A3B8;">
@@ -293,8 +279,7 @@
                 window.location.href = '/';
             },
             switchView(view) {
-                if (view === 'workshop') window.location.href = '/oficina.app';
-                else if (view === 'landing' || view === 'landing-home') window.location.href = '/';
+                if (view === 'landing' || view === 'landing-home') window.location.href = '/';
                 else if (view === 'login') window.location.href = '/#login';
                 else OwnerView.render();
             }

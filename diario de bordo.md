@@ -563,6 +563,19 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Criação das pastas de topo `cliente.app/` e `oficina.app/` com arquivos totalmente autocontidos (HTML, CSS, JS, manifest e ícones).
      - Configuração de serviços estáticos (`cliente-app` e `oficina-app`) no `render.yaml` e rotas estáticas dedicadas no servidor Node.js.
 
+### 📅 Ciclo 29 — Consolidação, Desacoplamento e Blindagem dos Dois Apps no Render (`cliente.app` e `oficina.app`)
+- **Demandas Atendidas:**
+  1. **Desacoplamento Visual e Isolamento Completo:**
+     - Remoção da barra superior residual `.standalone-top-banner` do App do Cliente (`cliente.app/index.html` e `public/cliente.html`), garantindo que o app mobile do proprietário inicie diretamente na interface limpa do smartphone sem qualquer elemento externo.
+     - Remoção do botão de visualização do app do cliente na barra superior do ERP da Oficina (`oficina.app/index.html` e `public/oficina.html`), mantendo o operador da oficina 100% focado no atendimento e gestão mecânica.
+     - Ajuste do `switchView` em ambos os apps para evitar redirecionamentos indesejados.
+  2. **Roteamento Estático Resiliente (`server.js`):**
+     - Adição do middleware `express.static` para `/cliente` e `/oficina` apontando para suas respectivas pastas autônomas, assegurando que requisições com ou sem barra final carreguem todos os estilos e scripts sem falhas.
+  3. **Rewrites SPA no Render Blueprint (`render.yaml`):**
+     - Inclusão das regras de rewrite (`/*` -> `/index.html`) para os serviços estáticos independentes `cliente-app` e `oficina-app`.
+  4. **Testes Automatizados:**
+     - Validação dos endpoints `/cliente`, `/cliente.html`, `/oficina` e `/oficina.html` com 100% de sucesso (43/43 testes verdes).
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

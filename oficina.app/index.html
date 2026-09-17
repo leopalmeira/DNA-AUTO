@@ -68,12 +68,6 @@
                 <span>DNA AUTO ERP • <strong>Painel Operacional da Oficina (oficina.app)</strong></span>
                 <span style="background:rgba(0,102,255,0.2); color:#38BDF8; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700;">OFICINA CREDENCIADA</span>
             </div>
-            <div style="display:flex; align-items:center; gap:16px;">
-                <a href="/cliente.app" title="Visualizar a experiência do Cliente / Garagem Digital" target="_blank">
-                    <span>📱 Ver App do Cliente</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                </a>
-            </div>
         </div>
 
         <!-- Viewport Principal do ERP da Oficina -->
@@ -359,8 +353,7 @@
                 window.location.href = '/';
             },
             switchView(view) {
-                if (view === 'owner') window.location.href = '/cliente.app';
-                else if (view === 'landing' || view === 'landing-home') window.location.href = '/';
+                if (view === 'landing' || view === 'landing-home') window.location.href = '/';
                 else if (view === 'login') window.location.href = '/#login';
                 else WorkshopView.render();
             }

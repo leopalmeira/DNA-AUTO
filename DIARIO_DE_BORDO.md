@@ -1069,6 +1069,29 @@ DNA-AUTO/
    - Atualização do [`render.yaml`](file:///c:/Users/User/Desktop/DNA-AUTO/render.yaml) definindo os serviços estáticos independentes `cliente-app` (porta de entrada: `./cliente.app`) e `oficina-app` (porta de entrada: `./oficina.app`), além do serviço web backend `dna-auto`.
    - Adaptação dinâmica em `api.js` (`baseUrl`) para chavear automaticamente para `https://dna-auto.onrender.com/api/v1` quando executado a partir de domínios estáticos do Render.
 
+### 📅 Ciclo 29 — Consolidação, Desacoplamento e Blindagem dos Dois Apps no Render (`cliente.app` e `oficina.app`)
+
+#### 1. Contexto e Demanda
+- **Objetivo:** Garantir que o aplicativo do cliente e o painel operacional da oficina estejam completamente isolados, autônomos e funcionem com 100% de confiabilidade no deploy do Render, tanto através de rotas limpas do serviço web Node.js (`/cliente`, `/cliente.html`, `/oficina`, `/oficina.html`) quanto via serviços estáticos independentes declarados no `render.yaml`.
+- **Desacoplamento Visual Completo:** Remoção definitiva de links cruzados e banners que misturavam os ambientes (remoção da barra superior extra do App do Cliente e remoção do botão "Ver App do Cliente" do topo da Oficina).
+
+#### 2. Implementações Técnicas
+1. **Desacoplamento Visual e Limpeza de Banners:**
+   - Em `cliente.app/index.html` e `public/cliente.html`: remoção completa do elemento `.standalone-top-banner` para que a experiência do smartphone seja 100% limpa, iniciando direto no viewport do app (`#view-content`).
+   - Em `oficina.app/index.html` e `public/oficina.html`: remoção do botão de redirecionamento para o app do cliente, garantindo que o operador da oficina permaneça 100% focado na rotina de recepção, box e agendamentos.
+   - Remoção de redirecionamentos cruzados indevidos no método `switchView` em ambos os aplicativos.
+2. **Roteamento Estático Resiliente no Servidor (`server/src/server.js`):**
+   - Inclusão de middleware estático para `/cliente` e `/oficina` apontando diretamente para as pastas `cliente.app` e `oficina.app`.
+   - Permite que recursos referenciados com caminhos relativos (`./css/variables.css`, `./js/api.js`) ou absolutos (`/css/...`) sejam resolvidos com zero erros 404, independentemente de a URL terminar com ou sem barra (`/cliente` vs `/cliente/`).
+   - Manutenção das rotas dedicadas anti-cache para `/cliente`, `/cliente.html`, `/app`, `/meucarro`, `/oficina`, `/oficina.html`, `/painel`, `/workshop` e `/erp`.
+3. **Regras de Rewrite SPA no Render Blueprint (`render.yaml`):**
+   - Configuração de blocos `routes` com regra de rewrite (`source: /*`, `destination: /index.html`) para os serviços estáticos `cliente-app` e `oficina-app`.
+   - Assegura suporte nativo a Single-Page Application (SPA), permitindo que recarregamentos de página (F5) e navegação interna em sub-rotas funcionem sem erro de arquivo não encontrado no Render.
+4. **Validação de Testes Automatizados (`test/api.test.js`):**
+   - Teste 42 atualizado para verificar `/cliente`, `/cliente.html`, `/app` e `/cliente.app`.
+   - Teste 43 atualizado para verificar `/oficina`, `/oficina.html`, `/painel` e `/oficina.app`.
+   - Bateria completa com **43/43 testes automatizados de integração aprovados com 100% de sucesso**.
+
 ---
 
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
