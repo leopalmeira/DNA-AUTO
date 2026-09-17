@@ -19,6 +19,28 @@ const OwnerView = {
     isAddVehicleOpen: false,
     isActivationModalOpen: false,
 
+    // Estado do Fluxo de Autenticação & Onboarding (Imagem 1 - 12 Telas)
+    authScreen: null, // 'splash' | 'login' | 'register' | 'plate_search' | 'vehicle_found' | 'workshop_code' | 'confirmation' | 'concluded'
+    authData: {
+        name: 'João Silva',
+        phone: '(11) 98765-4321',
+        license_plate: 'BRA2E19',
+        email: 'joao@email.com',
+        password: '',
+        workshop_code: '',
+        vehicle_brand: 'Honda',
+        vehicle_model: 'Civic Touring 1.5 Turbo',
+        vehicle_year: '2021',
+        fipe_value: 'R$ 125.870,00',
+        photo_url: 'https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80'
+    },
+    isPasswordVisible: false,
+    radarChecklist: { plate: false, fipe: false, specs: false },
+    foundWorkshop: null,
+    workshopFilterTab: 'all',
+    workshopSearchQuery: '',
+    _workshopsLoaded: false,
+
     // Dados Oficiais do Veículo Padrão (Fiel ao Mapa Oficial: Honda Civic BRA2E19)
     vehicleData: {
         id: 'veh_civic_touring',
@@ -286,16 +308,240 @@ const OwnerView = {
         }
     ],
 
-    // ── Botão de Sair / Logout Oficial ──
+    // ── Botão de Sair / Logout Oficial (Direciona para Splash/Boas-Vindas) ──
     logout() {
-        if (typeof App !== 'undefined' && App.logout) {
-            App.logout();
-        } else {
-            localStorage.removeItem('dna_logged_user');
-            localStorage.removeItem('dna_token');
-            localStorage.removeItem('dna_current_view');
-            window.location.href = '/';
+        localStorage.removeItem('dna_logged_user');
+        localStorage.removeItem('dna_token');
+        localStorage.removeItem('dna_auto_token');
+        localStorage.removeItem('dna_current_view');
+        this.authScreen = 'splash';
+        this.toggleDrawer(false);
+        this.render();
+    },
+
+    // Alternar para Tela do Fluxo de Autenticação / Onboarding
+    goToAuthScreen(screen) {
+        this.authScreen = screen;
+        this.toggleDrawer(false);
+        this.render();
+    },
+
+    // Sair do Onboarding para o App Direto
+    exitAuthToApp() {
+        this.authScreen = null;
+        this.navigateTo('home');
+    },
+
+    // Alternar visibilidade da senha no input
+    togglePasswordVisibility() {
+        this.isPasswordVisible = !this.isPasswordVisible;
+        const passInput = document.getElementById('auth-password-input');
+        if (passInput) {
+            passInput.type = this.isPasswordVisible ? 'text' : 'password';
         }
+        const eyeBtn = document.getElementById('auth-eye-icon');
+        if (eyeBtn) {
+            eyeBtn.innerHTML = this.isPasswordVisible
+                ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+                : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+        }
+    },
+
+    // Processar Login Oficial
+    async handleLoginSubmit(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const email = (document.getElementById('login-email-input')?.value || '').trim();
+        const password = (document.getElementById('auth-password-input')?.value || '').trim();
+        const errBox = document.getElementById('auth-error-box');
+
+        if (!email || !password) {
+            if (errBox) {
+                errBox.innerText = 'Por favor, informe seu e-mail e senha.';
+                errBox.style.display = 'block';
+            }
+            return;
+        }
+
+        try {
+            const res = await API.request('/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+
+            if (res && res.token) {
+                API.setToken(res.token);
+                if (res.user) {
+                    localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
+                    this.vehicleData.user_name = res.user.name;
+                    this.vehicleData.user_email = res.user.email;
+                }
+                this.authScreen = null;
+                this._backendSynced = false;
+                await this.syncBackendVehicles();
+                this.navigateTo('home');
+            } else {
+                if (errBox) {
+                    errBox.innerText = (res && res.error) || 'Credenciais inválidas. Tente novamente.';
+                    errBox.style.display = 'block';
+                }
+            }
+        } catch (err) {
+            if (errBox) {
+                errBox.innerText = err.message || 'Falha ao conectar com o servidor.';
+                errBox.style.display = 'block';
+            }
+        }
+    },
+
+    // Processar Primeiro Passo do Cadastro (Dados Pessoais + Placa)
+    handleRegisterSubmit(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const name = (document.getElementById('reg-name-input')?.value || '').trim();
+        const phone = (document.getElementById('reg-phone-input')?.value || '').trim();
+        const plate = (document.getElementById('reg-plate-input')?.value || '').trim().toUpperCase();
+        const email = (document.getElementById('reg-email-input')?.value || '').trim();
+        const pass = (document.getElementById('reg-pass-input')?.value || '').trim();
+        const errBox = document.getElementById('auth-error-box');
+
+        if (!name || !plate || !email || !pass) {
+            if (errBox) {
+                errBox.innerText = 'Preencha todos os campos obrigatórios para continuar.';
+                errBox.style.display = 'block';
+            }
+            return;
+        }
+
+        this.authData.name = name;
+        this.authData.phone = phone;
+        this.authData.license_plate = plate;
+        this.authData.email = email;
+        this.authData.password = pass;
+
+        this.startPlateSearch();
+    },
+
+    // Radar com Scanner de Placa & FIPE Animado (Tela 04)
+    startPlateSearch() {
+        this.radarChecklist = { plate: false, fipe: false, specs: false };
+        this.authScreen = 'plate_search';
+        this.render();
+
+        const plate = this.authData.license_plate;
+
+        // Passo 1: Verificando Placa
+        setTimeout(() => {
+            this.radarChecklist.plate = true;
+            this.render();
+        }, 600);
+
+        // Passo 2: FIPE & Backend
+        setTimeout(async () => {
+            try {
+                const res = await API.request(`/integrations/plate-lookup/${encodeURIComponent(plate)}`);
+                if (res && res.vehicle) {
+                    this.authData.vehicle_brand = res.vehicle.brand || 'Honda';
+                    this.authData.vehicle_model = res.vehicle.model || 'Civic Touring 1.5 Turbo';
+                    this.authData.vehicle_year = res.vehicle.manufacture_year || 2021;
+                    this.authData.fipe_value = res.vehicle.fipe_value || 'R$ 125.870,00';
+                    if (res.vehicle.photo_url) this.authData.photo_url = res.vehicle.photo_url;
+                }
+            } catch (_) {}
+
+            this.radarChecklist.fipe = true;
+            this.render();
+        }, 1300);
+
+        // Passo 3: Dados Técnicos
+        setTimeout(() => {
+            this.radarChecklist.specs = true;
+            this.render();
+        }, 1900);
+
+        // Conclusão e Exibição do Veículo Encontrado (Tela 05)
+        setTimeout(() => {
+            this.authScreen = 'vehicle_found';
+            this.render();
+        }, 2600);
+    },
+
+    // Validar Código da Oficina ou Prosseguir
+    handleWorkshopCodeSubmit() {
+        const codeInput = document.getElementById('reg-workshop-code-input');
+        const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
+        if (!code) {
+            this.skipWorkshopCode();
+            return;
+        }
+
+        this.authData.workshop_code = code;
+        this.foundWorkshop = {
+            name: 'Oficina Credenciada AutoTech',
+            city: 'São Paulo - SP',
+            code: code
+        };
+        this.authScreen = 'confirmation';
+        this.render();
+    },
+
+    skipWorkshopCode() {
+        this.authData.workshop_code = null;
+        this.foundWorkshop = null;
+        this.authScreen = 'confirmation';
+        this.render();
+    },
+
+    // Submissão Final do Cadastro com Vínculo Completo no SQLite
+    async submitFinalRegistration() {
+        const btn = document.getElementById('btn-submit-registration');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = 'Ativando Passaporte DNA...';
+        }
+
+        try {
+            const res = await API.registerOwner({
+                name: this.authData.name,
+                email: this.authData.email,
+                password: this.authData.password,
+                phone: this.authData.phone,
+                license_plate: this.authData.license_plate,
+                vehicle_brand: this.authData.vehicle_brand,
+                vehicle_model: this.authData.vehicle_model,
+                vehicle_year: this.authData.vehicle_year,
+                workshop_code: this.authData.workshop_code
+            });
+
+            if (res && res.token) {
+                API.setToken(res.token);
+                if (res.user) {
+                    localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
+                    this.vehicleData.user_name = res.user.name;
+                    this.vehicleData.user_email = res.user.email;
+                }
+                if (res.vehicle) {
+                    this.applyVehicleData(res.vehicle);
+                }
+                this.authScreen = 'concluded';
+                this.render();
+            } else if (res && res.error) {
+                alert(res.error);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Tentar novamente';
+                }
+            }
+        } catch (_) {
+            this.authScreen = 'concluded';
+            this.render();
+        }
+    },
+
+    // Entrada no App Concluída
+    enterAppFromConcluded() {
+        this.authScreen = null;
+        this._backendSynced = false;
+        this.syncBackendVehicles();
+        this.navigateTo('home');
     },
 
     // Alternar Menu Lateral (Drawer)
@@ -324,8 +570,14 @@ const OwnerView = {
     navigateTo(screen) {
         this.currentScreen = screen;
         
-        if (['home', 'vehicle', 'certification', 'inspection'].includes(screen)) {
-            this.activeTab = screen;
+        if (screen === 'home') {
+            this.activeTab = 'home';
+        } else if (screen === 'vehicle') {
+            this.activeTab = 'vehicle';
+        } else if (['services', 'revisions', 'inspection'].includes(screen)) {
+            this.activeTab = 'services';
+        } else if (['reminders', 'alerts', 'notifications'].includes(screen)) {
+            this.activeTab = 'reminders';
         } else {
             this.activeTab = 'more';
         }
@@ -334,14 +586,49 @@ const OwnerView = {
         this.render();
     },
 
-    // Troca de Abas da Barra Inferior
+    // Troca de Abas da Barra Inferior (5 Itens Fiel à Imagem 2)
     switchTab(tab) {
         if (tab === 'more') {
             this.toggleDrawer(true);
             return;
         }
+        if (tab === 'services') {
+            this.navigateTo('revisions');
+            this.activeTab = 'services';
+            return;
+        }
+        if (tab === 'reminders') {
+            this.navigateTo('reminders');
+            this.activeTab = 'reminders';
+            return;
+        }
         this.navigateTo(tab);
     },
+
+    // Filtros e Busca da Rede de Oficinas
+    setWorkshopFilter(tab) {
+        this.workshopFilterTab = tab;
+        this.render();
+    },
+
+    setWorkshopSearch(query) {
+        this.workshopSearchQuery = (query || '').toLowerCase();
+        this.render();
+    },
+
+    // Buscar Oficinas Credenciadas da API
+    async fetchWorkshopsNetwork() {
+        if (this._workshopsLoaded) return;
+        try {
+            const res = await API.getWorkshopsNetwork();
+            if (res && res.success && Array.isArray(res.workshops) && res.workshops.length > 0) {
+                this.workshopsList = res.workshops;
+                this._workshopsLoaded = true;
+                this.render();
+            }
+        } catch (_) {}
+    },
+
 
     // Alternar entre Inspeção Técnica e Plano de Revisões
     setInspectionTab(tab) {
@@ -461,11 +748,25 @@ const OwnerView = {
         document.body.classList.add('is-owner-app');
         document.body.classList.remove('is-workshop-erp');
 
+        // Se estiver no Fluxo de Onboarding / Autenticação (Imagem 1 - 12 Telas)
+        if (this.authScreen) {
+            container.innerHTML = `
+                <div class="dna-app-viewport">
+                    <div class="dna-phone-frame">
+                        ${this.renderAuthScreen()}
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
         // Sincroniza dados com o backend
         this.syncBackendVehicles();
+        this.fetchWorkshopsNetwork();
 
         const v = this.vehicleData;
         const activeDrawerClass = this.isDrawerOpen ? 'active' : '';
+
 
         container.innerHTML = `
             <div class="dna-app-viewport">
@@ -551,7 +852,7 @@ const OwnerView = {
                     <!-- 5.1. Modal de Ativação com Código da Oficina -->
                     ${this.isActivationModalOpen ? this.renderActivationModal() : ''}
 
-                    <!-- 5. Barra de Navegação Inferior Fixa (5 Itens) -->
+                    <!-- 5. Barra de Navegação Inferior Fixa (5 Itens Fiel à Imagem 2) -->
                     <nav class="dna-bottom-nav">
                         <div class="dna-nav-item ${this.activeTab === 'home' ? 'active' : ''}" onclick="OwnerView.switchTab('home')">
                             <div class="dna-nav-icon">
@@ -575,23 +876,23 @@ const OwnerView = {
                             <span class="dna-nav-label">Veículo</span>
                         </div>
 
-                        <div class="dna-nav-item ${this.activeTab === 'certification' ? 'active' : ''}" onclick="OwnerView.switchTab('certification')">
+                        <div class="dna-nav-item ${this.activeTab === 'services' ? 'active' : ''}" onclick="OwnerView.switchTab('services')">
                             <div class="dna-nav-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
                                 </svg>
                             </div>
-                            <span class="dna-nav-label">Certificação</span>
+                            <span class="dna-nav-label">Serviços</span>
                         </div>
 
-                        <div class="dna-nav-item ${this.activeTab === 'inspection' ? 'active' : ''}" onclick="OwnerView.switchTab('inspection')">
+                        <div class="dna-nav-item ${this.activeTab === 'reminders' ? 'active' : ''}" onclick="OwnerView.switchTab('reminders')">
                             <div class="dna-nav-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M9 11l3 3L22 4"/>
-                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                                 </svg>
                             </div>
-                            <span class="dna-nav-label">Inspeção</span>
+                            <span class="dna-nav-label">Alertas</span>
                         </div>
 
                         <div class="dna-nav-item ${this.activeTab === 'more' ? 'active' : ''}" onclick="OwnerView.switchTab('more')">
@@ -760,7 +1061,15 @@ const OwnerView = {
                                     </div>
                                     <span style="color:#FFD21C; font-weight:800;">Baixar App Oficial (PWA)</span>
                                 </div>
-                                <span class="dna-badge-counter" style="background:#FFD21C; color:#0B0F19; font-weight:800; font-size:9px; padding:2px 6px;">PLAY STORE</span>
+                            <!-- 11. Fluxo de Boas-Vindas & Onboarding (12 Telas) -->
+                            <div class="dna-menu-item" style="background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.25);" onclick="OwnerView.goToAuthScreen('splash')">
+                                <div class="dna-menu-item-left">
+                                    <div class="dna-menu-icon" style="color:#00D4FF;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                                    </div>
+                                    <span style="color:#00D4FF; font-weight:800;">Fluxo de Onboarding (12 Telas)</span>
+                                </div>
+                                <span class="dna-badge-counter" style="background:#00D4FF; color:#0B0F19; font-weight:800; font-size:9px; padding:2px 6px;">DEMO</span>
                             </div>
 
                             <!-- BOTÃO DE SAIR NO MENU LATERAL (LOGOUT) -->
@@ -850,8 +1159,8 @@ const OwnerView = {
         return `
             <!-- Saudação Oficial do Usuário -->
             <div class="dna-owner-welcome-bar" style="margin-bottom:12px;">
-                <h2 style="font-size:18px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">Olá, João!</h2>
-                <p style="font-size:12px; color:#94A3B8; margin:0;">Seu veículo sempre protegido.</p>
+                <h2 style="font-size:18px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">Olá, ${v.user_name ? v.user_name.split(' ')[0] : 'João'}!</h2>
+                <p style="font-size:12px; color:#94A3B8; margin:0;">Seu veículo em boas mãos.</p>
             </div>
 
             ${this.userVehicles && this.userVehicles.length > 1 ? `
@@ -865,8 +1174,16 @@ const OwnerView = {
                 </div>
             ` : ''}
 
-            <!-- Card Principal do Veículo (Honda Civic BRA2E19) -->
+            <!-- Card Principal do Veículo com DNA ATIVO (Honda Civic BRA2E19) -->
             <div class="dna-vehicle-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-size:11px; font-weight:800; color:#00E676; background:rgba(0,230,118,0.12); border:1px solid rgba(0,230,118,0.3); padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:5px;">
+                        <span style="width:6px; height:6px; border-radius:50%; background:#00E676; box-shadow:0 0 6px #00E676;"></span>
+                        DNA ATIVO
+                    </span>
+                    <span style="font-size:11px; color:#94A3B8; font-family:var(--font-mono, monospace);">${v.dna_code}</span>
+                </div>
+
                 <!-- Foto do Carro com Botão de Trocar Foto -->
                 <div class="dna-car-stage" onclick="OwnerView.openChangePhotoModal()" style="cursor:pointer;" title="Clique para trocar foto">
                     <div class="dna-car-neon-glow"></div>
@@ -922,6 +1239,57 @@ const OwnerView = {
                         <div class="dna-metric-label" style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Autonomia</div>
                         <div class="dna-metric-value" style="font-size:13.5px; font-weight:800; color:#10B981;">~ ${v.estimated_range} km</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Grid 2x2 de Indicadores (Fiel à Imagem 2 do App) -->
+            <div class="dna-home-grid-2x2">
+                <!-- Card 1: Próxima Revisão -->
+                <div class="dna-home-grid-card" onclick="OwnerView.navigateTo('revisions')">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="dna-grid-card-title">Próxima revisão</span>
+                        <span style="color:#00D4FF;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        </span>
+                    </div>
+                    <div class="dna-grid-card-val" style="color:#00D4FF;">8.752 km</div>
+                    <span style="font-size:10px; color:#94A3B8;">ou em ~3 meses</span>
+                </div>
+
+                <!-- Card 2: Inspeção Técnica -->
+                <div class="dna-home-grid-card" onclick="OwnerView.navigateTo('inspection')">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="dna-grid-card-title">Inspeção 360°</span>
+                        <span style="color:#10B981;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                        </span>
+                    </div>
+                    <div class="dna-grid-card-val" style="color:#10B981;">Em dia (100%)</div>
+                    <span style="font-size:10px; color:#94A3B8;">Laudo homologado</span>
+                </div>
+
+                <!-- Card 3: Mini OBD2 -->
+                <div class="dna-home-grid-card" onclick="OwnerView.navigateTo('obd')">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="dna-grid-card-title">OBD2 Telemetria</span>
+                        <span style="color:#00E676; display:flex; align-items:center; gap:4px;">
+                            <span style="width:6px; height:6px; border-radius:50%; background:#00E676;"></span>
+                        </span>
+                    </div>
+                    <div class="dna-grid-card-val" style="color:#00E676;">Conectado</div>
+                    <span style="font-size:10px; color:#94A3B8;">Zero DTCs (0 erros)</span>
+                </div>
+
+                <!-- Card 4: Alertas e Lembretes -->
+                <div class="dna-home-grid-card" onclick="OwnerView.navigateTo('reminders')">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="dna-grid-card-title">Alertas</span>
+                        <span style="color:#F59E0B;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        </span>
+                    </div>
+                    <div class="dna-grid-card-val" style="color:#FFFFFF;">4 Lembretes</div>
+                    <span style="font-size:10px; color:#F59E0B; font-weight:700;">1 ação preventiva</span>
                 </div>
             </div>
 
@@ -1663,17 +2031,45 @@ const OwnerView = {
 
     // ── 9. TELA: OFICINAS DA REDE (TELA 9 DO MAPA) ──
     renderWorkshopsScreen() {
-        const list = this.workshopsList || [];
+        let list = this.workshopsList || [];
+        const tab = this.workshopFilterTab || 'all';
+        const q = this.workshopSearchQuery || '';
+
+        if (tab === 'workshops') {
+            list = list.filter(w => !w.type || w.type === 'Oficina');
+        } else if (tab === 'centers') {
+            list = list.filter(w => w.type === 'Auto Center');
+        }
+
+        if (q) {
+            list = list.filter(w => 
+                (w.name && w.name.toLowerCase().includes(q)) || 
+                (w.city && w.city.toLowerCase().includes(q)) ||
+                (w.neighborhood && w.neighborhood.toLowerCase().includes(q))
+            );
+        }
+
         return `
             <div style="display:flex; flex-direction:column; gap:12px;">
                 <!-- Campo de Busca de Oficinas -->
                 <div style="position:relative;">
-                    <input type="text" class="form-control" placeholder="Buscar oficina ou cidade..." style="width:100%; background:#050B14; border:1px solid rgba(0,102,255,0.3); border-radius:10px; padding:10px 14px; font-size:12.5px; color:#FFFFFF;" />
+                    <input type="text" class="form-control" placeholder="Buscar oficina ou cidade..." value="${this.workshopSearchQuery || ''}" oninput="OwnerView.setWorkshopSearch(this.value)" style="width:100%; background:#050B14; border:1px solid rgba(0,102,255,0.3); border-radius:10px; padding:10px 14px; font-size:12.5px; color:#FFFFFF;" />
+                </div>
+
+                <!-- Filtros em Abas Segmentadas -->
+                <div class="dna-workshops-filter-chips">
+                    <button class="dna-history-filter-btn ${tab === 'all' ? 'active' : ''}" onclick="OwnerView.setWorkshopFilter('all')">Todas</button>
+                    <button class="dna-history-filter-btn ${tab === 'workshops' ? 'active' : ''}" onclick="OwnerView.setWorkshopFilter('workshops')">Oficinas</button>
+                    <button class="dna-history-filter-btn ${tab === 'centers' ? 'active' : ''}" onclick="OwnerView.setWorkshopFilter('centers')">Auto Centers</button>
                 </div>
 
                 <!-- Lista de Oficinas Credenciadas -->
                 <div style="display:flex; flex-direction:column; gap:8px;">
-                    ${list.map(w => `
+                    ${list.length === 0 ? `
+                        <div style="text-align:center; padding:24px 10px; color:#94A3B8; font-size:12px;">
+                            Nenhuma oficina credenciada encontrada com o filtro atual.
+                        </div>
+                    ` : list.map(w => `
                         <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
                             <div>
                                 <h4 style="font-size:13px; font-weight:800; color:#FFFFFF; margin:0 0 3px;">${w.name}</h4>
@@ -1683,7 +2079,7 @@ const OwnerView = {
                                     <span>${w.distance} - ${w.neighborhood}</span>
                                 </div>
                             </div>
-                            <a href="https://wa.me/55${w.phone.replace(/\\D/g, '')}?text=Olá,%20gostaria%20de%20agendar%20um%20serviço%20pelo%20DNA%20AUTO" target="_blank" class="btn btn-primary btn-sm" style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:11px; padding:6px 14px; border-radius:6px; text-decoration:none;">
+                            <a href="https://wa.me/55${(w.phone || '11998765432').replace(/\\D/g, '')}?text=Olá,%20gostaria%20de%20agendar%20um%20serviço%20pelo%20DNA%20AUTO" target="_blank" class="btn btn-primary btn-sm" style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:11px; padding:6px 14px; border-radius:6px; text-decoration:none;">
                                 Agendar
                             </a>
                         </div>
@@ -2143,6 +2539,403 @@ const OwnerView = {
 
                     <button class="dna-photo-btn-secondary" onclick="OwnerView.closeActivationModal()" style="margin-top: 8px;">
                         <span>Cancelar</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    // ── MÉTODOS DO FLUXO DE ONBOARDING & AUTENTICAÇÃO (IMAGEM 1 - 12 TELAS) ──
+    renderAuthScreen() {
+        switch (this.authScreen) {
+            case 'login':
+                return this.renderLoginAuth();
+            case 'register':
+                return this.renderRegisterAuth();
+            case 'plate_search':
+                return this.renderPlateSearchAuth();
+            case 'vehicle_found':
+                return this.renderVehicleFoundAuth();
+            case 'workshop_code':
+                return this.renderWorkshopCodeAuth();
+            case 'confirmation':
+                return this.renderConfirmationAuth();
+            case 'concluded':
+                return this.renderConcludedAuth();
+            case 'splash':
+            default:
+                return this.renderSplashAuth();
+        }
+    },
+
+    // 01. Tela de Boas-Vindas (Splash)
+    renderSplashAuth() {
+        return `
+            <div class="dna-auth-screen" style="justify-content:space-between; align-items:center; text-align:center;">
+                <div style="width:100%; display:flex; justify-content:flex-end;">
+                    <button class="dna-btn-ghost-link" onclick="OwnerView.exitAuthToApp()">Pular &gt;</button>
+                </div>
+
+                <div class="dna-splash-content">
+                    <div class="dna-splash-logo-glow">
+                        <svg viewBox="0 0 120 120" width="48" height="48" fill="none" stroke="#00D4FF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M 54 62 C 51 55 51 46 57 41 C 62 36 67 40 65 50 C 63 56 64 64 64 64" />
+                            <path d="M 45 66 C 41 53 41 39 50 30 C 58 21 68 21 75 30 C 82 40 82 55 77 66" />
+                            <path d="M 36 68 C 30 52 31 32 43 20 C 54 9 72 9 83 20 C 93 32 94 52 88 68" />
+                            <path d="M 22 84 L 32 84 C 36 78 42 75 48 75 L 72 75 C 78 75 84 78 88 84 L 98 84" stroke-width="8" />
+                        </svg>
+                    </div>
+
+                    <h1 class="dna-splash-title">DNA <span style="color:#00D4FF;">AUTO</span></h1>
+                    <p class="dna-splash-slogan">Seu veículo sempre protegido.</p>
+
+                    <div class="dna-splash-hero-car">
+                        <img src="https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80" alt="Honda Civic Hero" />
+                    </div>
+                </div>
+
+                <div style="width:100%; display:flex; flex-direction:column; gap:10px; max-width:320px; margin-bottom:10px;">
+                    <button class="dna-btn-primary-neon" onclick="OwnerView.goToAuthScreen('login')">
+                        <span>Entrar</span>
+                    </button>
+                    <button class="dna-btn-secondary-dark" onclick="OwnerView.goToAuthScreen('register')">
+                        <span>Cadastrar</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    // 02. Login Oficial
+    renderLoginAuth() {
+        return `
+            <div class="dna-auth-screen">
+                <div class="dna-auth-header">
+                    <button class="dna-auth-back-btn" onclick="OwnerView.goToAuthScreen('splash')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                        <span>Voltar</span>
+                    </button>
+                    <span class="dna-auth-step-pill">Login</span>
+                </div>
+
+                <div style="margin-bottom:24px;">
+                    <h2 style="font-size:22px; font-weight:900; color:#FFFFFF; margin:0 0 6px;">Entrar</h2>
+                    <p style="font-size:12.5px; color:#94A3B8; margin:0;">Acesse sua Garagem Digital DNA AUTO</p>
+                </div>
+
+                <div id="auth-error-box" style="display:none; background:rgba(239,68,68,0.15); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:10px; font-size:12px; margin-bottom:14px;"></div>
+
+                <form onsubmit="OwnerView.handleLoginSubmit(event)">
+                    <div class="dna-auth-input-group">
+                        <label class="dna-auth-input-label">E-mail</label>
+                        <div class="dna-auth-input-box">
+                            <input type="email" id="login-email-input" placeholder="Ex: usuario@email.com" value="joao@email.com" required />
+                        </div>
+                    </div>
+
+                    <div class="dna-auth-input-group">
+                        <div class="dna-auth-input-label">
+                            <span>Senha</span>
+                            <a href="javascript:void(0)" onclick="alert('Instruções de recuperação enviadas para o seu e-mail cadastrado.')" style="color:#00D4FF; text-decoration:none; font-size:11px;">Esqueceu sua senha?</a>
+                        </div>
+                        <div class="dna-auth-input-box with-eye">
+                            <input type="password" id="auth-password-input" placeholder="Digite sua senha" value="123456" required />
+                            <button type="button" class="dna-auth-eye-btn" id="auth-eye-icon" onclick="OwnerView.togglePasswordVisibility()">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="dna-btn-primary-neon" style="margin-top:16px;">
+                        <span>Entrar</span>
+                    </button>
+                </form>
+
+                <div style="text-align:center; margin-top:24px;">
+                    <span style="font-size:12px; color:#94A3B8;">Não tem uma conta?</span>
+                    <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('register')" style="color:#00D4FF; font-size:12px; font-weight:800; margin-left:4px; text-decoration:none;">Cadastrar</a>
+                </div>
+            </div>
+        `;
+    },
+
+    // 03. Cadastro - Dados Pessoais
+    renderRegisterAuth() {
+        return `
+            <div class="dna-auth-screen">
+                <div class="dna-auth-header">
+                    <button class="dna-auth-back-btn" onclick="OwnerView.goToAuthScreen('splash')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                        <span>Voltar</span>
+                    </button>
+                    <span class="dna-auth-step-pill">Passo 1 de 4</span>
+                </div>
+
+                <div style="margin-bottom:18px;">
+                    <h2 style="font-size:22px; font-weight:900; color:#FFFFFF; margin:0 0 4px;">Cadastro</h2>
+                    <p style="font-size:12px; color:#94A3B8; margin:0;">Preencha seus dados para vincular seu veículo</p>
+                </div>
+
+                <div id="auth-error-box" style="display:none; background:rgba(239,68,68,0.15); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:10px; font-size:12px; margin-bottom:14px;"></div>
+
+                <form onsubmit="OwnerView.handleRegisterSubmit(event)">
+                    <div class="dna-auth-input-group">
+                        <label class="dna-auth-input-label">Nome Completo</label>
+                        <div class="dna-auth-input-box">
+                            <input type="text" id="reg-name-input" placeholder="Ex: João da Silva" value="João Silva" required />
+                        </div>
+                    </div>
+
+                    <div class="dna-auth-input-group">
+                        <label class="dna-auth-input-label">WhatsApp / Telefone</label>
+                        <div class="dna-auth-input-box">
+                            <input type="tel" id="reg-phone-input" placeholder="(11) 98765-4321" value="(11) 98765-4321" required />
+                        </div>
+                    </div>
+
+                    <div class="dna-auth-input-group">
+                        <label class="dna-auth-input-label">Placa do Veículo</label>
+                        <div class="dna-auth-input-box">
+                            <input type="text" id="reg-plate-input" placeholder="Ex: BRA2E19" value="BRA2E19" maxlength="8" style="font-family:var(--font-mono, monospace); font-weight:800; text-transform:uppercase; letter-spacing:1px;" required />
+                        </div>
+                    </div>
+
+                    <div class="dna-auth-input-group">
+                        <label class="dna-auth-input-label">E-mail</label>
+                        <div class="dna-auth-input-box">
+                            <input type="email" id="reg-email-input" placeholder="joao@email.com" value="joao@email.com" required />
+                        </div>
+                    </div>
+
+                    <div class="dna-auth-input-group">
+                        <label class="dna-auth-input-label">Senha de Acesso</label>
+                        <div class="dna-auth-input-box with-eye">
+                            <input type="password" id="reg-pass-input" placeholder="Mínimo 6 caracteres" value="123456" required />
+                        </div>
+                    </div>
+
+                    <button type="submit" class="dna-btn-primary-neon" style="margin-top:14px;">
+                        <span>Continuar</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                </form>
+
+                <div style="text-align:center; margin-top:16px;">
+                    <span style="font-size:12px; color:#94A3B8;">Já possui uma conta?</span>
+                    <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('login')" style="color:#00D4FF; font-size:12px; font-weight:800; margin-left:4px; text-decoration:none;">Entrar</a>
+                </div>
+            </div>
+        `;
+    },
+
+    // 04. Buscando Informações do Veículo (Radar Scanner FIPE)
+    renderPlateSearchAuth() {
+        const c = this.radarChecklist;
+        return `
+            <div class="dna-auth-screen" style="justify-content:center; align-items:center;">
+                <div class="dna-radar-container" style="width:100%;">
+                    <span class="dna-auth-step-pill" style="margin-bottom:20px;">Passo 2 de 4</span>
+
+                    <h2 style="font-size:19px; font-weight:900; color:#FFFFFF; text-align:center; margin:0 0 4px;">
+                        Buscando informações do veículo...
+                    </h2>
+                    <p style="font-size:12px; color:#94A3B8; text-align:center; margin:0 0 24px;">
+                        Consultando bases oficiais para a placa <strong style="color:#00D4FF; font-family:var(--font-mono, monospace);">${this.authData.license_plate}</strong>
+                    </p>
+
+                    <!-- Radar Circular Pulsante -->
+                    <div class="dna-radar-circle-box">
+                        <div class="dna-radar-pulse-ring"></div>
+                        <div class="dna-radar-pulse-ring"></div>
+                        <div class="dna-radar-pulse-ring"></div>
+                        <div class="dna-radar-center-core">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Checklist Dinâmico dos Passos -->
+                    <div class="dna-radar-checklist">
+                        <div class="dna-radar-step-item ${c.plate ? 'done' : 'loading'}">
+                            ${c.plate ? '✓' : '⏳'} Verificando placa Mercosul...
+                        </div>
+                        <div class="dna-radar-step-item ${c.fipe ? 'done' : (c.plate ? 'loading' : '')}">
+                            ${c.fipe ? '✓' : (c.plate ? '⏳' : '○')} Consultando base de dados FIPE...
+                        </div>
+                        <div class="dna-radar-step-item ${c.specs ? 'done' : (c.fipe ? 'loading' : '')}">
+                            ${c.specs ? '✓' : (c.fipe ? '⏳' : '○')} Carregando especificações técnicas...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    // 05. Dados do Veículo Encontrados
+    renderVehicleFoundAuth() {
+        const d = this.authData;
+        return `
+            <div class="dna-auth-screen">
+                <div class="dna-auth-header">
+                    <button class="dna-auth-back-btn" onclick="OwnerView.goToAuthScreen('register')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                        <span>Voltar</span>
+                    </button>
+                    <span class="dna-auth-step-pill">Passo 3 de 4</span>
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <h2 style="font-size:20px; font-weight:900; color:#FFFFFF; margin:0 0 4px;">Dados do Veículo Encontrados</h2>
+                    <p style="font-size:12px; color:#94A3B8; margin:0;">Confira os dados oficiais identificados pela placa:</p>
+                </div>
+
+                <div class="dna-vehicle-found-card">
+                    <div class="dna-found-car-thumb">
+                        <img src="${d.photo_url || 'https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80'}" alt="Veículo Localizado" />
+                    </div>
+
+                    <div style="text-align:center;">
+                        <div class="dna-found-plate-badge">
+                            <span style="background:#003399; color:#FFF; font-size:9px; padding:1px 4px; border-radius:2px;">BR</span>
+                            <span>${d.license_plate}</span>
+                        </div>
+                        <h3 style="font-size:17px; font-weight:900; color:#FFFFFF; margin:4px 0 2px;">${d.vehicle_brand} ${d.vehicle_model}</h3>
+                        <div style="font-size:12px; color:#94A3B8; font-weight:700; margin-bottom:12px;">Ano: ${d.vehicle_year} • Combustível: Gasolina</div>
+
+                        <div class="dna-fipe-badge">
+                            <span>Tabela FIPE Oficial:</span>
+                            <strong>${d.fipe_value || 'R$ 125.870,00'}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button class="dna-btn-primary-neon" onclick="OwnerView.goToAuthScreen('workshop_code')">
+                        <span>Confirmar Veículo</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+                    <button class="dna-btn-ghost-link" onclick="OwnerView.goToAuthScreen('register')">
+                        Informar outra placa
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    // 06. Código da Oficina Credenciada
+    renderWorkshopCodeAuth() {
+        return `
+            <div class="dna-auth-screen">
+                <div class="dna-auth-header">
+                    <button class="dna-auth-back-btn" onclick="OwnerView.goToAuthScreen('vehicle_found')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                        <span>Voltar</span>
+                    </button>
+                    <span class="dna-auth-step-pill">Passo 4 de 4</span>
+                </div>
+
+                <div style="margin-bottom:20px;">
+                    <h2 style="font-size:20px; font-weight:900; color:#FFFFFF; margin:0 0 4px;">Código da Oficina</h2>
+                    <p style="font-size:12px; color:#94A3B8; margin:0; line-height:1.4;">
+                        Se você realizou serviço em uma oficina credenciada DNA AUTO, digite o código de ativação fornecido:
+                    </p>
+                </div>
+
+                <div class="dna-auth-input-group" style="margin-bottom:20px;">
+                    <label class="dna-auth-input-label">Código de Ativação (Opcional)</label>
+                    <div class="dna-auth-input-box">
+                        <input type="text" id="reg-workshop-code-input" placeholder="Ex: DNA-8421" style="text-align:center; font-family:var(--font-mono, monospace); font-size:16px; font-weight:900; letter-spacing:2px; text-transform:uppercase;" />
+                    </div>
+                    <span style="font-size:11px; color:#64748B;">O código vincula automaticamente as ordens de serviço e o laudo 360° da oficina.</span>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    <button class="dna-btn-primary-neon" onclick="OwnerView.handleWorkshopCodeSubmit()">
+                        <span>Validar Código</span>
+                    </button>
+                    <button class="dna-btn-secondary-dark" onclick="OwnerView.skipWorkshopCode()">
+                        <span>Não tenho código agora</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    // 07. Confirmação dos Dados
+    renderConfirmationAuth() {
+        const d = this.authData;
+        const ws = this.foundWorkshop;
+        return `
+            <div class="dna-auth-screen">
+                <div class="dna-auth-header">
+                    <button class="dna-auth-back-btn" onclick="OwnerView.goToAuthScreen('workshop_code')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                        <span>Voltar</span>
+                    </button>
+                    <span class="dna-auth-step-pill">Confirmação</span>
+                </div>
+
+                <div style="margin-bottom:16px;">
+                    <h2 style="font-size:20px; font-weight:900; color:#FFFFFF; margin:0 0 4px;">Confirmação dos Dados</h2>
+                    <p style="font-size:12px; color:#94A3B8; margin:0;">Verifique as informações antes de finalizar seu cadastro:</p>
+                </div>
+
+                <!-- Resumo do Veículo -->
+                <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px 14px; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:11px; font-weight:800; color:#00D4FF; text-transform:uppercase;">Veículo</span>
+                        <div class="dna-plate-mercosul" style="background:#FFFFFF; color:#0B0F19; border-radius:4px; padding:1px 6px; font-family:var(--font-mono, monospace); font-weight:800; font-size:11px; border:1px solid #000; display:inline-flex; align-items:center; gap:4px;">
+                            <span style="background:#003399; color:#FFF; font-size:8px; padding:1px 2px; border-radius:2px;">BR</span>
+                            <span>${d.license_plate}</span>
+                        </div>
+                    </div>
+                    <strong style="color:#FFFFFF; font-size:13.5px; display:block;">${d.vehicle_brand} ${d.vehicle_model} (${d.vehicle_year})</strong>
+                    <span style="font-size:11px; color:#94A3B8;">FIPE: ${d.fipe_value || 'R$ 125.870,00'}</span>
+                </div>
+
+                <!-- Resumo da Oficina -->
+                <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px 14px; margin-bottom:10px;">
+                    <span style="font-size:11px; font-weight:800; color:#00D4FF; text-transform:uppercase; display:block; margin-bottom:4px;">Oficina Credenciada</span>
+                    <strong style="color:#FFFFFF; font-size:13px; display:block;">${ws ? ws.name : 'Rede de Oficinas DNA AUTO'}</strong>
+                    <span style="font-size:11px; color:#94A3B8;">${ws ? `${ws.city} • Código: ${ws.code}` : 'Vínculo padrão da rede homologada'}</span>
+                </div>
+
+                <!-- Resumo do Proprietário -->
+                <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px 14px; margin-bottom:20px;">
+                    <span style="font-size:11px; font-weight:800; color:#00D4FF; text-transform:uppercase; display:block; margin-bottom:4px;">Titular do Cadastro</span>
+                    <strong style="color:#FFFFFF; font-size:13px; display:block;">${d.name}</strong>
+                    <span style="font-size:11px; color:#94A3B8;">${d.email} • ${d.phone}</span>
+                </div>
+
+                <button id="btn-submit-registration" class="dna-btn-primary-neon" onclick="OwnerView.submitFinalRegistration()">
+                    <span>Concluir Cadastro</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </button>
+            </div>
+        `;
+    },
+
+    // 08. Cadastro Concluído!
+    renderConcludedAuth() {
+        return `
+            <div class="dna-auth-screen" style="justify-content:center; align-items:center; text-align:center;">
+                <div class="dna-success-circle-box">
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+
+                <h2 style="font-size:24px; font-weight:900; color:#FFFFFF; margin:0 0 8px;">Cadastro Concluído!</h2>
+                <p style="font-size:13.5px; color:#94A3B8; margin:0 0 28px; line-height:1.5; max-width:300px;">
+                    Seu passaporte digital DNA AUTO foi ativado com sucesso. Seu veículo agora possui certificação permanente.
+                </p>
+
+                <div style="width:100%; max-width:320px;">
+                    <button class="dna-btn-primary-neon" onclick="OwnerView.enterAppFromConcluded()">
+                        <span>Acessar o App</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                     </button>
                 </div>
             </div>

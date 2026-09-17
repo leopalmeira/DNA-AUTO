@@ -576,6 +576,37 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   4. **Testes Automatizados:**
      - Validação dos endpoints `/cliente`, `/cliente.html`, `/oficina` e `/oficina.html` com 100% de sucesso (43/43 testes verdes).
 
+### 📅 Ciclo 30 — Implementação Completa do App do Cliente & Fluxo de Onboarding (12 Telas) com Integração Backend e SQLite
+- **Demandas Atendidas:**
+  1. **Fluxo de Login & Onboarding (12 telas):**
+     - Welcome/Splash inicial com branding de alta fidelidade e botão "Começar".
+     - Login com toggle de visibilidade de senha, validação de e-mail e atalho para cadastro.
+     - Cadastro completo (Nome, Telefone, E-mail, Senha e Placa do Veículo).
+     - Scanner de Radar animado com varredura estilo sonar e checklist visual dinâmico (comunicação com base veicular e tabela FIPE).
+     - Ficha do veículo localizado: placa Mercosul em destaque, marca, modelo, ano, valor FIPE e foto oficial.
+     - Código de ativação da oficina credenciada (`DNA-XXXX`) com opção de pular.
+     - Tela de confirmação e resumo com selo de integridade e botão "Acessar o app".
+  2. **App Completo do Cliente (11 telas):**
+     - Home com card do veículo, badge `DNA ATIVO`, underglow ciano e grid 2x2 com indicadores (Próxima Revisão, Inspeção 360°, Telemetria OBD2, Alertas).
+     - Meu Veículo (Ficha Técnica completa, especificações e histórico).
+     - Certificação DNA AUTO com selo holográfico de integridade mecânica.
+     - Inspeção Técnica 360° com gauge circular de 100% e checklist dos sistemas.
+     - Revisões Preventivas com prazo, substituições de peças e agendamento na rede credenciada.
+     - Telemetria OBD2 em tempo real com 3 gauges circulares e 0 falhas DTC.
+     - Histórico & Dossiê 360° com chips de filtragem (Todos, Serviços, Peças, Documentos).
+     - Alertas Preventivos categorizados por severidade (Urgente vermelho, Atenção amarelo, OK verde).
+     - Oficinas da Rede Credenciada com busca em tempo real, abas de filtro (Todas, Oficinas, Auto Centers), distância e avaliação padrão ouro.
+     - Menu Lateral Drawer com atalhos, download PWA nativo e botão de logout.
+  3. **Barra Inferior de 5 Abas (Bottom Navigation):**
+     - `Início`, `Veículo`, `Serviços`, `Alertas`, `Mais`.
+  4. **Backend e Banco de Dados Relacional:**
+     - Endpoint `POST /api/v1/auth/register-owner`: registro completo de usuário, proprietário, veículo, geração de passaporte `vehicle_dna`, inicialização de scores de saúde e vínculo com a oficina.
+     - Endpoint `GET /api/v1/workshops/network`: listagem dinâmica de oficinas homologadas com geolocalização e avaliação.
+     - Camada `api.js` sincronizada com `registerOwner()` e `getWorkshopsNetwork()`.
+  5. **Bateria de Testes Automatizados:**
+     - Inclusão dos Testes 44 e 45 em `test/api.test.js`.
+     - **45 testes automatizados de integração aprovados com 100% de sucesso**.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

@@ -67,6 +67,21 @@ const API = {
             body: JSON.stringify(data)
         });
     },
+    registerOwner(data) {
+        return this.request('/auth/register-owner', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    activateClientCode(code) {
+        return this.request('/clients/activate', {
+            method: 'POST',
+            body: JSON.stringify({ code })
+        });
+    },
+    getWorkshopsNetwork() {
+        return this.request('/workshops');
+    },
     registerWorkshop(data) {
         return this.request('/auth/register-workshop', {
             method: 'POST',
@@ -392,6 +407,19 @@ const API = {
             method: 'POST',
             body: JSON.stringify({ phone_number: phoneNumber })
         });
+    },
+
+    // Autenticação e Onboarding de Proprietário
+    registerOwner(data) {
+        return this.request('/auth/register-owner', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+
+    // Oficinas da Rede Credenciadas
+    getWorkshopsNetwork() {
+        return this.request('/workshops/network');
     }
 };
 

@@ -227,6 +227,151 @@ router.post('/register-client', (req, res) => {
     }
 });
 
+// Cadastro Completo de Proprietário com Placa do Veículo e Código de Oficina (Fluxo Onboarding Mobile)
+router.post('/register-owner', (req, res) => {
+    try {
+        const { name, email, password, phone, license_plate, plate, vehicle_model, model, vehicle_brand, brand, vehicle_year, year, workshop_code } = req.body;
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios.' });
+        }
+
+        const cleanEmail = email.trim().toLowerCase();
+        const existing = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanEmail);
+        if (existing) {
+            return res.status(409).json({ error: 'Este e-mail já está cadastrado no DNA AUTO.' });
+        }
+
+        const userId = `usr_${Date.now()}`;
+        const ownerId = `own_${Date.now()}`;
+        const passwordHash = bcrypt.hashSync(password, 10);
+        const rawPlate = license_plate || plate || '';
+        const cleanPlate = rawPlate.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        let vehicle = null;
+        let dnaRecord = null;
+
+        if (cleanPlate) {
+            vehicle = db.prepare('SELECT * FROM vehicles WHERE license_plate = ?').get(cleanPlate);
+            if (!vehicle) {
+                const vehicleId = `veh_${Date.now()}`;
+                const carBrand = vehicle_brand || brand || 'Honda';
+                const carModel = vehicle_model || model || 'Civic EXL';
+                const carYear = parseInt(vehicle_year || year) || 2021;
+                
+                let photoUrl = 'https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80';
+                try {
+                    const { getDefaultPhotoForVehicle } = require('../../services/vehiclePhoto.service');
+                    photoUrl = getDefaultPhotoForVehicle(carBrand, carModel);
+                } catch (_) {}
+
+                const vin = `9BWZZZ377VT${Date.now().toString().slice(-6)}`;
+                const renavam = `00${Date.now().toString().slice(-9)}`;
+                db.prepare(`
+                    INSERT INTO vehicles (id, license_plate, chassis_vin, renavam, brand, model, manufacture_year, model_year, fuel_type, color, photo_url, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Flex', 'Prata', ?, datetime('now'))
+                `).run(vehicleId, cleanPlate, vin, renavam, carBrand, carModel, carYear, carYear, photoUrl);
+
+                // Gerar DNA permanente
+                const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+                const rnd = (l) => Array.from({length: l}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+                const dnaCode = `DNA-BR-${rnd(4)}-${rnd(4)}-${rnd(3)}`;
+                const crypto = require('crypto');
+                const certHash = crypto.createHash('sha256').update(`${vehicleId}-${dnaCode}`).digest('hex');
+                
+                db.prepare(`
+                    INSERT INTO vehicle_dna (id, vehicle_id, dna_code, status, activation_fee_cents, certificate_hash, activated_at, created_at)
+                    VALUES (?, ?, ?, 'ACTIVE', 5990, ?, datetime('now'), datetime('now'))
+                `).run(`dna_${Date.now()}`, vehicleId, dnaCode, certHash);
+
+                db.prepare(`
+                    INSERT INTO health_scores (id, vehicle_id, overall_score, mechanical_score, electrical_score, bodywork_score, calculated_at)
+                    VALUES (?, ?, 95, 95, 95, 95, datetime('now'))
+                `).run(`hs_${Date.now()}`, vehicleId);
+
+                vehicle = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(vehicleId);
+            }
+
+            if (vehicle) {
+                dnaRecord = db.prepare('SELECT * FROM vehicle_dna WHERE vehicle_id = ?').get(vehicle.id);
+            }
+        }
+
+        db.transaction(() => {
+            db.prepare(`
+                INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
+                VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0)
+            `).run(userId, name.trim(), cleanEmail, passwordHash, phone ? phone.trim() : null);
+
+            db.prepare(`
+                INSERT INTO owners (id, user_id, name, document_cpf, email, phone, created_at)
+                VALUES (?, ?, ?, '000.000.000-00', ?, ?, datetime('now'))
+            `).run(ownerId, userId, name.trim(), cleanEmail, phone ? phone.trim() : null);
+
+            if (vehicle) {
+                db.prepare(`
+                    INSERT INTO ownership_transfers (id, vehicle_id, previous_owner_id, new_owner_id, status, requested_at, completed_at, transfer_mileage, created_at)
+                    VALUES (?, ?, NULL, ?, 'COMPLETED', datetime('now'), datetime('now'), 87542, datetime('now'))
+                `).run(`trn_${Date.now()}`, vehicle.id, ownerId);
+            }
+
+            // Se forneceu código de oficina, valida e ativa
+            if (workshop_code) {
+                const code = workshop_code.trim().toUpperCase();
+                const act = db.prepare('SELECT * FROM client_activations WHERE UPPER(activation_code) = ?').get(code);
+                if (act) {
+                    db.prepare(`
+                        UPDATE client_activations
+                        SET status = 'ACTIVATED', owner_id = ?, vehicle_id = COALESCE(vehicle_id, ?), activated_at = datetime('now')
+                        WHERE id = ?
+                    `).run(ownerId, vehicle ? vehicle.id : null, act.id);
+                }
+            }
+        })();
+
+        const token = jwt.sign(
+            { id: userId, email: cleanEmail, role_code: 'OWNER' },
+            JWT_SECRET,
+            { expiresIn: '7d' }
+        );
+
+        logAudit({
+            user: { id: userId, name: name.trim(), role_code: 'OWNER' },
+            action: 'REGISTER_OWNER_ONBOARDING',
+            entityType: 'USER',
+            entityId: userId,
+            ipAddress: req.ip || req.connection.remoteAddress,
+            userAgent: req.headers['user-agent']
+        });
+
+        res.status(201).json({
+            success: true,
+            token,
+            user: {
+                id: userId,
+                name: name.trim(),
+                email: cleanEmail,
+                phone: phone || null,
+                role: 'role_owner',
+                role_code: 'OWNER',
+                role_name: 'Proprietário de Veículo',
+                vehicle: vehicle || null
+            },
+            owner: {
+                id: ownerId,
+                user_id: userId,
+                name: name.trim(),
+                email: cleanEmail,
+                phone: phone || null
+            },
+            vehicle: vehicle || null,
+            dna: dnaRecord || null
+        });
+    } catch (err) {
+        console.error('Erro ao cadastrar proprietário via onboarding:', err);
+        res.status(500).json({ error: 'Erro interno ao cadastrar proprietário.' });
+    }
+});
+
 // Redefinição / Recuperação de Senha ("Esqueci minha senha")
 router.post('/forgot-password', (req, res) => {
     try {

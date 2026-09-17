@@ -323,6 +323,11 @@ async function runTests() {
         console.assert(typeof dataWppStatus.status === 'string', 'Status do WhatsApp deve ser string');
         console.log(`✅ 27. Status Inicial Baileys: Oficina ws_veloce com status [${dataWppStatus.status}]`);
 
+        // Garante reset de sessão para teste de pareamento se já estiver conectado
+        if (dataWppStatus.status === 'CONNECTED') {
+            await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/disconnect`, { method: 'POST' });
+        }
+
         // Teste 28: Solicitação de Conexão Baileys (Geração de Pairing Code e QR Code)
         const resWppConnect = await fetch(`${BASE_URL}/workshops/ws_veloce/whatsapp/connect`, {
             method: 'POST',
@@ -697,7 +702,60 @@ async function runTests() {
         console.assert(resWorkshopAppDir.status === 200, 'Falha ao acessar /oficina.app');
         console.log(`✅ 43. Rota e Arquivo Separado do Painel da Oficina: /oficina, /oficina.html, /painel e /oficina.app entregam oficina.app dedicado com sucesso.`);
 
-        console.log('\n🎉 TODOS OS 43 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 44: Registro Completo de Proprietário no App do Cliente (/auth/register-owner)
+        const resRegOwner = await fetch(`${BASE_URL}/auth/register-owner`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: 'Mariana Duarte Silva',
+                phone: '11988887766',
+                email: 'mariana.duarte@test.com',
+                password: 'senhaSegura123',
+                plate: 'ABC1D23',
+                brand: 'HONDA',
+                model: 'CIVIC TOURING 1.5 TURBO',
+                year: 2021,
+                fipe_price: 'R$ 138.500,00',
+                workshop_code: generatedCode // Código gerado e testado anteriormente
+            })
+        });
+        const dataRegOwner = await resRegOwner.json();
+        console.assert(resRegOwner.status === 201, 'Falha ao registrar novo proprietário no endpoint /auth/register-owner');
+        console.assert(dataRegOwner.success === true, 'Registro deve retornar success: true');
+        console.assert(!!dataRegOwner.token, 'Registro deve retornar token JWT');
+        console.assert(dataRegOwner.user.email === 'mariana.duarte@test.com', 'E-mail do usuário registrado divergente');
+        console.assert(dataRegOwner.user.role === 'role_owner', 'Perfil do usuário deve ser role_owner');
+        console.assert(dataRegOwner.vehicle.license_plate === 'ABC1D23', 'Placa do veículo registrado divergente');
+        console.assert(!!dataRegOwner.dna, 'Passaporte DNA do veículo deve ser criado no registro');
+
+        // Teste de e-mail duplicado
+        const resRegDuplicate = await fetch(`${BASE_URL}/auth/register-owner`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: 'Mariana Duplicada',
+                phone: '11988887766',
+                email: 'mariana.duarte@test.com',
+                password: 'outrasenha123',
+                plate: 'XYZ9A99'
+            })
+        });
+        console.assert(resRegDuplicate.status === 409, 'Cadastro com e-mail duplicado deve retornar HTTP 409 Conflict');
+        console.log(`✅ 44. Registro Completo de Proprietário & Passaporte DNA (/auth/register-owner): Novo usuário Mariana Duarte cadastrado com veículo ABC1D23, passaporte emitido e JWT validado.`);
+
+        // Teste 45: Catálogo de Oficinas Credenciadas da Rede DNA AUTO (/workshops/network)
+        const resNetwork = await fetch(`${BASE_URL}/workshops/network`);
+        const dataNetwork = await resNetwork.json();
+        console.assert(resNetwork.status === 200, 'Falha ao buscar rede credenciada de oficinas /workshops/network');
+        console.assert(dataNetwork.success === true, 'Busca de rede deve retornar success: true');
+        console.assert(Array.isArray(dataNetwork.workshops), 'Rede deve retornar array de oficinas');
+        console.assert(dataNetwork.workshops.length >= 2, 'Rede deve conter oficinas credenciadas cadastradas');
+        const veloceWs = dataNetwork.workshops.find(w => w.name.includes('Veloce'));
+        console.assert(!!veloceWs, 'Oficina Veloce Motors não encontrada na rede credenciada');
+        console.assert(veloceWs.rating >= 4.5, 'Avaliação da oficina credenciada deve ser padrão ouro');
+        console.log(`✅ 45. Rede Credenciada DNA AUTO (/workshops/network): ${dataNetwork.workshops.length} oficinas listadas com geolocalização, rating e especialidades.`);
+
+        console.log('\n🎉 TODOS OS 45 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

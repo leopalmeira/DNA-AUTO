@@ -2803,3 +2803,626 @@
     border-color: rgba(0, 212, 255, 0.3);
 }
 
+/* ==============================================================================
+   11. FLUXO DE ONBOARDING & AUTENTICAÇÃO (IMAGEM 1 - 12 TELAS)
+   ============================================================================== */
+
+.dna-auth-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 18px;
+    overflow-y: auto;
+    position: relative;
+    background: radial-gradient(circle at 50% 10%, #0c1b36 0%, #070d18 70%);
+}
+
+.dna-auth-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.dna-auth-back-btn {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dna-auth-back-btn:hover {
+    background: rgba(0, 102, 255, 0.25);
+    border-color: #00D4FF;
+}
+
+.dna-auth-step-pill {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: #00D4FF;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    padding: 4px 10px;
+    border-radius: 20px;
+    text-transform: uppercase;
+}
+
+/* Tela 01: Splash / Boas-Vindas */
+.dna-splash-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.dna-splash-logo-glow {
+    width: 84px;
+    height: 84px;
+    border-radius: 24px;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.3) 0%, rgba(0, 102, 255, 0.05) 70%);
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    box-shadow: 0 0 30px rgba(0, 102, 255, 0.4);
+}
+
+.dna-splash-title {
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #FFFFFF;
+    margin: 0 0 6px;
+}
+
+.dna-splash-slogan {
+    font-size: 14px;
+    color: #94A3B8;
+    margin: 0 0 24px;
+    font-weight: 500;
+}
+
+.dna-splash-hero-car {
+    width: 100%;
+    max-width: 320px;
+    height: 180px;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 28px;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+.dna-splash-hero-car img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dna-splash-hero-car::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(to top, #070d18, transparent);
+}
+
+/* Botões Oficiais Onboarding */
+.dna-btn-primary-neon {
+    width: 100%;
+    background: linear-gradient(135deg, #0066FF 0%, #00D4FF 100%);
+    color: #070D18;
+    font-weight: 900;
+    font-size: 14px;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(0, 102, 255, 0.5);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.dna-btn-primary-neon:hover {
+    box-shadow: 0 6px 24px rgba(0, 212, 255, 0.65);
+    transform: translateY(-1px);
+}
+
+.dna-btn-primary-neon:active {
+    transform: translateY(1px);
+}
+
+.dna-btn-secondary-dark {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(0, 102, 255, 0.35);
+    color: #FFFFFF;
+    font-weight: 800;
+    font-size: 13.5px;
+    padding: 13px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.dna-btn-secondary-dark:hover {
+    background: rgba(0, 102, 255, 0.2);
+    border-color: #00D4FF;
+}
+
+.dna-btn-ghost-link {
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    font-size: 12.5px;
+    font-weight: 700;
+    padding: 8px 14px;
+    cursor: pointer;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.dna-btn-ghost-link:hover {
+    color: #00D4FF;
+}
+
+/* Campos de Formulário Onboarding */
+.dna-auth-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.dna-auth-input-label {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: #CBD5E1;
+    display: flex;
+    justify-content: space-between;
+}
+
+.dna-auth-input-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.dna-auth-input-box input {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(0, 102, 255, 0.28);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: #FFFFFF;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.dna-auth-input-box input:focus {
+    outline: none;
+    border-color: #00D4FF;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+    background: rgba(15, 23, 42, 1);
+}
+
+.dna-auth-input-box input::placeholder {
+    color: #64748B;
+}
+
+.dna-auth-input-box.with-eye input {
+    padding-right: 42px;
+}
+
+.dna-auth-eye-btn {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dna-auth-eye-btn:hover {
+    color: #00D4FF;
+}
+
+/* Radar de Busca da Placa (Tela 04) */
+.dna-radar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 10px 20px;
+}
+
+.dna-radar-circle-box {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 28px;
+}
+
+.dna-radar-pulse-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid rgba(0, 212, 255, 0.6);
+    animation: dnaRadarPulse 2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.dna-radar-pulse-ring:nth-child(1) { width: 60px; height: 60px; animation-delay: 0s; }
+.dna-radar-pulse-ring:nth-child(2) { width: 105px; height: 105px; animation-delay: 0.6s; }
+.dna-radar-pulse-ring:nth-child(3) { width: 150px; height: 150px; animation-delay: 1.2s; }
+
+.dna-radar-center-core {
+    width: 44px;
+    height: 44px;
+    background: radial-gradient(circle, #00D4FF 0%, #0066FF 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #070D18;
+    z-index: 2;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+}
+
+@keyframes dnaRadarPulse {
+    0% {
+        transform: scale(0.6);
+        opacity: 0.9;
+    }
+    100% {
+        transform: scale(1.3);
+        opacity: 0;
+    }
+}
+
+.dna-radar-checklist {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dna-radar-step-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: #CBD5E1;
+    font-weight: 600;
+}
+
+.dna-radar-step-item.done {
+    color: #00E676;
+}
+
+.dna-radar-step-item.loading {
+    color: #00D4FF;
+}
+
+/* Card de Veículo Encontrado (Tela 05) */
+.dna-vehicle-found-card {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1.5px solid rgba(0, 212, 255, 0.4);
+    border-radius: 16px;
+    overflow: hidden;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.dna-found-car-thumb {
+    width: 100%;
+    height: 140px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dna-found-car-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dna-found-plate-badge {
+    background: #FFFFFF;
+    color: #0B0F19;
+    font-family: var(--font-mono, monospace);
+    font-weight: 900;
+    font-size: 14px;
+    border-radius: 6px;
+    padding: 3px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1.5px solid #000;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    margin-bottom: 8px;
+}
+
+.dna-fipe-badge {
+    background: rgba(0, 230, 118, 0.15);
+    border: 1px solid rgba(0, 230, 118, 0.35);
+    color: #00E676;
+    font-weight: 900;
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Círculo de Sucesso do Cadastro (Tela 08) */
+.dna-success-circle-box {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 230, 118, 0.3) 0%, rgba(0, 230, 118, 0.05) 70%);
+    border: 2px solid #00E676;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00E676;
+    margin: 0 auto 20px;
+    box-shadow: 0 0 28px rgba(0, 230, 118, 0.5);
+    animation: dnaSuccessBounce 0.6s ease;
+}
+
+@keyframes dnaSuccessBounce {
+    0% { transform: scale(0.3); opacity: 0; }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ==============================================================================
+   12. REFINAMENTOS VISUAIS DO APP DO CLIENTE (IMAGEM 2 - 11 TELAS)
+   ============================================================================== */
+
+/* Grid 2x2 da Home */
+.dna-home-grid-2x2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+}
+
+.dna-home-grid-card {
+    background: rgba(8, 16, 32, 0.88);
+    border: 1px solid rgba(0, 102, 255, 0.22);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dna-home-grid-card:hover {
+    border-color: rgba(0, 212, 255, 0.45);
+    background: rgba(12, 22, 42, 0.95);
+    transform: translateY(-1px);
+}
+
+.dna-grid-card-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.dna-grid-card-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-transform: uppercase;
+}
+
+.dna-grid-card-val {
+    font-size: 13px;
+    font-weight: 800;
+    color: #FFFFFF;
+}
+
+/* Cards de Alertas Categorizados por Severidade (Tela 09) */
+.dna-alert-card {
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+    position: relative;
+    border-left: 4px solid transparent;
+}
+
+.dna-alert-card.urgent {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-left: 4px solid #EF4444;
+}
+
+.dna-alert-card.attention {
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+    border-left: 4px solid #F59E0B;
+}
+
+.dna-alert-card.ok {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    border-left: 4px solid #10B981;
+}
+
+.dna-alert-badge {
+    font-size: 9.5px;
+    font-weight: 900;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    display: inline-block;
+    width: fit-content;
+}
+
+.dna-alert-card.urgent .dna-alert-badge { background: #EF4444; color: #FFFFFF; }
+.dna-alert-card.attention .dna-alert-badge { background: #F59E0B; color: #070D18; }
+.dna-alert-card.ok .dna-alert-badge { background: #10B981; color: #FFFFFF; }
+
+/* Oficinas da Rede Credenciada (Tela 10) */
+.dna-workshops-search-bar {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #FFFFFF;
+    font-family: inherit;
+    margin-bottom: 12px;
+}
+
+.dna-workshops-search-bar:focus {
+    outline: none;
+    border-color: #00D4FF;
+}
+
+.dna-workshops-filter-chips {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.dna-workshop-card {
+    background: rgba(8, 16, 32, 0.88);
+    border: 1px solid rgba(0, 102, 255, 0.22);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dna-workshop-card:hover {
+    border-color: #00D4FF;
+    background: rgba(12, 22, 42, 0.95);
+}
+
+.dna-workshop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.dna-workshop-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin: 0;
+}
+
+.dna-workshop-stars {
+    color: #FFD700;
+    font-size: 11.5px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+/* Mostradores Circulares do Painel OBD2 */
+.dna-obd-dials-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin: 14px 0;
+}
+
+.dna-obd-dial-box {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    border-radius: 12px;
+    padding: 10px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.dna-obd-dial-circle {
+    width: 62px;
+    height: 62px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 6px;
+}
+
+.dna-obd-dial-circle svg {
+    transform: rotate(-90deg);
+}
+
+.dna-obd-dial-val-text {
+    position: absolute;
+    font-size: 11px;
+    font-weight: 900;
+    color: #FFFFFF;
+}
+
+.dna-obd-dial-label {
+    font-size: 9.5px;
+    color: #94A3B8;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+

@@ -1092,6 +1092,50 @@ DNA-AUTO/
    - Teste 43 atualizado para verificar `/oficina`, `/oficina.html`, `/painel` e `/oficina.app`.
    - Bateria completa com **43/43 testes automatizados de integração aprovados com 100% de sucesso**.
 
+### 📅 Ciclo 30 — Implementação Completa do App do Cliente & Fluxo de Onboarding (12 Telas) com Integração Backend e SQLite
+
+#### 1. Contexto e Demanda
+- **Objetivo:** Implementar com fidelidade visual e funcional absoluta as duas pranchas de design mobile fornecidas para o aplicativo do cliente (**DNA AUTO Owner**):
+  1. **Prancha 1 — Fluxo de Login & Onboarding (12 telas):** Welcome/Splash, Login com toggle de senha, Cadastro (dados pessoais, celular, email, senha), Scanner Radar animado com checklist de busca FIPE, Ficha do veículo localizado (foto oficial, badge de placa Mercosul, marca, modelo, ano, valor FIPE), Inserção do código de ativação da oficina (`DNA-XXXX`), Tela de confirmação com resumo e Conclusão ("Acessar o app").
+  2. **Prancha 2 — App Completo do Cliente (11 telas):** Home com card do veículo, badge `DNA ATIVO` e underglow ciano, grid 2x2 de indicadores operacionais (Próxima Revisão, Inspeção 360°, Telemetria OBD2, Alertas), Ficha Técnica com especificações completas, Certificação DNA AUTO com selo de integridade, Inspeção 360° com gauge circular, Revisões Preventivas com peças e agendamento, Telemetria OBD2 ao vivo, Dossiê 360° com filtros por chips, Alertas Preventivos categorizados por severidade (Urgente, Atenção, Informativo), Rede Credenciada de Oficinas com geolocalização e busca ao vivo, e Menu Drawer/Mais com atalhos completos, instalação PWA e logout.
+  3. **Barra de Navegação Inferior (Bottom Navigation):** 5 itens intuitivos (`Início`, `Veículo`, `Serviços`, `Alertas`, `Mais`).
+
+#### 2. Implementações Técnicas
+
+1. **Backend & Banco de Dados Relacional (`server/src/`):**
+   - **Endpoint de Onboarding Completo (`POST /api/v1/auth/register-owner`):**
+     - Cria usuário com perfil `role_owner` e senha com hash bcrypt seguro.
+     - Cria registro de proprietário na tabela `owners`.
+     - Realiza o lookup da placa ou cadastra o veículo automaticamente com chassi e renavam gerados.
+     - Emite passaporte digital permanente na tabela `vehicle_dna` com formato `DNA-BR-XXXX-XXXX-XXX` e hash criptográfico sha256.
+     - Cria score inicial de saúde em `health_scores` e histórico de titularidade em `ownership_transfers`.
+     - Vincula e ativa automaticamente o código da oficina (`client_activations`) caso fornecido pelo proprietário.
+     - Retorna token JWT válido (7 dias) e dados completos para login imediato sem atrito.
+   - **Endpoint da Rede de Oficinas Credenciadas (`GET /api/v1/workshops/network`):**
+     - Retorna oficinas ativas e credenciadas ordenadas por selo verificado e proximidade, com endereço, telefone, especialidade e estrelas de avaliação.
+
+2. **Camada de Cliente HTTP (`api.js`):**
+   - Implementação das funções `api.registerOwner(data)` e `api.getWorkshopsNetwork()` sincronizadas em `cliente.app/js/api.js`, `public/js/api.js` e `oficina.app/js/api.js`.
+
+3. **Design System & Estilização Mobile (`owner-app.css`):**
+   - Adicionadas classes e animações completas:
+     - Scanner radar com efeito de sonar (`@keyframes radarSweep`, `@keyframes radarPulse`) e checklist animado.
+     - Card de veículo com badge Mercosul e selo holográfico FIPE.
+     - Grid 2x2 com cards com efeito glassmorphism e iluminação néon.
+     - Alertas coloridos por severidade (vermelho para urgências, amarelo para atenção, verde para regularidade).
+     - Componentes de filtros por abas e barra de pesquisa em tempo real para a rede credenciada.
+
+4. **Componente de Visualização do Cliente (`ownerView.js`):**
+   - Orquestração de estado com `authScreen`, `radarChecklist`, `foundWorkshop` e controle de bottom navigation.
+   - 8 telas de onboarding renderizadas dinamicamente dentro do container SPA ou invocadas a partir do menu Drawer.
+   - Navegação por 5 abas inferiores e integração de agendamento direto com a oficina.
+   - Paridade 100% mantida entre `cliente.app/js/components/ownerView.js` e `public/js/components/ownerView.js`.
+
+5. **Bateria de Testes Automatizados (`test/api.test.js`):**
+   - Adicionado **Teste 44**: Validação do registro completo de proprietário, vínculo veicular, geração de passaporte DNA e validação contra duplicidade de e-mail (HTTP 409).
+   - Adicionado **Teste 45**: Validação do catálogo de oficinas credenciadas com geolocalização e avaliação padrão ouro.
+   - **Resultado:** 45 de 45 testes automatizados de integração aprovados com 100% de sucesso.
+
 ---
 
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
