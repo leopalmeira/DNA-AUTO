@@ -62,7 +62,7 @@ const App = {
             } else if (hash === '#sales') {
                 this.switchView('sales');
             } else if (hash === '#cliente' && savedUser.role_code !== 'WORKSHOP') {
-                this.switchView('landing-client');
+                this.switchView('owner');
             } else if ((hash === '#autocente' || hash === '#autocenter') && savedUser.role_code !== 'WORKSHOP') {
                 this.switchView('landing-workshop');
             // B. Se a URL possui pathname específico
@@ -110,7 +110,9 @@ const App = {
         const activationCode = urlParams.get('code') || hashParams.get('code') || urlParams.get('c') || hashParams.get('c');
 
         // 1. App do Cliente / Dono do Veículo (Mobile PWA)
-        if (hash === '#owner' || hash === '#app' || hash === '#meucarro' || pathname === '/app' || pathname === '/owner' || pathname === '/meucarro') {
+        if (hash === '#owner' || hash === '#app' || hash === '#meucarro' || hash === '#cliente' ||
+            pathname === '/app' || pathname === '/owner' || pathname === '/meucarro' ||
+            pathname === '/cliente' || pathname === '/cliente.html' || pathname === '/cliente.app') {
             this.switchView('owner');
             if (activationCode) {
                 setTimeout(() => {

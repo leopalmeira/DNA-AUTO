@@ -1238,17 +1238,21 @@ router.post('/:id/clients/register-activation', async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', CURRENT_TIMESTAMP)
         `).run(actId, workshopId, clientName, rawPhone, plate, activationCode, vehicle.id, owner.id);
 
+        const baseUrl = process.env.SERVER_URL || 'https://dna-auto.onrender.com';
+        const clientAppUrl = `${baseUrl}/cliente?code=${activationCode}`;
+
         res.status(201).json({
             success: true,
             message: `Cliente ${clientName} cadastrado com sucesso! Código de ativação gerado.`,
             activation_code: activationCode,
+            client_app_url: clientAppUrl,
             client: {
                 name: clientName,
                 whatsapp: rawPhone,
                 plate: plate,
                 vehicle_id: vehicle.id
             },
-            whatsapp_share_text: `Olá ${clientName}! Seu cadastro no DNA AUTO foi iniciado pela oficina ${workshop.trade_name}. Para ativar seu aplicativo e acompanhar o histórico e manutenções do seu veículo (${plate}), use o código de ativação: ${activationCode}`
+            whatsapp_share_text: `Olá ${clientName}! Seu cadastro no DNA AUTO foi iniciado pela oficina ${workshop.trade_name}.\n\n📲 Para acompanhar o histórico, inspeções e manutenções do seu veículo (${plate}), acesse o App do Cliente pelo link direto:\n${clientAppUrl}\n\nCódigo de ativação: *${activationCode}*`
         });
     } catch (err) {
         console.error('Erro ao cadastrar cliente e gerar ativação:', err);

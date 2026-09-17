@@ -1162,6 +1162,30 @@ DNA-AUTO/
 
 ---
 
+### 📅 Ciclo 32 — Padronização de Links Diretos para o App do Cliente (`/cliente`) e Painel da Oficina (`/oficina`)
+
+#### 1. Contexto e Demanda
+- **Objetivo:** Disponibilizar links diretos, limpos e sem intermediários para o **App do Cliente** (`/cliente`, `/cliente.app`, `cliente-app.onrender.com`), funcionando exatamente como qualquer link direto de aplicativo moderno, eliminando páginas de marketing intermediárias ou desvios de navegação.
+
+#### 2. Implementações Técnicas
+1. **Roteamento SPA & Links Diretos (`public/js/app.js`):**
+   - Atualizado o roteador SPA para que `/cliente`, `/cliente.html`, `/cliente.app` e `#cliente` direcionem imediatamente para a view oficial do cliente (`owner`), inicializando a Garagem Digital e o Dossiê 360° sem intermediários.
+2. **Navegação na Home (`landingHomeView.js`):**
+   - No navbar: link direto `<a href="/cliente">📱 App do Cliente</a>` e `<a href="/oficina">🏭 Painel da Oficina</a>`.
+   - Nos cards de perfil: botões padronizados `<a href="/cliente">` ("Abrir App do Cliente") e `<a href="/oficina">` ("Abrir Painel da Oficina"), sem interceptações que impeçam o comportamento natural do link direto.
+3. **ERP da Oficina (`workshopView.js` em `public/` e `oficina.app/`):**
+   - Adicionado card dedicado na barra lateral (Sidebar): **📱 App do Cliente**, contendo link de abertura direta (`/cliente` com target `_blank`) e botão interativo com um clique para copiar o link direto (`navigator.clipboard.writeText(window.location.origin + '/cliente')`).
+   - Modal de Ativação do Cliente e Mensagens WhatsApp atualizados com a URL direta: `${window.location.origin}/cliente?code=${activationCode}`.
+4. **Backend e Notificações de Ativação (`workshops.routes.js`):**
+   - Rota `POST /:id/clients/register-activation` atualizada para retornar `client_app_url: ${baseUrl}/cliente?code=${activationCode}` e o texto de compartilhamento via WhatsApp contendo o link direto para o cliente.
+5. **Gerador de Cartazes e QR Codes (`posterGenerator.js`):**
+   - QR Code de adesivo/cartaz da oficina atualizado para direcionar para `${window.location.origin}/cliente?ref=workshop&ws=${workshopId}`.
+6. **Qualidade e Bateria de Testes (`test/api.test.js`):**
+   - Teste 38 estendido com validação estrita da existência de `client_app_url` apontando para `/cliente?code=`.
+   - **45 de 45 testes automatizados aprovados com 100% de sucesso.**
+
+---
+
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
 
 

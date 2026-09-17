@@ -13,13 +13,13 @@
 
 ---
 
-## 🌐 Acesso Rápido ao Sistema
+## 🌐 Acesso Rápido ao Sistema & Links Diretos
 
-* **🏠 Home / Entrada Oficial:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/) *(Portal limpo para direcionamento de perfil)*
-* **📱 App do Cliente (cliente.app):** [https://dna-auto.onrender.com/cliente.app](https://dna-auto.onrender.com/cliente.app) ou [https://dna-auto.onrender.com/cliente](https://dna-auto.onrender.com/cliente) *(Pasta dedicada `cliente.app/`, Garagem Digital, Dossiê 360°, Telemetria e Ativação)*
-* **🏭 Painel da Oficina (oficina.app):** [https://dna-auto.onrender.com/oficina.app](https://dna-auto.onrender.com/oficina.app) ou [https://dna-auto.onrender.com/oficina](https://dna-auto.onrender.com/oficina) *(Pasta dedicada `oficina.app/`, Recepção por placa, OS Nível 4, WhatsApp integrado e Agenda)*
-* **🚗 Landing do Cliente (Proprietário):** [https://dna-auto.onrender.com/cliente](https://dna-auto.onrender.com/cliente)
-* **🔧 Landing da Oficina (Auto Center):** [https://dna-auto.onrender.com/autocente](https://dna-auto.onrender.com/autocente)
+* **📱 Link Direto do App do Cliente:** [https://dna-auto.onrender.com/cliente](https://dna-auto.onrender.com/cliente) ou [https://dna-auto.onrender.com/cliente.app](https://dna-auto.onrender.com/cliente.app) ou [https://cliente-app.onrender.com](https://cliente-app.onrender.com)
+  *(Acesso direto ao App do Cliente sem intermediários: Garagem Digital, Onboarding, Dossiê 360°, Telemetria OBD2, Rede Credenciada e Ativação)*
+* **🏭 Link Direto do Painel da Oficina (ERP):** [https://dna-auto.onrender.com/oficina](https://dna-auto.onrender.com/oficina) ou [https://dna-auto.onrender.com/oficina.app](https://dna-auto.onrender.com/oficina.app) ou [https://oficina-app.onrender.com](https://oficina-app.onrender.com)
+  *(Acesso direto ao ERP da Oficina: Recepção por placa, OS Nível 4, WhatsApp integrado, Emissão de Códigos e Agenda Operacional)*
+* **🏠 Portal Principal / Home:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/) *(Portal com links diretos nos cards e na barra de navegação)*
 * **🛡️ Painel Administrativo Matriz:** [https://dna-auto.onrender.com/admin](https://dna-auto.onrender.com/admin)
 * **🚗 Dossiê Demonstrativo (Honda Civic):** [https://dna-auto.onrender.com/#dossier](https://dna-auto.onrender.com/#dossier)
 * **📂 Repositório Oficial:** [https://github.com/leopalmeira/DNA-AUTO](https://github.com/leopalmeira/DNA-AUTO)

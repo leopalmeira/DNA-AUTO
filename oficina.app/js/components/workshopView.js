@@ -433,6 +433,22 @@ const WorkshopView = {
                                     <div class="ws-erp-menu-left"><span>⚙️</span> <span>Configurações</span></div>
                                 </div>
                             </div>
+
+                            <!-- LINK DIRETO DO APP DO CLIENTE -->
+                            <div style="margin:14px 10px 8px; padding:12px; background:linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,102,255,0.05)); border:1px solid rgba(0,212,255,0.25); border-radius:10px; text-align:left;">
+                                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                                    <span style="font-size:11px; font-weight:800; color:#00D4FF; letter-spacing:0.5px; text-transform:uppercase; display:inline-flex; align-items:center; gap:5px;">
+                                        <span>📱</span> App do Cliente
+                                    </span>
+                                    <a href="/cliente" target="_blank" style="font-size:10.5px; color:#38bdf8; text-decoration:none; font-weight:700;" title="Abrir App do Cliente em nova aba">Abrir ↗</a>
+                                </div>
+                                <div style="font-size:10.5px; color:#94A3B8; margin-bottom:8px; line-height:1.3;">
+                                    Link direto para enviar aos clientes da sua oficina.
+                                </div>
+                                <button type="button" onclick="navigator.clipboard.writeText(window.location.origin + '/cliente'); alert('📋 Link do App do Cliente copiado com sucesso:\n' + window.location.origin + '/cliente');" style="width:100%; padding:6px 10px; background:rgba(0,212,255,0.15); border:1px solid #00D4FF; color:#00D4FF; border-radius:6px; font-size:10.5px; font-weight:800; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:5px;">
+                                    <span>🔗</span> Copiar Link do App
+                                </button>
+                            </div>
                         </nav>
                     </aside>
 
@@ -6226,7 +6242,7 @@ const WorkshopView = {
             });
 
             const code = res.activation_code || 'DNA-8421';
-            const directAppUrl = `${window.location.origin}/app?code=${code}`;
+            const directAppUrl = `${window.location.origin}/cliente?code=${code}`;
             const qrCodeImg = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(directAppUrl)}&color=00D4FF&bgcolor=0B1220`;
 
             if (container) {
@@ -6296,7 +6312,7 @@ const WorkshopView = {
 
     sendActivationWhatsApp(phone, name, plate, code) {
         const workshopName = this.officialWorkshopName || 'DNA AUTO Centro Automotivo';
-        const directUrl = `${window.location.origin}/app?code=${code}`;
+        const directUrl = `${window.location.origin}/cliente?code=${code}`;
         const msg = `Olá ${name}! Seu veículo placa *${plate}* foi cadastrado no sistema da oficina *${workshopName}*.\n\n📲 Para acompanhar o status, laudo e histórico do seu veículo em tempo real no App DNA AUTO, toque no link direto:\n${directUrl}\n\nSeu código de ativação exclusivo: *${code}*`;
         
         const cleanPhone = (phone || '').replace(/\D/g, '');

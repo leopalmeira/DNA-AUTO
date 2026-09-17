@@ -10,7 +10,7 @@ const PosterGenerator = {
         try {
             const data = await API.getWorkshopDashboard(workshopId);
             const w = data.workshop;
-            const qrCodeUrl = window.location.origin + `?ref=workshop&ws=${w.id}`;
+            const qrCodeUrl = window.location.origin + `/cliente?ref=workshop&ws=${w.id}`;
             const qrCodeSvg = QRCodeGenerator.generateSVG(qrCodeUrl, 200);
 
             contentBox.innerHTML = `

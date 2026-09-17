@@ -504,6 +504,7 @@ async function runTests() {
         console.assert(resRegActivation.status === 201, 'Falha ao registrar ativação de cliente');
         console.assert(dataRegActivation.success === true, 'Registro de ativação deve retornar success: true');
         console.assert(typeof dataRegActivation.activation_code === 'string' && dataRegActivation.activation_code.startsWith('DNA-'), 'Código de ativação deve iniciar com DNA-');
+        console.assert(typeof dataRegActivation.client_app_url === 'string' && dataRegActivation.client_app_url.includes('/cliente?code='), 'Link direto do app do cliente deve conter /cliente?code=');
         const generatedCode = dataRegActivation.activation_code;
 
         // Listagem de ativações da oficina

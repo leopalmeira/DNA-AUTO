@@ -46,11 +46,11 @@ const LandingHomeView = {
                         </a>
 
                         <nav class="dna-nav-links" role="navigation" aria-label="Navegação Principal">
-                            <a href="/cliente" class="dna-nav-link" onclick="event.preventDefault(); App.navigateTo('/cliente');">
-                                Cliente
+                            <a href="/cliente" class="dna-nav-link" title="Link direto para o App do Cliente">
+                                📱 App do Cliente
                             </a>
-                            <a href="/autocente" class="dna-nav-link" onclick="event.preventDefault(); App.navigateTo('/autocente');">
-                                Oficina / Auto Center
+                            <a href="/oficina" class="dna-nav-link" title="Link direto para o Painel da Oficina">
+                                🏭 Painel da Oficina
                             </a>
                         </nav>
                     </div>
@@ -68,27 +68,27 @@ const LandingHomeView = {
 
                         <div class="home-cards-grid">
                             <!-- CARD 1: CLIENTE -->
-                            <article class="home-profile-card client" onclick="App.navigateTo('/cliente')">
+                            <article class="home-profile-card client" onclick="window.location.href='/cliente'">
                                 <div class="home-card-icon" aria-hidden="true">🚗</div>
                                 <h2 class="home-card-title">Sou dono de carro</h2>
                                 <p class="home-card-text">
-                                    Quero acompanhar meu veículo e suas manutenções.
+                                    Acesse o aplicativo para acompanhar revisões, inspeção 360°, telemetria OBD2 e o DNA do seu veículo.
                                 </p>
-                                <a href="/cliente" class="dna-btn dna-btn-primary" onclick="event.preventDefault(); App.navigateTo('/cliente');">
-                                    <span>Entrar como cliente</span>
+                                <a href="/cliente" class="dna-btn dna-btn-primary" title="Abrir App do Cliente">
+                                    <span>Abrir App do Cliente</span>
                                     <span aria-hidden="true">→</span>
                                 </a>
                             </article>
 
                             <!-- CARD 2: OFICINA -->
-                            <article class="home-profile-card workshop" onclick="App.navigateTo('/autocente')">
+                            <article class="home-profile-card workshop" onclick="window.location.href='/oficina'">
                                 <div class="home-card-icon" aria-hidden="true">🔧</div>
                                 <h2 class="home-card-title">Sou dono de oficina</h2>
                                 <p class="home-card-text">
-                                    Quero gerenciar meus clientes e oportunidades de manutenção.
+                                    Acesse o painel operacional para gerenciar recepção por placa, OS nível 4 e WhatsApp.
                                 </p>
-                                <a href="/autocente" class="dna-btn dna-btn-primary" onclick="event.preventDefault(); App.navigateTo('/autocente');">
-                                    <span>Entrar como oficina</span>
+                                <a href="/oficina" class="dna-btn dna-btn-primary" title="Abrir Painel da Oficina">
+                                    <span>Abrir Painel da Oficina</span>
                                     <span aria-hidden="true">→</span>
                                 </a>
                             </article>

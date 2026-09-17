@@ -626,6 +626,20 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   4. **Qualidade & Testes:**
      - 45 de 45 testes automatizados aprovados com 100% de sucesso.
 
+### 📅 Ciclo 32 — Padronização de Links Diretos para o App do Cliente (`/cliente`) e Painel da Oficina (`/oficina`)
+- **Demandas Atendidas:**
+  1. **Acesso Direto ao App do Cliente como Link Padrão de Aplicação:**
+     - Rotas diretas `/cliente`, `/cliente.html`, `/cliente.app` e `#cliente` configuradas para carregar instantaneamente o App do Cliente (Garagem Digital e Dossiê 360°), eliminando páginas de marketing intermediárias.
+  2. **Links Nativos na Home:**
+     - Links e botões diretos no Navbar e nos cards de perfil ("Abrir App do Cliente" e "Abrir Painel da Oficina") com redirecionamento limpo para os respectivos módulos.
+  3. **Integração no ERP da Oficina:**
+     - Novo módulo na barra lateral com atalho "📱 App do Cliente" e botão interativo "Copiar Link do App" (`/cliente`).
+     - Modais de ativação e textos automáticos de WhatsApp atualizados para enviar o link direto `${origin}/cliente?code=...`.
+  4. **Atualização de QR Codes:**
+     - Cartaz imprimível da oficina com QR Code apontando diretamente para `/cliente?ref=workshop&ws=...`.
+  5. **Qualidade & Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso (inclusive verificação do link direto no Teste 38).
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes
