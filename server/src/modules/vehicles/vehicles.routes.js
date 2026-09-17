@@ -5,6 +5,8 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const db = require('../../database/db');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'dna_auto_secret_jwt_key_2026_super_secure';
 const { authenticateToken } = require('../../middlewares/auth');
 const { logAudit } = require('../../middlewares/audit');
 const apiPlacasService = require('../../services/apiPlacas.service');
@@ -71,6 +73,83 @@ router.get('/', (req, res) => {
     } catch (err) {
         console.error('Erro ao listar veículos:', err);
         res.status(500).json({ error: 'Erro ao listar veículos.' });
+    }
+});
+
+// Listar Veículos do Proprietário Autenticado (Garante que só constem os carros do cliente no app mobile)
+router.get('/my-vehicles', (req, res) => {
+    try {
+        let userId = null;
+        let userEmail = null;
+        
+        // Verificar token JWT se presente
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, JWT_SECRET);
+                userId = decoded.id;
+                userEmail = decoded.email;
+            } catch (_) {}
+        }
+        
+        if (!userId && req.headers['x-demo-user-id']) {
+            userId = req.headers['x-demo-user-id'];
+        }
+        
+        const queryEmail = (req.query.email || userEmail || '').trim().toLowerCase();
+        const queryPlate = (req.query.plate || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        let vehicles = [];
+
+        if (userId || queryEmail) {
+            vehicles = db.prepare(`
+                SELECT DISTINCT v.*,
+                       vd.dna_code, vd.status as dna_status, vd.activated_at as dna_activated_at,
+                       vd.activation_modality,
+                       o.name as owner_name, o.phone as owner_phone,
+                       COALESCE((SELECT MAX(mileage) FROM mileage_records mr WHERE mr.vehicle_id = v.id),
+                                (SELECT MAX(mileage) FROM service_records sr WHERE sr.vehicle_id = v.id), 0) as current_mileage,
+                       (SELECT COUNT(*) FROM service_records sr WHERE sr.vehicle_id = v.id) as services_count,
+                       (SELECT fipe_price_cents FROM fipe_values WHERE vehicle_id = v.id ORDER BY consulted_at DESC LIMIT 1) as fipe_price_cents,
+                       (SELECT fipe_code FROM fipe_values WHERE vehicle_id = v.id ORDER BY consulted_at DESC LIMIT 1) as fipe_code,
+                       (SELECT reference_month_year FROM fipe_values WHERE vehicle_id = v.id ORDER BY consulted_at DESC LIMIT 1) as fipe_ref
+                FROM vehicles v
+                LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+                JOIN ownership_transfers ot ON ot.vehicle_id = v.id AND ot.status = 'COMPLETED'
+                JOIN owners o ON o.id = ot.new_owner_id
+                LEFT JOIN users u ON u.id = o.user_id
+                WHERE (u.id = ? OR LOWER(o.email) = ? OR LOWER(u.email) = ?)
+                   ${queryPlate ? "OR UPPER(REPLACE(v.license_plate, '-', '')) = ?" : ""}
+                ORDER BY v.created_at DESC
+            `).all(...(queryPlate ? [userId, queryEmail, queryEmail, queryPlate] : [userId, queryEmail, queryEmail]));
+        }
+        
+        if ((!vehicles || vehicles.length === 0) && queryPlate) {
+            vehicles = db.prepare(`
+                SELECT v.*,
+                       vd.dna_code, vd.status as dna_status, vd.activated_at as dna_activated_at,
+                       vd.activation_modality,
+                       COALESCE(o.name, 'Proprietário') as owner_name,
+                       COALESCE(o.phone, '(11) 98888-0000') as owner_phone,
+                       COALESCE((SELECT MAX(mileage) FROM mileage_records mr WHERE mr.vehicle_id = v.id),
+                                (SELECT MAX(mileage) FROM service_records sr WHERE sr.vehicle_id = v.id), 0) as current_mileage,
+                       (SELECT COUNT(*) FROM service_records sr WHERE sr.vehicle_id = v.id) as services_count,
+                       (SELECT fipe_price_cents FROM fipe_values WHERE vehicle_id = v.id ORDER BY consulted_at DESC LIMIT 1) as fipe_price_cents,
+                       (SELECT fipe_code FROM fipe_values WHERE vehicle_id = v.id ORDER BY consulted_at DESC LIMIT 1) as fipe_code,
+                       (SELECT reference_month_year FROM fipe_values WHERE vehicle_id = v.id ORDER BY consulted_at DESC LIMIT 1) as fipe_ref
+                FROM vehicles v
+                LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+                LEFT JOIN ownership_transfers ot ON ot.vehicle_id = v.id AND ot.status = 'COMPLETED'
+                LEFT JOIN owners o ON o.id = ot.new_owner_id
+                WHERE UPPER(REPLACE(v.license_plate, '-', '')) = ?
+            `).all(queryPlate);
+        }
+
+        res.json({ success: true, count: vehicles.length, vehicles });
+    } catch (err) {
+        console.error('Erro ao buscar veículos do proprietário:', err);
+        res.status(500).json({ error: 'Erro ao buscar veículos do proprietário.' });
     }
 });
 

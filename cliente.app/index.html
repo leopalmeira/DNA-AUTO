@@ -11,43 +11,60 @@
     <meta http-equiv="Expires" content="0">
 
     <!-- Configurações PWA Mobile -->
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0B0F19">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="DNA AUTO">
-    <link rel="apple-touch-icon" href="./img/icons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="./img/icons/icon-192x192.png">
-    <link rel="icon" type="image/svg+xml" href="./img/icons/dna-logo.svg">
-    <link rel="shortcut icon" href="./img/icons/favicon.png">
+    <link rel="apple-touch-icon" href="/img/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/img/icons/icon-192x192.png">
+    <link rel="icon" type="image/svg+xml" href="/img/icons/dna-logo.svg">
+    <link rel="shortcut icon" href="/img/icons/favicon.png">
 
     <!-- Folhas de Estilo -->
-    <link rel="stylesheet" href="./css/variables.css">
-    <link rel="stylesheet" href="./css/base.css">
-    <link rel="stylesheet" href="./css/components.css">
-    <link rel="stylesheet" href="./css/dossier.css">
-    <link rel="stylesheet" href="./css/owner-app.css">
-    <link rel="stylesheet" href="./css/print.css">
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/dossier.css">
+    <link rel="stylesheet" href="/css/owner-app.css">
+    <link rel="stylesheet" href="/css/print.css">
 
     <style>
-        body.is-owner-app {
+        html, body.is-owner-app {
             background: #0B0F19;
             margin: 0;
             padding: 0;
-            overflow-x: hidden;
-            min-height: 100vh;
+            overflow: hidden !important;
+            height: 100%;
+            height: 100dvh;
+            max-height: 100dvh;
+            width: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overscroll-behavior: none;
         }
         #app-container {
-            min-height: 100vh;
+            height: 100%;
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden !important;
             display: flex;
             flex-direction: column;
+            width: 100%;
         }
         #view-content {
+            height: 100%;
+            height: 100dvh;
+            max-height: 100dvh;
+            overflow: hidden !important;
             flex: 1;
             width: 100%;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: stretch;
+            align-items: stretch;
         }
         .standalone-top-banner {
             background: linear-gradient(90deg, rgba(0, 102, 255, 0.15), rgba(0, 212, 255, 0.15));
@@ -252,12 +269,12 @@
     </div>
 
     <!-- Scripts do App do Cliente -->
-    <script src="./js/components/qrcode.js"></script>
-    <script src="./js/api.js"></script>
-    <script src="./js/components/dossierView.js"></script>
-    <script src="./js/components/saleReportModal.js"></script>
-    <script src="./js/components/ownerView.js"></script>
-    <script src="./js/components/pwaInstall.js"></script>
+    <script src="/js/components/qrcode.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/components/dossierView.js"></script>
+    <script src="/js/components/saleReportModal.js"></script>
+    <script src="/js/components/ownerView.js"></script>
+    <script src="/js/components/pwaInstall.js"></script>
 
     <!-- Inicializador Autônomo do App do Cliente -->
     <script>
@@ -319,22 +336,36 @@
             const activationCode = urlParams.get('code') || hashParams.get('code') || urlParams.get('c');
             const screenParam = urlParams.get('screen') || hashParams.get('screen');
 
-            // Determina tela inicial: Por padrão inicia na Tela 01: Splash / Login (conforme o mapa oficial)
-            if (screenParam === 'home' || rawHash === '#home') {
-                OwnerView.authScreen = null;
+            // Determina tela inicial com persistência de sessão no reload (F5)
+            const savedSession = localStorage.getItem('dna_owner_session');
+            const savedUser = localStorage.getItem('dna_logged_user');
+            const savedAuthScreen = localStorage.getItem('dna_owner_auth_screen');
+            const isUserLoggedIn = (savedSession === 'active' || savedAuthScreen === 'app' || !!savedUser);
+
+            if (screenParam === 'splash' || rawHash === '#splash') {
+                OwnerView.authScreen = 'splash';
             } else if (screenParam === 'login' || rawHash === '#login') {
                 OwnerView.authScreen = 'login';
             } else if (screenParam === 'register' || rawHash === '#register') {
                 OwnerView.authScreen = 'register';
+            } else if (isUserLoggedIn || screenParam === 'home' || rawHash === '#home') {
+                // Usuário conectado: nunca desconecta na atualização (F5)
+                OwnerView.authScreen = null;
+                const savedScreen = localStorage.getItem('dna_owner_current_screen');
+                if (savedScreen && ['home', 'vehicle', 'certification', 'inspection', 'revisions', 'obd', 'history', 'reminders', 'workshops', 'settings', 'notifications'].includes(savedScreen)) {
+                    OwnerView.currentScreen = savedScreen;
+                    OwnerView.activeTab = savedScreen;
+                }
             } else {
-                // Tela 01: Splash / Login (Fiel à foto do mapa)
+                // Tela 01: Splash / Login (Primeira visita)
                 OwnerView.authScreen = 'splash';
             }
 
             // Sincronizar token de API
-            const token = localStorage.getItem('dna_token') || 'sess_owner_usr_owner_carlos';
-            API.setToken(token);
-            API.setDemoUser('usr_owner_carlos');
+            const token = localStorage.getItem('dna_token');
+            if (token) {
+                API.setToken(token);
+            }
 
             // Renderizar App do Cliente
             await OwnerView.render();

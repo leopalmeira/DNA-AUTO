@@ -20,7 +20,7 @@ const OwnerView = {
     isActivationModalOpen: false,
 
     // Estado do Fluxo de Autenticação & Onboarding (Imagem 1 - 12 Telas)
-    authScreen: 'splash', // Inicia na Tela 01: Splash / Login conforme o Mapa Oficial
+    authScreen: (typeof localStorage !== 'undefined' && (localStorage.getItem('dna_owner_session') === 'active' || localStorage.getItem('dna_owner_auth_screen') === 'app' || localStorage.getItem('dna_logged_user'))) ? null : 'splash',
     authData: {
         name: 'João Silva',
         phone: '(11) 98765-4321',
@@ -314,7 +314,14 @@ const OwnerView = {
         localStorage.removeItem('dna_token');
         localStorage.removeItem('dna_auto_token');
         localStorage.removeItem('dna_current_view');
+        localStorage.removeItem('dna_owner_session');
+        localStorage.removeItem('dna_owner_auth_screen');
+        localStorage.removeItem('dna_owner_current_screen');
+        localStorage.removeItem('dna_registered_plate');
         this.authScreen = 'splash';
+        this.currentScreen = 'home';
+        this.activeTab = 'home';
+        this.userVehicles = [];
         this.toggleDrawer(false);
         this.render();
     },
@@ -328,6 +335,9 @@ const OwnerView = {
 
     // Sair do Onboarding para o App Direto
     exitAuthToApp() {
+        localStorage.setItem('dna_owner_session', 'active');
+        localStorage.setItem('dna_owner_auth_screen', 'app');
+        localStorage.setItem('dna_owner_current_screen', 'home');
         this.authScreen = null;
         this.navigateTo('home');
     },
@@ -375,6 +385,9 @@ const OwnerView = {
                     this.vehicleData.user_name = res.user.name;
                     this.vehicleData.user_email = res.user.email;
                 }
+                localStorage.setItem('dna_owner_session', 'active');
+                localStorage.setItem('dna_owner_auth_screen', 'app');
+                localStorage.setItem('dna_owner_current_screen', 'home');
                 this.authScreen = null;
                 this._backendSynced = false;
                 await this.syncBackendVehicles();
@@ -439,11 +452,33 @@ const OwnerView = {
             try {
                 const res = await API.request(`/integrations/plate-lookup/${encodeURIComponent(plate)}`);
                 if (res && res.vehicle) {
-                    this.authData.vehicle_brand = res.vehicle.brand || 'Honda';
-                    this.authData.vehicle_model = res.vehicle.model || 'Civic Touring 1.5 Turbo';
-                    this.authData.vehicle_year = res.vehicle.manufacture_year || 2021;
-                    this.authData.fipe_value = res.vehicle.fipe_value || 'R$ 125.870,00';
-                    if (res.vehicle.photo_url) this.authData.photo_url = res.vehicle.photo_url;
+                    const veh = res.vehicle;
+                    this.authData.vehicle_brand = veh.brand || this.authData.vehicle_brand;
+                    this.authData.vehicle_model = veh.version || veh.model || this.authData.vehicle_model;
+                    this.authData.vehicle_year = veh.model_year || veh.manufacture_year || this.authData.vehicle_year;
+
+                    // Extração precisa do valor real FIPE da API oficial
+                    let fipeFormatted = null;
+                    if (veh.fipe) {
+                        fipeFormatted = veh.fipe.market_value_formatted || veh.fipe.texto_valor || null;
+                        if (veh.fipe.fipe_code) this.authData.fipe_code = veh.fipe.fipe_code;
+                        if (veh.fipe.reference_month) this.authData.fipe_ref = veh.fipe.reference_month;
+                        if (veh.fipe.market_value_cents) this.authData.fipe_cents = veh.fipe.market_value_cents;
+                    }
+                    if (!fipeFormatted && veh.market_value_formatted) {
+                        fipeFormatted = veh.market_value_formatted;
+                    }
+                    if (fipeFormatted) {
+                        this.authData.fipe_value = fipeFormatted;
+                    }
+
+                    // Preenche todos os dados reais do veículo fornecidos pela API
+                    if (veh.color && veh.color !== 'Não informada') this.authData.color = veh.color;
+                    if (veh.fuel_type) this.authData.fuel_type = veh.fuel_type;
+                    if (veh.transmission_type) this.authData.transmission_type = veh.transmission_type;
+                    if (veh.chassis_vin) this.authData.chassis_vin = veh.chassis_vin;
+                    if (veh.renavam) this.authData.renavam = veh.renavam;
+                    if (veh.photo_url) this.authData.photo_url = veh.photo_url;
                 }
             } catch (_) {}
 
@@ -499,17 +534,32 @@ const OwnerView = {
         }
 
         try {
+            const cleanPlate = this.authData.license_plate.toUpperCase().replace(/[^A-Z0-9]/g, '');
             const res = await API.registerOwner({
                 name: this.authData.name,
                 email: this.authData.email,
                 password: this.authData.password,
                 phone: this.authData.phone,
-                license_plate: this.authData.license_plate,
+                license_plate: cleanPlate,
                 vehicle_brand: this.authData.vehicle_brand,
                 vehicle_model: this.authData.vehicle_model,
                 vehicle_year: this.authData.vehicle_year,
-                workshop_code: this.authData.workshop_code
+                workshop_code: this.authData.workshop_code,
+                color: this.authData.color,
+                fuel_type: this.authData.fuel_type,
+                transmission_type: this.authData.transmission_type,
+                chassis_vin: this.authData.chassis_vin,
+                renavam: this.authData.renavam,
+                fipe_value: this.authData.fipe_value,
+                fipe_code: this.authData.fipe_code,
+                fipe_cents: this.authData.fipe_cents,
+                fipe_ref: this.authData.fipe_ref
             });
+
+            localStorage.setItem('dna_owner_session', 'active');
+            localStorage.setItem('dna_owner_auth_screen', 'app');
+            localStorage.setItem('dna_owner_current_screen', 'home');
+            localStorage.setItem('dna_registered_plate', cleanPlate);
 
             if (res && res.token) {
                 API.setToken(res.token);
@@ -538,6 +588,9 @@ const OwnerView = {
 
     // Entrada no App Concluída
     enterAppFromConcluded() {
+        localStorage.setItem('dna_owner_session', 'active');
+        localStorage.setItem('dna_owner_auth_screen', 'app');
+        localStorage.setItem('dna_owner_current_screen', 'home');
         this.authScreen = null;
         this._backendSynced = false;
         this.syncBackendVehicles();
@@ -569,6 +622,9 @@ const OwnerView = {
     // Navegação Interna SPA Fluida (Sem Popups)
     navigateTo(screen) {
         this.currentScreen = screen;
+        try {
+            localStorage.setItem('dna_owner_current_screen', screen);
+        } catch (_) {}
         
         if (screen === 'home') {
             this.activeTab = 'home';
@@ -661,23 +717,56 @@ const OwnerView = {
         }, 700);
     },
 
-    // Sincronizar Veículos Reais do Backend SQLite
+    // Sincronizar Veículos Reais do Backend SQLite (Apenas os do Cliente Autenticado)
     async syncBackendVehicles() {
         if (this._backendSynced) return;
         this._backendSynced = true;
 
         try {
-            const res = await fetch('/api/v1/vehicles');
+            const loggedUserStr = localStorage.getItem('dna_logged_user');
+            const loggedUser = loggedUserStr ? JSON.parse(loggedUserStr) : null;
+            const regPlate = localStorage.getItem('dna_registered_plate') || (this.authData && this.authData.license_plate) || '';
+            const userEmail = (loggedUser && loggedUser.email) || (this.authData && this.authData.email) || '';
+
+            let endpoint = '/api/v1/vehicles/my-vehicles';
+            const params = new URLSearchParams();
+            if (userEmail) params.append('email', userEmail);
+            if (regPlate) params.append('plate', regPlate);
+            if (params.toString()) endpoint += '?' + params.toString();
+
+            const token = localStorage.getItem('dna_token') || (typeof API !== 'undefined' && API.token);
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+            const res = await fetch(endpoint, { headers });
             if (res.ok) {
                 const data = await res.json();
                 if (data.success && Array.isArray(data.vehicles) && data.vehicles.length > 0) {
                     this.userVehicles = data.vehicles;
-                    
-                    // Se houver veículo cadastrado, prioriza o atualmente selecionado
-                    const activePlate = this.vehicleData.license_plate;
+                    const activePlate = regPlate || this.vehicleData.license_plate;
                     const realVeh = (activePlate && data.vehicles.find(u => u.license_plate === activePlate)) || data.vehicles[0];
                     this.applyVehicleData(realVeh);
+                    this.render();
+                    return;
                 }
+            }
+
+            // Se o usuário cadastrou um veículo nesta sessão, mostra somente ele (zero mocks)
+            if (regPlate) {
+                this.userVehicles = [{
+                    id: 'veh_user_' + regPlate,
+                    brand: this.authData.vehicle_brand || 'Veículo',
+                    model: this.authData.vehicle_model || 'Cadastrado',
+                    full_title: `${this.authData.vehicle_brand || ''} ${this.authData.vehicle_model || ''}`.trim(),
+                    license_plate: regPlate,
+                    manufacture_year: this.authData.vehicle_year || 2021,
+                    model_year: this.authData.vehicle_year || 2021,
+                    photo_url: this.authData.photo_url || this.vehicleData.photo_url,
+                    dna_code: this.vehicleData.dna_code || 'DNA-BR-ATIVO'
+                }];
+                this.applyVehicleData(this.userVehicles[0]);
+                this.render();
+            } else {
+                this.userVehicles = [];
             }
         } catch (_) {}
     },
@@ -2830,11 +2919,11 @@ const OwnerView = {
                             <span>${d.license_plate}</span>
                         </div>
                         <h3 style="font-size:17px; font-weight:900; color:#FFFFFF; margin:4px 0 2px;">${d.vehicle_brand} ${d.vehicle_model}</h3>
-                        <div style="font-size:12px; color:#94A3B8; font-weight:700; margin-bottom:12px;">Ano: ${d.vehicle_year} • Combustível: Gasolina</div>
+                        <div style="font-size:12px; color:#94A3B8; font-weight:700; margin-bottom:12px;">Ano: ${d.vehicle_year} • Combustível: ${d.fuel_type || 'Flex'} • Cor: ${d.color || 'Prata'}</div>
 
                         <div class="dna-fipe-badge">
                             <span>Tabela FIPE Oficial:</span>
-                            <strong>${d.fipe_value || 'R$ 125.870,00'}</strong>
+                            <strong>${d.fipe_value || 'Consultando...'}</strong>
                         </div>
                     </div>
                 </div>

@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const db = require('../../database/db');
 const { JWT_SECRET, authenticateToken } = require('../../middlewares/auth');
 const { logAudit } = require('../../middlewares/audit');
+const apiPlacasService = require('../../services/apiPlacas.service');
 
 // Login de Usuários
 router.post('/login', (req, res) => {
@@ -228,9 +229,15 @@ router.post('/register-client', (req, res) => {
 });
 
 // Cadastro Completo de Proprietário com Placa do Veículo e Código de Oficina (Fluxo Onboarding Mobile)
-router.post('/register-owner', (req, res) => {
+router.post('/register-owner', async (req, res) => {
     try {
-        const { name, email, password, phone, license_plate, plate, vehicle_model, model, vehicle_brand, brand, vehicle_year, year, workshop_code } = req.body;
+        const {
+            name, email, password, phone, license_plate, plate,
+            vehicle_model, model, vehicle_brand, brand, vehicle_year, year,
+            workshop_code, color, fuel_type, transmission_type, chassis_vin,
+            renavam: reqRenavam, fipe_value, fipe_code: reqFipeCode, fipe_cents: reqFipeCents, fipe_ref: reqFipeRef
+        } = req.body;
+
         if (!name || !email || !password) {
             return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios.' });
         }
@@ -253,23 +260,59 @@ router.post('/register-owner', (req, res) => {
         if (cleanPlate) {
             vehicle = db.prepare('SELECT * FROM vehicles WHERE license_plate = ?').get(cleanPlate);
             if (!vehicle) {
-                const vehicleId = `veh_${Date.now()}`;
-                const carBrand = vehicle_brand || brand || 'Honda';
-                const carModel = vehicle_model || model || 'Civic EXL';
-                const carYear = parseInt(vehicle_year || year) || 2021;
-                
-                let photoUrl = 'https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80';
+                // Consulta a API de Placas oficial para obter dados reais de FIPE e Detran
+                let apiData = null;
                 try {
-                    const { getDefaultPhotoForVehicle } = require('../../services/vehiclePhoto.service');
-                    photoUrl = getDefaultPhotoForVehicle(carBrand, carModel);
+                    const apiRes = await apiPlacasService.consultarPlaca(cleanPlate);
+                    if (apiRes && apiRes.found && apiRes.vehicle) {
+                        apiData = apiRes.vehicle;
+                    }
                 } catch (_) {}
 
-                const vin = `9BWZZZ377VT${Date.now().toString().slice(-6)}`;
-                const renavam = `00${Date.now().toString().slice(-9)}`;
+                const vehicleId = `veh_${Date.now()}`;
+                const carBrand = (apiData && apiData.brand) || vehicle_brand || brand || 'Honda';
+                const carModel = (apiData && (apiData.version || apiData.model)) || vehicle_model || model || 'Civic';
+                const carYear = (apiData && (apiData.model_year || apiData.manufacture_year)) || parseInt(vehicle_year || year) || 2021;
+                const carColor = (apiData && apiData.color && apiData.color !== 'Não informada') ? apiData.color : (color || 'Prata');
+                const carFuel = (apiData && apiData.fuel_type) || fuel_type || 'Flex';
+                const carTrans = (apiData && apiData.transmission_type) || transmission_type || 'Manual';
+                const vin = (apiData && (apiData.chassis_vin || apiData.chassis_vin_masked)) || chassis_vin || `9BWZZZ377VT${Date.now().toString().slice(-6)}`;
+                const renavam = (apiData && (apiData.renavam || apiData.renavam_masked)) || reqRenavam || `00${Date.now().toString().slice(-9)}`;
+                
+                let photoUrl = (apiData && apiData.photo_url) || null;
+                if (!photoUrl) {
+                    try {
+                        const { getDefaultPhotoForVehicle } = require('../../services/vehiclePhoto.service');
+                        photoUrl = getDefaultPhotoForVehicle(carBrand, carModel);
+                    } catch (_) {
+                        photoUrl = 'https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80';
+                    }
+                }
+
                 db.prepare(`
-                    INSERT INTO vehicles (id, license_plate, chassis_vin, renavam, brand, model, manufacture_year, model_year, fuel_type, color, photo_url, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Flex', 'Prata', ?, datetime('now'))
-                `).run(vehicleId, cleanPlate, vin, renavam, carBrand, carModel, carYear, carYear, photoUrl);
+                    INSERT INTO vehicles (id, license_plate, chassis_vin, renavam, brand, model, version_label, manufacture_year, model_year, fuel_type, transmission_type, color, photo_url, created_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                `).run(vehicleId, cleanPlate, vin, renavam, carBrand, carModel, carModel, carYear, carYear, carFuel, carTrans, carColor, photoUrl);
+
+                // Inserir cotação FIPE oficial real
+                let fipeCents = reqFipeCents || 7500000;
+                let fipeCode = reqFipeCode || '004495-4';
+                let fipeRef = reqFipeRef || 'Setembro de 2026';
+                if (apiData && apiData.fipe) {
+                    if (apiData.fipe.market_value_cents) fipeCents = apiData.fipe.market_value_cents;
+                    if (apiData.fipe.fipe_code) fipeCode = apiData.fipe.fipe_code;
+                    if (apiData.fipe.reference_month) fipeRef = apiData.fipe.reference_month;
+                } else if (fipe_value && typeof fipe_value === 'string') {
+                    const num = fipe_value.replace(/[^0-9]/g, '');
+                    if (num) fipeCents = parseInt(num, 10);
+                }
+
+                try {
+                    db.prepare(`
+                        INSERT INTO fipe_values (id, vehicle_id, fipe_code, reference_month_year, fipe_price_cents)
+                        VALUES (?, ?, ?, ?, ?)
+                    `).run(`fipe_${Date.now()}`, vehicleId, fipeCode, fipeRef, fipeCents);
+                } catch (_) {}
 
                 // Gerar DNA permanente
                 const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
