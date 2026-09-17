@@ -113,6 +113,19 @@ const App = {
         if (hash === '#owner' || hash === '#app' || hash === '#meucarro' || hash === '#cliente' ||
             pathname === '/app' || pathname === '/owner' || pathname === '/meucarro' ||
             pathname === '/cliente' || pathname === '/cliente.html' || pathname === '/cliente.app') {
+            
+            const screenParam = urlParams.get('screen') || hashParams.get('screen');
+            if (screenParam === 'home' || hash === '#home') {
+                if (window.OwnerView) window.OwnerView.authScreen = null;
+            } else if (screenParam === 'login' || hash === '#login') {
+                if (window.OwnerView) window.OwnerView.authScreen = 'login';
+            } else if (screenParam === 'register' || hash === '#register') {
+                if (window.OwnerView) window.OwnerView.authScreen = 'register';
+            } else {
+                // Inicia na Tela 01: Splash / Login (Fiel ao mapa do app)
+                if (window.OwnerView) window.OwnerView.authScreen = 'splash';
+            }
+
             this.switchView('owner');
             if (activationCode) {
                 setTimeout(() => {

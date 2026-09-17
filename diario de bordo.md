@@ -640,6 +640,21 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   5. **Qualidade & Testes:**
      - 45 de 45 testes automatizados aprovados com 100% de sucesso (inclusive verificação do link direto no Teste 38).
 
+### 📅 Ciclo 33 — Inicialização Oficial na Tela 01 (Splash / Login) Fiel ao Mapa de Telas
+- **Demandas Atendidas:**
+  1. **Inicialização Padrão na Tela 01:**
+     - Ao carregar o App do Cliente (`/cliente`), o estado inicial define `OwnerView.authScreen = 'splash'`, exibindo a Tela de Boas-Vindas e Login como portal de entrada oficial.
+  2. **Fidelidade Visual à Prancha Oficial:**
+     - Status bar mobile no topo (`9:41`, Wi-Fi e bateria).
+     - Símbolo "D" estilizado com gradiente neon pulsante.
+     - Tipografia `DNA AUTO` e slogan `Seu veículo sempre protegido.`.
+     - Carro frontal com faróis de LED neon azuis (`splash-car-front.jpg`) sobre fundo escuro com reflexo no piso.
+     - Botões `Entrar` (login), `Cadastrar` (onboarding) e `Pular` (acesso direto ao dashboard).
+  3. **Integração de Logout e Menu Drawer:**
+     - Logout no app redireciona imediatamente para a Tela 01.
+  4. **Qualidade & Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

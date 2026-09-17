@@ -20,7 +20,7 @@ const OwnerView = {
     isActivationModalOpen: false,
 
     // Estado do Fluxo de Autenticação & Onboarding (Imagem 1 - 12 Telas)
-    authScreen: null, // 'splash' | 'login' | 'register' | 'plate_search' | 'vehicle_found' | 'workshop_code' | 'confirmation' | 'concluded'
+    authScreen: 'splash', // Inicia na Tela 01: Splash / Login conforme o Mapa Oficial
     authData: {
         name: 'João Silva',
         phone: '(11) 98765-4321',
@@ -1061,6 +1061,8 @@ const OwnerView = {
                                     </div>
                                     <span style="color:#FFD21C; font-weight:800;">Baixar App Oficial (PWA)</span>
                                 </div>
+                            </div>
+
                             <!-- 11. Fluxo de Boas-Vindas & Onboarding (12 Telas) -->
                             <div class="dna-menu-item" style="background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.25);" onclick="OwnerView.goToAuthScreen('splash')">
                                 <div class="dna-menu-item-left">
@@ -2568,34 +2570,71 @@ const OwnerView = {
         }
     },
 
-    // 01. Tela de Boas-Vindas (Splash)
+    // 01. Tela de Boas-Vindas & Login (Fiel à Tela 01 do Mapa Oficial)
     renderSplashAuth() {
         return `
-            <div class="dna-auth-screen" style="justify-content:space-between; align-items:center; text-align:center;">
-                <div style="width:100%; display:flex; justify-content:flex-end;">
-                    <button class="dna-btn-ghost-link" onclick="OwnerView.exitAuthToApp()">Pular &gt;</button>
-                </div>
-
-                <div class="dna-splash-content">
-                    <div class="dna-splash-logo-glow" style="width:84px; height:84px; padding:0; background:transparent; border:none; box-shadow:none;">
-                        <img src="./img/icons/icon-192x192.png" onerror="this.src='/img/icons/icon-192x192.png'" alt="DNA AUTO" style="width:84px; height:84px; border-radius:22px; box-shadow:0 0 30px rgba(0, 212, 255, 0.65), 0 0 10px rgba(0, 212, 255, 0.4); border:1px solid rgba(0, 212, 255, 0.5);" />
-                    </div>
-
-                    <h1 class="dna-splash-title" style="margin-top:14px;">DNA <span style="color:#00D4FF;">AUTO</span></h1>
-                    <p class="dna-splash-slogan">Seu veículo sempre protegido.</p>
-
-                    <div class="dna-splash-hero-car">
-                        <img src="https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80" alt="Honda Civic Hero" />
+            <div class="dna-auth-screen dna-splash-screen" style="display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; min-height:100%; padding:14px 20px 20px; box-sizing:border-box; background:radial-gradient(circle at 50% 20%, #0d1e3d 0%, #070c17 65%, #04070f 100%);">
+                
+                <!-- Status Bar Mobile Oficial (Fiel ao Mockup: 9:41) -->
+                <div class="dna-phone-status-bar" style="display:flex; justify-content:space-between; align-items:center; width:100%; padding:2px 4px 12px; color:#FFFFFF; font-size:12px; font-weight:700; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; opacity:0.9;">
+                    <span>9:41</span>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <svg width="14" height="11" viewBox="0 0 16 12" fill="currentColor"><rect x="1" y="8" width="2" height="4" rx="1"/><rect x="5" y="6" width="2" height="6" rx="1"/><rect x="9" y="3" width="2" height="9" rx="1"/><rect x="13" y="0" width="2" height="12" rx="1"/></svg>
+                        <svg width="14" height="11" viewBox="0 0 16 12" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3zm-4.24-3.18a6 6 0 0 1 8.48 0 .75.75 0 0 1-1.06 1.06 4.5 4.5 0 0 0-6.36 0 .75.75 0 0 1-1.06-1.06zm-2.83-2.83a10 10 0 0 1 14.14 0 .75.75 0 0 1-1.06 1.06 8.5 8.5 0 0 0-12.02 0 .75.75 0 0 1-1.06-1.06z"/></svg>
+                        <svg width="20" height="10" viewBox="0 0 24 12" fill="currentColor"><rect x="1" y="1" width="19" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="3" width="12" height="6" rx="1.5" fill="currentColor"/><path d="M22 4.5v3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                     </div>
                 </div>
 
-                <div style="width:100%; display:flex; flex-direction:column; gap:10px; max-width:320px; margin-bottom:10px;">
-                    <button class="dna-btn-primary-neon" onclick="OwnerView.goToAuthScreen('login')">
+                <!-- Conteúdo Central: Símbolo 'D', Título, Slogan e Carro Frontal -->
+                <div class="dna-splash-content" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; margin:auto 0; padding:4px 0;">
+                    <!-- Símbolo 'D' Estilizado em Gradiente Neon -->
+                    <div class="dna-splash-logo-glyph" style="margin-bottom:12px; display:flex; align-items:center; justify-content:center;">
+                        <svg width="70" height="70" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.85));">
+                            <defs>
+                                <linearGradient id="dnaSplashDGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#00E5FF" />
+                                    <stop offset="55%" stop-color="#0091FF" />
+                                    <stop offset="100%" stop-color="#0055FF" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M18 16H52C74 16 88 28 88 50C88 72 74 84 52 84H18L32 50H50C60 50 66 45 66 38C66 31 60 27 50 27H30L18 16Z" fill="url(#dnaSplashDGrad)"/>
+                        </svg>
+                    </div>
+
+                    <!-- Título Oficial DNA AUTO -->
+                    <h1 class="dna-splash-title" style="font-size:28px; font-weight:900; letter-spacing:1.5px; color:#FFFFFF; margin:0 0 4px; text-transform:uppercase;">
+                        DNA <span style="color:#00D4FF;">AUTO</span>
+                    </h1>
+
+                    <!-- Slogan Oficial -->
+                    <p class="dna-splash-slogan" style="font-size:13.5px; color:#94A3B8; margin:0 0 16px; font-weight:500;">
+                        Seu veículo sempre protegido.
+                    </p>
+
+                    <!-- Imagem Frontal do Supercarro com Faróis LED Neon Azuis -->
+                    <div class="dna-splash-hero-car" style="width:100%; max-width:320px; height:205px; position:relative; margin:4px 0 14px; display:flex; align-items:center; justify-content:center;">
+                        <img src="./img/splash-car-front.jpg" onerror="this.src='/img/splash-car-front.jpg'" alt="DNA AUTO Supercar Frontal" style="width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 14px 28px rgba(0, 102, 255, 0.45));" />
+                    </div>
+                </div>
+
+                <!-- Ações Inferiores (Entrar, Cadastrar e Pular) -->
+                <div class="dna-splash-actions" style="width:100%; max-width:320px; display:flex; flex-direction:column; gap:11px; padding-bottom:8px;">
+                    <!-- Botão Azul 1: Entrar -->
+                    <button class="dna-btn-primary-neon" onclick="OwnerView.goToAuthScreen('login')" style="width:100%; height:48px; background:linear-gradient(90deg, #0066FF 0%, #00B4FF 100%); color:#FFFFFF; font-weight:800; font-size:15px; border-radius:12px; border:none; cursor:pointer; box-shadow:0 4px 20px rgba(0, 102, 255, 0.5); display:flex; align-items:center; justify-content:center; transition:transform 0.15s ease, box-shadow 0.15s ease;">
                         <span>Entrar</span>
                     </button>
-                    <button class="dna-btn-secondary-dark" onclick="OwnerView.goToAuthScreen('register')">
+
+                    <!-- Botão Escuro 2: Cadastrar -->
+                    <button class="dna-btn-secondary-dark" onclick="OwnerView.goToAuthScreen('register')" style="width:100%; height:48px; background:rgba(12, 21, 38, 0.95); border:1px solid rgba(0, 102, 255, 0.4); color:#FFFFFF; font-weight:700; font-size:15px; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s ease, border-color 0.15s ease;">
                         <span>Cadastrar</span>
                     </button>
+
+                    <!-- Link 3: Pular -->
+                    <div style="text-align:center; margin-top:2px;">
+                        <button class="dna-btn-ghost-link" onclick="OwnerView.exitAuthToApp()" style="background:none; border:none; color:#38BDF8; font-size:13px; font-weight:600; cursor:pointer; padding:6px 14px; opacity:0.85; transition:opacity 0.2s;">
+                            Pular
+                        </button>
+                    </div>
                 </div>
             </div>
         `;

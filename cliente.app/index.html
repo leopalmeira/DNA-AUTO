@@ -276,12 +276,19 @@
                 localStorage.removeItem('dna_token');
                 localStorage.removeItem('dna_auto_token');
                 localStorage.removeItem('dna_current_view');
-                window.location.href = '/';
+                OwnerView.authScreen = 'splash';
+                OwnerView.render();
             },
             switchView(view) {
                 if (view === 'landing' || view === 'landing-home') window.location.href = '/';
-                else if (view === 'login') window.location.href = '/#login';
-                else OwnerView.render();
+                else if (view === 'login') {
+                    OwnerView.goToAuthScreen('login');
+                } else if (view === 'splash') {
+                    OwnerView.goToAuthScreen('splash');
+                } else {
+                    OwnerView.authScreen = null;
+                    OwnerView.render();
+                }
             }
         };
 
@@ -305,30 +312,32 @@
         document.addEventListener('DOMContentLoaded', async () => {
             setupModals();
 
-            // Garantir usuário e token padrão
-            let savedUser = null;
-            try {
-                const raw = localStorage.getItem('dna_logged_user');
-                if (raw) savedUser = JSON.parse(raw);
-            } catch (_) {}
+            // Parâmetros de URL para roteamento flexível
+            const urlParams = new URLSearchParams(window.location.search);
+            const hashParams = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '');
+            const rawHash = (window.location.hash || '').toLowerCase();
+            const activationCode = urlParams.get('code') || hashParams.get('code') || urlParams.get('c');
+            const screenParam = urlParams.get('screen') || hashParams.get('screen');
 
-            if (savedUser && savedUser.role_code === 'OWNER') {
-                window.App.currentUser = savedUser;
+            // Determina tela inicial: Por padrão inicia na Tela 01: Splash / Login (conforme o mapa oficial)
+            if (screenParam === 'home' || rawHash === '#home') {
+                OwnerView.authScreen = null;
+            } else if (screenParam === 'login' || rawHash === '#login') {
+                OwnerView.authScreen = 'login';
+            } else if (screenParam === 'register' || rawHash === '#register') {
+                OwnerView.authScreen = 'register';
             } else {
-                localStorage.setItem('dna_logged_user', JSON.stringify(window.App.currentUser));
+                // Tela 01: Splash / Login (Fiel à foto do mapa)
+                OwnerView.authScreen = 'splash';
             }
 
+            // Sincronizar token de API
             const token = localStorage.getItem('dna_token') || 'sess_owner_usr_owner_carlos';
             API.setToken(token);
-            API.setDemoUser(window.App.currentUser.id || 'usr_owner_carlos');
+            API.setDemoUser('usr_owner_carlos');
 
             // Renderizar App do Cliente
             await OwnerView.render();
-
-            // Verificar se foi passado código de ativação na URL (ex: ?code=DNA-8421)
-            const urlParams = new URLSearchParams(window.location.search);
-            const hashParams = new URLSearchParams(window.location.hash.includes('?') ? window.location.hash.split('?')[1] : '');
-            const activationCode = urlParams.get('code') || hashParams.get('code') || urlParams.get('c');
 
             if (activationCode) {
                 setTimeout(() => {

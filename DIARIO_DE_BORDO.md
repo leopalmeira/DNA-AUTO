@@ -1186,6 +1186,33 @@ DNA-AUTO/
 
 ---
 
+### 📅 Ciclo 33 — Inicialização Oficial na Tela 01 (Splash / Login) Fiel ao Mapa de Telas
+
+#### 1. Contexto e Demanda
+- **Objetivo:** Garantir que ao acessar o aplicativo do cliente (`/cliente`, `/cliente.app`, `cliente-app.onrender.com`), a primeira tela exibida seja exatamente a **Tela 01 (Splash / Login)** do mapa oficial de telas, resolvendo a questão de inicializar diretamente na Home e garantindo a identidade visual completa da prancha de design.
+
+#### 2. Implementações Técnicas
+1. **Ativação Padrão da Tela 01:**
+   - Atualizado o estado inicial de `OwnerView.authScreen` para `'splash'`, fazendo com que o App do Cliente sempre receba novos acessos ou sessões não autenticadas na Tela de Boas-Vindas & Login.
+   - Suporte a parâmetros de URL (`?screen=home` para acesso direto à Garagem Digital ou `?screen=login` para a tela de autenticação).
+2. **Fidelidade Visual à Prancha Oficial:**
+   - **Status Bar Mobile:** Inclusão do relógio `9:41`, indicador de sinal de celular, Wi-Fi e nível de bateria no topo.
+   - **Emblema "D" Neon:** Glifo geométrico estilizado da marca DNA AUTO com gradiente ciano-azul (`#00E5FF` para `#0055FF`) e filtro de iluminação pulsante (`filter: drop-shadow`).
+   - **Tipografia Corporativa:** Título `DNA AUTO` em caixa alta e peso 900 com o slogan oficial `Seu veículo sempre protegido.`.
+   - **Hero Car Frontal com Faróis LED:** Imagem de alta definição (`splash-car-front.jpg`) exibindo a frente do supercarro com faróis de LED neon azuis, assentada diretamente sobre o fundo escuro com reflexo suave no piso.
+   - **Botoeira de Ação:**
+     - Botão primário azul neon: `Entrar` (abre a Tela 02 de login com e-mail e senha).
+     - Botão secundário escuro com borda sutil: `Cadastrar` (inicia o fluxo de onboarding com scanner de placa e FIPE).
+     - Link centralizado: `Pular` (permite ao usuário entrar direto na Garagem Digital / Home).
+3. **Menu Lateral & Logout:**
+   - Logout no Drawer e no Header redireciona instantaneamente para a Tela 01 (`OwnerView.authScreen = 'splash'`).
+   - Adicionado atalho no Drawer para testar o Fluxo de Boas-Vindas a qualquer momento.
+4. **Paridade e Testes:**
+   - Sincronização 100% mantida entre `public/` e `cliente.app/`.
+   - Bateria com **45 de 45 testes automatizados aprovados com 100% de sucesso**.
+
+---
+
 *Diário de bordo mantido pela equipe de engenharia do DNA AUTO.*
 
 
