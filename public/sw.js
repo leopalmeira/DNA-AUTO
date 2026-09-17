@@ -1,5 +1,5 @@
 // DNA AUTO Service Worker — PWA Oficial (Google Play Store & TWA Ready)
-const CACHE_NAME = 'dna-auto-v1.4.0';
+const CACHE_NAME = 'dna-auto-v1.5.0';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -21,7 +21,8 @@ const ASSETS_TO_CACHE = [
     '/img/icons/icon-512x512.png',
     '/img/icons/maskable-icon-512x512.png',
     '/img/icons/dna-logo.svg',
-    '/img/icons/favicon.png'
+    '/img/icons/favicon.png',
+    '/img/splash-car-hero.jpg'
 ];
 
 // Instalação do Service Worker: Faz pré-cache dos assets estáticos

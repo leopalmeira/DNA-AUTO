@@ -2572,6 +2572,9 @@ const OwnerView = {
 
     // 01. Tela de Boas-Vindas & Login (Fiel à Tela 01 do Mapa Oficial)
     renderSplashAuth() {
+        // SVG inline do "D" como fallback caso a imagem do logo falhe
+        const dLogoSvg = `<svg width="70" height="70" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.85));"><defs><linearGradient id="dnaSplashDGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00E5FF"/><stop offset="55%" stop-color="#0091FF"/><stop offset="100%" stop-color="#0055FF"/></linearGradient></defs><path d="M18 16H52C74 16 88 28 88 50C88 72 74 84 52 84H18L32 50H50C60 50 66 45 66 38C66 31 60 27 50 27H30L18 16Z" fill="url(#dnaSplashDGrad)"/></svg>`;
+
         return `
             <div class="dna-auth-screen dna-splash-screen" style="display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; min-height:100%; padding:14px 20px 20px; box-sizing:border-box; background:radial-gradient(circle at 50% 20%, #0d1e3d 0%, #070c17 65%, #04070f 100%);">
                 
@@ -2587,18 +2590,9 @@ const OwnerView = {
 
                 <!-- Conteúdo Central: Símbolo 'D', Título, Slogan e Carro Frontal -->
                 <div class="dna-splash-content" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; margin:auto 0; padding:4px 0;">
-                    <!-- Símbolo 'D' Estilizado em Gradiente Neon -->
+                    <!-- Símbolo 'D' Estilizado (SVG inline — nunca quebra) -->
                     <div class="dna-splash-logo-glyph" style="margin-bottom:12px; display:flex; align-items:center; justify-content:center;">
-                        <svg width="70" height="70" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.85));">
-                            <defs>
-                                <linearGradient id="dnaSplashDGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stop-color="#00E5FF" />
-                                    <stop offset="55%" stop-color="#0091FF" />
-                                    <stop offset="100%" stop-color="#0055FF" />
-                                </linearGradient>
-                            </defs>
-                            <path d="M18 16H52C74 16 88 28 88 50C88 72 74 84 52 84H18L32 50H50C60 50 66 45 66 38C66 31 60 27 50 27H30L18 16Z" fill="url(#dnaSplashDGrad)"/>
-                        </svg>
+                        ${dLogoSvg}
                     </div>
 
                     <!-- Título Oficial DNA AUTO -->
@@ -2611,9 +2605,9 @@ const OwnerView = {
                         Seu veículo sempre protegido.
                     </p>
 
-                    <!-- Imagem Frontal do Supercarro com Faróis LED Neon Azuis -->
+                    <!-- Imagem Frontal do Supercarro (Extraída do Mockup Oficial) -->
                     <div class="dna-splash-hero-car" style="width:100%; max-width:320px; height:205px; position:relative; margin:4px 0 14px; display:flex; align-items:center; justify-content:center;">
-                        <img src="./img/splash-car-front.jpg" onerror="this.src='/img/splash-car-front.jpg'" alt="DNA AUTO Supercar Frontal" style="width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 14px 28px rgba(0, 102, 255, 0.45));" />
+                        <img src="./img/splash-car-hero.jpg" onerror="this.onerror=null; if(this.src.indexOf('splash-car-front')!==-1){this.style.display='none';} else {this.src='./img/splash-car-front.jpg';}" alt="DNA AUTO" style="width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 14px 28px rgba(0, 102, 255, 0.45));" />
                     </div>
                 </div>
 
