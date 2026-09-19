@@ -3095,33 +3095,38 @@ const OwnerView = {
         return `
             <div class="dna-splash-inner">
                 <header class="brand" aria-label="DNA AUTO">
-                    <!-- Logo em SVG para não depender de imagem externa -->
-                    <svg class="brand-logo" viewBox="0 0 120 90" role="img" aria-label="Logo DNA AUTO">
-                        <defs>
-                            <linearGradient id="dnaBlue" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0%" stop-color="#73c9ff"/>
-                                <stop offset="48%" stop-color="#229cff"/>
-                                <stop offset="100%" stop-color="#0068d5"/>
-                            </linearGradient>
-                        </defs>
-                        <path d="M20 66 L39 20 L62 20 L49 42 L37 66 Z" fill="url(#dnaBlue)"/>
-                        <path d="M49 20 L70 20 C91 20 103 30 103 45 C103 61 90 70 69 70 L50 70 L59 52 L72 52 C81 52 86 49 86 45 C86 41 81 38 72 38 L57 38 Z" fill="url(#dnaBlue)"/>
-                    </svg>
+                    <div class="app-icon-badge-wrapper">
+                        <div class="app-icon-glow"></div>
+                        <img
+                            class="app-icon-badge"
+                            src="/img/dna-app-icon.png"
+                            alt="Logo DNA AUTO"
+                            onerror="this.onerror=null; this.src='/img/splash-d-logo.png';"
+                        />
+                    </div>
 
-                    <h1 class="brand-name">
-                        DNA <span class="auto">AUTO</span>
+                    <h1 class="brand-name" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <span style="color:#FFFFFF;">DNA</span>
+                        <span class="auto" style="color:#00D4FF; text-shadow:0 0 16px rgba(0,212,255,0.7);">AUTO</span>
                     </h1>
 
-                    <p class="tagline">Seu veículo sempre protegido.</p>
+                    <p class="tagline">Seu veículo sempre protegido e valorizado</p>
+
+                    <div style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:9999px; background:rgba(0, 212, 255, 0.08); border:1px solid rgba(0, 212, 255, 0.25); color:#00D4FF; font-size:11.5px; font-weight:600; letter-spacing:0.4px; margin-top:8px;">
+                        <span style="width:6px; height:6px; border-radius:50%; background:#00D4FF; box-shadow:0 0 8px #00D4FF;"></span>
+                        <span>GARAGEM DIGITAL & CERTIFICAÇÃO 360°</span>
+                    </div>
                 </header>
 
-                <div class="car-area" aria-hidden="true">
+                <div class="car-area" aria-hidden="true" style="position:relative;">
+                    <div style="position:absolute; width:80%; height:70%; background:radial-gradient(ellipse at center, rgba(0, 140, 255, 0.28) 0%, rgba(0, 212, 255, 0.12) 40%, transparent 70%); filter:blur(24px); pointer-events:none;"></div>
                     <img
                         class="car"
                         src="/img/splash-car-hero.png"
                         onerror="this.onerror=null; this.src='/img/splash-car-neon.png';"
                         alt="DNA AUTO Car"
                     />
+                    <div style="width:78%; height:4px; margin-top:-6px; background:linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.7) 35%, rgba(0, 102, 255, 0.9) 50%, rgba(0, 212, 255, 0.7) 65%, transparent 100%); border-radius:50%; filter:blur(3px); box-shadow:0 0 16px 2px rgba(0, 212, 255, 0.6); pointer-events:none;"></div>
                 </div>
 
                 <nav class="actions" aria-label="Acesso">
@@ -3130,8 +3135,10 @@ const OwnerView = {
                         id="btnEntrar"
                         type="button"
                         onclick="OwnerView.goToAuthScreen('login')"
+                        style="box-shadow: 0 4px 22px rgba(0, 102, 255, 0.55), inset 0 0 0 1px rgba(0, 212, 255, 0.4); display:flex; align-items:center; justify-content:center; gap:8px;"
                     >
-                        <span>Entrar</span>
+                        <span>Entrar no App</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
                     </button>
 
                     <button
@@ -3139,9 +3146,16 @@ const OwnerView = {
                         id="btnCadastrar"
                         type="button"
                         onclick="OwnerView.goToAuthScreen('register')"
+                        style="display:flex; align-items:center; justify-content:center; gap:8px;"
                     >
-                        <span>Cadastrar</span>
+                        <span>Criar Cadastro</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
                     </button>
+
+                    <div style="font-size:11.5px; color:#64748B; display:flex; align-items:center; justify-content:center; gap:6px; margin-top:4px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        <span>Ambiente Seguro • Criptografia Veicular Ponta a Ponta</span>
+                    </div>
                 </nav>
             </div>
         `;
@@ -3152,8 +3166,18 @@ const OwnerView = {
         return `
             <div class="dna-auth-box-wrapper">
                 <main class="box dna-auth-box">
-                    <h1>Entrar no DNA AUTO</h1>
-                    <p class="auth-subtitle">Acesse sua Garagem Digital DNA AUTO</p>
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+                        <button type="button" onclick="OwnerView.goToAuthScreen('splash')" style="background:rgba(255,255,255,0.06); border:1px solid rgba(0,212,255,0.2); color:#94A3B8; padding:6px 14px; border-radius:9999px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                            ← Voltar
+                        </button>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <img src="/img/dna-app-icon.png" style="width:26px; height:26px; border-radius:6px; box-shadow:0 0 8px rgba(0,212,255,0.4);" onerror="this.src='/img/splash-d-logo.png';" />
+                            <span style="font-weight:800; font-size:13.5px; color:#FFFFFF;">DNA <b style="color:#00D4FF;">AUTO</b></span>
+                        </div>
+                    </div>
+
+                    <h1>Entrar na Garagem</h1>
+                    <p class="auth-subtitle">Acesse sua Garagem Digital com seu e-mail e senha</p>
 
                     <div id="auth-error-box" style="display:none; background:rgba(239,68,68,0.18); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:9px; font-size:12.5px; margin-bottom:16px;"></div>
 
@@ -3172,17 +3196,26 @@ const OwnerView = {
                             </button>
                         </div>
 
-                        <button id="btn-submit-login" type="submit">
-                            <span>Entrar</span>
+                        <button id="btn-submit-login" type="submit" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                            <span>Entrar no App</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
                         </button>
                     </form>
+
+                    <div onclick="document.getElementById('email').value='joao@email.com'; document.getElementById('senha').value='123456'; document.querySelector('.dna-auth-box form')?.dispatchEvent(new Event('submit', {cancelable:true, bubbles:true}));" style="margin-top:14px; padding:10px 14px; background:rgba(0, 212, 255, 0.06); border:1px dashed rgba(0, 212, 255, 0.3); border-radius:10px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;" title="Entrar com conta demo de João Silva">
+                        <div style="text-align:left;">
+                            <strong style="font-size:12.5px; color:#FFFFFF; display:block;">⚡ Testar Garagem Demo</strong>
+                            <span style="font-size:11px; color:#00D4FF;">João Silva • Honda Civic (BRA2E19)</span>
+                        </div>
+                        <span style="font-size:11px; font-weight:700; color:#00D4FF; padding:4px 8px; border-radius:9999px; background:rgba(0, 212, 255, 0.15);">1-Clique</span>
+                    </div>
 
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
                         <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('splash')" style="margin-top:0;">
                             ← Voltar
                         </a>
                         <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('register')" style="margin-top:0; font-weight:700;">
-                            Criar cadastro
+                            Criar cadastro gratuito
                         </a>
                     </div>
                 </main>
@@ -3195,23 +3228,37 @@ const OwnerView = {
         return `
             <div class="dna-auth-box-wrapper">
                 <main class="box dna-auth-box">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+                        <button type="button" onclick="OwnerView.goToAuthScreen('splash')" style="background:rgba(255,255,255,0.06); border:1px solid rgba(0,212,255,0.2); color:#94A3B8; padding:6px 14px; border-radius:9999px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                            ← Voltar
+                        </button>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <img src="/img/dna-app-icon.png" style="width:26px; height:26px; border-radius:6px; box-shadow:0 0 8px rgba(0,212,255,0.4);" onerror="this.src='/img/splash-d-logo.png';" />
+                            <span style="font-weight:800; font-size:13.5px; color:#FFFFFF;">DNA <b style="color:#00D4FF;">AUTO</b></span>
+                        </div>
+                    </div>
+
                     <h1>Criar cadastro</h1>
-                    <p class="auth-subtitle">Junte-se à rede de proteção veicular DNA AUTO</p>
+                    <p class="auth-subtitle">Junte-se à rede de proteção e certificação veicular DNA AUTO</p>
 
                     <div id="auth-reg-error-box" style="display:none; background:rgba(239,68,68,0.18); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:9px; font-size:12.5px; margin-bottom:16px;"></div>
 
                     <form onsubmit="OwnerView.handleClientRegisterSubmit(event)">
-                        <label for="nome">Nome</label>
+                        <label for="nome">Nome Completo</label>
                         <input id="nome" type="text" placeholder="Seu nome completo" required autocomplete="name" />
 
                         <label for="email">E-mail</label>
                         <input id="email" type="email" placeholder="seu@email.com" required autocomplete="email" />
 
+                        <label for="whatsapp">WhatsApp (para alertas de revisão)</label>
+                        <input id="whatsapp" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" />
+
                         <label for="senha">Senha</label>
                         <input id="senha" type="password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" />
 
-                        <button id="btn-submit-register" type="submit">
-                            <span>Criar cadastro</span>
+                        <button id="btn-submit-register" type="submit" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                            <span>Criar Minha Conta</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
                         </button>
                     </form>
 

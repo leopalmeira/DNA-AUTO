@@ -714,6 +714,11 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Criação e disponibilização de `public/dna-auto-login.html` e rotas diretas `/dna-auto-login` e `/login` no servidor Express, além da integração nativa no próprio `cliente.app/index.html` e `public/cliente.html`.
   5. **Qualidade e Testes:**
      - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
+  6. **Geração e Integração de Imagens de Alta Fidelidade (Nano Banana):**
+     - Síntese de interface idêntica à referência visual enviada pelo usuário através do modelo Nano Banana da DeepMind (`generate_image`), gerando telas com proporção 9:16 (`dna-auth-splash` e backdrop oficial).
+     - Extração e calibração dos ativos de alta resolução: logotipo "D" com gradiente ciano neon (`splash-d-logo.png`), supercarro frontal escuro com faróis LED duplos azuis e neblina iluminada (`splash-car-hero.png`).
+     - Refinamento dos botões pill com cantos arredondados contínuos (`border-radius: 9999px`, altura 56px), gradiente vibrante no botão 'Entrar' e borda ciano neon no botão 'Cadastrar' idênticos à referência oficial.
+
 
 ---
 

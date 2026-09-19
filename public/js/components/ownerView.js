@@ -387,12 +387,33 @@ const OwnerView = {
         }
     },
 
+    // Listeners de Eventos nos Botões da Splash / Login
+    bindAuthEvents() {
+        const btnEntrar = document.getElementById('btnEntrar');
+        if (btnEntrar) {
+            btnEntrar.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.goToAuthScreen('login');
+            };
+        }
+        const btnCadastrar = document.getElementById('btnCadastrar');
+        if (btnCadastrar) {
+            btnCadastrar.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.goToAuthScreen('register');
+            };
+        }
+    },
+
     // Processar Login Oficial
     async handleLoginSubmit(e) {
         if (e && e.preventDefault) e.preventDefault();
-        const email = (document.getElementById('login-email-input')?.value || '').trim();
-        const password = (document.getElementById('auth-password-input')?.value || '').trim();
+        const email = (document.getElementById('email')?.value || document.getElementById('login-email-input')?.value || '').trim();
+        const password = (document.getElementById('senha')?.value || document.getElementById('auth-password-input')?.value || '').trim();
         const errBox = document.getElementById('auth-error-box');
+        const btn = document.getElementById('btn-submit-login');
 
         if (!email || !password) {
             if (errBox) {
@@ -400,6 +421,11 @@ const OwnerView = {
                 errBox.style.display = 'block';
             }
             return;
+        }
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span>Entrando...</span>';
         }
 
         try {
@@ -427,11 +453,88 @@ const OwnerView = {
                     errBox.innerText = (res && res.error) || 'Credenciais inválidas. Tente novamente.';
                     errBox.style.display = 'block';
                 }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Entrar</span>';
+                }
             }
         } catch (err) {
             if (errBox) {
                 errBox.innerText = err.message || 'Falha ao conectar com o servidor.';
                 errBox.style.display = 'block';
+            }
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Entrar</span>';
+            }
+        }
+    },
+
+    // Processar Cadastro Rápido do Cliente (Snippet 1 - Criar cadastro)
+    async handleClientRegisterSubmit(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const name = (document.getElementById('nome')?.value || document.getElementById('reg-name-input')?.value || '').trim();
+        const email = (document.getElementById('email')?.value || document.getElementById('reg-email-input')?.value || '').trim();
+        const password = (document.getElementById('senha')?.value || document.getElementById('reg-pass-input')?.value || '').trim();
+        const errBox = document.getElementById('auth-reg-error-box') || document.getElementById('auth-error-box');
+        const btn = document.getElementById('btn-submit-register');
+
+        if (!name || !email || !password) {
+            if (errBox) {
+                errBox.innerText = 'Por favor, preencha nome, e-mail e senha.';
+                errBox.style.display = 'block';
+            }
+            return;
+        }
+
+        if (password.length < 6) {
+            if (errBox) {
+                errBox.innerText = 'A senha deve conter no mínimo 6 caracteres.';
+                errBox.style.display = 'block';
+            }
+            return;
+        }
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span>Criando cadastro...</span>';
+        }
+
+        try {
+            const res = await API.registerClient({ name, email, password });
+
+            if (res && res.token) {
+                API.setToken(res.token);
+                if (res.user) {
+                    localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
+                    this.vehicleData.user_name = res.user.name;
+                    this.vehicleData.user_email = res.user.email;
+                }
+                localStorage.setItem('dna_owner_session', 'active');
+                localStorage.setItem('dna_owner_auth_screen', 'app');
+                localStorage.setItem('dna_owner_current_screen', 'home');
+                this.authScreen = null;
+                this._backendSynced = false;
+                await this.syncBackendVehicles();
+                this.navigateTo('home');
+            } else {
+                if (errBox) {
+                    errBox.innerText = (res && res.error) || 'Erro ao criar cadastro. Tente novamente.';
+                    errBox.style.display = 'block';
+                }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span>Criar cadastro</span>';
+                }
+            }
+        } catch (err) {
+            if (errBox) {
+                errBox.innerText = err.message || 'Falha ao conectar com o servidor.';
+                errBox.style.display = 'block';
+            }
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Criar cadastro</span>';
             }
         }
     },
@@ -1001,15 +1104,14 @@ const OwnerView = {
         document.body.classList.add('is-owner-app');
         document.body.classList.remove('is-workshop-erp');
 
-        // Se estiver no Fluxo de Onboarding / Autenticação (Imagem 1 - 12 Telas)
+        // Se estiver no Fluxo de Onboarding / Autenticação (Fullscreen)
         if (this.authScreen) {
             container.innerHTML = `
-                <div class="dna-app-viewport">
-                    <div class="dna-phone-frame">
-                        ${this.renderAuthScreen()}
-                    </div>
+                <div class="dna-auth-fullscreen" id="dna-auth-fullscreen-container">
+                    ${this.renderAuthScreen()}
                 </div>
             `;
+            this.bindAuthEvents();
             return;
         }
 
@@ -2988,171 +3090,187 @@ const OwnerView = {
         }
     },
 
-    // 01. Tela de Boas-Vindas & Login (Fiel à Tela 01 do Mapa Oficial)
+    // 01. Tela de Boas-Vindas & Login (Fiel à Imagem de Referência do Usuário - Fullscreen)
     renderSplashAuth() {
-        // SVG inline do "D" — renderização direta sem onerror (nunca quebra)
-        const dLogoSvg = `<svg width="72" height="72" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.85));"><defs><linearGradient id="dnaSplashDGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00E5FF"/><stop offset="55%" stop-color="#0091FF"/><stop offset="100%" stop-color="#0055FF"/></linearGradient></defs><path d="M18 16H52C74 16 88 28 88 50C88 72 74 84 52 84H18L32 50H50C60 50 66 45 66 38C66 31 60 27 50 27H30L18 16Z" fill="url(#dnaSplashDGrad)"/></svg>`;
-
         return `
-            <div class="dna-auth-screen dna-splash-screen" style="display:flex; flex-direction:column; justify-content:space-between; align-items:center; text-align:center; min-height:100%; height:100%; padding:24px 20px 24px; box-sizing:border-box; background:radial-gradient(circle at 50% 18%, rgba(0, 102, 255, 0.22) 0%, #081326 50%, #030712 100%);">
-                
-                <!-- Conteúdo Central: Símbolo 'D', Título, Slogan e Carro Frontal Oficial -->
-                <div class="dna-splash-content" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; margin:auto 0; padding:4px 0;">
-                    <!-- Símbolo 'D' Estilizado Oficial (SVG inline direto — nunca quebra) -->
-                    <div class="dna-splash-logo-glyph" style="margin-bottom:12px; display:flex; align-items:center; justify-content:center;">
-                        ${dLogoSvg}
+            <div class="dna-splash-inner">
+                <header class="brand" aria-label="DNA AUTO">
+                    <div class="app-icon-badge-wrapper">
+                        <div class="app-icon-glow"></div>
+                        <img
+                            class="app-icon-badge"
+                            src="/img/dna-app-icon.png"
+                            alt="Logo DNA AUTO"
+                            onerror="this.onerror=null; this.src='/img/splash-d-logo.png';"
+                        />
                     </div>
 
-                    <!-- Título Oficial DNA AUTO -->
-                    <h1 class="dna-splash-title" style="font-size:29px; font-weight:900; letter-spacing:1.5px; color:#FFFFFF; margin:0 0 4px; text-transform:uppercase; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-                        DNA <span style="color:#00D4FF;">AUTO</span>
+                    <h1 class="brand-name" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <span style="color:#FFFFFF;">DNA</span>
+                        <span class="auto" style="color:#00D4FF; text-shadow:0 0 16px rgba(0,212,255,0.7);">AUTO</span>
                     </h1>
 
-                    <!-- Slogan Oficial -->
-                    <p class="dna-splash-slogan" style="font-size:14px; color:#CBD5E1; margin:0 0 16px; font-weight:500;">
-                        Seu veículo sempre protegido.
-                    </p>
+                    <p class="tagline">Seu veículo sempre protegido e valorizado</p>
 
-                    <!-- Imagem Frontal do Supercarro (Exata da Referência) -->
-                    <div class="dna-splash-hero-car" style="width:100%; max-width:320px; height:210px; position:relative; margin:6px 0 16px; display:flex; align-items:center; justify-content:center;">
-                        <img src="./img/splash-car-hero.png" onerror="this.onerror=null; this.src='./img/splash-car-hero.jpg';" alt="DNA AUTO Car" style="width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 14px 28px rgba(0, 102, 255, 0.5));" />
+                    <div style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:9999px; background:rgba(0, 212, 255, 0.08); border:1px solid rgba(0, 212, 255, 0.25); color:#00D4FF; font-size:11.5px; font-weight:600; letter-spacing:0.4px; margin-top:8px;">
+                        <span style="width:6px; height:6px; border-radius:50%; background:#00D4FF; box-shadow:0 0 8px #00D4FF;"></span>
+                        <span>GARAGEM DIGITAL & CERTIFICAÇÃO 360°</span>
                     </div>
+                </header>
+
+                <div class="car-area" aria-hidden="true" style="position:relative;">
+                    <div style="position:absolute; width:80%; height:70%; background:radial-gradient(ellipse at center, rgba(0, 140, 255, 0.28) 0%, rgba(0, 212, 255, 0.12) 40%, transparent 70%); filter:blur(24px); pointer-events:none;"></div>
+                    <img
+                        class="car"
+                        src="/img/splash-car-hero.png"
+                        onerror="this.onerror=null; this.src='/img/splash-car-neon.png';"
+                        alt="DNA AUTO Car"
+                    />
+                    <div style="width:78%; height:4px; margin-top:-6px; background:linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.7) 35%, rgba(0, 102, 255, 0.9) 50%, rgba(0, 212, 255, 0.7) 65%, transparent 100%); border-radius:50%; filter:blur(3px); box-shadow:0 0 16px 2px rgba(0, 212, 255, 0.6); pointer-events:none;"></div>
                 </div>
 
-                <!-- Ações Inferiores (Entrar e Cadastrar sem alteração) -->
-                <div class="dna-splash-actions" style="width:100%; max-width:320px; display:flex; flex-direction:column; gap:12px; padding-bottom:8px;">
-                    <!-- Botão Azul 1: Entrar -->
-                    <button class="dna-btn-primary-neon" onclick="OwnerView.goToAuthScreen('login')" style="width:100%; height:48px; background:#0066FF; color:#FFFFFF; font-weight:800; font-size:15px; border-radius:12px; border:none; cursor:pointer; box-shadow:0 4px 20px rgba(0, 102, 255, 0.55); display:flex; align-items:center; justify-content:center; transition:transform 0.15s ease, box-shadow 0.15s ease;">
-                        <span>Entrar</span>
+                <nav class="actions" aria-label="Acesso">
+                    <button
+                        class="btn btn-primary"
+                        id="btnEntrar"
+                        type="button"
+                        onclick="OwnerView.goToAuthScreen('login')"
+                        style="box-shadow: 0 4px 22px rgba(0, 102, 255, 0.55), inset 0 0 0 1px rgba(0, 212, 255, 0.4); display:flex; align-items:center; justify-content:center; gap:8px;"
+                    >
+                        <span>Entrar no App</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
                     </button>
 
-                    <!-- Botão Escuro 2: Cadastrar -->
-                    <button class="dna-btn-secondary-dark" onclick="OwnerView.goToAuthScreen('register')" style="width:100%; height:48px; background:rgba(8, 16, 32, 0.85); border:1.5px solid #0066FF; color:#FFFFFF; font-weight:700; font-size:15px; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background 0.15s ease, border-color 0.15s ease;">
-                        <span>Cadastrar</span>
+                    <button
+                        class="btn btn-secondary"
+                        id="btnCadastrar"
+                        type="button"
+                        onclick="OwnerView.goToAuthScreen('register')"
+                        style="display:flex; align-items:center; justify-content:center; gap:8px;"
+                    >
+                        <span>Criar Cadastro</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
                     </button>
-                </div>
+
+                    <div style="font-size:11.5px; color:#64748B; display:flex; align-items:center; justify-content:center; gap:6px; margin-top:4px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        <span>Ambiente Seguro • Criptografia Veicular Ponta a Ponta</span>
+                    </div>
+                </nav>
             </div>
         `;
     },
 
-    // 02. Login Oficial
+    // 02. Login Oficial (Snippet 3 - Entrar no DNA AUTO)
     renderLoginAuth() {
         return `
-            <div class="dna-auth-screen">
-                <div class="dna-auth-header">
-                    <button class="dna-auth-back-btn" onclick="OwnerView.goToAuthScreen('splash')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-                        <span>Voltar</span>
-                    </button>
-                    <span class="dna-auth-step-pill">Login</span>
-                </div>
-
-                <div style="margin-bottom:24px;">
-                    <h2 style="font-size:22px; font-weight:900; color:#FFFFFF; margin:0 0 6px;">Entrar</h2>
-                    <p style="font-size:12.5px; color:#94A3B8; margin:0;">Acesse sua Garagem Digital DNA AUTO</p>
-                </div>
-
-                <div id="auth-error-box" style="display:none; background:rgba(239,68,68,0.15); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:10px; font-size:12px; margin-bottom:14px;"></div>
-
-                <form onsubmit="OwnerView.handleLoginSubmit(event)">
-                    <div class="dna-auth-input-group">
-                        <label class="dna-auth-input-label">E-mail</label>
-                        <div class="dna-auth-input-box">
-                            <input type="email" id="login-email-input" placeholder="Ex: usuario@email.com" value="joao@email.com" required />
+            <div class="dna-auth-box-wrapper">
+                <main class="box dna-auth-box">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+                        <button type="button" onclick="OwnerView.goToAuthScreen('splash')" style="background:rgba(255,255,255,0.06); border:1px solid rgba(0,212,255,0.2); color:#94A3B8; padding:6px 14px; border-radius:9999px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                            ← Voltar
+                        </button>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <img src="/img/dna-app-icon.png" style="width:26px; height:26px; border-radius:6px; box-shadow:0 0 8px rgba(0,212,255,0.4);" onerror="this.src='/img/splash-d-logo.png';" />
+                            <span style="font-weight:800; font-size:13.5px; color:#FFFFFF;">DNA <b style="color:#00D4FF;">AUTO</b></span>
                         </div>
                     </div>
 
-                    <div class="dna-auth-input-group">
-                        <div class="dna-auth-input-label">
-                            <span>Senha</span>
-                            <a href="javascript:void(0)" onclick="alert('Instruções de recuperação enviadas para o seu e-mail cadastrado.')" style="color:#00D4FF; text-decoration:none; font-size:11px;">Esqueceu sua senha?</a>
+                    <h1>Entrar na Garagem</h1>
+                    <p class="auth-subtitle">Acesse sua Garagem Digital com seu e-mail e senha</p>
+
+                    <div id="auth-error-box" style="display:none; background:rgba(239,68,68,0.18); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:9px; font-size:12.5px; margin-bottom:16px;"></div>
+
+                    <form onsubmit="OwnerView.handleLoginSubmit(event)">
+                        <label for="email">E-mail</label>
+                        <input id="email" type="email" placeholder="seu@email.com" value="joao@email.com" required autocomplete="email" />
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin:14px 0 7px;">
+                            <label for="senha" style="margin:0;">Senha</label>
+                            <a href="javascript:void(0)" onclick="alert('Instruções de recuperação enviadas para o seu e-mail cadastrado.')" style="color:#43b7ff; font-size:12px; text-decoration:none; margin:0;">Esqueceu sua senha?</a>
                         </div>
-                        <div class="dna-auth-input-box with-eye">
-                            <input type="password" id="auth-password-input" placeholder="Digite sua senha" value="123456" required />
-                            <button type="button" class="dna-auth-eye-btn" id="auth-eye-icon" onclick="OwnerView.togglePasswordVisibility()">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <div style="position:relative; width:100%;">
+                            <input id="senha" type="password" placeholder="Digite sua senha" value="123456" required autocomplete="current-password" style="padding-right:46px;" />
+                            <button type="button" id="auth-eye-icon" onclick="OwnerView.togglePasswordVisibility()" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#43b7ff; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                             </button>
                         </div>
+
+                        <button id="btn-submit-login" type="submit" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                            <span>Entrar no App</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                        </button>
+                    </form>
+
+                    <div onclick="document.getElementById('email').value='joao@email.com'; document.getElementById('senha').value='123456'; document.querySelector('.dna-auth-box form')?.dispatchEvent(new Event('submit', {cancelable:true, bubbles:true}));" style="margin-top:14px; padding:10px 14px; background:rgba(0, 212, 255, 0.06); border:1px dashed rgba(0, 212, 255, 0.3); border-radius:10px; display:flex; align-items:center; justify-content:space-between; cursor:pointer;" title="Entrar com conta demo de João Silva">
+                        <div style="text-align:left;">
+                            <strong style="font-size:12.5px; color:#FFFFFF; display:block;">⚡ Testar Garagem Demo</strong>
+                            <span style="font-size:11px; color:#00D4FF;">João Silva • Honda Civic (BRA2E19)</span>
+                        </div>
+                        <span style="font-size:11px; font-weight:700; color:#00D4FF; padding:4px 8px; border-radius:9999px; background:rgba(0, 212, 255, 0.15);">1-Clique</span>
                     </div>
 
-                    <button type="submit" class="dna-btn-primary-neon" style="margin-top:16px;">
-                        <span>Entrar</span>
-                    </button>
-                </form>
-
-                <div style="text-align:center; margin-top:24px;">
-                    <span style="font-size:12px; color:#94A3B8;">Não tem uma conta?</span>
-                    <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('register')" style="color:#00D4FF; font-size:12px; font-weight:800; margin-left:4px; text-decoration:none;">Cadastrar</a>
-                </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+                        <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('splash')" style="margin-top:0;">
+                            ← Voltar
+                        </a>
+                        <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('register')" style="margin-top:0; font-weight:700;">
+                            Criar cadastro gratuito
+                        </a>
+                    </div>
+                </main>
             </div>
         `;
     },
 
-    // 03. Cadastro - Dados Pessoais
+    // 03. Criar Cadastro Oficial (Snippet 1 - Criar cadastro)
     renderRegisterAuth() {
         return `
-            <div class="dna-auth-screen">
-                <div class="dna-auth-header">
-                    <button class="dna-auth-back-btn" onclick="OwnerView.goToAuthScreen('splash')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-                        <span>Voltar</span>
-                    </button>
-                    <span class="dna-auth-step-pill">Passo 1 de 4</span>
-                </div>
-
-                <div style="margin-bottom:18px;">
-                    <h2 style="font-size:22px; font-weight:900; color:#FFFFFF; margin:0 0 4px;">Cadastro</h2>
-                    <p style="font-size:12px; color:#94A3B8; margin:0;">Preencha seus dados para vincular seu veículo</p>
-                </div>
-
-                <div id="auth-error-box" style="display:none; background:rgba(239,68,68,0.15); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:10px; font-size:12px; margin-bottom:14px;"></div>
-
-                <form onsubmit="OwnerView.handleRegisterSubmit(event)">
-                    <div class="dna-auth-input-group">
-                        <label class="dna-auth-input-label">Nome Completo</label>
-                        <div class="dna-auth-input-box">
-                            <input type="text" id="reg-name-input" placeholder="Ex: João da Silva" value="João Silva" required />
+            <div class="dna-auth-box-wrapper">
+                <main class="box dna-auth-box">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+                        <button type="button" onclick="OwnerView.goToAuthScreen('splash')" style="background:rgba(255,255,255,0.06); border:1px solid rgba(0,212,255,0.2); color:#94A3B8; padding:6px 14px; border-radius:9999px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                            ← Voltar
+                        </button>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <img src="/img/dna-app-icon.png" style="width:26px; height:26px; border-radius:6px; box-shadow:0 0 8px rgba(0,212,255,0.4);" onerror="this.src='/img/splash-d-logo.png';" />
+                            <span style="font-weight:800; font-size:13.5px; color:#FFFFFF;">DNA <b style="color:#00D4FF;">AUTO</b></span>
                         </div>
                     </div>
 
-                    <div class="dna-auth-input-group">
-                        <label class="dna-auth-input-label">WhatsApp / Telefone</label>
-                        <div class="dna-auth-input-box">
-                            <input type="tel" id="reg-phone-input" placeholder="(11) 98765-4321" value="(11) 98765-4321" required />
-                        </div>
+                    <h1>Criar cadastro</h1>
+                    <p class="auth-subtitle">Junte-se à rede de proteção e certificação veicular DNA AUTO</p>
+
+                    <div id="auth-reg-error-box" style="display:none; background:rgba(239,68,68,0.18); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:9px; font-size:12.5px; margin-bottom:16px;"></div>
+
+                    <form onsubmit="OwnerView.handleClientRegisterSubmit(event)">
+                        <label for="nome">Nome Completo</label>
+                        <input id="nome" type="text" placeholder="Seu nome completo" required autocomplete="name" />
+
+                        <label for="email">E-mail</label>
+                        <input id="email" type="email" placeholder="seu@email.com" required autocomplete="email" />
+
+                        <label for="whatsapp">WhatsApp (para alertas de revisão)</label>
+                        <input id="whatsapp" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" />
+
+                        <label for="senha">Senha</label>
+                        <input id="senha" type="password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" />
+
+                        <button id="btn-submit-register" type="submit" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                            <span>Criar Minha Conta</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
+                        </button>
+                    </form>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+                        <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('splash')" style="margin-top:0;">
+                            ← Voltar
+                        </a>
+                        <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('login')" style="margin-top:0; font-weight:700;">
+                            Já tenho conta
+                        </a>
                     </div>
-
-                    <div class="dna-auth-input-group">
-                        <label class="dna-auth-input-label">Placa do Veículo</label>
-                        <div class="dna-auth-input-box">
-                            <input type="text" id="reg-plate-input" placeholder="Ex: BRA2E19" value="BRA2E19" maxlength="8" style="font-family:var(--font-mono, monospace); font-weight:800; text-transform:uppercase; letter-spacing:1px;" required />
-                        </div>
-                    </div>
-
-                    <div class="dna-auth-input-group">
-                        <label class="dna-auth-input-label">E-mail</label>
-                        <div class="dna-auth-input-box">
-                            <input type="email" id="reg-email-input" placeholder="joao@email.com" value="joao@email.com" required />
-                        </div>
-                    </div>
-
-                    <div class="dna-auth-input-group">
-                        <label class="dna-auth-input-label">Senha de Acesso</label>
-                        <div class="dna-auth-input-box with-eye">
-                            <input type="password" id="reg-pass-input" placeholder="Mínimo 6 caracteres" value="123456" required />
-                        </div>
-                    </div>
-
-                    <button type="submit" class="dna-btn-primary-neon" style="margin-top:14px;">
-                        <span>Continuar</span>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                    </button>
-                </form>
-
-                <div style="text-align:center; margin-top:16px;">
-                    <span style="font-size:12px; color:#94A3B8;">Já possui uma conta?</span>
-                    <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('login')" style="color:#00D4FF; font-size:12px; font-weight:800; margin-left:4px; text-decoration:none;">Entrar</a>
-                </div>
+                </main>
             </div>
         `;
     },
@@ -3458,3 +3576,9 @@ const OwnerView = {
 };
 
 window.OwnerView = OwnerView;
+window.entrar = function() {
+    if (window.OwnerView) window.OwnerView.goToAuthScreen('login');
+};
+window.cadastrar = function() {
+    if (window.OwnerView) window.OwnerView.goToAuthScreen('register');
+};

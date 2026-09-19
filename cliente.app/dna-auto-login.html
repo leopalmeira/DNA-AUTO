@@ -2,506 +2,1107 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#020b16" />
-  <title>DNA AUTO — Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#030712" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>DNA AUTO — Garagem Digital & Acesso Oficial</title>
+
+  <!-- Favicon & Icons -->
+  <link rel="icon" type="image/png" href="/img/dna-app-icon.png" />
+  <link rel="apple-touch-icon" href="/img/dna-app-icon.png" />
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
 
   <style>
     :root {
-      --blue: #078cff;
-      --blue-light: #43b7ff;
-      --blue-dark: #0067cf;
-      --bg: #020a14;
-      --panel: #03101d;
-      --text: #f3f7fb;
-      --muted: #b9c7d5;
-      --border: #008cff;
-      --radius: 18px;
+      --bg-dark: #030712;
+      --bg-deep: #050B14;
+      --bg-card: rgba(8, 17, 32, 0.88);
+      --bg-card-border: rgba(0, 180, 255, 0.28);
+      --bg-input: rgba(4, 12, 24, 0.85);
+      --blue-electric: #0066FF;
+      --blue-vibrant: #0084FF;
+      --cyan-neon: #00D4FF;
+      --cyan-glow: rgba(0, 212, 255, 0.4);
+      --blue-glow: rgba(0, 102, 255, 0.45);
+      --text-main: #FFFFFF;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      --success: #10B981;
+      --danger: #EF4444;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-pill: 9999px;
+      --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
 
     html, body {
       width: 100%;
       min-height: 100%;
       height: 100%;
-      font-family: Arial, Helvetica, sans-serif;
-      background:
-        radial-gradient(circle at 50% 48%, rgba(0, 115, 255, .18), transparent 48%),
-        linear-gradient(180deg, #01070f 0%, #020b16 50%, #01070f 100%);
-      color: var(--text);
+      background-color: var(--bg-dark);
+      font-family: var(--font-primary);
+      color: var(--text-main);
       overflow-x: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
+    /* Fundo dinâmico com iluminação neon cyber-automotiva */
     body {
+      background:
+        radial-gradient(circle at 50% 12%, rgba(0, 102, 255, 0.22) 0%, transparent 55%),
+        radial-gradient(circle at 50% 88%, rgba(0, 212, 255, 0.16) 0%, transparent 60%),
+        linear-gradient(180deg, #02060E 0%, #050B14 50%, #02060E 100%);
+      position: relative;
+    }
+
+    /* Linhas e grade geométrica sutil ao fundo (estilo do ícone) */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: 
+        linear-gradient(to right, rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 102, 255, 0.03) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Feixes de luz angular inspirados no ícone */
+    body::after {
+      content: "";
+      position: fixed;
+      top: -30%;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 120vw;
+      height: 120vw;
+      max-width: 800px;
+      max-height: 800px;
+      border: 1px solid rgba(0, 212, 255, 0.06);
+      box-shadow: 0 0 100px rgba(0, 102, 255, 0.08);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Container Principal */
+    .dna-auth-container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 440px;
       min-height: 100vh;
       min-height: 100dvh;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 0;
-      margin: 0;
-      position: relative;
-    }
-
-    /* Brilhos decorativos atmosféricos fullscreen */
-    body::before {
-      content: "";
-      position: absolute;
-      inset: -20% -20% auto;
-      height: 55%;
-      background: radial-gradient(ellipse, rgba(0, 132, 255, .16), transparent 67%);
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    body::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      bottom: -15%;
-      width: 100%;
-      height: 48%;
-      transform: translateX(-50%);
-      background: radial-gradient(ellipse, rgba(0, 112, 255, .18), transparent 65%);
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    /* 1. Tela Fullscreen do App */
-    .dna-auth-fullscreen {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      height: 100dvh;
-      max-width: 100vw;
-      max-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      margin: 0;
-      padding: 0;
-      overflow-y: auto;
-      overflow-x: hidden;
-      z-index: 10;
+      padding: clamp(20px, 3vh, 32px) 20px;
       box-sizing: border-box;
     }
 
-    /* Conteúdo interno da Splash Screen */
-    .dna-splash-inner {
-      position: relative;
-      z-index: 20;
-      width: 100%;
-      max-width: 430px;
-      height: 100%;
-      min-height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      padding: clamp(24px, 5vh, 48px) 20px clamp(20px, 4vh, 32px);
-      box-sizing: border-box;
-    }
-
-    .brand {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      flex: 0 0 auto;
-    }
-
-    .brand-logo {
-      width: 78px;
-      height: 58px;
-      margin-bottom: 8px;
-      filter: drop-shadow(0 0 14px rgba(0, 145, 255, .45));
-    }
-
-    .brand-name {
-      font-size: clamp(26px, 7vw, 32px);
-      line-height: 1;
-      font-weight: 800;
-      letter-spacing: .5px;
-      color: #FFFFFF;
-      margin: 4px 0;
-    }
-
-    .brand-name .auto {
-      color: #169cff;
-    }
-
-    .tagline {
-      margin-top: 6px;
-      font-size: clamp(13px, 3.5vw, 15px);
-      color: #d8e0e8;
-      letter-spacing: .1px;
-    }
-
-    .car-area {
-      width: 100%;
-      margin: clamp(10px, 2.5vh, 24px) 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex: 1 1 auto;
-      position: relative;
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    .car {
-      width: min(100%, 390px);
-      height: auto;
-      max-height: clamp(200px, 36vh, 310px);
-      display: block;
-      object-fit: contain;
-      user-select: none;
-      -webkit-user-drag: none;
-      filter: drop-shadow(0 10px 24px rgba(0, 110, 255, .35));
-      pointer-events: none;
-    }
-
-    .actions {
-      width: min(100%, 390px);
-      margin-top: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 13px;
-      flex: 0 0 auto;
-      position: relative;
-      z-index: 50;
-      pointer-events: auto !important;
-    }
-
-    .btn {
-      width: 100% !important;
-      min-height: 52px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      text-decoration: none !important;
-      border-radius: 12px !important;
-      padding: 13px 20px !important;
-      font-size: 16px !important;
-      font-weight: 700 !important;
-      font-family: inherit !important;
-      cursor: pointer !important;
-      transition: transform .15s ease, box-shadow .15s ease, background .15s ease !important;
-      -webkit-tap-highlight-color: transparent !important;
-      pointer-events: auto !important;
-      box-sizing: border-box !important;
-    }
-
-    .btn:active {
-      transform: scale(.985) !important;
-    }
-
-    .btn-primary {
-      color: #FFFFFF !important;
-      border: 1px solid #1599ff !important;
-      background: linear-gradient(180deg, #159cff 0%, #087fe9 100%) !important;
-      box-shadow: 0 0 20px rgba(0, 132, 255, .35), inset 0 1px 0 rgba(255,255,255,.2) !important;
-    }
-
-    .btn-primary:hover {
-      background: linear-gradient(180deg, #29a5ff 0%, #0787f3 100%) !important;
-      box-shadow: 0 0 26px rgba(0, 145, 255, .45) !important;
-    }
-
-    .btn-secondary {
-      color: #f1f5fa !important;
-      border: 1.5px solid #008dff !important;
-      background: rgba(1, 12, 23, .85) !important;
-      box-shadow: inset 0 0 12px rgba(0, 120, 255, .05) !important;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(0, 93, 160, .2) !important;
-      box-shadow: 0 0 18px rgba(0, 135, 255, .25) !important;
-    }
-
-    /* 2. Container Box de Login e Cadastro (Snippets 1 e 3) */
-    .dna-auth-box-wrapper {
-      position: relative;
-      z-index: 20;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      box-sizing: border-box;
-      overflow-y: auto;
-    }
-
-    .box {
-      width: min(92%, 420px);
-      padding: 35px 28px;
-      border: 1px solid #078cff;
-      border-radius: 20px;
-      background: #03101d;
-      box-shadow: 0 0 28px rgba(0, 124, 255, 0.28);
-      box-sizing: border-box;
-      position: relative;
-      z-index: 30;
-      color: #FFFFFF;
-    }
-
-    .box h1 {
-      text-align: center;
-      margin: 0 0 8px;
-      font-size: 24px;
-      font-weight: 800;
-      color: #FFFFFF;
-    }
-
-    .box .auth-subtitle {
-      text-align: center;
-      font-size: 13px;
-      color: #b9c7d5;
-      margin: 0 0 22px;
-    }
-
-    .box label {
-      display: block;
-      margin: 14px 0 7px;
-      font-size: 14px;
-      font-weight: 600;
-      color: #b9c7d5;
-      text-align: left;
-    }
-
-    .box input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 9px;
-      border: 1px solid #087fe9;
-      background: #061522;
-      color: #FFFFFF;
-      font-size: 16px;
-      outline: none;
-      box-sizing: border-box;
-      transition: border-color .15s ease, box-shadow .15s ease;
-    }
-
-    .box input:focus {
-      border-color: #43b7ff;
-      box-shadow: 0 0 12px rgba(7, 140, 255, 0.35);
-    }
-
-    .box button[type="submit"] {
-      width: 100%;
-      margin-top: 22px;
-      padding: 14px;
-      border: 0;
-      border-radius: 9px;
-      background: #078cff;
-      color: #FFFFFF;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 0 22px rgba(0, 140, 255, 0.4);
-      transition: background .15s ease, transform .1s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .box button[type="submit"]:hover {
-      background: #2299ff;
-      box-shadow: 0 0 26px rgba(0, 140, 255, 0.55);
-    }
-
-    .box button[type="submit"]:active {
-      transform: scale(0.985);
-    }
-
-    .box button[type="submit"]:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .box a {
-      display: block;
-      text-align: center;
-      margin-top: 18px;
-      color: #43b7ff;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .box a:hover {
-      text-decoration: underline;
-    }
-
-    .auth-alert {
-      display: none;
-      background: rgba(239, 68, 68, 0.18);
-      border: 1px solid #EF4444;
-      color: #FCA5A5;
-      padding: 10px 14px;
-      border-radius: 9px;
-      font-size: 12.5px;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-
-    /* Transições entre telas */
+    /* Gerenciamento de Telas com Transição Fluida */
     .screen {
       display: none;
       width: 100%;
-      height: 100%;
-      min-height: 100%;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      opacity: 0;
+      transform: scale(0.97) translateY(8px);
+      transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .screen.active {
       display: flex;
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+
+    /* ═════════════════════════════════════════════════════════════════════
+       01. TELA DE BOAS-VINDAS / SPLASH SCREEN (FIEL À IMAGEM DO ÍCONE)
+       ═════════════════════════════════════════════════════════════════════ */
+    .splash-layout {
+      min-height: calc(100vh - 40px);
+      min-height: calc(100dvh - 40px);
+      display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Header da Marca */
+    .brand-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: clamp(8px, 2vh, 16px);
+      width: 100%;
+    }
+
+    /* Badge do App Icon (Squircle idêntico à imagem de referência) */
+    .app-icon-badge-wrapper {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: neonPulse 3.5s ease-in-out infinite alternate;
+    }
+
+    .app-icon-badge {
+      width: 100%;
+      height: 100%;
+      border-radius: 24px;
+      object-fit: cover;
+      box-shadow: 
+        0 0 0 1.5px rgba(0, 212, 255, 0.5),
+        0 0 28px rgba(0, 102, 255, 0.6),
+        0 0 50px rgba(0, 212, 255, 0.25);
+      background: #050B14;
+    }
+
+    /* Efeito de brilho em volta do badge */
+    .app-icon-glow {
+      position: absolute;
+      inset: -6px;
+      border-radius: 28px;
+      background: radial-gradient(circle, rgba(0, 212, 255, 0.35) 0%, rgba(0, 102, 255, 0.15) 50%, transparent 80%);
+      filter: blur(8px);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Tipografia DNA AUTO */
+    .brand-title {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 8vw, 36px);
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      line-height: 1.1;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .brand-title .dna {
+      background: linear-gradient(180deg, #FFFFFF 0%, #D8E6F5 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.25));
+    }
+
+    .brand-title .auto {
+      background: linear-gradient(180deg, #38BDF8 0%, #00D4FF 50%, #0084FF 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 16px rgba(0, 212, 255, 0.7));
+    }
+
+    .brand-tagline {
+      font-size: 14px;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 212, 255, 0.08);
+      border: 1px solid rgba(0, 212, 255, 0.25);
+      color: var(--cyan-neon);
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      margin-top: 10px;
+    }
+
+    .brand-pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan-neon);
+      box-shadow: 0 0 8px var(--cyan-neon);
+      animation: blinkDot 2s infinite ease-in-out;
+    }
+
+    /* Área Central com o Supercarro Neon e Efeito de Chão Iluminado */
+    .hero-car-stage {
+      width: 100%;
+      position: relative;
+      margin: clamp(16px, 3vh, 32px) 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+
+    .car-ambient-glow {
+      position: absolute;
+      width: 85%;
+      height: 70%;
+      background: radial-gradient(ellipse at center, rgba(0, 140, 255, 0.28) 0%, rgba(0, 212, 255, 0.12) 40%, transparent 70%);
+      filter: blur(24px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .car-image {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 380px;
+      height: auto;
+      max-height: clamp(190px, 32vh, 260px);
+      object-fit: contain;
+      filter: drop-shadow(0 14px 28px rgba(0, 102, 255, 0.55));
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Reflexo de neon sob o carro */
+    .car-ground-reflection {
+      width: 78%;
+      height: 4px;
+      margin-top: -6px;
+      background: linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.7) 35%, rgba(0, 102, 255, 0.9) 50%, rgba(0, 212, 255, 0.7) 65%, transparent 100%);
+      border-radius: 50%;
+      filter: blur(3px);
+      box-shadow: 0 0 16px 2px rgba(0, 212, 255, 0.6);
+      z-index: 3;
+    }
+
+    /* Ações Principais (Botões Entrar e Cadastrar) */
+    .splash-actions {
+      width: 100%;
+      max-width: 390px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: auto;
+      z-index: 10;
+    }
+
+    .btn {
+      width: 100%;
+      height: 56px;
+      min-height: 56px;
+      border-radius: var(--radius-pill);
+      font-size: 16.5px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      border: none;
+      outline: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Botão Entrar: Degradê Azul Elétrico Neon */
+    .btn-entrar {
+      background: linear-gradient(135deg, #0084FF 0%, #0055D4 100%);
+      color: #FFFFFF;
+      box-shadow: 
+        0 4px 22px rgba(0, 102, 255, 0.55),
+        0 0 0 1px rgba(0, 212, 255, 0.4) inset;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-entrar::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.5s;
+    }
+
+    .btn-entrar:hover {
+      box-shadow: 
+        0 6px 28px rgba(0, 132, 255, 0.7),
+        0 0 0 1.5px rgba(0, 212, 255, 0.6) inset;
+      transform: translateY(-1px);
+    }
+
+    .btn-entrar:hover::before {
+      left: 100%;
+    }
+
+    /* Botão Cadastrar: Contorno Neon Cyan Translúcido */
+    .btn-cadastrar {
+      background: rgba(3, 12, 26, 0.85);
+      border: 2px solid var(--cyan-neon);
+      color: #FFFFFF;
+      box-shadow: 
+        0 0 20px rgba(0, 212, 255, 0.22),
+        inset 0 0 12px rgba(0, 212, 255, 0.12);
+    }
+
+    .btn-cadastrar:hover {
+      background: rgba(0, 180, 255, 0.15);
+      box-shadow: 
+        0 0 26px rgba(0, 212, 255, 0.45),
+        inset 0 0 16px rgba(0, 212, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    /* Rodapé Informativo da Splash */
+    .splash-footer {
+      margin-top: 18px;
+      font-size: 11.5px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* ═════════════════════════════════════════════════════════════════════
+       02. CARD FLUTUANTE DE LOGIN E CADASTRO (GLASSMORPHISM CYBER)
+       ═════════════════════════════════════════════════════════════════════ */
+    .auth-card-wrapper {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: auto 0;
+    }
+
+    .auth-card {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid var(--bg-card-border);
+      border-radius: var(--radius-lg);
+      padding: clamp(24px, 4vh, 32px) 24px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.7),
+        0 0 32px rgba(0, 102, 255, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    /* Barra Superior com botão voltar e mini badge */
+    .auth-top-nav {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .btn-back {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      font-size: 12.5px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-back:hover {
+      background: rgba(0, 212, 255, 0.15);
+      color: #FFFFFF;
+      border-color: var(--cyan-neon);
+      transform: translateX(-2px);
+    }
+
+    .mini-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mini-badge img {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+    }
+
+    .mini-badge span {
+      font-family: var(--font-display);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .mini-badge span b {
+      color: var(--cyan-neon);
+    }
+
+    /* Cabeçalho do Formulário */
+    .auth-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 6px;
+      text-align: left;
+    }
+
+    .auth-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 22px;
+      line-height: 1.4;
+      text-align: left;
+    }
+
+    /* Alerta de Erro */
+    .auth-alert-box {
+      display: none;
+      background: rgba(239, 68, 68, 0.14);
+      border: 1px solid var(--danger);
+      color: #FCA5A5;
+      padding: 11px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      margin-bottom: 18px;
+      text-align: left;
+      line-height: 1.4;
+      animation: shake 0.3s ease-in-out;
+    }
+
+    /* Campos de Formulário */
+    .form-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .form-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 7px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #E2E8F0;
+      letter-spacing: 0.2px;
+    }
+
+    .form-link-sm {
+      font-size: 12px;
+      color: var(--cyan-neon);
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .form-link-sm:hover {
+      text-decoration: underline;
+      color: #70E0FF;
+    }
+
+    .input-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      color: var(--text-dim);
+      pointer-events: none;
+      transition: color 0.15s;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 48px;
+      background: var(--bg-input);
+      border: 1px solid rgba(0, 140, 255, 0.3);
+      border-radius: var(--radius-md);
+      color: #FFFFFF;
+      font-size: 15px;
+      font-family: inherit;
+      padding: 0 14px 0 42px;
+      outline: none;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+
+    .form-input::placeholder {
+      color: #475569;
+    }
+
+    .form-input:focus {
+      border-color: var(--cyan-neon);
+      box-shadow: 0 0 16px rgba(0, 212, 255, 0.35);
+      background: rgba(6, 18, 38, 0.95);
+    }
+
+    .form-input:focus + .input-icon,
+    .input-wrapper:focus-within .input-icon {
+      color: var(--cyan-neon);
+    }
+
+    .btn-toggle-pass {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s;
+    }
+
+    .btn-toggle-pass:hover {
+      color: var(--cyan-neon);
+    }
+
+    /* Botão de Envio */
+    .btn-submit {
+      width: 100%;
+      height: 52px;
+      background: linear-gradient(135deg, #0084FF 0%, #0055D4 100%);
+      border: none;
+      border-radius: var(--radius-md);
+      color: #FFFFFF;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      box-shadow: 0 4px 22px rgba(0, 102, 255, 0.5);
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn-submit:hover {
+      background: linear-gradient(135deg, #1A92FF 0%, #0066FF 100%);
+      box-shadow: 0 6px 26px rgba(0, 132, 255, 0.65);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:active {
+      transform: scale(0.985);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* Acesso Rápido Demo (1-Clique para testes) */
+    .demo-fast-access {
+      margin-top: 16px;
+      padding: 10px 14px;
+      background: rgba(0, 212, 255, 0.06);
+      border: 1px dashed rgba(0, 212, 255, 0.3);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .demo-fast-access:hover {
+      background: rgba(0, 212, 255, 0.12);
+      border-color: var(--cyan-neon);
+    }
+
+    .demo-fast-info {
+      text-align: left;
+    }
+
+    .demo-fast-info strong {
+      font-size: 12.5px;
+      color: #FFFFFF;
+      display: block;
+    }
+
+    .demo-fast-info span {
+      font-size: 11px;
+      color: var(--cyan-neon);
+    }
+
+    .demo-fast-badge {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--cyan-neon);
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 212, 255, 0.15);
+    }
+
+    /* Alternador entre telas no rodapé do card */
+    .auth-switch-footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+
+    .auth-switch-footer a {
+      color: var(--cyan-neon);
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .auth-switch-footer a:hover {
+      text-decoration: underline;
+      color: #70E0FF;
+    }
+
+    /* Animações */
+    @keyframes neonPulse {
+      0% {
+        box-shadow: 
+          0 0 0 1.5px rgba(0, 212, 255, 0.4),
+          0 0 24px rgba(0, 102, 255, 0.45);
+      }
+      100% {
+        box-shadow: 
+          0 0 0 2px rgba(0, 212, 255, 0.8),
+          0 0 38px rgba(0, 150, 255, 0.75),
+          0 0 60px rgba(0, 212, 255, 0.35);
+      }
+    }
+
+    @keyframes blinkDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    /* Responsividade */
+    @media (max-height: 680px) {
+      .app-icon-badge-wrapper {
+        width: 76px;
+        height: 76px;
+        margin-bottom: 10px;
+      }
+      .brand-title {
+        font-size: 26px;
+      }
+      .car-image {
+        max-height: 160px;
+      }
+      .btn {
+        height: 50px;
+        min-height: 50px;
+        font-size: 15px;
+      }
+      .auth-card {
+        padding: 20px 18px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <div class="dna-auth-fullscreen">
+  <div class="dna-auth-container">
 
-    <!-- 01. TELA DE BOAS-VINDAS / SPLASH FULLSCREEN -->
+    <!-- ══════════════════════════════════════════════════════════════════
+         01. TELA DE BOAS-VINDAS / SPLASH SCREEN (OFICIAL DNA AUTO)
+         ══════════════════════════════════════════════════════════════════ -->
     <section id="screen-splash" class="screen active">
-      <div class="dna-splash-inner">
-        <header class="brand" aria-label="DNA AUTO">
-          <svg class="brand-logo" viewBox="0 0 120 90" role="img" aria-label="Logo DNA AUTO">
-            <defs>
-              <linearGradient id="dnaBlue" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#73c9ff"/>
-                <stop offset="48%" stop-color="#229cff"/>
-                <stop offset="100%" stop-color="#0068d5"/>
-              </linearGradient>
-            </defs>
-            <path d="M20 66 L39 20 L62 20 L49 42 L37 66 Z" fill="url(#dnaBlue)"/>
-            <path d="M49 20 L70 20 C91 20 103 30 103 45 C103 61 90 70 69 70 L50 70 L59 52 L72 52 C81 52 86 49 86 45 C86 41 81 38 72 38 L57 38 Z" fill="url(#dnaBlue)"/>
-          </svg>
+      <div class="splash-layout">
+        
+        <!-- Header da Marca -->
+        <header class="brand-header">
+          <div class="app-icon-badge-wrapper">
+            <div class="app-icon-glow"></div>
+            <img
+              class="app-icon-badge"
+              src="/img/dna-app-icon.png"
+              alt="DNA AUTO Ícone Oficial"
+              onerror="this.onerror=null; this.src='/img/splash-d-logo.png';"
+            />
+          </div>
 
-          <h1 class="brand-name">
-            DNA <span class="auto">AUTO</span>
+          <h1 class="brand-title">
+            <span class="dna">DNA</span>
+            <span class="auto">AUTO</span>
           </h1>
 
-          <p class="tagline">Seu veículo sempre protegido.</p>
+          <p class="brand-tagline">Seu veículo sempre protegido e valorizado</p>
+
+          <div class="brand-pill">
+            <span class="dot"></span>
+            <span>GARAGEM DIGITAL & CERTIFICAÇÃO 360°</span>
+          </div>
         </header>
 
-        <div class="car-area" aria-hidden="true">
+        <!-- Silhueta Frontal do Supercarro com Faróis LED Neon -->
+        <div class="hero-car-stage" aria-hidden="true">
+          <div class="car-ambient-glow"></div>
           <img
-            class="car"
+            class="car-image"
             src="/img/splash-car-hero.png"
             onerror="this.onerror=null; this.src='/img/splash-car-neon.png';"
-            alt="DNA AUTO Car"
+            alt="DNA AUTO Veículo Conectado"
           />
+          <div class="car-ground-reflection"></div>
         </div>
 
-        <nav class="actions" aria-label="Acesso">
+        <!-- Ações do Usuário: Entrar e Cadastrar -->
+        <nav class="splash-actions" aria-label="Acesso à Garagem Digital">
           <button
-            class="btn btn-primary"
+            class="btn btn-entrar"
             id="btnEntrar"
             type="button"
             onclick="entrar()"
           >
-            <span>Entrar</span>
+            <span>Entrar no App</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
           </button>
 
           <button
-            class="btn btn-secondary"
+            class="btn btn-cadastrar"
             id="btnCadastrar"
             type="button"
             onclick="cadastrar()"
           >
-            <span>Cadastrar</span>
+            <span>Criar Cadastro</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <line x1="19" y1="8" x2="19" y2="14"></line>
+              <line x1="22" y1="11" x2="16" y2="11"></line>
+            </svg>
           </button>
+
+          <div class="splash-footer">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <span>Ambiente Seguro • Criptografia Veicular Ponta a Ponta</span>
+          </div>
         </nav>
+
       </div>
     </section>
 
-    <!-- 02. TELA DE LOGIN (ENTRAR NO DNA AUTO) -->
+    <!-- ══════════════════════════════════════════════════════════════════
+         02. TELA DO FLUXO DE LOGIN ("ENTRAR NO DNA AUTO")
+         ══════════════════════════════════════════════════════════════════ -->
     <section id="screen-login" class="screen">
-      <div class="dna-auth-box-wrapper">
-        <main class="box">
-          <h1>Entrar no DNA AUTO</h1>
-          <p class="auth-subtitle">Acesse sua Garagem Digital DNA AUTO</p>
+      <div class="auth-card-wrapper">
+        <main class="auth-card">
 
-          <div id="login-error-box" class="auth-alert"></div>
+          <!-- Barra de Navegação Superior -->
+          <div class="auth-top-nav">
+            <button class="btn-back" type="button" onclick="voltar()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"></path>
+              </svg>
+              <span>Voltar</span>
+            </button>
 
-          <form onsubmit="handleLogin(event)">
-            <label for="login-email">E-mail</label>
-            <input id="login-email" type="email" placeholder="seu@email.com" value="joao@email.com" required autocomplete="email" />
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin:14px 0 7px;">
-              <label for="login-password" style="margin:0;">Senha</label>
-              <a href="javascript:void(0)" onclick="alert('Instruções de recuperação enviadas para o seu e-mail cadastrado.')" style="color:#43b7ff; font-size:12px; text-decoration:none; margin:0;">Esqueceu a senha?</a>
+            <div class="mini-badge">
+              <img src="/img/dna-app-icon.png" alt="DNA AUTO" onerror="this.src='/img/splash-d-logo.png';" />
+              <span>DNA <b>AUTO</b></span>
             </div>
-            <div style="position:relative; width:100%;">
-              <input id="login-password" type="password" placeholder="Digite sua senha" value="123456" required autocomplete="current-password" style="padding-right:46px;" />
-              <button type="button" onclick="togglePass('login-password')" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#43b7ff; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              </button>
+          </div>
+
+          <h2 class="auth-title">Entrar na Garagem</h2>
+          <p class="auth-desc">Informe suas credenciais para acessar o histórico oficial do seu veículo.</p>
+
+          <div id="login-error-box" class="auth-alert-box"></div>
+
+          <form id="form-login" onsubmit="handleLogin(event)">
+            <!-- E-mail -->
+            <div class="form-group">
+              <div class="form-label-row">
+                <label class="form-label" for="login-email">E-mail Cadastrado</label>
+              </div>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                </svg>
+                <input
+                  id="login-email"
+                  class="form-input"
+                  type="email"
+                  placeholder="seu@email.com"
+                  value="joao@email.com"
+                  required
+                  autocomplete="email"
+                />
+              </div>
             </div>
 
-            <button id="btn-submit-login" type="submit">
-              <span>Entrar</span>
+            <!-- Senha -->
+            <div class="form-group">
+              <div class="form-label-row">
+                <label class="form-label" for="login-password">Senha de Acesso</label>
+                <a class="form-link-sm" href="javascript:void(0)" onclick="esqueciSenha()">Esqueceu a senha?</a>
+              </div>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <input
+                  id="login-password"
+                  class="form-input"
+                  type="password"
+                  placeholder="Sua senha"
+                  value="123456"
+                  required
+                  autocomplete="current-password"
+                  style="padding-right: 44px;"
+                />
+                <button
+                  type="button"
+                  class="btn-toggle-pass"
+                  onclick="togglePass('login-password')"
+                  aria-label="Mostrar ou ocultar senha"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <button id="btn-submit-login" class="btn-submit" type="submit">
+              <span>Entrar no App</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M5 12h14"></path>
+                <path d="m12 5 7 7-7 7"></path>
+              </svg>
             </button>
           </form>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
-            <a href="javascript:void(0)" onclick="voltar()" style="margin-top:0;">
-              ← Voltar
-            </a>
-            <a href="javascript:void(0)" onclick="cadastrar()" style="margin-top:0; font-weight:700;">
-              Criar cadastro
-            </a>
+          <!-- Acesso Rápido Demo para Testes Imediatos -->
+          <div class="demo-fast-access" onclick="quickDemoLogin()" title="Entrar imediatamente como João Silva (Civic BRA2E19)">
+            <div class="demo-fast-info">
+              <strong>⚡ Testar Garagem Demo</strong>
+              <span>João Silva • Honda Civic (BRA2E19)</span>
+            </div>
+            <span class="demo-fast-badge">1-Clique</span>
           </div>
+
+          <div class="auth-switch-footer">
+            <span>Ainda não tem conta?</span>
+            <a href="javascript:void(0)" onclick="cadastrar()">Criar cadastro gratuito</a>
+          </div>
+
         </main>
       </div>
     </section>
 
-    <!-- 03. TELA DE CADASTRO (CRIAR CADASTRO) -->
+    <!-- ══════════════════════════════════════════════════════════════════
+         03. TELA DO FLUXO DE CADASTRO ("CRIAR CADASTRO")
+         ══════════════════════════════════════════════════════════════════ -->
     <section id="screen-register" class="screen">
-      <div class="dna-auth-box-wrapper">
-        <main class="box">
-          <h1>Criar cadastro</h1>
-          <p class="auth-subtitle">Junte-se à rede de proteção veicular DNA AUTO</p>
+      <div class="auth-card-wrapper">
+        <main class="auth-card">
 
-          <div id="reg-error-box" class="auth-alert"></div>
+          <!-- Barra de Navegação Superior -->
+          <div class="auth-top-nav">
+            <button class="btn-back" type="button" onclick="voltar()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6"></path>
+              </svg>
+              <span>Voltar</span>
+            </button>
 
-          <form onsubmit="handleRegister(event)">
-            <label for="reg-nome">Nome</label>
-            <input id="reg-nome" type="text" placeholder="Seu nome completo" required autocomplete="name" />
+            <div class="mini-badge">
+              <img src="/img/dna-app-icon.png" alt="DNA AUTO" onerror="this.src='/img/splash-d-logo.png';" />
+              <span>DNA <b>AUTO</b></span>
+            </div>
+          </div>
 
-            <label for="reg-email">E-mail</label>
-            <input id="reg-email" type="email" placeholder="seu@email.com" required autocomplete="email" />
+          <h2 class="auth-title">Criar Cadastro</h2>
+          <p class="auth-desc">Cadastre-se para gerenciar o histórico, revisões e laudos do seu veículo.</p>
 
-            <label for="reg-senha">Senha</label>
-            <input id="reg-senha" type="password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" />
+          <div id="reg-error-box" class="auth-alert-box"></div>
 
-            <button id="btn-submit-register" type="submit">
-              <span>Criar cadastro</span>
+          <form id="form-register" onsubmit="handleRegister(event)">
+            <!-- Nome -->
+            <div class="form-group">
+              <label class="form-label" for="reg-nome">Nome Completo</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <input
+                  id="reg-nome"
+                  class="form-input"
+                  type="text"
+                  placeholder="Seu nome completo"
+                  required
+                  autocomplete="name"
+                />
+              </div>
+            </div>
+
+            <!-- E-mail -->
+            <div class="form-group">
+              <label class="form-label" for="reg-email">E-mail</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                </svg>
+                <input
+                  id="reg-email"
+                  class="form-input"
+                  type="email"
+                  placeholder="seu@email.com"
+                  required
+                  autocomplete="email"
+                />
+              </div>
+            </div>
+
+            <!-- WhatsApp (Opcional/Recomendado) -->
+            <div class="form-group">
+              <label class="form-label" for="reg-whatsapp">WhatsApp (para avisos de revisões)</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                <input
+                  id="reg-whatsapp"
+                  class="form-input"
+                  type="tel"
+                  placeholder="(11) 99999-9999"
+                  autocomplete="tel"
+                  oninput="maskPhone(this)"
+                />
+              </div>
+            </div>
+
+            <!-- Senha -->
+            <div class="form-group">
+              <label class="form-label" for="reg-senha">Criar Senha (Mínimo 6 dígitos)</label>
+              <div class="input-wrapper">
+                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <input
+                  id="reg-senha"
+                  class="form-input"
+                  type="password"
+                  placeholder="Mínimo 6 caracteres"
+                  required
+                  autocomplete="new-password"
+                  style="padding-right: 44px;"
+                />
+                <button
+                  type="button"
+                  class="btn-toggle-pass"
+                  onclick="togglePass('reg-senha')"
+                  aria-label="Mostrar ou ocultar senha"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <button id="btn-submit-register" class="btn-submit" type="submit">
+              <span>Criar Minha Conta</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <line x1="19" y1="8" x2="19" y2="14"></line>
+                <line x1="22" y1="11" x2="16" y2="11"></line>
+              </svg>
             </button>
           </form>
 
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
-            <a href="javascript:void(0)" onclick="voltar()" style="margin-top:0;">
-              ← Voltar
-            </a>
-            <a href="javascript:void(0)" onclick="entrar()" style="margin-top:0; font-weight:700;">
-              Já tenho conta
-            </a>
+          <div class="auth-switch-footer">
+            <span>Já possui uma conta?</span>
+            <a href="javascript:void(0)" onclick="entrar()">Fazer Login</a>
           </div>
+
         </main>
       </div>
     </section>
@@ -509,13 +1110,18 @@
   </div>
 
   <script>
-    // Navegação de Telas
+    // ── Transição de Telas ──
     function showScreen(name) {
-      document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.screen').forEach(el => {
+        el.classList.remove('active');
+      });
       const target = document.getElementById('screen-' + name);
       if (target) {
         target.classList.add('active');
-        window.location.hash = '#' + name;
+        if (window.location.hash !== '#' + name) {
+          window.location.hash = '#' + name;
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
 
@@ -531,6 +1137,7 @@
       showScreen('splash');
     }
 
+    // ── Alternar Visibilidade da Senha ──
     function togglePass(id) {
       const input = document.getElementById(id);
       if (input) {
@@ -538,7 +1145,38 @@
       }
     }
 
-    // Processar Login
+    // ── Máscara de Telefone ──
+    function maskPhone(input) {
+      let v = input.value.replace(/\D/g, '');
+      if (v.length > 11) v = v.substring(0, 11);
+      if (v.length > 10) {
+        input.value = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+      } else if (v.length > 6) {
+        input.value = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+      } else if (v.length > 2) {
+        input.value = v.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+      } else {
+        input.value = v;
+      }
+    }
+
+    // ── Esqueci Minha Senha ──
+    function esqueciSenha() {
+      const email = document.getElementById('login-email')?.value || '';
+      alert(email ? `Instruções de recuperação foram enviadas para o e-mail: ${email}` : 'Informe seu e-mail para receber as instruções de recuperação.');
+    }
+
+    // ── Acesso Rápido Demo (1-Clique) ──
+    function quickDemoLogin() {
+      document.getElementById('login-email').value = 'joao@email.com';
+      document.getElementById('login-password').value = '123456';
+      const form = document.getElementById('form-login');
+      if (form) {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+    }
+
+    // ── Processar Login ──
     async function handleLogin(e) {
       e.preventDefault();
       const email = (document.getElementById('login-email')?.value || '').trim();
@@ -547,13 +1185,13 @@
       const btn = document.getElementById('btn-submit-login');
 
       if (!email || !password) {
-        errBox.innerText = 'Informe seu e-mail e senha.';
+        errBox.innerText = 'Informe seu e-mail e senha de acesso.';
         errBox.style.display = 'block';
         return;
       }
 
       btn.disabled = true;
-      btn.innerHTML = '<span>Entrando...</span>';
+      btn.innerHTML = '<span>Entrando na Garagem...</span>';
       errBox.style.display = 'none';
 
       try {
@@ -575,30 +1213,43 @@
           localStorage.setItem('dna_owner_current_screen', 'home');
           window.location.href = '/cliente';
         } else {
-          errBox.innerText = data.error || 'Credenciais inválidas. Tente novamente.';
+          errBox.innerText = data.error || 'Credenciais inválidas. Verifique seu e-mail e senha.';
           errBox.style.display = 'block';
           btn.disabled = false;
-          btn.innerHTML = '<span>Entrar</span>';
+          btn.innerHTML = `
+            <span>Entrar no App</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M5 12h14"></path>
+              <path d="m12 5 7 7-7 7"></path>
+            </svg>
+          `;
         }
       } catch (err) {
-        errBox.innerText = 'Falha ao conectar com o servidor.';
+        errBox.innerText = 'Falha ao conectar ao servidor. Tente novamente.';
         errBox.style.display = 'block';
         btn.disabled = false;
-        btn.innerHTML = '<span>Entrar</span>';
+        btn.innerHTML = `
+          <span>Entrar no App</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M5 12h14"></path>
+            <path d="m12 5 7 7-7 7"></path>
+          </svg>
+        `;
       }
     }
 
-    // Processar Cadastro
+    // ── Processar Cadastro ──
     async function handleRegister(e) {
       e.preventDefault();
       const name = (document.getElementById('reg-nome')?.value || '').trim();
       const email = (document.getElementById('reg-email')?.value || '').trim();
       const password = (document.getElementById('reg-senha')?.value || '').trim();
+      const phone = (document.getElementById('reg-whatsapp')?.value || '').trim();
       const errBox = document.getElementById('reg-error-box');
       const btn = document.getElementById('btn-submit-register');
 
       if (!name || !email || !password) {
-        errBox.innerText = 'Preencha nome, e-mail e senha.';
+        errBox.innerText = 'Preencha todos os campos obrigatórios (Nome, E-mail e Senha).';
         errBox.style.display = 'block';
         return;
       }
@@ -617,7 +1268,7 @@
         const res = await fetch('/api/v1/auth/register-client', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password })
+          body: JSON.stringify({ name, email, password, phone })
         });
         const data = await res.json();
 
@@ -635,17 +1286,40 @@
           errBox.innerText = data.error || 'Erro ao criar cadastro. Tente novamente.';
           errBox.style.display = 'block';
           btn.disabled = false;
-          btn.innerHTML = '<span>Criar cadastro</span>';
+          btn.innerHTML = `
+            <span>Criar Minha Conta</span>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <line x1="19" y1="8" x2="19" y2="14"></line>
+              <line x1="22" y1="11" x2="16" y2="11"></line>
+            </svg>
+          `;
         }
       } catch (err) {
-        errBox.innerText = 'Falha ao conectar com o servidor.';
+        errBox.innerText = 'Falha ao conectar ao servidor. Tente novamente.';
         errBox.style.display = 'block';
         btn.disabled = false;
-        btn.innerHTML = '<span>Criar cadastro</span>';
+        btn.innerHTML = `
+          <span>Criar Minha Conta</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <line x1="19" y1="8" x2="19" y2="14"></line>
+            <line x1="22" y1="11" x2="16" y2="11"></line>
+          </svg>
+        `;
       }
     }
 
-    // Iniciar na tela solicitada pela URL hash
+    // ── Sincronização de Histórico e Hash ──
+    window.addEventListener('hashchange', () => {
+      const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+      if (hash === 'login') showScreen('login');
+      else if (hash === 'register') showScreen('register');
+      else showScreen('splash');
+    });
+
     window.addEventListener('DOMContentLoaded', () => {
       const hash = (window.location.hash || '').replace('#', '').toLowerCase();
       if (hash === 'login') showScreen('login');

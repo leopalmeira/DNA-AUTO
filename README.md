@@ -189,6 +189,11 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
 
 ### 5. 📱 Novo App Mobile do Proprietário (PWA Fullscreen Nativo)
 - **Acesso Direto:** `#owner` (quando logado como Cliente ou selecionado no simulador)
+- **Tela Oficial de Boas-Vindas & Fluxos de Autenticação (Login / Cadastro):**
+  - **Identidade Visual Oficial & Ícone Squircle Neon:** Arte oficial com ícone em squircle (`dna-app-icon.png`), pulsação neon azul/ciano sobre fundo *dark obsidian*, logotipo metálico "DNA AUTO" e silhueta frontal do supercarro com faróis em LED neon.
+  - **Botão Entrar:** Botão primário com degradê azul elétrico que abre suavemente a tela de Login com formulário seguro, toggle de visualização de senha e atalho demo 1-clique.
+  - **Botão Cadastrar:** Botão secundário com contorno ciano neon que abre a tela de Cadastro com validação de dados, máscara de WhatsApp e integração direta.
+  - **Roteamento por Hash e Standalone:** Disponível em `/login`, `/dna-auto-login` e internamente no SPA com sincronização via hash (`#splash`, `#login`, `#register`) compatível com o botão nativo voltar do smartphone.
 - **Design de Alta Fidelidade (Fullscreen Dark Obsidian & Neon Blue):**
   - **Fullscreen Nativo PWA:** Consumo de 100% da tela em smartphones e tablets, eliminando simulação de moldura/frame de celular e notch fake.
   - **Upload Real de Fotos com Persistência:**
