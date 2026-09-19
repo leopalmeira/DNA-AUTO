@@ -2947,52 +2947,48 @@
     box-sizing: border-box;
 }
 
-/* Badge Squircle do Ícone Oficial DNA AUTO */
-.app-icon-badge-wrapper {
+/* Logo com Aura Fluida Oficial DNA AUTO */
+.logo-aura-container {
     position: relative;
-    width: 90px;
-    height: 90px;
-    margin-bottom: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    animation: neonPulse 3.5s ease-in-out infinite alternate;
+    margin-bottom: 4px;
 }
 
-.app-icon-badge {
-    width: 100%;
-    height: 100%;
-    border-radius: 22px;
-    object-fit: cover;
-    box-shadow: 
-        0 0 0 1.5px rgba(0, 212, 255, 0.5),
-        0 0 28px rgba(0, 102, 255, 0.6),
-        0 0 50px rgba(0, 212, 255, 0.25);
-    background: #050B14;
-}
-
-.app-icon-glow {
+.logo-aura-glow {
     position: absolute;
-    inset: -6px;
-    border-radius: 26px;
-    background: radial-gradient(circle, rgba(0, 212, 255, 0.35) 0%, rgba(0, 102, 255, 0.15) 50%, transparent 80%);
-    filter: blur(8px);
-    z-index: -1;
+    width: 180px;
+    height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.45) 0%, rgba(0, 102, 255, 0.28) 45%, transparent 75%);
+    filter: blur(24px);
     pointer-events: none;
+    z-index: 1;
+    animation: auraPulse 4s ease-in-out infinite alternate;
 }
 
-@keyframes neonPulse {
-    0% {
-        box-shadow: 
-            0 0 0 1.5px rgba(0, 212, 255, 0.4),
-            0 0 24px rgba(0, 102, 255, 0.45);
-    }
-    100% {
-        box-shadow: 
-            0 0 0 2px rgba(0, 212, 255, 0.8),
-            0 0 38px rgba(0, 150, 255, 0.75),
-            0 0 60px rgba(0, 212, 255, 0.35);
-    }
+.logo-aura-img {
+    position: relative;
+    z-index: 2;
+    width: clamp(125px, 32vw, 155px);
+    height: auto;
+    display: block;
+    object-fit: contain;
+    filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.8)) drop-shadow(0 0 40px rgba(0, 102, 255, 0.55));
+    animation: floatLogo 5s ease-in-out infinite alternate;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+@keyframes auraPulse {
+    0% { transform: scale(0.92); opacity: 0.7; }
+    100% { transform: scale(1.15); opacity: 1; }
+}
+
+@keyframes floatLogo {
+    0% { transform: translateY(0px); }
+    100% { transform: translateY(-6px); }
 }
 
 /* Header de Marca */
@@ -3002,45 +2998,15 @@
     align-items: center;
     text-align: center;
     flex: 0 0 auto;
+    padding-top: clamp(28px, 6vh, 48px);
 }
 
-.dna-splash-inner .brand-logo {
-    width: 72px;
-    height: auto;
-    max-height: 64px;
-    margin-bottom: 6px;
-    display: block;
-    object-fit: contain;
-    filter: drop-shadow(0 0 16px rgba(0, 180, 255, .6));
-}
-
-.dna-splash-inner .brand-name {
-    font-size: clamp(28px, 7.5vw, 34px);
-    line-height: 1.1;
-    font-weight: 900;
-    letter-spacing: .5px;
-    color: #FFFFFF;
-    margin: 4px 0 2px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-}
-
-.dna-splash-inner .brand-name .auto {
-    color: #00D4FF;
-}
-
-.dna-splash-inner .tagline {
-    margin-top: 4px;
-    font-size: clamp(14px, 3.8vw, 16px);
-    color: #FFFFFF;
-    letter-spacing: .2px;
-    font-weight: 400;
-}
-
-/* Área do Carro Central */
+/* Área do Carro Central com Aura Esfumaçada */
 .dna-splash-inner .car-area {
     width: 100%;
-    margin: clamp(10px, 2.5vh, 20px) 0;
+    margin: clamp(8px, 1.5vh, 20px) 0;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     flex: 1 1 auto;
@@ -3049,16 +3015,42 @@
     pointer-events: none;
 }
 
+.dna-splash-inner .car-ambient-glow {
+    position: absolute;
+    width: 90%;
+    height: 80%;
+    background: radial-gradient(ellipse at 50% 55%, rgba(0, 140, 255, 0.45) 0%, rgba(0, 212, 255, 0.22) 42%, transparent 72%);
+    filter: blur(32px);
+    pointer-events: none;
+    z-index: 1;
+}
+
 .dna-splash-inner .car {
+    position: relative;
+    z-index: 2;
     width: min(100%, 420px);
     height: auto;
-    max-height: clamp(210px, 38vh, 320px);
+    max-height: clamp(200px, 34vh, 280px);
     display: block;
     object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;
-    filter: drop-shadow(0 12px 28px rgba(0, 120, 255, .45));
+    filter: drop-shadow(0 0 26px rgba(0, 140, 255, 0.65)) drop-shadow(0 0 55px rgba(0, 212, 255, 0.35));
+    mix-blend-mode: screen;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 55%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 85%);
+    mask-image: radial-gradient(ellipse at 50% 55%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 85%);
     pointer-events: none;
+}
+
+.dna-splash-inner .car-ground-reflection {
+    width: 82%;
+    height: 6px;
+    margin-top: -10px;
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.8) 30%, rgba(0, 102, 255, 0.95) 50%, rgba(0, 212, 255, 0.8) 70%, transparent 100%);
+    border-radius: 50%;
+    filter: blur(4px);
+    box-shadow: 0 0 20px 3px rgba(0, 212, 255, 0.7);
+    z-index: 3;
 }
 
 /* Ações Inferiores (Botões Pill Full-width Clicáveis) */

@@ -718,7 +718,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Síntese de interface idêntica à referência visual enviada pelo usuário através do modelo Nano Banana da DeepMind (`generate_image`), gerando telas com proporção 9:16 (`dna-auth-splash` e backdrop oficial).
      - Extração e calibração dos ativos de alta resolução: logotipo "D" com gradiente ciano neon (`splash-d-logo.png`), supercarro frontal escuro com faróis LED duplos azuis e neblina iluminada (`splash-car-hero.png`).
      - Refinamento dos botões pill com cantos arredondados contínuos (`border-radius: 9999px`, altura 56px), gradiente vibrante no botão 'Entrar' e borda ciano neon no botão 'Cadastrar' idênticos à referência oficial.
+### 📅 Ciclo 39 — Nova Tela de Login & Cadastro Oficial do App do Cliente (Identidade Oficial e Fluxos Integrados)
+- **Demandas Atendidas:**
+  1. Criação de nova arquitetura de autenticação unificada (`dna-auto-login.html`) e no SPA (`ownerView.js`).
+  2. Implementação dos fluxos com botões 'Entrar no App' e 'Criar Cadastro', com formulários completos e suporte a hash (`#splash`, `#login`, `#register`).
+  3. Bateria com 45 de 45 testes aprovados (100%).
 
+### 📅 Ciclo 40 — Refinamento Visual da Abertura: Logo com Aura Fluida Sem Quadrado, Remoção do Texto DNA AUTO e Carro com Aura Esfumaçada Sem Bordas Fixas
+- **Demandas Atendidas:**
+  1. **Logo no Topo sem Moldura Quadrada e com Aura:**
+     - O badge quadrado/squircle foi removido do topo da tela de abertura.
+     - O emblema oficial "D" agora flutua diretamente no espaço com sua aura luminosa em azul elétrico e ciano neon (`dna-logo-aura.png`).
+     - O logo foi ampliado para `clamp(125px, 32vw, 155px)` e posicionado mais abaixo com respiro visual equilibrado (`padding-top: clamp(34px, 7vh, 60px)`).
+  2. **Remoção do Texto "DNA AUTO":**
+     - O texto `DNA AUTO` foi completamente removido da tela de abertura conforme instrução do usuário, mantendo o visual limpo, moderno e focado na aura da marca.
+  3. **Carro com Aura Esfumaçada (Sem Bordas Fixas):**
+     - O veículo foi reprocessado com queda suave para 0% de opacidade (alpha = 0) em todas as 4 bordas (`dna-car-aura.png`), eliminando qualquer sensação de "foto colada" ou corte retangular.
+     - Aplicação de `mix-blend-mode: screen`, `-webkit-mask-image: radial-gradient(ellipse at 50% 55%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 85%)` e reflexo neon ciano no solo.
+  4. **Qualidade e Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
 
 ---
 

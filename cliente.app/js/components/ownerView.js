@@ -3095,38 +3095,26 @@ const OwnerView = {
         return `
             <div class="dna-splash-inner">
                 <header class="brand" aria-label="DNA AUTO">
-                    <div class="app-icon-badge-wrapper">
-                        <div class="app-icon-glow"></div>
+                    <div class="logo-aura-container">
+                        <div class="logo-aura-glow"></div>
                         <img
-                            class="app-icon-badge"
-                            src="/img/dna-app-icon.png"
-                            alt="Logo DNA AUTO"
+                            class="logo-aura-img"
+                            src="/img/dna-logo-aura.png"
+                            alt="Logo Oficial"
                             onerror="this.onerror=null; this.src='/img/splash-d-logo.png';"
                         />
                     </div>
-
-                    <h1 class="brand-name" style="display:flex; align-items:center; justify-content:center; gap:8px;">
-                        <span style="color:#FFFFFF;">DNA</span>
-                        <span class="auto" style="color:#00D4FF; text-shadow:0 0 16px rgba(0,212,255,0.7);">AUTO</span>
-                    </h1>
-
-                    <p class="tagline">Seu veículo sempre protegido e valorizado</p>
-
-                    <div style="display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:9999px; background:rgba(0, 212, 255, 0.08); border:1px solid rgba(0, 212, 255, 0.25); color:#00D4FF; font-size:11.5px; font-weight:600; letter-spacing:0.4px; margin-top:8px;">
-                        <span style="width:6px; height:6px; border-radius:50%; background:#00D4FF; box-shadow:0 0 8px #00D4FF;"></span>
-                        <span>GARAGEM DIGITAL & CERTIFICAÇÃO 360°</span>
-                    </div>
                 </header>
 
-                <div class="car-area" aria-hidden="true" style="position:relative;">
-                    <div style="position:absolute; width:80%; height:70%; background:radial-gradient(ellipse at center, rgba(0, 140, 255, 0.28) 0%, rgba(0, 212, 255, 0.12) 40%, transparent 70%); filter:blur(24px); pointer-events:none;"></div>
+                <div class="car-area" aria-hidden="true">
+                    <div class="car-ambient-glow"></div>
                     <img
                         class="car"
-                        src="/img/splash-car-hero.png"
-                        onerror="this.onerror=null; this.src='/img/splash-car-neon.png';"
-                        alt="DNA AUTO Car"
+                        src="/img/dna-car-aura.png"
+                        onerror="this.onerror=null; this.src='/img/splash-car-hero.png';"
+                        alt="DNA AUTO Veículo com Aura"
                     />
-                    <div style="width:78%; height:4px; margin-top:-6px; background:linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.7) 35%, rgba(0, 102, 255, 0.9) 50%, rgba(0, 212, 255, 0.7) 65%, transparent 100%); border-radius:50%; filter:blur(3px); box-shadow:0 0 16px 2px rgba(0, 212, 255, 0.6); pointer-events:none;"></div>
+                    <div class="car-ground-reflection"></div>
                 </div>
 
                 <nav class="actions" aria-label="Acesso">
@@ -3171,7 +3159,7 @@ const OwnerView = {
                             ← Voltar
                         </button>
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <img src="/img/dna-app-icon.png" style="width:26px; height:26px; border-radius:6px; box-shadow:0 0 8px rgba(0,212,255,0.4);" onerror="this.src='/img/splash-d-logo.png';" />
+                            <img src="/img/dna-logo-aura.png" style="width:28px; height:auto; border-radius:0; box-shadow:none; filter:drop-shadow(0 0 6px rgba(0,212,255,0.6));" onerror="this.src='/img/splash-d-logo.png';" />
                             <span style="font-weight:800; font-size:13.5px; color:#FFFFFF;">DNA <b style="color:#00D4FF;">AUTO</b></span>
                         </div>
                     </div>
@@ -3233,7 +3221,7 @@ const OwnerView = {
                             ← Voltar
                         </button>
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <img src="/img/dna-app-icon.png" style="width:26px; height:26px; border-radius:6px; box-shadow:0 0 8px rgba(0,212,255,0.4);" onerror="this.src='/img/splash-d-logo.png';" />
+                            <img src="/img/dna-logo-aura.png" style="width:28px; height:auto; border-radius:0; box-shadow:none; filter:drop-shadow(0 0 6px rgba(0,212,255,0.6));" onerror="this.src='/img/splash-d-logo.png';" />
                             <span style="font-weight:800; font-size:13.5px; color:#FFFFFF;">DNA <b style="color:#00D4FF;">AUTO</b></span>
                         </div>
                     </div>
