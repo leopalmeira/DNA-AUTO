@@ -2990,7 +2990,7 @@ const OwnerView = {
 
     // 01. Tela de Boas-Vindas & Login (Fiel à Tela 01 do Mapa Oficial)
     renderSplashAuth() {
-        // SVG inline do "D" como fallback caso a imagem do logo falhe
+        // SVG inline do "D" — renderização direta sem onerror (nunca quebra)
         const dLogoSvg = `<svg width="72" height="72" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 0 24px rgba(0, 212, 255, 0.85));"><defs><linearGradient id="dnaSplashDGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00E5FF"/><stop offset="55%" stop-color="#0091FF"/><stop offset="100%" stop-color="#0055FF"/></linearGradient></defs><path d="M18 16H52C74 16 88 28 88 50C88 72 74 84 52 84H18L32 50H50C60 50 66 45 66 38C66 31 60 27 50 27H30L18 16Z" fill="url(#dnaSplashDGrad)"/></svg>`;
 
         return `
@@ -2998,9 +2998,9 @@ const OwnerView = {
                 
                 <!-- Conteúdo Central: Símbolo 'D', Título, Slogan e Carro Frontal Oficial -->
                 <div class="dna-splash-content" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%; margin:auto 0; padding:4px 0;">
-                    <!-- Símbolo 'D' Estilizado Oficial (PNG com fallback SVG) -->
+                    <!-- Símbolo 'D' Estilizado Oficial (SVG inline direto — nunca quebra) -->
                     <div class="dna-splash-logo-glyph" style="margin-bottom:12px; display:flex; align-items:center; justify-content:center;">
-                        <img src="./img/splash-d-logo.png" onerror="this.onerror=null; if(this.src.indexOf('/img/splash-d-logo.png')===-1){this.src='/img/splash-d-logo.png';} else {this.outerHTML=\`${dLogoSvg}\`;}" alt="DNA AUTO Logo" style="width:72px; height:72px; object-fit:contain; filter:drop-shadow(0 0 22px rgba(0, 212, 255, 0.9));" />
+                        ${dLogoSvg}
                     </div>
 
                     <!-- Título Oficial DNA AUTO -->
@@ -3015,7 +3015,7 @@ const OwnerView = {
 
                     <!-- Imagem Frontal do Supercarro (Exata da Referência) -->
                     <div class="dna-splash-hero-car" style="width:100%; max-width:320px; height:210px; position:relative; margin:6px 0 16px; display:flex; align-items:center; justify-content:center;">
-                        <img src="./img/splash-car-hero.png" onerror="this.onerror=null; if(this.src.indexOf('splash-car-hero.jpg')===-1){this.src='./img/splash-car-hero.jpg';} else {this.src='./img/splash-car-front.jpg';}" alt="DNA AUTO Car" style="width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 14px 28px rgba(0, 102, 255, 0.5));" />
+                        <img src="./img/splash-car-hero.png" onerror="this.onerror=null; this.src='./img/splash-car-hero.jpg';" alt="DNA AUTO Car" style="width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 14px 28px rgba(0, 102, 255, 0.5));" />
                     </div>
                 </div>
 
