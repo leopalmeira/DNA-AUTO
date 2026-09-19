@@ -28,12 +28,14 @@ router.post('/generate-sale-report', (req, res) => {
             FROM vehicles v
             JOIN vehicle_dna vd ON vd.vehicle_id = v.id
             LEFT JOIN workshops w ON vd.activated_by_workshop_id = w.id
-            WHERE v.id = ?
-        `).get(vehicle_id);
+            WHERE v.id = ? OR UPPER(v.license_plate) = UPPER(?) OR UPPER(REPLACE(v.license_plate, '-', '')) = UPPER(REPLACE(?, '-', ''))
+        `).get(vehicle_id, vehicle_id, vehicle_id);
 
         if (!vehicle) {
             return res.status(404).json({ error: 'Veículo com DNA ativo não encontrado.' });
         }
+
+        const vId = vehicle.id;
 
         // 2. TODOS OS SERVIÇOS DETALHADOS
         const services = db.prepare(`
@@ -43,7 +45,7 @@ router.post('/generate-sale-report', (req, res) => {
             LEFT JOIN workshops w ON sr.workshop_id = w.id
             WHERE sr.vehicle_id = ?
             ORDER BY sr.service_date DESC
-        `).all(vehicle_id);
+        `).all(vId);
 
         // 3. TODAS AS PEÇAS INSTALADAS COM DETALHES
         const parts = db.prepare(`
@@ -57,7 +59,7 @@ router.post('/generate-sale-report', (req, res) => {
             LEFT JOIN workshops w ON sr.workshop_id = w.id
             WHERE sr.vehicle_id = ?
             ORDER BY sr.service_date DESC
-        `).all(vehicle_id);
+        `).all(vId);
 
         // 4. NOTAS FISCAIS
         const invoices = db.prepare(`
@@ -66,7 +68,7 @@ router.post('/generate-sale-report', (req, res) => {
             LEFT JOIN service_records sr ON i.service_record_id = sr.id
             WHERE i.vehicle_id = ?
             ORDER BY i.issue_date DESC
-        `).all(vehicle_id);
+        `).all(vId);
 
         // 5. FOTOS
         const photos = db.prepare(`
@@ -75,12 +77,12 @@ router.post('/generate-sale-report', (req, res) => {
             LEFT JOIN workshops w ON vp.workshop_id = w.id
             WHERE vp.vehicle_id = ?
             ORDER BY vp.taken_at DESC
-        `).all(vehicle_id);
+        `).all(vId);
 
         // 6. QUILOMETRAGEM COMPLETA
         const mileages = db.prepare(`
             SELECT * FROM mileage_records WHERE vehicle_id = ? ORDER BY recorded_at ASC
-        `).all(vehicle_id);
+        `).all(vId);
         const currentMileage = mileages.length > 0 ? mileages[mileages.length - 1].mileage : 0;
         const firstMileage = mileages.length > 0 ? mileages[0].mileage : 0;
         const firstMileageDate = mileages.length > 0 ? mileages[0].recorded_at : null;
@@ -97,7 +99,7 @@ router.post('/generate-sale-report', (req, res) => {
             WHERE sr.vehicle_id = ?
             GROUP BY w.id
             ORDER BY services_count DESC
-        `).all(vehicle_id);
+        `).all(vId);
 
         // 8. PROPRIETÁRIOS
         const owners = db.prepare(`
@@ -109,7 +111,7 @@ router.post('/generate-sale-report', (req, res) => {
             LEFT JOIN owners no2 ON ot.new_owner_id = no2.id
             WHERE ot.vehicle_id = ? AND ot.status = 'COMPLETED'
             ORDER BY ot.completed_at ASC
-        `).all(vehicle_id);
+        `).all(vId);
 
         // Proprietário atual
         const currentOwner = db.prepare(`
@@ -118,7 +120,7 @@ router.post('/generate-sale-report', (req, res) => {
             JOIN ownership_transfers ot ON ot.new_owner_id = o.id
             WHERE ot.vehicle_id = ? AND ot.status = 'COMPLETED'
             ORDER BY ot.completed_at DESC LIMIT 1
-        `).get(vehicle_id);
+        `).get(vId);
 
         // Primeiro proprietário
         const firstOwner = db.prepare(`
@@ -127,35 +129,35 @@ router.post('/generate-sale-report', (req, res) => {
             JOIN ownership_transfers ot ON ot.previous_owner_id = o.id
             WHERE ot.vehicle_id = ? AND ot.status = 'COMPLETED'
             ORDER BY ot.completed_at ASC LIMIT 1
-        `).get(vehicle_id);
+        `).get(vId);
 
         // 9. FIPE E VALORES
-        const fipe = db.prepare(`SELECT * FROM fipe_values WHERE vehicle_id = ? ORDER BY consulted_at DESC LIMIT 1`).get(vehicle_id);
-        const fipeHistory = db.prepare(`SELECT * FROM fipe_values WHERE vehicle_id = ? ORDER BY consulted_at DESC LIMIT 6`).all(vehicle_id);
-        const marketValues = db.prepare(`SELECT * FROM market_values WHERE vehicle_id = ? ORDER BY reference_date DESC LIMIT 3`).all(vehicle_id);
+        const fipe = db.prepare(`SELECT * FROM fipe_values WHERE vehicle_id = ? ORDER BY consulted_at DESC LIMIT 1`).get(vId);
+        const fipeHistory = db.prepare(`SELECT * FROM fipe_values WHERE vehicle_id = ? ORDER BY consulted_at DESC LIMIT 6`).all(vId);
+        const marketValues = db.prepare(`SELECT * FROM market_values WHERE vehicle_id = ? ORDER BY reference_date DESC LIMIT 3`).all(vId);
 
         // 10. SAÚDE DO HISTÓRICO
-        const health = db.prepare(`SELECT * FROM health_scores WHERE vehicle_id = ?`).get(vehicle_id);
+        const health = db.prepare(`SELECT * FROM health_scores WHERE vehicle_id = ?`).get(vId);
 
         // 11. DOCUMENTOS DO VEÍCULO
-        const documents = db.prepare(`SELECT * FROM vehicle_documents WHERE vehicle_id = ? ORDER BY issue_date DESC`).all(vehicle_id);
+        const documents = db.prepare(`SELECT * FROM vehicle_documents WHERE vehicle_id = ? ORDER BY issue_date DESC`).all(vId);
 
         // 12. IPVA E TAXAS
-        const taxes = db.prepare(`SELECT * FROM taxes WHERE vehicle_id = ? ORDER BY reference_year DESC`).all(vehicle_id);
+        const taxes = db.prepare(`SELECT * FROM taxes WHERE vehicle_id = ? ORDER BY reference_year DESC`).all(vId);
 
         // 13. MULTAS
-        const fines = db.prepare(`SELECT * FROM fines WHERE vehicle_id = ?`).all(vehicle_id);
+        const fines = db.prepare(`SELECT * FROM fines WHERE vehicle_id = ?`).all(vId);
 
         // 14. DÉBITOS E RESTRIÇÕES
-        const debts = db.prepare(`SELECT * FROM debts WHERE vehicle_id = ?`).all(vehicle_id);
+        const debts = db.prepare(`SELECT * FROM debts WHERE vehicle_id = ?`).all(vId);
 
         // 15. LEILÕES E SINISTROS
-        const auctions = db.prepare(`SELECT * FROM auctions WHERE vehicle_id = ?`).all(vehicle_id);
+        const auctions = db.prepare(`SELECT * FROM auctions WHERE vehicle_id = ?`).all(vId);
 
         // 16. MANUTENÇÕES PLANEJADAS
         const maintenances = db.prepare(`
             SELECT * FROM maintenance_records WHERE vehicle_id = ? ORDER BY recommended_km ASC
-        `).all(vehicle_id);
+        `).all(vId);
 
         // ==================================================================
         // CÁLCULOS DERIVADOS

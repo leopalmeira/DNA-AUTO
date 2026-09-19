@@ -674,6 +674,28 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   5. **Qualidade & Testes:**
      - 45 de 45 testes automatizados aprovados com 100% de sucesso (incluindo teste com a placa oficial da documentação `INT8C36` do CrossFox e `LQZ9A42` do Fox 2013).
 
+### 📅 Ciclo 37 — Tela Inicial Oficial Fiel à Referência, App Fullscreen Bloqueado, Exibição Integral dos Dados da Placa e Relatório de Manutenções Ultra-Completo
+- **Demandas Atendidas:**
+  1. **Tela Inicial do App do Cliente Idêntica à Referência do Usuário:**
+     - Ícone estilizado oficial "D" com gradiente ciano neon (`./img/splash-d-logo.png` com fallback SVG de alta fidelidade).
+     - Tipografia oficial `DNA AUTO` com destaque em ciano e slogan `Seu veículo sempre protegido.`.
+     - Supercarro frontal escuro com faróis duplos azuis em LED (`./img/splash-car-hero.png`).
+     - Ações inferiores limpas e fiéis: botão principal azul preenchido `Entrar` e botão secundário `Cadastrar` (fundo escuro e contorno azul), sem elementos extras ("Pular" ou status bar móvel fake).
+  2. **App do Cliente em Fullscreen Bloqueado e Fixo (100% da Tela):**
+     - Configuração de `html, body.is-owner-app`, `.dna-app-viewport` e `.dna-phone-frame` em `100vw` x `100dvh`, com `position: fixed !important; inset: 0 !important; overflow: hidden !important; overscroll-behavior: none !important; border-radius: 0 !important; box-shadow: none !important;`.
+     - Fim de qualquer moldura de smartphone, letterbox ou barra de rolagem externa da janela principal. A rolagem interna é restrita ao container `.dna-app-scroll-content`.
+  3. **Exibição e Consulta de Todos os Dados do Carro na Busca por Placa:**
+     - Captura completa na fase de radar/busca por placa (`startPlateSearch` e `renderVehicleFoundAuth`): Placa Mercosul & Placa Antiga, Marca, Modelo, Submodelo, Versão Homologada, Ano Fabricação e Modelo, Cor Oficial Registrada, Motorização e Cilindradas (cm³), Câmbio/Transmissão, Tipo de Combustível, Carroceria, Segmento e Sub-segmento, Lotação (passageiros), Número de Eixos, Peso Bruto Total / Capacidade de Tração, Chassi VIN protegido (LGPD), Renavam mascarado, Município e UF de emplacamento, Nacionalidade e Situação Cadastral no Detran/Senatran (Regular / Sem restrições).
+     - Cotação oficial da Tabela FIPE em destaque verde neon com valor de mercado, código FIPE, mês de referência e score de acurácia.
+     - Nova seção na aba "Meu Veículo": **"Ficha Técnica Completa & Dados Oficiais do Veículo"** para consulta contínua a qualquer instante.
+  4. **Relatório Completo de Manutenções & Venda (Ultra Completo):**
+     - Botão e card de ação oficial com badge `OFICIAL` e ícone de laudo técnico integrado na aba "Meu Veículo", no Dashboard principal ("Início") e na tela de "Revisões Preventivas", chamando `OwnerView.openMaintenanceReport()`.
+     - Backend em `server/src/modules/reports/reports.routes.js` atualizado para aceitar tanto o ID único quanto a placa do veículo (`v.id = ? OR v.license_plate = ?`), relacionando todas as ordens de serviço, peças, notas fiscais, custos, odômetros e laudo 360°.
+     - Suporte resiliente a 40+ seções detalhadas, QR Code criptográfico para autenticação e botão de impressão/PDF.
+  5. **Sincronização e Testes Automatizados:**
+     - Paridade absoluta mantida entre `cliente.app/` e `public/`.
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes
@@ -682,6 +704,3 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 3. **Comunicação:** Atendimento sempre no idioma português.
 4. **Validação de Testes:** O comando `npm test` deve sempre permanecer com 100% dos testes aprovados antes de qualquer publicação.
 5. **Autonomia de Testes do Usuário:** Toda parte de testes em navegadores reais na interface do WhatsApp é realizada diretamente pelo usuário, respeitando estritamente suas diretrizes operacionais.
-
-
-
