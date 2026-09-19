@@ -698,6 +698,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 
 ---
 
+### 📅 Ciclo 38 — Tela de Login & Cadastro Fullscreen do App do Cliente com Botões Clicáveis e Fluxo Completo de Autenticação
+- **Demandas Atendidas:**
+  1. **Fullscreen Nativo e Absoluto (100% da Tela):**
+     - A tela de boas-vindas / splash e os fluxos de autenticação do App do Cliente agora ocupam 100vw x 100vh / 100dvh via `.dna-auth-fullscreen` (`position: fixed; inset: 0; z-index: 99999`).
+     - Fim de qualquer moldura ou container externo na tela inicial, exibindo a arte de alta resolução (logotipo 'D', tipografia oficial 'DNA AUTO', slogan 'Seu veículo sempre protegido.', supercarro escuro com faróis em LED azul e botões de ação).
+  2. **Interatividade Total dos Botões (100% Clicáveis):**
+     - Botões `#btnEntrar` e `#btnCadastrar` com `pointer-events: auto`, `cursor: pointer` e `z-index: 10`, vinculados tanto via `addEventListener` direto quanto funções globais `window.entrar()` e `window.cadastrar()` para blindagem contra erros de escopo.
+     - Elementos decorativos (névoas de luz, partículas e gradientes) isolados com `pointer-events: none` para nunca interceptar cliques ou toques.
+  3. **Fluxo Completo de Autenticação Integrado com Backend:**
+     - Tela de Login ("Entrar no DNA AUTO"): formulário com e-mail, senha com visualização/ocultação dinâmica, botão de submissão conectado à API `/api/v1/auth/login`, persistência de token JWT e redirecionamento direto para a Garagem do Cliente.
+     - Tela de Cadastro ("Criar cadastro"): formulário com nome completo, e-mail, senha de acesso, botão de submissão conectado à API `/api/v1/auth/register-client` (com fallback para registro rápido de proprietário) e link para retornar ao Login.
+     - Navegação fluida entre Welcome, Login e Cadastro via `OwnerView.goToAuthScreen()` e links de "Voltar" com setas interativas.
+  4. **Rotas Dedicadas e Arquivo Standalone:**
+     - Criação e disponibilização de `public/dna-auto-login.html` e rotas diretas `/dna-auto-login` e `/login` no servidor Express, além da integração nativa no próprio `cliente.app/index.html` e `public/cliente.html`.
+  5. **Qualidade e Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
+
+---
+
 ## 🏛️ Diretrizes e Convenções Persistentes
 1. **Controle de Versão Git:** Todas as modificações de código e documentação devem ser seguidas de commit limpo e push para a branch `master` no repositório remoto GitHub.
 2. **Registro Contínuo:** Todo novo ciclo ou alteração relevante de engenharia deve ser imediatamente documentado no `diario de bordo.md`, no `DIARIO_DE_BORDO.md` e refletido no `README.md`.

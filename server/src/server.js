@@ -134,6 +134,13 @@ app.post('/api/v1/clients/activate', (req, res) => {
 });
 
 // ── Rotas Dedicadas para Arquivos Separados (App do Cliente & Painel da Oficina) ──
+app.get(['/dna-auto-login.html', '/dna-auto-login', '/login'], (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.sendFile(path.join(__dirname, '..', '..', 'cliente.app', 'dna-auto-login.html'));
+});
+
 app.get(['/cliente', '/cliente.html', '/app', '/meucarro', '/cliente.app'], (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.set('Pragma', 'no-cache');

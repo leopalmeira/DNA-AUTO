@@ -317,9 +317,16 @@
                     OwnerView.goToAuthScreen('splash');
                 } else {
                     OwnerView.authScreen = null;
-                    OwnerView.render();
                 }
             }
+        };
+
+        // Funções Globais para Ações da Tela de Autenticação / Splash
+        window.entrar = function() {
+            if (window.OwnerView) OwnerView.goToAuthScreen('login');
+        };
+        window.cadastrar = function() {
+            if (window.OwnerView) OwnerView.goToAuthScreen('register');
         };
 
         // Inicialização dos Modais

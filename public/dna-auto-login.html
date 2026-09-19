@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#020b16" />
+  <title>DNA AUTO — Login</title>
+
+  <style>
+    :root {
+      --blue: #078cff;
+      --blue-light: #43b7ff;
+      --blue-dark: #0067cf;
+      --bg: #020a14;
+      --panel: #03101d;
+      --text: #f3f7fb;
+      --muted: #b9c7d5;
+      --border: #008cff;
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at 50% 48%, rgba(0, 115, 255, .18), transparent 48%),
+        linear-gradient(180deg, #01070f 0%, #020b16 50%, #01070f 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      margin: 0;
+      position: relative;
+    }
+
+    /* Brilhos decorativos atmosféricos fullscreen */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: -20% -20% auto;
+      height: 55%;
+      background: radial-gradient(ellipse, rgba(0, 132, 255, .16), transparent 67%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    body::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -15%;
+      width: 100%;
+      height: 48%;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse, rgba(0, 112, 255, .18), transparent 65%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* 1. Tela Fullscreen do App */
+    .dna-auth-fullscreen {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      max-width: 100vw;
+      max-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      z-index: 10;
+      box-sizing: border-box;
+    }
+
+    /* Conteúdo interno da Splash Screen */
+    .dna-splash-inner {
+      position: relative;
+      z-index: 20;
+      width: 100%;
+      max-width: 430px;
+      height: 100%;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: clamp(24px, 5vh, 48px) 20px clamp(20px, 4vh, 32px);
+      box-sizing: border-box;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      flex: 0 0 auto;
+    }
+
+    .brand-logo {
+      width: 78px;
+      height: 58px;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 0 14px rgba(0, 145, 255, .45));
+    }
+
+    .brand-name {
+      font-size: clamp(26px, 7vw, 32px);
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: .5px;
+      color: #FFFFFF;
+      margin: 4px 0;
+    }
+
+    .brand-name .auto {
+      color: #169cff;
+    }
+
+    .tagline {
+      margin-top: 6px;
+      font-size: clamp(13px, 3.5vw, 15px);
+      color: #d8e0e8;
+      letter-spacing: .1px;
+    }
+
+    .car-area {
+      width: 100%;
+      margin: clamp(10px, 2.5vh, 24px) 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1 1 auto;
+      position: relative;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .car {
+      width: min(100%, 390px);
+      height: auto;
+      max-height: clamp(200px, 36vh, 310px);
+      display: block;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+      filter: drop-shadow(0 10px 24px rgba(0, 110, 255, .35));
+      pointer-events: none;
+    }
+
+    .actions {
+      width: min(100%, 390px);
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      flex: 0 0 auto;
+      position: relative;
+      z-index: 50;
+      pointer-events: auto !important;
+    }
+
+    .btn {
+      width: 100% !important;
+      min-height: 52px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      text-decoration: none !important;
+      border-radius: 12px !important;
+      padding: 13px 20px !important;
+      font-size: 16px !important;
+      font-weight: 700 !important;
+      font-family: inherit !important;
+      cursor: pointer !important;
+      transition: transform .15s ease, box-shadow .15s ease, background .15s ease !important;
+      -webkit-tap-highlight-color: transparent !important;
+      pointer-events: auto !important;
+      box-sizing: border-box !important;
+    }
+
+    .btn:active {
+      transform: scale(.985) !important;
+    }
+
+    .btn-primary {
+      color: #FFFFFF !important;
+      border: 1px solid #1599ff !important;
+      background: linear-gradient(180deg, #159cff 0%, #087fe9 100%) !important;
+      box-shadow: 0 0 20px rgba(0, 132, 255, .35), inset 0 1px 0 rgba(255,255,255,.2) !important;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(180deg, #29a5ff 0%, #0787f3 100%) !important;
+      box-shadow: 0 0 26px rgba(0, 145, 255, .45) !important;
+    }
+
+    .btn-secondary {
+      color: #f1f5fa !important;
+      border: 1.5px solid #008dff !important;
+      background: rgba(1, 12, 23, .85) !important;
+      box-shadow: inset 0 0 12px rgba(0, 120, 255, .05) !important;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0, 93, 160, .2) !important;
+      box-shadow: 0 0 18px rgba(0, 135, 255, .25) !important;
+    }
+
+    /* 2. Container Box de Login e Cadastro (Snippets 1 e 3) */
+    .dna-auth-box-wrapper {
+      position: relative;
+      z-index: 20;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    .box {
+      width: min(92%, 420px);
+      padding: 35px 28px;
+      border: 1px solid #078cff;
+      border-radius: 20px;
+      background: #03101d;
+      box-shadow: 0 0 28px rgba(0, 124, 255, 0.28);
+      box-sizing: border-box;
+      position: relative;
+      z-index: 30;
+      color: #FFFFFF;
+    }
+
+    .box h1 {
+      text-align: center;
+      margin: 0 0 8px;
+      font-size: 24px;
+      font-weight: 800;
+      color: #FFFFFF;
+    }
+
+    .box .auth-subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: #b9c7d5;
+      margin: 0 0 22px;
+    }
+
+    .box label {
+      display: block;
+      margin: 14px 0 7px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #b9c7d5;
+      text-align: left;
+    }
+
+    .box input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 9px;
+      border: 1px solid #087fe9;
+      background: #061522;
+      color: #FFFFFF;
+      font-size: 16px;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+
+    .box input:focus {
+      border-color: #43b7ff;
+      box-shadow: 0 0 12px rgba(7, 140, 255, 0.35);
+    }
+
+    .box button[type="submit"] {
+      width: 100%;
+      margin-top: 22px;
+      padding: 14px;
+      border: 0;
+      border-radius: 9px;
+      background: #078cff;
+      color: #FFFFFF;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 0 22px rgba(0, 140, 255, 0.4);
+      transition: background .15s ease, transform .1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .box button[type="submit"]:hover {
+      background: #2299ff;
+      box-shadow: 0 0 26px rgba(0, 140, 255, 0.55);
+    }
+
+    .box button[type="submit"]:active {
+      transform: scale(0.985);
+    }
+
+    .box button[type="submit"]:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .box a {
+      display: block;
+      text-align: center;
+      margin-top: 18px;
+      color: #43b7ff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .box a:hover {
+      text-decoration: underline;
+    }
+
+    .auth-alert {
+      display: none;
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid #EF4444;
+      color: #FCA5A5;
+      padding: 10px 14px;
+      border-radius: 9px;
+      font-size: 12.5px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    /* Transições entre telas */
+    .screen {
+      display: none;
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+    }
+
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="dna-auth-fullscreen">
+
+    <!-- 01. TELA DE BOAS-VINDAS / SPLASH FULLSCREEN -->
+    <section id="screen-splash" class="screen active">
+      <div class="dna-splash-inner">
+        <header class="brand" aria-label="DNA AUTO">
+          <svg class="brand-logo" viewBox="0 0 120 90" role="img" aria-label="Logo DNA AUTO">
+            <defs>
+              <linearGradient id="dnaBlue" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#73c9ff"/>
+                <stop offset="48%" stop-color="#229cff"/>
+                <stop offset="100%" stop-color="#0068d5"/>
+              </linearGradient>
+            </defs>
+            <path d="M20 66 L39 20 L62 20 L49 42 L37 66 Z" fill="url(#dnaBlue)"/>
+            <path d="M49 20 L70 20 C91 20 103 30 103 45 C103 61 90 70 69 70 L50 70 L59 52 L72 52 C81 52 86 49 86 45 C86 41 81 38 72 38 L57 38 Z" fill="url(#dnaBlue)"/>
+          </svg>
+
+          <h1 class="brand-name">
+            DNA <span class="auto">AUTO</span>
+          </h1>
+
+          <p class="tagline">Seu veículo sempre protegido.</p>
+        </header>
+
+        <div class="car-area" aria-hidden="true">
+          <img
+            class="car"
+            src="/img/splash-car-hero.png"
+            onerror="this.onerror=null; this.src='/img/splash-car-neon.png';"
+            alt="DNA AUTO Car"
+          />
+        </div>
+
+        <nav class="actions" aria-label="Acesso">
+          <button
+            class="btn btn-primary"
+            id="btnEntrar"
+            type="button"
+            onclick="entrar()"
+          >
+            <span>Entrar</span>
+          </button>
+
+          <button
+            class="btn btn-secondary"
+            id="btnCadastrar"
+            type="button"
+            onclick="cadastrar()"
+          >
+            <span>Cadastrar</span>
+          </button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- 02. TELA DE LOGIN (ENTRAR NO DNA AUTO) -->
+    <section id="screen-login" class="screen">
+      <div class="dna-auth-box-wrapper">
+        <main class="box">
+          <h1>Entrar no DNA AUTO</h1>
+          <p class="auth-subtitle">Acesse sua Garagem Digital DNA AUTO</p>
+
+          <div id="login-error-box" class="auth-alert"></div>
+
+          <form onsubmit="handleLogin(event)">
+            <label for="login-email">E-mail</label>
+            <input id="login-email" type="email" placeholder="seu@email.com" value="joao@email.com" required autocomplete="email" />
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin:14px 0 7px;">
+              <label for="login-password" style="margin:0;">Senha</label>
+              <a href="javascript:void(0)" onclick="alert('Instruções de recuperação enviadas para o seu e-mail cadastrado.')" style="color:#43b7ff; font-size:12px; text-decoration:none; margin:0;">Esqueceu a senha?</a>
+            </div>
+            <div style="position:relative; width:100%;">
+              <input id="login-password" type="password" placeholder="Digite sua senha" value="123456" required autocomplete="current-password" style="padding-right:46px;" />
+              <button type="button" onclick="togglePass('login-password')" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#43b7ff; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+
+            <button id="btn-submit-login" type="submit">
+              <span>Entrar</span>
+            </button>
+          </form>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+            <a href="javascript:void(0)" onclick="voltar()" style="margin-top:0;">
+              ← Voltar
+            </a>
+            <a href="javascript:void(0)" onclick="cadastrar()" style="margin-top:0; font-weight:700;">
+              Criar cadastro
+            </a>
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <!-- 03. TELA DE CADASTRO (CRIAR CADASTRO) -->
+    <section id="screen-register" class="screen">
+      <div class="dna-auth-box-wrapper">
+        <main class="box">
+          <h1>Criar cadastro</h1>
+          <p class="auth-subtitle">Junte-se à rede de proteção veicular DNA AUTO</p>
+
+          <div id="reg-error-box" class="auth-alert"></div>
+
+          <form onsubmit="handleRegister(event)">
+            <label for="reg-nome">Nome</label>
+            <input id="reg-nome" type="text" placeholder="Seu nome completo" required autocomplete="name" />
+
+            <label for="reg-email">E-mail</label>
+            <input id="reg-email" type="email" placeholder="seu@email.com" required autocomplete="email" />
+
+            <label for="reg-senha">Senha</label>
+            <input id="reg-senha" type="password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" />
+
+            <button id="btn-submit-register" type="submit">
+              <span>Criar cadastro</span>
+            </button>
+          </form>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+            <a href="javascript:void(0)" onclick="voltar()" style="margin-top:0;">
+              ← Voltar
+            </a>
+            <a href="javascript:void(0)" onclick="entrar()" style="margin-top:0; font-weight:700;">
+              Já tenho conta
+            </a>
+          </div>
+        </main>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // Navegação de Telas
+    function showScreen(name) {
+      document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById('screen-' + name);
+      if (target) {
+        target.classList.add('active');
+        window.location.hash = '#' + name;
+      }
+    }
+
+    function entrar() {
+      showScreen('login');
+    }
+
+    function cadastrar() {
+      showScreen('register');
+    }
+
+    function voltar() {
+      showScreen('splash');
+    }
+
+    function togglePass(id) {
+      const input = document.getElementById(id);
+      if (input) {
+        input.type = input.type === 'password' ? 'text' : 'password';
+      }
+    }
+
+    // Processar Login
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = (document.getElementById('login-email')?.value || '').trim();
+      const password = (document.getElementById('login-password')?.value || '').trim();
+      const errBox = document.getElementById('login-error-box');
+      const btn = document.getElementById('btn-submit-login');
+
+      if (!email || !password) {
+        errBox.innerText = 'Informe seu e-mail e senha.';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>Entrando...</span>';
+      errBox.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.token) {
+          localStorage.setItem('dna_token', data.token);
+          localStorage.setItem('dna_auto_token', data.token);
+          if (data.user) {
+            localStorage.setItem('dna_logged_user', JSON.stringify(data.user));
+          }
+          localStorage.setItem('dna_owner_session', 'active');
+          localStorage.setItem('dna_owner_auth_screen', 'app');
+          localStorage.setItem('dna_owner_current_screen', 'home');
+          window.location.href = '/cliente';
+        } else {
+          errBox.innerText = data.error || 'Credenciais inválidas. Tente novamente.';
+          errBox.style.display = 'block';
+          btn.disabled = false;
+          btn.innerHTML = '<span>Entrar</span>';
+        }
+      } catch (err) {
+        errBox.innerText = 'Falha ao conectar com o servidor.';
+        errBox.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<span>Entrar</span>';
+      }
+    }
+
+    // Processar Cadastro
+    async function handleRegister(e) {
+      e.preventDefault();
+      const name = (document.getElementById('reg-nome')?.value || '').trim();
+      const email = (document.getElementById('reg-email')?.value || '').trim();
+      const password = (document.getElementById('reg-senha')?.value || '').trim();
+      const errBox = document.getElementById('reg-error-box');
+      const btn = document.getElementById('btn-submit-register');
+
+      if (!name || !email || !password) {
+        errBox.innerText = 'Preencha nome, e-mail e senha.';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      if (password.length < 6) {
+        errBox.innerText = 'A senha deve conter no mínimo 6 caracteres.';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>Criando cadastro...</span>';
+      errBox.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/v1/auth/register-client', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.token) {
+          localStorage.setItem('dna_token', data.token);
+          localStorage.setItem('dna_auto_token', data.token);
+          if (data.user) {
+            localStorage.setItem('dna_logged_user', JSON.stringify(data.user));
+          }
+          localStorage.setItem('dna_owner_session', 'active');
+          localStorage.setItem('dna_owner_auth_screen', 'app');
+          localStorage.setItem('dna_owner_current_screen', 'home');
+          window.location.href = '/cliente';
+        } else {
+          errBox.innerText = data.error || 'Erro ao criar cadastro. Tente novamente.';
+          errBox.style.display = 'block';
+          btn.disabled = false;
+          btn.innerHTML = '<span>Criar cadastro</span>';
+        }
+      } catch (err) {
+        errBox.innerText = 'Falha ao conectar com o servidor.';
+        errBox.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<span>Criar cadastro</span>';
+      }
+    }
+
+    // Iniciar na tela solicitada pela URL hash
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+      if (hash === 'login') showScreen('login');
+      else if (hash === 'register') showScreen('register');
+      else showScreen('splash');
+    });
+  </script>
+</body>
+</html>

@@ -322,6 +322,14 @@
             }
         };
 
+        // Funções Globais para Ações da Tela de Autenticação / Splash
+        window.entrar = function() {
+            if (window.OwnerView) OwnerView.goToAuthScreen('login');
+        };
+        window.cadastrar = function() {
+            if (window.OwnerView) OwnerView.goToAuthScreen('register');
+        };
+
         // Inicialização dos Modais
         function setupModals() {
             document.querySelectorAll('.modal-close-btn').forEach(btn => {

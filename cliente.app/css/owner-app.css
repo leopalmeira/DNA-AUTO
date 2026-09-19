@@ -2866,144 +2866,339 @@
     text-transform: uppercase;
 }
 
-/* Tela 01: Splash / Boas-Vindas */
-.dna-splash-screen {
-    background: radial-gradient(circle at 50% 15%, #0e1e3d 0%, #070c17 65%, #04070f 100%) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    text-align: center !important;
-    padding: 12px 18px 20px !important;
-    box-sizing: border-box !important;
-    min-height: 100% !important;
-    position: relative;
-    overflow-y: auto;
+/* ==============================================================================
+   FLUXO DE AUTENTICAÇÃO / LOGIN FULLSCREEN (FIDELIDADE TOTAL À REFERÊNCIA)
+   ============================================================================== */
+
+:root {
+    --blue: #078cff;
+    --blue-light: #43b7ff;
+    --blue-dark: #0067cf;
+    --bg: #020a14;
+    --panel: #03101d;
+    --text: #f3f7fb;
+    --muted: #b9c7d5;
+    --border: #008cff;
+    --radius: 18px;
 }
 
-.dna-splash-content {
-    flex: 1;
+/* 1. Tela Fullscreen do App */
+.dna-auth-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-width: 100vw !important;
+    max-height: 100dvh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background:
+        radial-gradient(circle at 50% 48%, rgba(0, 115, 255, .18), transparent 48%),
+        linear-gradient(180deg, #01070f 0%, #020b16 50%, #01070f 100%) !important;
+    color: #f3f7fb;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden !important;
+    z-index: 99999 !important;
+    box-sizing: border-box !important;
+}
+
+/* Brilhos decorativos atmosféricos */
+.dna-auth-fullscreen::before {
+    content: "";
+    position: absolute;
+    inset: -20% -20% auto;
+    height: 55%;
+    background: radial-gradient(ellipse, rgba(0, 132, 255, .16), transparent 67%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.dna-auth-fullscreen::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -15%;
+    width: 100%;
+    height: 48%;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse, rgba(0, 112, 255, .18), transparent 65%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Conteúdo interno da Splash Screen */
+.dna-splash-inner {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 430px;
+    height: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: clamp(24px, 5vh, 48px) 20px clamp(20px, 4vh, 32px);
+    box-sizing: border-box;
+}
+
+/* Header de Marca */
+.dna-splash-inner .brand {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     text-align: center;
-    width: 100%;
-    margin: auto 0;
-    padding: 6px 0;
+    flex: 0 0 auto;
 }
 
-.dna-splash-logo-glyph {
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: dnaPulseGlow 3s ease-in-out infinite alternate;
+.dna-splash-inner .brand-logo {
+    width: 78px;
+    height: 58px;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 14px rgba(0, 145, 255, .45));
 }
 
-@keyframes dnaPulseGlow {
-    0% { filter: drop-shadow(0 0 16px rgba(0, 212, 255, 0.65)); transform: scale(0.99); }
-    100% { filter: drop-shadow(0 0 30px rgba(0, 212, 255, 0.95)); transform: scale(1.01); }
-}
-
-.dna-splash-title {
-    font-size: 27px;
-    font-weight: 900;
-    letter-spacing: 1.5px;
+.dna-splash-inner .brand-name {
+    font-size: clamp(26px, 7vw, 32px);
+    line-height: 1;
+    font-weight: 800;
+    letter-spacing: .5px;
     color: #FFFFFF;
-    margin: 0 0 4px;
-    text-transform: uppercase;
+    margin: 4px 0;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
-.dna-splash-slogan {
-    font-size: 13.5px;
-    color: #94A3B8;
-    margin: 0 0 16px;
-    font-weight: 500;
+.dna-splash-inner .brand-name .auto {
+    color: #169cff;
 }
 
-.dna-splash-hero-car {
+.dna-splash-inner .tagline {
+    margin-top: 6px;
+    font-size: clamp(13px, 3.5vw, 15px);
+    color: #d8e0e8;
+    letter-spacing: .1px;
+}
+
+/* Área do Carro Central */
+.dna-splash-inner .car-area {
     width: 100%;
-    max-width: 320px;
-    height: 205px;
-    position: relative;
-    margin: 4px 0 14px;
+    margin: clamp(10px, 2.5vh, 24px) 0;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    flex: 1 1 auto;
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
 }
 
-.dna-splash-hero-car img {
+.dna-splash-inner .car {
+    width: min(100%, 390px);
+    height: auto;
+    max-height: clamp(200px, 36vh, 310px);
+    display: block;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+    filter: drop-shadow(0 10px 24px rgba(0, 110, 255, .35));
+    pointer-events: none;
+}
+
+/* Ações Inferiores (Botões Full-width Clicáveis) */
+.dna-splash-inner .actions {
+    width: min(100%, 390px);
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    flex: 0 0 auto;
+    position: relative;
+    z-index: 50;
+    pointer-events: auto !important;
+}
+
+.dna-splash-inner .btn {
+    width: 100% !important;
+    min-height: 52px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
+    border-radius: 12px !important;
+    padding: 13px 20px !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    font-family: inherit !important;
+    cursor: pointer !important;
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease !important;
+    -webkit-tap-highlight-color: transparent !important;
+    pointer-events: auto !important;
+    box-sizing: border-box !important;
+}
+
+.dna-splash-inner .btn:active {
+    transform: scale(.985) !important;
+}
+
+.dna-splash-inner .btn-primary {
+    color: #FFFFFF !important;
+    border: 1px solid #1599ff !important;
+    background: linear-gradient(180deg, #159cff 0%, #087fe9 100%) !important;
+    box-shadow: 0 0 20px rgba(0, 132, 255, .35), inset 0 1px 0 rgba(255,255,255,.2) !important;
+}
+
+.dna-splash-inner .btn-primary:hover {
+    background: linear-gradient(180deg, #29a5ff 0%, #0787f3 100%) !important;
+    box-shadow: 0 0 26px rgba(0, 145, 255, .45) !important;
+}
+
+.dna-splash-inner .btn-secondary {
+    color: #f1f5fa !important;
+    border: 1.5px solid #008dff !important;
+    background: rgba(1, 12, 23, .85) !important;
+    box-shadow: inset 0 0 12px rgba(0, 120, 255, .05) !important;
+}
+
+.dna-splash-inner .btn-secondary:hover {
+    background: rgba(0, 93, 160, .2) !important;
+    box-shadow: 0 0 18px rgba(0, 135, 255, .25) !important;
+}
+
+/* 2. Container Box de Login e Cadastro (Snippets 1 e 3) */
+.dna-auth-box-wrapper {
+    position: relative;
+    z-index: 10;
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    filter: drop-shadow(0 14px 28px rgba(0, 102, 255, 0.45));
-}
-
-/* Botões Oficiais Onboarding */
-.dna-btn-primary-neon {
-    width: 100%;
-    background: linear-gradient(135deg, #0066FF 0%, #00D4FF 100%);
-    color: #070D18;
-    font-weight: 900;
-    font-size: 14px;
-    padding: 14px;
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    box-shadow: 0 4px 18px rgba(0, 102, 255, 0.5);
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    padding: 16px;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
-.dna-btn-primary-neon:hover {
-    box-shadow: 0 6px 24px rgba(0, 212, 255, 0.65);
-    transform: translateY(-1px);
+.dna-auth-box,
+.box {
+    width: min(92%, 420px) !important;
+    padding: 35px 28px !important;
+    border: 1px solid #078cff !important;
+    border-radius: 20px !important;
+    background: #03101d !important;
+    box-shadow: 0 0 28px rgba(0, 124, 255, 0.28) !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+    z-index: 20 !important;
+    color: #FFFFFF !important;
 }
 
-.dna-btn-primary-neon:active {
-    transform: translateY(1px);
+.dna-auth-box h1,
+.box h1 {
+    text-align: center !important;
+    margin: 0 0 8px !important;
+    font-size: 24px !important;
+    font-weight: 800 !important;
+    color: #FFFFFF !important;
+    font-family: Arial, Helvetica, sans-serif !important;
 }
 
-.dna-btn-secondary-dark {
-    width: 100%;
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid rgba(0, 102, 255, 0.35);
-    color: #FFFFFF;
-    font-weight: 800;
-    font-size: 13.5px;
-    padding: 13px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+.dna-auth-box .auth-subtitle,
+.box .auth-subtitle {
+    text-align: center !important;
+    font-size: 13px !important;
+    color: #b9c7d5 !important;
+    margin: 0 0 22px !important;
 }
 
-.dna-btn-secondary-dark:hover {
-    background: rgba(0, 102, 255, 0.2);
-    border-color: #00D4FF;
+.dna-auth-box label,
+.box label {
+    display: block !important;
+    margin: 14px 0 7px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #b9c7d5 !important;
+    text-align: left !important;
 }
 
-.dna-btn-ghost-link {
-    background: transparent;
-    border: none;
-    color: #94A3B8;
-    font-size: 12.5px;
-    font-weight: 700;
-    padding: 8px 14px;
-    cursor: pointer;
-    text-decoration: underline;
-    transition: color 0.2s;
+.dna-auth-box input,
+.box input {
+    width: 100% !important;
+    padding: 14px !important;
+    border-radius: 9px !important;
+    border: 1px solid #087fe9 !important;
+    background: #061522 !important;
+    color: #FFFFFF !important;
+    font-size: 16px !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    transition: border-color .15s ease, box-shadow .15s ease !important;
 }
 
-.dna-btn-ghost-link:hover {
-    color: #00D4FF;
+.dna-auth-box input:focus,
+.box input:focus {
+    border-color: #43b7ff !important;
+    box-shadow: 0 0 12px rgba(7, 140, 255, 0.35) !important;
+}
+
+.dna-auth-box button[type="submit"],
+.box button[type="submit"],
+.box button {
+    width: 100% !important;
+    margin-top: 22px !important;
+    padding: 14px !important;
+    border: 0 !important;
+    border-radius: 9px !important;
+    background: #078cff !important;
+    color: #FFFFFF !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    box-shadow: 0 0 22px rgba(0, 140, 255, 0.4) !important;
+    transition: background .15s ease, transform .1s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.dna-auth-box button[type="submit"]:hover,
+.box button[type="submit"]:hover,
+.box button:hover {
+    background: #2299ff !important;
+    box-shadow: 0 0 26px rgba(0, 140, 255, 0.55) !important;
+}
+
+.dna-auth-box button[type="submit"]:active,
+.box button[type="submit"]:active,
+.box button:active {
+    transform: scale(0.985) !important;
+}
+
+.dna-auth-box button[type="submit"]:disabled,
+.box button[type="submit"]:disabled {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+}
+
+.dna-auth-box a,
+.box a {
+    display: block !important;
+    text-align: center !important;
+    margin-top: 18px !important;
+    color: #43b7ff !important;
+    text-decoration: none !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+}
+
+.dna-auth-box a:hover,
+.box a:hover {
+    text-decoration: underline !important;
 }
 
 /* Campos de Formulário Onboarding */
