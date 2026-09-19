@@ -365,20 +365,20 @@
 
     .auth-card {
       width: 100%;
-      background: var(--bg-card);
-      border: 1px solid var(--bg-card-border);
-      border-radius: var(--radius-lg);
-      padding: clamp(24px, 4vh, 32px) 24px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: linear-gradient(180deg, rgba(8, 17, 34, 0.94) 0%, rgba(4, 10, 22, 0.98) 100%);
+      border: 1px solid rgba(0, 180, 255, 0.28);
+      border-radius: 24px;
+      padding: clamp(24px, 3.8vh, 32px) clamp(20px, 3.5vw, 26px);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
       box-shadow: 
-        0 12px 40px rgba(0, 0, 0, 0.7),
-        0 0 32px rgba(0, 102, 255, 0.22),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        0 20px 50px rgba(0, 0, 0, 0.8),
+        0 0 35px rgba(0, 102, 255, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
       position: relative;
     }
 
-    /* Barra Superior com botão voltar e mini badge */
+    /* Barra Superior com botão voltar DISCRETO e mini badge */
     .auth-top-nav {
       width: 100%;
       display: flex;
@@ -387,27 +387,39 @@
       margin-bottom: 20px;
     }
 
-    .btn-back {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(0, 212, 255, 0.2);
+    /* Botão Voltar Discreto: Compacto, Redondo e Minimalista (sem texto gigante) */
+    .btn-back-discrete {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      min-height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       color: var(--text-muted);
-      padding: 6px 14px;
-      border-radius: var(--radius-pill);
-      font-size: 12.5px;
-      font-weight: 600;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
       cursor: pointer;
       text-decoration: none;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 0;
+      margin: 0;
+      outline: none;
+      box-shadow: none;
+      flex-shrink: 0;
     }
 
-    .btn-back:hover {
-      background: rgba(0, 212, 255, 0.15);
-      color: #FFFFFF;
-      border-color: var(--cyan-neon);
+    .btn-back-discrete:hover {
+      background: rgba(0, 212, 255, 0.14);
+      color: #00D4FF;
+      border-color: rgba(0, 212, 255, 0.45);
       transform: translateX(-2px);
+      box-shadow: 0 0 14px rgba(0, 212, 255, 0.3);
+    }
+
+    .btn-back-discrete:active {
+      transform: scale(0.92);
     }
 
     .mini-badge {
@@ -417,17 +429,18 @@
     }
 
     .mini-badge img {
-      width: 28px;
-      height: 28px;
-      border-radius: 7px;
-      box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+      width: 26px;
+      height: 26px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.6));
     }
 
     .mini-badge span {
       font-family: var(--font-display);
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 800;
       letter-spacing: 0.5px;
+      color: #FFFFFF;
     }
 
     .mini-badge span b {
@@ -566,6 +579,200 @@
 
     .btn-toggle-pass:hover {
       color: var(--cyan-neon);
+    }
+
+    /* Estilos do Campo Especial de Placa Automotiva */
+    .form-input-plate {
+      font-family: 'SF Pro Display', 'Outfit', monospace;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #00D4FF;
+      font-size: 16px;
+      padding-left: 56px !important;
+      padding-right: 44px !important;
+    }
+
+    .plate-country-badge {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: linear-gradient(135deg, #0044AA 0%, #002277 100%);
+      color: #FFFFFF;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 212, 255, 0.4);
+      pointer-events: none;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .plate-status-indicator {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .spinner-neon {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(0, 212, 255, 0.2);
+      border-top-color: #00D4FF;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .form-badge-hint {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--cyan-neon);
+      background: rgba(0, 212, 255, 0.12);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+    }
+
+    .form-helper-text {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 5px;
+      line-height: 1.35;
+    }
+
+    /* Card Dinâmico de Veículo Puxado pelo Sistema DNA AUTO */
+    .vehicle-preview-card {
+      margin: 12px 0 16px;
+      background: linear-gradient(145deg, rgba(3, 20, 42, 0.95) 0%, rgba(5, 14, 28, 0.98) 100%);
+      border: 1px solid rgba(0, 212, 255, 0.45);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      box-shadow: 0 8px 24px rgba(0, 102, 255, 0.25), inset 0 0 16px rgba(0, 212, 255, 0.08);
+      position: relative;
+      overflow: hidden;
+      text-align: left;
+      animation: fadeInScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .vehicle-preview-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, #00D4FF 0%, #0066FF 100%);
+    }
+
+    .vpc-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .vpc-plate-pill {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(0, 212, 255, 0.5);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-family: monospace;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #FFFFFF;
+    }
+
+    .vpc-badge-dna {
+      font-size: 11px;
+      font-weight: 700;
+      color: #00E676;
+      background: rgba(0, 230, 118, 0.12);
+      border: 1px solid rgba(0, 230, 118, 0.3);
+      padding: 3px 8px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .vpc-badge-dna .dna-dot {
+      width: 6px;
+      height: 6px;
+      background: #00E676;
+      border-radius: 50%;
+      box-shadow: 0 0 6px #00E676;
+      animation: blinkDot 2s ease-in-out infinite;
+    }
+
+    .vpc-model {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+
+    .vpc-specs {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .vpc-specs span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .vpc-specs b {
+      color: #E2E8F0;
+    }
+
+    .vpc-dna-code {
+      font-size: 11px;
+      color: var(--cyan-neon);
+      font-family: monospace;
+      background: rgba(0, 212, 255, 0.08);
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+
+    .vpc-success-msg {
+      font-size: 11.5px;
+      color: #38BDF8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 8px;
+      margin-top: 6px;
+      line-height: 1.35;
     }
 
     /* Botão de Envio */
@@ -809,23 +1016,22 @@
       <div class="auth-card-wrapper">
         <main class="auth-card">
 
-          <!-- Barra de Navegação Superior -->
+          <!-- Barra de Navegação Superior (Botão Voltar Discreto à Esquerda) -->
           <div class="auth-top-nav">
-            <button class="btn-back" type="button" onclick="voltar()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <button class="btn-back-discrete" type="button" onclick="voltar()" aria-label="Voltar" title="Voltar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m15 18-6-6 6-6"></path>
               </svg>
-              <span>Voltar</span>
             </button>
 
             <div class="mini-badge">
-              <img src="/img/dna-logo-aura.png" alt="DNA AUTO" onerror="this.src='/img/splash-d-logo.png';" style="width:28px; height:auto; border-radius:0; box-shadow:none; filter:drop-shadow(0 0 6px rgba(0,212,255,0.6));" />
+              <img src="/img/dna-logo-aura.png" alt="DNA AUTO" onerror="this.src='/img/splash-d-logo.png';" />
               <span>DNA <b>AUTO</b></span>
             </div>
           </div>
 
           <h2 class="auth-title">Entrar na Garagem</h2>
-          <p class="auth-desc">Informe suas credenciais para acessar o histórico oficial do seu veículo.</p>
+          <p class="auth-desc">Informe suas credenciais para acessar o histórico oficial e telemetria do seu veículo.</p>
 
           <div id="login-error-box" class="auth-alert-box"></div>
 
@@ -921,27 +1127,52 @@
       <div class="auth-card-wrapper">
         <main class="auth-card">
 
-          <!-- Barra de Navegação Superior -->
+          <!-- Barra de Navegação Superior (Botão Voltar Discreto à Esquerda) -->
           <div class="auth-top-nav">
-            <button class="btn-back" type="button" onclick="voltar()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <button class="btn-back-discrete" type="button" onclick="voltar()" aria-label="Voltar" title="Voltar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m15 18-6-6 6-6"></path>
               </svg>
-              <span>Voltar</span>
             </button>
 
             <div class="mini-badge">
-              <img src="/img/dna-logo-aura.png" alt="DNA AUTO" onerror="this.src='/img/splash-d-logo.png';" style="width:28px; height:auto; border-radius:0; box-shadow:none; filter:drop-shadow(0 0 6px rgba(0,212,255,0.6));" />
+              <img src="/img/dna-logo-aura.png" alt="DNA AUTO" onerror="this.src='/img/splash-d-logo.png';" />
               <span>DNA <b>AUTO</b></span>
             </div>
           </div>
 
           <h2 class="auth-title">Criar Cadastro</h2>
-          <p class="auth-desc">Cadastre-se para gerenciar o histórico, revisões e laudos do seu veículo.</p>
+          <p class="auth-desc">Cadastre-se para gerenciar o histórico, revisões e laudos certificados do seu carro.</p>
 
           <div id="reg-error-box" class="auth-alert-box"></div>
 
           <form id="form-register" onsubmit="handleRegister(event)">
+            <!-- Placa do Veículo (Puxada do Sistema DNA AUTO) -->
+            <div class="form-group">
+              <div class="form-label-row">
+                <label class="form-label" for="reg-placa">Placa do Veículo</label>
+                <span class="form-badge-hint">Puxa dados oficiais</span>
+              </div>
+              <div class="input-wrapper">
+                <div class="plate-country-badge">BR</div>
+                <input
+                  id="reg-placa"
+                  class="form-input form-input-plate"
+                  type="text"
+                  placeholder="BRA2E19"
+                  maxlength="8"
+                  autocomplete="off"
+                  oninput="handlePlateInput(this)"
+                  onblur="triggerPlateSearch(this.value)"
+                />
+                <div id="plate-search-indicator" class="plate-status-indicator"></div>
+              </div>
+              <p class="form-helper-text">Informe a placa para puxar automaticamente os dados oficiais do veículo pelo DNA AUTO.</p>
+            </div>
+
+            <!-- Card Dinâmico de Veículo Confirmado (Injetado via JS) -->
+            <div id="reg-vehicle-card" class="vehicle-preview-card" style="display:none;"></div>
+
             <!-- Nome -->
             <div class="form-group">
               <label class="form-label" for="reg-nome">Nome Completo</label>
@@ -1102,6 +1333,121 @@
       }
     }
 
+    // ── Busca de Placa Dinâmica com o Sistema DNA AUTO ──
+    let plateDebounce = null;
+    let lastCheckedPlate = '';
+    let currentFoundVehicle = null;
+
+    function handlePlateInput(input) {
+      let v = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (v.length > 7) v = v.substring(0, 7);
+      input.value = v;
+
+      const card = document.getElementById('reg-vehicle-card');
+      const indicator = document.getElementById('plate-search-indicator');
+
+      if (v.length < 7) {
+        if (card) card.style.display = 'none';
+        if (indicator) indicator.innerHTML = '';
+        currentFoundVehicle = null;
+        return;
+      }
+
+      if (v.length === 7 && v !== lastCheckedPlate) {
+        clearTimeout(plateDebounce);
+        plateDebounce = setTimeout(() => {
+          triggerPlateSearch(v);
+        }, 350);
+      }
+    }
+
+    async function triggerPlateSearch(plate) {
+      const cleanPlate = (plate || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (cleanPlate.length !== 7) return;
+      lastCheckedPlate = cleanPlate;
+
+      const indicator = document.getElementById('plate-search-indicator');
+      const card = document.getElementById('reg-vehicle-card');
+
+      if (indicator) {
+        indicator.innerHTML = '<div class="spinner-neon" title="Buscando veículo no DNA AUTO..."></div>';
+      }
+
+      try {
+        const res = await fetch(`/api/v1/vehicles/search?q=${cleanPlate}`);
+        const data = await res.json();
+
+        if (res.ok && data.found && data.vehicle) {
+          currentFoundVehicle = data.vehicle;
+          const v = data.vehicle;
+          const brand = v.brand || 'Montadora Homologada';
+          const model = v.version || v.model || 'Modelo Homologado';
+          const year = v.model_year || v.manufacture_year || 2021;
+          const color = (v.color && v.color !== 'Não informada') ? v.color : 'Cor não inf.';
+          const dna = v.dna_code || (data.hasDna ? 'DNA ATIVO' : null);
+          const fipeFormatted = v.fipe_price_cents
+            ? (v.fipe_price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+            : null;
+
+          if (indicator) {
+            indicator.innerHTML = `
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Veículo localizado">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            `;
+          }
+
+          if (card) {
+            card.style.display = 'block';
+            card.innerHTML = `
+              <div class="vpc-header">
+                <span class="vpc-plate-pill">${cleanPlate}</span>
+                <span class="vpc-badge-dna">
+                  <span class="dna-dot"></span>
+                  ${dna ? '✓ DNA AUTO Localizado' : '✓ Base Nacional Homologada'}
+                </span>
+              </div>
+              <div class="vpc-model">${brand} ${model}</div>
+              <div class="vpc-specs">
+                <span>Ano: <b>${year}</b></span>
+                <span>•</span>
+                <span>Cor: <b>${color}</b></span>
+                ${fipeFormatted ? `<span>•</span><span>FIPE: <b>${fipeFormatted}</b></span>` : ''}
+              </div>
+              ${dna ? `<div class="vpc-dna-code">Passaporte: <b>${dna}</b></div>` : ''}
+              <div class="vpc-success-msg">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span>Veículo identificado! Será vinculado automaticamente à sua Garagem Digital.</span>
+              </div>
+            `;
+          }
+        } else {
+          if (indicator) {
+            indicator.innerHTML = '<span style="color:#00D4FF; font-size:11px; font-weight:800;" title="Novo veículo">NOVO</span>';
+          }
+          if (card) {
+            card.style.display = 'block';
+            card.innerHTML = `
+              <div class="vpc-header">
+                <span class="vpc-plate-pill">${cleanPlate}</span>
+                <span class="vpc-badge-dna" style="color:#00D4FF; border-color:rgba(0,212,255,0.3); background:rgba(0,212,255,0.1);">
+                  Novo Cadastro
+                </span>
+              </div>
+              <div class="vpc-model">Novo Veículo na Garagem Digital</div>
+              <p style="font-size:11.5px; color:#94A3B8; margin:4px 0 0;">
+                Esta placa será associada ao seu perfil para ativação do passaporte DNA AUTO.
+              </p>
+            `;
+          }
+        }
+      } catch (err) {
+        if (indicator) indicator.innerHTML = '';
+      }
+    }
+
     // ── Esqueci Minha Senha ──
     function esqueciSenha() {
       const email = document.getElementById('login-email')?.value || '';
@@ -1180,13 +1526,14 @@
       }
     }
 
-    // ── Processar Cadastro ──
+    // ── Processar Cadastro com Placa Dinâmica ──
     async function handleRegister(e) {
       e.preventDefault();
       const name = (document.getElementById('reg-nome')?.value || '').trim();
       const email = (document.getElementById('reg-email')?.value || '').trim();
       const password = (document.getElementById('reg-senha')?.value || '').trim();
       const phone = (document.getElementById('reg-whatsapp')?.value || '').trim();
+      const plate = (document.getElementById('reg-placa')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
       const errBox = document.getElementById('reg-error-box');
       const btn = document.getElementById('btn-submit-register');
 
@@ -1203,14 +1550,14 @@
       }
 
       btn.disabled = true;
-      btn.innerHTML = '<span>Criando cadastro...</span>';
+      btn.innerHTML = '<span>Criando cadastro e vinculando veículo...</span>';
       errBox.style.display = 'none';
 
       try {
         const res = await fetch('/api/v1/auth/register-client', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, phone })
+          body: JSON.stringify({ name, email, password, phone, plate })
         });
         const data = await res.json();
 

@@ -167,9 +167,9 @@ router.post('/seed', (req, res) => {
 
 
 // Cadastro de Novo Cliente (Proprietário)
-router.post('/register-client', (req, res) => {
+router.post('/register-client', async (req, res) => {
     try {
-        const { name, email, password, phone, cpf } = req.body;
+        const { name, email, password, phone, cpf, plate, license_plate } = req.body;
         if (!name || !email || !password) {
             return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios.' });
         }
@@ -181,7 +181,53 @@ router.post('/register-client', (req, res) => {
         }
 
         const userId = `usr_${Date.now()}`;
+        const ownerId = `own_${Date.now()}`;
         const passwordHash = bcrypt.hashSync(password, 10);
+        const rawPlate = plate || license_plate || '';
+        const cleanPlate = rawPlate.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+        let vehicle = null;
+        if (cleanPlate) {
+            vehicle = db.prepare('SELECT * FROM vehicles WHERE UPPER(REPLACE(license_plate, \'-\', \'\')) = ?').get(cleanPlate);
+            if (!vehicle) {
+                try {
+                    const extRes = await apiPlacasService.consultarPlaca(cleanPlate);
+                    if (extRes && extRes.found && extRes.vehicle) {
+                        const vData = extRes.vehicle;
+                        const vId = `veh_${Date.now()}`;
+                        const brand = vData.brand || 'Montadora';
+                        const model = vData.version || vData.model || 'Modelo';
+                        const year = vData.model_year || vData.manufacture_year || 2021;
+                        const color = vData.color || 'Prata';
+                        const fuel = vData.fuel_type || 'Flex';
+                        const vin = vData.chassis_vin || `9BWZZZ377VT${Date.now().toString().slice(-6)}`;
+                        const renavam = vData.renavam || `00${Date.now().toString().slice(-9)}`;
+
+                        db.prepare(`
+                            INSERT INTO vehicles (
+                                id, license_plate, chassis_vin, renavam, brand, model,
+                                model_year, manufacture_year, color, fuel_type, current_owner_id, created_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                        `).run(vId, cleanPlate, vin, renavam, brand, model, year, year, color, fuel, ownerId);
+
+                        // Gerar DNA automático se ativado
+                        const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+                        const rnd = (l) => Array.from({length: l}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+                        const dnaCode = `DNA-BR-${rnd(4)}-${rnd(4)}-${rnd(3)}`;
+                        const certHash = crypto.createHash('sha256').update(`${vId}-${dnaCode}`).digest('hex');
+
+                        db.prepare(`
+                            INSERT INTO vehicle_dna (id, vehicle_id, dna_code, status, activation_fee_cents, certificate_hash, activated_at, created_at)
+                            VALUES (?, ?, ?, 'ACTIVE', 5990, ?, datetime('now'), datetime('now'))
+                        `).run(`dna_${Date.now()}`, vId, dnaCode, certHash);
+
+                        vehicle = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(vId);
+                    }
+                } catch (e) {
+                    console.warn('Busca externa falhou no registro do cliente:', e.message);
+                }
+            }
+        }
 
         db.transaction(() => {
             db.prepare(`
@@ -192,7 +238,19 @@ router.post('/register-client', (req, res) => {
             db.prepare(`
                 INSERT INTO owners (id, user_id, name, document_cpf, email, phone, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
-            `).run(`own_${Date.now()}`, userId, name.trim(), cpf ? cpf.trim() : '000.000.000-00', cleanEmail, phone ? phone.trim() : null);
+            `).run(ownerId, userId, name.trim(), cpf ? cpf.trim() : '000.000.000-00', cleanEmail, phone ? phone.trim() : null);
+
+            if (vehicle) {
+                db.prepare(`
+                    INSERT INTO ownership_transfers (id, vehicle_id, previous_owner_id, new_owner_id, status, requested_at, completed_at, transfer_mileage, created_at)
+                    VALUES (?, ?, NULL, ?, 'COMPLETED', datetime('now'), datetime('now'), 0, datetime('now'))
+                `).run(`trn_${Date.now()}`, vehicle.id, ownerId);
+
+                // Atualiza current_owner_id se a coluna existir
+                try {
+                    db.prepare('UPDATE vehicles SET current_owner_id = ? WHERE id = ?').run(ownerId, vehicle.id);
+                } catch (_) {}
+            }
         })();
 
         const token = jwt.sign(
@@ -219,7 +277,13 @@ router.post('/register-client', (req, res) => {
                 phone: phone || null,
                 role_code: 'OWNER',
                 role_name: 'Proprietário de Veículo',
-                workshop: null
+                workshop: null,
+                vehicle: vehicle ? {
+                    id: vehicle.id,
+                    license_plate: vehicle.license_plate,
+                    brand: vehicle.brand,
+                    model: vehicle.model
+                } : null
             }
         });
     } catch (err) {

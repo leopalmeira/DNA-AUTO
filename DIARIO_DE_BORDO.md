@@ -738,6 +738,27 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   4. **Qualidade e Testes:**
      - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
 
+### 📅 Ciclo 41 — Redesign Premium do CSS de Login & Cadastro, Botão Voltar Super Discreto e Busca Dinâmica de Placa com Radar DNA AUTO
+- **Demandas Atendidas:**
+  1. **Novo CSS das Telas de Login e Cadastro (Glassmorphism Cyber Automotivo de Elite):**
+     - Eliminação de regras CSS legadas (`.box button { width: 100% !important; }` que desconfiguravam botões secundários).
+     - Cartão `.auth-card` e `.dna-auth-box` reconstruídos com gradiente Dark Obsidian translúcido (`rgba(8, 17, 34, 0.94)` a `rgba(4, 10, 22, 0.98)`), desfoque em profundidade (`backdrop-filter: blur(28px)`), borda de reflexo neon (`1px solid rgba(0, 180, 255, 0.28)`), raio de curvatura moderno (`24px`) e sombras multicamadas suaves (`box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(0, 102, 255, 0.22)`).
+     - Tipografia aprimorada com títulos harmoniosos (`Outfit`, `22px`, peso `800`), subtítulos discretos e inputs modernos de 48px/50px com foco neon ciano pulsante.
+  2. **Botão Voltar Super Discreto (`.btn-back-discrete`):**
+     - Substituição dos botões volumosos anteriores por um botão circular compacto de 36px (`border-radius: 50%`), translúcido (`background: rgba(255, 255, 255, 0.05)`), borda ultra fina (`1px solid rgba(255, 255, 255, 0.12)`), com ícone SVG fino de chevron esquerdo.
+     - Microinteração no hover com sutil iluminação ciano neon (`background: rgba(0, 212, 255, 0.14); border-color: rgba(0, 212, 255, 0.45); color: #00D4FF; transform: translateX(-2px)`), perfeitamente discreto e integrado à barra superior.
+     - Remoção de links e botões voltar duplicados ou pesados que sobrecarregavam o rodapé.
+  3. **Campo da Placa do Carro com Consulta em Tempo Real no Cadastro:**
+     - Adição do campo de **Placa do Veículo** (`reg-placa` / `placa`) na tela de criação de conta com badge oficial `BR`, formatação automática (Mercosul e formato antigo) e limite de 7 caracteres.
+     - Busca em tempo real com debounce consultando o endpoint oficial `/api/v1/vehicles/search?q={placa}`.
+     - Spinner dinâmico neon no próprio campo enquanto consulta a base do DNA AUTO.
+     - **Card Dinâmico de Veículo Confirmado (`.vehicle-preview-card`):** exibe instantaneamente a placa em badge, selo de DNA Ativo/Base Oficial, Marca/Modelo do veículo (ex: `HONDA CIVIC TOURING 1.5 TURBO`), Ano, Cor, FIPE estimada e mensagem de vinculação automática à Garagem Digital.
+  4. **Backend e Vinculação Automática (`/api/v1/auth/register-client`):**
+     - Endpoint atualizado para aceitar `plate`, consultar a base ou API de placas oficial e criar a transferência de propriedade (`ownership_transfers`) vinculando o carro diretamente ao novo cliente cadastrado.
+  5. **Sincronização e Testes Automatizados:**
+     - Paridade absoluta mantida entre `cliente.app/`, `public/` e os componentes SPA (`ownerView.js`).
+     - Bateria completa de testes automatizados com **45 de 45 testes aprovados (100%)** via `npm test`.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

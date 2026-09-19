@@ -3130,13 +3130,18 @@
 }
 
 .dna-auth-box,
-.box {
-    width: min(92%, 420px) !important;
-    padding: 35px 28px !important;
-    border: 1px solid #078cff !important;
-    border-radius: 20px !important;
-    background: #03101d !important;
-    box-shadow: 0 0 28px rgba(0, 124, 255, 0.28) !important;
+.box.dna-auth-box {
+    width: min(94%, 430px) !important;
+    padding: clamp(24px, 4vh, 32px) clamp(20px, 3.5vw, 26px) !important;
+    border: 1px solid rgba(0, 180, 255, 0.28) !important;
+    border-radius: 22px !important;
+    background: linear-gradient(180deg, rgba(8, 17, 34, 0.94) 0%, rgba(4, 10, 22, 0.98) 100%) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.8),
+        0 0 35px rgba(0, 102, 255, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
     box-sizing: border-box !important;
     position: relative !important;
     z-index: 20 !important;
@@ -3144,107 +3149,280 @@
 }
 
 .dna-auth-box h1,
-.box h1 {
-    text-align: center !important;
-    margin: 0 0 8px !important;
-    font-size: 24px !important;
+.box.dna-auth-box h1 {
+    text-align: left !important;
+    margin: 0 0 6px !important;
+    font-size: 22px !important;
     font-weight: 800 !important;
     color: #FFFFFF !important;
-    font-family: Arial, Helvetica, sans-serif !important;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    letter-spacing: -0.2px !important;
 }
 
 .dna-auth-box .auth-subtitle,
-.box .auth-subtitle {
-    text-align: center !important;
+.box.dna-auth-box .auth-subtitle {
+    text-align: left !important;
     font-size: 13px !important;
-    color: #b9c7d5 !important;
-    margin: 0 0 22px !important;
+    color: #94A3B8 !important;
+    margin: 0 0 20px !important;
+    line-height: 1.45 !important;
+}
+
+/* Botão Voltar Discreto (Compacto, Elegante e Minimalista) */
+.btn-back-discrete,
+.box .btn-back-discrete,
+.dna-auth-box .btn-back-discrete {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #94A3B8 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+    flex-shrink: 0 !important;
+}
+
+.btn-back-discrete:hover,
+.box .btn-back-discrete:hover,
+.dna-auth-box .btn-back-discrete:hover {
+    background: rgba(0, 212, 255, 0.14) !important;
+    border-color: rgba(0, 212, 255, 0.45) !important;
+    color: #00D4FF !important;
+    transform: translateX(-2px) !important;
+    box-shadow: 0 0 14px rgba(0, 212, 255, 0.3) !important;
+}
+
+.btn-back-discrete:active,
+.box .btn-back-discrete:active,
+.dna-auth-box .btn-back-discrete:active {
+    transform: scale(0.92) !important;
 }
 
 .dna-auth-box label,
-.box label {
-    display: block !important;
-    margin: 14px 0 7px !important;
-    font-size: 14px !important;
+.box.dna-auth-box label {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin: 12px 0 6px !important;
+    font-size: 13px !important;
     font-weight: 600 !important;
-    color: #b9c7d5 !important;
+    color: #E2E8F0 !important;
     text-align: left !important;
 }
 
 .dna-auth-box input,
-.box input {
+.box.dna-auth-box input {
     width: 100% !important;
-    padding: 14px !important;
-    border-radius: 9px !important;
-    border: 1px solid #087fe9 !important;
-    background: #061522 !important;
+    height: 48px !important;
+    padding: 0 14px !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(0, 140, 255, 0.28) !important;
+    background: rgba(4, 12, 24, 0.85) !important;
     color: #FFFFFF !important;
-    font-size: 16px !important;
+    font-size: 15px !important;
     outline: none !important;
     box-sizing: border-box !important;
-    transition: border-color .15s ease, box-shadow .15s ease !important;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease !important;
+    font-family: inherit !important;
 }
 
 .dna-auth-box input:focus,
-.box input:focus {
-    border-color: #43b7ff !important;
-    box-shadow: 0 0 12px rgba(7, 140, 255, 0.35) !important;
+.box.dna-auth-box input:focus {
+    border-color: #00D4FF !important;
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.35) !important;
+    background: rgba(6, 18, 38, 0.95) !important;
 }
 
+/* Campo Especial de Placa */
+.dna-auth-box input.input-placa,
+.box.dna-auth-box input.input-placa {
+    font-family: 'SF Pro Display', 'Outfit', monospace !important;
+    font-weight: 800 !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    color: #00D4FF !important;
+    font-size: 16.5px !important;
+}
+
+/* Card Dinâmico de Veículo Puxado pelo Sistema DNA AUTO */
+.vehicle-preview-card {
+    margin: 12px 0 16px !important;
+    background: linear-gradient(145deg, rgba(3, 20, 42, 0.95) 0%, rgba(5, 14, 28, 0.98) 100%) !important;
+    border: 1px solid rgba(0, 212, 255, 0.45) !important;
+    border-radius: 14px !important;
+    padding: 14px 16px !important;
+    box-shadow: 0 8px 24px rgba(0, 102, 255, 0.25), inset 0 0 16px rgba(0, 212, 255, 0.08) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    text-align: left !important;
+    animation: fadeInScale 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.vehicle-preview-card::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 4px !important;
+    height: 100% !important;
+    background: linear-gradient(180deg, #00D4FF 0%, #0066FF 100%) !important;
+}
+
+.vpc-header {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 8px !important;
+}
+
+.vpc-plate-pill {
+    background: rgba(0, 0, 0, 0.6) !important;
+    border: 1px solid rgba(0, 212, 255, 0.5) !important;
+    border-radius: 6px !important;
+    padding: 2px 8px !important;
+    font-family: monospace !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.5px !important;
+    color: #FFFFFF !important;
+}
+
+.vpc-badge-dna {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    color: #00E676 !important;
+    background: rgba(0, 230, 118, 0.12) !important;
+    border: 1px solid rgba(0, 230, 118, 0.3) !important;
+    padding: 3px 8px !important;
+    border-radius: 9999px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+}
+
+.vpc-model {
+    font-family: 'Outfit', sans-serif !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    color: #FFFFFF !important;
+    margin-bottom: 4px !important;
+    line-height: 1.3 !important;
+}
+
+.vpc-specs {
+    font-size: 12px !important;
+    color: #94A3B8 !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    margin-bottom: 6px !important;
+}
+
+.vpc-specs span {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+}
+
+.vpc-specs b {
+    color: #E2E8F0 !important;
+}
+
+.vpc-dna-code {
+    font-size: 11px !important;
+    color: #00D4FF !important;
+    font-family: monospace !important;
+    background: rgba(0, 212, 255, 0.08) !important;
+    padding: 3px 8px !important;
+    border-radius: 4px !important;
+    display: inline-block !important;
+    margin-bottom: 6px !important;
+}
+
+.vpc-success-msg {
+    font-size: 11.5px !important;
+    color: #38BDF8 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+    padding-top: 8px !important;
+    margin-top: 6px !important;
+    line-height: 1.35 !important;
+}
+
+/* Botões de Ação Específicos */
 .dna-auth-box button[type="submit"],
-.box button[type="submit"],
-.box button {
+.box.dna-auth-box button[type="submit"],
+.btn-submit-dna {
     width: 100% !important;
-    margin-top: 22px !important;
-    padding: 14px !important;
+    height: 50px !important;
+    margin-top: 16px !important;
+    padding: 0 16px !important;
     border: 0 !important;
-    border-radius: 9px !important;
-    background: #078cff !important;
+    border-radius: 12px !important;
+    background: linear-gradient(135deg, #0084FF 0%, #0055D4 100%) !important;
     color: #FFFFFF !important;
     font-size: 16px !important;
     font-weight: 700 !important;
+    letter-spacing: 0.3px !important;
     cursor: pointer !important;
-    box-shadow: 0 0 22px rgba(0, 140, 255, 0.4) !important;
-    transition: background .15s ease, transform .1s ease !important;
+    box-shadow: 0 4px 22px rgba(0, 102, 255, 0.5) !important;
+    transition: all .2s ease !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    gap: 8px !important;
 }
 
 .dna-auth-box button[type="submit"]:hover,
-.box button[type="submit"]:hover,
-.box button:hover {
-    background: #2299ff !important;
-    box-shadow: 0 0 26px rgba(0, 140, 255, 0.55) !important;
+.box.dna-auth-box button[type="submit"]:hover,
+.btn-submit-dna:hover {
+    background: linear-gradient(135deg, #1A92FF 0%, #0066FF 100%) !important;
+    box-shadow: 0 6px 26px rgba(0, 132, 255, 0.65) !important;
+    transform: translateY(-1px) !important;
 }
 
 .dna-auth-box button[type="submit"]:active,
-.box button[type="submit"]:active,
-.box button:active {
+.box.dna-auth-box button[type="submit"]:active,
+.btn-submit-dna:active {
     transform: scale(0.985) !important;
 }
 
 .dna-auth-box button[type="submit"]:disabled,
-.box button[type="submit"]:disabled {
-    opacity: 0.6 !important;
+.box.dna-auth-box button[type="submit"]:disabled,
+.btn-submit-dna:disabled {
+    opacity: 0.65 !important;
     cursor: not-allowed !important;
+    transform: none !important;
 }
 
 .dna-auth-box a,
-.box a {
-    display: block !important;
-    text-align: center !important;
-    margin-top: 18px !important;
-    color: #43b7ff !important;
+.box.dna-auth-box a {
+    display: inline-block !important;
+    color: #00D4FF !important;
     text-decoration: none !important;
-    font-size: 14px !important;
+    font-size: 13.5px !important;
     font-weight: 600 !important;
     cursor: pointer !important;
+    transition: color 0.15s ease !important;
 }
 
 .dna-auth-box a:hover,
-.box a:hover {
+.box.dna-auth-box a:hover {
     text-decoration: underline !important;
+    color: #70E0FF !important;
 }
 
 /* Campos de Formulário Onboarding */

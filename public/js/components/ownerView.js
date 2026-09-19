@@ -470,12 +470,102 @@ const OwnerView = {
         }
     },
 
+    // Busca de Placa Dinâmica em Tempo Real no SPA
+    handlePlateSearchInput(input) {
+        if (!input) return;
+        let val = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (val.length > 7) val = val.substring(0, 7);
+        input.value = val;
+
+        const card = document.getElementById('auth-plate-preview-card');
+        const indicator = document.getElementById('auth-plate-search-indicator');
+
+        if (val.length < 7) {
+            if (card) card.style.display = 'none';
+            if (indicator) indicator.innerHTML = '';
+            return;
+        }
+
+        if (val.length === 7) {
+            clearTimeout(this._plateTimeout);
+            this._plateTimeout = setTimeout(async () => {
+                if (indicator) {
+                    indicator.innerHTML = '<div class="spinner-neon" style="width:18px; height:18px; border:2px solid rgba(0,212,255,0.2); border-top-color:#00D4FF; border-radius:50%; animation:spin 0.7s linear infinite;" title="Buscando veículo no DNA AUTO..."></div>';
+                }
+                try {
+                    const res = await fetch(`/api/v1/vehicles/search?q=${val}`);
+                    const data = await res.json();
+                    if (res.ok && data.found && data.vehicle) {
+                        const v = data.vehicle;
+                        const brand = v.brand || 'Montadora Homologada';
+                        const model = v.version || v.model || 'Modelo Homologado';
+                        const year = v.model_year || v.manufacture_year || 2021;
+                        const color = (v.color && v.color !== 'Não informada') ? v.color : 'Cor não inf.';
+                        const dna = v.dna_code || (data.hasDna ? 'DNA ATIVO' : null);
+                        const fipePrice = v.fipe_price_cents
+                            ? (v.fipe_price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                            : null;
+
+                        if (indicator) {
+                            indicator.innerHTML = `
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Veículo localizado">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            `;
+                        }
+                        if (card) {
+                            card.style.display = 'block';
+                            card.innerHTML = `
+                                <div class="vpc-header">
+                                    <span class="vpc-plate-pill">${val}</span>
+                                    <span class="vpc-badge-dna">
+                                        <span class="dna-dot"></span>
+                                        ${dna ? '✓ DNA AUTO Localizado' : '✓ Base Nacional Homologada'}
+                                    </span>
+                                </div>
+                                <div class="vpc-model">${brand} ${model}</div>
+                                <div class="vpc-specs">
+                                    <span>Ano: <b>${year}</b></span> • <span>Cor: <b>${color}</b></span>
+                                    ${fipePrice ? ` • <span>FIPE: <b>${fipePrice}</b></span>` : ''}
+                                </div>
+                                ${dna ? `<div class="vpc-dna-code">Passaporte: <b>${dna}</b></div>` : ''}
+                                <div class="vpc-success-msg">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    <span>Veículo identificado! Será vinculado automaticamente à sua Garagem Digital.</span>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        if (indicator) {
+                            indicator.innerHTML = '<span style="color:#00D4FF; font-size:11px; font-weight:800;" title="Novo veículo">NOVO</span>';
+                        }
+                        if (card) {
+                            card.style.display = 'block';
+                            card.innerHTML = `
+                                <div class="vpc-header">
+                                    <span class="vpc-plate-pill">${val}</span>
+                                    <span class="vpc-badge-dna" style="color:#00D4FF; border-color:rgba(0,212,255,0.3); background:rgba(0,212,255,0.1);">Novo Cadastro</span>
+                                </div>
+                                <div class="vpc-model">Novo Veículo na Garagem Digital</div>
+                                <p style="font-size:11.5px; color:#94A3B8; margin:4px 0 0;">Esta placa será vinculada ao seu perfil para ativação do passaporte DNA AUTO.</p>
+                            `;
+                        }
+                    }
+                } catch (e) {
+                    if (indicator) indicator.innerHTML = '';
+                }
+            }, 350);
+        }
+    },
+
     // Processar Cadastro Rápido do Cliente (Snippet 1 - Criar cadastro)
     async handleClientRegisterSubmit(e) {
         if (e && e.preventDefault) e.preventDefault();
         const name = (document.getElementById('nome')?.value || document.getElementById('reg-name-input')?.value || '').trim();
         const email = (document.getElementById('email')?.value || document.getElementById('reg-email-input')?.value || '').trim();
         const password = (document.getElementById('senha')?.value || document.getElementById('reg-pass-input')?.value || '').trim();
+        const phone = (document.getElementById('whatsapp')?.value || '').trim();
+        const plate = (document.getElementById('placa')?.value || document.getElementById('reg-placa')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
         const errBox = document.getElementById('auth-reg-error-box') || document.getElementById('auth-error-box');
         const btn = document.getElementById('btn-submit-register');
 
@@ -497,11 +587,11 @@ const OwnerView = {
 
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = '<span>Criando cadastro...</span>';
+            btn.innerHTML = '<span>Criando cadastro e vinculando veículo...</span>';
         }
 
         try {
-            const res = await API.registerClient({ name, email, password });
+            const res = await API.registerClient({ name, email, password, phone, plate });
 
             if (res && res.token) {
                 API.setToken(res.token);
@@ -524,7 +614,7 @@ const OwnerView = {
                 }
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerHTML = '<span>Criar cadastro</span>';
+                    btn.innerHTML = '<span>Criar Minha Conta</span>';
                 }
             }
         } catch (err) {
@@ -534,7 +624,7 @@ const OwnerView = {
             }
             if (btn) {
                 btn.disabled = false;
-                btn.innerHTML = '<span>Criar cadastro</span>';
+                btn.innerHTML = '<span>Criar Minha Conta</span>';
             }
         }
     },
@@ -3149,17 +3239,19 @@ const OwnerView = {
         `;
     },
 
-    // 02. Login Oficial (Snippet 3 - Entrar no DNA AUTO)
+    // 02. Login Oficial (Entrar no DNA AUTO)
     renderLoginAuth() {
         return `
             <div class="dna-auth-box-wrapper">
                 <main class="box dna-auth-box">
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
-                        <button type="button" onclick="OwnerView.goToAuthScreen('splash')" style="background:rgba(255,255,255,0.06); border:1px solid rgba(0,212,255,0.2); color:#94A3B8; padding:6px 14px; border-radius:9999px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
-                            ← Voltar
+                        <button class="btn-back-discrete" type="button" onclick="OwnerView.goToAuthScreen('splash')" aria-label="Voltar" title="Voltar">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
                         </button>
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <img src="/img/dna-logo-aura.png" style="width:28px; height:auto; border-radius:0; box-shadow:none; filter:drop-shadow(0 0 6px rgba(0,212,255,0.6));" onerror="this.src='/img/splash-d-logo.png';" />
+                            <img src="/img/dna-logo-aura.png" style="width:26px; height:auto; border-radius:0; box-shadow:none; filter:drop-shadow(0 0 6px rgba(0,212,255,0.6));" onerror="this.src='/img/splash-d-logo.png';" />
                             <span style="font-weight:800; font-size:13.5px; color:#FFFFFF;">DNA <b style="color:#00D4FF;">AUTO</b></span>
                         </div>
                     </div>
@@ -3167,24 +3259,24 @@ const OwnerView = {
                     <h1>Entrar na Garagem</h1>
                     <p class="auth-subtitle">Acesse sua Garagem Digital com seu e-mail e senha</p>
 
-                    <div id="auth-error-box" style="display:none; background:rgba(239,68,68,0.18); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:9px; font-size:12.5px; margin-bottom:16px;"></div>
+                    <div id="auth-error-box" style="display:none; background:rgba(239,68,68,0.18); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:10px; font-size:12.5px; margin-bottom:16px;"></div>
 
                     <form onsubmit="OwnerView.handleLoginSubmit(event)">
-                        <label for="email">E-mail</label>
+                        <label for="email">E-mail Cadastrado</label>
                         <input id="email" type="email" placeholder="seu@email.com" value="joao@email.com" required autocomplete="email" />
 
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin:14px 0 7px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin:14px 0 6px;">
                             <label for="senha" style="margin:0;">Senha</label>
-                            <a href="javascript:void(0)" onclick="alert('Instruções de recuperação enviadas para o seu e-mail cadastrado.')" style="color:#43b7ff; font-size:12px; text-decoration:none; margin:0;">Esqueceu sua senha?</a>
+                            <a href="javascript:void(0)" onclick="alert('Instruções de recuperação foram enviadas para o seu e-mail cadastrado.')" style="color:#00D4FF; font-size:12px; text-decoration:none; margin:0;">Esqueceu sua senha?</a>
                         </div>
                         <div style="position:relative; width:100%;">
                             <input id="senha" type="password" placeholder="Digite sua senha" value="123456" required autocomplete="current-password" style="padding-right:46px;" />
-                            <button type="button" id="auth-eye-icon" onclick="OwnerView.togglePasswordVisibility()" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#43b7ff; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center;">
+                            <button type="button" id="auth-eye-icon" onclick="OwnerView.togglePasswordVisibility()" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:transparent; border:none; color:#00D4FF; cursor:pointer; padding:6px; display:flex; align-items:center; justify-content:center;">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                             </button>
                         </div>
 
-                        <button id="btn-submit-login" type="submit" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <button id="btn-submit-login" type="submit" class="btn-submit-dna">
                             <span>Entrar no App</span>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
                         </button>
@@ -3198,11 +3290,9 @@ const OwnerView = {
                         <span style="font-size:11px; font-weight:700; color:#00D4FF; padding:4px 8px; border-radius:9999px; background:rgba(0, 212, 255, 0.15);">1-Clique</span>
                     </div>
 
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
-                        <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('splash')" style="margin-top:0;">
-                            ← Voltar
-                        </a>
-                        <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('register')" style="margin-top:0; font-weight:700;">
+                    <div style="text-align:center; margin-top:20px; font-size:13px; color:#94A3B8;">
+                        <span>Ainda não tem conta?</span>
+                        <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('register')" style="margin-left:5px; font-weight:700;">
                             Criar cadastro gratuito
                         </a>
                     </div>
@@ -3211,17 +3301,19 @@ const OwnerView = {
         `;
     },
 
-    // 03. Criar Cadastro Oficial (Snippet 1 - Criar cadastro)
+    // 03. Criar Cadastro Oficial (com Campo de Placa Dinâmico)
     renderRegisterAuth() {
         return `
             <div class="dna-auth-box-wrapper">
                 <main class="box dna-auth-box">
                     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
-                        <button type="button" onclick="OwnerView.goToAuthScreen('splash')" style="background:rgba(255,255,255,0.06); border:1px solid rgba(0,212,255,0.2); color:#94A3B8; padding:6px 14px; border-radius:9999px; font-size:12.5px; font-weight:600; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
-                            ← Voltar
+                        <button class="btn-back-discrete" type="button" onclick="OwnerView.goToAuthScreen('splash')" aria-label="Voltar" title="Voltar">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
                         </button>
                         <div style="display:flex; align-items:center; gap:8px;">
-                            <img src="/img/dna-logo-aura.png" style="width:28px; height:auto; border-radius:0; box-shadow:none; filter:drop-shadow(0 0 6px rgba(0,212,255,0.6));" onerror="this.src='/img/splash-d-logo.png';" />
+                            <img src="/img/dna-logo-aura.png" style="width:26px; height:auto; border-radius:0; box-shadow:none; filter:drop-shadow(0 0 6px rgba(0,212,255,0.6));" onerror="this.src='/img/splash-d-logo.png';" />
                             <span style="font-weight:800; font-size:13.5px; color:#FFFFFF;">DNA <b style="color:#00D4FF;">AUTO</b></span>
                         </div>
                     </div>
@@ -3229,9 +3321,35 @@ const OwnerView = {
                     <h1>Criar cadastro</h1>
                     <p class="auth-subtitle">Junte-se à rede de proteção e certificação veicular DNA AUTO</p>
 
-                    <div id="auth-reg-error-box" style="display:none; background:rgba(239,68,68,0.18); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:9px; font-size:12.5px; margin-bottom:16px;"></div>
+                    <div id="auth-reg-error-box" style="display:none; background:rgba(239,68,68,0.18); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:10px; font-size:12.5px; margin-bottom:16px;"></div>
 
                     <form onsubmit="OwnerView.handleClientRegisterSubmit(event)">
+                        <!-- Campo Placa do Carro com Busca Automática -->
+                        <div style="margin-bottom:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <label for="placa" style="margin:0;">Placa do Veículo</label>
+                                <span style="font-size:10.5px; font-weight:700; color:#00D4FF; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.3); padding:2px 6px; border-radius:9999px;">Puxa dados oficiais</span>
+                            </div>
+                            <div style="position:relative; width:100%;">
+                                <div style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:linear-gradient(135deg,#0044AA,#002277); color:#FFF; font-size:10px; font-weight:900; padding:2px 5px; border-radius:4px; border:1px solid rgba(0,212,255,0.4); pointer-events:none;">BR</div>
+                                <input
+                                    id="placa"
+                                    type="text"
+                                    class="input-placa"
+                                    placeholder="BRA2E19"
+                                    maxlength="8"
+                                    autocomplete="off"
+                                    style="padding-left:52px !important; padding-right:40px !important;"
+                                    oninput="OwnerView.handlePlateSearchInput(this)"
+                                />
+                                <div id="auth-plate-search-indicator" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none;"></div>
+                            </div>
+                            <span style="font-size:11px; color:#64748B; display:block; margin-top:4px;">Digite a placa para carregar os dados cadastrais do seu carro.</span>
+                        </div>
+
+                        <!-- Card Dinâmico de Veículo Confirmado -->
+                        <div id="auth-plate-preview-card" class="vehicle-preview-card" style="display:none;"></div>
+
                         <label for="nome">Nome Completo</label>
                         <input id="nome" type="text" placeholder="Seu nome completo" required autocomplete="name" />
 
@@ -3239,23 +3357,21 @@ const OwnerView = {
                         <input id="email" type="email" placeholder="seu@email.com" required autocomplete="email" />
 
                         <label for="whatsapp">WhatsApp (para alertas de revisão)</label>
-                        <input id="whatsapp" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" />
+                        <input id="whatsapp" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" oninput="maskPhone(this)" />
 
                         <label for="senha">Senha</label>
                         <input id="senha" type="password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" />
 
-                        <button id="btn-submit-register" type="submit" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <button id="btn-submit-register" type="submit" class="btn-submit-dna">
                             <span>Criar Minha Conta</span>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
                         </button>
                     </form>
 
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
-                        <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('splash')" style="margin-top:0;">
-                            ← Voltar
-                        </a>
-                        <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('login')" style="margin-top:0; font-weight:700;">
-                            Já tenho conta
+                    <div style="text-align:center; margin-top:20px; font-size:13px; color:#94A3B8;">
+                        <span>Já possui uma conta?</span>
+                        <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('login')" style="margin-left:5px; font-weight:700;">
+                            Fazer Login
                         </a>
                     </div>
                 </main>
