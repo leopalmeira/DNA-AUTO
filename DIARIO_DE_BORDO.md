@@ -781,6 +781,28 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
    - Footer de "Ambiente Seguro • Criptografia Veicular Ponta a Ponta" ocultado, conforme design de referência.
 5. **Paridade:** Alterações sincronizadas em `cliente.app/dna-auto-login.html` e `public/dna-auto-login.html`.
 
+### 📱 Ciclo 42 — Nova Imagem de Fundo Oficial, Dois Botões Clicáveis e Ajuste Mobile-First para Celular
+**Data:** 22/09/2026
+
+**Demandas Atendidas:**
+1. **Nova Imagem de Fundo Oficial (`/img/dna-auth-splash.png` / `.jpg`):**
+   - Substituição da imagem anterior pela nova imagem fornecida pelo usuário, contendo o logotipo "D" neon ciano, tipografia "DNA AUTO - Seu veículo sempre protegido" e o supercarro frontal com iluminação cyber blue e reflexo no solo molhado.
+   - Preservação da fidelidade visual e proporção nativa da imagem, com `object-fit: cover` e `object-position: center top`.
+2. **Remoção de Elementos Legados e Duplicados ("Retire o que estava"):**
+   - Remoção de divs e CSS legados que renderizavam logos, textos e auras artificiais em HTML por cima da imagem.
+   - Limpeza de classes obsoletas (`.brand-header`, `.hero-car-stage`, `.car-image`, etc.) para garantir carregamento instantâneo e código limpo.
+3. **Dois Botões de Ação Clicáveis ("Entrar" e "Cadastrar"):**
+   - **Botão Entrar:** Gradiente Azul Elétrico Neon Primário (`#0084FF` a `#0055D4`), efeito de brilho suave e navegação direta para a tela de login (`#login`).
+   - **Botão Cadastrar:** Glassmorphism escuro translúcido com contorno Neon Ciano (`#00D4FF`), desfoque de fundo e navegação direta para o formulário de cadastro com placa (`#register`).
+4. **Ajuste Responsivo Otimizado para Celular (Mobile-First):**
+   - No celular (`@media (max-width: 600px)`): ocupação de 100vw e 100dvh contínua de ponta a ponta, sem bordas pretas laterais ou quebras de scroll.
+   - Espaçamento inferior compatível com safe-area de iPhones e Androids (`env(safe-area-inset-bottom)`), evitando interferência com a barra inicial do sistema operacional.
+   - Gradiente escuro sutil no rodapé (`.splash-bottom-gradient`) garantindo máximo contraste e legibilidade para os botões.
+   - No desktop: centralização harmônica simulando tela de smartphone com borda cyber neon e sombras profundas.
+5. **Paridade e Homologação:**
+   - Sincronização rigorosa entre `cliente.app/dna-auto-login.html` e `public/dna-auto-login.html`.
+   - 45 de 45 testes automatizados aprovados (100%) no `npm test`.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes
