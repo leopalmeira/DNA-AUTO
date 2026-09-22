@@ -26,7 +26,6 @@
     <link rel="stylesheet" href="/css/variables.css">
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/css/components.css">
-    <link rel="stylesheet" href="/css/dossier.css">
     <link rel="stylesheet" href="/css/owner-app.css">
     <link rel="stylesheet" href="/css/print.css">
 
@@ -259,20 +258,30 @@
                         </div>
                     </div>
 
-                    <!-- Anexo da Foto da Nota Fiscal -->
+                    <!-- Comprovação Dupla: Foto da Nota Fiscal e Foto da Peça Trocada -->
+                    <div class="alert-box alert-info" style="margin-bottom:14px; font-size:11.5px; line-height:1.4;">
+                        🛡️ <strong>Comprovação Máxima Nível 4 DNA AUTO:</strong> Para que a troca da peça seja 100% comprovada no histórico oficial, envie a <strong>Foto da Nota Fiscal</strong> e a <strong>Foto da Peça Nova Trocada / Instalada</strong>.
+                    </div>
+
                     <div class="form-grid-2">
                         <div class="form-group">
-                            <label style="display:block; margin-bottom:4px; font-weight:600;">Foto / PDF da Nota Fiscal (DANFE / NFS-e)</label>
-                            <input type="file" name="invoice" class="form-control" accept="image/*,.pdf" />
-                            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">A nota fiscal comprova a autenticidade e permite a validação pelo mecânico.</div>
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">🧾 Foto / PDF da Nota Fiscal (DANFE / NFS-e) *</label>
+                            <input type="file" id="owner-declare-invoice" name="invoice" class="form-control" accept="image/*,.pdf" />
+                            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">Comprova o serviço emitido e custo total.</div>
                         </div>
                         <div class="form-group">
-                            <label style="display:block; margin-bottom:4px; font-weight:600;">Valor Total da Nota (R$)</label>
-                            <input type="number" step="0.01" name="total_cost_cents" class="form-control" placeholder="Ex: 850.00" value="850.00" />
+                            <label style="display:block; margin-bottom:4px; font-weight:600;">📷 Foto da Peça Nova Trocada / Instalada *</label>
+                            <input type="file" id="owner-declare-part-photo" name="photos" class="form-control" accept="image/*" />
+                            <div style="font-size:11px; color:var(--text-dim); margin-top:4px;">Foto da peça no carro comprovando a troca física.</div>
                         </div>
                     </div>
 
-                    <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <div class="form-group" style="margin-top:10px;">
+                        <label style="display:block; margin-bottom:4px; font-weight:600;">Valor Total da Manutenção (R$)</label>
+                        <input type="number" step="0.01" id="owner-declare-total" name="total_cost_cents" class="form-control" placeholder="Ex: 850.00" value="850.00" />
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px;">
                         <button type="button" class="btn btn-secondary modal-close-btn">Cancelar</button>
                         <button type="submit" class="btn btn-primary" style="padding:10px 24px;">ENVIAR PARA VALIDAÇÃO DA OFICINA</button>
                     </div>
@@ -284,7 +293,6 @@
     <!-- Scripts do App do Cliente -->
     <script src="/js/components/qrcode.js"></script>
     <script src="/js/api.js"></script>
-    <script src="/js/components/dossierView.js"></script>
     <script src="/js/components/saleReportModal.js"></script>
     <script src="/js/components/ownerView.js"></script>
     <script src="/js/components/pwaInstall.js"></script>
@@ -377,7 +385,7 @@
                 // Usuário conectado: nunca desconecta na atualização (F5)
                 OwnerView.authScreen = null;
                 const savedScreen = localStorage.getItem('dna_owner_current_screen');
-                if (savedScreen && ['home', 'vehicle', 'certification', 'inspection', 'revisions', 'obd', 'history', 'reminders', 'workshops', 'settings', 'notifications'].includes(savedScreen)) {
+                if (savedScreen && ['home', 'vehicle', 'certification', 'inspection', 'revisions', 'obd', 'bluetooth-pair', 'services', 'history', 'reminders', 'workshops', 'settings', 'notifications'].includes(savedScreen)) {
                     OwnerView.currentScreen = savedScreen;
                     OwnerView.activeTab = savedScreen;
                 }

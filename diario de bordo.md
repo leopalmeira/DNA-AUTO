@@ -896,6 +896,38 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
    - Sincronização rigorosa mantida em 100% entre `cliente.app/` e `public/`.
    - Bateria de testes automatizados com 45 de 45 testes aprovados (100%) no `npm test`.
 
+### 📱 Ciclo 48 — Pareamento Bluetooth OBD2 Real, Bottom Nav com 5 Abas, Remoção de Dossiê, Drawer Despoluído e Serviços com Comprovação Dupla (NF + Foto da Peça)
+**Data:** 22/09/2026
+
+**Demandas Atendidas e Implementações Realizadas:**
+1. **Pareamento Bluetooth do Mini OBD2 Telemetria:**
+   - **Primeira Instalação Limpa**: Na primeira visita ou instalação nova, o aplicativo inicia com status "Não Pareado", sem falsos positivos.
+   - **Fluxo de Pareamento Dedicado (`bluetooth-pair`)**: Card informativo com radar animado BLE 5.2, escaneamento de dispositivo próximo, identificação do dongle `Mini OBD2 ELM327 BLE 5.2 AutoLink` (MAC, Sinal dBm e protocolo CAN Bus) e botão de pareamento com persistência atômica no `localStorage`.
+   - **Tela de Telemetria Integrada (`obd`)**: Quando pareado, exibe os medidores em tempo real com indicador ativo de BLE e opção rápida de gerenciar/desparear a conexão.
+2. **Barra de Navegação Inferior (Bottom Nav) com 5 Abas Oficiais:**
+   - Reestruturação completa da barra de navegação com 5 atalhos diretos:
+     1. `Início` (`home`): Visão geral do veículo, quilometragem, combustível e autonomia.
+     2. `Serviços` (`services`): Histórico funcional com peças, fotos e notas fiscais.
+     3. `Diagnóstico OBD` (`obd`): Redireciona para pareamento se desconectado ou telemetria se pareado.
+     4. `Alertas` (`reminders`): Manutenção preventiva e corretiva organizadas de fácil acesso.
+     5. `Mais` (`more`): Dispara o menu lateral deslizante (Drawer).
+3. **Erradicação Total do Dossiê no App do Cliente:**
+   - "Dossiê" completamente removido do vocabulário, rotas e estrutura do app do cliente, sendo substituído por "Histórico de Serviços & Peças" e "Certificação DNA AUTO".
+   - Removidos `dossier.css` e `dossierView.js` do HTML e do Service Worker (`sw.js`).
+4. **Despoluição Absoluta do Menu Lateral (Drawer):**
+   - Removidos do menu lateral todos os botões e links que já constavam no Card Principal do Carro ou na Barra Inferior (evitando redundâncias e poluição visual).
+   - Menu lateral mantido estritamente com: Meus Dados / Titular, Oficinas da Rede Credenciada, Transferência de Veículo (Venda), Ativar com Código da Oficina, Baixar App Oficial (PWA), Configurações e Sair da Conta (Logout).
+5. **Página de Serviços 100% Funcional com Dupla Comprovação Obrigatória:**
+   - **Exigência**: Comprovação de substituição real da peça por Nota Fiscal E Foto da Peça.
+   - **Formulário do Cliente (`#owner-declare-modal`)**: Upload de Nota Fiscal (`invoice`) e Foto da Peça Nova (`photos`), com cadastro de peças discriminadas por Part Number e quantidade.
+   - **Cards de Serviço**: Exibição em miniatura da Foto da Peça Nova Trocada (com modal de zoom em alta resolução) e do documento de Nota Fiscal Oficial (NF-e/DANFE), com selo "COMPROVADO NÍVEL 4 (PEÇA + NF)".
+   - **Backend**: Endpoint `/api/v1/services/owner-declare` com persistência em `invoices` e `vehicle_photos` com categoria `INSTALLED_PART`.
+6. **Alertas com Abas Integradas de Manutenção Preventiva e Corretiva:**
+   - Acesso simplificado e direto dentro de Alertas com abas dedicadas para *Manutenção Preventiva* (óleo, correias, fluidos) e *Manutenção Corretiva* (pastilhas, alinhamento), com botões para agendar na rede credenciada e registrar comprovação.
+7. **Qualidade, Paridade e Homologação:**
+   - Paridade rigorosa 100% mantida entre `cliente.app/` e `public/`.
+   - Bateria de testes automatizados com 45 de 45 testes aprovados (100%) no `npm test`.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

@@ -373,7 +373,8 @@ router.post('/owner-declare', authenticateToken, upload.fields([
                         vehicle_id,
                         serviceId,
                         targetWorkshop ? targetWorkshop.id : null,
-                        `Comprovante do Serviço - ${service_title}`,
+                        idx === 0 ? 'INSTALLED_PART' : 'RECEIPT',
+                        idx === 0 ? `Foto da Peça Trocada - ${service_title}` : `Comprovante do Serviço - ${service_title}`,
                         '/uploads/photos/' + f.filename,
                         req.user.id
                     );

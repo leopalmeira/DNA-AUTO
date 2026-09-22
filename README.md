@@ -9,7 +9,7 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 44):** Identidade real dinâmica no Login e Cadastro: fim definitivo do perfil estático "Olá, João!", sincronização imediata do primeiro nome do usuário na Home e no menu, criação garantida de veículo no banco de dados para qualquer placa informada com passaporte DNA permanente ativo, retorno do veículo no payload de login/cadastro e substituição de imagens externas corrompidas por ativos locais de alta definição (`/img/splash-car-hero.png`) com fallbacks seguros. 45 testes automatizados aprovados com 100% de sucesso.
+> ✨ **Novidades Recentes (Ciclo 48):** Pareamento Bluetooth OBD2 real com detecção do dongle BLE 5.2 (inicia não pareado na primeira instalação limpa), nova Barra Inferior (Bottom Nav) com 5 abas oficiais (Início, Serviços, Diagnóstico OBD, Alertas e Mais), eliminação completa de referências a Dossiê no app do cliente, limpeza total do menu lateral (Drawer) removendo duplicidades com os cards principais, página de Serviços 100% funcional com comprovação dupla mandatória de substituição física da peça (Nota Fiscal de Serviço + Foto da Peça trocada com zoom) e Alertas com abas dedicadas para Manutenção Preventiva e Corretiva de fácil acesso. 45 testes automatizados aprovados com 100% de sucesso.
 
 ---
 

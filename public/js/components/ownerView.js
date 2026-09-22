@@ -10,6 +10,11 @@ const OwnerView = {
     activeTab: 'home',
     inspectionTab: 'inspection',
     isObdScanning: false,
+    isObdPaired: (typeof localStorage !== 'undefined' && localStorage.getItem('dna_obd_paired') === 'true'),
+    obdPairingStep: 'idle',
+    obdFoundDevice: null,
+    selectedReminderTab: 'preventiva',
+    servicesFilter: 'all',
     userVehicles: [],
     selectedVehicleId: null,
     isPhotoModalOpen: false,
@@ -74,6 +79,7 @@ const OwnerView = {
     // Sincronizar Imediatamente Usuário e Veículo Ativo do LocalStorage (Zero Espera / Zero "Olá, João!")
     syncFromLocalStorage() {
         try {
+            this.isObdPaired = (typeof localStorage !== 'undefined' && localStorage.getItem('dna_obd_paired') === 'true');
             const userStr = typeof localStorage !== 'undefined' ? localStorage.getItem('dna_logged_user') : null;
             if (userStr) {
                 const u = JSON.parse(userStr);
@@ -127,10 +133,66 @@ const OwnerView = {
         user_role: 'Cliente Proprietário',
         notifications_count: 4,
         timeline: [
-            { id: 1, title: 'Revisão periódica - 80.000 km', date: '12/04/2025', km: '80.000 km', dotColor: '#00E676', workshop: 'Oficina AutoTech', details: 'Revisão periódica completa com troca de fluidos, velas de ignição e inspeção técnica.' },
-            { id: 2, title: 'Troca de correia dentada', date: '10/10/2024', km: '70.000 km', dotColor: '#0066FF', workshop: 'Oficina AutoTech', details: 'Substituição preventiva da correia dentada, tensores e bomba d\'água.' },
-            { id: 3, title: 'Suspensão e direção', date: '05/04/2024', km: '60.000 km', dotColor: '#0066FF', workshop: 'Oficina AutoTech', details: 'Geometria 3D, alinhamento, balanceamento dinâmico e revisão de buchas.' },
-            { id: 4, title: 'Troca de óleo e filtros', date: '15/12/2023', km: '50.000 km', dotColor: '#0066FF', workshop: 'Oficina AutoTech', details: 'Óleo sintético 0W20 Honda HAMP, filtro de óleo, filtro de ar e combustível.' }
+            { 
+                id: 1, 
+                title: 'Revisão periódica - 80.000 km', 
+                date: '12/04/2025', 
+                km: '80.000 km', 
+                dotColor: '#00E676', 
+                workshop: 'Oficina AutoTech', 
+                details: 'Revisão periódica completa com troca de pastilhas de freio, óleo sintético e velas de ignição.',
+                has_invoice: true,
+                has_part_photo: true,
+                invoice_url: '/uploads/invoices/nfe_001948.pdf',
+                part_photo_url: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&auto=format&fit=crop&q=80',
+                proof_level: 4,
+                parts: [{ name: 'Pastilhas de Freio Cerâmica', manufacturer: 'Bosch', part_number: 'BP1234', qty: 1 }]
+            },
+            { 
+                id: 2, 
+                title: 'Troca de correia dentada e tensores', 
+                date: '10/10/2024', 
+                km: '70.000 km', 
+                dotColor: '#0066FF', 
+                workshop: 'Oficina AutoTech', 
+                details: 'Substituição preventiva da correia dentada, tensores auxiliares e bomba d\'água.',
+                has_invoice: true,
+                has_part_photo: true,
+                invoice_url: '/uploads/invoices/nfe_002812.pdf',
+                part_photo_url: 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&auto=format&fit=crop&q=80',
+                proof_level: 4,
+                parts: [{ name: 'Kit Correia Dentada + Tensor', manufacturer: 'Continental', part_number: 'CT1192', qty: 1 }]
+            },
+            { 
+                id: 3, 
+                title: 'Revisão de Suspensão e Geometria 3D', 
+                date: '05/04/2024', 
+                km: '60.000 km', 
+                dotColor: '#0066FF', 
+                workshop: 'Oficina AutoTech', 
+                details: 'Troca de buchas da barra estabilizadora, geometria 3D e alinhamento computadorizado.',
+                has_invoice: true,
+                has_part_photo: true,
+                invoice_url: '/uploads/invoices/nfe_007621.pdf',
+                part_photo_url: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&auto=format&fit=crop&q=80',
+                proof_level: 4,
+                parts: [{ name: 'Buchas de Suspensão PU', manufacturer: 'Axios', part_number: 'AX-904', qty: 2 }]
+            },
+            { 
+                id: 4, 
+                title: 'Troca preventiva de óleo e filtros', 
+                date: '15/12/2023', 
+                km: '50.000 km', 
+                dotColor: '#0066FF', 
+                workshop: 'Oficina AutoTech', 
+                details: 'Óleo sintético 0W20 Honda HAMP, filtro de óleo, filtro de ar e higienização do ar-condicionado.',
+                has_invoice: true,
+                has_part_photo: true,
+                invoice_url: '/uploads/invoices/nfe_001948.pdf',
+                part_photo_url: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&auto=format&fit=crop&q=80',
+                proof_level: 4,
+                parts: [{ name: 'Óleo Sintético 0W20 HAMP 4L', manufacturer: 'Honda HAMP', part_number: '0W20-HP', qty: 1 }]
+            }
         ]
     },
 
@@ -1149,10 +1211,10 @@ const OwnerView = {
         
         if (screen === 'home') {
             this.activeTab = 'home';
-        } else if (screen === 'vehicle') {
-            this.activeTab = 'vehicle';
-        } else if (['services', 'revisions', 'inspection'].includes(screen)) {
+        } else if (['services', 'revisions', 'history'].includes(screen)) {
             this.activeTab = 'services';
+        } else if (['obd', 'bluetooth-pair'].includes(screen)) {
+            this.activeTab = 'obd';
         } else if (['reminders', 'alerts', 'notifications'].includes(screen)) {
             this.activeTab = 'reminders';
         } else {
@@ -1163,23 +1225,210 @@ const OwnerView = {
         this.render();
     },
 
-    // Troca de Abas da Barra Inferior (5 Itens Fiel à Imagem 2)
+    // Troca de Abas da Barra Inferior (5 Itens: Início, Serviços, OBD, Alertas, Mais)
     switchTab(tab) {
         if (tab === 'more') {
             this.toggleDrawer(true);
             return;
         }
         if (tab === 'services') {
-            this.navigateTo('revisions');
-            this.activeTab = 'services';
+            this.navigateTo('services');
+            return;
+        }
+        if (tab === 'obd') {
+            if (!this.isObdPaired) {
+                this.navigateTo('bluetooth-pair');
+            } else {
+                this.navigateTo('obd');
+            }
             return;
         }
         if (tab === 'reminders') {
             this.navigateTo('reminders');
-            this.activeTab = 'reminders';
             return;
         }
         this.navigateTo(tab);
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // MÉTODOS DE BLUETOOTH E MINI OBD2
+    // ──────────────────────────────────────────────────────────────────────────
+    startObdBluetoothSearch() {
+        this.obdPairingStep = 'searching';
+        this.render();
+        setTimeout(() => {
+            this.obdPairingStep = 'found';
+            this.obdFoundDevice = {
+                name: 'Mini OBD2 ELM327 BLE 5.2 AutoLink',
+                mac: '00:1D:A5:68:9B:F4',
+                signal: '-48 dBm (Excelente)',
+                protocol: 'ISO 15765-4 CAN (11 bit / 500 kbaud)'
+            };
+            this.render();
+        }, 1200);
+    },
+
+    pairObdBluetoothDevice() {
+        this.obdPairingStep = 'pairing';
+        this.render();
+        setTimeout(() => {
+            this.isObdPaired = true;
+            this.obdPairingStep = 'paired';
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem('dna_obd_paired', 'true');
+                localStorage.setItem('dna_obd_device_name', 'Mini OBD2 ELM327 BLE 5.2 AutoLink');
+                localStorage.setItem('dna_obd_paired_at', new Date().toISOString());
+            }
+            this.render();
+            setTimeout(() => {
+                this.navigateTo('obd');
+            }, 700);
+        }, 1400);
+    },
+
+    unpairObdBluetooth() {
+        this.isObdPaired = false;
+        this.obdPairingStep = 'idle';
+        this.obdFoundDevice = null;
+        if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem('dna_obd_paired');
+            localStorage.removeItem('dna_obd_device_name');
+            localStorage.removeItem('dna_obd_paired_at');
+        }
+        this.navigateTo('bluetooth-pair');
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // MÉTODOS DA PÁGINA DE SERVIÇOS & COMPROVAÇÃO (NF + FOTO DA PEÇA)
+    // ──────────────────────────────────────────────────────────────────────────
+    setReminderTab(tab) {
+        this.selectedReminderTab = tab;
+        this.render();
+    },
+
+    setServicesFilter(filter) {
+        this.servicesFilter = filter;
+        this.render();
+    },
+
+    openDeclareModal() {
+        const modal = document.getElementById('owner-declare-modal');
+        if (modal) modal.classList.add('active');
+    },
+
+    openPhotoZoom(url, title) {
+        const modal = document.getElementById('photo-zoom-modal');
+        const img = document.getElementById('photo-zoom-img');
+        const titleEl = document.getElementById('photo-zoom-title');
+        if (!modal || !img) return;
+        img.src = url || '/img/splash-car-hero.png';
+        if (titleEl) titleEl.textContent = title || 'Comprovante / Registro Fotográfico';
+        modal.classList.add('active');
+    },
+
+    addPartRow() {
+        const container = document.getElementById('owner-parts-container');
+        if (!container) return;
+        const div = document.createElement('div');
+        div.className = 'part-row';
+        div.style.cssText = 'display:grid; grid-template-columns: 2fr 1fr 1fr 60px 30px; gap:6px; margin-bottom:6px;';
+        div.innerHTML = `
+            <input type="text" class="form-control part-name" placeholder="Nome da Peça (Ex: Pastilha de Freio)" required />
+            <input type="text" class="form-control part-mfr" placeholder="Marca (Ex: Bosch)" />
+            <input type="text" class="form-control part-num" placeholder="Part Number" />
+            <input type="number" class="form-control part-qty" placeholder="Qtd" value="1" min="1" />
+            <button type="button" class="part-delete-btn" style="background:#EF4444; color:#fff; border:none; border-radius:4px; cursor:pointer;" onclick="this.closest('.part-row').remove()">&times;</button>
+        `;
+        container.appendChild(div);
+    },
+
+    async submitDeclaredService(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const form = document.getElementById('owner-declare-form');
+        if (!form) return;
+
+        const formData = new FormData(form);
+        const title = form.querySelector('[name="service_title"]')?.value || 'Manutenção Periódica';
+        const date = form.querySelector('[name="service_date"]')?.value || new Date().toISOString().split('T')[0];
+        const km = form.querySelector('[name="mileage"]')?.value || this.vehicleData.current_mileage;
+        const wsName = form.querySelector('[name="workshop_name"]')?.value || 'Oficina Responsável';
+        const total = form.querySelector('[name="total_cost_cents"]')?.value || '850.00';
+        const desc = form.querySelector('[name="description"]')?.value || '';
+
+        // Peças
+        const partRows = form.querySelectorAll('.part-row');
+        const partsList = [];
+        partRows.forEach(row => {
+            const pName = row.querySelector('.part-name')?.value;
+            const pMfr = row.querySelector('.part-mfr')?.value;
+            const pNum = row.querySelector('.part-num')?.value;
+            const pQty = row.querySelector('.part-qty')?.value;
+            if (pName) {
+                partsList.push({ name: pName, manufacturer: pMfr || 'Original', part_number: pNum || '', quantity: pQty || 1 });
+            }
+        });
+
+        // Arquivos de comprovação (Nota Fiscal e Peça Trocada)
+        const invoiceInput = document.getElementById('owner-declare-invoice');
+        const partPhotoInput = document.getElementById('owner-declare-part-photo');
+
+        let invoiceUrl = '/uploads/invoices/nfe_009284.pdf';
+        let partPhotoUrl = 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&auto=format&fit=crop&q=80';
+
+        const readFileAsDataUrl = (file) => new Promise((resolve) => {
+            if (!file) return resolve(null);
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+        });
+
+        if (invoiceInput && invoiceInput.files && invoiceInput.files[0]) {
+            const d = await readFileAsDataUrl(invoiceInput.files[0]);
+            if (d) invoiceUrl = d;
+        }
+        if (partPhotoInput && partPhotoInput.files && partPhotoInput.files[0]) {
+            const d = await readFileAsDataUrl(partPhotoInput.files[0]);
+            if (d) partPhotoUrl = d;
+        }
+
+        const newService = {
+            id: 'srv_decl_' + Date.now(),
+            date: date.includes('-') ? date.split('-').reverse().join('/') : date,
+            title: title,
+            km: Number(km).toLocaleString('pt-BR') + ' km',
+            workshop: wsName,
+            details: desc || `Manutenção registrada com comprovação de peças e nota fiscal. Valor total: R$ ${total}`,
+            parts: partsList.length > 0 ? partsList : [{ name: 'Peça Nova Substituída', manufacturer: 'Original', part_number: 'REF-01' }],
+            invoice_url: invoiceUrl,
+            part_photo_url: partPhotoUrl,
+            has_invoice: true,
+            has_part_photo: true,
+            proof_level: 4,
+            proof_status: 'COMPROVADO (PEÇA + NF)'
+        };
+
+        if (!this.vehicleData.timeline) this.vehicleData.timeline = [];
+        this.vehicleData.timeline.unshift(newService);
+
+        // Submissão assíncrona para o backend
+        try {
+            const token = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+            if (token) {
+                fetch('/api/v1/services/owner-declare', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                }).catch(() => {});
+            }
+        } catch (_) {}
+
+        const modal = document.getElementById('owner-declare-modal');
+        if (modal) modal.classList.remove('active');
+        form.reset();
+
+        alert('✅ Serviço registrado com sucesso no DNA AUTO!\nComprovação de Nota Fiscal e Peça Trocada salva.');
+        this.navigateTo('services');
     },
 
     // Filtros e Busca da Rede de Oficinas
@@ -1540,7 +1789,7 @@ const OwnerView = {
                     <!-- 5.1. Modal de Ativação com Código da Oficina -->
                     ${this.isActivationModalOpen ? this.renderActivationModal() : ''}
 
-                    <!-- 5. Barra de Navegação Inferior Fixa (5 Itens Fiel à Imagem 2) -->
+                    <!-- 5. Barra de Navegação Inferior Fixa (5 Itens: Início, Serviços, Diagnóstico OBD, Alertas, Mais) -->
                     <nav class="dna-bottom-nav">
                         <div class="dna-nav-item ${this.activeTab === 'home' ? 'active' : ''}" onclick="OwnerView.switchTab('home')">
                             <div class="dna-nav-icon">
@@ -1552,18 +1801,6 @@ const OwnerView = {
                             <span class="dna-nav-label">Início</span>
                         </div>
 
-                        <div class="dna-nav-item ${this.activeTab === 'vehicle' ? 'active' : ''}" onclick="OwnerView.switchTab('vehicle')">
-                            <div class="dna-nav-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="2" y="7" width="20" height="13" rx="3"/>
-                                    <path d="M16 2l3 5H5l3-5z"/>
-                                    <circle cx="7" cy="15" r="2"/>
-                                    <circle cx="17" cy="15" r="2"/>
-                                </svg>
-                            </div>
-                            <span class="dna-nav-label">Veículo</span>
-                        </div>
-
                         <div class="dna-nav-item ${this.activeTab === 'services' ? 'active' : ''}" onclick="OwnerView.switchTab('services')">
                             <div class="dna-nav-icon">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1571,6 +1808,20 @@ const OwnerView = {
                                 </svg>
                             </div>
                             <span class="dna-nav-label">Serviços</span>
+                        </div>
+
+                        <div class="dna-nav-item ${this.activeTab === 'obd' ? 'active' : ''}" onclick="OwnerView.switchTab('obd')">
+                            <div class="dna-nav-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="4" y="4" width="16" height="16" rx="2"/>
+                                    <rect x="9" y="9" width="6" height="6"/>
+                                    <line x1="9" y1="1" x2="9" y2="4"/>
+                                    <line x1="15" y1="1" x2="15" y2="4"/>
+                                    <line x1="9" y1="20" x2="9" y2="23"/>
+                                    <line x1="15" y1="20" x2="15" y2="23"/>
+                                </svg>
+                            </div>
+                            <span class="dna-nav-label">Diagnóstico OBD</span>
                         </div>
 
                         <div class="dna-nav-item ${this.activeTab === 'reminders' ? 'active' : ''}" onclick="OwnerView.switchTab('reminders')">
@@ -1598,7 +1849,7 @@ const OwnerView = {
                     <!-- 6. Backdrop Escurecido do Menu Lateral -->
                     <div id="dna-drawer-backdrop" class="dna-drawer-backdrop ${activeDrawerClass}" onclick="OwnerView.toggleDrawer(false)"></div>
 
-                    <!-- 7. Menu Lateral Aberto (Drawer com Logout) -->
+                    <!-- 7. Menu Lateral Aberto (Drawer Despoluído - Sem Duplicidades) -->
                     <aside id="dna-owner-drawer" class="dna-app-drawer ${activeDrawerClass}">
                         <div class="dna-drawer-header">
                             <button class="dna-drawer-close-btn" onclick="OwnerView.toggleDrawer(false)" title="Fechar Menu">
@@ -1617,131 +1868,51 @@ const OwnerView = {
                         </div>
 
                         <div class="dna-drawer-menu-list">
-                            <!-- 1. Início -->
-                            <div class="dna-menu-item ${this.currentScreen === 'home' ? 'active' : ''}" onclick="OwnerView.navigateTo('home')">
-                                <div class="dna-menu-item-left">
-                                    <div class="dna-menu-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                                    </div>
-                                    <span>Início (Dashboard)</span>
-                                </div>
-                                <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
-
-                            <!-- 2. Meu Veículo -->
+                            <!-- 1. Perfil e Dados do Titular -->
                             <div class="dna-menu-item ${this.currentScreen === 'vehicle' ? 'active' : ''}" onclick="OwnerView.navigateTo('vehicle')">
                                 <div class="dna-menu-item-left">
                                     <div class="dna-menu-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="13" rx="3"/><path d="M16 2l3 5H5l3-5z"/><circle cx="7" cy="15" r="2"/><circle cx="17" cy="15" r="2"/></svg>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                                     </div>
-                                    <span>Meu Veículo</span>
+                                    <span>Meus Dados / Titular</span>
                                 </div>
                                 <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                             </div>
 
-                            <!-- 3. Certificação DNA AUTO -->
-                            <div class="dna-menu-item ${this.currentScreen === 'certification' ? 'active' : ''}" onclick="OwnerView.navigateTo('certification')">
-                                <div class="dna-menu-item-left">
-                                    <div class="dna-menu-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-                                    </div>
-                                    <span>Certificação DNA AUTO</span>
-                                </div>
-                                <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
-
-                            <!-- 4. Inspeção Técnica 360° -->
-                            <div class="dna-menu-item ${this.currentScreen === 'inspection' ? 'active' : ''}" onclick="OwnerView.navigateTo('inspection')">
-                                <div class="dna-menu-item-left">
-                                    <div class="dna-menu-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                                            <path d="M9 11l3 3L22 4"/>
-                                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                                        </svg>
-                                    </div>
-                                    <span>Inspeção Técnica 360°</span>
-                                </div>
-                                <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
-
-                            <!-- 5. Revisões Preventivas -->
-                            <div class="dna-menu-item ${this.currentScreen === 'revisions' ? 'active' : ''}" onclick="OwnerView.navigateTo('revisions')">
-                                <div class="dna-menu-item-left">
-                                    <div class="dna-menu-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                                    </div>
-                                    <span>Revisões Preventivas</span>
-                                </div>
-                                <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
-
-                            <!-- 6. Diagnóstico OBD2 (Telemetria) -->
-                            <div class="dna-menu-item ${this.currentScreen === 'obd' ? 'active' : ''}" onclick="OwnerView.navigateTo('obd')">
-                                <div class="dna-menu-item-left">
-                                    <div class="dna-menu-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/></svg>
-                                    </div>
-                                    <span>Diagnóstico OBD2 (Telemetria)</span>
-                                </div>
-                                <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
-
-                            <!-- 7. Histórico / Dossiê -->
-                            <div class="dna-menu-item ${this.currentScreen === 'history' ? 'active' : ''}" onclick="OwnerView.navigateTo('history')">
-                                <div class="dna-menu-item-left">
-                                    <div class="dna-menu-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                    </div>
-                                    <span>Histórico / Dossiê Oficial</span>
-                                </div>
-                                <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
-
-                            <!-- 8. Alertas / Lembretes -->
-                            <div class="dna-menu-item ${this.currentScreen === 'reminders' ? 'active' : ''}" onclick="OwnerView.navigateTo('reminders')">
-                                <div class="dna-menu-item-left">
-                                    <div class="dna-menu-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                                    </div>
-                                    <span>Alertas / Lembretes</span>
-                                </div>
-                                <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                            </div>
-
-                            <!-- 9. Oficinas da Rede -->
+                            <!-- 2. Oficinas Credenciadas da Rede -->
                             <div class="dna-menu-item ${this.currentScreen === 'workshops' ? 'active' : ''}" onclick="OwnerView.navigateTo('workshops')">
                                 <div class="dna-menu-item-left">
                                     <div class="dna-menu-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-3"/></svg>
                                     </div>
-                                    <span>Oficinas da Rede</span>
+                                    <span>Oficinas da Rede Credenciada</span>
                                 </div>
                                 <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                             </div>
 
-                            <!-- 10. Configurações -->
-                            <div class="dna-menu-item ${this.currentScreen === 'settings' ? 'active' : ''}" onclick="OwnerView.navigateTo('settings')">
+                            <!-- 3. Transferência Segura do Veículo -->
+                            <div class="dna-menu-item" onclick="OwnerView.toggleDrawer(false); const m = document.getElementById('transfer-modal'); if (m) m.classList.add('active');">
                                 <div class="dna-menu-item-left">
-                                    <div class="dna-menu-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                                    <div class="dna-menu-icon" style="color:#00E676;">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
                                     </div>
-                                    <span>Configurações</span>
+                                    <span style="color:#00E676; font-weight:700;">Transferência de Veículo</span>
                                 </div>
-                                <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                                <span class="dna-badge-counter" style="background:rgba(0,230,118,0.15); color:#00E676; font-weight:800; font-size:9px; padding:2px 6px;">VENDA</span>
                             </div>
 
-                            <!-- Ativar com Código da Oficina -->
+                            <!-- 4. Ativar Veículo com Código da Oficina -->
                             <div class="dna-menu-item" style="background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.25);" onclick="OwnerView.toggleDrawer(false); OwnerView.openActivationModal();">
                                 <div class="dna-menu-item-left">
                                     <div class="dna-menu-icon" style="color:#00D4FF;">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
                                     </div>
-                                    <span style="color:#00D4FF; font-weight:800;">Ativar Veículo com Código</span>
+                                    <span style="color:#00D4FF; font-weight:800;">Ativar com Código da Oficina</span>
                                 </div>
                                 <span class="dna-badge-counter" style="background:#00D4FF; color:#0B0F19; font-weight:800; font-size:9px; padding:2px 6px;">OFICINA</span>
                             </div>
 
-                            <!-- 10. Baixar Aplicativo Oficial PWA / Play Store -->
+                            <!-- 5. Baixar Aplicativo Oficial PWA / Play Store -->
                             <div class="dna-menu-item" style="background: rgba(255, 210, 28, 0.08); border: 1px solid rgba(255, 210, 28, 0.25);" onclick="OwnerView.toggleDrawer(false); if (typeof PwaInstall !== 'undefined') PwaInstall.renderPlayStoreModal();">
                                 <div class="dna-menu-item-left">
                                     <div class="dna-menu-icon" style="color:#FFD21C;">
@@ -1751,15 +1922,15 @@ const OwnerView = {
                                 </div>
                             </div>
 
-                            <!-- 11. Fluxo de Boas-Vindas & Onboarding (12 Telas) -->
-                            <div class="dna-menu-item" style="background: rgba(0, 212, 255, 0.08); border: 1px solid rgba(0, 212, 255, 0.25);" onclick="OwnerView.goToAuthScreen('splash')">
+                            <!-- 6. Configurações -->
+                            <div class="dna-menu-item ${this.currentScreen === 'settings' ? 'active' : ''}" onclick="OwnerView.navigateTo('settings')">
                                 <div class="dna-menu-item-left">
-                                    <div class="dna-menu-icon" style="color:#00D4FF;">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                                    <div class="dna-menu-icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                                     </div>
-                                    <span style="color:#00D4FF; font-weight:800;">Fluxo de Onboarding (12 Telas)</span>
+                                    <span>Configurações</span>
                                 </div>
-                                <span class="dna-badge-counter" style="background:#00D4FF; color:#0B0F19; font-weight:800; font-size:9px; padding:2px 6px;">DEMO</span>
+                                <svg class="dna-menu-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
                             </div>
 
                             <!-- BOTÃO DE SAIR NO MENU LATERAL (LOGOUT) -->
@@ -1797,7 +1968,7 @@ const OwnerView = {
         }
     },
 
-    // Retorna Título Amigável para o Topo (10 Telas Oficiais)
+    // Retorna Título Amigável para o Topo
     getScreenTitle(screen) {
         const titles = {
             'vehicle': 'Meu Veículo',
@@ -1805,8 +1976,10 @@ const OwnerView = {
             'inspection': 'Inspeção Técnica 360°',
             'revisions': 'Revisões Preventivas',
             'obd': 'OBD2 (Telemetria)',
-            'history': 'Histórico / Dossiê',
-            'reminders': 'Alertas / Lembretes',
+            'bluetooth-pair': 'Conexão Bluetooth (OBD2)',
+            'services': 'Histórico de Serviços & Peças',
+            'history': 'Histórico de Serviços & Peças',
+            'reminders': 'Alertas & Manutenção',
             'workshops': 'Oficinas da Rede',
             'settings': 'Configurações',
             'notifications': 'Notificações'
@@ -1825,10 +1998,14 @@ const OwnerView = {
                 return this.renderInspectionScreen();
             case 'revisions':
                 return this.renderRevisionsScreen();
+            case 'bluetooth-pair':
+                return this.renderObdBluetoothScreen();
             case 'obd':
                 return this.renderObdScreen();
+            case 'services':
+                return this.renderServicesScreen();
             case 'history':
-                return this.renderHistoryScreen();
+                return this.renderServicesScreen();
             case 'reminders':
                 return this.renderRemindersScreen();
             case 'workshops':
@@ -1916,7 +2093,7 @@ const OwnerView = {
 
                 <!-- 3 Medidores em Grade (Quilometragem | Combustível | Autonomia) -->
                 <div class="dna-metrics-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-                    <div class="dna-metric-box" onclick="OwnerView.navigateTo('obd')" style="cursor:pointer;" title="Ver odômetro da ECU">
+                    <div class="dna-metric-box" onclick="OwnerView.navigateTo('${this.isObdPaired ? 'obd' : 'bluetooth-pair'}')" style="cursor:pointer;" title="Ver odômetro da ECU">
                         <div class="dna-metric-label" style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Quilometragem</div>
                         <div class="dna-metric-value" style="font-size:13.5px; font-weight:800; color:#FFFFFF;">${Number(v.current_mileage).toLocaleString('pt-BR')} km</div>
                     </div>
@@ -1959,15 +2136,15 @@ const OwnerView = {
                 </div>
 
                 <!-- Card 3: Mini OBD2 -->
-                <div class="dna-home-grid-card" onclick="OwnerView.navigateTo('obd')">
+                <div class="dna-home-grid-card" onclick="OwnerView.navigateTo('${this.isObdPaired ? 'obd' : 'bluetooth-pair'}')">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <span class="dna-grid-card-title">OBD2 Telemetria</span>
-                        <span style="color:#00E676; display:flex; align-items:center; gap:4px;">
-                            <span style="width:6px; height:6px; border-radius:50%; background:#00E676;"></span>
+                        <span style="color:${this.isObdPaired ? '#00E676' : '#F59E0B'}; display:flex; align-items:center; gap:4px;">
+                            <span style="width:6px; height:6px; border-radius:50%; background:${this.isObdPaired ? '#00E676' : '#F59E0B'}; ${this.isObdPaired ? 'box-shadow:0 0 6px #00E676;' : ''}"></span>
                         </span>
                     </div>
-                    <div class="dna-grid-card-val" style="color:#00E676;">Conectado</div>
-                    <span style="font-size:10px; color:#94A3B8;">Zero DTCs (0 erros)</span>
+                    <div class="dna-grid-card-val" style="color:${this.isObdPaired ? '#00E676' : '#F59E0B'}; font-size:13px;">${this.isObdPaired ? 'Conectado' : 'Não Pareado'}</div>
+                    <span style="font-size:10px; color:#94A3B8;">${this.isObdPaired ? 'Zero DTCs (0 erros)' : 'Toque p/ parear Bluetooth'}</span>
                 </div>
 
                 <!-- Card 4: Alertas e Lembretes -->
@@ -2007,10 +2184,10 @@ const OwnerView = {
             <div class="dna-events-section" style="margin-top:14px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Últimos eventos</span>
-                    <a href="javascript:void(0)" onclick="OwnerView.navigateTo('history')" style="font-size:11px; color:#00D4FF; font-weight:700; text-decoration:none;">Ver todos &gt;</a>
+                    <a href="javascript:void(0)" onclick="OwnerView.navigateTo('services')" style="font-size:11px; color:#00D4FF; font-weight:700; text-decoration:none;">Ver todos &gt;</a>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:8px;">
-                    <div class="dna-event-item" onclick="OwnerView.navigateTo('history')" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-radius:12px; padding:10px 14px; display:flex; align-items:center; gap:12px; cursor:pointer;">
+                    <div class="dna-event-item" onclick="OwnerView.navigateTo('services')" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-radius:12px; padding:10px 14px; display:flex; align-items:center; gap:12px; cursor:pointer;">
                         <div style="width:30px; height:30px; border-radius:50%; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; color:#10B981; flex-shrink:0;">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
                         </div>
@@ -2649,20 +2826,189 @@ const OwnerView = {
         `;
     },
 
+    // ── 5.1. TELA: PAREAMENTO BLUETOOTH MINI OBD2 ──
+    renderObdBluetoothScreen() {
+        const isPaired = this.isObdPaired;
+        const step = this.obdPairingStep || 'idle';
+        const deviceName = (typeof localStorage !== 'undefined' && localStorage.getItem('dna_obd_device_name')) || 'Mini OBD2 ELM327 BLE 5.2 AutoLink';
+
+        return `
+            <div class="dna-obd-pair-container" style="display:flex; flex-direction:column; gap:14px;">
+                <!-- Header informativo com ícone Bluetooth -->
+                <div style="background:linear-gradient(135deg, rgba(0,212,255,0.12) 0%, rgba(0,102,255,0.18) 100%); border:1.5px solid ${isPaired ? '#10B981' : '#00D4FF'}; border-radius:14px; padding:16px; text-align:center;">
+                    <div style="width:54px; height:54px; border-radius:50%; background:${isPaired ? 'rgba(16,185,129,0.2)' : 'rgba(0,212,255,0.2)'}; border:2px solid ${isPaired ? '#10B981' : '#00D4FF'}; display:inline-flex; align-items:center; justify-content:center; margin-bottom:10px; box-shadow:0 0 16px ${isPaired ? 'rgba(16,185,129,0.35)' : 'rgba(0,212,255,0.35)'};">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="${isPaired ? '#10B981' : '#00D4FF'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6.5 6.5 17.5 17.5 12 23 12 1 17.5 6.5 6.5 17.5"/>
+                        </svg>
+                    </div>
+                    <h3 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:0 0 4px;">
+                        ${isPaired ? 'Mini OBD2 Pareado & Conectado' : 'Conectar Mini OBD2 Bluetooth'}
+                    </h3>
+                    <p style="font-size:12px; color:#94A3B8; margin:0; line-height:1.4;">
+                        ${isPaired 
+                            ? 'O dispositivo está sincronizado ao seu smartphone e lendo telemetria da central ECU.' 
+                            : 'Como esta é a primeira instalação ou o dispositivo ainda não foi pareado, conecte o dongle na porta do veículo.'}
+                    </p>
+                </div>
+
+                ${isPaired ? `
+                    <!-- Detalhes do Dispositivo Pareado -->
+                    <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div style="width:8px; height:8px; border-radius:50%; background:#10B981; box-shadow:0 0 8px #10B981;"></div>
+                                <span style="font-size:12px; font-weight:800; color:#10B981;">Sessão Bluetooth Ativa</span>
+                            </div>
+                            <span style="font-size:10.5px; color:#94A3B8; font-family:var(--font-mono, monospace);">BLE 5.2</span>
+                        </div>
+
+                        <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:8px; display:flex; flex-direction:column; gap:6px; font-size:11.5px;">
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="color:#94A3B8;">Aparelho:</span>
+                                <strong style="color:#FFFFFF;">${deviceName}</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="color:#94A3B8;">MAC Address:</span>
+                                <strong style="color:#00D4FF; font-family:var(--font-mono, monospace);">00:1D:A5:68:9B:F4</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="color:#94A3B8;">Protocolo ECU:</span>
+                                <strong style="color:#FFFFFF;">ISO 15765-4 CAN (500 kbaud)</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between;">
+                                <span style="color:#94A3B8;">Intensidade do Sinal:</span>
+                                <strong style="color:#10B981;">-48 dBm (Forte)</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação para Dispositivo Pareado -->
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        <button class="btn btn-primary" onclick="OwnerView.navigateTo('obd')" style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:13px; padding:12px; border-radius:10px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(0,102,255,0.3);">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/></svg>
+                            <span>Acessar Diagnósticos & Telemetria OBD</span>
+                        </button>
+
+                        <button class="btn" onclick="OwnerView.unpairObdBluetooth()" style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#EF4444; font-weight:700; font-size:11.5px; padding:10px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            <span>Desconectar / Esquecer Aparelho</span>
+                        </button>
+                    </div>
+                ` : `
+                    <!-- Guia de 3 Passos Fáceis para Pareamento -->
+                    <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-radius:12px; padding:14px;">
+                        <span style="font-size:11px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:10px;">Como conectar em 3 passos:</span>
+                        
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <div style="display:flex; align-items:flex-start; gap:10px;">
+                                <span style="width:22px; height:22px; border-radius:50%; background:#0066FF; color:#FFF; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;">1</span>
+                                <div>
+                                    <strong style="color:#FFFFFF; font-size:12px; display:block;">Conecte o Dongle OBD2</strong>
+                                    <span style="color:#94A3B8; font-size:11px;">Encaixe o aparelho na porta OBD2 (normalmente embaixo do painel, perto do volante).</span>
+                                </div>
+                            </div>
+
+                            <div style="display:flex; align-items:flex-start; gap:10px;">
+                                <span style="width:22px; height:22px; border-radius:50%; background:#0066FF; color:#FFF; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;">2</span>
+                                <div>
+                                    <strong style="color:#FFFFFF; font-size:12px; display:block;">Ligue a Ignição do Carro</strong>
+                                    <span style="color:#94A3B8; font-size:11px;">Gire a chave para a posição ligada (ou aperte Start sem pisar no freio) para alimentar a ECU.</span>
+                                </div>
+                            </div>
+
+                            <div style="display:flex; align-items:flex-start; gap:10px;">
+                                <span style="width:22px; height:22px; border-radius:50%; background:#0066FF; color:#FFF; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0;">3</span>
+                                <div>
+                                    <strong style="color:#FFFFFF; font-size:12px; display:block;">Parear via Bluetooth</strong>
+                                    <span style="color:#94A3B8; font-size:11px;">Mantenha o Bluetooth do telefone ativado e clique no botão de busca abaixo.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bloco Dinâmico de Busca / Pareamento -->
+                    ${step === 'idle' ? `
+                        <button class="btn btn-primary" onclick="OwnerView.startObdBluetoothSearch()" style="background:linear-gradient(135deg, #00D4FF 0%, #0066FF 100%); color:#0B0F19; font-weight:900; font-size:13px; padding:13px; border-radius:10px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 18px rgba(0,212,255,0.35);">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <span>Buscar Aparelho Mini OBD2</span>
+                        </button>
+                    ` : ''}
+
+                    ${step === 'searching' ? `
+                        <div style="background:rgba(8,16,32,0.9); border:1.5px solid #00D4FF; border-radius:12px; padding:20px; text-align:center;">
+                            <div style="width:48px; height:48px; border:3px solid rgba(0,212,255,0.2); border-top-color:#00D4FF; border-radius:50%; margin:0 auto 12px; animation:spin 1s linear infinite;"></div>
+                            <strong style="color:#FFFFFF; font-size:13px; display:block;">Buscando sinal Bluetooth 5.2...</strong>
+                            <span style="color:#94A3B8; font-size:11px;">Procurando Mini OBD2 ELM327 próximo ao veículo</span>
+                        </div>
+                    ` : ''}
+
+                    ${step === 'found' && this.obdFoundDevice ? `
+                        <div style="background:rgba(8,16,32,0.95); border:1.5px solid #10B981; border-radius:12px; padding:14px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <div style="width:8px; height:8px; border-radius:50%; background:#10B981; box-shadow:0 0 8px #10B981;"></div>
+                                    <strong style="color:#FFFFFF; font-size:13px;">Dispositivo Encontrado!</strong>
+                                </div>
+                                <span style="background:rgba(16,185,129,0.15); color:#10B981; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px;">PRONTO</span>
+                            </div>
+
+                            <div style="font-size:11.5px; color:#94A3B8; display:flex; flex-direction:column; gap:4px; margin-bottom:12px;">
+                                <div>Nome: <strong style="color:#FFFFFF;">${this.obdFoundDevice.name}</strong></div>
+                                <div>MAC: <span style="color:#00D4FF; font-family:var(--font-mono, monospace);">${this.obdFoundDevice.mac}</span></div>
+                                <div>Sinal: <span style="color:#10B981; font-weight:700;">${this.obdFoundDevice.signal}</span></div>
+                                <div>Protocolo: <span style="color:#CBD5E1;">${this.obdFoundDevice.protocol}</span></div>
+                            </div>
+
+                            <button class="btn btn-success" onclick="OwnerView.pairObdBluetoothDevice()" style="width:100%; background:#10B981; color:#0B0F19; font-weight:900; font-size:13px; padding:12px; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(16,185,129,0.35);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                <span>Parear e Conectar Dispositivo</span>
+                            </button>
+                        </div>
+                    ` : ''}
+
+                    ${step === 'pairing' ? `
+                        <div style="background:rgba(8,16,32,0.9); border:1.5px solid #00D4FF; border-radius:12px; padding:20px; text-align:center;">
+                            <div style="width:48px; height:48px; border:3px solid rgba(0,212,255,0.2); border-top-color:#10B981; border-radius:50%; margin:0 auto 12px; animation:spin 1s linear infinite;"></div>
+                            <strong style="color:#FFFFFF; font-size:13px; display:block;">Conectando via BLE...</strong>
+                            <span style="color:#94A3B8; font-size:11px;">Validando criptografia e protocolo de comunicação CAN</span>
+                        </div>
+                    ` : ''}
+
+                    ${step === 'paired' ? `
+                        <div style="background:rgba(16,185,129,0.15); border:1.5px solid #10B981; border-radius:12px; padding:16px; text-align:center;">
+                            <div style="color:#10B981; font-size:24px; margin-bottom:6px;">✓</div>
+                            <strong style="color:#FFFFFF; font-size:13.5px; display:block;">Pareamento Concluído com Sucesso!</strong>
+                            <span style="color:#10B981; font-size:11px; font-weight:700;">Redirecionando para os diagnósticos do veículo...</span>
+                        </div>
+                    ` : ''}
+                `}
+            </div>
+        `;
+    },
+
     // ── 6. TELA: OBD2 TELEMETRIA (TELA 6 DO MAPA) ──
     renderObdScreen() {
+        if (!this.isObdPaired) {
+            return this.renderObdBluetoothScreen();
+        }
+
         const o = this.obdData;
         const scanningText = this.isObdScanning ? 'Lendo sensores da central ECU...' : 'Escanear Central ECU Novamente';
 
         return `
             <div class="dna-obd-container" style="display:flex; flex-direction:column; gap:12px;">
                 <!-- Status de Conexão com o Mini OBD2 Dongle -->
-                <div class="dna-obd-conn-banner" style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center;">
+                <div class="dna-obd-conn-banner" style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
                     <div style="display:flex; align-items:center; gap:8px;">
                         <div style="width:8px; height:8px; border-radius:50%; background:#10B981; box-shadow:0 0 8px #10B981;"></div>
-                        <span style="font-size:11.5px; color:#10B981; font-weight:700;">Conectado via BLE / Escaneamento ativo</span>
+                        <div>
+                            <span style="font-size:11.5px; color:#10B981; font-weight:800; display:block;">Pareado via Bluetooth (BLE 5.2)</span>
+                            <span style="font-size:10px; color:#94A3B8;">Mini OBD2 ELM327 • 500 kbaud</span>
+                        </div>
                     </div>
-                    <span style="font-size:10px; color:#94A3B8; font-family:var(--font-mono, monospace);">500 kbaud</span>
+                    <button onclick="OwnerView.navigateTo('bluetooth-pair')" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#FFFFFF; font-size:10px; font-weight:700; padding:4px 8px; border-radius:6px; cursor:pointer;">
+                        Gerenciar
+                    </button>
                 </div>
 
                 <!-- 4 Gauges Dials Circulares (RPM | Temp | Bateria | Odômetro) -->
@@ -2702,8 +3048,8 @@ const OwnerView = {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
                     </div>
                     <div>
-                        <strong style="color:#FFFFFF; font-size:12px; display:block;">DTC - Erros</strong>
-                        <span style="color:#10B981; font-size:11px; font-weight:700;">0 erros detectados</span>
+                        <strong style="color:#FFFFFF; font-size:12px; display:block;">DTC - Diagnóstico de Falhas</strong>
+                        <span style="color:#10B981; font-size:11px; font-weight:700;">0 erros na memória da central</span>
                     </div>
                 </div>
 
@@ -2712,26 +3058,26 @@ const OwnerView = {
                     <span style="font-size:11px; font-weight:800; color:#CBD5E1; text-transform:uppercase; display:block; margin-bottom:8px;">Sensores em tempo real</span>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11.5px;">
                         <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-                            <span style="color:#94A3B8;">Lambda</span>
+                            <span style="color:#94A3B8;">Sonda Lambda</span>
                             <strong style="color:#10B981;">${o.telemetry.lambda_ratio}</strong>
                         </div>
                         <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-                            <span style="color:#94A3B8;">MAP</span>
+                            <span style="color:#94A3B8;">Pressão MAP</span>
                             <strong style="color:#FFFFFF;">${o.telemetry.map_pressure_kpa} kPa</strong>
                         </div>
                         <div style="display:flex; justify-content:space-between; padding:4px 0;">
-                            <span style="color:#94A3B8;">TPS</span>
+                            <span style="color:#94A3B8;">Posição Borboleta</span>
                             <strong style="color:#FFFFFF;">${o.telemetry.throttle_pos_percent}%</strong>
                         </div>
                         <div style="display:flex; justify-content:space-between; padding:4px 0;">
-                            <span style="color:#94A3B8;">IAT</span>
+                            <span style="color:#94A3B8;">Temp Admissão</span>
                             <strong style="color:#FFFFFF;">${o.telemetry.intake_temp_c}°C</strong>
                         </div>
                     </div>
                 </div>
 
                 <!-- Botão de Re-escaneamento -->
-                <button class="dna-obd-rescan-btn" onclick="OwnerView.rescanObd()" ${this.isObdScanning ? 'disabled' : ''} style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:12px; padding:10px; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <button class="dna-obd-rescan-btn" onclick="OwnerView.rescanObd()" ${this.isObdScanning ? 'disabled' : ''} style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:12px; padding:11px; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" ${this.isObdScanning ? 'style="animation: spin 1s linear infinite;"' : ''}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
                     <span>${scanningText}</span>
                 </button>
@@ -2739,135 +3085,280 @@ const OwnerView = {
         `;
     },
 
-    // Alterar filtro do histórico
-    setHistoryFilter(filter) {
-        this.historyFilter = filter;
-        this.render();
-    },
-
-    // ── 7. TELA: HISTÓRICO / DOSSIÊ (TELA 7 DO MAPA) ──
-    renderHistoryScreen() {
+    // ── 7. TELA: SERVIÇOS & COMPROVAÇÃO DE PEÇAS E NOTA FISCAL ──
+    renderServicesScreen() {
         const v = this.vehicleData;
-        const filter = this.historyFilter || 'all';
+        const filter = this.servicesFilter || 'all';
+        let list = v.timeline || [];
 
-        // Dados de peças e fotos para os filtros
-        const partsData = [
-            { name: 'Correia Dentada Continental', ref: 'CT1192', date: '10/10/2024', workshop: 'Oficina AutoTech' },
-            { name: 'Pastilhas de Freio Bosch', ref: 'BP1234', date: '12/04/2025', workshop: 'Oficina AutoTech' },
-            { name: 'Óleo Sintético 0W20 Honda HAMP', ref: '4L', date: '15/12/2023', workshop: 'Oficina AutoTech' },
-            { name: 'Filtro de Ar Motor K&N', ref: 'FA3301', date: '12/04/2025', workshop: 'Oficina AutoTech' },
-            { name: 'Velas de Ignição NGK Iridium', ref: 'ILZKR7B-11S', date: '12/04/2025', workshop: 'Oficina AutoTech' }
-        ];
-
-        const photosData = [
-            { title: 'Correia Dentada Nova Instalada', date: '10/10/2024', type: 'Peça Instalada' },
-            { title: 'Odômetro 80.000 km', date: '12/04/2025', type: 'Registro' },
-            { title: 'Pastilhas Dianteiras Novas', date: '12/04/2025', type: 'Peça Nova' },
-            { title: 'Nota Fiscal NF-e 009284', date: '12/04/2025', type: 'Nota Fiscal' }
-        ];
+        if (filter === 'verified') {
+            list = list.filter(t => t.has_invoice && t.has_part_photo);
+        } else if (filter === 'preventiva') {
+            list = list.filter(t => t.title.toLowerCase().includes('revisão') || t.title.toLowerCase().includes('preventiva') || t.title.toLowerCase().includes('óleo') || t.title.toLowerCase().includes('correia'));
+        } else if (filter === 'corretiva') {
+            list = list.filter(t => t.title.toLowerCase().includes('pastilha') || t.title.toLowerCase().includes('corretiva') || t.title.toLowerCase().includes('substituição') || t.title.toLowerCase().includes('troca'));
+        }
 
         return `
             <div style="display:flex; flex-direction:column; gap:12px;">
-                <!-- Filtros em Chips: Todos, Serviços, Peças, Fotos -->
-                <div class="dna-history-pill-filters" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px;">
-                    <button class="dna-history-filter-btn ${filter === 'all' ? 'active' : ''}" onclick="OwnerView.setHistoryFilter('all')">Todos</button>
-                    <button class="dna-history-filter-btn ${filter === 'services' ? 'active' : ''}" onclick="OwnerView.setHistoryFilter('services')">Serviços</button>
-                    <button class="dna-history-filter-btn ${filter === 'parts' ? 'active' : ''}" onclick="OwnerView.setHistoryFilter('parts')">Peças</button>
-                    <button class="dna-history-filter-btn ${filter === 'photos' ? 'active' : ''}" onclick="OwnerView.setHistoryFilter('photos')">Fotos</button>
+                <!-- Botão Chamativo de Registro de Novo Serviço -->
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <div>
+                        <h3 style="font-size:15px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">Serviços & Peças</h3>
+                        <span style="font-size:11px; color:#94A3B8;">Comprovação obrigatória de NF e Peça Trocada</span>
+                    </div>
+                    <button class="btn btn-sm btn-primary" onclick="OwnerView.openDeclareModal()" style="background:linear-gradient(135deg, #00D4FF 0%, #0066FF 100%); color:#0B0F19; font-weight:900; font-size:11.5px; padding:8px 12px; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 10px rgba(0,212,255,0.3); white-space:nowrap;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>+ Declarar Serviço</span>
+                    </button>
                 </div>
 
-                <!-- Conteúdo Filtrado -->
-                <div class="dna-history-list" style="display:flex; flex-direction:column; gap:10px;">
-                    ${filter === 'all' || filter === 'services' ? v.timeline.map(t => `
-                        <div class="dna-history-item-clickable">
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                <!-- Banner de Comprovação Nível 4 -->
+                <div style="background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.25); border-radius:10px; padding:10px 12px; display:flex; align-items:center; gap:10px;">
+                    <div style="color:#00D4FF; flex-shrink:0;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                    </div>
+                    <div style="font-size:11px; color:#CBD5E1; line-height:1.35;">
+                        <strong style="color:#00D4FF;">Comprovação Máxima Nível 4:</strong>
+                        Cada serviço salvo registra a <strong style="color:#FFFFFF;">Foto da Peça Trocada</strong> e a <strong style="color:#FFFFFF;">Nota Fiscal Oficial</strong>, garantindo autenticidade total.
+                    </div>
+                </div>
+
+                <!-- Filtros em Chips -->
+                <div class="dna-history-pill-filters" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px;">
+                    <button class="dna-history-filter-btn ${filter === 'all' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('all')">Todos (${v.timeline ? v.timeline.length : 0})</button>
+                    <button class="dna-history-filter-btn ${filter === 'verified' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('verified')">NF + Peça Comprovada</button>
+                    <button class="dna-history-filter-btn ${filter === 'preventiva' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('preventiva')">Preventivas</button>
+                    <button class="dna-history-filter-btn ${filter === 'corretiva' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('corretiva')">Corretivas</button>
+                </div>
+
+                <!-- Lista de Serviços Funcionais -->
+                <div class="dna-services-list" style="display:flex; flex-direction:column; gap:12px;">
+                    ${list.length === 0 ? `
+                        <div style="text-align:center; padding:30px 16px; background:rgba(8,16,32,0.8); border:1px dashed rgba(255,255,255,0.15); border-radius:12px;">
+                            <span style="font-size:24px; display:block; margin-bottom:6px;">🛠️</span>
+                            <strong style="color:#FFFFFF; font-size:13px; display:block;">Nenhum serviço encontrado neste filtro</strong>
+                            <p style="font-size:11px; color:#94A3B8; margin:4px 0 12px;">Declare serviços com comprovante de nota fiscal e foto da peça trocada.</p>
+                            <button class="btn btn-sm btn-primary" onclick="OwnerView.openDeclareModal()" style="background:#0066FF; color:#FFF; font-weight:800; font-size:11.5px; padding:7px 14px; border-radius:8px; border:none; cursor:pointer;">
+                                Declarar Primeiro Serviço
+                            </button>
+                        </div>
+                    ` : list.map(t => `
+                        <div class="dna-history-item-clickable" style="background:rgba(8,16,32,0.9); border:1.5px solid rgba(0,102,255,0.25); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px;">
+                            <!-- Topo do Card: Data, Título, KM e Status -->
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div>
-                                    <span style="font-size:10.5px; color:#00D4FF; font-weight:700;">${t.date}</span>
-                                    <h4 style="font-size:13px; font-weight:800; color:#FFFFFF; margin:2px 0 0;">${t.title}</h4>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <span style="font-size:11px; color:#00D4FF; font-weight:800;">${t.date}</span>
+                                        <span style="color:#64748B;">•</span>
+                                        <span style="font-size:10.5px; color:#94A3B8;">${t.workshop || 'Oficina Responsável'}</span>
+                                    </div>
+                                    <h4 style="font-size:14px; font-weight:800; color:#FFFFFF; margin:3px 0 0;">${t.title}</h4>
                                 </div>
-                                <span style="background:rgba(16,185,129,0.15); color:#10B981; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px;">
+                                <span style="background:rgba(16,185,129,0.15); color:#10B981; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px; white-space:nowrap;">
                                     ${t.km}
                                 </span>
                             </div>
-                            <p style="font-size:11.5px; color:#CBD5E1; margin:0 0 8px; line-height:1.4;">${t.details}</p>
-                            <div style="font-size:10.5px; color:#94A3B8; border-top:1px solid rgba(255,255,255,0.06); padding-top:6px; display:flex; justify-content:space-between;">
-                                <span>Oficina: <strong style="color:#FFFFFF;">${t.workshop}</strong></span>
-                                <span style="color:#10B981; font-weight:700;">Comprovado Nível 4</span>
+
+                            <!-- Descrição / Detalhes -->
+                            <p style="font-size:12px; color:#CBD5E1; margin:0; line-height:1.4;">${t.details}</p>
+
+                            <!-- Lista de Peças Trocadas -->
+                            ${t.parts && t.parts.length > 0 ? `
+                                <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:8px 10px;">
+                                    <span style="font-size:10px; font-weight:800; color:#94A3B8; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px;">Peças Substituídas:</span>
+                                    <div style="display:flex; flex-direction:column; gap:4px;">
+                                        ${t.parts.map(p => `
+                                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px;">
+                                                <span style="color:#FFFFFF; font-weight:700;">• ${p.name} <span style="color:#94A3B8; font-weight:400;">(${p.manufacturer || 'Original'})</span></span>
+                                                <span style="color:#00D4FF; font-family:var(--font-mono, monospace); font-size:10px;">${p.part_number || 'N/D'}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <!-- 2 COMPROVANTES EXIGIDOS: NOTA FISCAL + FOTO DA PEÇA TROCADA -->
+                            <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:10px;">
+                                <span style="font-size:10px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:8px;">Comprovação Cadastrada (Comprovantes):</span>
+                                
+                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                                    <!-- 1. Foto da Peça Trocada -->
+                                    <div onclick="OwnerView.openPhotoZoom('${t.part_photo_url || 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&auto=format&fit=crop&q=80'}', '${t.title} - Peça Nova Trocada')" style="background:rgba(0,102,255,0.12); border:1px solid rgba(0,212,255,0.3); border-radius:8px; padding:8px; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
+                                        <div style="width:36px; height:36px; border-radius:6px; overflow:hidden; background:#0B0F19; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
+                                            <img src="${t.part_photo_url || 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=100&auto=format&fit=crop&q=80'}" alt="Peça Trocada" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/img/car-silhouette.svg'" />
+                                        </div>
+                                        <div style="overflow:hidden;">
+                                            <strong style="color:#00D4FF; font-size:11px; display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">Foto da Peça</strong>
+                                            <span style="color:#94A3B8; font-size:9.5px;">Toque p/ zoom 🔍</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- 2. Nota Fiscal de Serviço / Peça -->
+                                    <div onclick="OwnerView.openPhotoZoom('${t.invoice_url || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop&q=80'}', '${t.title} - Nota Fiscal Oficial')" style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:8px; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
+                                        <div style="width:36px; height:36px; border-radius:6px; background:rgba(16,185,129,0.2); flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#10B981;">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                        </div>
+                                        <div style="overflow:hidden;">
+                                            <strong style="color:#10B981; font-size:11px; display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">Nota Fiscal (NF)</strong>
+                                            <span style="color:#94A3B8; font-size:9.5px;">Comprovante Fiscal</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Rodapé do Card: Selo Nível 4 -->
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#94A3B8; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
+                                <span style="display:flex; align-items:center; gap:4px; color:#10B981; font-weight:800;">
+                                    <span style="width:6px; height:6px; border-radius:50%; background:#10B981;"></span>
+                                    COMPROVADO NÍVEL 4 (PEÇA + NF)
+                                </span>
+                                <span style="color:#64748B; font-family:var(--font-mono, monospace);">ID: ${t.id || 'SRV-01'}</span>
                             </div>
                         </div>
-                    `).join('') : ''}
-
-                    ${filter === 'all' || filter === 'parts' ? `
-                        ${filter === 'parts' ? '<span style="font-size:11px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Peças Utilizadas</span>' : ''}
-                        ${partsData.map(p => `
-                            <div class="dna-history-item-clickable">
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <div style="flex:1;">
-                                        <span style="font-size:13px; font-weight:700; color:#FFFFFF; display:block;">${p.name}</span>
-                                        <span style="font-size:11px; color:#94A3B8;">Ref: ${p.ref} • ${p.date}</span>
-                                    </div>
-                                    <div style="display:flex; align-items:center; gap:6px;">
-                                        <span style="font-size:10px; color:#FFD21C; font-weight:700; background:rgba(255,210,28,0.1); padding:2px 6px; border-radius:4px;">📷</span>
-                                        <span style="font-size:10px; color:#00D4FF; font-weight:700; background:rgba(0,212,255,0.1); padding:2px 6px; border-radius:4px;">🧾</span>
-                                    </div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    ` : ''}
-
-                    ${filter === 'photos' ? `
-                        <span style="font-size:11px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Registros Fotográficos</span>
-                        ${photosData.map(ph => `
-                            <div class="dna-history-item-clickable">
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <div style="display:flex; align-items:center; gap:12px;">
-                                        <div style="width:40px; height:40px; border-radius:8px; background:rgba(0,102,255,0.15); display:flex; align-items:center; justify-content:center; color:#00D4FF; flex-shrink:0;">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                                        </div>
-                                        <div>
-                                            <span style="font-size:13px; font-weight:700; color:#FFFFFF; display:block;">${ph.title}</span>
-                                            <span style="font-size:11px; color:#94A3B8;">${ph.date} • ${ph.type}</span>
-                                        </div>
-                                    </div>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                                </div>
-                            </div>
-                        `).join('')}
-                    ` : ''}
+                    `).join('')}
                 </div>
             </div>
         `;
     },
 
-    // ── 8. TELA: ALERTAS / LEMBRETES (TELA 8 DO MAPA) ──
+    // Alias de compatibilidade com histórico
+    renderHistoryScreen() {
+        return this.renderServicesScreen();
+    },
+
+    // ── 8. TELA: ALERTAS & MANUTENÇÃO (PREVENTIVA E CORRETIVA) ──
     renderRemindersScreen() {
-        const rems = this.remindersList || [];
+        const tab = this.selectedReminderTab || 'preventiva';
+
+        const preventivas = [
+            {
+                title: 'Troca de Óleo do Motor & Filtro',
+                subtitle: 'Recomendado a cada 10.000 km ou 12 meses • Óleo Sintético 0W20',
+                due_info: 'Vence em 2.450 km (ou ~2 meses)',
+                urgency: 'ALTA',
+                urgency_color: '#F59E0B',
+                type: 'preventiva'
+            },
+            {
+                title: 'Inspeção da Correia Dentada & Tensor',
+                subtitle: 'Checagem do estado de tensão e dentes da correia',
+                due_info: 'Agendada para 85.000 km',
+                urgency: 'MÉDIA',
+                urgency_color: '#00D4FF',
+                type: 'preventiva'
+            },
+            {
+                title: 'Substituição do Fluido de Freio DOT 4',
+                subtitle: 'Higroscopia preventiva anual para evitar perda de pressão hidráulica',
+                due_info: 'Vence em 15/10/2025',
+                urgency: 'MÉDIA',
+                urgency_color: '#00D4FF',
+                type: 'preventiva'
+            },
+            {
+                title: 'Filtro de Ar do Motor & Cabine (Ar-Condicionado)',
+                subtitle: 'Substituição preventiva periódica para eficiência de admissão',
+                due_info: 'Em dia',
+                urgency: 'REGULAR',
+                urgency_color: '#10B981',
+                type: 'preventiva'
+            }
+        ];
+
+        const corretivas = [
+            {
+                title: 'Pastilhas de Freio Dianteiras',
+                subtitle: 'Espessura atingiu 3.2 mm (limite recomendado: 3.0 mm). Requer troca em breve.',
+                due_info: 'Ação Recomendada Imediata',
+                urgency: 'URGENTE',
+                urgency_color: '#EF4444',
+                type: 'corretiva'
+            },
+            {
+                title: 'Alinhamento 3D & Balanceamento',
+                subtitle: 'Leve desvio direcional após impacto em buraco/desnível.',
+                due_info: 'Agendar na rede credenciada',
+                urgency: 'ATENÇÃO',
+                urgency_color: '#F59E0B',
+                type: 'corretiva'
+            }
+        ];
+
+        let displayItems = [];
+        if (tab === 'preventiva') {
+            displayItems = preventivas;
+        } else if (tab === 'corretiva') {
+            displayItems = corretivas;
+        } else {
+            displayItems = [...corretivas, ...preventivas];
+        }
+
         return `
-            <div style="display:flex; flex-direction:column; gap:10px;">
-                <!-- Lista de Alertas e Lembretes por Severidade -->
-                ${rems.map(r => `
-                    <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-left:4px solid ${r.severity_color}; border-radius:10px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <span style="font-size:9.5px; font-weight:900; color:${r.severity_color}; text-transform:uppercase; letter-spacing:0.5px;">${r.severity}</span>
-                            <h4 style="font-size:13px; font-weight:800; color:#FFFFFF; margin:2px 0 2px;">${r.title}</h4>
-                            <span style="font-size:11px; color:#94A3B8;">${r.subtitle}</span>
-                        </div>
-                        ${r.action_text ? `
-                            <button class="btn btn-sm" onclick="OwnerView.navigateTo('workshops')" style="background:${r.severity_color}; color:#FFFFFF; font-weight:800; font-size:11px; padding:6px 12px; border-radius:6px; border:none; cursor:pointer;">
-                                ${r.action_text}
-                            </button>
-                        ` : ''}
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <!-- Abas Segmentadas: Manutenção Preventiva | Corretiva | Todos -->
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; background:rgba(15,23,42,0.8); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:4px;">
+                    <button onclick="OwnerView.setReminderTab('preventiva')" style="background:${tab === 'preventiva' ? '#0066FF' : 'transparent'}; color:#FFFFFF; border:none; border-radius:7px; padding:8px 4px; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s; white-space:nowrap; text-align:center;">
+                        Preventiva
+                    </button>
+                    <button onclick="OwnerView.setReminderTab('corretiva')" style="background:${tab === 'corretiva' ? '#EF4444' : 'transparent'}; color:#FFFFFF; border:none; border-radius:7px; padding:8px 4px; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s; white-space:nowrap; text-align:center;">
+                        Corretiva
+                    </button>
+                    <button onclick="OwnerView.setReminderTab('all')" style="background:${tab === 'all' ? 'rgba(255,255,255,0.15)' : 'transparent'}; color:#FFFFFF; border:none; border-radius:7px; padding:8px 4px; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s; white-space:nowrap; text-align:center;">
+                        Todos (${preventivas.length + corretivas.length})
+                    </button>
+                </div>
+
+                <!-- Banner Informativo da Aba Ativa -->
+                <div style="background:${tab === 'corretiva' ? 'rgba(239,68,68,0.08)' : 'rgba(0,102,255,0.08)'}; border:1px solid ${tab === 'corretiva' ? 'rgba(239,68,68,0.25)' : 'rgba(0,102,255,0.25)'}; border-radius:10px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong style="color:#FFFFFF; font-size:12px; display:block;">
+                            ${tab === 'preventiva' ? 'Plano de Manutenção Preventiva' : (tab === 'corretiva' ? 'Demandas de Manutenção Corretiva' : 'Visão Integrada de Manutenção')}
+                        </strong>
+                        <span style="font-size:10.5px; color:#94A3B8;">
+                            ${tab === 'preventiva' ? 'Evite quebras prematuras seguindo o cronograma do fabricante.' : (tab === 'corretiva' ? 'Ações necessárias para restaurar o estado perfeito do veículo.' : 'Acompanhe todos os prazos e ações sugeridas.')}
+                        </span>
                     </div>
-                `).join('')}
+                    <button class="btn btn-sm" onclick="OwnerView.openDeclareModal()" style="background:#00D4FF; color:#0B0F19; font-weight:800; font-size:10.5px; padding:6px 10px; border-radius:6px; border:none; cursor:pointer; white-space:nowrap;">
+                        + Já Fiz
+                    </button>
+                </div>
 
-                <button class="btn btn-secondary" onclick="OwnerView.navigateTo('history')" style="background:rgba(15,23,42,0.8); color:#FFFFFF; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:12px; padding:10px; border-radius:8px; cursor:pointer; margin-top:4px;">
-                    Ver todos os lembretes
-                </button>
+                <!-- Lista de Itens de Manutenção e Alertas -->
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                    ${displayItems.map(item => `
+                        <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-left:4px solid ${item.urgency_color}; border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                <div>
+                                    <span style="font-size:9.5px; font-weight:900; color:${item.urgency_color}; text-transform:uppercase; letter-spacing:0.5px; background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px;">
+                                        ${item.urgency} • ${item.type === 'preventiva' ? 'PREVENTIVA' : 'CORRETIVA'}
+                                    </span>
+                                    <h4 style="font-size:13.5px; font-weight:800; color:#FFFFFF; margin:4px 0 2px;">${item.title}</h4>
+                                    <span style="font-size:11px; color:#94A3B8;">${item.subtitle}</span>
+                                </div>
+                            </div>
 
-                <!-- Botão Flutuante / Fixo Agendar pelo WhatsApp -->
-                <a href="https://wa.me/5511998765432?text=Olá,%20gostaria%20de%20agendar%20a%20revisão%20do%20meu%20Civic%20BRA2E19" target="_blank" class="btn btn-success" style="background:#10B981; color:#0B0F19; font-weight:800; font-size:13px; padding:12px; border-radius:10px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; margin-top:6px; box-shadow:0 4px 16px rgba(16,185,129,0.3);">
+                            <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-size:11px; color:#CBD5E1; font-weight:700;">
+                                    ⏱️ ${item.due_info}
+                                </span>
+                                <div style="display:flex; gap:6px;">
+                                    <button onclick="OwnerView.openDeclareModal()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#FFFFFF; font-size:10.5px; font-weight:700; padding:5px 8px; border-radius:6px; cursor:pointer;">
+                                        Registrar NF
+                                    </button>
+                                    <button onclick="OwnerView.navigateTo('workshops')" style="background:${item.urgency_color}; color:${item.urgency_color === '#00D4FF' ? '#0B0F19' : '#FFFFFF'}; font-size:10.5px; font-weight:800; padding:5px 10px; border-radius:6px; border:none; cursor:pointer;">
+                                        Agendar Oficina
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Botão de Agendamento Oficial WhatsApp -->
+                <a href="https://wa.me/5511998765432?text=Olá,%20gostaria%20de%20agendar%20uma%20manutenção%20preventiva%20para%20o%20meu%20veículo" target="_blank" class="btn btn-success" style="background:#10B981; color:#0B0F19; font-weight:800; font-size:13px; padding:12px; border-radius:10px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; margin-top:4px; box-shadow:0 4px 16px rgba(16,185,129,0.3);">
                     <span>💬</span>
-                    <span>Agendar pelo WhatsApp</span>
+                    <span>Agendar Manutenção via WhatsApp</span>
                 </a>
             </div>
         `;
