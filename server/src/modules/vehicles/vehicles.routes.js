@@ -102,12 +102,13 @@ router.get('/my-vehicles', (req, res) => {
 
         let vehicles = [];
 
-        if (userId || queryEmail) {
+        if (userId || queryEmail || queryPlate) {
             vehicles = db.prepare(`
                 SELECT DISTINCT v.*,
                        vd.dna_code, vd.status as dna_status, vd.activated_at as dna_activated_at,
                        vd.activation_modality,
-                       o.name as owner_name, o.phone as owner_phone,
+                       COALESCE(o.name, u.name, 'Proprietário') as owner_name,
+                       COALESCE(o.phone, u.phone, '') as owner_phone,
                        COALESCE((SELECT MAX(mileage) FROM mileage_records mr WHERE mr.vehicle_id = v.id),
                                 (SELECT MAX(mileage) FROM service_records sr WHERE sr.vehicle_id = v.id), 0) as current_mileage,
                        (SELECT COUNT(*) FROM service_records sr WHERE sr.vehicle_id = v.id) as services_count,
@@ -116,13 +117,25 @@ router.get('/my-vehicles', (req, res) => {
                        (SELECT reference_month_year FROM fipe_values WHERE vehicle_id = v.id ORDER BY consulted_at DESC LIMIT 1) as fipe_ref
                 FROM vehicles v
                 LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
-                JOIN ownership_transfers ot ON ot.vehicle_id = v.id AND ot.status = 'COMPLETED'
-                JOIN owners o ON o.id = ot.new_owner_id
-                LEFT JOIN users u ON u.id = o.user_id
-                WHERE (u.id = ? OR LOWER(o.email) = ? OR LOWER(u.email) = ?)
-                   ${queryPlate ? "OR UPPER(REPLACE(v.license_plate, '-', '')) = ?" : ""}
+                LEFT JOIN owners o ON o.id = v.current_owner_id 
+                                   OR o.id IN (SELECT new_owner_id FROM ownership_transfers WHERE vehicle_id = v.id)
+                LEFT JOIN users u ON u.id = o.user_id OR LOWER(u.email) = LOWER(o.email)
+                WHERE (
+                    (u.id = ? AND ? != '')
+                    OR (LOWER(o.email) = ? AND ? != '')
+                    OR (LOWER(u.email) = ? AND ? != '')
+                    OR (v.current_owner_id IN (SELECT id FROM owners WHERE (user_id = ? AND ? != '') OR (LOWER(email) = ? AND ? != '')))
+                    ${queryPlate ? "OR UPPER(REPLACE(v.license_plate, '-', '')) = ?" : ""}
+                )
                 ORDER BY v.created_at DESC
-            `).all(...(queryPlate ? [userId, queryEmail, queryEmail, queryPlate] : [userId, queryEmail, queryEmail]));
+            `).all(
+                userId || '', userId || '',
+                queryEmail || '', queryEmail || '',
+                queryEmail || '', queryEmail || '',
+                userId || '', userId || '',
+                queryEmail || '', queryEmail || '',
+                ...(queryPlate ? [queryPlate] : [])
+            );
         }
         
         if ((!vehicles || vehicles.length === 0) && queryPlate) {
@@ -140,8 +153,7 @@ router.get('/my-vehicles', (req, res) => {
                        (SELECT reference_month_year FROM fipe_values WHERE vehicle_id = v.id ORDER BY consulted_at DESC LIMIT 1) as fipe_ref
                 FROM vehicles v
                 LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
-                LEFT JOIN ownership_transfers ot ON ot.vehicle_id = v.id AND ot.status = 'COMPLETED'
-                LEFT JOIN owners o ON o.id = ot.new_owner_id
+                LEFT JOIN owners o ON o.id = v.current_owner_id OR o.id IN (SELECT new_owner_id FROM ownership_transfers WHERE vehicle_id = v.id)
                 WHERE UPPER(REPLACE(v.license_plate, '-', '')) = ?
             `).all(queryPlate);
         }

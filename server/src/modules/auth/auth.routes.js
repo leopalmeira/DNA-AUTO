@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
@@ -77,6 +78,25 @@ router.post('/login', (req, res) => {
             userAgent: req.headers['user-agent']
         });
 
+        // Buscar veículo vinculado do usuário para auto-carregamento imediato no app mobile
+        let primaryVehicle = null;
+        try {
+            const ownerRec = db.prepare('SELECT id, name FROM owners WHERE user_id = ? OR LOWER(email) = ?').get(user.id, user.email.toLowerCase());
+            if (ownerRec) {
+                primaryVehicle = db.prepare(`
+                    SELECT v.*,
+                           vd.dna_code, vd.status as dna_status, vd.activated_at as dna_activated_at,
+                           (SELECT fipe_price_cents FROM fipe_values WHERE vehicle_id = v.id ORDER BY consulted_at DESC LIMIT 1) as fipe_price_cents
+                    FROM vehicles v
+                    LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+                    LEFT JOIN ownership_transfers ot ON ot.vehicle_id = v.id AND ot.status = 'COMPLETED'
+                    WHERE v.current_owner_id = ? OR ot.new_owner_id = ?
+                    ORDER BY v.created_at DESC
+                    LIMIT 1
+                `).get(ownerRec.id, ownerRec.id);
+            }
+        } catch (_) {}
+
         res.json({
             token,
             user: {
@@ -86,7 +106,22 @@ router.post('/login', (req, res) => {
                 phone: user.phone,
                 role_code: user.role_code,
                 role_name: user.role_name,
-                workshop: workshopUser || null
+                workshop: workshopUser || null,
+                vehicle: primaryVehicle ? {
+                    id: primaryVehicle.id,
+                    license_plate: primaryVehicle.license_plate,
+                    brand: primaryVehicle.brand,
+                    model: primaryVehicle.model,
+                    full_title: `${primaryVehicle.brand} ${primaryVehicle.model}`.trim(),
+                    version_label: primaryVehicle.version_label,
+                    manufacture_year: primaryVehicle.manufacture_year,
+                    model_year: primaryVehicle.model_year,
+                    color: primaryVehicle.color,
+                    fuel_type: primaryVehicle.fuel_type,
+                    photo_url: primaryVehicle.photo_url || '/img/splash-car-hero.png',
+                    dna_code: primaryVehicle.dna_code || null,
+                    fipe_price_cents: primaryVehicle.fipe_price_cents || null
+                } : null
             }
         });
     } catch (err) {
@@ -202,13 +237,18 @@ router.post('/register-client', async (req, res) => {
                         const fuel = vData.fuel_type || 'Flex';
                         const vin = vData.chassis_vin || `9BWZZZ377VT${Date.now().toString().slice(-6)}`;
                         const renavam = vData.renavam || `00${Date.now().toString().slice(-9)}`;
+                        let photoUrl = '/img/splash-car-hero.png';
+                        try {
+                            const { getDefaultPhotoForVehicle } = require('../../services/vehiclePhoto.service');
+                            photoUrl = (vData.photo_url) || getDefaultPhotoForVehicle(brand, model) || '/img/splash-car-hero.png';
+                        } catch (_) {}
 
                         db.prepare(`
                             INSERT INTO vehicles (
                                 id, license_plate, chassis_vin, renavam, brand, model,
-                                model_year, manufacture_year, color, fuel_type, current_owner_id, created_at
-                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-                        `).run(vId, cleanPlate, vin, renavam, brand, model, year, year, color, fuel, ownerId);
+                                model_year, manufacture_year, color, fuel_type, current_owner_id, photo_url, created_at
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                        `).run(vId, cleanPlate, vin, renavam, brand, model, year, year, color, fuel, ownerId, photoUrl);
 
                         // Gerar DNA automático se ativado
                         const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -226,6 +266,43 @@ router.post('/register-client', async (req, res) => {
                 } catch (e) {
                     console.warn('Busca externa falhou no registro do cliente:', e.message);
                 }
+            }
+
+            // Se a API externa não localizou a placa, cria o veículo para a placa digitada (Garante que qualquer placa cadastrada funcione)
+            if (!vehicle) {
+                const vId = `veh_${Date.now()}`;
+                const brand = req.body.brand || req.body.vehicle_brand || 'Veículo';
+                const model = req.body.model || req.body.vehicle_model || 'Cadastrado';
+                const year = parseInt(req.body.year || req.body.vehicle_year) || 2022;
+                const color = req.body.color || 'Prata';
+                const fuel = req.body.fuel_type || 'Flex';
+                const vin = `9BWZZZ377VT${Date.now().toString().slice(-6)}`;
+                const renavam = `00${Date.now().toString().slice(-9)}`;
+                let photoUrl = '/img/splash-car-hero.png';
+                try {
+                    const { getDefaultPhotoForVehicle } = require('../../services/vehiclePhoto.service');
+                    photoUrl = getDefaultPhotoForVehicle(brand, model) || '/img/splash-car-hero.png';
+                } catch (_) {}
+
+                db.prepare(`
+                    INSERT INTO vehicles (
+                        id, license_plate, chassis_vin, renavam, brand, model,
+                        model_year, manufacture_year, color, fuel_type, current_owner_id, photo_url, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+                `).run(vId, cleanPlate, vin, renavam, brand, model, year, year, color, fuel, ownerId, photoUrl);
+
+                // Gerar DNA ativo para o veículo do novo cliente
+                const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+                const rnd = (l) => Array.from({length: l}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+                const dnaCode = `DNA-BR-${rnd(4)}-${rnd(4)}-${rnd(3)}`;
+                const certHash = crypto.createHash('sha256').update(`${vId}-${dnaCode}`).digest('hex');
+
+                db.prepare(`
+                    INSERT INTO vehicle_dna (id, vehicle_id, dna_code, status, activation_fee_cents, certificate_hash, activated_at, created_at)
+                    VALUES (?, ?, ?, 'ACTIVE', 5990, ?, datetime('now'), datetime('now'))
+                `).run(`dna_${Date.now()}`, vId, dnaCode, certHash);
+
+                vehicle = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(vId);
             }
         }
 
@@ -268,6 +345,12 @@ router.post('/register-client', async (req, res) => {
             userAgent: req.headers['user-agent']
         });
 
+        // Buscar dados de DNA vinculados
+        let vehicleDna = null;
+        if (vehicle) {
+            vehicleDna = db.prepare('SELECT dna_code, status FROM vehicle_dna WHERE vehicle_id = ?').get(vehicle.id);
+        }
+
         res.status(201).json({
             token,
             user: {
@@ -282,7 +365,14 @@ router.post('/register-client', async (req, res) => {
                     id: vehicle.id,
                     license_plate: vehicle.license_plate,
                     brand: vehicle.brand,
-                    model: vehicle.model
+                    model: vehicle.model,
+                    full_title: `${vehicle.brand} ${vehicle.model}`.trim(),
+                    manufacture_year: vehicle.manufacture_year,
+                    model_year: vehicle.model_year,
+                    color: vehicle.color,
+                    fuel_type: vehicle.fuel_type,
+                    photo_url: vehicle.photo_url || '/img/splash-car-hero.png',
+                    dna_code: (vehicleDna && vehicleDna.dna_code) || null
                 } : null
             }
         });

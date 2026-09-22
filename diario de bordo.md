@@ -761,9 +761,91 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 
 ---
 
+### 🎨 Ciclo 39: Fidelidade Visual Absoluta — Tela de Login (Splash Screen)
+**Data:** 21/09/2026
+
+**Motivação:** Garantir que a splash screen (tela de login) reproduza com fidelidade pixel-perfect o design de referência fornecido pelo proprietário do projeto.
+
+**Alterações Realizadas:**
+1. **Logo e Identidade de Marca:**
+   - Logo principal alterado para `splash-d-logo.png` (ícone "D" com glow neon azul) como fonte primária.
+   - Adição do texto "DNA AUTO" (h1, `font-family: Outfit`, 30px, weight 900) logo abaixo do ícone.
+   - Adição do subtítulo "Seu veículo sempre protegido." em tipografia muted abaixo do título.
+2. **Imagem do Carro (Hero):**
+   - Remoção de `mix-blend-mode: screen` que descaracterizava as cores originais da foto.
+   - Remoção de `mask-image` radial que esmaecia as bordas do carro — agora o veículo aparece com bordas nítidas e definidas, exatamente como na referência.
+3. **Botões de Ação:**
+   - Botão "Entrar" simplificado: texto "Entrar" apenas, sem ícone de seta.
+   - Botão "Cadastrar" simplificado: texto "Cadastrar" apenas, sem ícone de pessoa/plus.
+4. **Rodapé:**
+   - Footer de "Ambiente Seguro • Criptografia Veicular Ponta a Ponta" ocultado, conforme design de referência.
+5. **Paridade:** Alterações sincronizadas em `cliente.app/dna-auto-login.html` e `public/dna-auto-login.html`.
+
+### 📱 Ciclo 42 — Nova Imagem de Fundo Oficial, Dois Botões Clicáveis e Ajuste Mobile-First para Celular
+**Data:** 22/09/2026
+
+**Demandas Atendidas:**
+1. **Nova Imagem de Fundo Oficial (`/img/dna-auth-splash.png` / `.jpg`):**
+   - Substituição da imagem anterior pela nova imagem fornecida pelo usuário, contendo o logotipo "D" neon ciano, tipografia "DNA AUTO - Seu veículo sempre protegido" e o supercarro frontal com iluminação cyber blue e reflexo no solo molhado.
+   - Preservação da fidelidade visual e proporção nativa da imagem, com `object-fit: cover` e `object-position: center top`.
+2. **Remoção de Elementos Legados e Duplicados ("Retire o que estava"):**
+   - Remoção de divs e CSS legados que renderizavam logos, textos e auras artificiais em HTML por cima da imagem.
+   - Limpeza de classes obsoletas (`.brand-header`, `.hero-car-stage`, `.car-image`, etc.) para garantir carregamento instantâneo e código limpo.
+3. **Dois Botões de Ação Clicáveis ("Entrar" e "Cadastrar"):**
+   - **Botão Entrar:** Gradiente Azul Elétrico Neon Primário (`#0084FF` a `#0055D4`), efeito de brilho suave e navegação direta para a tela de login (`#login`).
+   - **Botão Cadastrar:** Glassmorphism escuro translúcido com contorno Neon Ciano (`#00D4FF`), desfoque de fundo e navegação direta para o formulário de cadastro com placa (`#register`).
+4. **Ajuste Responsivo Otimizado para Celular (Mobile-First):**
+   - No celular (`@media (max-width: 600px)`): ocupação de 100vw e 100dvh contínua de ponta a ponta, sem bordas pretas laterais ou quebras de scroll.
+   - Espaçamento inferior compatível com safe-area de iPhones e Androids (`env(safe-area-inset-bottom)`), evitando interferência com a barra inicial do sistema operacional.
+   - Gradiente escuro sutil no rodapé (`.splash-bottom-gradient`) garantindo máximo contraste e legibilidade para os botões.
+   - No desktop: centralização harmônica simulando tela de smartphone com borda cyber neon e sombras profundas.
+### 🏎️ Ciclo 43 — Tela de Login com Wallpaper Nativo e Campos Cyber-Pill Fiéis ao Design de Referência
+**Data:** 22/09/2026
+
+**Demandas Atendidas:**
+1. **Transição Contínua da Splash para a Tela de Login:**
+   - Ao clicar em "Entrar" na tela de splash, o usuário é direcionado para a tela de login mantendo o mesmo wallpaper do superesportivo com faróis neon e logotipo oficial.
+2. **Campos de Entrada Cyber-Pill (Fidelidade Pixel-Perfect ao Modelo):**
+   - **Campo 1 (E-mail ou CPF):** Pílula com borda neon azul/ciano (`1.5px solid #0099FF`), fundo translúcido escuro com blur, ícone de usuário (`👤`) em ciano `#00D4FF`, linha divisória vertical e input com placeholder "E-mail ou CPF".
+   - **Campo 2 (Senha):** Pílula com o mesmo acabamento, ícone de cadeado (`🔒`) em ciano `#00D4FF`, linha divisória vertical, input de senha e botão com ícone de olho (`👁️`) para alternar visibilidade.
+3. **Linha de Opções & Ações:**
+   - Checkbox estilizado com seleção suave e texto "Lembrar de mim".
+   - Link direto "Esqueceu a senha?" em azul neon com hover luminoso.
+   - Botão de submit principal "Entrar" com gradiente elétrico, raio de curvatura de 16px e sombra neon azul.
+4. **Navegação Discreta & Experiência Mobile:**
+   - Botão voltar circular e minimalista (`.login-back-btn`) posicionado no canto superior esquerdo para retorno suave à tela de splash.
+   - Ocupação responsiva de 100vw e 100dvh no smartphone e visualização centrada em moldura moderna no desktop.
+5. **Paridade e Homologação:**
+   - Sincronização rigorosa entre `cliente.app/dna-auto-login.html` e `public/dna-auto-login.html`.
+   - 45 de 45 testes automatizados aprovados (100%) no `npm test`.
+
+### 👤 Ciclo 44 — Resolução de Identidade Real no Login e Cadastro com Vínculo Dinâmico de Placa e Eliminação de Mock Fixo
+**Data:** 22/09/2026
+
+**Demandas Atendidas:**
+1. **Eliminação do Perfil Estático "Olá, João!":**
+   - Corrigido o comportamento em que qualquer usuário que fazia login ou cadastro sempre visualizava o perfil fixo de "João Silva".
+   - O `ownerView.js` agora lê imediatamente o `localStorage` no momento da inicialização síncrona (`syncFromLocalStorage`), sincronizando o primeiro nome real do usuário autenticado ("Olá, [Nome]!") na tela inicial (`renderHomeScreen`), na gaveta lateral de perfil e nas telas internas.
+   - O fallback genérico mudou de "João" para "Proprietário" / "Cliente".
+2. **Criação e Vínculo Garantido de Veículo com Qualquer Placa Cadastrada:**
+   - No backend `POST /api/v1/auth/register-client`: corrigida a dependência do módulo `crypto` e implementada a criação garantida do veículo no banco de dados SQLite com emissão do passaporte DNA ativo (`ACTIVE`) e vínculo em `ownership_transfers` e `current_owner_id`, mesmo quando a API externa não responde ou para novas placas.
+   - Os endpoints de cadastro e de login (`POST /api/v1/auth/login`) agora retornam o veículo vinculado diretamente no payload `user.vehicle`.
+3. **Persistência de Placa e Sessão em Ambas as Telas:**
+   - Em `dna-auto-login.html` (nas abas de Login e Cadastro) e nos formulários internos de `ownerView.js`, a placa (`dna_registered_plate`) e o usuário autenticado (`dna_logged_user` e `dna_user_name`) são persistidos e aplicados imediatamente na Garagem Digital do cliente.
+4. **Resolução de Imagem Quebrada do Carro:**
+   - Substituição de URLs externas do Unsplash por ativos automotivos locais de alta definição (`/img/splash-car-hero.png` e `/img/vw-gol-app.jpg`), com fallbacks de segurança em tags `<img>` via `onerror="this.onerror=null; this.src='/img/splash-car-hero.png';"`, eliminando ícones de imagens corrompidas.
+5. **Aprimoramento da Consulta de Frota do Dono (`/api/v1/vehicles/my-vehicles`):**
+   - Query SQL aprimorada com busca resiliente por `current_owner_id`, histórico em `ownership_transfers`, e-mail do usuário/owner e correspondência por placa ativa.
+6. **Qualidade e Paridade:**
+   - Paridade rigorosa 100% mantida entre `cliente.app/` e `public/`.
+   - 45 de 45 testes automatizados aprovados (100%) no `npm test`.
+
+---
+
 ## 🏛️ Diretrizes e Convenções Persistentes
 1. **Controle de Versão Git:** Todas as modificações de código e documentação devem ser seguidas de commit limpo e push para a branch `master` no repositório remoto GitHub.
 2. **Registro Contínuo:** Todo novo ciclo ou alteração relevante de engenharia deve ser imediatamente documentado no `diario de bordo.md`, no `DIARIO_DE_BORDO.md` e refletido no `README.md`.
 3. **Comunicação:** Atendimento sempre no idioma português.
 4. **Validação de Testes:** O comando `npm test` deve sempre permanecer com 100% dos testes aprovados antes de qualquer publicação.
 5. **Autonomia de Testes do Usuário:** Toda parte de testes em navegadores reais na interface do WhatsApp é realizada diretamente pelo usuário, respeitando estritamente suas diretrizes operacionais.
+

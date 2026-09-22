@@ -71,7 +71,34 @@ const OwnerView = {
     workshopSearchQuery: '',
     _workshopsLoaded: false,
 
-    // Dados Oficiais do Veículo Padrão (Fiel ao Mapa Oficial: Honda Civic BRA2E19)
+    // Sincronizar Imediatamente Usuário e Veículo Ativo do LocalStorage (Zero Espera / Zero "Olá, João!")
+    syncFromLocalStorage() {
+        try {
+            const userStr = typeof localStorage !== 'undefined' ? localStorage.getItem('dna_logged_user') : null;
+            if (userStr) {
+                const u = JSON.parse(userStr);
+                if (u && u.name) {
+                    this.vehicleData.user_name = u.name;
+                }
+                if (u && u.email) {
+                    this.vehicleData.user_email = u.email;
+                }
+                if (u && u.vehicle) {
+                    this.applyVehicleData(u.vehicle);
+                }
+            } else if (typeof localStorage !== 'undefined') {
+                const savedName = localStorage.getItem('dna_user_name');
+                if (savedName) this.vehicleData.user_name = savedName;
+            }
+
+            const regPlate = typeof localStorage !== 'undefined' ? localStorage.getItem('dna_registered_plate') : null;
+            if (regPlate) {
+                this.vehicleData.license_plate = regPlate;
+            }
+        } catch (_) {}
+    },
+
+    // Dados Oficiais do Veículo Padrão (Fallback Seguro com Imagem Local)
     vehicleData: {
         id: 'veh_civic_touring',
         brand: 'Honda',
@@ -94,9 +121,9 @@ const OwnerView = {
         certification_status: 'Permanente',
         status_badge: 'EM DIA',
         status_subtext: '(Sem pendências)',
-        photo_url: 'https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80',
-        user_name: 'João Silva',
-        user_email: 'joao@email.com',
+        photo_url: '/img/splash-car-hero.png',
+        user_name: 'Proprietário',
+        user_email: '',
         user_role: 'Cliente Proprietário',
         notifications_count: 4,
         timeline: [
@@ -341,6 +368,7 @@ const OwnerView = {
     // ── Botão de Sair / Logout Oficial (Direciona para Splash/Boas-Vindas) ──
     logout() {
         localStorage.removeItem('dna_logged_user');
+        localStorage.removeItem('dna_user_name');
         localStorage.removeItem('dna_token');
         localStorage.removeItem('dna_auto_token');
         localStorage.removeItem('dna_current_view');
@@ -352,6 +380,9 @@ const OwnerView = {
         this.currentScreen = 'home';
         this.activeTab = 'home';
         this.userVehicles = [];
+        this.vehicleData.user_name = 'Proprietário';
+        this.vehicleData.user_email = '';
+        this._backendSynced = false;
         this.toggleDrawer(false);
         this.render();
     },
@@ -438,8 +469,17 @@ const OwnerView = {
                 API.setToken(res.token);
                 if (res.user) {
                     localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
-                    this.vehicleData.user_name = res.user.name;
-                    this.vehicleData.user_email = res.user.email;
+                    if (res.user.name) {
+                        localStorage.setItem('dna_user_name', res.user.name);
+                        this.vehicleData.user_name = res.user.name;
+                    }
+                    if (res.user.email) {
+                        this.vehicleData.user_email = res.user.email;
+                    }
+                    if (res.user.vehicle && res.user.vehicle.license_plate) {
+                        localStorage.setItem('dna_registered_plate', res.user.vehicle.license_plate);
+                        this.applyVehicleData(res.user.vehicle);
+                    }
                 }
                 localStorage.setItem('dna_owner_session', 'active');
                 localStorage.setItem('dna_owner_auth_screen', 'app');
@@ -595,10 +635,22 @@ const OwnerView = {
 
             if (res && res.token) {
                 API.setToken(res.token);
+                if (plate) {
+                    localStorage.setItem('dna_registered_plate', plate);
+                }
                 if (res.user) {
                     localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
-                    this.vehicleData.user_name = res.user.name;
-                    this.vehicleData.user_email = res.user.email;
+                    if (res.user.name) {
+                        localStorage.setItem('dna_user_name', res.user.name);
+                        this.vehicleData.user_name = res.user.name;
+                    }
+                    if (res.user.email) {
+                        this.vehicleData.user_email = res.user.email;
+                    }
+                    if (res.user.vehicle && res.user.vehicle.license_plate) {
+                        localStorage.setItem('dna_registered_plate', res.user.vehicle.license_plate);
+                        this.applyVehicleData(res.user.vehicle);
+                    }
                 }
                 localStorage.setItem('dna_owner_session', 'active');
                 localStorage.setItem('dna_owner_auth_screen', 'app');
@@ -1054,10 +1106,20 @@ const OwnerView = {
         this._backendSynced = true;
 
         try {
-            const loggedUserStr = localStorage.getItem('dna_logged_user');
+            const loggedUserStr = typeof localStorage !== 'undefined' ? localStorage.getItem('dna_logged_user') : null;
             const loggedUser = loggedUserStr ? JSON.parse(loggedUserStr) : null;
-            const regPlate = localStorage.getItem('dna_registered_plate') || (this.authData && this.authData.license_plate) || '';
+            const regPlate = (typeof localStorage !== 'undefined' && localStorage.getItem('dna_registered_plate')) || (this.authData && this.authData.license_plate) || '';
             const userEmail = (loggedUser && loggedUser.email) || (this.authData && this.authData.email) || '';
+
+            if (loggedUser && loggedUser.name) {
+                this.vehicleData.user_name = loggedUser.name;
+            }
+            if (loggedUser && loggedUser.email) {
+                this.vehicleData.user_email = loggedUser.email;
+            }
+            if (loggedUser && loggedUser.vehicle) {
+                this.applyVehicleData(loggedUser.vehicle);
+            }
 
             let endpoint = '/api/v1/vehicles/my-vehicles';
             const params = new URLSearchParams();
@@ -1065,7 +1127,7 @@ const OwnerView = {
             if (regPlate) params.append('plate', regPlate);
             if (params.toString()) endpoint += '?' + params.toString();
 
-            const token = localStorage.getItem('dna_token') || (typeof API !== 'undefined' && API.token);
+            const token = (typeof localStorage !== 'undefined' && localStorage.getItem('dna_token')) || (typeof API !== 'undefined' && API.token);
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
             const res = await fetch(endpoint, { headers });
@@ -1073,28 +1135,41 @@ const OwnerView = {
                 const data = await res.json();
                 if (data.success && Array.isArray(data.vehicles) && data.vehicles.length > 0) {
                     this.userVehicles = data.vehicles;
-                    const activePlate = regPlate || this.vehicleData.license_plate;
+                    const activePlate = regPlate || (loggedUser && loggedUser.vehicle && loggedUser.vehicle.license_plate) || this.vehicleData.license_plate;
                     const realVeh = (activePlate && data.vehicles.find(u => u.license_plate === activePlate)) || data.vehicles[0];
                     this.applyVehicleData(realVeh);
+                    if (loggedUser && loggedUser.name) {
+                        this.vehicleData.user_name = loggedUser.name;
+                    }
                     this.render();
                     return;
                 }
             }
 
-            // Se o usuário cadastrou um veículo nesta sessão, mostra somente ele (zero mocks)
+            // Se o backend não retornou veículos mas temos placa registrada ou dados no loggedUser
             if (regPlate) {
+                const brand = (loggedUser && loggedUser.vehicle && loggedUser.vehicle.brand) || this.authData.vehicle_brand || 'Veículo';
+                const model = (loggedUser && loggedUser.vehicle && loggedUser.vehicle.model) || this.authData.vehicle_model || 'Cadastrado';
                 this.userVehicles = [{
                     id: 'veh_user_' + regPlate,
-                    brand: this.authData.vehicle_brand || 'Veículo',
-                    model: this.authData.vehicle_model || 'Cadastrado',
-                    full_title: `${this.authData.vehicle_brand || ''} ${this.authData.vehicle_model || ''}`.trim(),
+                    brand: brand,
+                    model: model,
+                    full_title: `${brand} ${model}`.trim(),
                     license_plate: regPlate,
-                    manufacture_year: this.authData.vehicle_year || 2021,
-                    model_year: this.authData.vehicle_year || 2021,
-                    photo_url: this.authData.photo_url || this.vehicleData.photo_url,
-                    dna_code: this.vehicleData.dna_code || 'DNA-BR-ATIVO'
+                    manufacture_year: this.authData.vehicle_year || 2022,
+                    model_year: this.authData.vehicle_year || 2022,
+                    photo_url: (loggedUser && loggedUser.vehicle && loggedUser.vehicle.photo_url) || this.authData.photo_url || '/img/splash-car-hero.png',
+                    dna_code: (loggedUser && loggedUser.vehicle && loggedUser.vehicle.dna_code) || this.vehicleData.dna_code || 'DNA-BR-ATIVO'
                 }];
                 this.applyVehicleData(this.userVehicles[0]);
+                if (loggedUser && loggedUser.name) {
+                    this.vehicleData.user_name = loggedUser.name;
+                }
+                this.render();
+            } else if (loggedUser && loggedUser.vehicle) {
+                this.applyVehicleData(loggedUser.vehicle);
+                this.userVehicles = [loggedUser.vehicle];
+                if (loggedUser.name) this.vehicleData.user_name = loggedUser.name;
                 this.render();
             } else {
                 this.userVehicles = [];
@@ -1142,10 +1217,24 @@ const OwnerView = {
         if (realVeh.fipe_code) this.vehicleData.fipe_code = realVeh.fipe_code;
         if (realVeh.fipe_ref) this.vehicleData.fipe_ref = realVeh.fipe_ref;
         if (realVeh.fipe_score) this.vehicleData.fipe_score = realVeh.fipe_score;
-        if (realVeh.photo_url) this.vehicleData.photo_url = realVeh.photo_url;
+        if (realVeh.photo_url && !realVeh.photo_url.includes('unsplash.com')) {
+            this.vehicleData.photo_url = realVeh.photo_url;
+        } else if (!this.vehicleData.photo_url || this.vehicleData.photo_url.includes('unsplash.com')) {
+            this.vehicleData.photo_url = '/img/splash-car-hero.png';
+        }
         if (realVeh.dna_code) this.vehicleData.dna_code = realVeh.dna_code;
         if (realVeh.current_mileage) this.vehicleData.current_mileage = realVeh.current_mileage;
-        if (realVeh.owner_name) this.vehicleData.user_name = realVeh.owner_name;
+
+        // Priorizar sempre o nome do usuário logado na sessão ativa
+        const loggedUserStr = typeof localStorage !== 'undefined' ? localStorage.getItem('dna_logged_user') : null;
+        if (loggedUserStr) {
+            try {
+                const lu = JSON.parse(loggedUserStr);
+                if (lu && lu.name) this.vehicleData.user_name = lu.name;
+            } catch (_) {}
+        } else if (realVeh.owner_name) {
+            this.vehicleData.user_name = realVeh.owner_name;
+        }
 
         // Buscar Inspeção e OBD2 para o Veículo Ativo
         this.fetchVehicleExtras(this.vehicleData.license_plate);
@@ -1169,19 +1258,32 @@ const OwnerView = {
                 fetch(`/api/v1/vehicles/${plate}/obd`)
             ]);
             if (rInsp.ok) {
-                const dInsp = await rInsp.json();
-                if (dInsp.success) {
-                    if (dInsp.inspection) this.inspectionData = dInsp.inspection;
-                    if (dInsp.revisions) this.revisionsData = dInsp.revisions;
+                const data = await rInsp.json();
+                if (data.success && data.inspection) {
+                    this.inspectionData = data.inspection;
                 }
             }
             if (rObd.ok) {
-                const dObd = await rObd.json();
-                if (dObd.success && dObd.telemetry) {
-                    this.obdData = dObd;
+                const data = await rObd.json();
+                if (data.success && data.telemetry) {
+                    this.obdData = data;
                 }
             }
-            this.render();
+        } catch (_) {}
+    },
+
+    // Buscar Rede de Oficinas Credenciadas
+    async fetchWorkshopsNetwork() {
+        if (this._workshopsLoaded) return;
+        this._workshopsLoaded = true;
+        try {
+            const res = await fetch('/api/v1/workshops/network');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success && Array.isArray(data.workshops)) {
+                    this.workshopsList = data.workshops;
+                }
+            }
         } catch (_) {}
     },
 
@@ -1189,6 +1291,9 @@ const OwnerView = {
     async render() {
         const container = document.getElementById('view-content');
         if (!container) return;
+
+        // Sincroniza imediatamente o usuário e carro do cache local antes de desenhar
+        this.syncFromLocalStorage();
 
         // Garante a aplicação do isolamento no body
         document.body.classList.add('is-owner-app');
@@ -1606,7 +1711,7 @@ const OwnerView = {
         return `
             <!-- Saudação Oficial do Usuário -->
             <div class="dna-owner-welcome-bar" style="margin-bottom:12px;">
-                <h2 style="font-size:18px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">Olá, ${v.user_name ? v.user_name.split(' ')[0] : 'João'}!</h2>
+                <h2 style="font-size:18px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">Olá, ${v.user_name && v.user_name !== 'Proprietário' ? v.user_name.split(' ')[0] : (v.user_name || 'Cliente')}!</h2>
                 <p style="font-size:12px; color:#94A3B8; margin:0;">Seu veículo em boas mãos.</p>
             </div>
 
@@ -1621,7 +1726,7 @@ const OwnerView = {
                 </div>
             ` : ''}
 
-            <!-- Card Principal do Veículo com DNA ATIVO (Honda Civic BRA2E19) -->
+            <!-- Card Principal do Veículo com DNA ATIVO -->
             <div class="dna-vehicle-card">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <span style="font-size:11px; font-weight:800; color:#00E676; background:rgba(0,230,118,0.12); border:1px solid rgba(0,230,118,0.3); padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:5px;">
@@ -1634,7 +1739,7 @@ const OwnerView = {
                 <!-- Foto do Carro com Botão de Trocar Foto -->
                 <div class="dna-car-stage" onclick="OwnerView.openChangePhotoModal()" style="cursor:pointer;" title="Clique para trocar foto">
                     <div class="dna-car-neon-glow"></div>
-                    <img class="dna-car-image" src="${v.photo_url}" alt="${v.full_title}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80';" />
+                    <img class="dna-car-image" src="${v.photo_url || '/img/splash-car-hero.png'}" alt="${v.full_title}" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
                     <button class="dna-car-change-photo-btn" onclick="event.stopPropagation(); OwnerView.openChangePhotoModal();" title="Trocar foto do meu carro">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                         <span>Trocar Foto</span>
@@ -1829,7 +1934,7 @@ const OwnerView = {
                 <div class="dna-vehicle-card" style="margin-bottom:0;">
                     <div class="dna-car-stage" onclick="OwnerView.openChangePhotoModal()" style="cursor:pointer;" title="Clique para trocar foto">
                         <div class="dna-car-neon-glow"></div>
-                        <img class="dna-car-image" src="${v.photo_url}" alt="${v.full_title}" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1590362891988-f778047020d0?w=800&auto=format&fit=crop&q=80';" />
+                        <img class="dna-car-image" src="${v.photo_url || '/img/splash-car-hero.png'}" alt="${v.full_title}" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
                         <button class="dna-car-change-photo-btn" onclick="event.stopPropagation(); OwnerView.openChangePhotoModal();" title="Trocar foto do meu carro">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                             <span>Trocar Foto</span>

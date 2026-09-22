@@ -9,7 +9,7 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 43):** Tela de login e boas-vindas do App do Cliente com **layout contínuo em wallpaper nativo** (superesportivo frontal em alta resolução com neon ciano e logo da marca), **campos de entrada cyber-pill** ('E-mail ou CPF', 'Senha' com toggle de olho) posicionados diretamente sobre o piso reflexivo exatamente como no design oficial, checkbox 'Lembrar de mim', link 'Esqueceu a senha?', botão elétrico 'Entrar' e navegação de retorno discreta. 45 testes automatizados aprovados com 100% de sucesso.
+> ✨ **Novidades Recentes (Ciclo 44):** Identidade real dinâmica no Login e Cadastro: fim definitivo do perfil estático "Olá, João!", sincronização imediata do primeiro nome do usuário na Home e no menu, criação garantida de veículo no banco de dados para qualquer placa informada com passaporte DNA permanente ativo, retorno do veículo no payload de login/cadastro e substituição de imagens externas corrompidas por ativos locais de alta definição (`/img/splash-car-hero.png`) com fallbacks seguros. 45 testes automatizados aprovados com 100% de sucesso.
 
 ---
 

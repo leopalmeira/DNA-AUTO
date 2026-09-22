@@ -1661,8 +1661,8 @@
 
     // ── Acesso Rápido Demo (1-Clique) ──
     function quickDemoLogin() {
-      document.getElementById('login-email').value = 'joao@email.com';
-      document.getElementById('login-password').value = '123456';
+      document.getElementById('login-email').value = 'carlos.silva@email.com';
+      document.getElementById('login-password').value = 'senha123';
       const form = document.getElementById('form-login');
       if (form) {
         form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
@@ -1700,6 +1700,12 @@
           localStorage.setItem('dna_auto_token', data.token);
           if (data.user) {
             localStorage.setItem('dna_logged_user', JSON.stringify(data.user));
+            if (data.user.name) {
+              localStorage.setItem('dna_user_name', data.user.name);
+            }
+            if (data.user.vehicle && data.user.vehicle.license_plate) {
+              localStorage.setItem('dna_registered_plate', data.user.vehicle.license_plate);
+            }
           }
           localStorage.setItem('dna_owner_session', 'active');
           localStorage.setItem('dna_owner_auth_screen', 'app');
@@ -1757,8 +1763,17 @@
         if (res.ok && data.token) {
           localStorage.setItem('dna_token', data.token);
           localStorage.setItem('dna_auto_token', data.token);
+          if (plate) {
+            localStorage.setItem('dna_registered_plate', plate);
+          }
           if (data.user) {
             localStorage.setItem('dna_logged_user', JSON.stringify(data.user));
+            if (data.user.name) {
+              localStorage.setItem('dna_user_name', data.user.name);
+            }
+            if (data.user.vehicle && data.user.vehicle.license_plate) {
+              localStorage.setItem('dna_registered_plate', data.user.vehicle.license_plate);
+            }
           }
           localStorage.setItem('dna_owner_session', 'active');
           localStorage.setItem('dna_owner_auth_screen', 'app');

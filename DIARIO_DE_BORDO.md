@@ -819,6 +819,27 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
    - Sincronização rigorosa entre `cliente.app/dna-auto-login.html` e `public/dna-auto-login.html`.
    - 45 de 45 testes automatizados aprovados (100%) no `npm test`.
 
+### 👤 Ciclo 44 — Resolução de Identidade Real no Login e Cadastro com Vínculo Dinâmico de Placa e Eliminação de Mock Fixo
+**Data:** 22/09/2026
+
+**Demandas Atendidas:**
+1. **Eliminação do Perfil Estático "Olá, João!":**
+   - Corrigido o comportamento em que qualquer usuário que fazia login ou cadastro sempre visualizava o perfil fixo de "João Silva".
+   - O `ownerView.js` agora lê imediatamente o `localStorage` no momento da inicialização síncrona (`syncFromLocalStorage`), sincronizando o primeiro nome real do usuário autenticado ("Olá, [Nome]!") na tela inicial (`renderHomeScreen`), na gaveta lateral de perfil e nas telas internas.
+   - O fallback genérico mudou de "João" para "Proprietário" / "Cliente".
+2. **Criação e Vínculo Garantido de Veículo com Qualquer Placa Cadastrada:**
+   - No backend `POST /api/v1/auth/register-client`: corrigida a dependência do módulo `crypto` e implementada a criação garantida do veículo no banco de dados SQLite com emissão do passaporte DNA ativo (`ACTIVE`) e vínculo em `ownership_transfers` e `current_owner_id`, mesmo quando a API externa não responde ou para novas placas.
+   - Os endpoints de cadastro e de login (`POST /api/v1/auth/login`) agora retornam o veículo vinculado diretamente no payload `user.vehicle`.
+3. **Persistência de Placa e Sessão em Ambas as Telas:**
+   - Em `dna-auto-login.html` (nas abas de Login e Cadastro) e nos formulários internos de `ownerView.js`, a placa (`dna_registered_plate`) e o usuário autenticado (`dna_logged_user` e `dna_user_name`) são persistidos e aplicados imediatamente na Garagem Digital do cliente.
+4. **Resolução de Imagem Quebrada do Carro:**
+   - Substituição de URLs externas do Unsplash por ativos automotivos locais de alta definição (`/img/splash-car-hero.png` e `/img/vw-gol-app.jpg`), com fallbacks de segurança em tags `<img>` via `onerror="this.onerror=null; this.src='/img/splash-car-hero.png';"`, eliminando ícones de imagens corrompidas.
+5. **Aprimoramento da Consulta de Frota do Dono (`/api/v1/vehicles/my-vehicles`):**
+   - Query SQL aprimorada com busca resiliente por `current_owner_id`, histórico em `ownership_transfers`, e-mail do usuário/owner e correspondência por placa ativa.
+6. **Qualidade e Paridade:**
+   - Paridade rigorosa 100% mantida entre `cliente.app/` e `public/`.
+   - 45 de 45 testes automatizados aprovados (100%) no `npm test`.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes
@@ -827,3 +848,4 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 3. **Comunicação:** Atendimento sempre no idioma português.
 4. **Validação de Testes:** O comando `npm test` deve sempre permanecer com 100% dos testes aprovados antes de qualquer publicação.
 5. **Autonomia de Testes do Usuário:** Toda parte de testes em navegadores reais na interface do WhatsApp é realizada diretamente pelo usuário, respeitando estritamente suas diretrizes operacionais.
+

@@ -303,9 +303,14 @@
             },
             logout() {
                 localStorage.removeItem('dna_logged_user');
+                localStorage.removeItem('dna_user_name');
+                localStorage.removeItem('dna_registered_plate');
                 localStorage.removeItem('dna_token');
                 localStorage.removeItem('dna_auto_token');
                 localStorage.removeItem('dna_current_view');
+                localStorage.removeItem('dna_owner_session');
+                localStorage.removeItem('dna_owner_auth_screen');
+                localStorage.removeItem('dna_owner_current_screen');
                 OwnerView.authScreen = 'splash';
                 OwnerView.render();
             },
