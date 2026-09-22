@@ -1313,10 +1313,9 @@
               <span>Entrar</span>
             </button>
 
-            <!-- Acesso Rápido Demo Discreto & Link para Cadastro -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 0 4px; font-size: 13px;">
-              <a href="javascript:void(0)" onclick="cadastrar()" style="color: #00D4FF; font-weight: 500; text-decoration: none;">Criar nova conta</a>
-              <a href="javascript:void(0)" onclick="quickDemoLogin()" style="color: rgba(255, 255, 255, 0.55); text-decoration: none;">⚡ Demo 1-Clique</a>
+            <!-- Link para Cadastro (Sem Demo 1-Clique) -->
+            <div style="display: flex; justify-content: center; align-items: center; margin-top: 14px; padding: 0 4px; font-size: 13.5px;">
+              <a href="javascript:void(0)" onclick="cadastrar()" style="color: #00D4FF; font-weight: 600; text-decoration: none;">Não tem uma conta? Criar cadastro</a>
             </div>
 
           </form>
@@ -1657,16 +1656,6 @@
     function esqueciSenha() {
       const email = document.getElementById('login-email')?.value || '';
       alert(email ? `Instruções de recuperação foram enviadas para o e-mail: ${email}` : 'Informe seu e-mail para receber as instruções de recuperação.');
-    }
-
-    // ── Acesso Rápido Demo (1-Clique) ──
-    function quickDemoLogin() {
-      document.getElementById('login-email').value = 'carlos.silva@email.com';
-      document.getElementById('login-password').value = 'senha123';
-      const form = document.getElementById('form-login');
-      if (form) {
-        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-      }
     }
 
     // ── Processar Login ──

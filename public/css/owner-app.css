@@ -2894,225 +2894,400 @@
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    justify-content: space-between !important;
+    justify-content: center !important;
     margin: 0 !important;
     padding: 0 !important;
-    background:
-        radial-gradient(circle at 50% 48%, rgba(0, 115, 255, .18), transparent 48%),
-        linear-gradient(180deg, #01070f 0%, #020b16 50%, #01070f 100%) !important;
+    background: #02060E !important;
     color: #f3f7fb;
-    font-family: Arial, Helvetica, sans-serif;
-    overflow: hidden !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
     z-index: 99999 !important;
     box-sizing: border-box !important;
 }
 
-/* Brilhos decorativos atmosféricos */
-.dna-auth-fullscreen::before {
-    content: "";
-    position: absolute;
-    inset: -20% -20% auto;
-    height: 55%;
-    background: radial-gradient(ellipse, rgba(0, 132, 255, .16), transparent 67%);
-    pointer-events: none;
-    z-index: 1;
-}
-
+.dna-auth-fullscreen::before,
 .dna-auth-fullscreen::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -15%;
-    width: 100%;
-    height: 48%;
-    transform: translateX(-50%);
-    background: radial-gradient(ellipse, rgba(0, 112, 255, .18), transparent 65%);
-    pointer-events: none;
-    z-index: 1;
+    display: none !important;
 }
 
-/* Conteúdo interno da Splash Screen */
-.dna-splash-inner {
+/* ═════════════════════════════════════════════════════════════════════
+   TELAS COM IMAGEM DE FUNDO WALLPAPER (SPLASH SCREEN & LOGIN OFICIAL)
+   ═════════════════════════════════════════════════════════════════════ */
+.splash-layout {
     position: relative;
-    z-index: 10;
     width: 100%;
-    max-width: 430px;
     height: 100%;
-    min-height: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    padding: clamp(24px, 5vh, 48px) 20px clamp(20px, 4vh, 32px);
+    overflow: hidden;
     box-sizing: border-box;
 }
 
-/* Logo com Aura Fluida Oficial DNA AUTO */
-.logo-aura-container {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 4px;
-}
-
-.logo-aura-glow {
+/* Imagem de Fundo Oficial do DNA AUTO */
+.splash-bg-img {
     position: absolute;
-    width: 180px;
-    height: 150px;
-    border-radius: 50%;
-    background: radial-gradient(ellipse at center, rgba(0, 212, 255, 0.45) 0%, rgba(0, 102, 255, 0.28) 45%, transparent 75%);
-    filter: blur(24px);
-    pointer-events: none;
-    z-index: 1;
-    animation: auraPulse 4s ease-in-out infinite alternate;
-}
-
-.logo-aura-img {
-    position: relative;
-    z-index: 2;
-    width: clamp(125px, 32vw, 155px);
-    height: auto;
-    display: block;
-    object-fit: contain;
-    filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.8)) drop-shadow(0 0 40px rgba(0, 102, 255, 0.55));
-    animation: floatLogo 5s ease-in-out infinite alternate;
-    user-select: none;
-    -webkit-user-drag: none;
-}
-
-@keyframes auraPulse {
-    0% { transform: scale(0.92); opacity: 0.7; }
-    100% { transform: scale(1.15); opacity: 1; }
-}
-
-@keyframes floatLogo {
-    0% { transform: translateY(0px); }
-    100% { transform: translateY(-6px); }
-}
-
-/* Header de Marca */
-.dna-splash-inner .brand {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    flex: 0 0 auto;
-    padding-top: clamp(28px, 6vh, 48px);
-}
-
-/* Área do Carro Central com Aura Esfumaçada */
-.dna-splash-inner .car-area {
+    inset: 0;
     width: 100%;
-    margin: clamp(8px, 1.5vh, 20px) 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex: 1 1 auto;
-    position: relative;
-    z-index: 2;
-    pointer-events: none;
-}
-
-.dna-splash-inner .car-ambient-glow {
-    position: absolute;
-    width: 90%;
-    height: 80%;
-    background: radial-gradient(ellipse at 50% 55%, rgba(0, 140, 255, 0.45) 0%, rgba(0, 212, 255, 0.22) 42%, transparent 72%);
-    filter: blur(32px);
-    pointer-events: none;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
     z-index: 1;
-}
-
-.dna-splash-inner .car {
-    position: relative;
-    z-index: 2;
-    width: min(100%, 420px);
-    height: auto;
-    max-height: clamp(200px, 34vh, 280px);
-    display: block;
-    object-fit: contain;
     user-select: none;
     -webkit-user-drag: none;
-    filter: drop-shadow(0 0 26px rgba(0, 140, 255, 0.65)) drop-shadow(0 0 55px rgba(0, 212, 255, 0.35));
-    mix-blend-mode: screen;
-    -webkit-mask-image: radial-gradient(ellipse at 50% 55%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 85%);
-    mask-image: radial-gradient(ellipse at 50% 55%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 85%);
     pointer-events: none;
 }
 
-.dna-splash-inner .car-ground-reflection {
-    width: 82%;
-    height: 6px;
-    margin-top: -10px;
-    background: linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.8) 30%, rgba(0, 102, 255, 0.95) 50%, rgba(0, 212, 255, 0.8) 70%, transparent 100%);
-    border-radius: 50%;
-    filter: blur(4px);
-    box-shadow: 0 0 20px 3px rgba(0, 212, 255, 0.7);
-    z-index: 3;
+/* Gradiente suave inferior para contraste dos botões/campos */
+.splash-bottom-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 340px;
+    background: linear-gradient(to top, rgba(2, 6, 14, 0.98) 0%, rgba(2, 6, 14, 0.8) 50%, rgba(2, 6, 14, 0.3) 80%, transparent 100%);
+    pointer-events: none;
+    z-index: 2;
 }
 
-/* Ações Inferiores (Botões Pill Full-width Clicáveis) */
-.dna-splash-inner .actions {
-    width: min(100%, 390px);
-    margin-top: auto;
+/* Ações da Splash: 2 Botões com Safe-Area para Celular */
+.splash-actions {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 390px;
+    padding: 0 20px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 12px));
+    margin-bottom: clamp(16px, 2.5vh, 28px);
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    flex: 0 0 auto;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+/* Botões Padrão DNA AUTO (Splash & Login) */
+.splash-actions .btn,
+.dna-auth-fullscreen .btn {
+    width: 100%;
+    height: 52px;
+    min-height: 52px;
+    border-radius: 9999px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    outline: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.splash-actions .btn:active,
+.dna-auth-fullscreen .btn:active {
+    transform: scale(0.97);
+}
+
+/* Botão 1: ENTRAR (Azul Elétrico Neon Primário) */
+.splash-actions .btn-entrar,
+.dna-auth-fullscreen .btn-entrar {
+    background: linear-gradient(135deg, #0084FF 0%, #0055D4 100%) !important;
+    color: #FFFFFF !important;
+    box-shadow: 
+        0 6px 24px rgba(0, 102, 255, 0.55),
+        0 0 0 1px rgba(0, 212, 255, 0.4) inset !important;
     position: relative;
-    z-index: 50;
-    pointer-events: auto !important;
+    overflow: hidden;
 }
 
-.dna-splash-inner .btn {
-    width: 100% !important;
-    height: 56px !important;
-    min-height: 56px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-decoration: none !important;
-    border-radius: 9999px !important;
-    padding: 0 24px !important;
-    font-size: 17px !important;
-    font-weight: 700 !important;
-    font-family: inherit !important;
-    cursor: pointer !important;
-    transition: transform .15s ease, box-shadow .15s ease, background .15s ease !important;
-    -webkit-tap-highlight-color: transparent !important;
-    pointer-events: auto !important;
-    box-sizing: border-box !important;
-    letter-spacing: .2px !important;
+.splash-actions .btn-entrar:hover,
+.dna-auth-fullscreen .btn-entrar:hover {
+    box-shadow: 
+        0 8px 30px rgba(0, 132, 255, 0.75),
+        0 0 0 1.5px rgba(0, 212, 255, 0.6) inset !important;
+    transform: translateY(-1px);
 }
 
-.dna-splash-inner .btn:active {
-    transform: scale(.98) !important;
+/* Botão Entrar específico da tela de login (Raio de curvatura cyber-pill) */
+.dna-auth-fullscreen .btn-entrar-login {
+    height: 54px !important;
+    min-height: 54px !important;
+    border-radius: 16px !important;
+    font-size: 16.5px !important;
+    box-shadow: 
+        0 8px 28px rgba(0, 102, 255, 0.65),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
 }
 
-.dna-splash-inner .btn-primary {
+/* Botão 2: CADASTRAR (Contorno Neon Cyan Glassmorphism) */
+.splash-actions .btn-cadastrar,
+.dna-auth-fullscreen .btn-cadastrar {
+    background: rgba(3, 12, 26, 0.82) !important;
+    border: 2px solid #00D4FF !important;
     color: #FFFFFF !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.55),
+        0 0 16px rgba(0, 212, 255, 0.2),
+        inset 0 0 12px rgba(0, 212, 255, 0.12) !important;
+}
+
+.splash-actions .btn-cadastrar:hover,
+.dna-auth-fullscreen .btn-cadastrar:hover {
+    background: rgba(0, 180, 255, 0.16) !important;
+    box-shadow: 
+        0 6px 26px rgba(0, 212, 255, 0.42),
+        inset 0 0 16px rgba(0, 212, 255, 0.22) !important;
+    transform: translateY(-1px);
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   FORMULÁRIO DA TELA DE LOGIN (MODELO EXATO DA REFERÊNCIA)
+   ═════════════════════════════════════════════ */
+.login-form-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 390px;
+    padding: 0 20px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 12px));
+    margin-bottom: clamp(16px, 2.5vh, 28px);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.login-fields-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Pílula de Input Cyberpunk (Campos E-mail e Senha) */
+.cyber-input-pill {
+    width: 100%;
+    height: 54px;
+    min-height: 54px;
+    border-radius: 16px;
+    background: rgba(3, 14, 30, 0.78);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1.5px solid #0099FF;
+    box-shadow: 
+        0 0 16px rgba(0, 153, 255, 0.2),
+        inset 0 0 10px rgba(0, 153, 255, 0.08);
+    display: flex;
+    align-items: center;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+    position: relative;
+}
+
+.cyber-input-pill:focus-within {
+    border-color: #00D4FF;
+    box-shadow: 
+        0 0 24px rgba(0, 212, 255, 0.45),
+        inset 0 0 14px rgba(0, 212, 255, 0.15);
+    background: rgba(4, 18, 38, 0.9);
+}
+
+/* Ícone à Esquerda */
+.pill-icon-left {
+    width: 48px;
+    min-width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00D4FF;
+    flex-shrink: 0;
+}
+
+/* Divisor Vertical Interno */
+.pill-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(0, 180, 255, 0.4);
+    flex-shrink: 0;
+}
+
+/* Campo de Texto Interno */
+.pill-input {
+    flex: 1;
+    height: 100%;
+    background: transparent !important;
     border: none !important;
-    background: linear-gradient(180deg, #0099ff 0%, #0072ee 100%) !important;
-    box-shadow: 0 0 26px rgba(0, 140, 255, .5), inset 0 1px 0 rgba(255,255,255,.25) !important;
-}
-
-.dna-splash-inner .btn-primary:hover {
-    background: linear-gradient(180deg, #1aa3ff 0%, #007dfa 100%) !important;
-    box-shadow: 0 0 32px rgba(0, 160, 255, .65) !important;
-}
-
-.dna-splash-inner .btn-secondary {
+    outline: none !important;
     color: #FFFFFF !important;
-    border: 2px solid #00b0ff !important;
-    background: rgba(1, 10, 22, .88) !important;
-    box-shadow: 0 0 20px rgba(0, 176, 255, .32), inset 0 0 10px rgba(0, 176, 255, .12) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 15.5px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    padding: 0 14px !important;
+    box-sizing: border-box;
+    box-shadow: none !important;
 }
 
-.dna-splash-inner .btn-secondary:hover {
-    background: rgba(0, 140, 255, .16) !important;
-    box-shadow: 0 0 28px rgba(0, 176, 255, .48) !important;
+.pill-input::placeholder {
+    color: #7E9EBE;
+    font-size: 15px;
+    font-weight: 400;
+    opacity: 1;
+}
+
+/* Ícone Toggle Senha à Direita */
+.pill-icon-right {
+    width: 46px;
+    min-width: 46px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00B4D8;
+    background: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.pill-icon-right:hover {
+    color: #00F0FF;
+    transform: scale(1.08);
+}
+
+/* Linha de Opções (Lembrar de mim / Esqueceu a senha) */
+.login-options-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 2px 4px 6px 4px;
+    box-sizing: border-box;
+}
+
+/* Checkbox Estilizado */
+.remember-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cyber-checkbox {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.custom-checkbox {
+    width: 17px;
+    height: 17px;
+    min-width: 17px;
+    border: 1.5px solid #0099FF;
+    border-radius: 4px;
+    background: rgba(3, 14, 30, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.cyber-checkbox:checked ~ .custom-checkbox {
+    background: #0084FF;
+    border-color: #00D4FF;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+}
+
+.cyber-checkbox:checked ~ .custom-checkbox::after {
+    content: "";
+    width: 4px;
+    height: 8px;
+    border: solid #FFFFFF;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+}
+
+.remember-text {
+    color: #B5CEE6;
+    font-size: 13.5px;
+    font-weight: 500;
+    letter-spacing: 0.1px;
+}
+
+/* Link Esqueceu a Senha */
+.forgot-link {
+    color: #00A3FF;
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.forgot-link:hover {
+    color: #38C7FF;
+    text-shadow: 0 0 12px rgba(0, 180, 255, 0.6);
+}
+
+/* Botão Voltar Discreto no Topo Esquerdo da Tela de Login */
+.login-back-btn {
+    position: absolute;
+    top: clamp(16px, 2.8vh, 26px);
+    left: clamp(16px, 3.5vw, 22px);
+    z-index: 25;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(3, 12, 26, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: #00D4FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.login-back-btn:hover {
+    background: rgba(0, 212, 255, 0.2);
+    border-color: #00D4FF;
+    transform: translateX(-2px);
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.4);
+}
+
+/* Ajuste Responsivo para Desktop (Mantendo proporção de App Mobile) */
+@media (min-width: 601px) {
+    .dna-auth-fullscreen .splash-layout {
+        max-width: 440px;
+        height: min(920px, calc(100dvh - 32px));
+        border-radius: 36px;
+        border: 1px solid rgba(0, 212, 255, 0.25);
+        box-shadow: 
+            0 25px 70px rgba(0, 0, 0, 0.9),
+            0 0 50px rgba(0, 102, 255, 0.3);
+    }
 }
 
 /* 2. Container Box de Login e Cadastro (Snippets 1 e 3) */

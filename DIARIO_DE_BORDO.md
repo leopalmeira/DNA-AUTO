@@ -840,6 +840,24 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
    - Paridade rigorosa 100% mantida entre `cliente.app/` e `public/`.
    - 45 de 45 testes automatizados aprovados (100%) no `npm test`.
 
+### 📱 Ciclo 45 — Unificação Oficial da Splash Screen no Localhost (/cliente) e Remoção Total do Acesso Demo 1-Clique
+**Data:** 22/09/2026
+
+**Demandas Atendidas:**
+1. **Correção da Splash Screen em `localhost:3000/cliente/`:**
+   - Corrigido o problema onde a rota `/cliente` (entregue por `cliente.app/index.html` via `ownerView.js`) ainda renderizava a tela splash legada (carro em vetor 3D com logo antigo e botões desatualizados).
+   - O método `renderSplashAuth()` em `ownerView.js` foi completamente atualizado para exibir o wallpaper oficial (`/img/dna-auth-splash.png` / `.jpg`), gradiente inferior de proteção de contraste e os 2 botões de ação: **"Entrar"** e **"Cadastrar"**.
+   - As folhas de estilo `owner-app.css` (em `cliente.app/` e `public/`) foram enriquecidas com o design system responsivo oficial (`.splash-layout`, `.splash-bg-img`, `.splash-bottom-gradient`, `.splash-actions`, `.btn-entrar`, `.btn-cadastrar`).
+2. **Atualização da Tela de Login em `ownerView.js`:**
+   - O método `renderLoginAuth()` foi atualizado para utilizar o mesmo padrão visual moderno com campos cyber-pill (E-mail ou CPF e Senha com toggle de visibilidade de olho), gradiente de base e botão de voltar discreto, garantindo consistência total entre `/login` e `/cliente`.
+3. **Remoção Completa do Texto e Botão "Demo 1-Clique":**
+   - Removido o link `⚡ Demo 1-Clique` do rodapé do formulário de login em `dna-auto-login.html` (em `cliente.app/` e `public/`).
+   - Removido o card `⚡ Testar Garagem Demo` de `ownerView.js` em ambos os diretórios.
+   - Removida a função legada `quickDemoLogin()` do frontend.
+4. **Paridade e Homologação:**
+   - Sincronização rigorosa mantida em 100% entre `cliente.app/` e `public/`.
+   - Bateria de testes automatizados com 45 de 45 testes aprovados (100%) no `npm test`.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes
@@ -848,4 +866,5 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 3. **Comunicação:** Atendimento sempre no idioma português.
 4. **Validação de Testes:** O comando `npm test` deve sempre permanecer com 100% dos testes aprovados antes de qualquer publicação.
 5. **Autonomia de Testes do Usuário:** Toda parte de testes em navegadores reais na interface do WhatsApp é realizada diretamente pelo usuário, respeitando estritamente suas diretrizes operacionais.
+
 

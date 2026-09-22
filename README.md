@@ -81,9 +81,10 @@ O DNA AUTO conta com uma arquitetura limpa de páginas públicas, separando rigo
 O DNA AUTO disponibiliza acesso direto e desacoplado tanto através do **serviço web unificado no Render** quanto via **serviços estáticos independentes** definidos no `render.yaml`, garantindo banco de dados 100% sincronizado em tempo real:
 
 * 📱 **App do Cliente / Dono de Carro (PWA):**
-  - **No serviço principal:** `https://dna-auto.onrender.com/cliente` (ou `/cliente.html`, `/app`, `/meucarro`)
+  - **No serviço principal:** `https://dna-auto.onrender.com/cliente` (ou `/cliente.html`, `/app`, `/meucarro`, `/login`, `/dna-auto-login.html`)
   - **No serviço estático dedicado:** `https://cliente-app.onrender.com` (pasta `./cliente.app`)
-  - **Acesso direto e limpo:** Abre diretamente a experiência mobile do smartphone sem passar pela landing page.
+  - **Acesso direto e limpo:** Abre diretamente a experiência mobile do smartphone com tela splash oficial (wallpaper superesportivo com faróis neon e botões "Entrar" e "Cadastrar").
+  - **Login Cyber-Pill:** Formulário elegante com campos em formato de pílula neon, alternador de senha com ícone de olho, recuperação rápida e sem dependência de botões demo.
   - **Suporte a QR Code & WhatsApp:** Ao acessar com parâmetro `?code=DNA-XXXX`, o app abre com o modal de ativação acionado e o código do veículo já preenchido.
 * 🏢 **ERP Operacional da Oficina:**
   - **No serviço principal:** `https://dna-auto.onrender.com/oficina` (ou `/oficina.html`, `/painel`, `/workshop`, `/erp`)
