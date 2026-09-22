@@ -761,6 +761,28 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 
 ---
 
+### 🎨 Ciclo 39: Fidelidade Visual Absoluta — Tela de Login (Splash Screen)
+**Data:** 21/09/2026
+
+**Motivação:** Garantir que a splash screen (tela de login) reproduza com fidelidade pixel-perfect o design de referência fornecido pelo proprietário do projeto.
+
+**Alterações Realizadas:**
+1. **Logo e Identidade de Marca:**
+   - Logo principal alterado para `splash-d-logo.png` (ícone "D" com glow neon azul) como fonte primária.
+   - Adição do texto "DNA AUTO" (h1, `font-family: Outfit`, 30px, weight 900) logo abaixo do ícone.
+   - Adição do subtítulo "Seu veículo sempre protegido." em tipografia muted abaixo do título.
+2. **Imagem do Carro (Hero):**
+   - Remoção de `mix-blend-mode: screen` que descaracterizava as cores originais da foto.
+   - Remoção de `mask-image` radial que esmaecia as bordas do carro — agora o veículo aparece com bordas nítidas e definidas, exatamente como na referência.
+3. **Botões de Ação:**
+   - Botão "Entrar" simplificado: texto "Entrar" apenas, sem ícone de seta.
+   - Botão "Cadastrar" simplificado: texto "Cadastrar" apenas, sem ícone de pessoa/plus.
+4. **Rodapé:**
+   - Footer de "Ambiente Seguro • Criptografia Veicular Ponta a Ponta" ocultado, conforme design de referência.
+5. **Paridade:** Alterações sincronizadas em `cliente.app/dna-auto-login.html` e `public/dna-auto-login.html`.
+
+---
+
 ## 🏛️ Diretrizes e Convenções Persistentes
 1. **Controle de Versão Git:** Todas as modificações de código e documentação devem ser seguidas de commit limpo e push para a branch `master` no repositório remoto GitHub.
 2. **Registro Contínuo:** Todo novo ciclo ou alteração relevante de engenharia deve ser imediatamente documentado no `diario de bordo.md`, no `DIARIO_DE_BORDO.md` e refletido no `README.md`.
