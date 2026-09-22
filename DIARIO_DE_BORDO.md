@@ -858,6 +858,23 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
    - Sincronização rigorosa mantida em 100% entre `cliente.app/` e `public/`.
    - Bateria de testes automatizados com 45 de 45 testes aprovados (100%) no `npm test`.
 
+### 🚗 Ciclo 46 — Enquadramento Perfeito do Veículo no Background (Sem Cortes Horizontais ou Verticais)
+**Data:** 22/09/2026
+
+**Demandas Atendidas:**
+1. **Eliminação de Cortes no Veículo e Espelhos Laterais (`object-fit: contain`):**
+   - Diagnosticado que a propriedade anterior `object-fit: cover` com `object-position: center top` em `.splash-bg-img` forçava a expansão da imagem (aspect ratio 586x1024) para preencher 100% da altura de telas de celulares modernos (proporções 9:19.5 e 9:20, como iPhones 390x844 e Androids 360x800).
+   - Como o carro e sua iluminação neon ocupam de 0px a 585px de largura, o `cover` cortava até 93px horizontalmente (espelhos retrovisores e paralamas).
+   - Ajustada a regra `.splash-bg-img` para `object-fit: contain; object-position: center top;` em `owner-app.css` e `dna-auto-login.html`.
+2. **Integração Perfeita com o Fundo Dark Navy / Cyberpunk:**
+   - Background de `.splash-layout` e `.dna-auth-fullscreen` configurado com gradiente escuro (`linear-gradient(180deg, #010C1A 0%, #010712 40%, #000812 100%)`), combinando com exatidão com os pixels de borda da arte (`#000B18` no topo e `#000812` na base), criando uma transição invisível e contínua em qualquer resolução de tela ou proporção.
+3. **Ajuste do Gradiente Inferior (`.splash-bottom-gradient`):**
+   - Altura reduzida de 340px para 160px com gradiente refinado (`linear-gradient(to top, rgba(1, 10, 22, 0.92) 0%, rgba(1, 10, 22, 0.45) 60%, transparent 100%)`).
+   - Garante excelente legibilidade e contraste para os botões "Entrar" e "Cadastrar" e campos de formulário, sem cobrir as rodas, para-choque e grade frontal do veículo.
+4. **Paridade e Homologação:**
+   - Sincronização 100% mantida entre `cliente.app/` e `public/`.
+   - 45 de 45 testes automatizados aprovados (100%) no `npm test`.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

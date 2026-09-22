@@ -191,13 +191,13 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
 ### 5. 📱 Novo App Mobile do Proprietário (PWA Fullscreen Nativo)
 - **Acesso Direto:** `#owner` (quando logado como Cliente ou selecionado no simulador)
 - **Tela Oficial de Boas-Vindas & Fluxos de Autenticação (Login / Cadastro):**
-  - **Identidade Visual Oficial com Aura Fluida:** Logotipo oficial com aura luminescente em azul elétrico e ciano neon (`dna-logo-aura.png`), supercarro com esfumaçamento perimetral orgânico (`dna-car-aura.png`) sem cortes rígidos e reflexo de neon sobre solo escuro.
-  - **Botão Voltar Super Discreto:** Design minimalista e elegante em formato circular compacto de 36px (`.btn-back-discrete`) com ícone chevron refinado e micro-iluminação neon no hover, perfeitamente integrado à barra de topo sem poluição visual.
-  - **CSS Premium em Glassmorphism Cyber:** Cartões em gradiente *dark obsidian* translúcido (`rgba(8, 17, 34, 0.94)` a `rgba(4, 10, 22, 0.98)`), desfoque em 28px, borda com reflexo neon, cantos arredondados de 24px e sombras profundas.
-  - **Campo de Placa Dinâmico com Radar DNA AUTO:** Campo com badge `BR` oficial e máscara automática no cadastro que dispara consulta em tempo real para `/api/v1/vehicles/search?q={placa}`, exibindo o **Card Dinâmico de Veículo Confirmado** com Marca, Modelo, Ano, Cor, FIPE e Passaporte DNA antes da conclusão do cadastro.
-  - **Botão Entrar:** Botão primário com degradê azul elétrico que abre suavemente a tela de Login com formulário seguro, toggle de visualização de senha e atalho demo 1-clique.
-  - **Botão Cadastrar:** Botão secundário com contorno ciano neon que abre a tela de Cadastro com validação de dados, consulta de placa em tempo real e vinculação automática da posse veicular.
-  - **Roteamento por Hash e Standalone:** Disponível em `/login`, `/dna-auto-login` e internamente no SPA com sincronização via hash (`#splash`, `#login`, `#register`) compatível com o botão nativo voltar do smartphone.
+  - **Wallpaper Oficial com Enquadramento Perfeito Sem Cortes:** Arte oficial do veículo (`dna-auth-splash.png`) com regra `object-fit: contain` e `object-position: center top`, garantindo visibilidade total do veículo de ponta a ponta (espelhos, paralamas, rodas e neon) sem nenhum corte lateral ou vertical em qualquer formato de tela (smartphones 9:19.5, 9:20, tablets ou desktop).
+  - **Integração Fluida com o Fundo Dark Navy:** Gradiente base (`linear-gradient(180deg, #010C1A 0%, #010712 40%, #000812 100%)`) perfeitamente calibrado com os pixels de borda da imagem, garantindo fusão contínua e sem emendas.
+  - **Gradiente Inferior de Proteção:** Overlay inferior compacto de 160px (`.splash-bottom-gradient`) para máximo contraste e legibilidade dos botões e campos de formulário, sem encobrir a parte frontal do veículo.
+  - **Botões Oficiais de Acesso:** Botão primário `Entrar` e secundário `Cadastrar` estrategicamente posicionados no rodapé com safe-area para celulares.
+  - **Formulário de Login Cyber-Pill:** Campos estilizados para E-mail/CPF e Senha com divisor vertical, ícones integrados e toggle de visibilidade.
+  - **Botão Voltar Discreto:** Botão circular translúcido no topo esquerdo para retornar à splash com transição fluida.
+  - **Roteamento e Paridade:** Disponível tanto em `/cliente`, `/app`, `/cliente.app` quanto em `/login` e `/dna-auto-login.html`.
 - **Design de Alta Fidelidade (Fullscreen Dark Obsidian & Neon Blue):**
   - **Fullscreen Nativo PWA:** Consumo de 100% da tela em smartphones e tablets, eliminando simulação de moldura/frame de celular e notch fake.
   - **Upload Real de Fotos com Persistência:**

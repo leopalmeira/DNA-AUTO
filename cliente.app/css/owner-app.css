@@ -2897,7 +2897,8 @@
     justify-content: center !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: #02060E !important;
+    background: #010A16 !important;
+    background: linear-gradient(180deg, #010C1A 0%, #010712 50%, #000812 100%) !important;
     color: #f3f7fb;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
     overflow-y: auto !important;
@@ -2926,15 +2927,17 @@
     align-items: center;
     overflow: hidden;
     box-sizing: border-box;
+    background: #010A16;
+    background: linear-gradient(180deg, #010C1A 0%, #010712 40%, #000812 100%);
 }
 
-/* Imagem de Fundo Oficial do DNA AUTO */
+/* Imagem de Fundo Oficial do DNA AUTO (Enquadramento perfeito sem cortes em qualquer tela) */
 .splash-bg-img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center top;
     z-index: 1;
     user-select: none;
@@ -2942,14 +2945,14 @@
     pointer-events: none;
 }
 
-/* Gradiente suave inferior para contraste dos botões/campos */
+/* Gradiente suave inferior para contraste refinado dos botões/campos sem cobrir o veículo */
 .splash-bottom-gradient {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 340px;
-    background: linear-gradient(to top, rgba(2, 6, 14, 0.98) 0%, rgba(2, 6, 14, 0.8) 50%, rgba(2, 6, 14, 0.3) 80%, transparent 100%);
+    height: 160px;
+    background: linear-gradient(to top, rgba(1, 10, 22, 0.92) 0%, rgba(1, 10, 22, 0.45) 60%, transparent 100%);
     pointer-events: none;
     z-index: 2;
 }
@@ -3280,6 +3283,7 @@
 /* Ajuste Responsivo para Desktop (Mantendo proporção de App Mobile) */
 @media (min-width: 601px) {
     .dna-auth-fullscreen .splash-layout {
+        width: 100%;
         max-width: 440px;
         height: min(920px, calc(100dvh - 32px));
         border-radius: 36px;
