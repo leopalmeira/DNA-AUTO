@@ -136,8 +136,7 @@
       transform: scale(1) translateY(0);
     }
 
-    /* Telas de formulário mantêm respiro estético */
-    #screen-login,
+    /* Telas de formulário com card (Cadastro e Esqueci Senha) */
     #screen-register,
     #screen-forgot {
       padding: clamp(16px, 3vh, 28px) 16px;
@@ -147,9 +146,10 @@
     }
 
     /* ═════════════════════════════════════════════════════════════════════
-       01. TELA DE BOAS-VINDAS / SPLASH SCREEN (AJUSTE PERFEITO PARA CELULAR)
+       01. TELAS COM IMAGEM DE FUNDO WALLPAPER (SPLASH SCREEN & LOGIN OFICIAL)
        ═════════════════════════════════════════════════════════════════════ */
-    #screen-splash {
+    #screen-splash,
+    #screen-login {
       position: relative;
       width: 100%;
       height: 100vh;
@@ -163,7 +163,8 @@
       justify-content: flex-end;
     }
 
-    #screen-splash.active {
+    #screen-splash.active,
+    #screen-login.active {
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
@@ -184,7 +185,7 @@
       box-sizing: border-box;
     }
 
-    /* Nova Imagem de Fundo Oficial (Wallpaper Nativo do App - Sem distorção) */
+    /* Imagem de Fundo Oficial do DNA AUTO */
     .splash-bg-img {
       position: absolute;
       inset: 0;
@@ -198,14 +199,14 @@
       pointer-events: none;
     }
 
-    /* Gradiente suave inferior para assegurar legibilidade e contraste premium dos botões */
+    /* Gradiente suave inferior para assegurar legibilidade e contraste dos botões/campos */
     .splash-bottom-gradient {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      height: 240px;
-      background: linear-gradient(to top, rgba(2, 6, 14, 0.95) 0%, rgba(2, 6, 14, 0.6) 45%, transparent 100%);
+      height: 320px;
+      background: linear-gradient(to top, rgba(2, 6, 14, 0.98) 0%, rgba(2, 6, 14, 0.8) 50%, rgba(2, 6, 14, 0.3) 80%, transparent 100%);
       pointer-events: none;
       z-index: 2;
     }
@@ -223,6 +224,200 @@
       flex-direction: column;
       gap: 12px;
       box-sizing: border-box;
+    }
+
+    /* ═════════════════════════════════════════════════════════════════════
+       FORMULÁRIO DA TELA DE LOGIN (MODELO EXATO DA REFERÊNCIA)
+       ═════════════════════════════════════════════════════════════════════ */
+    .login-form-container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 390px;
+      padding: 0 20px;
+      padding-bottom: calc(24px + env(safe-area-inset-bottom, 12px));
+      margin-bottom: clamp(16px, 2.5vh, 28px);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    .login-fields-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Pílula de Input Cyberpunk (Campos E-mail e Senha) */
+    .cyber-input-pill {
+      width: 100%;
+      height: 54px;
+      min-height: 54px;
+      border-radius: 16px;
+      background: rgba(3, 14, 30, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1.5px solid #0099FF;
+      box-shadow: 
+        0 0 16px rgba(0, 153, 255, 0.2),
+        inset 0 0 10px rgba(0, 153, 255, 0.08);
+      display: flex;
+      align-items: center;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .cyber-input-pill:focus-within {
+      border-color: #00D4FF;
+      box-shadow: 
+        0 0 24px rgba(0, 212, 255, 0.45),
+        inset 0 0 14px rgba(0, 212, 255, 0.15);
+      background: rgba(4, 18, 38, 0.9);
+    }
+
+    /* Ícone à Esquerda */
+    .pill-icon-left {
+      width: 48px;
+      min-width: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #00D4FF;
+      flex-shrink: 0;
+    }
+
+    /* Divisor Vertical Interno */
+    .pill-divider {
+      width: 1px;
+      height: 24px;
+      background: rgba(0, 180, 255, 0.4);
+      flex-shrink: 0;
+    }
+
+    /* Campo de Texto Interno */
+    .pill-input {
+      flex: 1;
+      height: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #FFFFFF;
+      font-family: var(--font-primary);
+      font-size: 15.5px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      padding: 0 14px;
+      box-sizing: border-box;
+    }
+
+    .pill-input::placeholder {
+      color: #7E9EBE;
+      font-size: 15px;
+      font-weight: 400;
+      opacity: 1;
+    }
+
+    /* Ícone Toggle Senha à Direita */
+    .pill-icon-right {
+      width: 46px;
+      min-width: 46px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #00B4D8;
+      background: transparent;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .pill-icon-right:hover {
+      color: #00F0FF;
+      transform: scale(1.08);
+    }
+
+    /* Linha de Opções (Lembrar de mim / Esqueceu a senha) */
+    .login-options-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 2px 4px 6px 4px;
+      box-sizing: border-box;
+    }
+
+    /* Checkbox Estilizado */
+    .remember-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .cyber-checkbox {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+
+    .custom-checkbox {
+      width: 17px;
+      height: 17px;
+      min-width: 17px;
+      border: 1.5px solid #0099FF;
+      border-radius: 4px;
+      background: rgba(3, 14, 30, 0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    .cyber-checkbox:checked ~ .custom-checkbox {
+      background: #0084FF;
+      border-color: #00D4FF;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+    }
+
+    .cyber-checkbox:checked ~ .custom-checkbox::after {
+      content: "";
+      width: 4px;
+      height: 8px;
+      border: solid #FFFFFF;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+      margin-bottom: 2px;
+    }
+
+    .remember-text {
+      color: #B5CEE6;
+      font-size: 13.5px;
+      font-weight: 500;
+      letter-spacing: 0.1px;
+    }
+
+    /* Link Esqueceu a Senha */
+    .forgot-link {
+      color: #00A3FF;
+      font-size: 13.5px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .forgot-link:hover {
+      color: #38C7FF;
+      text-shadow: 0 0 12px rgba(0, 180, 255, 0.6);
     }
 
     /* Botões Padrão DNA AUTO */
@@ -285,6 +480,17 @@
       left: 100%;
     }
 
+    /* Botão Entrar específico da tela de login (Raio de curvatura igual ao design de referência) */
+    .btn-entrar-login {
+      height: 54px;
+      min-height: 54px;
+      border-radius: 16px;
+      font-size: 16.5px;
+      box-shadow: 
+        0 8px 28px rgba(0, 102, 255, 0.65),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+
     /* Botão 2: CADASTRAR (Contorno Neon Cyan Glassmorphism) */
     .btn-cadastrar {
       background: rgba(3, 12, 26, 0.82);
@@ -306,6 +512,36 @@
       transform: translateY(-1px);
     }
 
+    /* Botão Voltar Discreto no Topo Esquerdo da Tela de Login */
+    .login-back-btn {
+      position: absolute;
+      top: clamp(16px, 2.8vh, 26px);
+      left: clamp(16px, 3.5vw, 22px);
+      z-index: 25;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(3, 12, 26, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      color: #00D4FF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    }
+
+    .login-back-btn:hover {
+      background: rgba(0, 212, 255, 0.2);
+      border-color: #00D4FF;
+      transform: translateX(-2px);
+      box-shadow: 0 0 16px rgba(0, 212, 255, 0.4);
+    }
+
     /* Ajuste de Proporção para Celular e Desktop */
     @media (min-width: 601px) {
       body {
@@ -313,13 +549,15 @@
         justify-content: center;
       }
 
-      #screen-splash.active {
+      #screen-splash.active,
+      #screen-login.active {
         display: flex;
         justify-content: center;
         align-items: center;
       }
 
-      #screen-splash .splash-layout {
+      #screen-splash .splash-layout,
+      #screen-login .splash-layout {
         max-width: 440px;
         height: min(920px, calc(100dvh - 32px));
         border-radius: 36px;
@@ -337,14 +575,16 @@
         padding: 0;
       }
 
-      #screen-splash {
+      #screen-splash,
+      #screen-login {
         width: 100vw;
         max-width: 100vw;
         height: 100dvh;
         min-height: 100dvh;
       }
 
-      #screen-splash .splash-layout {
+      #screen-splash .splash-layout,
+      #screen-login .splash-layout {
         width: 100%;
         max-width: 100%;
         height: 100%;
@@ -353,7 +593,8 @@
         box-shadow: none;
       }
 
-      .splash-actions {
+      .splash-actions,
+      .login-form-container {
         width: 100%;
         max-width: 100%;
         padding: 0 20px;
@@ -362,9 +603,9 @@
       }
 
       .btn {
-        height: 50px;
-        min-height: 50px;
-        font-size: 15.5px;
+        height: 52px;
+        min-height: 52px;
+        font-size: 16px;
       }
     }
 
@@ -978,113 +1219,109 @@
     </section>
 
     <!-- ══════════════════════════════════════════════════════════════════
-         02. TELA DO FLUXO DE LOGIN ("ENTRAR NO DNA AUTO")
+         02. TELA DO FLUXO DE LOGIN ("ENTRAR NO DNA AUTO" - MODELO OFICIAL)
          ══════════════════════════════════════════════════════════════════ -->
     <section id="screen-login" class="screen">
-      <div class="auth-card-wrapper">
-        <main class="auth-card">
+      <div class="splash-layout">
+        
+        <!-- Imagem de fundo oficial enviada pelo usuário -->
+        <img
+          src="/img/dna-auth-splash.png"
+          alt="DNA AUTO — Login"
+          class="splash-bg-img"
+        />
 
-          <!-- Barra de Navegação Superior (Botão Voltar Discreto à Esquerda) -->
-          <div class="auth-top-nav">
-            <button class="btn-back-discrete" type="button" onclick="voltar()" aria-label="Voltar" title="Voltar">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m15 18-6-6 6-6"></path>
-              </svg>
-            </button>
+        <!-- Botão voltar discreto no topo esquerdo para retornar à splash -->
+        <button class="login-back-btn" type="button" onclick="voltar()" aria-label="Voltar para tela inicial" title="Voltar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 18-6-6 6-6"></path>
+          </svg>
+        </button>
 
-            <div class="mini-badge">
-              <img src="/img/dna-logo-aura.png" alt="DNA AUTO" onerror="this.src='/img/splash-d-logo.png';" />
-              <span>DNA <b>AUTO</b></span>
-            </div>
-          </div>
+        <!-- Gradiente suave inferior para assegurar legibilidade dos campos -->
+        <div class="splash-bottom-gradient"></div>
 
-          <h2 class="auth-title">Entrar na Garagem</h2>
-          <p class="auth-desc">Informe suas credenciais para acessar o histórico oficial e telemetria do seu veículo.</p>
+        <!-- Formulário de Login Posicionado sobre o Solo (Modelo Exato da Foto) -->
+        <div class="login-form-container">
+          <div id="login-error-box" class="auth-alert-box" style="display:none;"></div>
 
-          <div id="login-error-box" class="auth-alert-box"></div>
-
-          <form id="form-login" onsubmit="handleLogin(event)">
-            <!-- E-mail -->
-            <div class="form-group">
-              <div class="form-label-row">
-                <label class="form-label" for="login-email">E-mail Cadastrado</label>
-              </div>
-              <div class="input-wrapper">
-                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+          <form id="form-login" onsubmit="handleLogin(event)" class="login-fields-form">
+            
+            <!-- Campo 1: E-mail ou CPF -->
+            <div class="cyber-input-pill">
+              <div class="pill-icon-left">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <input
-                  id="login-email"
-                  class="form-input"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value="joao@email.com"
-                  required
-                  autocomplete="email"
-                />
               </div>
+              <div class="pill-divider"></div>
+              <input
+                id="login-email"
+                class="pill-input"
+                type="text"
+                placeholder="E-mail ou CPF"
+                value="joao@email.com"
+                required
+                autocomplete="username"
+              />
             </div>
 
-            <!-- Senha -->
-            <div class="form-group">
-              <div class="form-label-row">
-                <label class="form-label" for="login-password">Senha de Acesso</label>
-                <a class="form-link-sm" href="javascript:void(0)" onclick="esqueciSenha()">Esqueceu a senha?</a>
-              </div>
-              <div class="input-wrapper">
-                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Campo 2: Senha -->
+            <div class="cyber-input-pill">
+              <div class="pill-icon-left">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                <input
-                  id="login-password"
-                  class="form-input"
-                  type="password"
-                  placeholder="Sua senha"
-                  value="123456"
-                  required
-                  autocomplete="current-password"
-                  style="padding-right: 44px;"
-                />
-                <button
-                  type="button"
-                  class="btn-toggle-pass"
-                  onclick="togglePass('login-password')"
-                  aria-label="Mostrar ou ocultar senha"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                </button>
               </div>
+              <div class="pill-divider"></div>
+              <input
+                id="login-password"
+                class="pill-input"
+                type="password"
+                placeholder="Senha"
+                value="123456"
+                required
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                class="pill-icon-right btn-toggle-pass"
+                onclick="togglePass('login-password')"
+                aria-label="Mostrar ou ocultar senha"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
             </div>
 
-            <button id="btn-submit-login" class="btn-submit" type="submit">
-              <span>Entrar no App</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                <path d="M5 12h14"></path>
-                <path d="m12 5 7 7-7 7"></path>
-              </svg>
+            <!-- Linha de Opções: Lembrar de mim & Esqueceu a senha -->
+            <div class="login-options-row">
+              <label class="remember-checkbox-label">
+                <input type="checkbox" id="remember-me" checked class="cyber-checkbox" />
+                <span class="custom-checkbox"></span>
+                <span class="remember-text">Lembrar de mim</span>
+              </label>
+              <a class="forgot-link" href="javascript:void(0)" onclick="esqueciSenha()">Esqueceu a senha?</a>
+            </div>
+
+            <!-- Botão Entrar -->
+            <button id="btn-submit-login" class="btn btn-entrar btn-entrar-login" type="submit">
+              <span>Entrar</span>
             </button>
-          </form>
 
-          <!-- Acesso Rápido Demo para Testes Imediatos -->
-          <div class="demo-fast-access" onclick="quickDemoLogin()" title="Entrar imediatamente como João Silva (Civic BRA2E19)">
-            <div class="demo-fast-info">
-              <strong>⚡ Testar Garagem Demo</strong>
-              <span>João Silva • Honda Civic (BRA2E19)</span>
+            <!-- Acesso Rápido Demo Discreto & Link para Cadastro -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 0 4px; font-size: 13px;">
+              <a href="javascript:void(0)" onclick="cadastrar()" style="color: #00D4FF; font-weight: 500; text-decoration: none;">Criar nova conta</a>
+              <a href="javascript:void(0)" onclick="quickDemoLogin()" style="color: rgba(255, 255, 255, 0.55); text-decoration: none;">⚡ Demo 1-Clique</a>
             </div>
-            <span class="demo-fast-badge">1-Clique</span>
-          </div>
 
-          <div class="auth-switch-footer">
-            <span>Ainda não tem conta?</span>
-            <a href="javascript:void(0)" onclick="cadastrar()">Criar cadastro gratuito</a>
-          </div>
+          </form>
+        </div>
 
-        </main>
       </div>
     </section>
 
@@ -1472,25 +1709,13 @@
           errBox.innerText = data.error || 'Credenciais inválidas. Verifique seu e-mail e senha.';
           errBox.style.display = 'block';
           btn.disabled = false;
-          btn.innerHTML = `
-            <span>Entrar no App</span>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M5 12h14"></path>
-              <path d="m12 5 7 7-7 7"></path>
-            </svg>
-          `;
+          btn.innerHTML = '<span>Entrar</span>';
         }
       } catch (err) {
         errBox.innerText = 'Falha ao conectar ao servidor. Tente novamente.';
         errBox.style.display = 'block';
         btn.disabled = false;
-        btn.innerHTML = `
-          <span>Entrar no App</span>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <path d="M5 12h14"></path>
-            <path d="m12 5 7 7-7 7"></path>
-          </svg>
-        `;
+        btn.innerHTML = '<span>Entrar</span>';
       }
     }
 

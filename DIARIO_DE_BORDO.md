@@ -799,6 +799,22 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
    - Espaçamento inferior compatível com safe-area de iPhones e Androids (`env(safe-area-inset-bottom)`), evitando interferência com a barra inicial do sistema operacional.
    - Gradiente escuro sutil no rodapé (`.splash-bottom-gradient`) garantindo máximo contraste e legibilidade para os botões.
    - No desktop: centralização harmônica simulando tela de smartphone com borda cyber neon e sombras profundas.
+### 🏎️ Ciclo 43 — Tela de Login com Wallpaper Nativo e Campos Cyber-Pill Fiéis ao Design de Referência
+**Data:** 22/09/2026
+
+**Demandas Atendidas:**
+1. **Transição Contínua da Splash para a Tela de Login:**
+   - Ao clicar em "Entrar" na tela de splash, o usuário é direcionado para a tela de login mantendo o mesmo wallpaper do superesportivo com faróis neon e logotipo oficial.
+2. **Campos de Entrada Cyber-Pill (Fidelidade Pixel-Perfect ao Modelo):**
+   - **Campo 1 (E-mail ou CPF):** Pílula com borda neon azul/ciano (`1.5px solid #0099FF`), fundo translúcido escuro com blur, ícone de usuário (`👤`) em ciano `#00D4FF`, linha divisória vertical e input com placeholder "E-mail ou CPF".
+   - **Campo 2 (Senha):** Pílula com o mesmo acabamento, ícone de cadeado (`🔒`) em ciano `#00D4FF`, linha divisória vertical, input de senha e botão com ícone de olho (`👁️`) para alternar visibilidade.
+3. **Linha de Opções & Ações:**
+   - Checkbox estilizado com seleção suave e texto "Lembrar de mim".
+   - Link direto "Esqueceu a senha?" em azul neon com hover luminoso.
+   - Botão de submit principal "Entrar" com gradiente elétrico, raio de curvatura de 16px e sombra neon azul.
+4. **Navegação Discreta & Experiência Mobile:**
+   - Botão voltar circular e minimalista (`.login-back-btn`) posicionado no canto superior esquerdo para retorno suave à tela de splash.
+   - Ocupação responsiva de 100vw e 100dvh no smartphone e visualização centrada em moldura moderna no desktop.
 5. **Paridade e Homologação:**
    - Sincronização rigorosa entre `cliente.app/dna-auto-login.html` e `public/dna-auto-login.html`.
    - 45 de 45 testes automatizados aprovados (100%) no `npm test`.

@@ -9,7 +9,7 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 42):** Tela de boas-vindas e login do App do Cliente com **nova imagem de fundo oficial nativa** (superesportivo frontal em alta resolução com neon ciano e logo da marca integrado), **dois botões de ação sobrepostos** ('Entrar' e 'Cadastrar') perfeitamente clicáveis com suporte a safe-area em smartphones, layout 100% responsivo para celular (100vw x 100dvh contínuo) e visualização em moldura cyber no desktop. Relatório de Manutenções & Venda ultra-completo, consulta de placa integral e 45 testes automatizados aprovados com 100% de sucesso.
+> ✨ **Novidades Recentes (Ciclo 43):** Tela de login e boas-vindas do App do Cliente com **layout contínuo em wallpaper nativo** (superesportivo frontal em alta resolução com neon ciano e logo da marca), **campos de entrada cyber-pill** ('E-mail ou CPF', 'Senha' com toggle de olho) posicionados diretamente sobre o piso reflexivo exatamente como no design oficial, checkbox 'Lembrar de mim', link 'Esqueceu a senha?', botão elétrico 'Entrar' e navegação de retorno discreta. 45 testes automatizados aprovados com 100% de sucesso.
 
 ---
 
