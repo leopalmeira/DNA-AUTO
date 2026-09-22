@@ -210,6 +210,39 @@ router.get('/search', async (req, res) => {
                OR UPPER(vd.dna_code) = ?
         `).get(query, cleanPlate, query, query);
 
+        // Se a busca for por placa válida de 7 caracteres, consultar prioritariamente a base nacional oficial
+        if (cleanPlate.length === 7) {
+            try {
+                const extRes = await apiPlacasService.consultarPlaca(cleanPlate);
+                if (extRes && extRes.found && extRes.vehicle) {
+                    const veh = extRes.vehicle;
+                    if (vehicle) {
+                        veh.id = vehicle.id;
+                        veh.hasDna = !!vehicle.dna_code;
+                        veh.dna_code = vehicle.dna_code || null;
+                        veh.dna_status = vehicle.dna_status || null;
+                        veh.dna_activated_at = vehicle.dna_activated_at || null;
+                        veh.activation_modality = vehicle.activation_modality || null;
+                        veh.owner_name = vehicle.owner_name || 'Proprietário Particular';
+                        veh.owner_phone = vehicle.owner_phone || '';
+                        veh.current_mileage = vehicle.current_mileage || 0;
+                        veh.services_count = vehicle.services_count || 0;
+                        veh.latest_mileage = vehicle.latest_mileage || 0;
+                        veh.activated_by_workshop_name = vehicle.activated_by_workshop_name || null;
+                    }
+                    return res.json({
+                        found: true,
+                        hasDna: !!(vehicle && vehicle.dna_code),
+                        fromExternalApi: true,
+                        source: 'Base Nacional Oficial / Tabela FIPE Oficial / Sefaz',
+                        vehicle: veh
+                    });
+                }
+            } catch (e) {
+                console.warn('Falha na busca externa em /vehicles/search:', e.message);
+            }
+        }
+
         if (!vehicle) {
             // Verificar se o veículo já consta em cadastros de clientes ou agendamentos
             if (cleanPlate.length === 7) {
@@ -257,22 +290,6 @@ router.get('/search', async (req, res) => {
                             brand: ''
                         }
                     });
-                }
-
-                // Se não encontrado localmente e tem formato de placa, consultar API Placas oficial
-                try {
-                    const extRes = await apiPlacasService.consultarPlaca(cleanPlate);
-                    if (extRes.found && extRes.vehicle) {
-                        return res.json({
-                            found: true,
-                            hasDna: false,
-                            fromExternalApi: true,
-                            source: extRes.source,
-                            vehicle: extRes.vehicle
-                        });
-                    }
-                } catch (e) {
-                    console.warn('Falha na busca externa em /vehicles/search:', e.message);
                 }
             }
 

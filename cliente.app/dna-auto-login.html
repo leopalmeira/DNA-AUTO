@@ -136,8 +136,7 @@
       transform: scale(1) translateY(0);
     }
 
-    /* Telas de formulário com card (Cadastro e Esqueci Senha) */
-    #screen-register,
+    /* Telas de formulário com card (Esqueci Senha) */
     #screen-forgot {
       padding: clamp(16px, 3vh, 28px) 16px;
       min-height: 100vh;
@@ -146,23 +145,40 @@
     }
 
     /* ═════════════════════════════════════════════════════════════════════
-       01. TELAS COM IMAGEM DE FUNDO WALLPAPER (SPLASH SCREEN & LOGIN OFICIAL)
+       01. TELAS COM IMAGEM DE FUNDO WALLPAPER (SPLASH, LOGIN & CADASTRO OFICIAL)
        ═════════════════════════════════════════════════════════════════════ */
     #screen-splash,
-    #screen-login {
+    #screen-login,
+    #screen-register {
       position: relative;
       width: 100%;
       height: 100vh;
       height: 100dvh;
       min-height: 100vh;
       min-height: 100dvh;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
       padding: 0;
       margin: 0;
       box-sizing: border-box;
-      justify-content: flex-end;
+      justify-content: flex-start;
       background: #010A16;
       background: linear-gradient(180deg, #010C1A 0%, #010712 40%, #000812 100%);
+    }
+
+    #screen-splash.active,
+    #screen-login.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    #screen-register.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
     }
 
     #screen-splash.active,
@@ -1038,6 +1054,494 @@
       line-height: 1.35;
     }
 
+    /* ═════════════════════════════════════════════════════════════════════
+       ESTILOS DO LAYOUT CYBER DE CADASTRO & HUD DE AUDITORIA
+       ═════════════════════════════════════════════════════════════════════ */
+    .splash-layout.register-layout {
+      justify-content: flex-start;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: calc(30px + env(safe-area-inset-bottom, 15px));
+    }
+
+    .splash-bg-fixed {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('/img/dna-auth-splash.png');
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.45;
+    }
+
+    .register-header-bar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: clamp(14px, 2.4vh, 20px) 16px 8px;
+      z-index: 30;
+      background: linear-gradient(to bottom, rgba(1, 10, 22, 0.95) 0%, rgba(1, 10, 22, 0.7) 70%, transparent 100%);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-sizing: border-box;
+    }
+
+    .register-brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(3, 14, 30, 0.75);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    .register-logo-img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.6));
+    }
+
+    .register-logo-text {
+      font-size: 13px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: 0.5px;
+    }
+
+    .register-form-container {
+      position: relative;
+      z-index: 20;
+      width: 100%;
+      max-width: 440px;
+      padding: 10px 20px 28px;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+
+    .register-title-box {
+      margin-bottom: 18px;
+      text-align: left;
+    }
+
+    .register-title {
+      font-size: clamp(22px, 3.2vh, 26px);
+      font-weight: 800;
+      color: #FFFFFF;
+      margin: 0 0 6px;
+      letter-spacing: -0.3px;
+      font-family: inherit;
+    }
+
+    .register-subtitle {
+      font-size: 13px;
+      color: #94A3B8;
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    .register-fields-form {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .form-field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .field-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cyber-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #E2E8F0;
+      margin: 0;
+    }
+
+    .cyber-badge-official {
+      font-size: 11px;
+      font-weight: 700;
+      color: #00D4FF;
+      background: rgba(0, 212, 255, 0.12);
+      border: 1px solid rgba(0, 212, 255, 0.35);
+      padding: 3px 10px;
+      border-radius: 9999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .cyber-badge-official:hover {
+      background: rgba(0, 212, 255, 0.25);
+      border-color: #00D4FF;
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+    }
+
+    .cyber-badge-official .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #00E676;
+      box-shadow: 0 0 8px #00E676;
+      animation: blinkDot 1.5s infinite;
+    }
+
+    .plate-input-pill {
+      border-color: #00B4D8;
+    }
+
+    .pill-plate-flag {
+      width: 48px;
+      min-width: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .flag-br-badge {
+      background: linear-gradient(135deg, #003399 0%, #001A66 100%);
+      color: #FFFFFF;
+      font-size: 10.5px;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 212, 255, 0.5);
+      letter-spacing: 0.5px;
+    }
+
+    .plate-cyber-input {
+      font-family: monospace;
+      font-weight: 800;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #00D4FF;
+      font-size: 17px;
+    }
+
+    .plate-indicator-box {
+      width: 44px;
+      min-width: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cyber-helper-text {
+      font-size: 11px;
+      color: #64748B;
+      line-height: 1.35;
+      margin-top: 2px;
+    }
+
+    /* Barras de Verificação Oficiais HUD */
+    .cyber-verification-hud {
+      width: 100%;
+      background: linear-gradient(145deg, rgba(3, 16, 36, 0.95) 0%, rgba(2, 10, 24, 0.98) 100%);
+      border: 1.5px solid rgba(0, 212, 255, 0.45);
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 
+        0 12px 36px rgba(0, 0, 0, 0.85),
+        0 0 25px rgba(0, 153, 255, 0.22),
+        inset 0 0 16px rgba(0, 212, 255, 0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-sizing: border-box;
+      margin: 4px 0 10px;
+      animation: fadeInScale 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cyber-verification-hud::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2.5px;
+      background: linear-gradient(90deg, #0084FF 0%, #00D4FF 50%, #00E676 100%);
+    }
+
+    .hud-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .hud-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #00D4FF;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .hud-pulse-radar {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00E676;
+      box-shadow: 0 0 10px #00E676;
+      animation: blinkDot 1.2s infinite;
+    }
+
+    .hud-origin-tag {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #94A3B8;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+
+    .hud-hero-box {
+      background: rgba(2, 8, 20, 0.88);
+      border: 1px solid rgba(0, 212, 255, 0.22);
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .hud-hero-info {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .hud-plate-tag {
+      display: inline-flex;
+      align-items: center;
+      background: #FFFFFF;
+      color: #0B0F19;
+      border-radius: 5px;
+      border: 1.5px solid #000000;
+      overflow: hidden;
+      font-family: monospace;
+      font-weight: 900;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .hud-br-flag {
+      background: #003399;
+      color: #FFFFFF;
+      font-size: 8.5px;
+      padding: 2px 5px;
+      font-weight: 900;
+    }
+
+    .hud-plate-code {
+      padding: 2px 7px;
+      letter-spacing: 1px;
+    }
+
+    .hud-hero-titles {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      text-align: left;
+    }
+
+    .hud-car-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #FFFFFF;
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .hud-car-version {
+      font-size: 12px;
+      color: #94A3B8;
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .hud-fipe-badge {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(135deg, rgba(0, 230, 118, 0.14) 0%, rgba(0, 153, 255, 0.09) 100%);
+      border: 1px solid rgba(0, 230, 118, 0.4);
+      border-radius: 10px;
+      padding: 8px 12px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .fipe-label {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #00E676;
+      letter-spacing: 0.5px;
+    }
+
+    .fipe-value {
+      font-size: 16px;
+      font-weight: 900;
+      color: #FFFFFF;
+      text-shadow: 0 0 10px rgba(0, 230, 118, 0.4);
+    }
+
+    .fipe-ref {
+      font-size: 10px;
+      color: #94A3B8;
+      width: 100%;
+      text-align: left;
+    }
+
+    .hud-checklist-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 12px;
+    }
+
+    .check-bar-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(3, 14, 30, 0.72);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 10px;
+      padding: 8px 12px;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+
+    .check-bar-item.done {
+      border-left: 3.5px solid #00E676;
+      background: rgba(3, 16, 34, 0.82);
+    }
+
+    .check-icon-box {
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      border-radius: 50%;
+      background: rgba(0, 230, 118, 0.18);
+      border: 1.5px solid #00E676;
+      color: #00E676;
+      font-size: 12px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 8px rgba(0, 230, 118, 0.35);
+    }
+
+    .check-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .check-row-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .check-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #94A3B8;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .check-status-badge {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #00E676;
+      background: rgba(0, 230, 118, 0.12);
+      padding: 1px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 230, 118, 0.25);
+    }
+
+    .check-status-badge.highlight-blue {
+      color: #00D4FF;
+      background: rgba(0, 212, 255, 0.12);
+      border-color: rgba(0, 212, 255, 0.3);
+    }
+
+    .check-status-badge.highlight-green {
+      color: #00E676;
+      background: rgba(0, 230, 118, 0.18);
+      border-color: rgba(0, 230, 118, 0.4);
+      box-shadow: 0 0 8px rgba(0, 230, 118, 0.25);
+    }
+
+    .check-value {
+      font-size: 12px;
+      font-weight: 700;
+      color: #F8FAFC;
+    }
+
+    .check-value.fipe-highlight {
+      color: #00E676;
+      font-size: 12.5px;
+      font-weight: 800;
+    }
+
+    .hud-footer-success {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 230, 118, 0.08);
+      border: 1px solid rgba(0, 230, 118, 0.25);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #E2E8F0;
+      line-height: 1.35;
+      text-align: left;
+    }
+
     /* Botão de Envio */
     .btn-submit {
       width: 100%;
@@ -1266,7 +1770,6 @@
                 class="pill-input"
                 type="text"
                 placeholder="E-mail ou CPF"
-                value="joao@email.com"
                 required
                 autocomplete="username"
               />
@@ -1286,7 +1789,6 @@
                 class="pill-input"
                 type="password"
                 placeholder="Senha"
-                value="123456"
                 required
                 autocomplete="current-password"
               />
@@ -1330,69 +1832,82 @@
     </section>
 
     <!-- ══════════════════════════════════════════════════════════════════
-         03. TELA DO FLUXO DE CADASTRO ("CRIAR CADASTRO")
+         03. TELA DO FLUXO DE CADASTRO ("CRIAR CADASTRO" - MODELO OFICIAL)
          ══════════════════════════════════════════════════════════════════ -->
     <section id="screen-register" class="screen">
-      <div class="auth-card-wrapper">
-        <main class="auth-card">
+      <div class="splash-layout register-layout">
+        <!-- Imagem de Fundo Oficial Wallpaper Fixa -->
+        <div class="splash-bg-fixed"></div>
 
-          <!-- Barra de Navegação Superior (Botão Voltar Discreto à Esquerda) -->
-          <div class="auth-top-nav">
-            <button class="btn-back-discrete" type="button" onclick="voltar()" aria-label="Voltar" title="Voltar">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m15 18-6-6 6-6"></path>
-              </svg>
-            </button>
+        <!-- Barra Superior com Botão Voltar Discreto e Identidade Visual DNA AUTO -->
+        <div class="register-header-bar">
+          <button class="login-back-btn" type="button" onclick="voltar()" aria-label="Voltar para início" title="Voltar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m15 18-6-6 6-6"></path>
+            </svg>
+          </button>
+          <div class="brand-top-pill register-brand-pill">
+            <img src="/img/dna-logo-aura.png" class="register-logo-img" alt="DNA AUTO" onerror="this.src='/img/splash-d-logo.png';" />
+            <span class="register-logo-text">DNA <b style="color:#00D4FF;">AUTO</b></span>
+          </div>
+        </div>
 
-            <div class="mini-badge">
-              <img src="/img/dna-logo-aura.png" alt="DNA AUTO" onerror="this.src='/img/splash-d-logo.png';" />
-              <span>DNA <b>AUTO</b></span>
-            </div>
+        <!-- Formulário de Cadastro Cyberpunk com Pílulas e Auditoria Cadastral -->
+        <div class="register-form-container">
+          <div class="register-title-box">
+            <h1 class="register-title">Criar cadastro</h1>
+            <p class="register-subtitle">Junte-se à rede de proteção e certificação veicular DNA AUTO</p>
           </div>
 
-          <h2 class="auth-title">Criar Cadastro</h2>
-          <p class="auth-desc">Cadastre-se para gerenciar o histórico, revisões e laudos certificados do seu carro.</p>
+          <div id="reg-error-box" class="auth-alert-box" style="display:none;"></div>
 
-          <div id="reg-error-box" class="auth-alert-box"></div>
-
-          <form id="form-register" onsubmit="handleRegister(event)">
-            <!-- Placa do Veículo (Puxada do Sistema DNA AUTO) -->
-            <div class="form-group">
-              <div class="form-label-row">
-                <label class="form-label" for="reg-placa">Placa do Veículo</label>
-                <span class="form-badge-hint">Puxa dados oficiais</span>
+          <form id="form-register" onsubmit="handleRegister(event)" class="register-fields-form">
+            <!-- Placa do Veículo com Verificação Oficial -->
+            <div class="form-field-group">
+              <div class="field-label-row">
+                <label class="cyber-label" for="reg-placa">Placa do Veículo</label>
+                <button type="button" class="cyber-badge-official" onclick="triggerPlateSearch(document.getElementById('reg-placa').value)" title="Puxar dados oficiais">
+                  <span class="pulse-dot"></span>
+                  <span>Puxar dados oficiais</span>
+                </button>
               </div>
-              <div class="input-wrapper">
-                <div class="plate-country-badge">BR</div>
+              <div class="cyber-input-pill plate-input-pill">
+                <div class="pill-plate-flag">
+                  <span class="flag-br-badge">BR</span>
+                </div>
+                <div class="pill-divider"></div>
                 <input
                   id="reg-placa"
-                  class="form-input form-input-plate"
+                  class="pill-input plate-cyber-input"
                   type="text"
                   placeholder="BRA2E19"
-                  maxlength="8"
+                  maxlength="7"
                   autocomplete="off"
                   oninput="handlePlateInput(this)"
                   onblur="triggerPlateSearch(this.value)"
                 />
-                <div id="plate-search-indicator" class="plate-status-indicator"></div>
+                <div id="plate-search-indicator" class="plate-indicator-box"></div>
               </div>
-              <p class="form-helper-text">Informe a placa para puxar automaticamente os dados oficiais do veículo pelo DNA AUTO.</p>
+              <span class="cyber-helper-text">Digite a placa para carregar os dados cadastrais do seu carro.</span>
             </div>
 
-            <!-- Card Dinâmico de Veículo Confirmado (Injetado via JS) -->
-            <div id="reg-vehicle-card" class="vehicle-preview-card" style="display:none;"></div>
+            <!-- Card Dinâmico de Auditoria Cadastral (HUD Checklist Bars com Todos os Dados) -->
+            <div id="reg-vehicle-card" style="display:none;"></div>
 
-            <!-- Nome -->
-            <div class="form-group">
-              <label class="form-label" for="reg-nome">Nome Completo</label>
-              <div class="input-wrapper">
-                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
+            <!-- Nome Completo -->
+            <div class="form-field-group">
+              <label class="cyber-label" for="reg-nome">Nome Completo</label>
+              <div class="cyber-input-pill">
+                <div class="pill-icon-left">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+                <div class="pill-divider"></div>
                 <input
                   id="reg-nome"
-                  class="form-input"
+                  class="pill-input"
                   type="text"
                   placeholder="Seu nome completo"
                   required
@@ -1402,16 +1917,19 @@
             </div>
 
             <!-- E-mail -->
-            <div class="form-group">
-              <label class="form-label" for="reg-email">E-mail</label>
-              <div class="input-wrapper">
-                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                </svg>
+            <div class="form-field-group">
+              <label class="cyber-label" for="reg-email">E-mail</label>
+              <div class="cyber-input-pill">
+                <div class="pill-icon-left">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                  </svg>
+                </div>
+                <div class="pill-divider"></div>
                 <input
                   id="reg-email"
-                  class="form-input"
+                  class="pill-input"
                   type="email"
                   placeholder="seu@email.com"
                   required
@@ -1420,16 +1938,19 @@
               </div>
             </div>
 
-            <!-- WhatsApp (Opcional/Recomendado) -->
-            <div class="form-group">
-              <label class="form-label" for="reg-whatsapp">WhatsApp (para avisos de revisões)</label>
-              <div class="input-wrapper">
-                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                </svg>
+            <!-- WhatsApp (para alertas de revisão) -->
+            <div class="form-field-group">
+              <label class="cyber-label" for="reg-whatsapp">WhatsApp (para alertas de revisão)</label>
+              <div class="cyber-input-pill">
+                <div class="pill-icon-left">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                  </svg>
+                </div>
+                <div class="pill-divider"></div>
                 <input
                   id="reg-whatsapp"
-                  class="form-input"
+                  class="pill-input"
                   type="tel"
                   placeholder="(11) 99999-9999"
                   autocomplete="tel"
@@ -1439,27 +1960,30 @@
             </div>
 
             <!-- Senha -->
-            <div class="form-group">
-              <label class="form-label" for="reg-senha">Criar Senha (Mínimo 6 dígitos)</label>
-              <div class="input-wrapper">
-                <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
+            <div class="form-field-group">
+              <label class="cyber-label" for="reg-senha">Senha</label>
+              <div class="cyber-input-pill">
+                <div class="pill-icon-left">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </div>
+                <div class="pill-divider"></div>
                 <input
                   id="reg-senha"
-                  class="form-input"
+                  class="pill-input"
                   type="password"
                   placeholder="Mínimo 6 caracteres"
                   required
                   autocomplete="new-password"
-                  style="padding-right: 44px;"
                 />
                 <button
                   type="button"
-                  class="btn-toggle-pass"
+                  class="pill-icon-right btn-toggle-pass"
                   onclick="togglePass('reg-senha')"
                   aria-label="Mostrar ou ocultar senha"
+                  title="Mostrar/ocultar senha"
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
@@ -1469,23 +1993,24 @@
               </div>
             </div>
 
-            <button id="btn-submit-register" class="btn-submit" type="submit">
+            <!-- Botão Criar Minha Conta -->
+            <button id="btn-submit-register" class="btn btn-entrar btn-entrar-login" type="submit" style="margin-top: 8px;">
               <span>Criar Minha Conta</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
                 <circle cx="9" cy="7" r="4"></circle>
                 <line x1="19" y1="8" x2="19" y2="14"></line>
                 <line x1="22" y1="11" x2="16" y2="11"></line>
               </svg>
             </button>
+
+            <!-- Link para Fazer Login -->
+            <div style="display: flex; justify-content: center; align-items: center; margin-top: 14px; padding: 0 4px; font-size: 13.5px;">
+              <span style="color: #94A3B8; margin-right: 6px;">Já possui uma conta?</span>
+              <a href="javascript:void(0)" onclick="entrar()" style="color: #00D4FF; font-weight: 700; text-decoration: none;">Fazer Login</a>
+            </div>
           </form>
-
-          <div class="auth-switch-footer">
-            <span>Já possui uma conta?</span>
-            <a href="javascript:void(0)" onclick="entrar()">Fazer Login</a>
-          </div>
-
-        </main>
+        </div>
       </div>
     </section>
 
@@ -1579,78 +2104,209 @@
       const card = document.getElementById('reg-vehicle-card');
 
       if (indicator) {
-        indicator.innerHTML = '<div class="spinner-neon" title="Buscando veículo no DNA AUTO..."></div>';
+        indicator.innerHTML = '<div class="spinner-neon" style="width:18px; height:18px; border:2px solid rgba(0,212,255,0.2); border-top-color:#00D4FF; border-radius:50%; animation:spin 0.7s linear infinite;" title="Consultando base oficial..."></div>';
       }
 
       try {
-        const res = await fetch(`/api/v1/vehicles/search?q=${cleanPlate}`);
+        const res = await fetch(`/api/v1/integrations/plate-lookup/${cleanPlate}`);
         const data = await res.json();
 
-        if (res.ok && data.found && data.vehicle) {
-          currentFoundVehicle = data.vehicle;
-          const v = data.vehicle;
-          const brand = v.brand || 'Montadora Homologada';
-          const model = v.version || v.model || 'Modelo Homologado';
-          const year = v.model_year || v.manufacture_year || 2021;
-          const color = (v.color && v.color !== 'Não informada') ? v.color : 'Cor não inf.';
-          const dna = v.dna_code || (data.hasDna ? 'DNA ATIVO' : null);
-          const fipeFormatted = v.fipe_price_cents
-            ? (v.fipe_price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-            : null;
-
+        if (!res.ok || !data.found || !data.vehicle) {
           if (indicator) {
             indicator.innerHTML = `
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Veículo localizado">
-                <polyline points="20 6 9 17 4 12"></polyline>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" title="Veículo não localizado">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
               </svg>
             `;
           }
-
           if (card) {
             card.style.display = 'block';
             card.innerHTML = `
-              <div class="vpc-header">
-                <span class="vpc-plate-pill">${cleanPlate}</span>
-                <span class="vpc-badge-dna">
-                  <span class="dna-dot"></span>
-                  ${dna ? '✓ DNA AUTO Localizado' : '✓ Base Nacional Homologada'}
-                </span>
+              <div class="cyber-verification-hud" style="border-color: rgba(239, 68, 68, 0.4); background: rgba(20, 10, 15, 0.92);">
+                <div class="hud-header">
+                  <div class="hud-status-badge" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #EF4444;">
+                    <span style="width:6px; height:6px; border-radius:50%; background:#EF4444;"></span>
+                    <span>PLACA NÃO LOCALIZADA</span>
+                  </div>
+                  <span class="hud-origin-tag">Base Nacional Oficial</span>
+                </div>
+                <div style="padding: 16px 14px; text-align: center;">
+                  <p style="font-size: 13.5px; color: #FCA5A5; font-weight: 700; margin-bottom: 5px;">Veículo não localizado na Base Nacional Oficial</p>
+                  <p style="font-size: 12px; color: #94A3B8; line-height: 1.4;">A placa <strong style="color:#FFF;">${cleanPlate}</strong> não foi encontrada nos registros oficiais. Verifique se digitou os 7 caracteres corretamente.</p>
+                </div>
               </div>
-              <div class="vpc-model">${brand} ${model}</div>
-              <div class="vpc-specs">
-                <span>Ano: <b>${year}</b></span>
-                <span>•</span>
-                <span>Cor: <b>${color}</b></span>
-                ${fipeFormatted ? `<span>•</span><span>FIPE: <b>${fipeFormatted}</b></span>` : ''}
+            `;
+          }
+          currentFoundVehicle = null;
+          return;
+        }
+
+        const v = data.vehicle;
+        currentFoundVehicle = v;
+
+        const brand = v.brand || (v.specs && v.specs.marca) || 'Veículo';
+        const model = v.model || (v.specs && v.specs.modelo) || '';
+        const version = v.version || v.version_label || (v.specs && v.specs.versao) || `${brand} ${model}`;
+        const yearFab = v.manufacture_year || (v.specs && v.specs.ano_fabricacao) || '---';
+        const yearMod = v.model_year || (v.specs && v.specs.ano_modelo) || '---';
+        const color = (v.color && v.color !== 'Não informada') ? v.color : ((v.specs && v.specs.cor) || 'Não informada');
+        const fuel = v.fuel_type || (v.specs && v.specs.combustivel) || 'Não informado';
+        const displacement = v.engine_displacement || (v.specs && v.specs.cilindradas_formatada) || '';
+        const chassi = v.chassis_vin_masked || v.chassis_vin || (v.specs && v.specs.chassi) || 'Auditado pela base';
+
+        let fipeFormatted = 'Não informada pela Tabela FIPE';
+        let fipeCode = '---';
+        let refMonth = 'Mês vigente';
+
+        if (v.fipe) {
+          if (v.fipe.market_value_formatted) fipeFormatted = v.fipe.market_value_formatted;
+          else if (v.fipe_price_cents) fipeFormatted = (v.fipe_price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          if (v.fipe.fipe_code) fipeCode = v.fipe.fipe_code;
+          if (v.fipe.reference_month) refMonth = v.fipe.reference_month;
+        } else if (v.fipe_price_cents) {
+          fipeFormatted = (v.fipe_price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        const city = (v.origin && v.origin.city) || (v.specs && v.specs.municipio) || v.city || 'Origem nacional';
+        const state = (v.origin && v.origin.state) || (v.specs && v.specs.uf) || v.state || 'BR';
+        const country = (v.origin && v.origin.country) || (v.specs && v.specs.nacionalidade) || 'Nacional';
+        const vehicleType = v.vehicle_type || (v.specs && v.specs.tipo_veiculo) || 'Automóvel';
+        const situacao = (v.legal_status && v.legal_status.detran_status) || (v.specs && v.specs.situacao_veiculo) || 'Regular • Registro Ativo';
+
+        if (indicator) {
+          indicator.innerHTML = `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00E676" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" title="Veículo 100% Auditado">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          `;
+        }
+
+        if (card) {
+          card.style.display = 'block';
+          card.innerHTML = `
+            <div class="cyber-verification-hud">
+              <div class="hud-header">
+                <div class="hud-status-badge">
+                  <span class="hud-pulse-radar"></span>
+                  <span>AUDITORIA CADASTRAL HOMOLOGADA</span>
+                </div>
+                <span class="hud-origin-tag">Base Nacional Oficial</span>
               </div>
-              ${dna ? `<div class="vpc-dna-code">Passaporte: <b>${dna}</b></div>` : ''}
-              <div class="vpc-success-msg">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+              <div class="hud-hero-box">
+                <div class="hud-hero-info">
+                  <div class="hud-plate-tag">
+                    <span class="hud-br-flag">BR</span>
+                    <span class="hud-plate-code">${cleanPlate}</span>
+                  </div>
+                  <div class="hud-hero-titles">
+                    <h3 class="hud-car-title">${brand} ${model}</h3>
+                    <p class="hud-car-version">${version}</p>
+                  </div>
+                </div>
+                <div class="hud-fipe-badge">
+                  <span class="fipe-label">VALOR TABELA FIPE OFICIAL</span>
+                  <span class="fipe-value">${fipeFormatted}</span>
+                  <span class="fipe-ref">Referência: ${refMonth}</span>
+                </div>
+              </div>
+
+              <div class="hud-checklist-bars">
+                <!-- 1. Placa -->
+                <div class="check-bar-item done">
+                  <div class="check-icon-box">✓</div>
+                  <div class="check-content">
+                    <div class="check-row-top">
+                      <span class="check-label">Placa do Veículo</span>
+                      <span class="check-status-badge">Validada</span>
+                    </div>
+                    <div class="check-value">${cleanPlate} • Padrão Mercosul / Registro Nacional</div>
+                  </div>
+                </div>
+
+                <!-- 2. Chassi & VIN -->
+                <div class="check-bar-item done">
+                  <div class="check-icon-box">✓</div>
+                  <div class="check-content">
+                    <div class="check-row-top">
+                      <span class="check-label">Chassi & Identificação VIN</span>
+                      <span class="check-status-badge">Auditado</span>
+                    </div>
+                    <div class="check-value">${chassi} • Numeração de Fábrica Conforme</div>
+                  </div>
+                </div>
+
+                <!-- 3. Ano e Fabricação -->
+                <div class="check-bar-item done">
+                  <div class="check-icon-box">✓</div>
+                  <div class="check-content">
+                    <div class="check-row-top">
+                      <span class="check-label">Ano de Fabricação / Modelo</span>
+                      <span class="check-status-badge">Homologado</span>
+                    </div>
+                    <div class="check-value">${yearFab} / ${yearMod} • Procedência: ${country}</div>
+                  </div>
+                </div>
+
+                <!-- 4. Tabela FIPE -->
+                <div class="check-bar-item done">
+                  <div class="check-icon-box">✓</div>
+                  <div class="check-content">
+                    <div class="check-row-top">
+                      <span class="check-label">Valor de Mercado FIPE Oficial</span>
+                      <span class="check-status-badge highlight-green">Confirmado</span>
+                    </div>
+                    <div class="check-value fipe-highlight">${fipeFormatted} • Código FIPE: ${fipeCode}</div>
+                  </div>
+                </div>
+
+                <!-- 5. Cor & Motor -->
+                <div class="check-bar-item done">
+                  <div class="check-icon-box">✓</div>
+                  <div class="check-content">
+                    <div class="check-row-top">
+                      <span class="check-label">Cor & Motorização</span>
+                      <span class="check-status-badge">Certificado</span>
+                    </div>
+                    <div class="check-value">${color} • ${fuel} ${displacement ? '• ' + displacement : ''}</div>
+                  </div>
+                </div>
+
+                <!-- 6. Modelo & Categoria -->
+                <div class="check-bar-item done">
+                  <div class="check-icon-box">✓</div>
+                  <div class="check-content">
+                    <div class="check-row-top">
+                      <span class="check-label">Modelo & Categoria</span>
+                      <span class="check-status-badge">Catalogado</span>
+                    </div>
+                    <div class="check-value">${brand} ${model} • ${vehicleType}</div>
+                  </div>
+                </div>
+
+                <!-- 7. Situação Cadastral -->
+                <div class="check-bar-item done">
+                  <div class="check-icon-box">✓</div>
+                  <div class="check-content">
+                    <div class="check-row-top">
+                      <span class="check-label">Situação Cadastral & Emplacamento</span>
+                      <span class="check-status-badge highlight-blue">Regular</span>
+                    </div>
+                    <div class="check-value">${city} - ${state} • ${situacao}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="hud-footer-success">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E676" stroke-width="2.5">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
-                <span>Veículo identificado! Será vinculado automaticamente à sua Garagem Digital.</span>
+                <span>Veículo 100% auditado na base oficial e apto para certificação DNA AUTO.</span>
               </div>
-            `;
-          }
-        } else {
-          if (indicator) {
-            indicator.innerHTML = '<span style="color:#00D4FF; font-size:11px; font-weight:800;" title="Novo veículo">NOVO</span>';
-          }
-          if (card) {
-            card.style.display = 'block';
-            card.innerHTML = `
-              <div class="vpc-header">
-                <span class="vpc-plate-pill">${cleanPlate}</span>
-                <span class="vpc-badge-dna" style="color:#00D4FF; border-color:rgba(0,212,255,0.3); background:rgba(0,212,255,0.1);">
-                  Novo Cadastro
-                </span>
-              </div>
-              <div class="vpc-model">Novo Veículo na Garagem Digital</div>
-              <p style="font-size:11.5px; color:#94A3B8; margin:4px 0 0;">
-                Esta placa será associada ao seu perfil para ativação do passaporte DNA AUTO.
-              </p>
-            `;
-          }
+            </div>
+          `;
         }
       } catch (err) {
         if (indicator) indicator.innerHTML = '';

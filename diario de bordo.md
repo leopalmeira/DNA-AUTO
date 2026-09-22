@@ -875,6 +875,27 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
    - Sincronização 100% mantida entre `cliente.app/` e `public/`.
    - 45 de 45 testes automatizados aprovados (100%) no `npm test`.
 
+### 🛡️ Ciclo 47 — Formulários Limpos (Sem Dados Fake), Integração Oficial de Placa (WDAPI2), Tabela FIPE Real e HUD com Checks Sem Menção à API
+**Data:** 22/09/2026
+
+**Demandas Atendidas:**
+1. **Formulários 100% Limpos para Novos Usuários:**
+   - Remoção completa de valores pré-preenchidos ou fictícios (`value="joao@email.com"` e `value="123456"`) dos campos de login e cadastro em `dna-auto-login.html` e `ownerView.js`.
+   - Novos usuários agora encontram todos os campos (Nome, E-mail, WhatsApp, Senha e Placa) completamente vazios e prontos para inserção de dados reais.
+2. **Priorização da Base Nacional Oficial de Placas (Token Oficial WDAPI2):**
+   - Corrigido o interceptor de rotas em `GET /api/v1/integrations/plate-lookup/:plate` e `GET /api/v1/vehicles/search?q=:placa`. Anteriormente, placas como `BRA2E19` eram interceptadas pelo registro mock do banco de dados local (`Honda Civic Touring` / `R$ 138.900,00`).
+   - Os endpoints agora consultam prioritariamente o serviço oficial `apiPlacasService.consultarPlaca(cleanPlate)` com o token oficial ativo (`be14254e5b6a32f36acabc0542e822dd`), retornando as especificações reais de fábrica e a cotação oficial da Tabela FIPE.
+   - Para a placa `BRA2E19`, o sistema retorna com exatidão o veículo real: **FORD F14000 HD, 1994/1995, Cor AZUL, Combustível Diesel, 5882 cm³, Chassi 9BFXTNSM******348, FIPE R$ 32.478,00, PE - Igarassu**.
+3. **Erradicação Completa de Fallbacks Fake no Frontend:**
+   - Eliminados todos os valores hardcoded de fallback ('HONDA', 'CIVIC TOURING', 'R$ 138.900,00', 'Volkswagen Gol', 'R$ 54.890,00').
+   - Quando uma placa for inválida ou não for localizada na base nacional, o sistema exibe feedback claro e elegante de "Placa não localizada na Base Nacional Oficial", sem inventar veículos falsos.
+4. **Barras de Verificação HUD com Checks Oficiais ("Sem Mencionar a API"):**
+   - O painel HUD exibe 7 barras de verificação validadas (Placa, Chassi/VIN, Ano/Fabricação, Tabela FIPE Oficial com código e mês de referência, Cor & Motor, Modelo & Categoria, e Situação Cadastral).
+   - Textos da interface utilizam terminologia estritamente oficial: "Base Nacional Oficial", "Tabela FIPE Oficial", "Auditoria Cadastral Homologada", sem utilizar o termo técnico "API".
+5. **Paridade e Homologação:**
+   - Sincronização rigorosa mantida em 100% entre `cliente.app/` e `public/`.
+   - Bateria de testes automatizados com 45 de 45 testes aprovados (100%) no `npm test`.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes

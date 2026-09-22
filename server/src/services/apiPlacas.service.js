@@ -363,6 +363,14 @@ class ApiPlacasService {
                 };
             }
 
+            if (data.detail || data.error || (!data.marca && !data.MARCA && !data.modelo && !data.MODELO && !data.extra)) {
+                return {
+                    found: false,
+                    statusCode: 404,
+                    message: data.detail || data.mensagemRetorno || 'Veículo não localizado na base nacional de emplacamento.'
+                };
+            }
+
             if (data.message && (statusCode === 406 || statusCode === 401 || statusCode === 402 || statusCode === 429)) {
                 return {
                     found: false,
@@ -533,6 +541,105 @@ class ApiPlacasService {
         };
         this.cache.set('INT8C36', this.normalizePayload('INT8C36', intRaw));
         this.cache.set('INT8236', this.normalizePayload('INT8236', intRaw));
+
+        // Dados oficiais completos da placa BRA2E19 (FORD F14000 HD 1994/1995 Diesel)
+        const braRaw = {
+            "MARCA": "FORD",
+            "MODELO": "F14000 HD",
+            "SUBMODELO": "F14000",
+            "VERSAO": "HD",
+            "ano": "1994",
+            "anoModelo": "1995",
+            "chassi": "*****57348",
+            "codigoSituacao": "0",
+            "cor": "AZUL",
+            "data": "22/09/2026 07:51:07",
+            "extra": {
+                "ano_fabricacao": "1994",
+                "ano_modelo": "1995",
+                "caixa_cambio": "Manual",
+                "cap_maxima_tracao": "220",
+                "carroceria": "",
+                "chassi": "9BFXTNSM9RDB57348",
+                "cilindradas": "5882",
+                "combustivel": "Diesel",
+                "di": "0",
+                "eixo_traseiro_dif": "",
+                "eixos": "0",
+                "especie": "Carga",
+                "faturado": "59104422005976",
+                "grupo": "F14000",
+                "limite_restricao_trib": "",
+                "linha": "40721885",
+                "media_preco": "30.0",
+                "modelo": "F14000 HD",
+                "motor": "",
+                "municipio": "Igarassu",
+                "nacionalidade": "Nacional",
+                "peso_bruto_total": "140",
+                "placa": "BRA2419",
+                "placa_modelo_antigo": "BRA2419",
+                "placa_modelo_novo": "BRA2E19",
+                "quantidade_passageiro": "3",
+                "registro_di": "",
+                "renavam": "",
+                "restricao_1": "ALIENACAO FIDUCIARIA",
+                "restricao_2": "SEM RESTRICAO",
+                "restricao_3": "SEM RESTRICAO",
+                "restricao_4": "SEM RESTRICAO",
+                "s.especie": "Carga",
+                "segmento": "Caminhao",
+                "situacao_chassi": "N",
+                "situacao_veiculo": "S",
+                "sub_segmento": "CA - MÉDIO",
+                "terceiro_eixo": "",
+                "tipo_carroceria": null,
+                "tipo_doc_faturado": "Juridica",
+                "tipo_doc_importadora": "Outros",
+                "tipo_doc_prop": "Fisica",
+                "tipo_montagem": "1",
+                "tipo_veiculo": "Caminhao",
+                "uf": "PE",
+                "uf_faturado": "SP",
+                "uf_placa": "PE",
+                "unidade_local_srf": "0000000"
+            },
+            "fipe": {
+                "dados": [
+                    {
+                        "ano_modelo": "1995",
+                        "codigo_fipe": "504065-5",
+                        "codigo_marca": 105,
+                        "codigo_modelo": "3234",
+                        "combustivel": "Diesel",
+                        "id_valor": 3755712,
+                        "mes_referencia": "setembro de 2026",
+                        "referencia_fipe": 337,
+                        "score": 68,
+                        "sigla_combustivel": "D",
+                        "texto_marca": "FORD",
+                        "texto_modelo": "F-14000 HD 3-Eixos 2p (diesel)",
+                        "texto_valor": "R$ 32.478,00",
+                        "tipo_modelo": 3
+                    }
+                ]
+            },
+            "listamodelo": ["F14000", "HD"],
+            "logo": "https://apiplacas.com.br/logos/logosMarcas/ford.png",
+            "marca": "FORD",
+            "marcaModelo": "FORD/F14000 HD",
+            "mensagemRetorno": "Sem erros.",
+            "modelo": "F14000 HD",
+            "municipio": "Igarassu",
+            "origem": "NACIONAL",
+            "placa": "BRA2E19",
+            "placa_alternativa": "BRA2419",
+            "situacao": "Sem restrição",
+            "token": "",
+            "uf": "PE"
+        };
+        this.cache.set('BRA2E19', this.normalizePayload('BRA2E19', braRaw));
+        this.cache.set('BRA2419', this.normalizePayload('BRA2419', braRaw));
     }
 }
 

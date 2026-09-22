@@ -39,7 +39,17 @@ router.get('/plate-lookup/:plate', async (req, res) => {
             return res.status(400).json({ error: 'Formato de placa inválido. Informe 7 caracteres (Ex: BRA2E19 ou ABC1234).' });
         }
 
-        // 1. Verificar se o veículo já está registrado na base DNA AUTO
+        // 1. Consultar prioritariamente a Base Nacional Oficial de Placas (WDAPI2 com token oficial)
+        const origin = getPlateOriginState(cleanPlate);
+        const detranName = `DETRAN-${origin.state}`;
+        let external = null;
+        try {
+            external = await apiPlacasService.consultarPlaca(cleanPlate);
+        } catch (e) {
+            console.warn('Falha na consulta oficial WDAPI2:', e.message);
+        }
+
+        // 2. Verificar se o veículo possui registro prévio na base DNA AUTO (para manter DNA, histórico e ID)
         const existingVehicle = db.prepare(`
             SELECT v.*,
                    vd.dna_code, vd.status as dna_status, vd.activated_at as dna_activated_at,
@@ -53,14 +63,40 @@ router.get('/plate-lookup/:plate', async (req, res) => {
                OR UPPER(v.license_plate) = ?
         `).get(cleanPlate, cleanPlate);
 
+        if (external && external.found && external.vehicle) {
+            const v = external.vehicle;
+            if (existingVehicle) {
+                v.id = existingVehicle.id;
+                v.hasDna = !!existingVehicle.dna_code;
+                v.dna_code = existingVehicle.dna_code || null;
+            }
+
+            logAudit({
+                user: req.user || { name: 'Consulta Oficial de Placas' },
+                action: 'PLATE_LOOKUP_INTEGRATION_EXTERNAL',
+                entityType: 'PLATE_QUERY',
+                entityId: cleanPlate,
+                ipAddress: req.ip,
+                dataAfter: { plate: cleanPlate, found: true, provider: 'WDAPI2' }
+            });
+
+            return res.json({
+                found: true,
+                source: 'Base Nacional Oficial (Senatran / Detran / Tabela FIPE)',
+                vehicle: v,
+                raw: external.raw || null
+            });
+        }
+
+        // 3. Se a consulta externa não retornou, verificar veículo local cadastrado
         if (existingVehicle) {
             const fipeAmount = existingVehicle.fipe_price_cents ? (existingVehicle.fipe_price_cents / 100) : 138000;
             const ipvaEstimated = Math.round(fipeAmount * 0.04);
-            const maskedChassis = existingVehicle.chassis_vin.substring(0, 8) + '******' + existingVehicle.chassis_vin.slice(-3);
+            const maskedChassis = existingVehicle.chassis_vin ? (existingVehicle.chassis_vin.substring(0, 8) + '******' + existingVehicle.chassis_vin.slice(-3)) : `9BWAA45******${cleanPlate.slice(-3)}`;
             const maskedRenavam = (existingVehicle.renavam || '01239847120').substring(0, 6) + '*****';
 
             logAudit({
-                user: req.user || { name: 'Consulta API de Placas' },
+                user: req.user || { name: 'Consulta Oficial de Placas' },
                 action: 'PLATE_LOOKUP_INTEGRATION',
                 entityType: 'VEHICLE',
                 entityId: existingVehicle.id,
@@ -71,7 +107,7 @@ router.get('/plate-lookup/:plate', async (req, res) => {
 
             return res.json({
                 found: true,
-                source: 'Integração Senatran / Tabela FIPE Oficial / Sefaz',
+                source: 'Base Nacional Oficial / Tabela FIPE Oficial / Sefaz',
                 vehicle: {
                     id: existingVehicle.id,
                     license_plate: existingVehicle.license_plate,
@@ -124,30 +160,7 @@ router.get('/plate-lookup/:plate', async (req, res) => {
             });
         }
 
-        // 2. Veículo não cadastrado na base local: consultar API Placas oficial (WDAPI2)
-        const origin = getPlateOriginState(cleanPlate);
-        const detranName = `DETRAN-${origin.state}`;
-        const external = await apiPlacasService.consultarPlaca(cleanPlate);
-
-        logAudit({
-            user: req.user || { name: 'Consulta API de Placas' },
-            action: 'PLATE_LOOKUP_INTEGRATION_EXTERNAL',
-            entityType: 'PLATE_QUERY',
-            entityId: cleanPlate,
-            ipAddress: req.ip,
-            dataAfter: { plate: cleanPlate, found: external.found, provider: 'WDAPI2' }
-        });
-
-        if (external.found && external.vehicle) {
-            return res.json({
-                found: true,
-                source: external.source || 'API Placas Oficial (Senatran / FIPE)',
-                vehicle: external.vehicle,
-                raw: external.raw || null
-            });
-        }
-
-        // Se a API externa não localizou ou placa não encontrada na base nacional:
+        // Se não localizado nem na base externa nem na base local:
         return res.json({
             found: false,
             needsRegistration: true,
@@ -159,7 +172,7 @@ router.get('/plate-lookup/:plate', async (req, res) => {
                 ? 'https://www.detran.rj.gov.br/consultas/consultas-drv/cadastro-de-veiculo.html'
                 : `https://www.detran.${origin.state.toLowerCase()}.gov.br/`,
             ipva_rate: origin.state === 'RJ' || origin.state === 'SP' || origin.state === 'MG' ? '4%' : '3%',
-            message: external.message || `Placa registrada sob jurisdição do ${detranName} (${origin.city}/${origin.state}). Veículo novo na rede DNA AUTO: confirme os dados do documento para entrada imediata.`
+            message: (external && external.message) || `Placa registrada sob jurisdição do ${detranName} (${origin.city}/${origin.state}). Veículo novo na rede DNA AUTO: confirme os dados do documento para entrada imediata.`
         });
     } catch (err) {
         console.error('Erro na consulta de placa:', err);

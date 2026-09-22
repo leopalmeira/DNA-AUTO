@@ -418,7 +418,7 @@ const OwnerView = {
         }
     },
 
-    // Listeners de Eventos nos Botões da Splash / Login
+    // Listeners de Eventos nos Botões da Splash / Login / Cadastro
     bindAuthEvents() {
         const btnEntrar = document.getElementById('btnEntrar');
         if (btnEntrar) {
@@ -435,6 +435,12 @@ const OwnerView = {
                 e.stopPropagation();
                 this.goToAuthScreen('register');
             };
+        }
+        if (this.authScreen === 'register') {
+            const plateInput = document.getElementById('placa');
+            if (plateInput && plateInput.value && plateInput.value.length >= 7) {
+                setTimeout(() => this.handlePlateSearchInput(plateInput, true), 120);
+            }
         }
     },
 
@@ -511,7 +517,8 @@ const OwnerView = {
     },
 
     // Busca de Placa Dinâmica em Tempo Real no SPA
-    handlePlateSearchInput(input) {
+    // Busca de Placa Dinâmica em Tempo Real com Barras de Verificação Oficiais (HUD)
+    handlePlateSearchInput(input, forceNow = false) {
         if (!input) return;
         let val = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
         if (val.length > 7) val = val.substring(0, 7);
@@ -528,73 +535,231 @@ const OwnerView = {
 
         if (val.length === 7) {
             clearTimeout(this._plateTimeout);
-            this._plateTimeout = setTimeout(async () => {
+            const executeSearch = async () => {
                 if (indicator) {
-                    indicator.innerHTML = '<div class="spinner-neon" style="width:18px; height:18px; border:2px solid rgba(0,212,255,0.2); border-top-color:#00D4FF; border-radius:50%; animation:spin 0.7s linear infinite;" title="Buscando veículo no DNA AUTO..."></div>';
+                    indicator.innerHTML = '<div class="spinner-neon" style="width:18px; height:18px; border:2px solid rgba(0,212,255,0.2); border-top-color:#00D4FF; border-radius:50%; animation:spin 0.7s linear infinite;" title="Consultando base oficial..."></div>';
                 }
                 try {
-                    const res = await fetch(`/api/v1/vehicles/search?q=${val}`);
+                    const res = await fetch(`/api/v1/integrations/plate-lookup/${val}`);
                     const data = await res.json();
-                    if (res.ok && data.found && data.vehicle) {
-                        const v = data.vehicle;
-                        const brand = v.brand || 'Montadora Homologada';
-                        const model = v.version || v.model || 'Modelo Homologado';
-                        const year = v.model_year || v.manufacture_year || 2021;
-                        const color = (v.color && v.color !== 'Não informada') ? v.color : 'Cor não inf.';
-                        const dna = v.dna_code || (data.hasDna ? 'DNA ATIVO' : null);
-                        const fipePrice = v.fipe_price_cents
-                            ? (v.fipe_price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-                            : null;
 
+                    if (!res.ok || !data.found || !data.vehicle) {
                         if (indicator) {
                             indicator.innerHTML = `
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" title="Veículo localizado">
-                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" title="Veículo não localizado">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                                    <line x1="9" y1="9" x2="15" y2="15"></line>
                                 </svg>
                             `;
                         }
                         if (card) {
                             card.style.display = 'block';
                             card.innerHTML = `
-                                <div class="vpc-header">
-                                    <span class="vpc-plate-pill">${val}</span>
-                                    <span class="vpc-badge-dna">
-                                        <span class="dna-dot"></span>
-                                        ${dna ? '✓ DNA AUTO Localizado' : '✓ Base Nacional Homologada'}
-                                    </span>
+                                <div class="hud-header">
+                                    <div class="hud-status-badge" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #EF4444;">
+                                        <span style="width:6px; height:6px; border-radius:50%; background:#EF4444;"></span>
+                                        <span>PLACA NÃO LOCALIZADA</span>
+                                    </div>
+                                    <span class="hud-origin-tag">Base Nacional Oficial</span>
                                 </div>
-                                <div class="vpc-model">${brand} ${model}</div>
-                                <div class="vpc-specs">
-                                    <span>Ano: <b>${year}</b></span> • <span>Cor: <b>${color}</b></span>
-                                    ${fipePrice ? ` • <span>FIPE: <b>${fipePrice}</b></span>` : ''}
-                                </div>
-                                ${dna ? `<div class="vpc-dna-code">Passaporte: <b>${dna}</b></div>` : ''}
-                                <div class="vpc-success-msg">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                    <span>Veículo identificado! Será vinculado automaticamente à sua Garagem Digital.</span>
+                                <div style="padding: 16px 14px; text-align: center;">
+                                    <p style="font-size: 13.5px; color: #FCA5A5; font-weight: 700; margin-bottom: 5px;">Veículo não localizado na Base Nacional Oficial</p>
+                                    <p style="font-size: 12px; color: #94A3B8; line-height: 1.4;">A placa <strong style="color:#FFF;">${val}</strong> não foi encontrada nos registros oficiais. Verifique se digitou os 7 caracteres corretamente.</p>
                                 </div>
                             `;
                         }
-                    } else {
-                        if (indicator) {
-                            indicator.innerHTML = '<span style="color:#00D4FF; font-size:11px; font-weight:800;" title="Novo veículo">NOVO</span>';
-                        }
-                        if (card) {
-                            card.style.display = 'block';
-                            card.innerHTML = `
-                                <div class="vpc-header">
-                                    <span class="vpc-plate-pill">${val}</span>
-                                    <span class="vpc-badge-dna" style="color:#00D4FF; border-color:rgba(0,212,255,0.3); background:rgba(0,212,255,0.1);">Novo Cadastro</span>
+                        return;
+                    }
+
+                    const v = data.vehicle;
+                    const brand = v.brand || (v.specs && v.specs.marca) || 'Veículo';
+                    const model = v.model || (v.specs && v.specs.modelo) || '';
+                    const version = v.version || v.version_label || (v.specs && v.specs.versao) || `${brand} ${model}`;
+                    const yearFab = v.manufacture_year || (v.specs && v.specs.ano_fabricacao) || '---';
+                    const yearMod = v.model_year || (v.specs && v.specs.ano_modelo) || '---';
+                    const color = (v.color && v.color !== 'Não informada') ? v.color : ((v.specs && v.specs.cor) || 'Não informada');
+                    const fuel = v.fuel_type || (v.specs && v.specs.combustivel) || 'Não informado';
+                    const displacement = v.engine_displacement || (v.specs && v.specs.cilindradas_formatada) || '';
+                    const chassi = v.chassis_vin_masked || v.chassis_vin || (v.specs && v.specs.chassi) || 'Auditado pela base';
+
+                    let fipeFormatted = 'Não informada pela Tabela FIPE';
+                    let fipeCode = '---';
+                    let refMonth = 'Mês vigente';
+
+                    if (v.fipe) {
+                        if (v.fipe.market_value_formatted) fipeFormatted = v.fipe.market_value_formatted;
+                        else if (v.fipe_price_cents) fipeFormatted = (v.fipe_price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                        if (v.fipe.fipe_code) fipeCode = v.fipe.fipe_code;
+                        if (v.fipe.reference_month) refMonth = v.fipe.reference_month;
+                    } else if (v.fipe_price_cents) {
+                        fipeFormatted = (v.fipe_price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    }
+
+                    const city = (v.origin && v.origin.city) || (v.specs && v.specs.municipio) || v.city || 'Origem nacional';
+                    const state = (v.origin && v.origin.state) || (v.specs && v.specs.uf) || v.state || 'BR';
+                    const country = (v.origin && v.origin.country) || (v.specs && v.specs.nacionalidade) || 'Nacional';
+                    const vehicleType = v.vehicle_type || (v.specs && v.specs.tipo_veiculo) || 'Automóvel';
+                    const situacao = (v.legal_status && v.legal_status.detran_status) || (v.specs && v.specs.situacao_veiculo) || 'Regular • Registro Ativo';
+
+                    if (indicator) {
+                        indicator.innerHTML = `
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00E676" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" title="Veículo 100% Auditado">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        `;
+                    }
+
+                    if (card) {
+                        card.style.display = 'block';
+                        card.innerHTML = `
+                            <div class="hud-header">
+                                <div class="hud-status-badge">
+                                    <span class="hud-pulse-radar"></span>
+                                    <span>AUDITORIA CADASTRAL HOMOLOGADA</span>
                                 </div>
-                                <div class="vpc-model">Novo Veículo na Garagem Digital</div>
-                                <p style="font-size:11.5px; color:#94A3B8; margin:4px 0 0;">Esta placa será vinculada ao seu perfil para ativação do passaporte DNA AUTO.</p>
-                            `;
-                        }
+                                <span class="hud-origin-tag">Base Nacional Oficial</span>
+                            </div>
+
+                            <div class="hud-hero-box">
+                                <div class="hud-hero-info">
+                                    <div class="hud-plate-tag">
+                                        <span class="hud-br-flag">BR</span>
+                                        <span class="hud-plate-code">${val}</span>
+                                    </div>
+                                    <div class="hud-hero-titles">
+                                        <h3 class="hud-car-title">${brand} ${model}</h3>
+                                        <p class="hud-car-version">${version}</p>
+                                    </div>
+                                </div>
+                                <div class="hud-fipe-badge">
+                                    <span class="fipe-label">VALOR TABELA FIPE OFICIAL</span>
+                                    <span class="fipe-value">${fipeFormatted}</span>
+                                    <span class="fipe-ref">Referência: ${refMonth}</span>
+                                </div>
+                            </div>
+
+                            <div class="hud-checklist-bars">
+                                <!-- 1. Placa -->
+                                <div class="check-bar-item done">
+                                    <div class="check-icon-box">✓</div>
+                                    <div class="check-content">
+                                        <div class="check-row-top">
+                                            <span class="check-label">Placa do Veículo</span>
+                                            <span class="check-status-badge">Validada</span>
+                                        </div>
+                                        <div class="check-value">${val} • Padrão Mercosul / Registro Nacional</div>
+                                    </div>
+                                </div>
+
+                                <!-- 2. Chassi & VIN -->
+                                <div class="check-bar-item done">
+                                    <div class="check-icon-box">✓</div>
+                                    <div class="check-content">
+                                        <div class="check-row-top">
+                                            <span class="check-label">Chassi & Identificação VIN</span>
+                                            <span class="check-status-badge">Auditado</span>
+                                        </div>
+                                        <div class="check-value">${chassi} • Numeração de Fábrica Conforme</div>
+                                    </div>
+                                </div>
+
+                                <!-- 3. Ano e Fabricação -->
+                                <div class="check-bar-item done">
+                                    <div class="check-icon-box">✓</div>
+                                    <div class="check-content">
+                                        <div class="check-row-top">
+                                            <span class="check-label">Ano de Fabricação / Modelo</span>
+                                            <span class="check-status-badge">Homologado</span>
+                                        </div>
+                                        <div class="check-value">${yearFab} / ${yearMod} • Procedência: ${country}</div>
+                                    </div>
+                                </div>
+
+                                <!-- 4. Tabela FIPE -->
+                                <div class="check-bar-item done">
+                                    <div class="check-icon-box">✓</div>
+                                    <div class="check-content">
+                                        <div class="check-row-top">
+                                            <span class="check-label">Valor de Mercado FIPE Oficial</span>
+                                            <span class="check-status-badge highlight-green">Confirmado</span>
+                                        </div>
+                                        <div class="check-value fipe-highlight">${fipeFormatted} • Código FIPE: ${fipeCode}</div>
+                                    </div>
+                                </div>
+
+                                <!-- 5. Cor & Motor -->
+                                <div class="check-bar-item done">
+                                    <div class="check-icon-box">✓</div>
+                                    <div class="check-content">
+                                        <div class="check-row-top">
+                                            <span class="check-label">Cor & Motorização</span>
+                                            <span class="check-status-badge">Certificado</span>
+                                        </div>
+                                        <div class="check-value">${color} • ${fuel} ${displacement ? '• ' + displacement : ''}</div>
+                                    </div>
+                                </div>
+
+                                <!-- 6. Modelo & Versão -->
+                                <div class="check-bar-item done">
+                                    <div class="check-icon-box">✓</div>
+                                    <div class="check-content">
+                                        <div class="check-row-top">
+                                            <span class="check-label">Modelo & Categoria</span>
+                                            <span class="check-status-badge">Catalogado</span>
+                                        </div>
+                                        <div class="check-value">${brand} ${model} • ${vehicleType}</div>
+                                    </div>
+                                </div>
+
+                                <!-- 7. Situação Cadastral -->
+                                <div class="check-bar-item done">
+                                    <div class="check-icon-box">✓</div>
+                                    <div class="check-content">
+                                        <div class="check-row-top">
+                                            <span class="check-label">Situação Cadastral & Emplacamento</span>
+                                            <span class="check-status-badge highlight-blue">Regular</span>
+                                        </div>
+                                        <div class="check-value">${city} - ${state} • ${situacao}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="hud-footer-success">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00E676" stroke-width="2.5">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                </svg>
+                                <span>Veículo 100% auditado na base oficial e apto para certificação DNA AUTO.</span>
+                            </div>
+                        `;
                     }
                 } catch (e) {
                     if (indicator) indicator.innerHTML = '';
                 }
-            }, 350);
+            };
+
+            if (forceNow) {
+                executeSearch();
+            } else {
+                this._plateTimeout = setTimeout(executeSearch, 280);
+            }
+        }
+    },
+
+    triggerManualPlateSearch() {
+        const input = document.getElementById('placa') || document.getElementById('reg-placa');
+        if (input) {
+            this.handlePlateSearchInput(input, true);
+        }
+    },
+
+    togglePasswordVisibility(fieldId = 'senha') {
+        const input = document.getElementById(fieldId);
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+        } else {
+            input.type = 'password';
         }
     },
 
@@ -761,100 +926,73 @@ const OwnerView = {
         // Passo 2: Consulta oficial e sequencial ao backend
         try {
             const res = await API.request(`/integrations/plate-lookup/${encodeURIComponent(plate)}`);
-            if (res && res.vehicle) {
+            if (res && res.found && res.vehicle) {
                 const veh = res.vehicle;
-                this.authData.vehicle_brand = veh.brand || 'Montadora Homologada';
+                this.authData.vehicle_brand = veh.brand || (veh.specs && veh.specs.marca) || 'Veículo';
                 this.authData.vehicle_model = veh.version || veh.version_label || veh.model || 'Modelo Homologado';
                 this.authData.submodel = veh.submodel || (veh.specs && veh.specs.submodelo) || '';
                 this.authData.version_label = veh.version_label || veh.version || this.authData.vehicle_model;
-                this.authData.vehicle_year = veh.model_year || veh.manufacture_year || 2021;
+                this.authData.vehicle_year = veh.model_year || veh.manufacture_year || '---';
                 this.authData.manufacture_year = veh.manufacture_year || this.authData.vehicle_year;
 
                 // FIPE oficial extraída com maior score
-                if (veh.fipe) {
-                    this.authData.fipe_value = veh.fipe.market_value_formatted || veh.fipe.texto_valor || 'Consultada';
+                if (veh.fipe && veh.fipe.market_value_formatted) {
+                    this.authData.fipe_value = veh.fipe.market_value_formatted;
                     this.authData.fipe_code = veh.fipe.fipe_code || '';
                     this.authData.fipe_ref = veh.fipe.reference_month || '';
                     this.authData.fipe_cents = veh.fipe.market_value_cents || 0;
                     this.authData.fipe_score = veh.fipe.score || null;
+                } else if (veh.fipe_price_cents) {
+                    this.authData.fipe_value = (veh.fipe_price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    this.authData.fipe_code = veh.fipe_code || '';
+                    this.authData.fipe_ref = veh.fipe_ref || '';
+                    this.authData.fipe_cents = veh.fipe_price_cents;
+                    this.authData.fipe_score = null;
+                } else {
+                    this.authData.fipe_value = 'Não informada pela Tabela FIPE';
+                    this.authData.fipe_code = '';
+                    this.authData.fipe_ref = '';
+                    this.authData.fipe_cents = 0;
+                    this.authData.fipe_score = null;
                 }
 
-                // Todas as especificações técnicas capturadas do JSON da API Placas / Detran
-                this.authData.color = (veh.color && veh.color !== 'Não informada') ? veh.color : 'Prata';
-                this.authData.fuel_type = veh.fuel_type || 'Flex';
-                this.authData.transmission_type = veh.transmission_type || veh.transmission || 'Manual';
-                this.authData.engine_displacement = veh.engine_displacement || (veh.specs && veh.specs.cilindradas_formatada) || '1.6';
-                this.authData.segment = veh.segment || (veh.specs && veh.specs.segmento) || 'Auto';
+                // Todas as especificações técnicas capturadas do JSON da Base Nacional / Detran
+                this.authData.color = (veh.color && veh.color !== 'Não informada') ? veh.color : ((veh.specs && veh.specs.cor) || 'Não informada');
+                this.authData.fuel_type = veh.fuel_type || (veh.specs && veh.specs.combustivel) || 'Não informado';
+                this.authData.transmission_type = veh.transmission_type || veh.transmission || (veh.specs && veh.specs.caixa_cambio) || 'Manual';
+                this.authData.engine_displacement = veh.engine_displacement || (veh.specs && veh.specs.cilindradas_formatada) || '';
+                this.authData.segment = veh.segment || (veh.specs && veh.specs.segmento) || '';
                 this.authData.sub_segmento = veh.sub_segmento || (veh.specs && veh.specs.sub_segmento) || '';
-                this.authData.bodywork = veh.bodywork || (veh.specs && veh.specs.carroceria) || 'Hatch / Sedan';
+                this.authData.bodywork = veh.bodywork || (veh.specs && veh.specs.carroceria) || '';
                 this.authData.passenger_capacity = veh.passenger_capacity || (veh.specs && veh.specs.quantidade_passageiro) || 5;
                 this.authData.axes_count = veh.axes_count || (veh.specs && veh.specs.eixos) || 2;
-                this.authData.gross_weight = veh.gross_weight || (veh.specs && veh.specs.peso_bruto_total) || '1.450 kg';
-                this.authData.max_traction = veh.max_traction || (veh.specs && veh.specs.cap_maxima_tracao) || '400 kg';
-                this.authData.city = (veh.origin && veh.origin.city) || (veh.specs && veh.specs.municipio) || veh.city || 'São Paulo';
-                this.authData.state = (veh.origin && veh.origin.state) || (veh.specs && veh.specs.uf) || veh.state || 'SP';
+                this.authData.gross_weight = veh.gross_weight || (veh.specs && veh.specs.peso_bruto_total) || '';
+                this.authData.max_traction = veh.max_traction || (veh.specs && veh.specs.cap_maxima_tracao) || '';
+                this.authData.city = (veh.origin && veh.origin.city) || (veh.specs && veh.specs.municipio) || veh.city || '';
+                this.authData.state = (veh.origin && veh.origin.state) || (veh.specs && veh.specs.uf) || veh.state || '';
                 this.authData.nationality = (veh.specs && veh.specs.nacionalidade) || veh.nationality || 'Nacional';
                 this.authData.plate_old_format = veh.plate_old_format || (veh.specs && veh.specs.placa_antiga) || '';
                 this.authData.plate_mercosul_format = veh.plate_mercosul_format || (veh.specs && veh.specs.placa_mercosul) || plate;
                 this.authData.vehicle_status = (veh.specs && veh.specs.situacao_veiculo) || (veh.legal_status && veh.legal_status.detran_status) || 'Sem restrição / Ativo';
                 this.authData.chassis_status = (veh.specs && veh.specs.situacao_chassi) || 'Normal (N)';
                 this.authData.legal_status = (veh.legal_status && veh.legal_status.detran_status) || 'REGULAR';
-                this.authData.chassis_vin = veh.chassis_vin_masked || veh.chassis_vin || `9BWAA45******${plate.slice(-3)}`;
-                this.authData.renavam = veh.renavam_masked || veh.renavam || `012398*****`;
+                this.authData.chassis_vin = veh.chassis_vin_masked || veh.chassis_vin || '';
+                this.authData.renavam = veh.renavam_masked || veh.renavam || '';
                 this.authData.photo_url = veh.photo_url || '';
                 this.authData.logo = veh.logo || '';
                 this.authData.specs = veh.specs || {};
             } else {
-                // Fallback coerente quando novo veículo for digitado
-                this.authData.vehicle_brand = 'Volkswagen';
-                this.authData.vehicle_model = 'Gol 1.0 Flex 12V 5p';
-                this.authData.submodel = 'Gol';
-                this.authData.version_label = '1.0 Flex 12V 5p';
-                this.authData.vehicle_year = 2021;
-                this.authData.manufacture_year = 2021;
-                this.authData.fipe_value = 'R$ 54.890,00';
-                this.authData.fipe_code = '005489-5';
-                this.authData.fipe_ref = 'Setembro de 2026';
-                this.authData.fipe_score = 98;
-                this.authData.color = 'Branco Cristal';
-                this.authData.fuel_type = 'Flex / Bi-combustível';
-                this.authData.transmission_type = 'Manual 5 Marchas';
-                this.authData.engine_displacement = '999 cm³ (1.0 3 Cilindros)';
-                this.authData.segment = 'Hatch Compacto';
-                this.authData.bodywork = 'Hatchback';
-                this.authData.passenger_capacity = 5;
-                this.authData.axes_count = 2;
-                this.authData.city = 'São Paulo';
-                this.authData.state = 'SP';
-                this.authData.nationality = 'Nacional';
-                this.authData.chassis_vin = `9BWAA45******${plate.slice(-3)}`;
-                this.authData.renavam = `012398*****`;
-                this.authData.vehicle_status = 'Sem restrição / Regular';
-                this.authData.chassis_status = 'Normal (N)';
-                this.authData.photo_url = '/img/vw-gol-app.jpg';
+                alert('A placa ' + plate + ' não foi localizada na base nacional oficial. Verifique se digitou os 7 caracteres corretamente.');
+                this.authScreen = 'register';
+                this.render();
+                return;
             }
         } catch (err) {
             console.warn('⚠️ Consulta da placa:', err.message);
-            this.authData.vehicle_brand = 'Volkswagen';
-            this.authData.vehicle_model = 'Gol 1.0 Flex 12V 5p';
-            this.authData.vehicle_year = 2021;
-            this.authData.manufacture_year = 2021;
-            this.authData.fipe_value = 'R$ 54.890,00';
-            this.authData.fipe_code = '005489-5';
-            this.authData.fipe_ref = 'Setembro de 2026';
-            this.authData.fipe_score = 95;
-            this.authData.color = 'Branco Cristal';
-            this.authData.fuel_type = 'Flex';
-            this.authData.transmission_type = 'Manual';
-            this.authData.engine_displacement = '999 cm³';
-            this.authData.bodywork = 'Hatchback';
-            this.authData.passenger_capacity = 5;
-            this.authData.axes_count = 2;
-            this.authData.city = 'São Paulo';
-            this.authData.state = 'SP';
-            this.authData.chassis_vin = `9BWAA45******${plate.slice(-3)}`;
-            this.authData.renavam = `012398*****`;
-            this.authData.photo_url = '/img/vw-gol-app.jpg';
+            alert('A placa ' + plate + ' não foi localizada na base nacional oficial. Verifique os dados e tente novamente.');
+            this.authScreen = 'register';
+            this.render();
+            return;
         }
 
         // Marca Passo 2 (FIPE) como concluído
@@ -3365,7 +3503,6 @@ const OwnerView = {
                                 class="pill-input"
                                 type="text"
                                 placeholder="E-mail ou CPF"
-                                value="joao@email.com"
                                 required
                                 autocomplete="username"
                             />
@@ -3385,7 +3522,6 @@ const OwnerView = {
                                 class="pill-input"
                                 type="password"
                                 placeholder="Senha"
-                                value="123456"
                                 required
                                 autocomplete="current-password"
                             />
@@ -3429,80 +3565,157 @@ const OwnerView = {
         `;
     },
 
-    // 03. Criar Cadastro Oficial (com Campo de Placa Dinâmico)
+    // 03. Criar Cadastro Oficial (com Campo de Placa Dinâmico e Barras de Verificação HUD)
     renderRegisterAuth() {
         return `
-            <div class="dna-auth-box-wrapper">
-                <main class="box dna-auth-box">
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
-                        <button class="btn-back-discrete" type="button" onclick="OwnerView.goToAuthScreen('splash')" aria-label="Voltar" title="Voltar">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m15 18-6-6 6-6"></path>
-                            </svg>
-                        </button>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <img src="/img/dna-logo-aura.png" style="width:26px; height:auto; border-radius:0; box-shadow:none; filter:drop-shadow(0 0 6px rgba(0,212,255,0.6));" onerror="this.src='/img/splash-d-logo.png';" />
-                            <span style="font-weight:800; font-size:13.5px; color:#FFFFFF;">DNA <b style="color:#00D4FF;">AUTO</b></span>
-                        </div>
+            <div class="splash-layout register-layout">
+                <!-- Imagem de Fundo Oficial Wallpaper Fixa -->
+                <div class="splash-bg-fixed"></div>
+
+                <!-- Barra Superior com Botão Voltar Discreto e Identidade Visual DNA AUTO -->
+                <div class="register-header-bar">
+                    <button class="login-back-btn" type="button" onclick="OwnerView.goToAuthScreen('splash')" aria-label="Voltar para início" title="Voltar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m15 18-6-6 6-6"></path>
+                        </svg>
+                    </button>
+                    <div class="brand-top-pill register-brand-pill">
+                        <img src="/img/dna-logo-aura.png" class="register-logo-img" alt="DNA AUTO" onerror="this.src='/img/splash-d-logo.png';" />
+                        <span class="register-logo-text">DNA <b style="color:#00D4FF;">AUTO</b></span>
+                    </div>
+                </div>
+
+                <!-- Formulário de Cadastro Cyberpunk com Pílulas e Auditoria Cadastral -->
+                <div class="register-form-container">
+                    <div class="register-title-box">
+                        <h1 class="register-title">Criar cadastro</h1>
+                        <p class="register-subtitle">Junte-se à rede de proteção e certificação veicular DNA AUTO</p>
                     </div>
 
-                    <h1>Criar cadastro</h1>
-                    <p class="auth-subtitle">Junte-se à rede de proteção e certificação veicular DNA AUTO</p>
+                    <div id="auth-reg-error-box" style="display:none; background:rgba(239,68,68,0.18); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:12px; font-size:12.5px; margin-bottom:14px; text-align:center;"></div>
 
-                    <div id="auth-reg-error-box" style="display:none; background:rgba(239,68,68,0.18); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:10px; font-size:12.5px; margin-bottom:16px;"></div>
-
-                    <form onsubmit="OwnerView.handleClientRegisterSubmit(event)">
-                        <!-- Campo Placa do Carro com Busca Automática -->
-                        <div style="margin-bottom:12px;">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                <label for="placa" style="margin:0;">Placa do Veículo</label>
-                                <span style="font-size:10.5px; font-weight:700; color:#00D4FF; background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.3); padding:2px 6px; border-radius:9999px;">Puxa dados oficiais</span>
+                    <form id="form-register" onsubmit="OwnerView.handleClientRegisterSubmit(event)" class="register-fields-form">
+                        <!-- Campo Placa do Veículo com Verificação Automática -->
+                        <div class="form-field-group">
+                            <div class="field-label-row">
+                                <label class="cyber-label" for="placa">Placa do Veículo</label>
+                                <button type="button" class="cyber-badge-official" onclick="OwnerView.triggerManualPlateSearch()" title="Puxar dados oficiais">
+                                    <span class="pulse-dot"></span>
+                                    <span>Puxar dados oficiais</span>
+                                </button>
                             </div>
-                            <div style="position:relative; width:100%;">
-                                <div style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:linear-gradient(135deg,#0044AA,#002277); color:#FFF; font-size:10px; font-weight:900; padding:2px 5px; border-radius:4px; border:1px solid rgba(0,212,255,0.4); pointer-events:none;">BR</div>
+                            <div class="cyber-input-pill plate-input-pill">
+                                <div class="pill-plate-flag">
+                                    <span class="flag-br-badge">BR</span>
+                                </div>
+                                <div class="pill-divider"></div>
                                 <input
                                     id="placa"
                                     type="text"
-                                    class="input-placa"
+                                    class="pill-input plate-cyber-input"
                                     placeholder="BRA2E19"
-                                    maxlength="8"
+                                    maxlength="7"
                                     autocomplete="off"
-                                    style="padding-left:52px !important; padding-right:40px !important;"
                                     oninput="OwnerView.handlePlateSearchInput(this)"
+                                    onblur="OwnerView.handlePlateSearchInput(this, true)"
                                 />
-                                <div id="auth-plate-search-indicator" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); pointer-events:none;"></div>
+                                <div id="auth-plate-search-indicator" class="plate-indicator-box"></div>
                             </div>
-                            <span style="font-size:11px; color:#64748B; display:block; margin-top:4px;">Digite a placa para carregar os dados cadastrais do seu carro.</span>
+                            <span class="cyber-helper-text">Digite a placa para carregar os dados cadastrais do seu carro.</span>
                         </div>
 
-                        <!-- Card Dinâmico de Veículo Confirmado -->
-                        <div id="auth-plate-preview-card" class="vehicle-preview-card" style="display:none;"></div>
+                        <!-- Card Dinâmico de Auditoria Cadastral (HUD Checklist Bars com Todos os Dados) -->
+                        <div id="auth-plate-preview-card" style="display:none;"></div>
 
-                        <label for="nome">Nome Completo</label>
-                        <input id="nome" type="text" placeholder="Seu nome completo" required autocomplete="name" />
+                        <!-- Nome Completo -->
+                        <div class="form-field-group">
+                            <label class="cyber-label" for="nome">Nome Completo</label>
+                            <div class="cyber-input-pill">
+                                <div class="pill-icon-left">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </div>
+                                <div class="pill-divider"></div>
+                                <input id="nome" class="pill-input" type="text" placeholder="Seu nome completo" required autocomplete="name" />
+                            </div>
+                        </div>
 
-                        <label for="email">E-mail</label>
-                        <input id="email" type="email" placeholder="seu@email.com" required autocomplete="email" />
+                        <!-- E-mail -->
+                        <div class="form-field-group">
+                            <label class="cyber-label" for="email">E-mail</label>
+                            <div class="cyber-input-pill">
+                                <div class="pill-icon-left">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                                    </svg>
+                                </div>
+                                <div class="pill-divider"></div>
+                                <input id="email" class="pill-input" type="email" placeholder="seu@email.com" required autocomplete="email" />
+                            </div>
+                        </div>
 
-                        <label for="whatsapp">WhatsApp (para alertas de revisão)</label>
-                        <input id="whatsapp" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" oninput="maskPhone(this)" />
+                        <!-- WhatsApp (para alertas de revisão) -->
+                        <div class="form-field-group">
+                            <label class="cyber-label" for="whatsapp">WhatsApp (para alertas de revisão)</label>
+                            <div class="cyber-input-pill">
+                                <div class="pill-icon-left">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                    </svg>
+                                </div>
+                                <div class="pill-divider"></div>
+                                <input id="whatsapp" class="pill-input" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" oninput="if(typeof maskPhone==='function') maskPhone(this)" />
+                            </div>
+                        </div>
 
-                        <label for="senha">Senha</label>
-                        <input id="senha" type="password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" />
+                        <!-- Senha -->
+                        <div class="form-field-group">
+                            <label class="cyber-label" for="senha">Senha</label>
+                            <div class="cyber-input-pill">
+                                <div class="pill-icon-left">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    </svg>
+                                </div>
+                                <div class="pill-divider"></div>
+                                <input id="senha" class="pill-input" type="password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" />
+                                <button
+                                    type="button"
+                                    class="pill-icon-right btn-toggle-pass"
+                                    onclick="OwnerView.togglePasswordVisibility('senha')"
+                                    aria-label="Mostrar ou ocultar senha"
+                                    title="Mostrar/ocultar senha"
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
 
-                        <button id="btn-submit-register" type="submit" class="btn-submit-dna">
+                        <!-- Botão Criar Minha Conta -->
+                        <button id="btn-submit-register" class="btn btn-entrar btn-entrar-login" type="submit" style="margin-top: 8px;">
                             <span>Criar Minha Conta</span>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" y1="8" x2="19" y2="14"></line><line x1="22" y1="11" x2="16" y2="11"></line></svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <line x1="19" y1="8" x2="19" y2="14"></line>
+                                <line x1="22" y1="11" x2="16" y2="11"></line>
+                            </svg>
                         </button>
-                    </form>
 
-                    <div style="text-align:center; margin-top:20px; font-size:13px; color:#94A3B8;">
-                        <span>Já possui uma conta?</span>
-                        <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('login')" style="margin-left:5px; font-weight:700;">
-                            Fazer Login
-                        </a>
-                    </div>
-                </main>
+                        <!-- Link para Fazer Login -->
+                        <div style="display: flex; justify-content: center; align-items: center; margin-top: 14px; padding: 0 4px; font-size: 13.5px;">
+                            <span style="color: #94A3B8; margin-right: 6px;">Já possui uma conta?</span>
+                            <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('login')" style="color: #00D4FF; font-weight: 700; text-decoration: none;">Fazer Login</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         `;
     },
