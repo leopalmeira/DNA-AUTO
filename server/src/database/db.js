@@ -110,7 +110,9 @@ const vehicleColumns = [
     { name: 'fipe_score', type: 'INTEGER' },
     { name: 'raw_json', type: 'TEXT' },
     { name: 'extra_json', type: 'TEXT' },
-    { name: 'fipe_json', type: 'TEXT' }
+    { name: 'fipe_json', type: 'TEXT' },
+    { name: 'current_owner_id', type: 'TEXT' },
+    { name: 'workshop_id', type: 'TEXT' }
 ];
 
 for (const col of vehicleColumns) {
