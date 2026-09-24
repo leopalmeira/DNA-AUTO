@@ -233,9 +233,6 @@
                     ${this.renderMobileActiveSection()}
                 </main>
 
-                <!-- BARRA DE NAVEGAÇÃO INFERIOR -->
-                ${this.renderMobileBottomNav()}
-
                 <!-- CONTAINER DE MODAL PARA TROCA DE DISPOSITIVO / MODO WEB -->
                 <div id="dna-mobile-modal-root"></div>
             </div>
@@ -303,37 +300,7 @@
     // BARRA DE NAVEGAÇÃO INFERIOR
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileBottomNav = function() {
-        const sec = this.currentSection || 'dashboard';
-        const isInicio = sec === 'dashboard';
-        const isVeiculos = sec === 'buscar-veiculos' || sec === 'entrada-veiculos';
-        const isServicos = sec === 'lancar-servicos' || sec === 'detalhe-servico';
-        const isClientes = sec === 'clientes' || sec === 'cadastrar-cliente';
-        const isMais = sec === 'configuracoes' || sec === 'relatorios' || sec === 'estoque' || sec === 'suporte' || sec === 'financeiro';
-
-        return `
-            <nav class="dna-mobile-bottom-nav">
-                <div class="dna-nav-item ${isInicio ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('dashboard')">
-                    <span class="nav-icon">🏠</span>
-                    <span>Início</span>
-                </div>
-                <div class="dna-nav-item ${isVeiculos ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
-                    <span class="nav-icon">🚗</span>
-                    <span>Veículos</span>
-                </div>
-                <div class="dna-nav-item ${isServicos ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
-                    <span class="nav-icon">🔧</span>
-                    <span>Serviços</span>
-                </div>
-                <div class="dna-nav-item ${isClientes ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('clientes')">
-                    <span class="nav-icon">👤</span>
-                    <span>Clientes</span>
-                </div>
-                <div class="dna-nav-item ${isMais ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('configuracoes')">
-                    <span class="nav-icon">☰</span>
-                    <span>Mais</span>
-                </div>
-            </nav>
-        `;
+        return ''; // Navegação 100% orientada em cards (sem botões em baixo)
     };
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -388,14 +355,6 @@
         if (viewport) {
             viewport.innerHTML = this.renderMobileActiveSection();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            // Atualiza bottom nav
-            const nav = document.querySelector('.dna-mobile-bottom-nav');
-            if (nav) {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = this.renderMobileBottomNav();
-                nav.innerHTML = tempDiv.firstElementChild.innerHTML;
-            }
         } else {
             this.render();
         }
@@ -413,8 +372,8 @@
         const pendingAlertsCount = alerts.filter(a => !this.mobileAlertsSent[a.id]).length;
 
         return `
-            <div style="padding-bottom: 20px;">
-                <!-- 1. CARD RESUMO NO TOPO -->
+            <div style="padding-bottom: 30px;">
+                <!-- 1. CARD RESUMO DO PÁTIO NO TOPO -->
                 <div class="dna-mobile-stats-card">
                     <div class="dna-mobile-stat-col">
                         <span class="dna-mobile-stat-number blue">${countToday}</span>
@@ -430,85 +389,102 @@
                     </div>
                 </div>
 
-                <!-- NOVO: LINKS EXCLUSIVOS DNA AUTO (APP OFICINA vs PAINEL WEB) -->
+                <!-- 2. LINKS EXCLUSIVOS DA OFICINA (APP CELULAR vs PAINEL WEB) -->
                 ${this.renderMobileLinksSection()}
 
-                <!-- 2. GRID COM OS 6 CARDS PRINCIPAIS DE ACESSO RÁPIDO -->
-                <div class="dna-mobile-grid-section">
-                    <div class="dna-mobile-section-header">
-                        <span class="dna-mobile-section-label">Acesso Rápido da Oficina</span>
-                        <span style="font-size:11px; color:var(--dna-ws-cyan); font-weight:700;">6 Módulos Principais</span>
+                <!-- 3. TODAS AS FUNÇÕES DA OFICINA ORIENTADAS EM CARDS (SEM BOTÕES EM BAIXO) -->
+                <div class="dna-mobile-list-section" style="padding: 10px 16px;">
+                    <div class="dna-mobile-section-header" style="margin-bottom:12px;">
+                        <span class="dna-mobile-section-label" style="font-size:12px; color:var(--dna-ws-cyan); font-weight:800; letter-spacing:0.8px;">
+                            📱 Funções da Oficina em Cards
+                        </span>
+                        <span style="font-size:11px; color:var(--dna-ws-text-muted);">Toque no card para abrir</span>
                     </div>
 
-                    <div class="dna-mobile-actions-grid">
-                        <!-- Card 1: Entrada de Veículos -->
-                        <div class="dna-mobile-action-card dna-card-blue" onclick="WorkshopView.switchMobileSection('entrada-veiculos')">
-                            <div class="dna-card-icon-box">🚗</div>
-                            <div>
-                                <h3 class="dna-card-title">Entrada de Veículos</h3>
-                                <p class="dna-card-desc">Cadastrar, buscar placa ou adicionar veículo</p>
-                            </div>
+                    <!-- CARD 1: Entrada de Veículos -->
+                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('entrada-veiculos')">
+                        <div class="dna-mobile-row-icon dna-icon-blue">🚗</div>
+                        <div class="dna-mobile-row-content">
+                            <h4 class="dna-mobile-row-title">Entrada de Veículos</h4>
+                            <p class="dna-mobile-row-desc">Buscar placa no DETRAN, registrar chegada do carro no pátio ou iniciar novo atendimento rápido.</p>
                         </div>
-
-                        <!-- Card 2: Lançar Serviços -->
-                        <div class="dna-mobile-action-card dna-card-green" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
-                            <div class="dna-card-icon-box">🔧</div>
-                            <div>
-                                <h3 class="dna-card-title">Lançar Serviços</h3>
-                                <p class="dna-card-desc">Adicionar serviços, peças e observações</p>
-                            </div>
-                        </div>
-
-                        <!-- Card 3: Clientes -->
-                        <div class="dna-mobile-action-card dna-card-purple" onclick="WorkshopView.switchMobileSection('clientes')">
-                            <div class="dna-card-icon-box">👤</div>
-                            <div>
-                                <h3 class="dna-card-title">Clientes</h3>
-                                <p class="dna-card-desc">Cadastrar e gerenciar clientes</p>
-                            </div>
-                        </div>
-
-                        <!-- Card 4: Notas Fiscais -->
-                        <div class="dna-mobile-action-card dna-card-amber" onclick="WorkshopView.switchMobileSection('nota-fiscal')">
-                            <div class="dna-card-icon-box">📄</div>
-                            <div>
-                                <h3 class="dna-card-title">Notas Fiscais</h3>
-                                <p class="dna-card-desc">Emitir e gerenciar notas fiscais</p>
-                            </div>
-                        </div>
-
-                        <!-- Card 5: Enviar Fotos -->
-                        <div class="dna-mobile-action-card dna-card-red" onclick="WorkshopView.switchMobileSection('enviar-fotos')">
-                            <div class="dna-card-icon-box">📷</div>
-                            <div>
-                                <h3 class="dna-card-title">Enviar Fotos</h3>
-                                <p class="dna-card-desc">Registrar fotos do veículo e dos serviços</p>
-                            </div>
-                        </div>
-
-                        <!-- Card 6: Buscar Veículos -->
-                        <div class="dna-mobile-action-card dna-card-cyan" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
-                            <div class="dna-card-icon-box">🔍</div>
-                            <div>
-                                <h3 class="dna-card-title">Buscar Veículos</h3>
-                                <p class="dna-card-desc">Por placa, chassi ou cliente</p>
-                            </div>
+                        <div class="dna-mobile-row-right">
+                            <span class="dna-mobile-row-badge" style="background:rgba(0,102,255,0.25); color:#60a5fa; border:1px solid rgba(0,102,255,0.5);">Recepção</span>
+                            <span class="dna-mobile-row-chevron">›</span>
                         </div>
                     </div>
-                </div>
 
-                <!-- 3. CARDS ADICIONAIS INDEPENDENTES (ROLAR PARA BAIXO - CADA FUNÇÃO SEU CARD PRÓPRIO!) -->
-                <div class="dna-mobile-list-section">
-                    <div class="dna-mobile-section-header" style="margin-top:6px;">
-                        <span class="dna-mobile-section-label">Gestão, Manutenções & Mais</span>
+                    <!-- CARD 2: Lançar Serviços & Manutenções -->
+                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
+                        <div class="dna-mobile-row-icon dna-icon-green">🔧</div>
+                        <div class="dna-mobile-row-content">
+                            <h4 class="dna-mobile-row-title">Lançar Serviços</h4>
+                            <p class="dna-mobile-row-desc">Adicionar trocas de óleo, filtros, correias e revisões preventivas sem preços direto no histórico do carro.</p>
+                        </div>
+                        <div class="dna-mobile-row-right">
+                            <span class="dna-mobile-row-badge" style="background:rgba(16,185,129,0.25); color:#34d399; border:1px solid rgba(16,185,129,0.5);">Técnico</span>
+                            <span class="dna-mobile-row-chevron">›</span>
+                        </div>
                     </div>
 
-                    <!-- Card: Manutenção dos Veículos -->
+                    <!-- CARD 3: Clientes & Proprietários -->
+                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('clientes')">
+                        <div class="dna-mobile-row-icon dna-icon-purple">👤</div>
+                        <div class="dna-mobile-row-content">
+                            <h4 class="dna-mobile-row-title">Clientes</h4>
+                            <p class="dna-mobile-row-desc">Gerenciar carteira de clientes, cadastrar novos proprietários e emitir código de ativação do Passaporte DNA.</p>
+                        </div>
+                        <div class="dna-mobile-row-right">
+                            <span class="dna-mobile-row-badge" style="background:rgba(139,92,246,0.25); color:#c084fc; border:1px solid rgba(139,92,246,0.5);">Carteira</span>
+                            <span class="dna-mobile-row-chevron">›</span>
+                        </div>
+                    </div>
+
+                    <!-- CARD 4: Notas Fiscais & Orçamentos -->
+                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('nota-fiscal')">
+                        <div class="dna-mobile-row-icon dna-icon-amber">📄</div>
+                        <div class="dna-mobile-row-content">
+                            <h4 class="dna-mobile-row-title">Notas Fiscais & Orçamentos</h4>
+                            <p class="dna-mobile-row-desc">Emitir notas fiscais detalhadas, orçamentos com peças e serviços e cálculo automático de totais da oficina.</p>
+                        </div>
+                        <div class="dna-mobile-row-right">
+                            <span class="dna-mobile-row-badge dna-badge-amber">Emissão</span>
+                            <span class="dna-mobile-row-chevron">›</span>
+                        </div>
+                    </div>
+
+                    <!-- CARD 5: Enviar Fotos & Laudos -->
+                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('enviar-fotos')">
+                        <div class="dna-mobile-row-icon dna-icon-red">📷</div>
+                        <div class="dna-mobile-row-content">
+                            <h4 class="dna-mobile-row-title">Enviar Fotos</h4>
+                            <p class="dna-mobile-row-desc">Fotografar peças substituídas com câmera ou galeria do celular e anexar comprovantes de notas fiscais.</p>
+                        </div>
+                        <div class="dna-mobile-row-right">
+                            <span class="dna-mobile-row-badge" style="background:rgba(239,68,68,0.25); color:#f87171; border:1px solid rgba(239,68,68,0.5);">Laudos</span>
+                            <span class="dna-mobile-row-chevron">›</span>
+                        </div>
+                    </div>
+
+                    <!-- CARD 6: Buscar Veículos na Frota -->
+                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
+                        <div class="dna-mobile-row-icon dna-icon-cyan">🔍</div>
+                        <div class="dna-mobile-row-content">
+                            <h4 class="dna-mobile-row-title">Buscar Veículos</h4>
+                            <p class="dna-mobile-row-desc">Consultar histórico de manutenções, ficha técnica e odômetro por placa, chassi ou nome do cliente.</p>
+                        </div>
+                        <div class="dna-mobile-row-right">
+                            <span class="dna-mobile-row-badge" style="background:rgba(0,212,255,0.25); color:#38bdf8; border:1px solid rgba(0,212,255,0.5);">Busca</span>
+                            <span class="dna-mobile-row-chevron">›</span>
+                        </div>
+                    </div>
+
+                    <!-- CARD 7: Manutenção dos Veículos (Radar Preventivo) -->
                     <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
                         <div class="dna-mobile-row-icon dna-icon-amber">🛠️</div>
                         <div class="dna-mobile-row-content">
                             <h4 class="dna-mobile-row-title">Manutenção dos Veículos</h4>
-                            <p class="dna-mobile-row-desc">Veja quais veículos estão próximos da manutenção por KM ou por tempo.</p>
+                            <p class="dna-mobile-row-desc">Radar preventivo: acompanhe quais veículos estão com revisão em dia, em breve ou atrasada por KM ou tempo.</p>
                         </div>
                         <div class="dna-mobile-row-right">
                             <span class="dna-mobile-row-badge dna-badge-red">3</span>
@@ -516,12 +492,12 @@
                         </div>
                     </div>
 
-                    <!-- Card: Avisos de Manutenção -->
+                    <!-- CARD 8: Avisos de Manutenção (WhatsApp Automático) -->
                     <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('avisos-manutencao')">
                         <div class="dna-mobile-row-icon dna-icon-red">🔔</div>
                         <div class="dna-mobile-row-content">
                             <h4 class="dna-mobile-row-title">Avisos de Manutenção</h4>
-                            <p class="dna-mobile-row-desc">Veja clientes que precisam ser avisados sobre manutenção.</p>
+                            <p class="dna-mobile-row-desc">Notificar clientes no momento ideal com mensagens inteligentes e personalizadas enviadas via WhatsApp.</p>
                         </div>
                         <div class="dna-mobile-row-right">
                             <span class="dna-mobile-row-badge dna-badge-amber">${pendingAlertsCount}</span>
@@ -529,77 +505,102 @@
                         </div>
                     </div>
 
-                    <!-- Card: Relatórios -->
+                    <!-- CARD 9: Relatórios Operacionais -->
                     <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('relatorios')">
                         <div class="dna-mobile-row-icon dna-icon-blue">📊</div>
                         <div class="dna-mobile-row-content">
                             <h4 class="dna-mobile-row-title">Relatórios</h4>
-                            <p class="dna-mobile-row-desc">Consulte serviços, veículos, clientes e movimentações.</p>
+                            <p class="dna-mobile-row-desc">Produtividade dos mecânicos, atendimentos realizados, veículos finalizados e volume de serviços da oficina.</p>
                         </div>
                         <div class="dna-mobile-row-right">
                             <span class="dna-mobile-row-chevron">›</span>
                         </div>
                     </div>
 
-                    <!-- Card: Financeiro -->
+                    <!-- CARD 10: Financeiro & Faturamento -->
                     <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('financeiro')">
                         <div class="dna-mobile-row-icon dna-icon-green">💵</div>
                         <div class="dna-mobile-row-content">
                             <h4 class="dna-mobile-row-title">Financeiro</h4>
-                            <p class="dna-mobile-row-desc">Controle de recebimentos e despesas da oficina.</p>
+                            <p class="dna-mobile-row-desc">Controle de receitas da oficina, despesas operacionais, faturamento mensal e comissões por DNA emitido.</p>
                         </div>
                         <div class="dna-mobile-row-right">
                             <span class="dna-mobile-row-chevron">›</span>
                         </div>
                     </div>
 
-                    <!-- Card: Estoque / Peças -->
+                    <!-- CARD 11: Estoque & Peças -->
                     <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('estoque')">
                         <div class="dna-mobile-row-icon dna-icon-cyan">📦</div>
                         <div class="dna-mobile-row-content">
                             <h4 class="dna-mobile-row-title">Estoque / Peças</h4>
-                            <p class="dna-mobile-row-desc">Controle peças e materiais utilizados.</p>
+                            <p class="dna-mobile-row-desc">Controle de peças de reposição, filtros, óleos automotivos e insumos utilizados nos atendimentos diários.</p>
                         </div>
                         <div class="dna-mobile-row-right">
                             <span class="dna-mobile-row-chevron">›</span>
                         </div>
                     </div>
 
-                    <!-- Card: Configurações -->
+                    <!-- CARD 12: Configurações da Oficina -->
                     <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('configuracoes')">
                         <div class="dna-mobile-row-icon dna-icon-purple">⚙️</div>
                         <div class="dna-mobile-row-content">
                             <h4 class="dna-mobile-row-title">Configurações</h4>
-                            <p class="dna-mobile-row-desc">Configure os dados da oficina e preferências.</p>
+                            <p class="dna-mobile-row-desc">Configurar dados da Auto Center, horário de expediente, telefone oficial do WhatsApp e preferências gerais.</p>
                         </div>
                         <div class="dna-mobile-row-right">
                             <span class="dna-mobile-row-chevron">›</span>
                         </div>
                     </div>
 
-                    <!-- Card: Suporte -->
+                    <!-- CARD 13: Suporte & Atendimento -->
                     <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('suporte')">
                         <div class="dna-mobile-row-icon dna-icon-blue">🎧</div>
                         <div class="dna-mobile-row-content">
                             <h4 class="dna-mobile-row-title">Suporte</h4>
-                            <p class="dna-mobile-row-desc">Ajuda e atendimento DNA AUTO.</p>
+                            <p class="dna-mobile-row-desc">Ajuda, atendimento técnico e suporte direto da DNA AUTO para a equipe e gestão da oficina.</p>
                         </div>
                         <div class="dna-mobile-row-right">
                             <span class="dna-mobile-row-chevron">›</span>
                         </div>
                     </div>
-                </div>
 
-                <!-- 4. BANNER APP DO CLIENTE -->
-                <div class="dna-mobile-client-banner">
-                    <div class="dna-banner-left">
-                        <div class="dna-banner-icon">📱</div>
-                        <div>
-                            <div class="dna-banner-title">App do Cliente</div>
-                            <div class="dna-banner-desc">Compartilhe o status do serviço, fotos e notas fiscais.</div>
+                    <!-- CARD 14: App do Cliente -->
+                    <div class="dna-mobile-row-card" onclick="window.open('/cliente', '_blank')">
+                        <div class="dna-mobile-row-icon dna-icon-cyan">📱</div>
+                        <div class="dna-mobile-row-content">
+                            <h4 class="dna-mobile-row-title">App do Cliente (Garagem Digital)</h4>
+                            <p class="dna-mobile-row-desc">Visualizar como o dono do carro acompanha o status dos serviços, fotos de peças e o Passaporte DNA.</p>
+                        </div>
+                        <div class="dna-mobile-row-right">
+                            <span class="dna-mobile-row-badge" style="background:rgba(0,212,255,0.2); color:var(--dna-ws-cyan);">Abrir ↗</span>
                         </div>
                     </div>
-                    <button class="dna-banner-btn" onclick="window.open('/cliente', '_blank')">Ver detalhes</button>
+
+                    <!-- CARD 15: Login & Cadastro de Auto Center -->
+                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('auth')">
+                        <div class="dna-mobile-row-icon dna-icon-green">🔑</div>
+                        <div class="dna-mobile-row-content">
+                            <h4 class="dna-mobile-row-title">Login / Cadastrar Auto Center</h4>
+                            <p class="dna-mobile-row-desc">Acessar outra conta da oficina, alternar de filial ou cadastrar uma nova Auto Center credenciada.</p>
+                        </div>
+                        <div class="dna-mobile-row-right">
+                            <span class="dna-mobile-row-badge" style="background:rgba(16,185,129,0.2); color:#10B981;">Conta</span>
+                            <span class="dna-mobile-row-chevron">›</span>
+                        </div>
+                    </div>
+
+                    <!-- CARD 16: Painel Web Desktop (Computador) -->
+                    <div class="dna-mobile-row-card" onclick="WorkshopView.setDesktopMode(true)">
+                        <div class="dna-mobile-row-icon dna-icon-blue">💻</div>
+                        <div class="dna-mobile-row-content">
+                            <h4 class="dna-mobile-row-title">Modo Painel Web (Computador)</h4>
+                            <p class="dna-mobile-row-desc">Alternar para o painel corporativo completo em tela cheia com tabelas detalhadas para computador / balcão.</p>
+                        </div>
+                        <div class="dna-mobile-row-right">
+                            <span class="dna-mobile-row-badge" style="background:rgba(0,102,255,0.2); color:#60a5fa;">Mudar Modo ➔</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
@@ -617,7 +618,7 @@
                 <!-- Barra Superior com Voltar -->
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Entrada de Veículos</span>
                     <div style="width:50px;"></div>
@@ -685,7 +686,11 @@
                     <button class="dna-primary-btn-lg" onclick="WorkshopView.switchMobileSection('cadastrar-cliente')">
                         <span>+</span> <span>Adicionar Veículo</span>
                     </button>
-                </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+</div>
             </div>
         `;
     };
@@ -788,7 +793,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Cadastrar Cliente</span>
                     <div style="width:50px;"></div>
@@ -861,7 +866,11 @@
                     <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSubmitClientRegister()">
                         <span>✓</span> <span>Cadastrar Cliente</span>
                     </button>
-                </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+</div>
             </div>
         `;
     };
@@ -940,7 +949,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Lançar Serviços</span>
                     <div style="width:50px;"></div>
@@ -1002,7 +1011,11 @@
                     <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSelectServiceToDetail('srv_oleo')">
                         <span>+</span> <span>Adicionar Serviço</span>
                     </button>
-                </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+</div>
             </div>
         `;
     };
@@ -1052,7 +1065,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">${s.num}. ${s.title}</span>
                     <div style="width:50px;"></div>
@@ -1144,7 +1157,11 @@
                     <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSaveServiceRecord()">
                         <span>✓</span> <span>Registrar Serviço</span>
                     </button>
-                </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+</div>
             </div>
         `;
     };
@@ -1189,7 +1206,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Manutenção dos Veículos</span>
                     <div style="width:50px;"></div>
@@ -1249,6 +1266,11 @@
                             </div>
                         `).join('')}
                     </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+
                 </div>
             </div>
         `;
@@ -1281,7 +1303,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Avisos de Manutenção</span>
                     <div style="width:50px;"></div>
@@ -1337,6 +1359,11 @@
                             "Olá, {nome}! A oficina {nome_oficina} identificou que seu veículo {modelo}, placa {placa}, está próximo do período recomendado para {servico}. Recomendamos realizar a manutenção para manter o veículo em boas condições. Estamos à disposição para agendar seu atendimento."
                         </div>
                     </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+
                 </div>
             </div>
         `;
@@ -1375,7 +1402,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Enviar Fotos</span>
                     <div style="width:50px;"></div>
@@ -1460,7 +1487,11 @@
                     <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSavePhotos()">
                         <span>✓</span> <span>Salvar Fotos</span>
                     </button>
-                </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+</div>
             </div>
         `;
     };
@@ -1512,7 +1543,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Nota Fiscal</span>
                     <div style="width:50px;"></div>
@@ -1597,7 +1628,11 @@
                     <button class="dna-primary-btn-lg cyan" style="flex:1;" onclick="WorkshopView.handleMobileSaveInvoice(true)">
                         <span>↗</span> <span>Emitir Nota Fiscal</span>
                     </button>
-                </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+</div>
             </div>
         `;
     };
@@ -1629,7 +1664,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Clientes</span>
                     <div style="width:50px;"></div>
@@ -1683,7 +1718,11 @@
                     <button class="dna-primary-btn-lg" onclick="WorkshopView.switchMobileSection('cadastrar-cliente')">
                         <span>+</span> <span>Novo Cliente</span>
                     </button>
-                </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+</div>
             </div>
         `;
     };
@@ -1747,7 +1786,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Buscar Veículos</span>
                     <div style="width:50px;"></div>
@@ -1802,6 +1841,11 @@
                             `).join('')}
                         </div>
                     </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+
                 </div>
             </div>
         `;
@@ -1859,7 +1903,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Relatórios</span>
                     <div style="width:50px;"></div>
@@ -1889,6 +1933,11 @@
                         </div>
                         <span class="dna-mobile-row-chevron">›</span>
                     </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+
                 </div>
             </div>
         `;
@@ -1899,7 +1948,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Financeiro</span>
                     <div style="width:50px;"></div>
@@ -1927,6 +1976,11 @@
                             <p class="dna-mobile-row-desc">R$ 6.150,00 recebidos instantaneamente.</p>
                         </div>
                     </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+
                 </div>
             </div>
         `;
@@ -1937,7 +1991,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Estoque / Peças</span>
                     <div style="width:50px;"></div>
@@ -1964,6 +2018,11 @@
                             <p class="dna-mobile-row-desc">Saldo: 26 unidades variadas.</p>
                         </div>
                     </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+
                 </div>
             </div>
         `;
@@ -1975,7 +2034,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Configurações</span>
                     <div style="width:50px;"></div>
@@ -2005,6 +2064,11 @@
                             <p class="dna-mobile-row-desc">Disparos automáticos e canal de atendimento ativo.</p>
                         </div>
                     </div>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+
                 </div>
             </div>
         `;
@@ -2015,7 +2079,7 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
+                        <span>‹</span> <span>Voltar aos Cards</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Suporte DNA AUTO</span>
                     <div style="width:50px;"></div>
@@ -2032,6 +2096,11 @@
                     <button class="dna-whatsapp-btn" style="height:50px;" onclick="window.open('https://wa.me/5511999999999?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20na%20oficina%20DNA%20AUTO', '_blank')">
                         <span>💬 Suporte Direto via WhatsApp</span>
                     </button>
+
+                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
+
                 </div>
             </div>
         `;

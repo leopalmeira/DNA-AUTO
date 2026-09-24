@@ -1012,3 +1012,14 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   5. Discriminação completa e estruturada de todos os links operacionais no `README.md` do GitHub.
   6. Validação integral com 100% de aprovação na bateria de testes automatizados (`npm test` - 45/45).
 
+
+---
+
+### Ciclo 51 — Refinamento PWA Oficina: 100% Orientado a Cards, Remoção de Botões em Baixo & Corte Total de Telas Laterais
+- **Data/Hora:** 24/09/2026
+- **Contexto & Escopo:**
+  1. **Remoção de Botões em Baixo:** Eliminação completa da barra inferior de navegação (`.dna-mobile-bottom-nav`) e transformação de todos os botões de ação em elementos estáticos em fluxo natural (`position: static`), garantindo que nenhum botão flutuante bloqueie o conteúdo na parte inferior do smartphone.
+  2. **Navegação 100% em Cards para Celular:** Todas as 16 funções do app da oficina foram unificadas em cards grandes, claros e táteis, contendo ícone temático com gradiente, título em destaque, descrição completa da funcionalidade, badges de status e chevron de acesso direto (*Abriu → Identificou pelo Card → Clicou → Executou a Página → Voltou aos Cards*).
+  3. **Corte Total de Telas Laterais:** Eliminação estrita de qualquer sidebar (`.ws-sidebar`, `.sidebar`, menus laterais e faixas desktop) no modo mobile. O aplicativo assume 100% da largura da tela no smartphone de forma limpa e contínua.
+  4. **Fluxo de Retorno Intuitivo:** Implementação de botão destacado `‹ Voltar aos Cards` no topo de todas as 15 subpáginas e botão secundário no final de cada tela para permitir retorno imediato sem esforço de rolagem.
+  5. **Sincronização & Testes:** Sincronização integral com a pasta `public/` e aprovação de 100% dos 45 testes automatizados (`npm test`).

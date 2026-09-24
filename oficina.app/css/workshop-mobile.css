@@ -52,7 +52,7 @@
     box-sizing: border-box;
     overflow-x: hidden;
     position: relative;
-    padding-bottom: 74px; /* Espaço para barra inferior fixa */
+    padding-bottom: 32px;
 }
 
 /* Quando visualizado em desktop, centraliza com elegância mantendo foco mobile ou permite modo web */
@@ -1392,4 +1392,96 @@
     font-size: 10.5px;
     color: var(--dna-ws-text-dim);
     margin-left: 24px;
+}
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   CORTE TOTAL DE TELA LATERAL / SIDEBAR & ELIMINAÇÃO DE BOTÕES EM BAIXO
+   ────────────────────────────────────────────────────────────────────────── */
+body.is-workshop-erp:not(.force-desktop-mode) .ws-sidebar,
+body.is-workshop-erp:not(.force-desktop-mode) #ws-sidebar,
+body.is-workshop-erp:not(.force-desktop-mode) .sidebar,
+body.is-workshop-erp:not(.force-desktop-mode) .sidebar-nav,
+body.is-workshop-erp:not(.force-desktop-mode) .standalone-ws-top-banner,
+body.is-workshop-erp:not(.force-desktop-mode) .dna-desktop-switch-banner {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+}
+
+body.is-workshop-erp:not(.force-desktop-mode) .dna-mobile-shell {
+    width: 100% !important;
+    max-width: 680px !important;
+    margin: 0 auto !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+    overflow-x: hidden !important;
+    padding-bottom: 36px !important;
+}
+
+/* O PWA da oficina NÃO tem botões em baixo - navegação 100% em cards */
+.dna-mobile-bottom-nav {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    pointer-events: none !important;
+}
+
+.dna-mobile-subpage {
+    min-height: 100vh !important;
+    padding-bottom: 40px !important;
+}
+
+.dna-mobile-back-to-cards-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 13px 18px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: var(--dna-ws-radius-md);
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    margin-top: 18px;
+    box-sizing: border-box;
+}
+
+.dna-mobile-back-to-cards-btn:hover,
+.dna-mobile-back-to-cards-btn:active {
+    background: rgba(0, 212, 255, 0.18);
+    border-color: var(--dna-ws-cyan);
+    color: var(--dna-ws-cyan);
+}
+
+
+/* AÇÕES NATIVAS EM FLUXO NORMAL (NENHUM BOTÃO FLUTUANTE EM BAIXO) */
+.dna-mobile-fixed-bottom-bar {
+    position: static !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
+    padding: 16px 0 0 0 !important;
+    margin-top: 14px !important;
+    background: transparent !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    z-index: auto !important;
 }
