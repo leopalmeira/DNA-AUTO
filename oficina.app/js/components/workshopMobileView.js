@@ -336,7 +336,7 @@
                     </div>
 
                     <!-- Botão de Sair Rápido -->
-                    <button type="button" class="dna-mobile-logout-btn" onclick="if(typeof App!=='undefined'&&App.logout) App.logout(); else window.location.href='/';">
+                    <button type="button" class="dna-mobile-logout-btn" onclick="WorkshopView.showOficinaLoginScreen()">
                         <span>Sair</span> <span>↗</span>
                     </button>
                 </div>
@@ -408,11 +408,19 @@
 
     // Alternar de Seção no Modo Mobile
     WorkshopView.switchMobileSection = function(sectionId) {
+        // Enforce senha do financeiro sempre ao sair da tela de estoque
+        if (this.currentSection === 'estoque' && sectionId !== 'estoque') {
+            this.stockAuthenticated = false;
+        }
         this.currentSection = sectionId;
         const viewport = document.getElementById('ws-mobile-active-viewport');
         if (viewport) {
             viewport.innerHTML = this.renderMobileActiveSection();
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Inicializa o carrossel de serviços se estiver na tela correta
+            if (sectionId === 'lancar-servicos') {
+                setTimeout(() => this._initWheelAfterRender(), 80);
+            }
         } else {
             this.render();
         }
@@ -876,24 +884,24 @@
 
                         <div class="dna-input-group">
                             <label class="dna-input-label">Nome completo *</label>
-                            <input type="text" id="mobile-reg-owner-name" class="form-control" placeholder="João da Silva" value="${v.client_name || 'João da Silva'}" style="height:48px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); color:#fff; border-radius:12px; padding:0 14px;" />
+                            <input type="text" id="mobile-reg-owner-name" class="form-control" placeholder="João da Silva" value="${v.client_name || 'João da Silva'}" style="height:48px; padding:0 14px; font-weight:700;" />
                         </div>
 
                         <div class="dna-input-group">
                             <label class="dna-input-label">WhatsApp *</label>
-                            <input type="tel" id="mobile-reg-owner-wpp" class="form-control" placeholder="(21) 98765-4321" value="${v.client_phone || '(21) 98765-4321'}" style="height:48px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); color:#fff; border-radius:12px; padding:0 14px;" />
+                            <input type="tel" id="mobile-reg-owner-wpp" class="form-control" placeholder="(21) 98765-4321" value="${v.client_phone || '(21) 98765-4321'}" style="height:48px; padding:0 14px; font-weight:700;" />
                         </div>
 
                         <div class="dna-input-group">
                             <label class="dna-input-label">E-mail *</label>
-                            <input type="email" id="mobile-reg-owner-email" class="form-control" placeholder="joao@email.com" value="${v.client_email || 'joao@email.com'}" style="height:48px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); color:#fff; border-radius:12px; padding:0 14px;" />
+                            <input type="email" id="mobile-reg-owner-email" class="form-control" placeholder="joao@email.com" value="${v.client_email || 'joao@email.com'}" style="height:48px; padding:0 14px; font-weight:700;" />
                         </div>
 
                         <div class="dna-input-group">
                             <label class="dna-input-label">Senha de Acesso ao App *</label>
                             <div style="position:relative;">
-                                <input type="password" id="mobile-reg-owner-pass" class="form-control" placeholder="Crie uma senha" value="123456" style="height:48px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); color:#fff; border-radius:12px; padding:0 40px 0 14px;" />
-                                <button type="button" onclick="const p=document.getElementById('mobile-reg-owner-pass'); p.type = p.type==='password'?'text':'password';" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--dna-ws-text-muted); cursor:pointer;">
+                                <input type="password" id="mobile-reg-owner-pass" class="form-control" placeholder="Crie uma senha" value="123456" style="height:48px; padding:0 40px 0 14px; font-weight:700;" />
+                                <button type="button" onclick="const p=document.getElementById('mobile-reg-owner-pass'); p.type = p.type==='password'?'text':'password';" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748B; cursor:pointer;">
                                     👁️
                                 </button>
                             </div>
@@ -1013,11 +1021,11 @@
                     <!-- 3. FOTOS DA PEÇA & NOTA FISCAL (DUAS OPÇÕES: CÂMERA & GALERIA) -->
                     ${this.renderDualPhotoUploadSection('service-launch-photos', 'Foto da Peça / Serviço', 'Câmera ou Galeria')}
 
-                    <!-- 4. BUSCADOR & LISTA DE SERVIÇOS TÉCNICOS POR MONITORAMENTO -->
+                    <!-- 4. SELETOR DE SERVIÇOS ESTILO CARROSSEL / ROLO VERTICAL -->
                     <div style="margin-top:8px;">
                         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
                             <span class="dna-mobile-section-label">Selecione o Serviço para Lançar</span>
-                            <span style="font-size:11px; color:var(--dna-ws-cyan); font-weight:700;">Sem Preços</span>
+                            <span style="font-size:11px; color:var(--dna-ws-cyan); font-weight:700;">Deslize ↕</span>
                         </div>
 
                         <!-- Buscador de Serviço -->
@@ -1025,24 +1033,38 @@
                             type="text" 
                             id="mobile-service-search-input" 
                             placeholder="🔍 Digite para filtrar serviços..." 
-                            oninput="WorkshopView.handleMobileFilterServicesList(this.value)"
-                            style="width:100%; height:42px; background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.3); border-radius:10px; padding:0 12px; color:#fff; font-size:13px; box-sizing:border-box; margin-bottom:10px;"
+                            oninput="WorkshopView.handleWheelFilterServices(this.value)"
+                            style="width:100%; height:42px; border-radius:10px; padding:0 12px; font-size:13px; box-sizing:border-box; margin-bottom:10px;"
                         />
 
-                        <div class="dna-service-monitoring-list" id="mobile-services-items-container">
-                            ${services.map(s => `
-                                <div class="dna-service-item-row" onclick="WorkshopView.handleMobileSelectServiceToDetail('${s.id}')">
-                                    <div class="dna-service-item-icon">${s.icon}</div>
-                                    <div class="dna-service-item-content">
-                                        <div class="dna-service-item-title">${s.title}</div>
-                                        <div class="dna-service-item-tag">
-                                            ${s.mode === 'km' ? 'Por km' : s.mode === 'tempo' ? 'Por tempo' : 'Por km ou tempo'}
+                        <!-- ROLO / CARROSSEL VERTICAL DE SERVIÇOS 3D (VISÃO DE ROLO) -->
+                        <div class="dna-service-wheel-wrapper">
+                            <button type="button" class="dna-wheel-nav-btn up" onclick="WorkshopView.handleWheelStep(-1)" title="Serviço Anterior">▲</button>
+                            <button type="button" class="dna-wheel-nav-btn down" onclick="WorkshopView.handleWheelStep(1)" title="Próximo Serviço">▼</button>
+
+                            <div class="dna-service-wheel-container">
+                                <div class="dna-service-wheel-highlight"></div>
+                                <div class="dna-service-wheel-scroll" id="service-wheel-scroll">
+                                    ${services.map((s, idx) => `
+                                        <div class="dna-service-wheel-item ${idx === 0 ? 'active' : ''}" 
+                                             data-service-id="${s.id}" 
+                                             onclick="WorkshopView.handleWheelSelectService('${s.id}')">
+                                            <div class="wheel-icon">${s.icon}</div>
+                                            <div class="wheel-label">
+                                                <div class="wheel-title">${s.title}</div>
+                                                <div class="wheel-tag">${s.mode === 'km' ? 'Por km' : s.mode === 'tempo' ? 'Por tempo' : 'Por km ou tempo'}</div>
+                                            </div>
+                                            <span class="wheel-chevron">›</span>
                                         </div>
-                                    </div>
-                                    <span class="dna-mobile-row-chevron">›</span>
+                                    `).join('')}
                                 </div>
-                            `).join('')}
+                            </div>
                         </div>
+
+                        <!-- Botão de confirmação do serviço selecionado -->
+                        <button class="dna-primary-btn-lg" style="margin-top:12px; height:48px;" id="wheel-confirm-btn" onclick="WorkshopView.handleWheelConfirmSelection()">
+                            <span>✓</span> <span id="wheel-confirm-label">Abrir: ${services[0].title}</span>
+                        </button>
                     </div>
 
                     <div style="margin-top:14px; text-align:center;">
@@ -1053,6 +1075,120 @@
                 </div>
             </div>
         `;
+    };
+
+    // Navegar um passo para cima ou para baixo no rolo
+    WorkshopView.handleWheelStep = function(delta) {
+        const scroller = document.getElementById('service-wheel-scroll');
+        if (!scroller) return;
+        scroller.scrollBy({ top: delta * 68, behavior: 'smooth' });
+    };
+
+    // Inicializar o scroll-wheel listener após o render
+    WorkshopView._initWheelAfterRender = function() {
+        const scroller = document.getElementById('service-wheel-scroll');
+        if (!scroller) return;
+
+        let scrollTimeout;
+        scroller.addEventListener('scroll', () => {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => this._updateWheelActiveItem(), 60);
+        }, { passive: true });
+
+        // Garante cálculo inicial imediato
+        this._updateWheelActiveItem();
+    };
+
+    WorkshopView._updateWheelActiveItem = function() {
+        const scroller = document.getElementById('service-wheel-scroll');
+        if (!scroller) return;
+
+        const items = scroller.querySelectorAll('.dna-service-wheel-item');
+        const scrollerRect = scroller.getBoundingClientRect();
+        const targetCenterY = scrollerRect.top + scrollerRect.height / 2;
+
+        let closestItem = null;
+        let closestDist = Infinity;
+
+        items.forEach(item => {
+            const itemRect = item.getBoundingClientRect();
+            const itemCenter = itemRect.top + itemRect.height / 2;
+            const dist = Math.abs(targetCenterY - itemCenter);
+            if (dist < closestDist) {
+                closestDist = dist;
+                closestItem = item;
+            }
+        });
+
+        items.forEach(item => item.classList.remove('active'));
+        if (closestItem) {
+            closestItem.classList.add('active');
+            const serviceId = closestItem.getAttribute('data-service-id');
+            const service = this.monitoredServicesCatalog.find(s => s.id === serviceId);
+            if (service) {
+                this._wheelSelectedServiceId = serviceId;
+                const label = document.getElementById('wheel-confirm-label');
+                if (label) label.textContent = 'Abrir: ' + service.title;
+            }
+        }
+    };
+
+    WorkshopView.handleWheelSelectService = function(serviceId) {
+        // Se clicar no item que já está centralizado e selecionado, abre o detalhe imediatamente
+        if (this._wheelSelectedServiceId === serviceId) {
+            this.handleMobileSelectServiceToDetail(serviceId);
+            return;
+        }
+
+        this._wheelSelectedServiceId = serviceId;
+        const scroller = document.getElementById('service-wheel-scroll');
+        if (scroller) {
+            const item = scroller.querySelector('[data-service-id="' + serviceId + '"]');
+            if (item) {
+                item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+        const items = document.querySelectorAll('.dna-service-wheel-item');
+        items.forEach(el => el.classList.remove('active'));
+        const active = document.querySelector('[data-service-id="' + serviceId + '"]');
+        if (active) active.classList.add('active');
+
+        const service = this.monitoredServicesCatalog.find(s => s.id === serviceId);
+        if (service) {
+            const label = document.getElementById('wheel-confirm-label');
+            if (label) label.textContent = 'Abrir: ' + service.title;
+        }
+    };
+
+    WorkshopView.handleWheelConfirmSelection = function() {
+        const id = this._wheelSelectedServiceId || this.monitoredServicesCatalog[0].id;
+        this.handleMobileSelectServiceToDetail(id);
+    };
+
+    WorkshopView.handleWheelFilterServices = function(query) {
+        const q = (query || '').toLowerCase().trim();
+        const scroller = document.getElementById('service-wheel-scroll');
+        if (!scroller) return;
+
+        const filtered = this.monitoredServicesCatalog.filter(s => s.title.toLowerCase().includes(q));
+        scroller.innerHTML = filtered.map((s, idx) => `
+            <div class="dna-service-wheel-item ${idx === 0 ? 'active' : ''}" 
+                 data-service-id="${s.id}" 
+                 onclick="WorkshopView.handleWheelSelectService('${s.id}')">
+                <div class="wheel-icon">${s.icon}</div>
+                <div class="wheel-label">
+                    <div class="wheel-title">${s.title}</div>
+                    <div class="wheel-tag">${s.mode === 'km' ? 'Por km' : s.mode === 'tempo' ? 'Por tempo' : 'Por km ou tempo'}</div>
+                </div>
+                <span class="wheel-chevron">›</span>
+            </div>
+        `).join('');
+
+        if (filtered.length > 0) {
+            this._wheelSelectedServiceId = filtered[0].id;
+            const label = document.getElementById('wheel-confirm-label');
+            if (label) label.textContent = 'Abrir: ' + filtered[0].title;
+        }
     };
 
     WorkshopView.handleMobileFilterServicesList = function(query) {
@@ -1159,7 +1295,7 @@
                             </label>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <span style="font-size:11px; color:var(--dna-ws-text-muted);">A cada</span>
-                                <input type="number" id="mobile-srv-interval-km" value="${s.defaultKm || 10000}" style="width:80px; height:36px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); border-radius:8px; color:#fff; text-align:center; font-weight:800;" />
+                                <input type="number" id="mobile-srv-interval-km" value="${s.defaultKm || 10000}" style="width:90px; height:38px; text-align:center; font-weight:800;" />
                                 <span style="font-size:11.5px; color:var(--dna-ws-cyan);">km</span>
                             </div>
                         </div>
@@ -1171,7 +1307,7 @@
                             </label>
                             <div style="display:flex; align-items:center; gap:6px;">
                                 <span style="font-size:11px; color:var(--dna-ws-text-muted);">A cada</span>
-                                <input type="number" id="mobile-srv-interval-months" value="${s.defaultMonths || 12}" style="width:60px; height:36px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); border-radius:8px; color:#fff; text-align:center; font-weight:800;" />
+                                <input type="number" id="mobile-srv-interval-months" value="${s.defaultMonths || 12}" style="width:70px; height:38px; text-align:center; font-weight:800;" />
                                 <span style="font-size:11.5px; color:var(--dna-ws-cyan);">meses</span>
                             </div>
                         </div>
@@ -1184,11 +1320,11 @@
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                             <div class="dna-input-group">
                                 <label class="dna-input-label" style="font-size:11px;">Data do Serviço</label>
-                                <input type="date" id="mobile-srv-last-date" value="${todayStr}" style="height:42px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); border-radius:10px; color:#fff; padding:0 10px; font-size:12.5px;" />
+                                <input type="date" id="mobile-srv-last-date" value="${todayStr}" style="height:44px; padding:0 10px; font-size:13px; font-weight:700;" />
                             </div>
                             <div class="dna-input-group">
                                 <label class="dna-input-label" style="font-size:11px;">Odômetro Atual (KM)</label>
-                                <input type="number" id="mobile-srv-last-km" value="${currentMileage}" style="height:42px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); border-radius:10px; color:#fff; padding:0 10px; font-size:12.5px; font-weight:700;" />
+                                <input type="number" id="mobile-srv-last-km" value="${currentMileage}" style="height:44px; padding:0 10px; font-size:13px; font-weight:700;" />
                             </div>
                         </div>
                     </div>
@@ -1200,11 +1336,11 @@
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                             <div class="dna-input-group">
                                 <label class="dna-input-label" style="font-size:11px;">Data Estimada</label>
-                                <input type="date" id="mobile-srv-next-date" value="${nextDateStr}" style="height:42px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,212,255,0.4); border-radius:10px; color:#fff; padding:0 10px; font-size:12.5px;" />
+                                <input type="date" id="mobile-srv-next-date" value="${nextDateStr}" style="height:44px; padding:0 10px; font-size:13px; font-weight:700;" />
                             </div>
                             <div class="dna-input-group">
                                 <label class="dna-input-label" style="font-size:11px;">Odômetro Estimado</label>
-                                <input type="number" id="mobile-srv-next-km" value="${nextMileage}" style="height:42px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,212,255,0.4); border-radius:10px; color:#fff; padding:0 10px; font-size:12.5px; font-weight:700;" />
+                                <input type="number" id="mobile-srv-next-km" value="${nextMileage}" style="height:44px; padding:0 10px; font-size:13px; font-weight:700;" />
                             </div>
                         </div>
                     </div>
@@ -2231,7 +2367,118 @@
         `;
     };
 
+    WorkshopView.stockAuthenticated = false;
+
+    WorkshopView.handleVerifyStockPassword = function() {
+        const input = document.getElementById('mobile-stock-pwd-input');
+        const err = document.getElementById('mobile-stock-pwd-error');
+        const pwd = (input ? input.value : '').trim();
+        const expected = this.getFinancialPassword();
+
+        if (pwd === expected) {
+            this.stockAuthenticated = true;
+            const viewport = document.getElementById('ws-mobile-active-viewport');
+            if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
+        } else {
+            if (err) err.style.display = 'block';
+            if (input) { input.value = ''; input.focus(); }
+        }
+    };
+
+    WorkshopView.handleLockStockPanel = function() {
+        this.stockAuthenticated = false;
+        const viewport = document.getElementById('ws-mobile-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
+    };
+
+    // Lista em memória de itens de estoque para manipulação em tempo real
+    WorkshopView.stockInventory = [
+        { id: 'stk_oleo', icon: '🛢️', name: 'Óleo 5W30 Sintético', code: 'LUB-5W30-SN', qty: 48, unit: 'litros', color: 'cyan' },
+        { id: 'stk_freio', icon: '🛑', name: 'Pastilhas de Freio Dianteiras', code: 'FR-PST-CIV', qty: 12, unit: 'jogos', color: 'blue' },
+        { id: 'stk_filtro_ar', icon: '💨', name: 'Filtros de Ar do Motor', code: 'FL-AR-401', qty: 26, unit: 'unidades', color: 'amber' },
+        { id: 'stk_filtro_comb', icon: '⛽', name: 'Filtro de Combustível', code: 'FL-COMB-102', qty: 14, unit: 'unidades', color: 'green' },
+        { id: 'stk_bat', icon: '🔋', name: 'Baterias 60Ah Seladas', code: 'BAT-MOU-60', qty: 6, unit: 'unidades', color: 'purple' },
+        { id: 'stk_velas', icon: '⚡', name: 'Velas de Ignição Iridium', code: 'VEL-NGK-IR', qty: 32, unit: 'unidades', color: 'red' },
+        { id: 'stk_fluidos', icon: '🧪', name: 'Fluido de Freio DOT4', code: 'FLD-DOT4-500', qty: 18, unit: 'frascos', color: 'navy' }
+    ];
+
+    WorkshopView.handleSaveStockItem = function(idx, name) {
+        const inInput = document.getElementById('stock-in-' + idx);
+        const outInput = document.getElementById('stock-out-' + idx);
+        const refInput = document.getElementById('stock-ref-' + idx);
+
+        const inVal = parseInt(inInput ? inInput.value : '0', 10) || 0;
+        const outVal = parseInt(outInput ? outInput.value : '0', 10) || 0;
+        const refVal = refInput ? refInput.value.trim() : '';
+
+        if (inVal === 0 && outVal === 0) {
+            alert('Informe ao menos uma quantidade de entrada (+) ou saída (-) para atualizar o estoque.');
+            return;
+        }
+
+        const item = this.stockInventory[idx];
+        if (item) {
+            item.qty = Math.max(0, item.qty + inVal - outVal);
+        }
+
+        if (inInput) inInput.value = '0';
+        if (outInput) outInput.value = '0';
+        if (refInput) refInput.value = '';
+
+        alert(`✅ Estoque de "${name}" atualizado com sucesso!\nNovo Saldo: ${item.qty} ${item.unit}` + (refVal ? `\nReferência: ${refVal}` : ''));
+        
+        const viewport = document.getElementById('ws-mobile-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
+    };
+
     WorkshopView.renderMobileStockView = function() {
+        // Se não autenticado, exige senha do financeiro (Sempre mediante senha)
+        if (!this.stockAuthenticated) {
+            return `
+                <div class="dna-mobile-subpage">
+                    <div class="dna-mobile-subpage-header">
+                        <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                            <span>‹</span> <span>Voltar</span>
+                        </button>
+                        <span class="dna-mobile-subpage-title">Estoque / Peças</span>
+                    </div>
+                    <div class="dna-mobile-subpage-body">
+                        <div class="dna-stock-password-overlay">
+                            <div class="stock-lock-icon">📦</div>
+                            <h3>Estoque Protegido</h3>
+                            <p>Para inserir ou alterar dados de estoque, digite a senha do painel financeiro:</p>
+
+                            <div style="width:100%; max-width:280px; margin-top:8px;">
+                                <input 
+                                    type="password" 
+                                    id="mobile-stock-pwd-input" 
+                                    placeholder="••••••" 
+                                    maxlength="20"
+                                    class="dna-oficina-login-input"
+                                    style="text-align:center; font-size:22px; letter-spacing:6px; font-weight:800; height:48px;"
+                                    onkeydown="if(event.key==='Enter') WorkshopView.handleVerifyStockPassword()"
+                                />
+                                <div id="mobile-stock-pwd-error" style="color:#EF4444; font-size:11.5px; font-weight:700; margin-top:8px; display:none;">
+                                    ⚠️ Senha incorreta. Use a mesma do painel financeiro.
+                                </div>
+                            </div>
+
+                            <button type="button" class="dna-primary-btn-lg" style="width:100%; max-width:280px; height:46px; margin-top:6px;" onclick="WorkshopView.handleVerifyStockPassword()">
+                                <span>🔓</span> <span>Acessar Estoque</span>
+                            </button>
+
+                            <button type="button" class="dna-mobile-back-to-cards-btn" style="margin-top:16px;" onclick="WorkshopView.switchMobileSection('dashboard')">
+                                <span>‹</span> <span>Voltar para Todos os Cards</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Painel de Estoque Autenticado — cada card é um formulário de inserção de dados de estoque
+        const stockItems = this.stockInventory;
+
         return `
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
@@ -2239,35 +2486,61 @@
                         <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Estoque / Peças</span>
-                    
+                    <button type="button" onclick="WorkshopView.handleLockStockPanel()" style="background:rgba(239,68,68,0.15); border:1px solid #EF4444; color:#EF4444; padding:5px 10px; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer;">
+                        🔒 Bloquear
+                    </button>
                 </div>
                 <div class="dna-mobile-subpage-body">
-                    <div class="dna-mobile-row-card">
-                        <div class="dna-mobile-row-icon dna-icon-cyan">🛢️</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Óleo 5W30 Sintético</h4>
-                            <p class="dna-mobile-row-desc">Saldo: 48 litros disponíveis.</p>
+                    <!-- Resumo -->
+                    <div style="background:rgba(0,102,255,0.1); border:1px solid rgba(0,102,255,0.3); border-radius:12px; padding:12px 14px; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+                        <div>
+                            <strong style="color:#FFFFFF; font-size:14px;">Inserir Dados de Estoque</strong>
+                            <div style="font-size:11px; color:var(--dna-ws-text-muted); margin-top:2px;">Autenticado com senha financeira</div>
                         </div>
-                    </div>
-                    <div class="dna-mobile-row-card">
-                        <div class="dna-mobile-row-icon dna-icon-blue">🛑</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Pastilhas de Freio Dianteiras</h4>
-                            <p class="dna-mobile-row-desc">Saldo: 12 jogos em estoque.</p>
-                        </div>
-                    </div>
-                    <div class="dna-mobile-row-card">
-                        <div class="dna-mobile-row-icon dna-icon-amber">💨</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Filtros de Ar e Óleo</h4>
-                            <p class="dna-mobile-row-desc">Saldo: 26 unidades variadas.</p>
-                        </div>
+                        <span style="font-size:22px; font-weight:800; color:var(--dna-ws-cyan);">${stockItems.length} itens</span>
                     </div>
 
-                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    <!-- Cards de Inserção de Dados de Estoque -->
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        ${stockItems.map((item, idx) => `
+                            <div class="dna-stock-card">
+                                <div class="dna-stock-card-header">
+                                    <div class="dna-stock-card-icon">${item.icon}</div>
+                                    <div class="dna-stock-card-info">
+                                        <div class="dna-stock-card-title">${item.name}</div>
+                                        <div class="dna-stock-card-meta">Cód: ${item.code} • Unid: ${item.unit}</div>
+                                    </div>
+                                    <div class="dna-stock-card-badge">Saldo: ${item.qty}</div>
+                                </div>
+
+                                <div class="dna-stock-card-inputs">
+                                    <div class="dna-stock-field-group">
+                                        <label class="dna-stock-field-label in">+ Entrada (Reposição)</label>
+                                        <input type="number" id="stock-in-${idx}" value="0" min="0" placeholder="0" style="height:42px; text-align:center; font-size:15px; font-weight:800;" />
+                                    </div>
+                                    <div class="dna-stock-field-group">
+                                        <label class="dna-stock-field-label out">- Saída (Uso em O.S.)</label>
+                                        <input type="number" id="stock-out-${idx}" value="0" min="0" placeholder="0" style="height:42px; text-align:center; font-size:15px; font-weight:800;" />
+                                    </div>
+                                </div>
+
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <input type="text" id="stock-ref-${idx}" placeholder="Nº NF / Fornecedor / Lote..." style="flex:1; height:40px; font-size:12.5px; padding:0 12px;" />
+                                    <button type="button" class="dna-primary-btn-lg" style="width:auto; height:40px; padding:0 14px; font-size:12px; white-space:nowrap;" onclick="WorkshopView.handleSaveStockItem(${idx}, '${item.name}')">
+                                        <span>✓</span> Salvar
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <button class="dna-primary-btn-lg" style="margin-top:14px;" onclick="alert('✅ Todos os dados de estoque foram sincronizados no sistema!'); WorkshopView.switchMobileSection('dashboard');">
+                        <span>✓</span> <span>Concluir & Voltar ao Painel</span>
                     </button>
 
+                    <button type="button" class="dna-mobile-back-to-cards-btn" style="margin-top:10px;" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                    </button>
                 </div>
             </div>
         `;
@@ -2933,9 +3206,9 @@
                         value="${this.mobileActivePlate || v.license_plate || ''}"
                         oninput="this.value = this.value.toUpperCase()"
                         onkeydown="if(event.key==='Enter') WorkshopView.handleUniversalPlateSearch()"
-                        style="flex:1; height:44px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.35); border-radius:10px; color:#fff; text-align:center; font-weight:800; font-family:monospace; font-size:15px;"
+                        style="flex:1; height:46px; background:#FFFFFF; border:1.5px solid #0084FF; border-radius:10px; color:#000000; text-align:center; font-weight:800; font-family:monospace; font-size:16px;"
                     />
-                    <button type="button" class="dna-search-action-btn" onclick="WorkshopView.handleUniversalPlateSearch()" title="Localizar Placa" style="width:44px; height:44px; font-size:18px; border-radius:10px; background:linear-gradient(135deg, #0052cc, #00d4ff); border:none; color:#fff; cursor:pointer;">
+                    <button type="button" class="dna-search-action-btn" onclick="WorkshopView.handleUniversalPlateSearch()" title="Localizar Placa" style="width:46px; height:46px; font-size:18px; border-radius:10px; background:linear-gradient(135deg, #0052cc, #00d4ff); border:none; color:#fff; cursor:pointer;">
                         🔍
                     </button>
                 </div>
@@ -3090,13 +3363,153 @@
         }
     };
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // TELA DE LOGIN EXCLUSIVA DO APP DA OFICINA (ESTILO WALLPAPER DNA AUTO)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.showOficinaLoginScreen = function() {
+        // Limpa sessão e registra estado de logout
+        this.financialAuthenticated = false;
+        this.stockAuthenticated = false;
+        localStorage.setItem('dna_logged_out', 'true');
+        localStorage.removeItem('dna_logged_user');
+        localStorage.removeItem('dna_token');
+
+        const container = document.getElementById('view-content');
+        if (!container) return;
+
+        // Imagem de fundo do DNA AUTO (a 3ª foto do usuário com o carro e logo azul)
+        const bgImageUrl = './img/dna-auto-bg-login.png';
+
+        container.innerHTML = `
+            <div class="dna-oficina-login-screen">
+                <!-- Imagem de Fundo Oficial do DNA AUTO -->
+                <div class="dna-oficina-login-bg" style="background-image: url('${bgImageUrl}'), linear-gradient(180deg, #010C1A, #010712);"></div>
+                <div class="dna-oficina-login-gradient"></div>
+
+                <!-- Conteúdo de Login na Parte Inferior -->
+                <div class="dna-oficina-login-content">
+                    <!-- Frase Motivacional solicitada -->
+                    <div class="dna-oficina-login-motto">
+                        Mais clientes + faturamento<br/>= <span>mais serviço</span>
+                    </div>
+                    <div class="dna-oficina-login-subtitle">
+                        Gestão inteligente & Fidelização para sua Auto Center
+                    </div>
+
+                    <!-- Formulário de Login (letras pretas no input) -->
+                    <div class="dna-oficina-login-form">
+                        <input 
+                            type="email" 
+                            id="oficina-login-email" 
+                            class="dna-oficina-login-input" 
+                            placeholder="E-mail da sua oficina"
+                            autocomplete="username"
+                        />
+                        <input 
+                            type="password" 
+                            id="oficina-login-password" 
+                            class="dna-oficina-login-input" 
+                            placeholder="Senha de acesso"
+                            autocomplete="current-password"
+                            onkeydown="if(event.key==='Enter') WorkshopView.handleOficinaLogin()"
+                        />
+
+                        <button type="button" class="dna-oficina-login-btn" onclick="WorkshopView.handleOficinaLogin()">
+                            <span>🔓</span> Entrar no Painel
+                        </button>
+
+                        <button type="button" class="dna-oficina-login-register" onclick="WorkshopView.currentSection='auth'; WorkshopView.authActiveTab='register'; WorkshopView.renderMobileShell();">
+                            <span>📝</span> Cadastrar minha Auto Center
+                        </button>
+
+                        <button type="button" class="dna-oficina-login-demo" onclick="WorkshopView.handleWorkshopDemoLogin()">
+                            Acessar como oficina de demonstração
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    WorkshopView.handleOficinaLogin = async function() {
+        const email = (document.getElementById('oficina-login-email')?.value || '').trim();
+        const password = (document.getElementById('oficina-login-password')?.value || '').trim();
+
+        if (!email || !password) {
+            alert('Por favor, preencha e-mail e senha.');
+            return;
+        }
+
+        localStorage.removeItem('dna_logged_out');
+
+        // Tenta autenticar via API
+        try {
+            if (typeof API !== 'undefined' && API.login) {
+                const res = await API.login({ email, password });
+                if (res && res.token) {
+                    localStorage.setItem('dna_token', res.token);
+                    if (res.user) localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
+                    if (res.user && res.user.workshop) {
+                        this.officialWorkshopName = res.user.workshop.trade_name || 'Auto Center';
+                    }
+                    this.currentSection = 'dashboard';
+                    this.renderMobileShell();
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn('Login via sistema:', e.message);
+        }
+
+        // Login local simplificado para demonstração
+        this.officialWorkshopName = 'Auto Center ' + email.split('@')[0];
+        const user = {
+            id: 'usr_' + Date.now(),
+            name: email.split('@')[0],
+            email: email,
+            role_code: 'WORKSHOP',
+            workshop: { trade_name: this.officialWorkshopName }
+        };
+        localStorage.setItem('dna_logged_user', JSON.stringify(user));
+        localStorage.setItem('dna_token', 'sess_' + Date.now());
+
+        this.currentSection = 'dashboard';
+        this.renderMobileShell();
+    };
+
+    // Login com Oficina de Demonstração
+    WorkshopView.handleWorkshopDemoLogin = function() {
+        localStorage.removeItem('dna_logged_out');
+        this.officialWorkshopName = 'Veloce Auto Center Premium';
+        const demoUser = {
+            id: 'usr_workshop_marcos',
+            name: 'Marcos Silveira',
+            email: 'marcos@veloce.com.br',
+            role_code: 'WORKSHOP',
+            role_name: 'Proprietário de Oficina',
+            workshop: {
+                id: 'ws_veloce',
+                workshop_id: 'ws_veloce',
+                trade_name: 'Veloce Auto Center Premium',
+                cnpj: '12.345.678/0001-90'
+            }
+        };
+        localStorage.setItem('dna_logged_user', JSON.stringify(demoUser));
+        localStorage.setItem('dna_token', 'sess_workshop_usr_workshop_marcos');
+        if (typeof API !== 'undefined') {
+            API.setToken('sess_workshop_usr_workshop_marcos');
+            API.setDemoUser('usr_workshop_marcos');
+        }
+
+        this.currentSection = 'dashboard';
+        this.renderMobileShell();
+    };
+
     // Verificação de dispositivo na inicialização
     WorkshopView.checkDevicePrompt = function() {
-        // Se a tela for larga (> 1024px) e o usuário nunca escolheu o modo, sugere sutilmente
         const hasPrompted = sessionStorage.getItem('dna_device_prompted');
         if (!hasPrompted && window.innerWidth >= 1200 && this.currentViewMode === 'mobile') {
             sessionStorage.setItem('dna_device_prompted', 'true');
-            // Mantém no mobile por padrão como solicitado, mas deixa o botão visível no topo
         }
     };
 
@@ -3111,6 +3524,14 @@
         const activeWorkshopId = this.getEffectiveWorkshopId();
         this.currentWorkshopId = activeWorkshopId;
         document.body.classList.add('is-workshop-erp');
+
+        // Se o usuário estiver deslogado ou a URL solicitar login, exibe a tela de login com imagem DNA AUTO
+        const isLoggedOut = localStorage.getItem('dna_logged_out') === 'true';
+        if (isLoggedOut || window.location.hash === '#login') {
+            document.body.classList.remove('force-desktop-mode');
+            this.showOficinaLoginScreen();
+            return;
+        }
 
         // Carrega dados base
         try {
@@ -3142,15 +3563,11 @@
             localStorage.setItem('dna_workshop_view_mode', 'mobile');
         }
 
-        const isAuthHash = window.location.hash === '#login' || window.location.hash === '#cadastro';
-        const isAuthQuery = urlParams.get('auth') === '1' || urlParams.get('mode') === 'login';
+        const isAuthHash = window.location.hash === '#cadastro';
+        const isAuthQuery = urlParams.get('auth') === '1';
         if (isAuthHash || isAuthQuery) {
             this.currentSection = 'auth';
-            if (window.location.hash === '#cadastro') {
-                this.authActiveTab = 'register';
-            } else {
-                this.authActiveTab = 'login';
-            }
+            this.authActiveTab = 'register';
             document.body.classList.remove('force-desktop-mode');
             this.renderMobileShell();
             return;

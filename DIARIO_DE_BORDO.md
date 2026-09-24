@@ -1087,3 +1087,31 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Sincronização automática para `public/js/components/workshopMobileView.js`.
 
 
+
+---
+
+### Ciclo 55 — Regra Global de Letras Pretas nos Inputs, Carrossel Vertical de Serviços em Visão de Rolo 3D, Cards de Estoque com Entrada/Saída sob Senha e Tela de Login com Wallpaper DNA AUTO & Motto
+- **Data/Hora:** 24/09/2026
+- **Contexto & Escopo:**
+  1. **Regra de Tipografia de Inputs: Letras Pretas com Fundo Branco:**
+     - Aplicada regra global no `workshop-mobile.css` para todos os campos digitáveis (`input`, `textarea`, `select`, `.dna-plate-input`, `.form-control`, `.dna-oficina-login-input`): `color: #000000 !important; -webkit-text-fill-color: #000000 !important; background-color: #FFFFFF !important; font-weight: 700;`.
+     - Fundo branco limpo com bordas nítidas de alto contraste, garantindo leitura instantânea pelo mecânico na oficina, eliminando qualquer texto branco sobre fundo escuro nos campos de digitação.
+  2. **Carrossel Vertical de Serviços em Visão de Rolo 3D (Picker Wheel):**
+     - O seletor de serviços na tela de lançamento foi redesenhado no formato de **cilindro vertical/rolo 3D**:
+       - Moldura central iluminada (`.dna-service-wheel-highlight`) com neon cyan pulsante e etiqueta `● SELECIONADO`.
+       - Máscaras superior e inferior com gradientes suaves de curvatura criando o efeito de tambor rotativo.
+       - Botões rápidos de navegação `▲` e `▼` no topo e rodapé do rolo para avançar ou recuar de forma precisa.
+       - Ao clicar em qualquer serviço, o rolo desliza suavemente até o centro; se o serviço já estiver no centro, o clique abre imediatamente a tela de detalhes.
+       - Botão de ação inferior: `[ ✓ Abrir: {Nome do Serviço} ]`.
+  3. **Cards de Estoque com Inserção de Dados sob Senha Financeira Permanente:**
+     - Card de Estoque reestruturado como grade de formulários de movimentação (`.dna-stock-card`):
+       - Cada item possui saldo atual em destaque, campo para **+ Entrada (Reposição)**, campo para **- Saída (Uso em O.S.)**, campo de **Referência / NF / Fornecedor** e botão para salvar individualmente ou em lote.
+       - Acesso protegido estritamente pela senha do financeiro (`123456`), exigindo reautenticação a cada nova entrada no módulo.
+  4. **Tela de Login do App da Oficina com Imagem DNA AUTO & Frase de Valorização:**
+     - Ao clicar no botão **Sair ↗**, a sessão é encerrada e o aplicativo exibe a tela de login exclusiva da Auto Center:
+       - Fundo em alta resolução com a foto oficial do veículo azul iluminado e logotipo DNA AUTO (`dna-auto-bg-login.png`).
+       - Frase de valorização: **"Mais clientes + faturamento = mais serviço"**.
+       - Formulário ergonômico na parte inferior com campos de e-mail e senha (letras pretas em fundo branco), botão de acesso ao painel, botão para cadastrar nova Auto Center e atalho de demonstração.
+  5. **Qualidade e Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
+     - Arquivos sincronizados para `public/css/` e `public/js/components/`.

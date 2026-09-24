@@ -1895,3 +1895,599 @@ input.dna-plate-input {
     max-width: 100% !important;
     box-sizing: border-box !important;
 }
+
+/* ==============================================================================
+   11. TEXTO PRETO NOS CAMPOS DE DIGITAÇÃO (LEGIBILIDADE MÁXIMA)
+   ============================================================================== */
+.dna-mobile-shell input[type="text"],
+.dna-mobile-shell input[type="number"],
+.dna-mobile-shell input[type="tel"],
+.dna-mobile-shell input[type="email"],
+.dna-mobile-shell input[type="date"],
+.dna-mobile-shell input[type="password"],
+.dna-mobile-shell textarea,
+.dna-mobile-shell select,
+.dna-mobile-shell .dna-plate-input,
+.dna-mobile-shell .dna-input-field {
+    color: #000000 !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    border: 1.5px solid rgba(0, 102, 255, 0.4) !important;
+    caret-color: #0066FF !important;
+}
+
+.dna-mobile-shell input::placeholder,
+.dna-mobile-shell textarea::placeholder {
+    color: #6B7280 !important;
+    opacity: 1 !important;
+}
+
+.dna-mobile-shell input:focus,
+.dna-mobile-shell textarea:focus,
+.dna-mobile-shell select:focus {
+    border-color: #00D4FF !important;
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2) !important;
+    outline: none !important;
+}
+
+/* Select option text */
+.dna-mobile-shell select option {
+    background: #0B1424 !important;
+    color: #FFFFFF !important;
+}
+
+/* ==============================================================================
+   12. CARROSSEL / ROLO VERTICAL DE SELEÇÃO DE SERVIÇOS (SCROLL-WHEEL SNAP)
+/* ==============================================================================
+   12. CARROSSEL VERTICAL / ROLO 3D DE SERVIÇOS (ESTILO PICKER WHEEL)
+   "visão de rolo: opções em carrossel para cima e para baixo ficando o do meio selecionado"
+   ============================================================================== */
+.dna-service-wheel-wrapper {
+    position: relative;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.dna-service-wheel-container {
+    position: relative;
+    width: 100%;
+    height: 290px;
+    overflow: hidden;
+    border-radius: 18px;
+    background: radial-gradient(circle at 50% 50%, #0a172e 0%, #040810 100%);
+    border: 1.5px solid rgba(0, 102, 255, 0.3);
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8), 0 8px 24px rgba(0, 0, 0, 0.4);
+    perspective: 800px;
+}
+
+/* Sombras e máscaras nas bordas superior e inferior criando curvatura do cilindro */
+.dna-service-wheel-container::before,
+.dna-service-wheel-container::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 90px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.dna-service-wheel-container::before {
+    top: 0;
+    background: linear-gradient(to bottom, #040810 0%, rgba(4, 8, 16, 0.85) 40%, transparent 100%);
+}
+
+.dna-service-wheel-container::after {
+    bottom: 0;
+    background: linear-gradient(to top, #040810 0%, rgba(4, 8, 16, 0.85) 40%, transparent 100%);
+}
+
+/* Indicador central do item do meio (selecionado e aguardando clique) */
+.dna-service-wheel-highlight {
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    right: 8px;
+    height: 68px;
+    transform: translateY(-50%);
+    background: linear-gradient(90deg, rgba(0, 102, 255, 0.22) 0%, rgba(0, 212, 255, 0.18) 100%);
+    border: 2px solid #00D4FF;
+    border-radius: 16px;
+    box-shadow: 0 0 25px rgba(0, 212, 255, 0.35), inset 0 0 15px rgba(0, 212, 255, 0.15);
+    z-index: 5;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 14px;
+}
+
+.dna-service-wheel-highlight::after {
+    content: "● SELECIONADO";
+    font-size: 9px;
+    font-weight: 800;
+    color: #00D4FF;
+    letter-spacing: 0.8px;
+    background: rgba(0, 212, 255, 0.15);
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    animation: dnaPulseCyan 1.8s infinite ease-in-out;
+}
+
+@keyframes dnaPulseCyan {
+    0%, 100% { opacity: 0.8; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+}
+
+/* Lista scrollável com snap no centro */
+.dna-service-wheel-scroll {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 111px 10px;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+}
+
+.dna-service-wheel-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+/* Cada item no cilindro / rolo */
+.dna-service-wheel-item {
+    scroll-snap-align: center;
+    height: 68px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease, background 0.2s;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 13px;
+    font-weight: 600;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    opacity: 0.42;
+    transform: scale(0.92);
+}
+
+.dna-service-wheel-item:hover {
+    color: rgba(255, 255, 255, 0.75);
+    opacity: 0.7;
+}
+
+.dna-service-wheel-item.active {
+    color: #FFFFFF;
+    font-weight: 800;
+    font-size: 14.5px;
+    opacity: 1;
+    transform: scale(1.04);
+    z-index: 6;
+}
+
+.dna-service-wheel-item .wheel-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 12px;
+    background: rgba(0, 102, 255, 0.2);
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    transition: all 0.2s ease;
+}
+
+.dna-service-wheel-item.active .wheel-icon {
+    background: linear-gradient(135deg, #0052CC, #00D4FF);
+    border-color: #00D4FF;
+    box-shadow: 0 0 18px rgba(0, 212, 255, 0.45);
+    transform: scale(1.05);
+}
+
+.dna-service-wheel-item .wheel-label {
+    flex: 1;
+    min-width: 0;
+}
+
+.dna-service-wheel-item .wheel-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dna-service-wheel-item .wheel-tag {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--dna-ws-text-dim);
+    margin-top: 2px;
+}
+
+.dna-service-wheel-item.active .wheel-tag {
+    color: var(--dna-ws-cyan);
+    font-weight: 700;
+}
+
+.dna-service-wheel-item .wheel-chevron {
+    font-size: 18px;
+    color: var(--dna-ws-text-dim);
+    transition: all 0.2s;
+}
+
+.dna-service-wheel-item.active .wheel-chevron {
+    color: var(--dna-ws-cyan);
+    transform: translateX(2px);
+    font-weight: 800;
+}
+
+/* Botões de navegação rápida para rolar o cilindro */
+.dna-wheel-nav-btn {
+    position: absolute;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(9, 17, 34, 0.9);
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    color: var(--dna-ws-cyan);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    cursor: pointer;
+    z-index: 15;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    transition: all 0.15s ease;
+}
+
+.dna-wheel-nav-btn:active {
+    transform: scale(0.9);
+    background: var(--dna-ws-blue);
+    color: #FFFFFF;
+}
+
+.dna-wheel-nav-btn.up {
+    top: 8px;
+}
+
+.dna-wheel-nav-btn.down {
+    bottom: 8px;
+}
+
+/* ==============================================================================
+   13. ESTOQUE DE PEÇAS: CARDS COM CAMPOS EDITÁVEIS PROTEGIDOS POR SENHA
+   "os cards devem ser campos para inserir dados de estoque mediante senha do financeiro sempre"
+   ============================================================================== */
+.dna-stock-password-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 32px 16px;
+    gap: 14px;
+}
+
+.dna-stock-password-overlay .stock-lock-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(0, 102, 255, 0.15);
+    border: 1.5px solid rgba(0, 212, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    box-shadow: 0 0 25px rgba(0, 102, 255, 0.3);
+}
+
+.dna-stock-password-overlay h3 {
+    color: #FFFFFF;
+    font-size: 18px;
+    font-weight: 800;
+    font-family: var(--dna-ws-font-display);
+    margin: 0;
+}
+
+.dna-stock-password-overlay p {
+    color: var(--dna-ws-text-muted);
+    font-size: 13px;
+    max-width: 290px;
+    line-height: 1.45;
+    margin: 0;
+}
+
+/* Cards Operacionais de Inserção de Dados de Estoque */
+.dna-stock-card {
+    background: linear-gradient(145deg, rgba(13, 24, 44, 0.95), rgba(7, 13, 25, 0.95));
+    border: 1.5px solid rgba(0, 102, 255, 0.28);
+    border-radius: var(--dna-ws-radius-lg);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+    transition: border-color 0.2s ease;
+}
+
+.dna-stock-card:focus-within {
+    border-color: var(--dna-ws-cyan);
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.15);
+}
+
+.dna-stock-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dna-stock-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(0, 102, 255, 0.2);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.dna-stock-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.dna-stock-card-title {
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dna-stock-card-meta {
+    font-size: 11.5px;
+    color: var(--dna-ws-text-muted);
+    margin-top: 2px;
+}
+
+.dna-stock-card-badge {
+    background: rgba(0, 212, 255, 0.15);
+    color: var(--dna-ws-cyan);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    white-space: nowrap;
+}
+
+.dna-stock-card-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.dna-stock-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dna-stock-field-label {
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.dna-stock-field-label.in {
+    color: var(--dna-ws-cyan);
+}
+
+.dna-stock-field-label.out {
+    color: #EF4444;
+}
+
+/* ==============================================================================
+   14. TELA DE LOGIN DO APP DA OFICINA (FUNDO COM IMAGEM + FRASE MOTIVACIONAL)
+   "ter uma frase Mais cliente + faturamento = mais serviço e a área de login em baixo e com a foto de fundo da terceira imagem"
+   ============================================================================== */
+.dna-oficina-login-screen {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    background: #010A16;
+}
+
+.dna-oficina-login-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    z-index: 1;
+}
+
+.dna-oficina-login-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(to top, rgba(1, 10, 22, 0.98) 0%, rgba(1, 10, 22, 0.88) 50%, transparent 100%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.dna-oficina-login-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 400px;
+    padding: 0 20px;
+    padding-bottom: calc(28px + env(safe-area-inset-bottom, 16px));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    box-sizing: border-box;
+}
+
+.dna-oficina-login-motto {
+    font-family: var(--dna-ws-font-display);
+    font-size: 21px;
+    font-weight: 800;
+    color: #FFFFFF;
+    text-align: center;
+    line-height: 1.35;
+    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8);
+}
+
+.dna-oficina-login-motto span {
+    color: var(--dna-ws-cyan);
+}
+
+.dna-oficina-login-subtitle {
+    font-size: 12.5px;
+    color: var(--dna-ws-text-muted);
+    text-align: center;
+    line-height: 1.4;
+}
+
+.dna-oficina-login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dna-oficina-login-btn {
+    width: 100%;
+    height: 52px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0084FF 0%, #0052CC 100%);
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 800;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 6px 24px rgba(0, 102, 255, 0.55);
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.dna-oficina-login-btn:active {
+    transform: scale(0.97);
+}
+
+.dna-oficina-login-register {
+    width: 100%;
+    height: 46px;
+    border-radius: 14px;
+    background: transparent;
+    border: 1.5px solid rgba(0, 212, 255, 0.45);
+    color: #FFFFFF;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.dna-oficina-login-register:hover {
+    background: rgba(0, 212, 255, 0.12);
+    border-color: var(--dna-ws-cyan);
+}
+
+.dna-oficina-login-demo {
+    background: none;
+    border: none;
+    color: var(--dna-ws-cyan);
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 4px 0;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* ==============================================================================
+   15. REGRA GLOBAL OBRIGATÓRIA: TEXTO DIGITADO SEMPRE PRETO COM FUNDO BRANCO
+   "na parte que se digita deve ser preta a letra."
+   ============================================================================== */
+.dna-mobile-shell input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]),
+.dna-mobile-shell textarea,
+.dna-mobile-shell select,
+.dna-plate-input,
+.dna-oficina-login-input,
+.form-control,
+input.form-control,
+textarea.form-control,
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+input[type="search"],
+textarea {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    background-color: #FFFFFF !important;
+    border: 1.5px solid #CBD5E1 !important;
+    font-weight: 700 !important;
+    caret-color: #000000 !important;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.dna-mobile-shell input::placeholder,
+.dna-mobile-shell textarea::placeholder,
+.dna-plate-input::placeholder,
+.dna-oficina-login-input::placeholder,
+input::placeholder,
+textarea::placeholder {
+    color: #64748B !important;
+    -webkit-text-fill-color: #64748B !important;
+    font-weight: 500 !important;
+}
+
+.dna-mobile-shell input:focus,
+.dna-mobile-shell textarea:focus,
+.dna-plate-input:focus,
+.dna-oficina-login-input:focus,
+input:focus,
+textarea:focus {
+    color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    background-color: #FFFFFF !important;
+    border-color: #0066FF !important;
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.25) !important;
+    outline: none !important;
+}
+

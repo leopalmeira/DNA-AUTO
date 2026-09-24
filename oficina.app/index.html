@@ -352,11 +352,23 @@
                 localStorage.removeItem('dna_token');
                 localStorage.removeItem('dna_auto_token');
                 localStorage.removeItem('dna_current_view');
-                window.location.href = '/';
+                localStorage.setItem('dna_logged_out', 'true');
+                if (typeof WorkshopView !== 'undefined' && WorkshopView.showOficinaLoginScreen) {
+                    WorkshopView.showOficinaLoginScreen();
+                } else {
+                    window.location.hash = '#login';
+                    window.location.reload();
+                }
             },
             switchView(view) {
                 if (view === 'landing' || view === 'landing-home') window.location.href = '/';
-                else if (view === 'login') window.location.href = '/#login';
+                else if (view === 'login') {
+                    if (typeof WorkshopView !== 'undefined' && WorkshopView.showOficinaLoginScreen) {
+                        WorkshopView.showOficinaLoginScreen();
+                    } else {
+                        window.location.href = '/#login';
+                    }
+                }
                 else WorkshopView.render();
             }
         };
@@ -388,22 +400,27 @@
         document.addEventListener('DOMContentLoaded', async () => {
             setupModals();
 
-            // Sincronizar usuário salvo ou usar o perfil padrão da Veloce Auto Center
+            // Sincronizar usuário salvo ou usar o perfil padrão se não tiver feito logout
+            const isLoggedOut = localStorage.getItem('dna_logged_out') === 'true';
             let savedUser = null;
             try {
                 const raw = localStorage.getItem('dna_logged_user');
                 if (raw) savedUser = JSON.parse(raw);
             } catch (_) {}
 
-            if (savedUser && savedUser.role_code === 'WORKSHOP') {
+            if (isLoggedOut) {
+                window.App.currentUser = null;
+            } else if (savedUser && savedUser.role_code === 'WORKSHOP') {
                 window.App.currentUser = savedUser;
             } else {
                 localStorage.setItem('dna_logged_user', JSON.stringify(window.App.currentUser));
             }
 
-            const token = localStorage.getItem('dna_token') || 'sess_workshop_usr_workshop_marcos';
-            API.setToken(token);
-            API.setDemoUser(window.App.currentUser.id || 'usr_workshop_marcos');
+            const token = localStorage.getItem('dna_token') || (!isLoggedOut ? 'sess_workshop_usr_workshop_marcos' : '');
+            if (token) {
+                API.setToken(token);
+                if (window.App.currentUser) API.setDemoUser(window.App.currentUser.id || 'usr_workshop_marcos');
+            }
 
             // Renderizar ERP da Oficina
             await WorkshopView.render();
