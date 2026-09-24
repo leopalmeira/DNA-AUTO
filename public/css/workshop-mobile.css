@@ -1,0 +1,1074 @@
+/* ==============================================================================
+   DNA AUTO — REESTRUTURAÇÃO MOBILE FIRST DO PAINEL DA OFICINA / AUTO CENTER
+   Identidade: Dark Obsidian, Azul DNA AUTO #0066FF, Neon Cyan #00D4FF, Emerald #10B981
+   Foco Operacional: Experiência ágil para mecânicos e funcionários no smartphone
+   ============================================================================== */
+
+:root {
+    --dna-ws-bg: #05080D;
+    --dna-ws-bg-surface: #090E1A;
+    --dna-ws-bg-card: rgba(11, 20, 36, 0.88);
+    --dna-ws-bg-elevated: #111B2E;
+    --dna-ws-border: rgba(0, 102, 255, 0.22);
+    --dna-ws-border-highlight: rgba(0, 212, 255, 0.35);
+    
+    --dna-ws-blue: #0066FF;
+    --dna-ws-blue-glow: rgba(0, 102, 255, 0.45);
+    --dna-ws-cyan: #00D4FF;
+    --dna-ws-cyan-glow: rgba(0, 212, 255, 0.35);
+    --dna-ws-green: #10B981;
+    --dna-ws-green-glow: rgba(16, 185, 129, 0.35);
+    --dna-ws-amber: #F59E0B;
+    --dna-ws-amber-glow: rgba(245, 158, 11, 0.35);
+    --dna-ws-red: #EF4444;
+    --dna-ws-red-glow: rgba(239, 68, 68, 0.35);
+    --dna-ws-wpp: #25D366;
+    
+    --dna-ws-text-white: #FFFFFF;
+    --dna-ws-text-main: #E2E8F0;
+    --dna-ws-text-muted: #94A3B8;
+    --dna-ws-text-dim: #64748B;
+    
+    --dna-ws-radius-sm: 8px;
+    --dna-ws-radius-md: 14px;
+    --dna-ws-radius-lg: 18px;
+    --dna-ws-radius-xl: 22px;
+    --dna-ws-radius-full: 9999px;
+    
+    --dna-ws-font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --dna-ws-font-display: 'Outfit', 'Plus Jakarta Sans', -apple-system, sans-serif;
+}
+
+/* 1. CONTAINER MOBILE VIEWPORT */
+.dna-mobile-shell {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: radial-gradient(circle at 50% 10%, #0a162b 0%, #05080D 70%, #020407 100%);
+    color: var(--dna-ws-text-main);
+    font-family: var(--dna-ws-font-main);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    position: relative;
+    padding-bottom: 74px; /* Espaço para barra inferior fixa */
+}
+
+/* Quando visualizado em desktop, centraliza com elegância mantendo foco mobile ou permite modo web */
+@media (min-width: 900px) {
+    body.is-workshop-erp:not(.force-desktop-mode) .dna-mobile-shell {
+        max-width: 480px;
+        margin: 0 auto;
+        min-height: 100vh;
+        box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 1px 1px rgba(0, 102, 255, 0.3);
+        border-left: 1px solid rgba(0, 102, 255, 0.2);
+        border-right: 1px solid rgba(0, 102, 255, 0.2);
+    }
+}
+
+/* 2. HEADER SUPERIOR DO APP DA OFICINA */
+.dna-mobile-header {
+    padding: 14px 16px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(5, 8, 13, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dna-mobile-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dna-mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.dna-mobile-logo-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--dna-ws-radius-sm);
+    background: linear-gradient(135deg, var(--dna-ws-blue), var(--dna-ws-cyan));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 14px var(--dna-ws-blue-glow);
+}
+
+.dna-mobile-brand-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.dna-mobile-brand-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: #FFFFFF;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+    font-family: var(--dna-ws-font-display);
+}
+
+.dna-mobile-brand-title span {
+    color: var(--dna-ws-cyan);
+}
+
+.dna-mobile-brand-sub {
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--dna-ws-text-muted);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.dna-mobile-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dna-mobile-badge-workshop {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(17, 27, 46, 0.85);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    border-radius: var(--dna-ws-radius-pill);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #FFFFFF;
+}
+
+.dna-mobile-badge-workshop .online-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--dna-ws-green);
+    box-shadow: 0 0 8px var(--dna-ws-green);
+}
+
+.dna-mobile-header-btn {
+    background: rgba(17, 27, 46, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--dna-ws-text-muted);
+    border-radius: var(--dna-ws-radius-sm);
+    padding: 6px 9px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+}
+
+.dna-mobile-header-btn:hover {
+    color: #FFFFFF;
+    border-color: var(--dna-ws-cyan);
+}
+
+/* 3. CARD RESUMO OPERACIONAL (TOPO) */
+.dna-mobile-stats-card {
+    margin: 12px 16px 6px;
+    padding: 14px 16px;
+    background: linear-gradient(145deg, rgba(13, 24, 44, 0.95), rgba(7, 13, 25, 0.95));
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    border-radius: var(--dna-ws-radius-lg);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    text-align: center;
+}
+
+.dna-mobile-stat-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.dna-mobile-stat-col:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 15%;
+    bottom: 15%;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.dna-mobile-stat-number {
+    font-size: 22px;
+    font-weight: 800;
+    color: #FFFFFF;
+    line-height: 1;
+    margin-bottom: 4px;
+    font-family: var(--dna-ws-font-display);
+}
+
+.dna-mobile-stat-number.blue { color: var(--dna-ws-cyan); }
+.dna-mobile-stat-number.green { color: var(--dna-ws-green); }
+.dna-mobile-stat-number.amber { color: var(--dna-ws-amber); }
+
+.dna-mobile-stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--dna-ws-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+}
+
+/* 4. GRID DE CARDS PRINCIPAIS (2 COLUNAS) */
+.dna-mobile-grid-section {
+    padding: 10px 16px;
+}
+
+.dna-mobile-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.dna-mobile-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--dna-ws-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.dna-mobile-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.dna-mobile-action-card {
+    border-radius: var(--dna-ws-radius-lg);
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 136px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.12s ease, box-shadow 0.15s ease;
+    border: none;
+    text-align: left;
+    user-select: none;
+}
+
+.dna-mobile-action-card:active {
+    transform: scale(0.97);
+}
+
+.dna-mobile-action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent);
+    pointer-events: none;
+}
+
+/* Cores específicas dos 6 cards principais (fidelidade aos prints) */
+.dna-card-blue {
+    background: linear-gradient(145deg, #0052cc 0%, #0066FF 60%, #0284c7 100%);
+    box-shadow: 0 8px 20px rgba(0, 102, 255, 0.32);
+}
+
+.dna-card-green {
+    background: linear-gradient(145deg, #047857 0%, #10B981 60%, #059669 100%);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.dna-card-purple {
+    background: linear-gradient(145deg, #4f46e5 0%, #6366f1 60%, #7c3aed 100%);
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+}
+
+.dna-card-amber {
+    background: linear-gradient(145deg, #d97706 0%, #f59e0b 60%, #ea580c 100%);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.3);
+}
+
+.dna-card-red {
+    background: linear-gradient(145deg, #e11d48 0%, #f43f5e 60%, #dc2626 100%);
+    box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3);
+}
+
+.dna-card-cyan {
+    background: linear-gradient(145deg, #0891b2 0%, #06b6d4 60%, #00d4ff 100%);
+    box-shadow: 0 8px 20px rgba(6, 182, 212, 0.3);
+}
+
+.dna-card-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--dna-ws-radius-md);
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: #FFFFFF;
+}
+
+.dna-card-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin-bottom: 4px;
+    font-family: var(--dna-ws-font-display);
+    letter-spacing: -0.2px;
+}
+
+.dna-card-desc {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.3;
+    font-weight: 500;
+}
+
+/* 5. CARDS ADICIONAIS INDEPENDENTES (ROLAR PARA BAIXO) */
+.dna-mobile-list-section {
+    padding: 10px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dna-mobile-row-card {
+    background: var(--dna-ws-bg-card);
+    border: 1px solid var(--dna-ws-border);
+    border-radius: var(--dna-ws-radius-lg);
+    padding: 15px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    user-select: none;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.dna-mobile-row-card:active {
+    transform: scale(0.98);
+    background: var(--dna-ws-bg-elevated);
+}
+
+.dna-mobile-row-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--dna-ws-radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.dna-icon-amber { background: rgba(245, 158, 11, 0.16); color: var(--dna-ws-amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+.dna-icon-red { background: rgba(239, 68, 68, 0.16); color: var(--dna-ws-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+.dna-icon-blue { background: rgba(0, 102, 255, 0.16); color: var(--dna-ws-blue); border: 1px solid rgba(0, 102, 255, 0.3); }
+.dna-icon-cyan { background: rgba(0, 212, 255, 0.16); color: var(--dna-ws-cyan); border: 1px solid rgba(0, 212, 255, 0.3); }
+.dna-icon-green { background: rgba(16, 185, 129, 0.16); color: var(--dna-ws-green); border: 1px solid rgba(16, 185, 129, 0.3); }
+.dna-icon-purple { background: rgba(99, 102, 241, 0.16); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
+
+.dna-mobile-row-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dna-mobile-row-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dna-mobile-row-desc {
+    font-size: 11.5px;
+    color: var(--dna-ws-text-muted);
+    line-height: 1.3;
+}
+
+.dna-mobile-row-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.dna-mobile-row-badge {
+    padding: 3px 9px;
+    border-radius: var(--dna-ws-radius-pill);
+    font-size: 11px;
+    font-weight: 800;
+    color: #FFFFFF;
+}
+
+.dna-badge-red { background: var(--dna-ws-red); box-shadow: 0 0 10px var(--dna-ws-red-glow); }
+.dna-badge-amber { background: var(--dna-ws-amber); box-shadow: 0 0 10px var(--dna-ws-amber-glow); }
+
+.dna-mobile-row-chevron {
+    color: var(--dna-ws-text-dim);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* 6. BANNER APP DO CLIENTE */
+.dna-mobile-client-banner {
+    margin: 6px 16px 14px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, rgba(0, 212, 255, 0.12), rgba(0, 102, 255, 0.12));
+    border: 1px solid rgba(0, 212, 255, 0.35);
+    border-radius: var(--dna-ws-radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.dna-banner-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dna-banner-icon {
+    font-size: 24px;
+}
+
+.dna-banner-title {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--dna-ws-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dna-banner-desc {
+    font-size: 11px;
+    color: var(--dna-ws-text-muted);
+}
+
+.dna-banner-btn {
+    padding: 7px 12px;
+    background: rgba(0, 212, 255, 0.2);
+    border: 1px solid var(--dna-ws-cyan);
+    color: var(--dna-ws-cyan);
+    border-radius: var(--dna-ws-radius-md);
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* 7. BARRA DE NAVEGAÇÃO INFERIOR (BOTTOM NAV) */
+.dna-mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: rgba(6, 11, 20, 0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(0, 102, 255, 0.22);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (min-width: 900px) {
+    body.is-workshop-erp:not(.force-desktop-mode) .dna-mobile-bottom-nav {
+        max-width: 480px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 1px solid rgba(0, 102, 255, 0.2);
+        border-right: 1px solid rgba(0, 102, 255, 0.2);
+    }
+}
+
+.dna-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 6px 12px;
+    color: var(--dna-ws-text-dim);
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    user-select: none;
+}
+
+.dna-nav-item .nav-icon {
+    font-size: 19px;
+    line-height: 1;
+}
+
+.dna-nav-item.active {
+    color: var(--dna-ws-cyan);
+}
+
+.dna-nav-item.active .nav-icon {
+    transform: translateY(-2px);
+    filter: drop-shadow(0 0 8px var(--dna-ws-cyan-glow));
+}
+
+/* 8. SUB-TELAS / PÁGINAS INDIVIDUAIS */
+.dna-mobile-subpage {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 74px);
+    background: transparent;
+}
+
+.dna-mobile-subpage-header {
+    height: 54px;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(5, 8, 13, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+}
+
+.dna-mobile-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: none;
+    color: var(--dna-ws-cyan);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 6px 0;
+}
+
+.dna-mobile-subpage-title {
+    font-size: 15.5px;
+    font-weight: 800;
+    color: #FFFFFF;
+    font-family: var(--dna-ws-font-display);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.dna-mobile-subpage-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 9. CONTROLES E COMPONENTES DE FORMULÁRIO */
+.dna-segmented-control {
+    display: flex;
+    background: rgba(13, 24, 44, 0.9);
+    border: 1px solid rgba(0, 102, 255, 0.2);
+    border-radius: var(--dna-ws-radius-md);
+    padding: 3px;
+    gap: 2px;
+}
+
+.dna-segment-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 8px 6px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--dna-ws-text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.dna-segment-btn.active {
+    background: var(--dna-ws-blue);
+    color: #FFFFFF;
+    box-shadow: 0 2px 10px var(--dna-ws-blue-glow);
+}
+
+.dna-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dna-input-label {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--dna-ws-text-main);
+}
+
+.dna-input-search-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.dna-plate-input {
+    flex: 1;
+    height: 52px;
+    background: rgba(8, 16, 32, 0.9);
+    border: 2px solid rgba(0, 102, 255, 0.35);
+    border-radius: var(--dna-ws-radius-md);
+    padding: 0 16px;
+    font-size: 18px;
+    font-weight: 800;
+    font-family: monospace, var(--dna-ws-font-main);
+    color: #FFFFFF;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dna-plate-input:focus {
+    outline: none;
+    border-color: var(--dna-ws-cyan);
+    box-shadow: 0 0 16px var(--dna-ws-cyan-glow);
+}
+
+.dna-search-action-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--dna-ws-radius-md);
+    background: linear-gradient(135deg, var(--dna-ws-blue), var(--dna-ws-cyan));
+    border: none;
+    color: #FFFFFF;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 14px var(--dna-ws-blue-glow);
+    flex-shrink: 0;
+}
+
+.dna-search-action-btn:active {
+    transform: scale(0.96);
+}
+
+/* 10. CARD DE VEÍCULO IDENTIFICADO */
+.dna-vehicle-preview-card {
+    background: linear-gradient(145deg, rgba(13, 24, 44, 0.95), rgba(8, 15, 28, 0.95));
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: var(--dna-ws-radius-lg);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.dna-vehicle-preview-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--dna-ws-radius-md);
+    background: rgba(0, 102, 255, 0.2);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.dna-vehicle-preview-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--dna-ws-radius-md);
+}
+
+.dna-vehicle-preview-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.dna-vehicle-preview-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin-bottom: 2px;
+}
+
+.dna-vehicle-preview-meta {
+    font-size: 11.5px;
+    color: var(--dna-ws-text-muted);
+}
+
+.dna-vehicle-preview-owner {
+    font-size: 11px;
+    color: var(--dna-ws-cyan);
+    margin-top: 2px;
+    font-weight: 600;
+}
+
+/* 11. BOTÃO INFERIOR FIXO DE AÇÃO */
+.dna-mobile-fixed-bottom-bar {
+    position: fixed;
+    bottom: 64px;
+    left: 0;
+    right: 0;
+    padding: 10px 16px;
+    background: linear-gradient(180deg, transparent 0%, rgba(5, 8, 13, 0.95) 30%, #05080D 100%);
+    z-index: 30;
+}
+
+@media (min-width: 900px) {
+    body.is-workshop-erp:not(.force-desktop-mode) .dna-mobile-fixed-bottom-bar {
+        max-width: 480px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+.dna-primary-btn-lg {
+    width: 100%;
+    height: 52px;
+    background: linear-gradient(135deg, var(--dna-ws-blue), #0052cc);
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    border-radius: var(--dna-ws-radius-md);
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: 800;
+    font-family: var(--dna-ws-font-display);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 18px var(--dna-ws-blue-glow);
+    transition: transform 0.12s ease, box-shadow 0.15s ease;
+}
+
+.dna-primary-btn-lg:active {
+    transform: scale(0.98);
+}
+
+.dna-primary-btn-lg.green {
+    background: linear-gradient(135deg, var(--dna-ws-green), #059669);
+    box-shadow: 0 4px 18px var(--dna-ws-green-glow);
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.dna-primary-btn-lg.cyan {
+    background: linear-gradient(135deg, var(--dna-ws-cyan), #0066FF);
+    box-shadow: 0 4px 18px var(--dna-ws-cyan-glow);
+    border-color: rgba(0, 212, 255, 0.5);
+    color: #FFFFFF;
+}
+
+/* 12. LISTA DE SERVIÇOS SEM PREÇO (MONITORAMENTO) */
+.dna-service-monitoring-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dna-service-item-row {
+    background: var(--dna-ws-bg-card);
+    border: 1px solid var(--dna-ws-border);
+    border-radius: var(--dna-ws-radius-md);
+    padding: 13px 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.dna-service-item-row:active {
+    background: var(--dna-ws-bg-elevated);
+    border-color: var(--dna-ws-cyan);
+}
+
+.dna-service-item-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(0, 102, 255, 0.15);
+    border: 1px solid rgba(0, 102, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+}
+
+.dna-service-item-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dna-service-item-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 2px;
+}
+
+.dna-service-item-tag {
+    font-size: 11px;
+    color: var(--dna-ws-text-dim);
+}
+
+/* 13. CARDS DE ALERTA DE MANUTENÇÃO (WHATSAPP) */
+.dna-maint-alert-card {
+    background: var(--dna-ws-bg-card);
+    border: 1px solid var(--dna-ws-border);
+    border-radius: var(--dna-ws-radius-lg);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.dna-maint-alert-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.dna-maint-alert-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.dna-alert-critical {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--dna-ws-red);
+    border: 1px solid var(--dna-ws-red);
+}
+
+.dna-alert-warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: var(--dna-ws-amber);
+    border: 1px solid var(--dna-ws-amber);
+}
+
+.dna-maint-alert-info {
+    flex: 1;
+}
+
+.dna-maint-alert-car {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #FFFFFF;
+}
+
+.dna-maint-alert-service {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dna-ws-cyan);
+    margin-top: 2px;
+}
+
+.dna-maint-alert-due {
+    font-size: 11.5px;
+    color: var(--dna-ws-red);
+    margin-top: 3px;
+    font-weight: 600;
+}
+
+.dna-maint-alert-due.amber {
+    color: var(--dna-ws-amber);
+}
+
+.dna-whatsapp-btn {
+    width: 100%;
+    height: 44px;
+    background: #25D366;
+    border: none;
+    border-radius: var(--dna-ws-radius-md);
+    color: #FFFFFF;
+    font-size: 13.5px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+    transition: transform 0.12s ease;
+}
+
+.dna-whatsapp-btn:active {
+    transform: scale(0.98);
+}
+
+/* 14. UPLOAD DE FOTOS E COMPROVANTES */
+.dna-photo-upload-box {
+    border: 2px dashed rgba(0, 102, 255, 0.35);
+    border-radius: var(--dna-ws-radius-lg);
+    background: rgba(8, 16, 32, 0.6);
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.dna-photo-upload-box:hover {
+    border-color: var(--dna-ws-cyan);
+    background: rgba(8, 16, 32, 0.85);
+}
+
+.dna-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.dna-photo-thumb {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: var(--dna-ws-radius-md);
+    overflow: hidden;
+    border: 1px solid rgba(0, 102, 255, 0.3);
+}
+
+.dna-photo-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dna-photo-remove-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    color: #FFFFFF;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* 15. MODAL DE DISPOSITIVO / MODO WEB */
+.dna-device-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 200;
+}
+
+.dna-device-modal-card {
+    background: linear-gradient(145deg, #091322, #05080D);
+    border: 1px solid rgba(0, 102, 255, 0.35);
+    border-radius: var(--dna-ws-radius-xl);
+    padding: 28px 22px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.dna-device-modal-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--dna-ws-radius-lg);
+    background: rgba(0, 102, 255, 0.2);
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: var(--dna-ws-cyan);
+}
+
+.dna-device-modal-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #FFFFFF;
+    font-family: var(--dna-ws-font-display);
+}
+
+.dna-device-modal-text {
+    font-size: 13px;
+    color: var(--dna-ws-text-muted);
+    line-height: 1.5;
+}
+
+.dna-device-modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}

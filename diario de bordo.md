@@ -928,6 +928,64 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
    - Paridade rigorosa 100% mantida entre `cliente.app/` e `public/`.
    - Bateria de testes automatizados com 45 de 45 testes aprovados (100%) no `npm test`.
 
+### 🏭 Ciclo 49 — Reestruturação Mobile-First Completa da Oficina / Auto Center DNA AUTO
+**Data:** 24/09/2026
+
+**Demandas Atendidas e Implementações Realizadas:**
+1. **Conceito Mobile-First por Cards Operacionais:**
+   - Transformação completa da experiência da oficina para uso ágil no smartphone pelo próprio mecânico: *Abriu → Identificou a Função → Clicou no Card → Executou → Voltou*.
+   - Interface limpa, eliminando tabelas complexas e sidebars minúsculas na visualização mobile.
+   - Navegação consistente com botão obrigatório `← Voltar` em todas as sub-telas para retorno imediato ao Dashboard.
+2. **Identidade Visual e Ecossistema Unificado:**
+   - Mesma linguagem visual do App do Cliente: Dark Obsidian (`#05080D`), Azul DNA AUTO (`#0066FF`), Neon Cyan (`#00D4FF`), Emerald Green (`#10B981`), cards arredondados (`border-radius: 18px`), sombras com profundidade e tipografia de alto contraste (`Outfit` e `Inter`).
+   - Botões e inputs dimensionados para toque com uma mão só (alvos táteis de 48px a 54px).
+3. **Dashboard da Oficina Baseado em Cards de Ação:**
+   - **Resumo Operacional Superior**: Cards com KPIs dinâmicos (Veículos hoje, Em andamento, Aguardando).
+   - **6 Cards Principais em Grid 2x3**:
+     1. `Entrada de Veículos` (🚗 Azul)
+     2. `Lançar Serviços` (🔧 Verde Esmeralda)
+     3. `Clientes` (👤 Roxo/Índigo)
+     4. `Notas Fiscais` (📄 Âmbar/Laranja)
+     5. `Enviar Fotos` (📷 Vermelho/Rosa)
+     6. `Buscar Veículos` (🔍 Ciano)
+   - **Cards Adicionais Individuais Roláveis (Sem agrupamentos em "Outros Serviços")**:
+     - `Manutenção dos Veículos` (🛠️ com badge de alertas)
+     - `Avisos de Manutenção` (🔔 com badge de clientes a avisar)
+     - `Relatórios` (📊)
+     - `Financeiro` (💵)
+     - `Estoque / Peças` (📦)
+     - `Configurações` (⚙️)
+     - `Suporte` (🎧)
+     - `App do Cliente` (📱 Banner informativo e atalho direto)
+4. **Barra de Navegação Inferior (Bottom Nav):**
+   - 5 atalhos objetivos: `Início`, `Veículos`, `Serviços`, `Clientes` e `Mais`.
+5. **Entrada de Veículos (Sem Câmera / Leitor de Placa):**
+   - Foco exclusivo em: `PLACA → BUSCAR → IDENTIFICAR VEÍCULO → CONTINUAR`.
+   - Consulta instantânea na base local e conectores; identificação com badge verde de sucesso ou opção direta de cadastrar.
+   - Lista rápida dos últimos veículos atendidos para acesso instantâneo.
+6. **Cadastrar Cliente (Veículo Primeiro):**
+   - Fluxo estruturado: *Placa do Veículo → Prévia dos Dados do Veículo → Dados do Proprietário* (Nome, WhatsApp, E-mail, Senha com visualizador).
+7. **Lançar Serviços & Monitoramento Técnico (Sem Preços):**
+   - **Preços 100% Removidos** da tela de lançamento técnico de serviços, focando puramente em manutenção.
+   - Lista completa com 15 serviços monitorados por KM, tempo ou ambos.
+   - Tela de detalhe do serviço com seleção de intervalo (KM ou Meses), odômetro da última troca e cálculo automático da próxima manutenção prevista.
+8. **Manutenção dos Veículos & Alertas Preventivos:**
+   - Cards com situação visual clara: `EM BREVE` (Amarelo), `ATRASADA` (Vermelho) e `EM DIA` (Verde), com odômetro atual vs recomendada.
+9. **Disparo Automático de Mensagens WhatsApp:**
+   - Template personalizado automático incluindo nome do cliente, modelo, placa, serviço necessário e o nome oficial da oficina.
+   - Botão direto para abertura do WhatsApp oficial (`wa.me/55...`) e integração nativa com Baileys/Evolution API.
+10. **Registro Fotográfico e Comprovantes de NF:**
+    - Tela dedicada "Enviar Fotos" com descrição obrigatória e contador de caracteres (0/200).
+    - Captura direta via câmera e galeria com miniaturas removíveis e anexo da Nota Fiscal.
+11. **Nota Fiscal da Oficina:**
+    - Fluxo por placa, seleção dos serviços e peças com preços, cálculo automático de totais e emissão de NF-e.
+12. **Modo Web & Responsividade Interativa:**
+    - Detecção inteligente: Abre automaticamente no **Modo Mobile / Cards** em smartphones.
+    - Botão "Modo Web" para alternar para o painel ERP completo de desktop a qualquer momento com persistência no `localStorage`.
+13. **Homologação e Testes Automatizados:**
+    - 45 de 45 testes aprovados (100% de sucesso) no `npm test`.
+    - Sincronização rigorosa mantida entre `oficina.app/` e `public/`.
+
 ---
 
 ## 🏛️ Diretrizes e Convenções Persistentes
