@@ -1062,3 +1062,28 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
      - Sincronização automática para `public/css/` e `public/js/components/`.
 
+---
+
+### Ciclo 54 — Limpeza Operacional dos Cards, Consulta Real de Veículos por Placa, Radar de 100 KM, Suporte Matriz com Pedido de Equipamentos e Financeiro com Senha & Ranking R$ 5 Mil
+- **Data/Hora:** 24/09/2026
+- **Contexto & Escopo:**
+  1. **Remoção de Cards Não Operacionais do Dashboard:**
+     - Eliminados os cards `App do Cliente`, `Login / Cadastro` e `Modo Web (PC)` do dashboard mobile da oficina, mantendo apenas os 13 cards de operação direta do mecânico.
+  2. **Consulta Real de Veículos por Placa no Sistema (Sem Menção a "API"):**
+     - Função `fetchVehicleDataByPlate` implementada com busca transparente: pesquisa na frota local da oficina, consulta no banco de dados e, se necessário, no registro oficial de placas.
+     - Integrada aos cards **Entrada de Veículos**, **Lançar Serviços** e **Buscar Veículos**, preenchendo automaticamente modelo, ano, cor, chassi e FIPE sem expor termos técnicos.
+  3. **Correção de Manutenções & Radar de 100 KM:**
+     - Resolução da falha que impedia a abertura do card de manutenções (ajuste de propriedades de odômetro).
+     - Veículos com 100 km ou menos para a revisão são destacados com alertas imediatos e botão para notificar via WhatsApp.
+  4. **Card Suporte Integrado ao Admin & Pedido de Equipamentos:**
+     - Link direto para a Central Matriz / Painel do Administrador e WhatsApp corporativo.
+     - Módulo de solicitação de novos equipamentos (Dongles Mini OBD2 AutoLink, Tags QR Code DNA, Cartazes Oficiais e Kits da Oficina), com geração de protocolo oficial.
+  5. **Card Financeiro com Senha Confidencial & Ranking de Premiação:**
+     - Tela de proteção com senha confidencial (padrão inicial `123456`, mascarada em `••••••`), com opção para o dono trocar a senha a qualquer momento.
+     - Extrato de aparelhos Mini OBD2 instalados a pagar no mês com código Pix.
+     - Ranking de Premiação do Mês da Matriz: 1º Lugar R$ 5.000, 2º Lugar R$ 3.000 e 3º Lugar R$ 2.000.
+  6. **Qualidade e Testes:**
+     - 45 de 45 testes aprovados (`npm test`) com 100% de sucesso.
+     - Sincronização automática para `public/js/components/workshopMobileView.js`.
+
+

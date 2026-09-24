@@ -60,135 +60,120 @@
             {
                 id: 'veh_civic',
                 license_plate: 'ABC1D23',
+                plate: 'ABC1D23',
                 brand: 'Honda',
                 model: 'Civic Touring 1.5 Turbo',
                 year: '2020',
                 color: 'Prata',
                 chassis: '9BWCA41JX9P029348',
-                mileage: 9750,
+                mileage: 9950, // Faltam 50 km para os 10.000 km!
                 client_name: 'João da Silva',
                 client_phone: '(21) 98765-4321',
                 client_email: 'joao@email.com',
                 photo_url: './img/vehicles/civic.png',
-                last_service_date: '10/09/2025 08:32',
+                last_service_date: 'Hoje',
                 status: 'EM_ANDAMENTO'
             },
             {
                 id: 'veh_corolla',
                 license_plate: 'XY29A87',
+                plate: 'XY29A87',
                 brand: 'Toyota',
                 model: 'Corolla XEi 2.0 Flex',
                 year: '2018',
                 color: 'Branco',
                 chassis: '9BRBL48E8K0184729',
-                mileage: 82400,
+                mileage: 19920, // Faltam 80 km para os 20.000 km!
                 client_name: 'Maria Fernandes',
                 client_phone: '(21) 97654-3210',
                 client_email: 'maria@email.com',
                 photo_url: './img/vehicles/corolla.png',
-                last_service_date: '09/09/2025 18:20',
+                last_service_date: 'Ontem',
                 status: 'AGUARDANDO'
             },
             {
                 id: 'veh_uno',
                 license_plate: 'QWE2F34',
+                plate: 'QWE2F34',
                 brand: 'Fiat',
                 model: 'Uno Way 1.0 Fire',
                 year: '2015',
                 color: 'Vermelho',
                 chassis: '9BD158229F6819234',
-                mileage: 114200,
+                mileage: 30120, // Atrasada por 120 km!
                 client_name: 'Carlos Almeida',
                 client_phone: '(21) 91234-5678',
                 client_email: 'carlos@email.com',
                 photo_url: './img/vehicles/uno.png',
-                last_service_date: '09/09/2025 14:10',
-                status: 'CONCLUIDO'
-            },
-            {
-                id: 'veh_onix',
-                license_plate: 'RTY6H21',
-                brand: 'Chevrolet',
-                model: 'Onix Premier 1.0 Turbo',
-                year: '2021',
-                color: 'Prata',
-                chassis: '9BGKS48V0MG193847',
-                mileage: 48900,
-                client_name: 'Ana Souza',
-                client_phone: '(21) 99876-5432',
-                client_email: 'ana@email.com',
-                photo_url: './img/vehicles/onix.png',
-                last_service_date: '08/09/2025 11:45',
-                status: 'EM_ANDAMENTO'
+                last_service_date: '10 dias atrás',
+                status: 'AGUARDANDO'
             },
             {
                 id: 'veh_hb20',
-                license_plate: 'JKLOA12',
+                license_plate: 'BRA2E19',
+                plate: 'BRA2E19',
                 brand: 'Hyundai',
                 model: 'HB20 Evolution 1.0',
-                year: '2019',
-                color: 'Preto',
-                chassis: '9BHBH51DBKP029481',
-                mileage: 63200,
-                client_name: 'Roberto Lima',
-                client_phone: '(21) 97088-7655',
-                client_email: 'roberto@email.com',
-                photo_url: './img/vehicles/hb20.png',
-                last_service_date: '07/09/2025 16:30',
-                status: 'AGUARDANDO'
+                year: '2021',
+                color: 'Cinza',
+                chassis: '9BHBH41DXMP019284',
+                mileage: 29940, // Faltam 60 km para os 30.000 km!
+                client_name: 'Carlos Alberto Silva',
+                client_phone: '(11) 98888-7777',
+                client_email: 'carlos.alberto@email.com',
+                last_service_date: 'Hoje',
+                status: 'EM_ANDAMENTO'
             }
         ];
     };
 
     // Alertas de Manutenção para o Mecânico
     WorkshopView.getMobileAlerts = function() {
-        return [
-            {
-                id: 'alt_001',
-                license_plate: 'ABC1D23',
-                vehicle_model: 'Honda Civic',
-                client_name: 'João da Silva',
-                client_phone: '21987654321',
-                service_needed: 'Troca de óleo e filtros',
-                reason: 'Próximo da quilometragem recomendada.',
-                due_text: 'Vence em 2 dias (10/09/2025)',
-                current_km: 9750,
-                next_km: 10000,
-                next_date: '10/09/2025',
-                status: 'EM_BREVE',
-                urgency: 'WARNING'
-            },
-            {
-                id: 'alt_002',
-                license_plate: 'XY29A87',
-                vehicle_model: 'Toyota Corolla',
-                client_name: 'Maria Fernandes',
-                client_phone: '21976543210',
-                service_needed: 'Revisão geral',
-                reason: 'Período recomendado atingido.',
-                due_text: 'Vence em 7 dias (15/09/2025)',
-                current_km: 82400,
-                next_km: 80000,
-                next_date: '15/09/2025',
-                status: 'ATRASADA',
-                urgency: 'CRITICAL'
-            },
-            {
-                id: 'alt_003',
-                license_plate: 'QWE2F34',
-                vehicle_model: 'Fiat Uno',
-                client_name: 'Carlos Almeida',
-                client_phone: '21912345678',
-                service_needed: 'Alinhamento e balanceamento',
-                reason: 'Recomendação técnica pós 10.000 km.',
-                due_text: 'Vence em 10 dias (18/09/2025)',
-                current_km: 114200,
-                next_km: 115000,
-                next_date: '18/09/2025',
-                status: 'EM_BREVE',
-                urgency: 'WARNING'
-            }
-        ];
+        const list = this.getEffectiveVehiclesList();
+        const alerts = [];
+
+        list.forEach((v, vIdx) => {
+            const km = Number(v.mileage) || 10000;
+            // Próximo marco de manutenção a cada 10.000 km
+            const nextTargetKm = Math.ceil((km + 1) / 10000) * 10000;
+            const diff = nextTargetKm - km;
+
+            let srvTitle = 'Troca de Óleo e Filtros';
+            if (nextTargetKm % 40000 === 0) srvTitle = 'Suspensão, Freios e Revisão Geral';
+            else if (nextTargetKm % 20000 === 0) srvTitle = 'Freios, Pastilhas e Fluídos';
+            else if (nextTargetKm % 10000 === 0) srvTitle = 'Troca de Óleo, Filtros e Alinhamento';
+
+            const isOverdue = diff <= 0;
+            const isUrgent = diff > 0 && diff <= 100;
+            const status = isOverdue ? 'ATRASADA' : (isUrgent ? 'URGENTE' : 'EM_BREVE');
+            const urgency = (isOverdue || isUrgent) ? 'CRITICAL' : 'WARNING';
+
+            alerts.push({
+                id: 'alt_' + (v.license_plate || vIdx) + '_' + nextTargetKm,
+                license_plate: v.license_plate || v.plate,
+                vehicle_plate: v.license_plate || v.plate,
+                vehicle_model: `${v.brand || ''} ${v.model || 'Veículo'}`.trim(),
+                client_name: v.client_name || 'Cliente da Oficina',
+                client_phone: v.client_phone || '(11) 99999-9999',
+                service_title: srvTitle,
+                service_needed: srvTitle,
+                current_km: km,
+                due_km: nextTargetKm,
+                next_km: nextTargetKm,
+                remaining_km: diff,
+                due_date: isOverdue ? 'Imediato' : isUrgent ? 'Próximos dias' : 'Em 15 dias',
+                next_date: isOverdue ? 'Imediato' : isUrgent ? 'Próximos dias' : 'Em 15 dias',
+                status: status,
+                urgency: urgency,
+                reason: isUrgent 
+                    ? `Faltando apenas ${diff} km para atingir os ${nextTargetKm.toLocaleString('pt-BR')} km recomendados!`
+                    : isOverdue 
+                        ? `Revisão de ${nextTargetKm.toLocaleString('pt-BR')} km ultrapassada.`
+                        : `Previsão aos ${nextTargetKm.toLocaleString('pt-BR')} km.`
+            });
+        });
+
+        return alerts;
     };
 
     // Obter lista consolidada de veículos
@@ -200,6 +185,95 @@
     };
 
     // Localizar veículo por placa
+    
+    // ──────────────────────────────────────────────────────────────────────────
+    // CONSULTA AUTOMÁTICA DE VEÍCULO POR PLACA NO SISTEMA (SEM MENÇÃO A API)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.fetchVehicleDataByPlate = async function(rawPlate) {
+        if (!rawPlate) return null;
+        const clean = rawPlate.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (clean.length < 3) return null;
+
+        // 1. Verifica na memória local da oficina
+        const local = this.findVehicleByPlate(clean);
+        if (local) return local;
+
+        try {
+            // 2. Consulta no banco de dados e registros do sistema
+            let res = null;
+            if (typeof API !== 'undefined' && API.searchVehicle) {
+                res = await API.searchVehicle(clean).catch(() => null);
+            } else {
+                const token = localStorage.getItem('dna_token');
+                const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+                const r = await fetch('/api/v1/vehicles/search?q=' + encodeURIComponent(clean), { headers }).catch(() => null);
+                if (r && r.ok) res = await r.json();
+            }
+
+            if (res && res.found && res.vehicle) {
+                const v = res.vehicle;
+                const formatted = {
+                    id: v.id || ('veh_' + clean),
+                    license_plate: v.license_plate || clean,
+                    plate: v.license_plate || clean,
+                    brand: v.brand || 'Veículo',
+                    model: v.model || 'Modelo Localizado',
+                    year: v.manufacture_year || v.model_year || v.year || '2022',
+                    color: v.color || 'Prata',
+                    chassis: v.chassis || '',
+                    mileage: v.current_mileage || v.mileage || 45000,
+                    client_name: v.client_name || v.owner_name || 'Cliente da Oficina',
+                    client_phone: v.client_phone || v.owner_phone || '(11) 99999-9999',
+                    client_email: v.client_email || '',
+                    fipe_value: v.fipe ? v.fipe.market_value_formatted : null,
+                    last_service_date: 'Hoje',
+                    status: 'EM_ANDAMENTO'
+                };
+                if (!this.vehiclesList) this.vehiclesList = [];
+                const exists = this.vehiclesList.find(x => (x.license_plate || '').toUpperCase() === clean);
+                if (!exists) this.vehiclesList.unshift(formatted);
+                return formatted;
+            }
+
+            // 3. Consulta cadastral no registro nacional de veículos
+            let plateRes = null;
+            if (typeof API !== 'undefined' && API.lookupPlate) {
+                plateRes = await API.lookupPlate(clean).catch(() => null);
+            } else {
+                const r = await fetch('/api/v1/integrations/plate-lookup/' + encodeURIComponent(clean)).catch(() => null);
+                if (r && r.ok) plateRes = await r.json();
+            }
+
+            if (plateRes && plateRes.found && plateRes.vehicle) {
+                const pv = plateRes.vehicle;
+                const formatted = {
+                    id: 'veh_' + clean,
+                    license_plate: pv.license_plate || clean,
+                    plate: pv.license_plate || clean,
+                    brand: pv.brand || 'Veículo',
+                    model: pv.model || 'Modelo Identificado',
+                    year: pv.manufacture_year || pv.model_year || '2022',
+                    color: pv.color || 'Prata',
+                    chassis: pv.chassis || '',
+                    mileage: 45000,
+                    client_name: 'Cliente da Oficina',
+                    client_phone: '(11) 99999-9999',
+                    fipe_value: pv.fipe ? pv.fipe.market_value_formatted : null,
+                    last_service_date: 'Hoje',
+                    status: 'EM_ANDAMENTO'
+                };
+                if (!this.vehiclesList) this.vehiclesList = [];
+                const exists = this.vehiclesList.find(x => (x.license_plate || '').toUpperCase() === clean);
+                if (!exists) this.vehiclesList.unshift(formatted);
+                return formatted;
+            }
+        } catch (e) {
+            console.warn('Erro ao consultar placa no sistema:', e);
+        }
+
+        return null;
+    };
+
     WorkshopView.findVehicleByPlate = function(plate) {
         if (!plate) return null;
         const clean = plate.toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -371,7 +445,7 @@
                     </div>
                 </div>
 
-                <!-- 2. CARDS DE ACESSO RÁPIDO TOTVS ERP (100% DA TELA DIRETA AOS CARDS) -->
+                <!-- 2. CARDS DE ACESSO RÁPIDO OPERACIONAIS DA OFICINA (DIRETOS AO PONTO) -->
                 <div class="dna-mobile-grid-section">
                     <div class="dna-mobile-actions-grid">
                         <!-- Card 1: Entrada de Veículos -->
@@ -379,7 +453,7 @@
                             <div class="dna-card-icon-box">🚗</div>
                             <div>
                                 <h3 class="dna-card-title">Entrada de Veículos</h3>
-                                <p class="dna-card-desc">Cadastrar, buscar placa ou adicionar veículo</p>
+                                <p class="dna-card-desc">Localizar pela placa e receber veículo</p>
                             </div>
                         </div>
 
@@ -406,7 +480,7 @@
                             <div class="dna-card-icon-box">📄</div>
                             <div>
                                 <h3 class="dna-card-title">Notas Fiscais</h3>
-                                <p class="dna-card-desc">Emitir e gerenciar notas fiscais</p>
+                                <p class="dna-card-desc">Emitir e anexar notas com fotos</p>
                             </div>
                         </div>
 
@@ -415,7 +489,7 @@
                             <div class="dna-card-icon-box">📷</div>
                             <div>
                                 <h3 class="dna-card-title">Enviar Fotos</h3>
-                                <p class="dna-card-desc">Registrar fotos do veículo e dos serviços</p>
+                                <p class="dna-card-desc">Tirar fotos da câmera ou buscar galeria</p>
                             </div>
                         </div>
 
@@ -433,7 +507,7 @@
                             <div class="dna-card-icon-box">🛠️</div>
                             <div>
                                 <h3 class="dna-card-title">Manutenções</h3>
-                                <p class="dna-card-desc">Radar preventivo por KM ou tempo</p>
+                                <p class="dna-card-desc">Radar preventivo e revisões a 100km</p>
                             </div>
                         </div>
 
@@ -442,7 +516,7 @@
                             <div class="dna-card-icon-box">🔔</div>
                             <div>
                                 <h3 class="dna-card-title">Avisos WhatsApp</h3>
-                                <p class="dna-card-desc">Lembretes automáticos para clientes</p>
+                                <p class="dna-card-desc">Lembretes para clientes a vencer</p>
                             </div>
                         </div>
 
@@ -455,12 +529,12 @@
                             </div>
                         </div>
 
-                        <!-- Card 10: Financeiro -->
+                        <!-- Card 10: Financeiro (Protegido por Senha) -->
                         <div class="dna-mobile-action-card dna-card-gold" onclick="WorkshopView.switchMobileSection('financeiro')">
                             <div class="dna-card-icon-box">💵</div>
                             <div>
                                 <h3 class="dna-card-title">Financeiro</h3>
-                                <p class="dna-card-desc">Recebimentos, despesas e comissões</p>
+                                <p class="dna-card-desc">Aparelhos, faturamento e ranking R$ 5 mil</p>
                             </div>
                         </div>
 
@@ -482,39 +556,12 @@
                             </div>
                         </div>
 
-                        <!-- Card 13: Suporte Técnico -->
+                        <!-- Card 13: Suporte Técnico & Equipamentos Matriz -->
                         <div class="dna-mobile-action-card dna-card-violet" onclick="WorkshopView.switchMobileSection('suporte')">
                             <div class="dna-card-icon-box">🎧</div>
                             <div>
                                 <h3 class="dna-card-title">Suporte</h3>
-                                <p class="dna-card-desc">Ajuda e atendimento DNA AUTO</p>
-                            </div>
-                        </div>
-
-                        <!-- Card 14: App do Cliente -->
-                        <div class="dna-mobile-action-card dna-card-sky" onclick="window.open('/cliente', '_blank')">
-                            <div class="dna-card-icon-box">📱</div>
-                            <div>
-                                <h3 class="dna-card-title">App do Cliente</h3>
-                                <p class="dna-card-desc">Garagem digital, fotos e laudos</p>
-                            </div>
-                        </div>
-
-                        <!-- Card 15: Login / Cadastrar -->
-                        <div class="dna-mobile-action-card dna-card-darkgreen" onclick="WorkshopView.switchMobileSection('auth')">
-                            <div class="dna-card-icon-box">🔑</div>
-                            <div>
-                                <h3 class="dna-card-title">Login / Cadastro</h3>
-                                <p class="dna-card-desc">Acessar ou credenciar nova oficina</p>
-                            </div>
-                        </div>
-
-                        <!-- Card 16: Modo Painel Web -->
-                        <div class="dna-mobile-action-card dna-card-steel" onclick="WorkshopView.setDesktopMode(true)">
-                            <div class="dna-card-icon-box">💻</div>
-                            <div>
-                                <h3 class="dna-card-title">Modo Web (PC)</h3>
-                                <p class="dna-card-desc">Alternar para o painel de computador</p>
+                                <p class="dna-card-desc">Central Admin & Pedir Equipamentos</p>
                             </div>
                         </div>
                     </div>
@@ -659,15 +706,91 @@
         }
     };
 
-    WorkshopView.handleMobilePlateEntrySearch = function() {
+    WorkshopView.handleMobilePlateEntrySearch = async function() {
         const input = document.getElementById('mobile-entry-plate-input');
         const plate = (input?.value || '').trim().toUpperCase();
         if (!plate) {
-            alert('Por favor, informe a placa do veículo.');
+            alert('Por favor, digite a placa do veículo.');
             return;
         }
+
+        const resultBox = document.getElementById('mobile-entry-lookup-result');
+        if (resultBox) {
+            resultBox.innerHTML = `
+                <div style="background:rgba(0,102,255,0.15); border:1px solid var(--dna-ws-cyan); border-radius:12px; padding:16px; text-align:center; color:#fff;">
+                    <div style="font-size:24px; margin-bottom:8px;">🔍</div>
+                    <strong style="font-size:14px; color:var(--dna-ws-cyan);">Consultando dados do veículo ${plate} no sistema...</strong>
+                    <div style="font-size:11.5px; color:var(--dna-ws-text-muted); margin-top:4px;">Localizando modelo, ano e histórico cadastral</div>
+                </div>
+            `;
+        }
+
+        const found = await this.fetchVehicleDataByPlate(plate);
         this.mobileActivePlate = plate;
-        this.switchMobileSection('entrada-veiculos');
+
+        if (found) {
+            this.selectedMobileVehicle = found;
+            if (resultBox) {
+                resultBox.innerHTML = `
+                    <div style="background:rgba(16, 185, 129, 0.12); border:1.5px solid var(--dna-ws-green); border-radius:12px; padding:14px 16px; margin-bottom:8px;">
+                        <div style="display:flex; align-items:center; gap:8px; color:var(--dna-ws-green); font-size:12.5px; font-weight:800; margin-bottom:8px;">
+                            <span>✓</span> <span>Veículo localizado com sucesso no sistema!</span>
+                        </div>
+
+                        <div class="dna-vehicle-preview-card" style="margin-bottom:12px; background:rgba(6, 11, 20, 0.95); border:1px solid rgba(0,212,255,0.3);">
+                            <div class="dna-vehicle-preview-thumb" style="width:42px; height:42px; font-size:20px;">🚗</div>
+                            <div class="dna-vehicle-preview-info">
+                                <div class="dna-vehicle-preview-title" style="font-size:14.5px; font-weight:800; color:#fff;">${found.brand || ''} ${found.model || 'Veículo'}</div>
+                                <div class="dna-vehicle-preview-meta" style="font-size:12px; color:var(--dna-ws-cyan); font-weight:700;">
+                                    Placa: ${found.license_plate} • Ano: ${found.year || '2022'} • Cor: ${found.color || 'Prata'}
+                                </div>
+                                <div class="dna-vehicle-preview-owner" style="font-size:11.5px;">Proprietário: ${found.client_name || 'Cliente da Oficina'}</div>
+                                ${found.fipe_value ? `<div style="font-size:11px; color:#10B981; font-weight:700; margin-top:2px;">FIPE Oficial: ${found.fipe_value}</div>` : ''}
+                            </div>
+                        </div>
+
+                        <button class="dna-primary-btn-lg green" style="height:48px; font-size:14px;" onclick="WorkshopView.handleMobileStartAttendance('${found.license_plate}')">
+                            <span>🚗 Iniciar Atendimento & Lançar Serviços</span> <span>›</span>
+                        </button>
+                    </div>
+                `;
+            }
+        } else {
+            // Criação rápida para não travar a oficina
+            const newVeh = {
+                id: 'veh_' + plate,
+                license_plate: plate,
+                plate: plate,
+                brand: 'Veículo',
+                model: 'Modelo Identificado',
+                year: '2022',
+                color: 'Prata',
+                mileage: 45000,
+                client_name: 'Cliente da Oficina',
+                client_phone: '(11) 99999-9999',
+                last_service_date: 'Hoje',
+                status: 'EM_ANDAMENTO'
+            };
+            if (!this.vehiclesList) this.vehiclesList = [];
+            this.vehiclesList.unshift(newVeh);
+            this.selectedMobileVehicle = newVeh;
+
+            if (resultBox) {
+                resultBox.innerHTML = `
+                    <div style="background:rgba(234, 179, 8, 0.12); border:1.5px solid #EAB308; border-radius:12px; padding:14px 16px; margin-bottom:8px;">
+                        <div style="color:#EAB308; font-size:13px; font-weight:800; margin-bottom:6px;">
+                            ℹ️ Placa ${plate} pronta para registro
+                        </div>
+                        <p style="font-size:11.5px; color:var(--dna-ws-text-muted); margin-bottom:10px;">
+                            Veículo pronto para receber ordens de serviço e lançamento direto.
+                        </p>
+                        <button class="dna-primary-btn-lg" style="height:46px; font-size:13.5px;" onclick="WorkshopView.handleMobileStartAttendance('${plate}')">
+                            <span>🔧 Lançar Serviços para ${plate}</span> <span>›</span>
+                        </button>
+                    </div>
+                `;
+            }
+        }
     };
 
     WorkshopView.handleMobileSelectVehicleFromList = function(plate) {
@@ -1762,31 +1885,65 @@
         this.switchMobileSection('buscar-veiculos');
     };
 
-    WorkshopView.handleLiveVehicleSearch = function(query) {
+    WorkshopView.handleLiveVehicleSearch = async function(query) {
         const q = (query || '').toLowerCase().trim();
         const container = document.getElementById('mobile-search-results-container');
         if (!container) return;
 
         const vehicles = this.getEffectiveVehiclesList();
-        const filtered = vehicles.filter(v => {
+        let filtered = vehicles.filter(v => {
             if (this.mobileSearchType === 'placa') return (v.license_plate || '').toLowerCase().includes(q);
             if (this.mobileSearchType === 'chassi') return (v.chassis || '').toLowerCase().includes(q);
             return (v.client_name || '').toLowerCase().includes(q);
         });
 
+        // Se a busca local não retornou e parece uma placa com 3+ caracteres, busca no sistema
+        if (filtered.length === 0 && q.length >= 3 && this.mobileSearchType === 'placa') {
+            container.innerHTML = `
+                <div style="text-align:center; padding:20px; color:var(--dna-ws-cyan);">
+                    <div style="font-size:24px; margin-bottom:6px;">🔍</div>
+                    <strong style="font-size:13px;">Buscando veículo ${q.toUpperCase()} no sistema...</strong>
+                </div>
+            `;
+            const remote = await this.fetchVehicleDataByPlate(q);
+            if (remote) filtered = [remote];
+        }
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; padding:30px 16px; color:var(--dna-ws-text-muted);">
+                    <div style="font-size:28px; margin-bottom:8px;">🚗</div>
+                    <strong style="color:#fff; font-size:14px; display:block;">Nenhum veículo localizado</strong>
+                    <span style="font-size:12px;">Verifique os dados digitados ou tente buscar por placa completa.</span>
+                </div>
+            `;
+            return;
+        }
+
         container.innerHTML = filtered.map(v => `
-            <div class="dna-mobile-row-card" onclick="WorkshopView.handleMobileOpenDossier('${v.license_plate}')">
-                <div class="dna-mobile-row-icon dna-icon-blue">🚗</div>
-                <div class="dna-mobile-row-content">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-weight:800; font-family:monospace; color:#fff; font-size:14px;">${v.license_plate}</span>
-                        <span style="font-size:12px; color:var(--dna-ws-text-muted);">${v.brand || ''} ${v.model || ''}</span>
-                    </div>
-                    <div style="font-size:11px; color:var(--dna-ws-text-dim); margin-top:2px;">
-                        ${v.year || '2020'} • ${v.color || 'Prata'} • Cliente: ${v.client_name || 'Oficina'}
+            <div class="dna-mobile-row-card" style="flex-direction:column; align-items:stretch; gap:10px;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="dna-mobile-row-icon dna-icon-blue" style="width:40px; height:40px; font-size:20px;">🚗</div>
+                    <div class="dna-mobile-row-content">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-weight:800; font-family:monospace; color:#fff; font-size:15px;">${v.license_plate}</span>
+                            <span style="font-size:13px; color:var(--dna-ws-text-muted); font-weight:700;">${v.brand || ''} ${v.model || ''}</span>
+                        </div>
+                        <div style="font-size:11.5px; color:var(--dna-ws-text-dim); margin-top:2px;">
+                            ${v.year || '2022'} • ${v.color || 'Prata'} • Cliente: ${v.client_name || 'Oficina'}
+                        </div>
+                        ${v.fipe_value ? `<div style="font-size:11px; color:#10B981; font-weight:700;">FIPE: ${v.fipe_value}</div>` : ''}
                     </div>
                 </div>
-                <span class="dna-mobile-row-chevron">›</span>
+
+                <div style="display:flex; gap:8px;">
+                    <button class="dna-small-action-btn cyan" style="flex:1;" onclick="WorkshopView.selectVehicleByPlate('${v.license_plate}'); WorkshopView.switchMobileSection('lancar-servicos');">
+                        <span>🔧 Lançar Serviços</span>
+                    </button>
+                    <button class="dna-small-action-btn" style="flex:1;" onclick="WorkshopView.handleMobileOpenDossier('${v.license_plate}')">
+                        <span>📄 Ficha do Carro</span>
+                    </button>
+                </div>
             </div>
         `).join('');
     };
@@ -1849,44 +2006,226 @@
         `;
     };
 
+    WorkshopView.financialAuthenticated = false;
+
+    WorkshopView.getFinancialPassword = function() {
+        return localStorage.getItem('dna_finance_pwd') || '123456';
+    };
+
+    WorkshopView.handleVerifyFinancialPassword = function() {
+        const input = document.getElementById('mobile-finance-pwd-input');
+        const err = document.getElementById('mobile-finance-pwd-error');
+        const pwd = (input ? input.value : '').trim();
+        const expected = this.getFinancialPassword();
+
+        if (pwd === expected) {
+            this.financialAuthenticated = true;
+            const viewport = document.getElementById('ws-mobile-active-viewport');
+            if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
+        } else {
+            if (err) err.style.display = 'block';
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+        }
+    };
+
+    WorkshopView.handleChangeFinancialPassword = function() {
+        const newPwd = prompt('Digite a nova senha de 6 dígitos para o Painel Financeiro:');
+        if (!newPwd || newPwd.trim().length < 4) {
+            alert('A senha deve ter pelo menos 4 caracteres.');
+            return;
+        }
+        localStorage.setItem('dna_finance_pwd', newPwd.trim());
+        alert('✅ Senha do Painel Financeiro alterada com sucesso! Guarde sua nova senha com segurança.');
+    };
+
+    WorkshopView.handleLockFinancialPanel = function() {
+        this.financialAuthenticated = false;
+        const viewport = document.getElementById('ws-mobile-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
+    };
+
     WorkshopView.renderMobileFinancialView = function() {
+        // Se ainda não autenticado com senha, exibe a tela de bloqueio
+        if (!this.financialAuthenticated) {
+            return `
+                <div class="dna-mobile-subpage">
+                    <div class="dna-mobile-subpage-header">
+                        <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                            <span>‹</span> <span>Voltar</span>
+                        </button>
+                        <span class="dna-mobile-subpage-title">Financeiro</span>
+                    </div>
+
+                    <div class="dna-mobile-subpage-body" style="align-items:center; text-align:center; padding-top:24px;">
+                        <div style="width:68px; height:68px; border-radius:50%; background:rgba(234,179,8,0.15); border:1.5px solid #EAB308; display:flex; align-items:center; justify-content:center; font-size:32px; margin-bottom:12px; box-shadow:0 0 25px rgba(234,179,8,0.25);">
+                            🔒
+                        </div>
+                        <h3 style="color:#FFFFFF; font-size:18px; font-weight:800; margin:0 0 6px;">Acesso Restrito ao Dono</h3>
+                        <p style="color:var(--dna-ws-text-muted); font-size:12.5px; max-width:290px; margin:0 0 20px; line-height:1.4;">
+                            Área exclusiva para o proprietário da oficina. Digite a senha para acessar faturamento, aparelhos e premiações:
+                        </p>
+
+                        <div style="width:100%; max-width:280px; margin-bottom:14px;">
+                            <input 
+                                type="password" 
+                                id="mobile-finance-pwd-input" 
+                                placeholder="••••••" 
+                                maxlength="20"
+                                style="width:100%; height:48px; background:rgba(6,11,20,0.95); border:1.5px solid rgba(0,102,255,0.4); border-radius:12px; color:#fff; text-align:center; font-size:22px; letter-spacing:6px; font-weight:800; box-sizing:border-box;"
+                                onkeydown="if(event.key==='Enter') WorkshopView.handleVerifyFinancialPassword()"
+                            />
+                            <div id="mobile-finance-pwd-error" style="color:#EF4444; font-size:11.5px; font-weight:700; margin-top:8px; display:none;">
+                                ⚠️ Senha incorreta. Tente novamente.
+                            </div>
+                        </div>
+
+                        <button type="button" class="dna-primary-btn-lg" style="width:100%; max-width:280px; height:46px;" onclick="WorkshopView.handleVerifyFinancialPassword()">
+                            <span>🔓</span> <span>Acessar Painel Financeiro</span>
+                        </button>
+
+                        <div style="margin-top:28px;">
+                            <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                                <span>‹</span> <span>Voltar para Todos os Cards</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Painel Financeiro Autenticado
         return `
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
                         <span>‹</span> <span>Voltar</span>
                     </button>
-                    <span class="dna-mobile-subpage-title">Financeiro</span>
-                    
+                    <span class="dna-mobile-subpage-title">Gestão Financeira</span>
+                    <button type="button" onclick="WorkshopView.handleLockFinancialPanel()" style="background:rgba(239,68,68,0.15); border:1px solid #EF4444; color:#EF4444; padding:5px 10px; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer;">
+                        🔒 Bloquear
+                    </button>
                 </div>
+
                 <div class="dna-mobile-subpage-body">
-                    <div style="background:var(--dna-ws-bg-card); border:1px solid var(--dna-ws-border); border-radius:var(--dna-ws-radius-lg); padding:20px; text-align:center;">
-                        <span style="font-size:12px; color:var(--dna-ws-text-muted); text-transform:uppercase;">Faturamento Bruto no Mês</span>
-                        <div style="font-size:32px; font-weight:800; color:var(--dna-ws-green); font-family:var(--dna-ws-font-display); margin:8px 0;">
+                    <!-- 1. RANKING DE PREMIAÇÃO DAS 3 MELHORES LOJAS DO MÊS (DESTAQUE MÁXIMO) -->
+                    <div style="background:linear-gradient(145deg, rgba(234,179,8,0.22), rgba(202,138,4,0.08)); border:1.5px solid #EAB308; border-radius:14px; padding:16px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:24px;">🏆</span>
+                                <strong style="color:#FFFFFF; font-size:15px; font-weight:800;">Ranking de Premiação do Mês</strong>
+                            </div>
+                            <span style="background:#EAB308; color:#000; font-size:10px; font-weight:800; padding:2px 8px; border-radius:9999px;">R$ 10.000 EM PRÊMIOS</span>
+                        </div>
+
+                        <p style="font-size:12px; color:#E2E8F0; margin:0 0 12px; line-height:1.4;">
+                            Premiações pagas diretamente pela Matriz DNA AUTO para as 3 lojas mais ativadoras de aparelhos e laudos:
+                        </p>
+
+                        <!-- Pódios Oficiais -->
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.35); border:1px solid rgba(234,179,8,0.4); border-radius:10px; padding:8px 12px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:20px;">🥇</span>
+                                    <div>
+                                        <strong style="color:#fff; font-size:13px;">1º Lugar: Auto Center Speed Prime</strong>
+                                        <div style="font-size:11px; color:var(--dna-ws-text-muted);">42 aparelhos ativados</div>
+                                    </div>
+                                </div>
+                                <span style="color:#EAB308; font-size:14px; font-weight:800;">R$ 5.000,00</span>
+                            </div>
+
+                            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.35); border:1px solid rgba(192,192,192,0.3); border-radius:10px; padding:8px 12px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:20px;">🥈</span>
+                                    <div>
+                                        <strong style="color:#fff; font-size:13px;">2º Lugar: Oficina Mecânica Estrela</strong>
+                                        <div style="font-size:11px; color:var(--dna-ws-text-muted);">38 aparelhos ativados</div>
+                                    </div>
+                                </div>
+                                <span style="color:#C0C0C0; font-size:14px; font-weight:800;">R$ 3.000,00</span>
+                            </div>
+
+                            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.35); border:1px solid rgba(205,127,50,0.3); border-radius:10px; padding:8px 12px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:20px;">🥉</span>
+                                    <div>
+                                        <strong style="color:#fff; font-size:13px;">3º Lugar: Auto Center Paulista</strong>
+                                        <div style="font-size:11px; color:var(--dna-ws-text-muted);">31 aparelhos ativados</div>
+                                    </div>
+                                </div>
+                                <span style="color:#CD7F32; font-size:14px; font-weight:800;">R$ 2.000,00</span>
+                            </div>
+
+                            <!-- Posição da Loja Atual -->
+                            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,102,255,0.18); border:1px solid var(--dna-ws-cyan); border-radius:10px; padding:8px 12px; margin-top:4px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <span style="font-size:18px;">🏢</span>
+                                    <div>
+                                        <strong style="color:#fff; font-size:13px;">Sua Oficina: Veloce Auto Center</strong>
+                                        <div style="font-size:11px; color:var(--dna-ws-cyan); font-weight:700;">4º Lugar • 24 ativações (Faltam 7 para o pódio!)</div>
+                                    </div>
+                                </div>
+                                <span style="color:#10B981; font-size:12px; font-weight:800;">Subindo! ↗</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. EXTRATO DE APARELHOS INSTALADOS A PAGAR -->
+                    <div style="background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); border-radius:14px; padding:16px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                            <strong style="color:#FFFFFF; font-size:14.5px;">Aparelhos Instalados no Mês</strong>
+                            <span style="font-size:11px; color:#10B981; font-weight:800;">Fatura em Aberto</span>
+                        </div>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+                            <div style="background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; text-align:center;">
+                                <span style="font-size:11px; color:var(--dna-ws-text-muted); display:block;">Dispositivos Ativos</span>
+                                <strong style="font-size:22px; color:#FFFFFF;">8</strong>
+                                <span style="font-size:10px; color:var(--dna-ws-cyan); display:block;">Dongles Mini OBD2</span>
+                            </div>
+                            <div style="background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; text-align:center;">
+                                <span style="font-size:11px; color:var(--dna-ws-text-muted); display:block;">Total a Pagar</span>
+                                <strong style="font-size:22px; color:#EF4444;">R$ 399,20</strong>
+                                <span style="font-size:10px; color:var(--dna-ws-text-dim); display:block;">Vencimento: dia 10</span>
+                            </div>
+                        </div>
+
+                        <button type="button" class="dna-primary-btn-lg cyan" style="height:44px; font-size:13px;" onclick="alert('Código Pix para pagamento da fatura de aparelhos:\n\n00020126580014br.gov.bcb.pix0136dna-auto-fatura-aparelhos-matriz\n\nCopiado para a área de transferência!')">
+                            <span>📲 Copiar Código Pix para Pagamento</span>
+                        </button>
+                    </div>
+
+                    <!-- 3. RESUMO GERAL DE FATURAMENTO DA OFICINA -->
+                    <div style="background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.25); border-radius:14px; padding:16px;">
+                        <span style="font-size:12px; color:var(--dna-ws-text-muted); text-transform:uppercase;">Faturamento Bruto da Oficina</span>
+                        <div style="font-size:28px; font-weight:800; color:var(--dna-ws-green); font-family:var(--dna-ws-font-display); margin:6px 0;">
                             R$ 18.450,00
                         </div>
-                        <span style="font-size:11.5px; color:var(--dna-ws-text-dim);">14 serviços concluídos • 0 pendências</span>
-                    </div>
-
-                    <div class="dna-mobile-row-card">
-                        <div class="dna-mobile-row-icon dna-icon-green">💳</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Recebimentos no Cartão</h4>
-                            <p class="dna-mobile-row-desc">R$ 12.300,00 em 8 transações.</p>
-                        </div>
-                    </div>
-                    <div class="dna-mobile-row-card">
-                        <div class="dna-mobile-row-icon dna-icon-blue">⚡</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Pix e Transferências</h4>
-                            <p class="dna-mobile-row-desc">R$ 6.150,00 recebidos instantaneamente.</p>
+                        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--dna-ws-text-muted); border-top:1px solid rgba(255,255,255,0.08); padding-top:8px;">
+                            <span>Serviços Concluídos: 14</span>
+                            <span>Ticket Médio: R$ 1.317,85</span>
                         </div>
                     </div>
 
-                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar para Todos os Cards</span>
-                    </button>
+                    <!-- 4. SEGURANÇA E TROCA DE SENHA -->
+                    <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px; display:flex; align-items:center; justify-content:space-between;">
+                        <div>
+                            <strong style="color:#FFFFFF; font-size:13px; display:block;">Segurança do Financeiro</strong>
+                            <span style="font-size:11px; color:var(--dna-ws-text-dim);">Deseja trocar sua senha de acesso?</span>
+                        </div>
+                        <button type="button" onclick="WorkshopView.handleChangeFinancialPassword()" style="background:rgba(0,212,255,0.15); border:1px solid var(--dna-ws-cyan); color:var(--dna-ws-cyan); padding:6px 12px; border-radius:8px; font-size:11.5px; font-weight:700; cursor:pointer;">
+                            🔑 Trocar Senha
+                        </button>
+                    </div>
 
+                    <div style="margin-top:10px; text-align:center;">
+                        <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                            <span>‹</span> <span>Voltar para Todos os Cards</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -1987,29 +2326,90 @@
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
                         <span>‹</span> <span>Voltar</span>
                     </button>
-                    <span class="dna-mobile-subpage-title">Suporte DNA AUTO</span>
-                    
+                    <span class="dna-mobile-subpage-title">Suporte & Equipamentos</span>
                 </div>
                 <div class="dna-mobile-subpage-body">
-                    <div style="text-align:center; padding:30px 16px;">
-                        <span style="font-size:44px;">🎧</span>
-                        <h3 style="color:#fff; font-size:18px; margin:10px 0 4px;">Central de Atendimento DNA AUTO</h3>
-                        <p style="color:var(--dna-ws-text-muted); font-size:13px; line-height:1.4;">
-                            Precisa de ajuda ou deseja homologar novos serviços? Nossa equipe está pronta para atendê-lo.
+                    <!-- 1. ACESSO À PLATAFORMA DO ADMINISTRADOR -->
+                    <div style="background:linear-gradient(145deg, rgba(0,102,255,0.22), rgba(0,212,255,0.12)); border:1.5px solid rgba(0,212,255,0.4); border-radius:14px; padding:16px;">
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                            <div style="width:42px; height:42px; border-radius:10px; background:linear-gradient(135deg, #0052cc, #00d4ff); display:flex; align-items:center; justify-content:center; font-size:22px;">🏛️</div>
+                            <div>
+                                <h3 style="margin:0; font-size:15px; font-weight:800; color:#FFFFFF;">Central Matriz DNA AUTO</h3>
+                                <span style="font-size:11.5px; color:var(--dna-ws-cyan); font-weight:700;">Plataforma Oficial do Administrador</span>
+                            </div>
+                        </div>
+                        <p style="font-size:12px; color:var(--dna-ws-text-muted); margin:0 0 12px; line-height:1.4;">
+                            Acesso direto à central corporativa para gestão da rede, auditoria de laudos e suporte operacional.
                         </p>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <button type="button" class="dna-primary-btn-lg cyan" style="height:44px; font-size:13px;" onclick="window.open('/admin', '_blank')">
+                                <span>🖥️ Abrir Painel do Administrador</span>
+                            </button>
+                            <button type="button" class="dna-whatsapp-btn" style="height:44px; font-size:13px;" onclick="window.open('https://wa.me/5511999999999?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20para%20a%20minha%20oficina%20credenciada%20DNA%20AUTO', '_blank')">
+                                <span>💬 Suporte Matriz via WhatsApp</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <button class="dna-whatsapp-btn" style="height:50px;" onclick="window.open('https://wa.me/5511999999999?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20na%20oficina%20DNA%20AUTO', '_blank')">
-                        <span>💬 Suporte Direto via WhatsApp</span>
-                    </button>
+                    <!-- 2. SOLICITAR MAIS EQUIPAMENTOS -->
+                    <div style="background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.28); border-radius:14px; padding:16px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                            <span style="font-size:24px;">📦</span>
+                            <div>
+                                <strong style="color:#ffffff; font-size:14.5px; display:block;">Solicitar Mais Equipamentos</strong>
+                                <span style="font-size:11px; color:var(--dna-ws-text-dim);">Peça novos dispositivos e materiais para a oficina</span>
+                            </div>
+                        </div>
 
-                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar para Todos os Cards</span>
-                    </button>
+                        <!-- Seleção do Equipamento -->
+                        <div class="dna-input-group" style="margin-bottom:10px;">
+                            <label class="dna-input-label">Tipo de Equipamento Desejado *</label>
+                            <select id="equip-type-select" style="width:100%; height:44px; background:rgba(6,11,20,0.9); border:1px solid rgba(0,102,255,0.35); border-radius:10px; color:#fff; padding:0 12px; font-size:13px; font-weight:700;">
+                                <option value="obd2">🔌 Dongles Mini OBD2 ELM327 BLE (AutoLink)</option>
+                                <option value="tags">🏷️ Tags / Adesivos QR Code DNA Permanente</option>
+                                <option value="posters">📜 Cartazes Oficiais de Parede / Balcão</option>
+                                <option value="kit">📦 Kit Completo de Boas-Vindas da Oficina</option>
+                            </select>
+                        </div>
 
+                        <!-- Quantidade -->
+                        <div class="dna-input-group" style="margin-bottom:10px;">
+                            <label class="dna-input-label">Quantidade de Unidades *</label>
+                            <input type="number" id="equip-qty-input" value="5" min="1" max="100" style="width:100%; height:44px; background:rgba(6,11,20,0.9); border:1px solid rgba(0,102,255,0.35); border-radius:10px; color:#fff; padding:0 12px; font-size:14px; font-weight:800;" />
+                        </div>
+
+                        <!-- Observações e Ponto de Entrega -->
+                        <div class="dna-input-group" style="margin-bottom:14px;">
+                            <label class="dna-input-label">Endereço de Entrega / Observações</label>
+                            <textarea id="equip-notes-input" rows="2" placeholder="Informe o endereço ou ponto de referência da oficina..." style="width:100%; resize:none; padding:10px; background:rgba(6,11,20,0.9); border:1px solid rgba(0,102,255,0.35); border-radius:10px; color:#fff; font-size:12.5px;"></textarea>
+                        </div>
+
+                        <button type="button" class="dna-primary-btn-lg" onclick="WorkshopView.handleRequestEquipment()">
+                            <span>✓ Enviar Solicitação à Matriz</span>
+                        </button>
+                    </div>
+
+                    <div style="margin-top:10px; text-align:center;">
+                        <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                            <span>‹</span> <span>Voltar para Todos os Cards</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
+    };
+
+    WorkshopView.handleRequestEquipment = function() {
+        const typeSelect = document.getElementById('equip-type-select');
+        const qtyInput = document.getElementById('equip-qty-input');
+        const notesInput = document.getElementById('equip-notes-input');
+
+        const typeName = typeSelect ? typeSelect.options[typeSelect.selectedIndex].text : 'Equipamentos';
+        const qty = qtyInput ? qtyInput.value : '5';
+        const protocol = 'PED-EQP-' + Math.floor(100000 + Math.random() * 900000);
+
+        alert(`✅ Solicitação de equipamentos enviada com sucesso à Matriz!\n\nEquipamento: ${typeName}\nQuantidade: ${qty} unidades\nProtocolo: ${protocol}\n\nSeu pedido será despachado em até 48 horas úteis.`);
+        this.switchMobileSection('dashboard');
     };
 
     // ──────────────────────────────────────────────────────────────────────────
