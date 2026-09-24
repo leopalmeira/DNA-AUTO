@@ -1072,3 +1072,324 @@
     gap: 10px;
     width: 100%;
 }
+
+/* 16. LINKS EXCLUSIVOS DA AUTO CENTER & CLARA DISTINÇÃO (APP vs PAINEL WEB) */
+.dna-ws-links-section {
+    margin: 8px 16px 14px;
+    background: linear-gradient(145deg, rgba(13, 24, 44, 0.95), rgba(7, 13, 25, 0.95));
+    border: 1px solid rgba(0, 212, 255, 0.35);
+    border-radius: var(--dna-ws-radius-xl);
+    padding: 18px 16px;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55), 0 0 20px rgba(0, 212, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.dna-ws-links-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 10px;
+}
+
+.dna-ws-links-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dna-ws-links-icon-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(0, 212, 255, 0.15);
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--dna-ws-cyan);
+}
+
+.dna-ws-links-heading {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: var(--dna-ws-font-display);
+}
+
+.dna-ws-links-sub {
+    font-size: 10.5px;
+    color: var(--dna-ws-text-muted);
+}
+
+.dna-ws-dual-links-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+@media (min-width: 600px) {
+    .dna-ws-dual-links-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.dna-ws-link-box {
+    background: rgba(8, 16, 32, 0.85);
+    border: 1px solid rgba(0, 102, 255, 0.28);
+    border-radius: var(--dna-ws-radius-lg);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+
+.dna-ws-link-box:hover {
+    border-color: var(--dna-ws-cyan);
+    box-shadow: 0 4px 18px rgba(0, 102, 255, 0.25);
+}
+
+.dna-ws-link-box.active-mode {
+    border-color: var(--dna-ws-cyan);
+    background: linear-gradient(145deg, rgba(13, 27, 51, 0.95), rgba(7, 16, 32, 0.95));
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.2);
+}
+
+.dna-ws-link-badge-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dna-ws-link-tag {
+    font-size: 9.5px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: var(--dna-ws-radius-pill);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.dna-tag-mobile {
+    background: rgba(0, 212, 255, 0.18);
+    color: var(--dna-ws-cyan);
+    border: 1px solid rgba(0, 212, 255, 0.4);
+}
+
+.dna-tag-web {
+    background: rgba(0, 102, 255, 0.18);
+    color: #60a5fa;
+    border: 1px solid rgba(0, 102, 255, 0.4);
+}
+
+.dna-ws-link-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dna-ws-link-purpose {
+    font-size: 11px;
+    color: var(--dna-ws-text-muted);
+    line-height: 1.35;
+}
+
+.dna-ws-link-url-pill {
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 11px;
+    color: #38bdf8;
+    font-family: monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: all;
+}
+
+.dna-ws-link-btn-row {
+    display: flex;
+    gap: 6px;
+}
+
+.dna-ws-link-action-btn {
+    flex: 1;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+}
+
+.dna-ws-link-action-btn.copy {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #FFFFFF;
+}
+
+.dna-ws-link-action-btn.copy:hover {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: #FFFFFF;
+}
+
+.dna-ws-link-action-btn.open {
+    background: linear-gradient(135deg, var(--dna-ws-blue), var(--dna-ws-cyan));
+    border: none;
+    color: #FFFFFF;
+    box-shadow: 0 2px 10px var(--dna-ws-blue-glow);
+}
+
+.dna-ws-link-action-btn.open:hover {
+    transform: translateY(-1px);
+}
+
+/* 17. TELA ULTRA PROFISSIONAL DE LOGIN & CADASTRO DE AUTO CENTERS */
+.dna-ws-auth-viewport {
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    background: radial-gradient(circle at 50% 15%, #0c1a33 0%, #05080D 70%, #020407 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 16px 40px;
+    box-sizing: border-box;
+    font-family: var(--dna-ws-font-main);
+    color: var(--dna-ws-text-main);
+}
+
+.dna-ws-auth-card {
+    width: 100%;
+    max-width: 440px;
+    background: linear-gradient(145deg, rgba(13, 24, 44, 0.96), rgba(7, 13, 25, 0.98));
+    border: 1px solid rgba(0, 180, 255, 0.35);
+    border-radius: var(--dna-ws-radius-xl);
+    padding: 26px 22px;
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(0, 102, 255, 0.2);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: relative;
+    overflow: hidden;
+}
+
+.dna-ws-auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--dna-ws-blue), var(--dna-ws-cyan), var(--dna-ws-green));
+}
+
+.dna-ws-auth-header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.dna-ws-auth-logo-box {
+    width: 52px;
+    height: 52px;
+    border-radius: var(--dna-ws-radius-md);
+    background: linear-gradient(135deg, var(--dna-ws-blue), var(--dna-ws-cyan));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px var(--dna-ws-blue-glow);
+}
+
+.dna-ws-auth-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #FFFFFF;
+    font-family: var(--dna-ws-font-display);
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+.dna-ws-auth-title span {
+    color: var(--dna-ws-cyan);
+}
+
+.dna-ws-auth-subtitle {
+    font-size: 12px;
+    color: var(--dna-ws-text-muted);
+    line-height: 1.35;
+}
+
+.dna-ws-auth-tabs {
+    display: flex;
+    background: rgba(8, 16, 32, 0.9);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    border-radius: var(--dna-ws-radius-md);
+    padding: 3px;
+    gap: 3px;
+}
+
+.dna-ws-auth-tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px 8px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--dna-ws-text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+}
+
+.dna-ws-auth-tab-btn.active {
+    background: linear-gradient(135deg, var(--dna-ws-blue), #0052cc);
+    color: #FFFFFF;
+    box-shadow: 0 2px 10px var(--dna-ws-blue-glow);
+}
+
+.dna-ws-mode-radio-box {
+    background: rgba(8, 16, 32, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dna-ws-mode-radio-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.dna-ws-mode-radio-desc {
+    font-size: 10.5px;
+    color: var(--dna-ws-text-dim);
+    margin-left: 24px;
+}

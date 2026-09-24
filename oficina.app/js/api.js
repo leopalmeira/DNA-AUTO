@@ -4,7 +4,7 @@
 
 const API = {
     baseUrl: (typeof window !== 'undefined' && window.location.hostname.includes('onrender.com') && !window.location.hostname.startsWith('dna-auto'))
-        ? 'https://dna-auto.onrender.com/api/v1'
+        ? 'https://dna-auto-vua4.onrender.com/api/v1'
         : '/api/v1',
     token: localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token') || null,
     currentDemoUserId: localStorage.getItem('dna_auto_demo_user_id') || 'usr_admin',

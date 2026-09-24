@@ -4,7 +4,7 @@
 > **Plataforma:** DNA AUTO — Identidade e Histórico Digital Permanente de Veículos  
 > **Versão:** 1.3.0 Enterprise  
 > **Repositório GitHub:** [https://github.com/leopalmeira/DNA-AUTO](https://github.com/leopalmeira/DNA-AUTO)  
-> **Deploy de Produção:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/)  
+> **Deploy de Produção:** [https://dna-auto-vua4.onrender.com/](https://dna-auto-vua4.onrender.com/)  
 > **Documento Mestre Detalhado:** Consulte também [DIARIO_DE_BORDO.md](file:///c:/Users/User/Desktop/DNA-AUTO/DIARIO_DE_BORDO.md).
 
 ---
@@ -487,9 +487,9 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   1. **Análise Estrutural e Arquitetural (Unificação vs 2 Apps no Render):**
      - Avaliação técnica demonstrando por que **não** se deve criar 2 serviços separados no Render: o banco de dados SQLite local ficaria isolado em containers diferentes (o cliente nunca encontraria os carros ou códigos cadastrados pela oficina), além de dobrar a dormência de instâncias gratuitas no Render.
   2. **Rotas Limpas e Dedicadas no Sistema Unificado:**
-     - `https://dna-auto.onrender.com/app` (ou `/meucarro`, `/owner`): Direciona imediatamente para o **Aplicativo Mobile do Cliente (PWA)** em tela cheia, sem passar por landing page de vendas.
-     - `https://dna-auto.onrender.com/oficina` (ou `/workshop`, `/erp`): Direciona imediatamente para o **ERP Operacional da Oficina**.
-     - `https://dna-auto.onrender.com/app?code=DNA-XXXX`: Abre o app do cliente já com o modal de ativação acionado e o código do veículo preenchido automaticamente!
+     - `https://dna-auto-vua4.onrender.com/app` (ou `/meucarro`, `/owner`): Direciona imediatamente para o **Aplicativo Mobile do Cliente (PWA)** em tela cheia, sem passar por landing page de vendas.
+     - `https://dna-auto-vua4.onrender.com/oficina` (ou `/workshop`, `/erp`): Direciona imediatamente para o **ERP Operacional da Oficina**.
+     - `https://dna-auto-vua4.onrender.com/app?code=DNA-XXXX`: Abre o app do cliente já com o modal de ativação acionado e o código do veículo preenchido automaticamente!
   3. **QR Code Dinâmico no Balcão da Oficina:**
      - Ao gerar o código na oficina, o modal exibe imediatamente um **QR Code de Alta Resolução** apontando para a URL direta `/app?code=DNA-XXXX`. O cliente na recepção só precisa apontar a câmera do celular para a tela para abrir seu app.
   4. **Link Clicável no WhatsApp e Ativação Instantânea:**
@@ -995,4 +995,20 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 4. **Validação de Testes:** O comando `npm test` deve sempre permanecer com 100% dos testes aprovados antes de qualquer publicação.
 5. **Autonomia de Testes do Usuário:** Toda parte de testes em navegadores reais na interface do WhatsApp é realizada diretamente pelo usuário, respeitando estritamente suas diretrizes operacionais.
 
+
+
+---
+
+### Ciclo 50 — Nova Conta Render (`dna-auto-vua4`), Links Exclusivos Auto Center (App vs Web) & Tela de Login/Cadastro Dedicada
+- **Data/Hora:** 24/09/2026
+- **Contexto & Escopo:**
+  1. Atualização de todo o ecossistema de produção para a nova conta e domínio do Render: **`https://dna-auto-vua4.onrender.com/`**.
+  2. Implementação de **links exclusivos com clara distinção** dentro do app da oficina (`oficina.app`), direcionando o dono e a equipe para o ambiente ideal:
+     - 📱 **App da Oficina (Mobile-First & PWA):** `https://dna-auto-vua4.onrender.com/oficina` (Interface de cards rápidos para smartphone de mecânicos no pátio).
+     - 💻 **Painel Web da Oficina (Desktop ERP):** `https://dna-auto-vua4.onrender.com/oficina?mode=web` (Painel corporativo completo em tabelas para balcão e gerência no PC).
+     - 🔑 **Login & Cadastro da Auto Center:** `https://dna-auto-vua4.onrender.com/oficina#login` (Tela profissional para entrada com login, botão de 1 toque com oficina demonstrativa e cadastro completo com CNPJ, WhatsApp, Cidade/UF e seleção de destino).
+  3. Inclusão de seletor rápido no topo do cabeçalho mobile (`[ 📱 App ] [ 💻 Web ] [ 🔑 Login ]`) e banner de retorno no topo da interface desktop.
+  4. Suporte completo a rotas com query params e hash (`?mode=web`, `?mode=mobile`, `#login`, `#cadastro`).
+  5. Discriminação completa e estruturada de todos os links operacionais no `README.md` do GitHub.
+  6. Validação integral com 100% de aprovação na bateria de testes automatizados (`npm test` - 45/45).
 

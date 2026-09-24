@@ -1238,7 +1238,7 @@ router.post('/:id/clients/register-activation', async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', CURRENT_TIMESTAMP)
         `).run(actId, workshopId, clientName, rawPhone, plate, activationCode, vehicle.id, owner.id);
 
-        const baseUrl = process.env.SERVER_URL || 'https://dna-auto.onrender.com';
+        const baseUrl = process.env.SERVER_URL || 'https://dna-auto-vua4.onrender.com';
         const clientAppUrl = `${baseUrl}/cliente?code=${activationCode}`;
 
         res.status(201).json({

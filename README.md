@@ -1,10 +1,10 @@
 # 🧬 DNA AUTO — Identidade & Histórico Digital Permanente de Veículos
 
-[![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto.onrender.com/)
+[![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto-vua4.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
 [![Testes Automatizados](https://img.shields.io/badge/Testes-45%2F45%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
-[![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto.onrender.com/)
+[![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto-vua4.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
@@ -13,17 +13,42 @@
 
 ---
 
-## 🌐 Acesso Rápido ao Sistema & Links Diretos
+## 🌐 Acesso Rápido ao Sistema & Links Oficiais de Produção (Render)
 
-* **📱 Link Direto do App do Cliente:** [https://dna-auto.onrender.com/cliente](https://dna-auto.onrender.com/cliente) ou [https://dna-auto.onrender.com/cliente.app](https://dna-auto.onrender.com/cliente.app) ou [https://cliente-app.onrender.com](https://cliente-app.onrender.com)
-  *(Acesso direto ao App do Cliente sem intermediários: Garagem Digital, Onboarding, Dossiê 360°, Telemetria OBD2, Rede Credenciada e Ativação)*
-* **🏭 Link Direto do Painel da Oficina (ERP):** [https://dna-auto.onrender.com/oficina](https://dna-auto.onrender.com/oficina) ou [https://dna-auto.onrender.com/oficina.app](https://dna-auto.onrender.com/oficina.app) ou [https://oficina-app.onrender.com](https://oficina-app.onrender.com)
-  *(Acesso direto ao ERP da Oficina: Recepção por placa, OS Nível 4, WhatsApp integrado, Emissão de Códigos e Agenda Operacional)*
-* **🏠 Portal Principal / Home:** [https://dna-auto.onrender.com/](https://dna-auto.onrender.com/) *(Portal com links diretos nos cards e na barra de navegação)*
-* **🛡️ Painel Administrativo Matriz:** [https://dna-auto.onrender.com/admin](https://dna-auto.onrender.com/admin)
-* **🚗 Dossiê Demonstrativo (Honda Civic):** [https://dna-auto.onrender.com/#dossier](https://dna-auto.onrender.com/#dossier)
-* **📂 Repositório Oficial:** [https://github.com/leopalmeira/DNA-AUTO](https://github.com/leopalmeira/DNA-AUTO)
-* **📓 Diário de Bordo Completo:** Consulte [DIARIO_DE_BORDO.md](file:///c:/Users/User/Desktop/DNA-AUTO/DIARIO_DE_BORDO.md) para detalhes de engenharia e decisões arquiteturais.
+> 🚀 **Ambiente de Produção Oficial (Render):** [https://dna-auto-vua4.onrender.com/](https://dna-auto-vua4.onrender.com/)
+
+Abaixo estão discriminados todos os links exclusivos do ecossistema DNA AUTO com **clara distinção de destino** para o proprietário da Auto Center, mecânicos e clientes:
+
+### 🏢 1. Área Exclusiva da Oficina & Auto Center (Dois Ambientes Dedicados)
+
+| Ambiente | Perfil de Uso | Link Direto Oficial | Destaques da Interface |
+| :--- | :--- | :--- | :--- |
+| 📱 **App da Oficina (Mobile-First / PWA)** | Mecânicos e funcionários no pátio da oficina (Smartphone) | [**https://dna-auto-vua4.onrender.com/oficina**](https://dna-auto-vua4.onrender.com/oficina) | **Cards grandes e ágeis de 1 toque** (*Abriu → Clicou → Executou*). Câmera/Galeria de fotos, lançamento de serviços sem preços, consulta rápida por placa e sem sidebars ou tabelas. |
+| 💻 **Painel Web da Oficina (Desktop ERP)** | Gerentes, donos e atendentes no balcão (Computador / PC) | [**https://dna-auto-vua4.onrender.com/oficina?mode=web**](https://dna-auto-vua4.onrender.com/oficina?mode=web) | **Interface corporativa completa (estilo TOTVS ERP)** com tabelas analíticas, gestão financeira aprofundada, orçamentos, agenda semanal e WhatsApp Baileys integrado. |
+| 🔑 **Login & Cadastro da Auto Center** | Credenciamento de novas oficinas e acesso autenticado | [**https://dna-auto-vua4.onrender.com/oficina#login**](https://dna-auto-vua4.onrender.com/oficina#login) | Tela moderna e profissional de autenticação. Permite login direto, botão de 1 toque com oficina modelo demonstrativa, e **cadastro completo de novas oficinas** (CNPJ, WhatsApp, Cidade/UF). Direciona automaticamente para o App Mobile ou Painel Web conforme a preferência. |
+
+---
+
+### 🚗 2. Área do Cliente & Proprietário do Veículo
+
+| Ambiente | Finalidade | Link Direto Oficial |
+| :--- | :--- | :--- |
+| 📱 **App do Cliente (Garagem Digital)** | Acompanhamento do histórico, odômetro, fotos e laudos do veículo | [**https://dna-auto-vua4.onrender.com/cliente**](https://dna-auto-vua4.onrender.com/cliente) |
+| 👤 **Portal / Login do Cliente** | Entrada e cadastro de proprietários de veículos | [**https://dna-auto-vua4.onrender.com/login**](https://dna-auto-vua4.onrender.com/login) *(ou /dna-auto-login.html)* |
+| 🚗 **Dossiê 360° Demonstrativo** | Visualização pública do Passaporte Digital do Honda Civic | [**https://dna-auto-vua4.onrender.com/#dossier**](https://dna-auto-vua4.onrender.com/#dossier) |
+
+---
+
+### 🏛️ 3. Portais Institucionais, Matriz & Infraestrutura
+
+| Portal / Serviço | Descrição | Link Direto Oficial |
+| :--- | :--- | :--- |
+| 🏠 **Portal Principal / Home** | Página inicial com direcionamento visual para Dono de Carro e Dono de Oficina | [**https://dna-auto-vua4.onrender.com/**](https://dna-auto-vua4.onrender.com/) |
+| 🛡️ **Painel Administrativo Matriz** | Cockpit de governança multi-tenant, auditoria e gestão da rede | [**https://dna-auto-vua4.onrender.com/admin**](https://dna-auto-vua4.onrender.com/admin) |
+| 📚 **Documentação da API (Swagger)** | Especificação OpenAPI interativa de todos os endpoints RESTful | [**https://dna-auto-vua4.onrender.com/api/docs/**](https://dna-auto-vua4.onrender.com/api/docs/) |
+| ❤️ **Health Check & Diagnóstico** | Monitoramento de disponibilidade e integridade do banco SQLite | [**https://dna-auto-vua4.onrender.com/health**](https://dna-auto-vua4.onrender.com/health) |
+| 📂 **Repositório GitHub** | Código-fonte, testes e histórico de commits | [**https://github.com/leopalmeira/DNA-AUTO**](https://github.com/leopalmeira/DNA-AUTO) |
+| 📓 **Diário de Bordo Completo** | Registro de todos os ciclos de engenharia e decisões arquiteturais | [**DIARIO_DE_BORDO.md**](DIARIO_DE_BORDO.md) |
 
 ---
 
@@ -81,18 +106,18 @@ O DNA AUTO conta com uma arquitetura limpa de páginas públicas, separando rigo
 O DNA AUTO disponibiliza acesso direto e desacoplado tanto através do **serviço web unificado no Render** quanto via **serviços estáticos independentes** definidos no `render.yaml`, garantindo banco de dados 100% sincronizado em tempo real:
 
 * 📱 **App do Cliente / Dono de Carro (PWA):**
-  - **No serviço principal:** `https://dna-auto.onrender.com/cliente` (ou `/cliente.html`, `/app`, `/meucarro`, `/login`, `/dna-auto-login.html`)
+  - **No serviço principal:** `https://dna-auto-vua4.onrender.com/cliente` (ou `/cliente.html`, `/app`, `/meucarro`, `/login`, `/dna-auto-login.html`)
   - **No serviço estático dedicado:** `https://cliente-app.onrender.com` (pasta `./cliente.app`)
   - **Acesso direto e limpo:** Abre diretamente a experiência mobile do smartphone com tela splash oficial (wallpaper superesportivo com faróis neon e botões "Entrar" e "Cadastrar").
   - **Login Cyber-Pill:** Formulário elegante com campos em formato de pílula neon, alternador de senha com ícone de olho, recuperação rápida e sem dependência de botões demo.
   - **Suporte a QR Code & WhatsApp:** Ao acessar com parâmetro `?code=DNA-XXXX`, o app abre com o modal de ativação acionado e o código do veículo já preenchido.
 * 🏢 **ERP Operacional da Oficina:**
-  - **No serviço principal:** `https://dna-auto.onrender.com/oficina` (ou `/oficina.html`, `/painel`, `/workshop`, `/erp`)
+  - **No serviço principal:** `https://dna-auto-vua4.onrender.com/oficina` (ou `/oficina.html`, `/painel`, `/workshop`, `/erp`)
   - **No serviço estático dedicado:** `https://oficina-app.onrender.com` (pasta `./oficina.app`)
   - **Painel em Tela Cheia:** Interface corporativa padrão TOTVS focada em cockpit, recepção rápida, agendamentos, ordens de serviço e live chat do WhatsApp.
   - **QR Code no Balcão:** Renderiza QR Code na tela da oficina para o cliente escanear com a câmera do celular no balcão de atendimento.
-* ⚙️ **Matriz Administrativa:** `https://dna-auto.onrender.com/admin`
-* 🌐 **Portal Institucional / Landing:** `https://dna-auto.onrender.com/`
+* ⚙️ **Matriz Administrativa:** `https://dna-auto-vua4.onrender.com/admin`
+* 🌐 **Portal Institucional / Landing:** `https://dna-auto-vua4.onrender.com/`
 
 ### 2. 🛡️ Painel Administrativo Matriz (`/admin`)
 - **Acesso Restrito:** Perfil `ADMIN` com visualização hierárquica da rede.

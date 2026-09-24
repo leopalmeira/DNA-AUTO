@@ -29,7 +29,7 @@ function getTargetUrl() {
         return `https://${serviceName}.onrender.com`;
     }
     if (process.env.NODE_ENV === 'production') {
-        return 'https://dna-auto.onrender.com';
+        return 'https://dna-auto-vua4.onrender.com';
     }
     return null;
 }
