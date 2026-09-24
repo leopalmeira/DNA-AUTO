@@ -417,8 +417,14 @@
         if (viewport) {
             viewport.innerHTML = this.renderMobileActiveSection();
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (sectionId === 'lancar-servicos') {
+                setTimeout(() => this.initVerticalCardCarousel(), 40);
+            }
         } else {
             this.render();
+            if (sectionId === 'lancar-servicos') {
+                setTimeout(() => this.initVerticalCardCarousel(), 80);
+            }
         }
     };
 
@@ -983,17 +989,34 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
+    // CATÁLOGO DE SERVIÇOS DO CARROSSEL VERTICAL
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 5: LANÇAR SERVIÇOS (LAYOUT PROFISSIONAL, NÍTIDO E SEM CARROSSEL)
+    WorkshopView.launchCarouselServices = [
+        { id: 'srv_diagnostico', icon: '🔎', title: 'Diagnóstico', desc: 'Avaliação completa do veículo' },
+        { id: 'srv_revisao', icon: '🛠️', title: 'Revisão', desc: 'Manutenção preventiva' },
+        { id: 'srv_pneus', icon: '🛞', title: 'Pneus', desc: 'Troca e manutenção' },
+        { id: 'srv_bateria', icon: '🔋', title: 'Bateria', desc: 'Teste e substituição' },
+        { id: 'srv_freios', icon: '⚙️', title: 'Freios', desc: 'Pastilhas e discos' },
+        { id: 'srv_oleo', icon: '🛢️', title: 'Óleo e filtros', desc: 'Troca e manutenção' },
+        { id: 'srv_suspensao', icon: '🚗', title: 'Suspensão', desc: 'Amortecedores e componentes' },
+        { id: 'srv_ar', icon: '❄️', title: 'Ar-Condicionado', desc: 'Higienização e filtro de cabine' },
+        { id: 'srv_correia', icon: '⛓️', title: 'Correia Dentada', desc: 'Kit de distribuição e tensores' },
+        { id: 'srv_fluidos', icon: '🧪', title: 'Fluidos e Arrefecimento', desc: 'Fluido de freio e aditivo radiador' },
+        { id: 'srv_velas', icon: '⚡', title: 'Velas de Ignição', desc: 'Velas e cabos supressores' },
+        { id: 'srv_limpeza', icon: '🚿', title: 'Injeção Eletrônica', desc: 'Limpeza de bicos e descarbonização' },
+        { id: 'srv_filtro_comb', icon: '⛽', title: 'Filtro de Combustível', desc: 'Filtro de linha de combustível' }
+    ];
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // TELA 5: LANÇAR SERVIÇOS (CAMPO DE PLACA SEMPRE LIMPO + CARROSSEL VERTICAL)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileLaunchServicesView = function() {
-        const v = this.selectedMobileVehicle || this.getDefaultMobileVehicles()[0];
-        const services = this.monitoredServicesCatalog;
-        const activeCategory = this.selectedServiceCategory || 'todos';
+        const v = this.selectedMobileVehicle;
+        const recents = this.getEffectiveVehiclesList().slice(0, 4);
+        const services = this.launchCarouselServices;
 
-        const filteredServices = (activeCategory === 'todos') 
-            ? services 
-            : services.filter(s => s.category === activeCategory);
+        // O campo sempre inicia vazio para o profissional digitar, conforme solicitado
+        this.mobileActivePlate = '';
 
         return `
             <div class="dna-mobile-subpage">
@@ -1005,107 +1028,90 @@
                 </div>
 
                 <div class="dna-mobile-subpage-body">
-                    <!-- 1. IDENTIFICAÇÃO E STATUS DO VEÍCULO (BARRA UNIVERSAL DE BUSCA POR PLACA) -->
-                    ${this.renderUniversalVehiclePlateBar()}
-
-                    <!-- 2. CARD COMPLETO: DADOS TÉCNICOS DA ORDEM DE SERVIÇO -->
-                    <div class="dna-service-order-card">
-                        <div class="dna-so-card-header">
-                            <div class="dna-so-badge">
-                                <span>📋</span>
-                                <span>ORDEM TÉCNICA DE SERVIÇO</span>
-                            </div>
-                            <div class="dna-so-status-indicator">
-                                <span class="dna-status-dot pulse"></span>
-                                <span>Veículo no Box</span>
-                            </div>
+                    <!-- 1. CAMPO DE INSERÇÃO DIRETA DA PLACA (SEMPRE VAZIO) -->
+                    <div class="dna-launch-plate-box">
+                        <label class="dna-launch-plate-label">🚗 Digite a Placa do Veículo:</label>
+                        <div class="dna-launch-plate-input-row">
+                            <input 
+                                type="text" 
+                                id="mobile-launch-plate-input" 
+                                class="dna-plate-input" 
+                                placeholder="DIGITE A PLACA (EX: BRA2E19)" 
+                                maxlength="8" 
+                                value="" 
+                                autocomplete="off"
+                                autofocus
+                                oninput="WorkshopView.handleLaunchPlateInput(this.value)"
+                                onkeydown="if(event.key==='Enter') WorkshopView.triggerLaunchPlateSearch()"
+                            />
+                            <button type="button" onclick="WorkshopView.triggerLaunchPlateSearch()" title="Localizar Veículo">
+                                🔍
+                            </button>
                         </div>
 
-                        <!-- Mecânico Responsável & Odômetro Atual -->
-                        <div class="dna-so-grid-fields">
-                            <div class="dna-input-group">
-                                <label class="dna-input-label">Mecânico / Técnico Responsável</label>
-                                <select id="mobile-service-technician" class="dna-input-field dna-so-select">
-                                    <option value="Carlos Mecânico" selected>Carlos Mecânico (Box 1)</option>
-                                    <option value="Lucas Silva">Lucas Silva (Box 2)</option>
-                                    <option value="Marcos Elétrica">Marcos Elétrica (Box 3)</option>
-                                    <option value="Oficina Titular">Oficina Titular</option>
-                                </select>
-                            </div>
-                            <div class="dna-input-group">
-                                <label class="dna-input-label">Odômetro Atual (KM)</label>
-                                <input 
-                                    type="number" 
-                                    id="mobile-service-entry-km" 
-                                    class="dna-input-field dna-so-km-input" 
-                                    value="${v.mileage || 45000}" 
-                                    placeholder="Ex: 45000"
-                                />
-                            </div>
+                        <!-- Atalhos Rápidos com Veículos Recentes -->
+                        <div class="dna-launch-plate-recents">
+                            <span class="recents-label">Recentes:</span>
+                            ${recents.map(r => `
+                                <button type="button" class="recent-plate-chip" onclick="WorkshopView.fillAndSearchPlate('${r.license_plate}')">
+                                    ${r.license_plate}
+                                </button>
+                            `).join('')}
                         </div>
 
-                        <!-- Tipo de Manutenção (Chips Rápidos) -->
-                        <div class="dna-so-type-selector">
-                            <label class="dna-input-label">Tipo de Manutenção</label>
-                            <div class="dna-so-pills">
-                                <button type="button" class="dna-so-pill ${(this.selectedServiceOrderType || 'preventiva') === 'preventiva' ? 'active' : ''}" onclick="WorkshopView.setServiceOrderType(this, 'preventiva')">✓ Preventiva</button>
-                                <button type="button" class="dna-so-pill ${this.selectedServiceOrderType === 'corretiva' ? 'active' : ''}" onclick="WorkshopView.setServiceOrderType(this, 'corretiva')">Corretiva</button>
-                                <button type="button" class="dna-so-pill ${this.selectedServiceOrderType === 'revisao' ? 'active' : ''}" onclick="WorkshopView.setServiceOrderType(this, 'revisao')">Revisão Geral</button>
-                            </div>
-                        </div>
-
-                        <!-- Observações Técnicas -->
-                        <div class="dna-input-group" style="margin-top:6px;">
-                            <label class="dna-input-label">Observações Técnicas & Peças Substituídas</label>
-                            <textarea 
-                                id="mobile-service-notes-input" 
-                                class="dna-input-field" 
-                                rows="2" 
-                                placeholder="Descreva o serviço realizado, marcas das peças trocadas, especificações técnicas..."
-                                style="resize:none; padding:10px; height:58px; font-size:12.5px;"
-                            >${this._tempServiceLaunchNotes || ''}</textarea>
+                        <!-- Card de Identificação Automática do Veículo -->
+                        <div id="mobile-launch-vehicle-badge">
+                            ${v ? this.renderLaunchVehicleBadgeHtml(v) : `
+                                <div class="dna-launch-plate-status waiting">
+                                    <span>👆 Digite os 7 caracteres da placa acima para carregar o veículo</span>
+                                </div>
+                            `}
                         </div>
                     </div>
 
-                    <!-- 3. FOTOS DA PEÇA & NOTA FISCAL (CÂMERA OU GALERIA) -->
-                    ${this.renderDualPhotoUploadSection('service-launch-photos', 'Foto da Peça / Serviço', 'Câmera ou Galeria')}
-
-                    <!-- 4. CATÁLOGO DE SERVIÇOS MODERNO (SEM PESQUISA, SEM CARROSSEL ESCURO) -->
-                    <div class="dna-catalog-section" style="margin-top:14px;">
-                        <div class="dna-catalog-header">
-                            <div>
-                                <h3 class="dna-catalog-title">Catálogo de Serviços</h3>
-                                <p class="dna-catalog-subtitle">Toque no card para abrir e registrar os detalhes técnicos</p>
-                            </div>
-                            <span class="dna-catalog-counter" id="dna-catalog-counter-badge">${filteredServices.length} serviços</span>
-                        </div>
-
-                        <!-- ABAS DE CATEGORIA RÁPIDAS (SEGMENTED TABS) - SEM PESQUISA! -->
-                        <div class="dna-service-category-tabs">
-                            <button type="button" class="dna-category-tab ${activeCategory === 'todos' ? 'active' : ''}" data-cat="todos" onclick="WorkshopView.setServiceCategory('todos')">
-                                Todos (${services.length})
-                            </button>
-                            <button type="button" class="dna-category-tab ${activeCategory === 'oleo_filtros' ? 'active' : ''}" data-cat="oleo_filtros" onclick="WorkshopView.setServiceCategory('oleo_filtros')">
-                                🛢️ Óleo & Filtros
-                            </button>
-                            <button type="button" class="dna-category-tab ${activeCategory === 'freios_suspensao' ? 'active' : ''}" data-cat="freios_suspensao" onclick="WorkshopView.setServiceCategory('freios_suspensao')">
-                                🛑 Freios & Suspensão
-                            </button>
-                            <button type="button" class="dna-category-tab ${activeCategory === 'mecanica' ? 'active' : ''}" data-cat="mecanica" onclick="WorkshopView.setServiceCategory('mecanica')">
-                                ⚙️ Motor & Ignição
-                            </button>
-                            <button type="button" class="dna-category-tab ${activeCategory === 'eletrica_fluidos' ? 'active' : ''}" data-cat="eletrica_fluidos" onclick="WorkshopView.setServiceCategory('eletrica_fluidos')">
-                                ⚡ Elétrica & Fluidos
-                            </button>
-                        </div>
-
-                        <!-- GRID MODERNO DE CARDS DE SERVIÇOS (100% NÍTIDO, SEM MÁSCARAS ESCURAS) -->
-                        <div class="dna-service-cards-grid" id="dna-service-cards-container">
-                            ${filteredServices.map(s => this.renderServiceLaunchCardHtml(s)).join('')}
+                    <!-- 2. TÍTULO DO CARROSSEL -->
+                    <div style="margin-top:14px; margin-bottom:8px; text-align:center;">
+                        <span style="font-size:16px; font-weight:800; color:#FFFFFF; letter-spacing:-0.3px;">
+                            Escolha o serviço
+                        </span>
+                        <div style="font-size:11px; color:#7f8995; margin-top:2px;">
+                            Deslize verticalmente ↕ e toque no serviço selecionado
                         </div>
                     </div>
 
-                    <div style="margin-top:18px; text-align:center;">
+                    <!-- 3. CARROSSEL VERTICAL OFICIAL DE CARDS ESTREITOS -->
+                    <div class="carousel" id="dna-vertical-carousel">
+                        <div class="viewport">
+                            <div class="cards" id="dna-carousel-cards-track">
+                                ${services.map((s, idx) => `
+                                    <div class="card ${idx === 0 ? 'active' : ''}" data-service-id="${s.id}" data-index="${idx}">
+                                        <div class="icon">${s.icon}</div>
+                                        <div class="info">
+                                            <h2>${s.title}</h2>
+                                            <p>${s.desc}</p>
+                                        </div>
+                                        <div class="arrow">›</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="fade top"></div>
+                            <div class="fade bottom"></div>
+                        </div>
+
+                        <div class="indicator" id="dna-carousel-indicator"></div>
+
+                        <div class="controls">
+                            <button type="button" class="control" id="carousel-up-btn" onclick="WorkshopView.moveCarousel(-1)">↑</button>
+                            <button type="button" class="control" id="carousel-down-btn" onclick="WorkshopView.moveCarousel(1)">↓</button>
+                        </div>
+                    </div>
+
+                    <!-- 4. BOTÃO DE CONFIRMAÇÃO DO SERVIÇO SELECIONADO -->
+                    <button class="dna-primary-btn-lg" style="margin-top:14px; height:48px;" id="carousel-action-btn" onclick="WorkshopView.openCurrentCarouselService()">
+                        <span>✓</span> <span id="carousel-action-btn-text">Confirmar Serviço: ${services[0].title}</span>
+                    </button>
+
+                    <div style="margin-top:14px; text-align:center;">
                         <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
                             <span>‹</span> <span>Voltar para Todos os Cards</span>
                         </button>
@@ -1115,106 +1121,309 @@
         `;
     };
 
-    // Renderiza o card individual de serviço com 100% de nitidez e legibilidade
-    WorkshopView.renderServiceLaunchCardHtml = function(s) {
-        const kmBadge = s.defaultKm > 0 
-            ? `<span class="dna-slc-badge km">⏱️ A cada ${s.defaultKm.toLocaleString('pt-BR')} km</span>` 
-            : '';
-        const monthsBadge = s.defaultMonths > 0 
-            ? `<span class="dna-slc-badge tempo">📅 A cada ${s.defaultMonths} meses</span>` 
-            : '';
-
+    // Renderiza o badge de identificação do veículo encontrado
+    WorkshopView.renderLaunchVehicleBadgeHtml = function(v) {
         return `
-            <div class="dna-service-launch-card" onclick="WorkshopView.handleMobileSelectServiceToDetail('${s.id}')">
-                <div class="dna-slc-top">
-                    <div class="dna-slc-icon-wrap" style="background:${s.iconBg || 'rgba(0,102,255,0.18)'};">
-                        <span class="dna-slc-icon">${s.icon}</span>
+            <div class="dna-vehicle-preview-card" style="padding:10px 14px; background:linear-gradient(145deg, rgba(14,24,42,0.95), rgba(8,14,25,0.98)); border:1.5px solid rgba(0,212,255,0.35); border-radius:14px; display:flex; align-items:center; gap:12px; box-shadow:0 4px 16px rgba(0,212,255,0.12);">
+                <div style="width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, #0052cc, #00d4ff); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">🚗</div>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:14px; font-weight:800; color:#FFFFFF; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        ${v.brand || ''} ${v.model || 'Veículo Localizado'}
                     </div>
-                    <div class="dna-slc-header-text">
-                        <div class="dna-slc-title">${s.num}. ${s.title}</div>
-                        <div class="dna-slc-desc">${s.desc || 'Serviço preventivo e corretivo certificado DNA AUTO'}</div>
+                    <div style="font-size:11.5px; color:#00D4FF; font-weight:700;">
+                        Placa: ${v.license_plate} • Odômetro: ${(v.mileage || 10000).toLocaleString('pt-BR')} km
                     </div>
-                    <button type="button" class="dna-slc-arrow-btn" aria-label="Abrir serviço">›</button>
+                    <div style="font-size:11px; color:#94A3B8;">
+                        Cliente: ${v.client_name || 'Cliente da Oficina'}
+                    </div>
                 </div>
-                <div class="dna-slc-footer">
-                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                        ${kmBadge}
-                        ${monthsBadge}
-                    </div>
-                    <span class="dna-slc-cta">Lançar Detalhes ›</span>
-                </div>
+                <span style="font-size:10.5px; font-weight:800; color:#10B981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:3px 8px; border-radius:6px; white-space:nowrap;">
+                    ✓ Identificado
+                </span>
             </div>
         `;
     };
 
-    // Filtro instantâneo por categoria sem recarga
-    WorkshopView.setServiceCategory = function(cat) {
-        this.selectedServiceCategory = cat || 'todos';
-        const tabs = document.querySelectorAll('.dna-category-tab');
-        tabs.forEach(t => {
-            if (t.getAttribute('data-cat') === cat) {
-                t.classList.add('active');
-            } else {
-                t.classList.remove('active');
+    // Preenche a placa e dispara a busca imediata
+    WorkshopView.fillAndSearchPlate = function(plate) {
+        const input = document.getElementById('mobile-launch-plate-input');
+        if (input) {
+            input.value = plate;
+            this.handleLaunchPlateInput(plate);
+        }
+    };
+
+    // Dispara a busca manual do botão ou Enter
+    WorkshopView.triggerLaunchPlateSearch = function() {
+        const input = document.getElementById('mobile-launch-plate-input');
+        const plate = input ? input.value : '';
+        this.handleLaunchPlateInput(plate);
+    };
+
+    // Manipula a digitação da placa com busca automática ao completar 7 dígitos
+    WorkshopView.handleLaunchPlateInput = async function(val) {
+        const clean = (val || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const input = document.getElementById('mobile-launch-plate-input');
+        if (input && input.value !== clean) {
+            input.value = clean;
+        }
+
+        const badgeContainer = document.getElementById('mobile-launch-vehicle-badge');
+        if (clean.length < 7) {
+            if (badgeContainer) {
+                badgeContainer.innerHTML = `
+                    <div class="dna-launch-plate-status waiting">
+                        <span>👆 Digite os 7 caracteres da placa acima para buscar</span>
+                    </div>
+                `;
             }
+            return;
+        }
+
+        if (badgeContainer) {
+            badgeContainer.innerHTML = `
+                <div class="dna-launch-plate-status loading">
+                    <span>🔍 Localizando veículo com a placa ${clean}...</span>
+                </div>
+            `;
+        }
+
+        const vehicle = await this.fetchVehicleDataByPlate(clean);
+        if (vehicle) {
+            this.selectedMobileVehicle = vehicle;
+            this.mobileActivePlate = clean;
+            if (badgeContainer) {
+                badgeContainer.innerHTML = this.renderLaunchVehicleBadgeHtml(vehicle);
+            }
+        } else {
+            // Cria registro dinâmico imediato para a oficina poder lançar o serviço sem travar
+            const newVeh = {
+                id: 'veh_' + clean,
+                license_plate: clean,
+                plate: clean,
+                brand: 'Veículo',
+                model: 'Modelo Identificado',
+                year: '2022',
+                color: 'Prata',
+                mileage: 45000,
+                client_name: 'Cliente da Oficina',
+                client_phone: '(11) 99999-9999',
+                last_service_date: 'Hoje'
+            };
+            this.selectedMobileVehicle = newVeh;
+            this.mobileActivePlate = clean;
+            if (badgeContainer) {
+                badgeContainer.innerHTML = this.renderLaunchVehicleBadgeHtml(newVeh);
+            }
+        }
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // INICIALIZAÇÃO E LÓGICA DO CARROSSEL VERTICAL 3D DE CARDS
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.initVerticalCardCarousel = function() {
+        const carousel = document.getElementById("dna-vertical-carousel");
+        if (!carousel) return;
+
+        const cards = [...carousel.querySelectorAll(".card")];
+        const indicator = document.getElementById("dna-carousel-indicator");
+        if (!cards.length || !indicator) return;
+
+        indicator.innerHTML = '';
+        let current = this._carouselCurrentIndex || 0;
+        if (current >= cards.length) current = 0;
+        this._carouselCurrentIndex = current;
+        let wheelLocked = false;
+
+        // Cria os indicadores verticais
+        cards.forEach((card, index) => {
+            const dot = document.createElement("div");
+            dot.classList.add("dot");
+            dot.addEventListener("click", (e) => {
+                e.stopPropagation();
+                WorkshopView.selectCarouselCard(index);
+            });
+            indicator.appendChild(dot);
         });
 
-        const container = document.getElementById('dna-service-cards-container');
-        if (!container) return;
+        const dots = [...indicator.querySelectorAll(".dot")];
 
-        const filtered = (cat === 'todos') 
-            ? this.monitoredServicesCatalog 
-            : this.monitoredServicesCatalog.filter(s => s.category === cat);
+        // Função de Render com perspectiva, profundidade, scale, blur e opacidade
+        const render = () => {
+            cards.forEach((card, index) => {
+                const distance = index - current;
+                const absDistance = Math.abs(distance);
 
-        container.innerHTML = filtered.map(s => this.renderServiceLaunchCardHtml(s)).join('');
+                // Distância vertical (card height 76px + 12px gap = 88px)
+                const y = distance * 88;
 
-        const counter = document.getElementById('dna-catalog-counter-badge');
-        if (counter) {
-            counter.textContent = `${filtered.length} serviço${filtered.length > 1 ? 's' : ''}`;
-        }
+                // Profundidade
+                const scale = 1 - Math.min(absDistance * 0.10, 0.38);
+
+                // Transparência
+                let opacity = 1 - absDistance * 0.25;
+                opacity = Math.max(opacity, 0.12);
+
+                // Blur
+                const blur = Math.min(absDistance * 1.15, 4);
+
+                // Rotação 3D
+                const rotateX = distance * -3;
+
+                // Cards muito distantes desaparecem
+                if (absDistance > 3) {
+                    opacity = 0;
+                }
+
+                // Transformação centralizada no viewport (calc(50% - 38px + y))
+                card.style.transform = `
+                    translateY(calc(50% - 38px + ${y}px))
+                    scale(${scale})
+                    rotateX(${rotateX}deg)
+                `;
+                card.style.opacity = opacity;
+                card.style.filter = `blur(${blur}px)`;
+                card.style.zIndex = 50 - absDistance;
+
+                if (index === current) {
+                    card.classList.add("active");
+                } else {
+                    card.classList.remove("active");
+                }
+            });
+
+            // Atualiza indicadores
+            dots.forEach((dot, index) => {
+                dot.classList.toggle("active", index === current);
+            });
+
+            // Atualiza botão de ação inferior
+            const activeCard = cards[current];
+            if (activeCard) {
+                const titleEl = activeCard.querySelector(".info h2");
+                const actionBtnText = document.getElementById("carousel-action-btn-text");
+                if (actionBtnText && titleEl) {
+                    actionBtnText.textContent = "Confirmar Serviço: " + titleEl.textContent;
+                }
+            }
+        };
+
+        // Selecionar card por índice
+        WorkshopView.selectCarouselCard = function(index) {
+            if (index < 0) index = cards.length - 1;
+            if (index >= cards.length) index = 0;
+            current = index;
+            WorkshopView._carouselCurrentIndex = current;
+            render();
+        };
+
+        // Movimento relativo
+        WorkshopView.moveCarousel = function(direction) {
+            WorkshopView.selectCarouselCard(current + direction);
+        };
+
+        // Clique nos cards
+        cards.forEach((card, index) => {
+            card.onclick = () => {
+                if (index === current) {
+                    const serviceId = card.getAttribute("data-service-id");
+                    WorkshopView.handleMobileSelectServiceToDetail(serviceId);
+                } else {
+                    WorkshopView.selectCarouselCard(index);
+                }
+            };
+        });
+
+        // Evento Mouse Wheel / Trackpad
+        carousel.onwheel = (event) => {
+            if (wheelLocked) return;
+            if (Math.abs(event.deltaY) < 15) return;
+            wheelLocked = true;
+            if (event.deltaY > 0) {
+                WorkshopView.moveCarousel(1);
+            } else {
+                WorkshopView.moveCarousel(-1);
+            }
+            setTimeout(() => { wheelLocked = false; }, 380);
+        };
+
+        // Evento Touch / Swipe no Mobile
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        carousel.ontouchstart = (event) => {
+            touchStartY = event.touches[0].clientY;
+        };
+
+        carousel.ontouchend = (event) => {
+            touchEndY = event.changedTouches[0].clientY;
+            const difference = touchStartY - touchEndY;
+            if (difference > 40) {
+                WorkshopView.moveCarousel(1);
+            } else if (difference < -40) {
+                WorkshopView.moveCarousel(-1);
+            }
+        };
+
+        render();
     };
 
-    // Seleção de tipo de ordem
-    WorkshopView.setServiceOrderType = function(btn, type) {
-        const parent = btn.parentElement;
-        if (parent) {
-            parent.querySelectorAll('.dna-so-pill').forEach(b => b.classList.remove('active'));
-        }
-        btn.classList.add('active');
-        this.selectedServiceOrderType = type;
+    // Abre o serviço selecionado no carrossel
+    WorkshopView.openCurrentCarouselService = function() {
+        const current = this._carouselCurrentIndex || 0;
+        const s = this.launchCarouselServices[current] || this.launchCarouselServices[0];
+        this.handleMobileSelectServiceToDetail(s.id);
     };
 
-    // Abertura do detalhe do serviço com propagação de odômetro e notas técnicas
+    // Abertura do detalhe do serviço com vinculação garantida do veículo
     WorkshopView.handleMobileSelectServiceToDetail = function(serviceId) {
-        const s = this.monitoredServicesCatalog.find(item => item.id === serviceId) || this.monitoredServicesCatalog[0];
+        // Encontra o serviço no catálogo geral ou de carrossel
+        const s = this.monitoredServicesCatalog.find(item => item.id === serviceId) || 
+                  this.launchCarouselServices.find(item => item.id === serviceId) || 
+                  this.monitoredServicesCatalog[0];
         this.selectedMobileService = s;
 
-        // Se o mecânico informou um odômetro de entrada no card, preserva para o cálculo da próxima revisão
-        const entryKmInput = document.getElementById('mobile-service-entry-km');
-        if (entryKmInput && entryKmInput.value && this.selectedMobileVehicle) {
-            const parsedKm = parseInt(entryKmInput.value, 10);
-            if (!isNaN(parsedKm) && parsedKm > 0) {
-                this.selectedMobileVehicle.mileage = parsedKm;
+        // Se o usuário digitou uma placa no campo mas ainda não buscou, vincula de imediato
+        const input = document.getElementById('mobile-launch-plate-input');
+        if (input && input.value) {
+            const typedPlate = input.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (typedPlate.length >= 3) {
+                if (!this.selectedMobileVehicle || this.selectedMobileVehicle.license_plate !== typedPlate) {
+                    this.selectedMobileVehicle = this.findVehicleByPlate(typedPlate) || {
+                        id: 'veh_' + typedPlate,
+                        license_plate: typedPlate,
+                        plate: typedPlate,
+                        brand: 'Veículo',
+                        model: 'Modelo Identificado',
+                        year: '2022',
+                        color: 'Prata',
+                        mileage: 45000,
+                        client_name: 'Cliente da Oficina',
+                        client_phone: '(11) 99999-9999',
+                        last_service_date: 'Hoje'
+                    };
+                }
             }
         }
 
-        // Se o mecânico digitou observações na tela principal, passa para a tela de detalhe
-        const notesInput = document.getElementById('mobile-service-notes-input');
-        if (notesInput && notesInput.value) {
-            this._tempServiceLaunchNotes = notesInput.value;
+        // Se nenhum veículo foi digitado ainda, define o padrão de demonstração para a tela não falhar
+        if (!this.selectedMobileVehicle) {
+            this.selectedMobileVehicle = this.getDefaultMobileVehicles()[0];
         }
 
         this.switchMobileSection('detalhe-servico');
     };
 
-    // Stubs para compatibilidade com eventuais chamadas legadas
-    WorkshopView.handleWheelStep = function() {};
-    WorkshopView._initWheelAfterRender = function() {};
+    // Stubs de compatibilidade
+    WorkshopView.handleWheelStep = function(delta) { this.moveCarousel(delta); };
+    WorkshopView._initWheelAfterRender = function() { this.initVerticalCardCarousel(); };
     WorkshopView._updateWheelActiveItem = function() {};
     WorkshopView.handleWheelSelectService = function(id) { this.handleMobileSelectServiceToDetail(id); };
-    WorkshopView.handleWheelConfirmSelection = function() {};
+    WorkshopView.handleWheelConfirmSelection = function() { this.openCurrentCarouselService(); };
     WorkshopView.handleWheelFilterServices = function() {};
     WorkshopView.handleMobileFilterServicesList = function() {};
+    WorkshopView.setServiceCategory = function() {};
+    WorkshopView.setServiceOrderType = function() {};
 
     // ──────────────────────────────────────────────────────────────────────────
     // TELA 6: DETALHE DO SERVIÇO (EX: TROCA DE ÓLEO E FILTROS)

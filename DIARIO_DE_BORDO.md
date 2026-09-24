@@ -1137,3 +1137,29 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
      - Sincronização automática para `public/css/` e `public/js/components/`.
 
+---
+
+### Ciclo 57 — Implementação do Carrossel Vertical 3D Oficial com Cards Estreitos, Busca Direta de Placa Sempre Limpa e Integração Completa de Lançamento
+- **Data/Hora:** 24/09/2026
+- **Contexto & Escopo:**
+  1. **Fluxo Descomplicado e Direto de Entrada de Placa:**
+     - O profissional não precisa mais navegar por blocos de O.S. poluídos: a tela abre diretamente com o campo de placa **sempre vazio (`value=""`)**, pronto para digitação instantânea.
+     - Campo com contraste de alta legibilidade (fundo branco, letras pretas em negrito e placeholder cinza discreto).
+     - Busca automática disparada ao atingir 7 caracteres (placa Mercosul ou cinza), com consulta instantânea ao banco local / API Placas e geração imediata do badge do veículo com modelo, odômetro e proprietário.
+  2. **Carrossel Vertical 3D de Cards Estreitos (Código Oficial do Usuário):**
+     - Integrado exatamente o CSS e JS fornecidos pelo usuário, adaptado de forma ergonômica para cards compactos/estreitos na altura (`height: 76px`, mobile `72px`) e normais na largura (100% da viewport), garantindo legibilidade perfeita dos textos.
+     - Física 3D completa com perspectiva (`perspective: 1000px`), profundidade (`scale`), opacidade progressiva, desfoque gradual (`blur`) e rotação suave no eixo X (`rotateX`).
+     - Card ativo com destaque em borda azul ciano `#2388ff`, aura luminosa expansiva (`box-shadow`) e brilho interno discreto (`inset`).
+     - Máscaras de fade superior e inferior (`.fade.top`, `.fade.bottom`) para transição de bordas realista.
+     - Indicador lateral de pílula vertical dinâmica (`.indicator` com `.dot.active`).
+     - Controles verticais discretos à direita com botões circulares `↑` e `↓`.
+     - Suporte nativo e fluido a gestos de Swipe/Touch no celular, Mouse Wheel / Trackpad no desktop e teclado (Setas Cima / Baixo).
+  3. **Ação Rápida de Confirmação:**
+     - Clique em qualquer card não-ativo rotaciona o carrossel e o centraliza instantaneamente.
+     - Clique no card central ativo ou no botão de confirmação inferior `[ ✓ Confirmar Serviço: {Título} ]` direciona o mecânico para a tela de parametrização e lançamento técnico.
+  4. **Padronização Global de Inputs:**
+     - Mantida a regra mandatória de todos os inputs e caixas de texto com fundo branco e letras pretas (`color: #000000 !important; background-color: #FFFFFF !important;`).
+  5. **Qualidade e Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
+     - Arquivos sincronizados em `public/` e `oficina.app/`.
+
