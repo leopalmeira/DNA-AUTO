@@ -1023,3 +1023,13 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   3. **Corte Total de Telas Laterais:** Eliminação estrita de qualquer sidebar (`.ws-sidebar`, `.sidebar`, menus laterais e faixas desktop) no modo mobile. O aplicativo assume 100% da largura da tela no smartphone de forma limpa e contínua.
   4. **Fluxo de Retorno Intuitivo:** Implementação de botão destacado `‹ Voltar aos Cards` no topo de todas as 15 subpáginas e botão secundário no final de cada tela para permitir retorno imediato sem esforço de rolagem.
   5. **Sincronização & Testes:** Sincronização integral com a pasta `public/` e aprovação de 100% dos 45 testes automatizados (`npm test`).
+
+---
+
+### Ciclo 52 — Layout TOTVS ERP: Tela da Oficina 100% Baseada em Cards de Acesso Rápido
+- **Data/Hora:** 24/09/2026
+- **Contexto & Escopo:**
+  1. **Padronização em Cards de Acesso Rápido (Estilo TOTVS ERP):** Conforme diretriz do usuário, a tela principal da oficina foi 100% estruturada no formato de **Cards de Acesso Rápido** em grade de 2 colunas, eliminando listas secundárias dispersas ou textos redundantes (*Abriu → Identificou pelo Card de Acesso Rápido → Clicou → Executou a Página → Voltou aos Cards*).
+  2. **16 Módulos em Cards Corporativos:** Entrada de Veículos, Lançar Serviços, Clientes, Notas Fiscais, Enviar Fotos, Buscar Veículos, Manutenções (Radar), Avisos WhatsApp, Relatórios, Financeiro, Estoque / Peças, Configurações, Suporte, App do Cliente, Login / Cadastro e Modo Web (PC).
+  3. **Paleta de Cores e Estilo TOTVS:** Criação de gradientes corporativos de alta distinção para todos os 16 cards no `workshop-mobile.css`.
+  4. **Sincronização & Testes:** Sincronizado integralmente para `public/` e aprovado com 100% de sucesso na suíte de 45 testes (`npm test`).

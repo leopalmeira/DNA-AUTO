@@ -370,10 +370,13 @@
         const countPending = stats.waiting || stats.pending_vehicles || 2;
         const alerts = this.getMobileAlerts();
         const pendingAlertsCount = alerts.filter(a => !this.mobileAlertsSent[a.id]).length;
+        const origin = window.location.origin || 'https://dna-auto-vua4.onrender.com';
+        const mobileUrl = origin + '/oficina';
+        const webUrl = origin + '/oficina?mode=web';
 
         return `
             <div style="padding-bottom: 30px;">
-                <!-- 1. CARD RESUMO DO PÁTIO NO TOPO -->
+                <!-- 1. RESUMO OPERACIONAL TOTVS ERP -->
                 <div class="dna-mobile-stats-card">
                     <div class="dna-mobile-stat-col">
                         <span class="dna-mobile-stat-number blue">${countToday}</span>
@@ -389,216 +392,178 @@
                     </div>
                 </div>
 
-                <!-- 2. LINKS EXCLUSIVOS DA OFICINA (APP CELULAR vs PAINEL WEB) -->
-                ${this.renderMobileLinksSection()}
+                <!-- 2. BARRA RÁPIDA DE LINKS EXCLUSIVOS DE PRODUÇÃO -->
+                <div style="padding: 0 16px 8px;">
+                    <div style="background: rgba(13, 24, 44, 0.85); border: 1px solid rgba(0, 102, 255, 0.25); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:16px;">🔗</span>
+                            <div style="font-size:11.5px; color:#ffffff; font-weight:700;">
+                                Links Exclusivos: <span style="color:#00d4ff;">App Celular</span> • <span style="color:#60a5fa;">Painel Web PC</span>
+                            </div>
+                        </div>
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" class="dna-ws-link-action-btn copy" style="height:28px; font-size:10px; padding:0 8px;" onclick="WorkshopView.copyLinkToClipboard('${mobileUrl}', this)">
+                                📋 Copiar App
+                            </button>
+                            <button type="button" class="dna-ws-link-action-btn copy" style="height:28px; font-size:10px; padding:0 8px;" onclick="WorkshopView.copyLinkToClipboard('${webUrl}', this)">
+                                📋 Copiar Web
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-                <!-- 3. TODAS AS FUNÇÕES DA OFICINA ORIENTADAS EM CARDS (SEM BOTÕES EM BAIXO) -->
-                <div class="dna-mobile-list-section" style="padding: 10px 16px;">
-                    <div class="dna-mobile-section-header" style="margin-bottom:12px;">
+                <!-- 3. TELA DA OFICINA 100% BASEADA EM CARDS DE ACESSO RÁPIDO (ESTILO TOTVS ERP) -->
+                <div class="dna-mobile-grid-section">
+                    <div class="dna-mobile-section-header">
                         <span class="dna-mobile-section-label" style="font-size:12px; color:var(--dna-ws-cyan); font-weight:800; letter-spacing:0.8px;">
-                            📱 Funções da Oficina em Cards
+                            ⚡ Cards de Acesso Rápido da Oficina
                         </span>
-                        <span style="font-size:11px; color:var(--dna-ws-text-muted);">Toque no card para abrir</span>
+                        <span style="font-size:11px; color:var(--dna-ws-text-muted);">16 Módulos Operacionais</span>
                     </div>
 
-                    <!-- CARD 1: Entrada de Veículos -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('entrada-veiculos')">
-                        <div class="dna-mobile-row-icon dna-icon-blue">🚗</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Entrada de Veículos</h4>
-                            <p class="dna-mobile-row-desc">Buscar placa no DETRAN, registrar chegada do carro no pátio ou iniciar novo atendimento rápido.</p>
+                    <div class="dna-mobile-actions-grid">
+                        <!-- Card 1: Entrada de Veículos -->
+                        <div class="dna-mobile-action-card dna-card-blue" onclick="WorkshopView.switchMobileSection('entrada-veiculos')">
+                            <div class="dna-card-icon-box">🚗</div>
+                            <div>
+                                <h3 class="dna-card-title">Entrada de Veículos</h3>
+                                <p class="dna-card-desc">Cadastrar, buscar placa ou adicionar veículo</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-badge" style="background:rgba(0,102,255,0.25); color:#60a5fa; border:1px solid rgba(0,102,255,0.5);">Recepção</span>
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 2: Lançar Serviços & Manutenções -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
-                        <div class="dna-mobile-row-icon dna-icon-green">🔧</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Lançar Serviços</h4>
-                            <p class="dna-mobile-row-desc">Adicionar trocas de óleo, filtros, correias e revisões preventivas sem preços direto no histórico do carro.</p>
+                        <!-- Card 2: Lançar Serviços -->
+                        <div class="dna-mobile-action-card dna-card-green" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
+                            <div class="dna-card-icon-box">🔧</div>
+                            <div>
+                                <h3 class="dna-card-title">Lançar Serviços</h3>
+                                <p class="dna-card-desc">Adicionar serviços, peças e observações</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-badge" style="background:rgba(16,185,129,0.25); color:#34d399; border:1px solid rgba(16,185,129,0.5);">Técnico</span>
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 3: Clientes & Proprietários -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('clientes')">
-                        <div class="dna-mobile-row-icon dna-icon-purple">👤</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Clientes</h4>
-                            <p class="dna-mobile-row-desc">Gerenciar carteira de clientes, cadastrar novos proprietários e emitir código de ativação do Passaporte DNA.</p>
+                        <!-- Card 3: Clientes -->
+                        <div class="dna-mobile-action-card dna-card-purple" onclick="WorkshopView.switchMobileSection('clientes')">
+                            <div class="dna-card-icon-box">👤</div>
+                            <div>
+                                <h3 class="dna-card-title">Clientes</h3>
+                                <p class="dna-card-desc">Cadastrar e gerenciar clientes</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-badge" style="background:rgba(139,92,246,0.25); color:#c084fc; border:1px solid rgba(139,92,246,0.5);">Carteira</span>
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 4: Notas Fiscais & Orçamentos -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('nota-fiscal')">
-                        <div class="dna-mobile-row-icon dna-icon-amber">📄</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Notas Fiscais & Orçamentos</h4>
-                            <p class="dna-mobile-row-desc">Emitir notas fiscais detalhadas, orçamentos com peças e serviços e cálculo automático de totais da oficina.</p>
+                        <!-- Card 4: Notas Fiscais -->
+                        <div class="dna-mobile-action-card dna-card-amber" onclick="WorkshopView.switchMobileSection('nota-fiscal')">
+                            <div class="dna-card-icon-box">📄</div>
+                            <div>
+                                <h3 class="dna-card-title">Notas Fiscais</h3>
+                                <p class="dna-card-desc">Emitir e gerenciar notas fiscais</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-badge dna-badge-amber">Emissão</span>
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 5: Enviar Fotos & Laudos -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('enviar-fotos')">
-                        <div class="dna-mobile-row-icon dna-icon-red">📷</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Enviar Fotos</h4>
-                            <p class="dna-mobile-row-desc">Fotografar peças substituídas com câmera ou galeria do celular e anexar comprovantes de notas fiscais.</p>
+                        <!-- Card 5: Enviar Fotos -->
+                        <div class="dna-mobile-action-card dna-card-red" onclick="WorkshopView.switchMobileSection('enviar-fotos')">
+                            <div class="dna-card-icon-box">📷</div>
+                            <div>
+                                <h3 class="dna-card-title">Enviar Fotos</h3>
+                                <p class="dna-card-desc">Registrar fotos do veículo e dos serviços</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-badge" style="background:rgba(239,68,68,0.25); color:#f87171; border:1px solid rgba(239,68,68,0.5);">Laudos</span>
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 6: Buscar Veículos na Frota -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
-                        <div class="dna-mobile-row-icon dna-icon-cyan">🔍</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Buscar Veículos</h4>
-                            <p class="dna-mobile-row-desc">Consultar histórico de manutenções, ficha técnica e odômetro por placa, chassi ou nome do cliente.</p>
+                        <!-- Card 6: Buscar Veículos -->
+                        <div class="dna-mobile-action-card dna-card-cyan" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
+                            <div class="dna-card-icon-box">🔍</div>
+                            <div>
+                                <h3 class="dna-card-title">Buscar Veículos</h3>
+                                <p class="dna-card-desc">Por placa, chassi ou cliente</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-badge" style="background:rgba(0,212,255,0.25); color:#38bdf8; border:1px solid rgba(0,212,255,0.5);">Busca</span>
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 7: Manutenção dos Veículos (Radar Preventivo) -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
-                        <div class="dna-mobile-row-icon dna-icon-amber">🛠️</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Manutenção dos Veículos</h4>
-                            <p class="dna-mobile-row-desc">Radar preventivo: acompanhe quais veículos estão com revisão em dia, em breve ou atrasada por KM ou tempo.</p>
+                        <!-- Card 7: Manutenção dos Veículos -->
+                        <div class="dna-mobile-action-card dna-card-indigo" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
+                            <div class="dna-card-icon-box">🛠️</div>
+                            <div>
+                                <h3 class="dna-card-title">Manutenções</h3>
+                                <p class="dna-card-desc">Radar preventivo por KM ou tempo</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-badge dna-badge-red">3</span>
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 8: Avisos de Manutenção (WhatsApp Automático) -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('avisos-manutencao')">
-                        <div class="dna-mobile-row-icon dna-icon-red">🔔</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Avisos de Manutenção</h4>
-                            <p class="dna-mobile-row-desc">Notificar clientes no momento ideal com mensagens inteligentes e personalizadas enviadas via WhatsApp.</p>
+                        <!-- Card 8: Avisos WhatsApp -->
+                        <div class="dna-mobile-action-card dna-card-emerald" onclick="WorkshopView.switchMobileSection('avisos-manutencao')">
+                            <div class="dna-card-icon-box">🔔</div>
+                            <div>
+                                <h3 class="dna-card-title">Avisos WhatsApp</h3>
+                                <p class="dna-card-desc">Lembretes automáticos para clientes</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-badge dna-badge-amber">${pendingAlertsCount}</span>
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 9: Relatórios Operacionais -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('relatorios')">
-                        <div class="dna-mobile-row-icon dna-icon-blue">📊</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Relatórios</h4>
-                            <p class="dna-mobile-row-desc">Produtividade dos mecânicos, atendimentos realizados, veículos finalizados e volume de serviços da oficina.</p>
+                        <!-- Card 9: Relatórios -->
+                        <div class="dna-mobile-action-card dna-card-navy" onclick="WorkshopView.switchMobileSection('relatorios')">
+                            <div class="dna-card-icon-box">📊</div>
+                            <div>
+                                <h3 class="dna-card-title">Relatórios</h3>
+                                <p class="dna-card-desc">Produtividade, histórico e serviços</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 10: Financeiro & Faturamento -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('financeiro')">
-                        <div class="dna-mobile-row-icon dna-icon-green">💵</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Financeiro</h4>
-                            <p class="dna-mobile-row-desc">Controle de receitas da oficina, despesas operacionais, faturamento mensal e comissões por DNA emitido.</p>
+                        <!-- Card 10: Financeiro -->
+                        <div class="dna-mobile-action-card dna-card-gold" onclick="WorkshopView.switchMobileSection('financeiro')">
+                            <div class="dna-card-icon-box">💵</div>
+                            <div>
+                                <h3 class="dna-card-title">Financeiro</h3>
+                                <p class="dna-card-desc">Recebimentos, despesas e comissões</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 11: Estoque & Peças -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('estoque')">
-                        <div class="dna-mobile-row-icon dna-icon-cyan">📦</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Estoque / Peças</h4>
-                            <p class="dna-mobile-row-desc">Controle de peças de reposição, filtros, óleos automotivos e insumos utilizados nos atendimentos diários.</p>
+                        <!-- Card 11: Estoque de Peças -->
+                        <div class="dna-mobile-action-card dna-card-teal" onclick="WorkshopView.switchMobileSection('estoque')">
+                            <div class="dna-card-icon-box">📦</div>
+                            <div>
+                                <h3 class="dna-card-title">Estoque / Peças</h3>
+                                <p class="dna-card-desc">Controle de peças e materiais usados</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 12: Configurações da Oficina -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('configuracoes')">
-                        <div class="dna-mobile-row-icon dna-icon-purple">⚙️</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Configurações</h4>
-                            <p class="dna-mobile-row-desc">Configurar dados da Auto Center, horário de expediente, telefone oficial do WhatsApp e preferências gerais.</p>
+                        <!-- Card 12: Configurações -->
+                        <div class="dna-mobile-action-card dna-card-slate" onclick="WorkshopView.switchMobileSection('configuracoes')">
+                            <div class="dna-card-icon-box">⚙️</div>
+                            <div>
+                                <h3 class="dna-card-title">Configurações</h3>
+                                <p class="dna-card-desc">Dados da oficina e preferências</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 13: Suporte & Atendimento -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('suporte')">
-                        <div class="dna-mobile-row-icon dna-icon-blue">🎧</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Suporte</h4>
-                            <p class="dna-mobile-row-desc">Ajuda, atendimento técnico e suporte direto da DNA AUTO para a equipe e gestão da oficina.</p>
+                        <!-- Card 13: Suporte Técnico -->
+                        <div class="dna-mobile-action-card dna-card-violet" onclick="WorkshopView.switchMobileSection('suporte')">
+                            <div class="dna-card-icon-box">🎧</div>
+                            <div>
+                                <h3 class="dna-card-title">Suporte</h3>
+                                <p class="dna-card-desc">Ajuda e atendimento DNA AUTO</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 14: App do Cliente -->
-                    <div class="dna-mobile-row-card" onclick="window.open('/cliente', '_blank')">
-                        <div class="dna-mobile-row-icon dna-icon-cyan">📱</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">App do Cliente (Garagem Digital)</h4>
-                            <p class="dna-mobile-row-desc">Visualizar como o dono do carro acompanha o status dos serviços, fotos de peças e o Passaporte DNA.</p>
+                        <!-- Card 14: App do Cliente -->
+                        <div class="dna-mobile-action-card dna-card-sky" onclick="window.open('/cliente', '_blank')">
+                            <div class="dna-card-icon-box">📱</div>
+                            <div>
+                                <h3 class="dna-card-title">App do Cliente</h3>
+                                <p class="dna-card-desc">Garagem digital, fotos e laudos</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-badge" style="background:rgba(0,212,255,0.2); color:var(--dna-ws-cyan);">Abrir ↗</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 15: Login & Cadastro de Auto Center -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.switchMobileSection('auth')">
-                        <div class="dna-mobile-row-icon dna-icon-green">🔑</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Login / Cadastrar Auto Center</h4>
-                            <p class="dna-mobile-row-desc">Acessar outra conta da oficina, alternar de filial ou cadastrar uma nova Auto Center credenciada.</p>
+                        <!-- Card 15: Login / Cadastrar -->
+                        <div class="dna-mobile-action-card dna-card-darkgreen" onclick="WorkshopView.switchMobileSection('auth')">
+                            <div class="dna-card-icon-box">🔑</div>
+                            <div>
+                                <h3 class="dna-card-title">Login / Cadastro</h3>
+                                <p class="dna-card-desc">Acessar ou credenciar nova oficina</p>
+                            </div>
                         </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-badge" style="background:rgba(16,185,129,0.2); color:#10B981;">Conta</span>
-                            <span class="dna-mobile-row-chevron">›</span>
-                        </div>
-                    </div>
 
-                    <!-- CARD 16: Painel Web Desktop (Computador) -->
-                    <div class="dna-mobile-row-card" onclick="WorkshopView.setDesktopMode(true)">
-                        <div class="dna-mobile-row-icon dna-icon-blue">💻</div>
-                        <div class="dna-mobile-row-content">
-                            <h4 class="dna-mobile-row-title">Modo Painel Web (Computador)</h4>
-                            <p class="dna-mobile-row-desc">Alternar para o painel corporativo completo em tela cheia com tabelas detalhadas para computador / balcão.</p>
-                        </div>
-                        <div class="dna-mobile-row-right">
-                            <span class="dna-mobile-row-badge" style="background:rgba(0,102,255,0.2); color:#60a5fa;">Mudar Modo ➔</span>
+                        <!-- Card 16: Modo Painel Web -->
+                        <div class="dna-mobile-action-card dna-card-steel" onclick="WorkshopView.setDesktopMode(true)">
+                            <div class="dna-card-icon-box">💻</div>
+                            <div>
+                                <h3 class="dna-card-title">Modo Web (PC)</h3>
+                                <p class="dna-card-desc">Alternar para o painel de computador</p>
+                            </div>
                         </div>
                     </div>
                 </div>

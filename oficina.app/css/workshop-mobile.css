@@ -1485,3 +1485,57 @@ body.is-workshop-erp:not(.force-desktop-mode) .dna-mobile-shell {
     gap: 10px !important;
     z-index: auto !important;
 }
+
+
+/* ──────────────────────────────────────────────────────────────────────────
+   CORES CORPORATIVAS ADICIONAIS DOS CARDS DE ACESSO RÁPIDO (ESTILO TOTVS ERP)
+   ────────────────────────────────────────────────────────────────────────── */
+.dna-card-indigo {
+    background: linear-gradient(145deg, #3730a3 0%, #4338ca 60%, #6366f1 100%);
+    box-shadow: 0 8px 20px rgba(67, 56, 202, 0.3);
+}
+
+.dna-card-emerald {
+    background: linear-gradient(145deg, #065f46 0%, #059669 60%, #10b981 100%);
+    box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
+}
+
+.dna-card-navy {
+    background: linear-gradient(145deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%);
+    box-shadow: 0 8px 20px rgba(29, 78, 216, 0.3);
+}
+
+.dna-card-gold {
+    background: linear-gradient(145deg, #b45309 0%, #d97706 60%, #f59e0b 100%);
+    box-shadow: 0 8px 20px rgba(217, 119, 6, 0.3);
+}
+
+.dna-card-teal {
+    background: linear-gradient(145deg, #115e59 0%, #0f766e 60%, #14b8a6 100%);
+    box-shadow: 0 8px 20px rgba(15, 118, 110, 0.3);
+}
+
+.dna-card-slate {
+    background: linear-gradient(145deg, #334155 0%, #475569 60%, #64748b 100%);
+    box-shadow: 0 8px 20px rgba(71, 85, 105, 0.3);
+}
+
+.dna-card-violet {
+    background: linear-gradient(145deg, #581c87 0%, #7e22ce 60%, #a855f7 100%);
+    box-shadow: 0 8px 20px rgba(126, 34, 206, 0.3);
+}
+
+.dna-card-sky {
+    background: linear-gradient(145deg, #0369a1 0%, #0284c7 60%, #38bdf8 100%);
+    box-shadow: 0 8px 20px rgba(2, 132, 199, 0.3);
+}
+
+.dna-card-darkgreen {
+    background: linear-gradient(145deg, #14532d 0%, #166534 60%, #15803d 100%);
+    box-shadow: 0 8px 20px rgba(22, 101, 52, 0.3);
+}
+
+.dna-card-steel {
+    background: linear-gradient(145deg, #1e293b 0%, #334155 60%, #475569 100%);
+    box-shadow: 0 8px 20px rgba(30, 41, 59, 0.3);
+}
