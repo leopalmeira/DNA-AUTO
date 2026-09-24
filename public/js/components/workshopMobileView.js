@@ -37,21 +37,21 @@
 
     // Catálogo Oficial de Serviços para Monitoramento (Sem Preços!)
     WorkshopView.monitoredServicesCatalog = [
-        { id: 'srv_oleo', num: 1, title: 'Troca de Óleo e Filtros', defaultKm: 10000, defaultMonths: 6, mode: 'ambos', icon: '🛢️' },
-        { id: 'srv_alinhamento', num: 2, title: 'Alinhamento e Balanceamento', defaultKm: 10000, defaultMonths: 6, mode: 'km', icon: '⚙️' },
-        { id: 'srv_freios', num: 3, title: 'Freios (Pastilhas e Discos)', defaultKm: 20000, defaultMonths: 12, mode: 'km', icon: '🛑' },
-        { id: 'srv_ar', num: 4, title: 'Ar-Condicionado e Filtro de Cabine', defaultKm: 10000, defaultMonths: 6, mode: 'tempo', icon: '❄️' },
-        { id: 'srv_revisao', num: 5, title: 'Revisão Geral Preventiva', defaultKm: 10000, defaultMonths: 12, mode: 'ambos', icon: '🔍' },
-        { id: 'srv_suspensao', num: 6, title: 'Suspensão e Amortecedores', defaultKm: 40000, defaultMonths: 24, mode: 'km', icon: '🔩' },
-        { id: 'srv_correia', num: 7, title: 'Correia Dentada e Tensores', defaultKm: 50000, defaultMonths: 36, mode: 'km', icon: '⛓️' },
-        { id: 'srv_bateria', num: 8, title: 'Bateria e Sistema Elétrico', defaultKm: 0, defaultMonths: 24, mode: 'tempo', icon: '🔋' },
-        { id: 'srv_filtro_ar', num: 9, title: 'Filtro de Ar do Motor', defaultKm: 10000, defaultMonths: 12, mode: 'km', icon: '💨' },
-        { id: 'srv_filtro_comb', num: 10, title: 'Filtro de Combustível', defaultKm: 10000, defaultMonths: 12, mode: 'km', icon: '⛽' },
-        { id: 'srv_fluidos', num: 11, title: 'Fluido de Freio e Arrefecimento', defaultKm: 30000, defaultMonths: 24, mode: 'ambos', icon: '🧪' },
-        { id: 'srv_velas', num: 12, title: 'Velas e Cabos de Ignição', defaultKm: 30000, defaultMonths: 24, mode: 'km', icon: '⚡' },
-        { id: 'srv_pneus', num: 13, title: 'Pneus e Rodízio', defaultKm: 10000, defaultMonths: 6, mode: 'km', icon: '🛞' },
-        { id: 'srv_limpeza', num: 14, title: 'Limpeza de Bicos e Injeção', defaultKm: 20000, defaultMonths: 12, mode: 'km', icon: '🚿' },
-        { id: 'srv_outros', num: 15, title: 'Outros Serviços Especializados', defaultKm: 10000, defaultMonths: 12, mode: 'ambos', icon: '🔧' }
+        { id: 'srv_oleo', num: 1, title: 'Troca de Óleo e Filtros', defaultKm: 10000, defaultMonths: 6, mode: 'ambos', icon: '🛢️', category: 'oleo_filtros', iconBg: 'rgba(245, 158, 11, 0.18)', desc: 'Óleo sintético/semissintético e troca de filtro de óleo' },
+        { id: 'srv_alinhamento', num: 2, title: 'Alinhamento e Balanceamento', defaultKm: 10000, defaultMonths: 6, mode: 'km', icon: '⚙️', category: 'freios_suspensao', iconBg: 'rgba(0, 212, 255, 0.18)', desc: 'Geometria 3D, cambagem e balanceamento das 4 rodas' },
+        { id: 'srv_freios', num: 3, title: 'Freios (Pastilhas e Discos)', defaultKm: 20000, defaultMonths: 12, mode: 'km', icon: '🛑', category: 'freios_suspensao', iconBg: 'rgba(239, 68, 68, 0.18)', desc: 'Inspeção de pastilhas, discos, tambores e pinças' },
+        { id: 'srv_ar', num: 4, title: 'Ar-Condicionado e Filtro de Cabine', defaultKm: 10000, defaultMonths: 6, mode: 'tempo', icon: '❄️', category: 'oleo_filtros', iconBg: 'rgba(56, 189, 248, 0.18)', desc: 'Higienização com ozônio e troca do filtro de pólen' },
+        { id: 'srv_revisao', num: 5, title: 'Revisão Geral Preventiva', defaultKm: 10000, defaultMonths: 12, mode: 'ambos', icon: '🔍', category: 'mecanica', iconBg: 'rgba(16, 185, 129, 0.18)', desc: 'Checkup completo de 50 itens de segurança e mecânica' },
+        { id: 'srv_suspensao', num: 6, title: 'Suspensão e Amortecedores', defaultKm: 40000, defaultMonths: 24, mode: 'km', icon: '🔩', category: 'freios_suspensao', iconBg: 'rgba(245, 158, 11, 0.18)', desc: 'Amortecedores, batentes, bieletas, buchas e pivôs' },
+        { id: 'srv_correia', num: 7, title: 'Correia Dentada e Tensores', defaultKm: 50000, defaultMonths: 36, mode: 'km', icon: '⛓️', category: 'mecanica', iconBg: 'rgba(239, 68, 68, 0.18)', desc: 'Kit de distribuição: correia sincronizadora e esticador' },
+        { id: 'srv_bateria', num: 8, title: 'Bateria e Sistema Elétrico', defaultKm: 0, defaultMonths: 24, mode: 'tempo', icon: '🔋', category: 'eletrica_fluidos', iconBg: 'rgba(168, 85, 247, 0.18)', desc: 'Teste de condutância, alternador e carga nominal' },
+        { id: 'srv_filtro_ar', num: 9, title: 'Filtro de Ar do Motor', defaultKm: 10000, defaultMonths: 12, mode: 'km', icon: '💨', category: 'oleo_filtros', iconBg: 'rgba(59, 130, 246, 0.18)', desc: 'Elemento filtrante de admissão de ar para motor' },
+        { id: 'srv_filtro_comb', num: 10, title: 'Filtro de Combustível', defaultKm: 10000, defaultMonths: 12, mode: 'km', icon: '⛽', category: 'oleo_filtros', iconBg: 'rgba(245, 158, 11, 0.18)', desc: 'Filtro de linha de combustível etanol/gasolina' },
+        { id: 'srv_fluidos', num: 11, title: 'Fluido de Freio e Arrefecimento', defaultKm: 30000, defaultMonths: 24, mode: 'ambos', icon: '🧪', category: 'eletrica_fluidos', iconBg: 'rgba(16, 185, 129, 0.18)', desc: 'Aditivo orgânico de radiador e fluido DOT 4/5.1' },
+        { id: 'srv_velas', num: 12, title: 'Velas e Cabos de Ignição', defaultKm: 30000, defaultMonths: 24, mode: 'km', icon: '⚡', category: 'mecanica', iconBg: 'rgba(234, 179, 8, 0.18)', desc: 'Velas de Iridium/Níquel e cabos supressores' },
+        { id: 'srv_pneus', num: 13, title: 'Pneus e Rodízio', defaultKm: 10000, defaultMonths: 6, mode: 'km', icon: '🛞', category: 'freios_suspensao', iconBg: 'rgba(100, 116, 139, 0.22)', desc: 'Rodízio de eixos, calibragem e verificação de TWI' },
+        { id: 'srv_limpeza', num: 14, title: 'Limpeza de Bicos e Injeção', defaultKm: 20000, defaultMonths: 12, mode: 'km', icon: '🚿', category: 'mecanica', iconBg: 'rgba(6, 182, 212, 0.18)', desc: 'Ultrassom de injetores, descarbonização e TBI' },
+        { id: 'srv_outros', num: 15, title: 'Outros Serviços Especializados', defaultKm: 10000, defaultMonths: 12, mode: 'ambos', icon: '🔧', category: 'eletrica_fluidos', iconBg: 'rgba(99, 102, 241, 0.18)', desc: 'Diagnóstico computadorizado, scanner e elétrica geral' }
     ];
 
     // Veículos Padrão de Demonstração para Mecânicos
@@ -417,10 +417,6 @@
         if (viewport) {
             viewport.innerHTML = this.renderMobileActiveSection();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            // Inicializa o carrossel de serviços se estiver na tela correta
-            if (sectionId === 'lancar-servicos') {
-                setTimeout(() => this._initWheelAfterRender(), 80);
-            }
         } else {
             this.render();
         }
@@ -987,11 +983,17 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 5: LANÇAR SERVIÇOS (SEM PREÇOS!)
+    // ──────────────────────────────────────────────────────────────────────────
+    // TELA 5: LANÇAR SERVIÇOS (LAYOUT PROFISSIONAL, NÍTIDO E SEM CARROSSEL)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileLaunchServicesView = function() {
         const v = this.selectedMobileVehicle || this.getDefaultMobileVehicles()[0];
         const services = this.monitoredServicesCatalog;
+        const activeCategory = this.selectedServiceCategory || 'todos';
+
+        const filteredServices = (activeCategory === 'todos') 
+            ? services 
+            : services.filter(s => s.category === activeCategory);
 
         return `
             <div class="dna-mobile-subpage">
@@ -1003,71 +1005,107 @@
                 </div>
 
                 <div class="dna-mobile-subpage-body">
-                    <!-- 1. BARRA UNIVERSAL DE BUSCA POR PLACA -->
+                    <!-- 1. IDENTIFICAÇÃO E STATUS DO VEÍCULO (BARRA UNIVERSAL DE BUSCA POR PLACA) -->
                     ${this.renderUniversalVehiclePlateBar()}
 
-                    <!-- 2. CAMPO DE OBSERVAÇÕES RÁPIDAS DO MECÂNICO -->
-                    <div class="dna-input-group" style="margin-top:6px;">
-                        <label class="dna-input-label">Observações Técnicas do Mecânico</label>
-                        <textarea 
-                            id="mobile-service-notes-input" 
-                            class="dna-input-field" 
-                            rows="2" 
-                            placeholder="Descreva o serviço, peças trocadas ou observações importantes..."
-                            style="resize:none; padding:10px; height:60px; font-size:12.5px;"
-                        ></textarea>
-                    </div>
-
-                    <!-- 3. FOTOS DA PEÇA & NOTA FISCAL (DUAS OPÇÕES: CÂMERA & GALERIA) -->
-                    ${this.renderDualPhotoUploadSection('service-launch-photos', 'Foto da Peça / Serviço', 'Câmera ou Galeria')}
-
-                    <!-- 4. SELETOR DE SERVIÇOS ESTILO CARROSSEL / ROLO VERTICAL -->
-                    <div style="margin-top:8px;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                            <span class="dna-mobile-section-label">Selecione o Serviço para Lançar</span>
-                            <span style="font-size:11px; color:var(--dna-ws-cyan); font-weight:700;">Deslize ↕</span>
-                        </div>
-
-                        <!-- Buscador de Serviço -->
-                        <input 
-                            type="text" 
-                            id="mobile-service-search-input" 
-                            placeholder="🔍 Digite para filtrar serviços..." 
-                            oninput="WorkshopView.handleWheelFilterServices(this.value)"
-                            style="width:100%; height:42px; border-radius:10px; padding:0 12px; font-size:13px; box-sizing:border-box; margin-bottom:10px;"
-                        />
-
-                        <!-- ROLO / CARROSSEL VERTICAL DE SERVIÇOS 3D (VISÃO DE ROLO) -->
-                        <div class="dna-service-wheel-wrapper">
-                            <button type="button" class="dna-wheel-nav-btn up" onclick="WorkshopView.handleWheelStep(-1)" title="Serviço Anterior">▲</button>
-                            <button type="button" class="dna-wheel-nav-btn down" onclick="WorkshopView.handleWheelStep(1)" title="Próximo Serviço">▼</button>
-
-                            <div class="dna-service-wheel-container">
-                                <div class="dna-service-wheel-highlight"></div>
-                                <div class="dna-service-wheel-scroll" id="service-wheel-scroll">
-                                    ${services.map((s, idx) => `
-                                        <div class="dna-service-wheel-item ${idx === 0 ? 'active' : ''}" 
-                                             data-service-id="${s.id}" 
-                                             onclick="WorkshopView.handleWheelSelectService('${s.id}')">
-                                            <div class="wheel-icon">${s.icon}</div>
-                                            <div class="wheel-label">
-                                                <div class="wheel-title">${s.title}</div>
-                                                <div class="wheel-tag">${s.mode === 'km' ? 'Por km' : s.mode === 'tempo' ? 'Por tempo' : 'Por km ou tempo'}</div>
-                                            </div>
-                                            <span class="wheel-chevron">›</span>
-                                        </div>
-                                    `).join('')}
-                                </div>
+                    <!-- 2. CARD COMPLETO: DADOS TÉCNICOS DA ORDEM DE SERVIÇO -->
+                    <div class="dna-service-order-card">
+                        <div class="dna-so-card-header">
+                            <div class="dna-so-badge">
+                                <span>📋</span>
+                                <span>ORDEM TÉCNICA DE SERVIÇO</span>
+                            </div>
+                            <div class="dna-so-status-indicator">
+                                <span class="dna-status-dot pulse"></span>
+                                <span>Veículo no Box</span>
                             </div>
                         </div>
 
-                        <!-- Botão de confirmação do serviço selecionado -->
-                        <button class="dna-primary-btn-lg" style="margin-top:12px; height:48px;" id="wheel-confirm-btn" onclick="WorkshopView.handleWheelConfirmSelection()">
-                            <span>✓</span> <span id="wheel-confirm-label">Abrir: ${services[0].title}</span>
-                        </button>
+                        <!-- Mecânico Responsável & Odômetro Atual -->
+                        <div class="dna-so-grid-fields">
+                            <div class="dna-input-group">
+                                <label class="dna-input-label">Mecânico / Técnico Responsável</label>
+                                <select id="mobile-service-technician" class="dna-input-field dna-so-select">
+                                    <option value="Carlos Mecânico" selected>Carlos Mecânico (Box 1)</option>
+                                    <option value="Lucas Silva">Lucas Silva (Box 2)</option>
+                                    <option value="Marcos Elétrica">Marcos Elétrica (Box 3)</option>
+                                    <option value="Oficina Titular">Oficina Titular</option>
+                                </select>
+                            </div>
+                            <div class="dna-input-group">
+                                <label class="dna-input-label">Odômetro Atual (KM)</label>
+                                <input 
+                                    type="number" 
+                                    id="mobile-service-entry-km" 
+                                    class="dna-input-field dna-so-km-input" 
+                                    value="${v.mileage || 45000}" 
+                                    placeholder="Ex: 45000"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Tipo de Manutenção (Chips Rápidos) -->
+                        <div class="dna-so-type-selector">
+                            <label class="dna-input-label">Tipo de Manutenção</label>
+                            <div class="dna-so-pills">
+                                <button type="button" class="dna-so-pill ${(this.selectedServiceOrderType || 'preventiva') === 'preventiva' ? 'active' : ''}" onclick="WorkshopView.setServiceOrderType(this, 'preventiva')">✓ Preventiva</button>
+                                <button type="button" class="dna-so-pill ${this.selectedServiceOrderType === 'corretiva' ? 'active' : ''}" onclick="WorkshopView.setServiceOrderType(this, 'corretiva')">Corretiva</button>
+                                <button type="button" class="dna-so-pill ${this.selectedServiceOrderType === 'revisao' ? 'active' : ''}" onclick="WorkshopView.setServiceOrderType(this, 'revisao')">Revisão Geral</button>
+                            </div>
+                        </div>
+
+                        <!-- Observações Técnicas -->
+                        <div class="dna-input-group" style="margin-top:6px;">
+                            <label class="dna-input-label">Observações Técnicas & Peças Substituídas</label>
+                            <textarea 
+                                id="mobile-service-notes-input" 
+                                class="dna-input-field" 
+                                rows="2" 
+                                placeholder="Descreva o serviço realizado, marcas das peças trocadas, especificações técnicas..."
+                                style="resize:none; padding:10px; height:58px; font-size:12.5px;"
+                            >${this._tempServiceLaunchNotes || ''}</textarea>
+                        </div>
                     </div>
 
-                    <div style="margin-top:14px; text-align:center;">
+                    <!-- 3. FOTOS DA PEÇA & NOTA FISCAL (CÂMERA OU GALERIA) -->
+                    ${this.renderDualPhotoUploadSection('service-launch-photos', 'Foto da Peça / Serviço', 'Câmera ou Galeria')}
+
+                    <!-- 4. CATÁLOGO DE SERVIÇOS MODERNO (SEM PESQUISA, SEM CARROSSEL ESCURO) -->
+                    <div class="dna-catalog-section" style="margin-top:14px;">
+                        <div class="dna-catalog-header">
+                            <div>
+                                <h3 class="dna-catalog-title">Catálogo de Serviços</h3>
+                                <p class="dna-catalog-subtitle">Toque no card para abrir e registrar os detalhes técnicos</p>
+                            </div>
+                            <span class="dna-catalog-counter" id="dna-catalog-counter-badge">${filteredServices.length} serviços</span>
+                        </div>
+
+                        <!-- ABAS DE CATEGORIA RÁPIDAS (SEGMENTED TABS) - SEM PESQUISA! -->
+                        <div class="dna-service-category-tabs">
+                            <button type="button" class="dna-category-tab ${activeCategory === 'todos' ? 'active' : ''}" data-cat="todos" onclick="WorkshopView.setServiceCategory('todos')">
+                                Todos (${services.length})
+                            </button>
+                            <button type="button" class="dna-category-tab ${activeCategory === 'oleo_filtros' ? 'active' : ''}" data-cat="oleo_filtros" onclick="WorkshopView.setServiceCategory('oleo_filtros')">
+                                🛢️ Óleo & Filtros
+                            </button>
+                            <button type="button" class="dna-category-tab ${activeCategory === 'freios_suspensao' ? 'active' : ''}" data-cat="freios_suspensao" onclick="WorkshopView.setServiceCategory('freios_suspensao')">
+                                🛑 Freios & Suspensão
+                            </button>
+                            <button type="button" class="dna-category-tab ${activeCategory === 'mecanica' ? 'active' : ''}" data-cat="mecanica" onclick="WorkshopView.setServiceCategory('mecanica')">
+                                ⚙️ Motor & Ignição
+                            </button>
+                            <button type="button" class="dna-category-tab ${activeCategory === 'eletrica_fluidos' ? 'active' : ''}" data-cat="eletrica_fluidos" onclick="WorkshopView.setServiceCategory('eletrica_fluidos')">
+                                ⚡ Elétrica & Fluidos
+                            </button>
+                        </div>
+
+                        <!-- GRID MODERNO DE CARDS DE SERVIÇOS (100% NÍTIDO, SEM MÁSCARAS ESCURAS) -->
+                        <div class="dna-service-cards-grid" id="dna-service-cards-container">
+                            ${filteredServices.map(s => this.renderServiceLaunchCardHtml(s)).join('')}
+                        </div>
+                    </div>
+
+                    <div style="margin-top:18px; text-align:center;">
                         <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
                             <span>‹</span> <span>Voltar para Todos os Cards</span>
                         </button>
@@ -1077,145 +1115,106 @@
         `;
     };
 
-    // Navegar um passo para cima ou para baixo no rolo
-    WorkshopView.handleWheelStep = function(delta) {
-        const scroller = document.getElementById('service-wheel-scroll');
-        if (!scroller) return;
-        scroller.scrollBy({ top: delta * 68, behavior: 'smooth' });
+    // Renderiza o card individual de serviço com 100% de nitidez e legibilidade
+    WorkshopView.renderServiceLaunchCardHtml = function(s) {
+        const kmBadge = s.defaultKm > 0 
+            ? `<span class="dna-slc-badge km">⏱️ A cada ${s.defaultKm.toLocaleString('pt-BR')} km</span>` 
+            : '';
+        const monthsBadge = s.defaultMonths > 0 
+            ? `<span class="dna-slc-badge tempo">📅 A cada ${s.defaultMonths} meses</span>` 
+            : '';
+
+        return `
+            <div class="dna-service-launch-card" onclick="WorkshopView.handleMobileSelectServiceToDetail('${s.id}')">
+                <div class="dna-slc-top">
+                    <div class="dna-slc-icon-wrap" style="background:${s.iconBg || 'rgba(0,102,255,0.18)'};">
+                        <span class="dna-slc-icon">${s.icon}</span>
+                    </div>
+                    <div class="dna-slc-header-text">
+                        <div class="dna-slc-title">${s.num}. ${s.title}</div>
+                        <div class="dna-slc-desc">${s.desc || 'Serviço preventivo e corretivo certificado DNA AUTO'}</div>
+                    </div>
+                    <button type="button" class="dna-slc-arrow-btn" aria-label="Abrir serviço">›</button>
+                </div>
+                <div class="dna-slc-footer">
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        ${kmBadge}
+                        ${monthsBadge}
+                    </div>
+                    <span class="dna-slc-cta">Lançar Detalhes ›</span>
+                </div>
+            </div>
+        `;
     };
 
-    // Inicializar o scroll-wheel listener após o render
-    WorkshopView._initWheelAfterRender = function() {
-        const scroller = document.getElementById('service-wheel-scroll');
-        if (!scroller) return;
-
-        let scrollTimeout;
-        scroller.addEventListener('scroll', () => {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => this._updateWheelActiveItem(), 60);
-        }, { passive: true });
-
-        // Garante cálculo inicial imediato
-        this._updateWheelActiveItem();
-    };
-
-    WorkshopView._updateWheelActiveItem = function() {
-        const scroller = document.getElementById('service-wheel-scroll');
-        if (!scroller) return;
-
-        const items = scroller.querySelectorAll('.dna-service-wheel-item');
-        const scrollerRect = scroller.getBoundingClientRect();
-        const targetCenterY = scrollerRect.top + scrollerRect.height / 2;
-
-        let closestItem = null;
-        let closestDist = Infinity;
-
-        items.forEach(item => {
-            const itemRect = item.getBoundingClientRect();
-            const itemCenter = itemRect.top + itemRect.height / 2;
-            const dist = Math.abs(targetCenterY - itemCenter);
-            if (dist < closestDist) {
-                closestDist = dist;
-                closestItem = item;
+    // Filtro instantâneo por categoria sem recarga
+    WorkshopView.setServiceCategory = function(cat) {
+        this.selectedServiceCategory = cat || 'todos';
+        const tabs = document.querySelectorAll('.dna-category-tab');
+        tabs.forEach(t => {
+            if (t.getAttribute('data-cat') === cat) {
+                t.classList.add('active');
+            } else {
+                t.classList.remove('active');
             }
         });
 
-        items.forEach(item => item.classList.remove('active'));
-        if (closestItem) {
-            closestItem.classList.add('active');
-            const serviceId = closestItem.getAttribute('data-service-id');
-            const service = this.monitoredServicesCatalog.find(s => s.id === serviceId);
-            if (service) {
-                this._wheelSelectedServiceId = serviceId;
-                const label = document.getElementById('wheel-confirm-label');
-                if (label) label.textContent = 'Abrir: ' + service.title;
-            }
-        }
-    };
-
-    WorkshopView.handleWheelSelectService = function(serviceId) {
-        // Se clicar no item que já está centralizado e selecionado, abre o detalhe imediatamente
-        if (this._wheelSelectedServiceId === serviceId) {
-            this.handleMobileSelectServiceToDetail(serviceId);
-            return;
-        }
-
-        this._wheelSelectedServiceId = serviceId;
-        const scroller = document.getElementById('service-wheel-scroll');
-        if (scroller) {
-            const item = scroller.querySelector('[data-service-id="' + serviceId + '"]');
-            if (item) {
-                item.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
-        const items = document.querySelectorAll('.dna-service-wheel-item');
-        items.forEach(el => el.classList.remove('active'));
-        const active = document.querySelector('[data-service-id="' + serviceId + '"]');
-        if (active) active.classList.add('active');
-
-        const service = this.monitoredServicesCatalog.find(s => s.id === serviceId);
-        if (service) {
-            const label = document.getElementById('wheel-confirm-label');
-            if (label) label.textContent = 'Abrir: ' + service.title;
-        }
-    };
-
-    WorkshopView.handleWheelConfirmSelection = function() {
-        const id = this._wheelSelectedServiceId || this.monitoredServicesCatalog[0].id;
-        this.handleMobileSelectServiceToDetail(id);
-    };
-
-    WorkshopView.handleWheelFilterServices = function(query) {
-        const q = (query || '').toLowerCase().trim();
-        const scroller = document.getElementById('service-wheel-scroll');
-        if (!scroller) return;
-
-        const filtered = this.monitoredServicesCatalog.filter(s => s.title.toLowerCase().includes(q));
-        scroller.innerHTML = filtered.map((s, idx) => `
-            <div class="dna-service-wheel-item ${idx === 0 ? 'active' : ''}" 
-                 data-service-id="${s.id}" 
-                 onclick="WorkshopView.handleWheelSelectService('${s.id}')">
-                <div class="wheel-icon">${s.icon}</div>
-                <div class="wheel-label">
-                    <div class="wheel-title">${s.title}</div>
-                    <div class="wheel-tag">${s.mode === 'km' ? 'Por km' : s.mode === 'tempo' ? 'Por tempo' : 'Por km ou tempo'}</div>
-                </div>
-                <span class="wheel-chevron">›</span>
-            </div>
-        `).join('');
-
-        if (filtered.length > 0) {
-            this._wheelSelectedServiceId = filtered[0].id;
-            const label = document.getElementById('wheel-confirm-label');
-            if (label) label.textContent = 'Abrir: ' + filtered[0].title;
-        }
-    };
-
-    WorkshopView.handleMobileFilterServicesList = function(query) {
-        const q = (query || '').toLowerCase().trim();
-        const container = document.getElementById('mobile-services-items-container');
+        const container = document.getElementById('dna-service-cards-container');
         if (!container) return;
 
-        const filtered = this.monitoredServicesCatalog.filter(s => s.title.toLowerCase().includes(q));
-        container.innerHTML = filtered.map(s => `
-            <div class="dna-service-item-row" onclick="WorkshopView.handleMobileSelectServiceToDetail('${s.id}')">
-                <div class="dna-service-item-icon">${s.icon}</div>
-                <div class="dna-service-item-content">
-                    <div class="dna-service-item-title">${s.title}</div>
-                    <div class="dna-service-item-tag">
-                        ${s.mode === 'km' ? 'Por km' : s.mode === 'tempo' ? 'Por tempo' : 'Por km ou tempo'}
-                    </div>
-                </div>
-                <span class="dna-mobile-row-chevron">›</span>
-            </div>
-        `).join('');
+        const filtered = (cat === 'todos') 
+            ? this.monitoredServicesCatalog 
+            : this.monitoredServicesCatalog.filter(s => s.category === cat);
+
+        container.innerHTML = filtered.map(s => this.renderServiceLaunchCardHtml(s)).join('');
+
+        const counter = document.getElementById('dna-catalog-counter-badge');
+        if (counter) {
+            counter.textContent = `${filtered.length} serviço${filtered.length > 1 ? 's' : ''}`;
+        }
     };
 
+    // Seleção de tipo de ordem
+    WorkshopView.setServiceOrderType = function(btn, type) {
+        const parent = btn.parentElement;
+        if (parent) {
+            parent.querySelectorAll('.dna-so-pill').forEach(b => b.classList.remove('active'));
+        }
+        btn.classList.add('active');
+        this.selectedServiceOrderType = type;
+    };
+
+    // Abertura do detalhe do serviço com propagação de odômetro e notas técnicas
     WorkshopView.handleMobileSelectServiceToDetail = function(serviceId) {
         const s = this.monitoredServicesCatalog.find(item => item.id === serviceId) || this.monitoredServicesCatalog[0];
         this.selectedMobileService = s;
+
+        // Se o mecânico informou um odômetro de entrada no card, preserva para o cálculo da próxima revisão
+        const entryKmInput = document.getElementById('mobile-service-entry-km');
+        if (entryKmInput && entryKmInput.value && this.selectedMobileVehicle) {
+            const parsedKm = parseInt(entryKmInput.value, 10);
+            if (!isNaN(parsedKm) && parsedKm > 0) {
+                this.selectedMobileVehicle.mileage = parsedKm;
+            }
+        }
+
+        // Se o mecânico digitou observações na tela principal, passa para a tela de detalhe
+        const notesInput = document.getElementById('mobile-service-notes-input');
+        if (notesInput && notesInput.value) {
+            this._tempServiceLaunchNotes = notesInput.value;
+        }
+
         this.switchMobileSection('detalhe-servico');
     };
+
+    // Stubs para compatibilidade com eventuais chamadas legadas
+    WorkshopView.handleWheelStep = function() {};
+    WorkshopView._initWheelAfterRender = function() {};
+    WorkshopView._updateWheelActiveItem = function() {};
+    WorkshopView.handleWheelSelectService = function(id) { this.handleMobileSelectServiceToDetail(id); };
+    WorkshopView.handleWheelConfirmSelection = function() {};
+    WorkshopView.handleWheelFilterServices = function() {};
+    WorkshopView.handleMobileFilterServicesList = function() {};
 
     // ──────────────────────────────────────────────────────────────────────────
     // TELA 6: DETALHE DO SERVIÇO (EX: TROCA DE ÓLEO E FILTROS)
@@ -1254,7 +1253,7 @@
                             rows="2" 
                             placeholder="Descreva detalhes específicos da manutenção realizada, marca da peça aplicada, etc..."
                             style="resize:none; padding:10px; height:60px; font-size:12.5px;"
-                        ></textarea>
+                        >${this._tempServiceLaunchNotes || ''}</textarea>
                     </div>
 
                     <!-- 3. FOTO DA PEÇA (DUAS OPÇÕES: CÂMERA & GALERIA) -->

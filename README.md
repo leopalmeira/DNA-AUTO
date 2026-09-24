@@ -287,6 +287,11 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
   - **Fluxo Operacional Rápido:** Preenche automaticamente o modelo do veículo (e nome/WhatsApp se já existente), restando ao mecânico apenas preencher o nome e telefone do cliente novo para gerar o código em 1 clique.
 - **Zero Popups / Alerts:**
   - 100% das telas (Inspeção & Revisões, Veículo, Certificação, Histórico, OBD2, Lembretes, Oficinas e Configurações) funcionam como navegação SPA interna sem qualquer caixa cinza do navegador.
+- **⚡ Painel de Lançamento de Serviços & Ordem Técnica (Anti-Slop):**
+  - Layout limpo, nítido e responsivo sem carrossel escuro ou máscaras de opacidade.
+  - Card completo com Mecânico Responsável, Odômetro de Entrada, Tipo de Manutenção e Anotações Técnicas.
+  - Catálogo com 15 serviços divididos em abas de toque rápido (`Todos`, `Óleo & Filtros`, `Freios & Suspensão`, `Motor & Ignição`, `Elétrica & Fluidos`), badges de intervalo e abertura direta no card.
+  - Regra global de digitação com alto contraste (fundo branco e texto preto nos campos).
 
 ---
 

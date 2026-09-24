@@ -1115,3 +1115,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   5. **Qualidade e Testes:**
      - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
      - Arquivos sincronizados para `public/css/` e `public/js/components/`.
+
+---
+
+### Ciclo 56 — Redesign Completo da Tela "Lançar Serviços" (Anti-Slop Web UI & Frontend Architecture): Eliminação do Carrossel Escuro e Pesquisa, Grid Categorizado de Serviços 100% Nítido e Card Completo de Ordem Técnica
+- **Data/Hora:** 24/09/2026
+- **Contexto & Escopo:**
+  1. **Eliminação do Carrossel Cilíndrico e da Pesquisa Desnecessária:**
+     - Atendendo ao feedback de usabilidade, removeu-se completamente o carrossel em rolo vertical, os botões flutuantes longos, o container excessivamente alto e a etiqueta sobreposta que bloqueava o conteúdo.
+     - Removida a barra de pesquisa que sobrecarregava o topo da tela, substituída por categorização direta e instantânea por abas.
+  2. **Card Completo de Dados da Ordem Técnica de Serviço:**
+     - Estruturado bloco de cabeçalho operacional com status em tempo real ("Veículo no Box" com dot pulsante verde).
+     - Campos técnicos diretos: **Mecânico / Técnico Responsável** (dropdown estilizado), **Odômetro Atual de Entrada** (campo numérico com fundo branco e letras pretas), **Tipo de Manutenção** (chips rápidos `[✓ Preventiva]`, `[Corretiva]`, `[Revisão Geral]`) e **Observações Técnicas do Mecânico** que se propagam automaticamente para a tela de finalização.
+  3. **Catálogo de Serviços em Grid Categorizado e 100% Nítido:**
+     - Fim das opções escuras ou apagadas por opacidade: todos os 15 serviços possuem 100% de nitidez com títulos brancos puros (`#FFFFFF`), ícones vibrantes com fundos temáticos por sistema do veículo e badges informativos de intervalo de troca (`⏱️ A cada X km` / `📅 A cada Y meses`).
+     - Abas de filtragem rápida por toque (Segmented Tabs): `Todos (15)`, `🛢️ Óleo & Filtros`, `🛑 Freios & Suspensão`, `⚙️ Motor & Ignição` e `⚡ Elétrica & Fluidos`.
+     - Toque direto no card com botão de ação `Lançar Detalhes ›` para abrir a parametrização do serviço imediatamente.
+  4. **Padronização Global de Inputs:**
+     - Mantida a exigência de todos os campos digitáveis com fundo branco e letras pretas (`color: #000000 !important; background-color: #FFFFFF !important;`).
+  5. **Qualidade e Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
+     - Sincronização automática para `public/css/` e `public/js/components/`.
+

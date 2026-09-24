@@ -1938,226 +1938,366 @@ input.dna-plate-input {
 /* ==============================================================================
    12. CARROSSEL / ROLO VERTICAL DE SELEÇÃO DE SERVIÇOS (SCROLL-WHEEL SNAP)
 /* ==============================================================================
-   12. CARROSSEL VERTICAL / ROLO 3D DE SERVIÇOS (ESTILO PICKER WHEEL)
-   "visão de rolo: opções em carrossel para cima e para baixo ficando o do meio selecionado"
+   12. PAINEL DE LANÇAMENTO DE SERVIÇOS & CATÁLOGO TÉCNICO ERP
+   Layout moderno, ergonômico, anti-slop, sem carrossel escuro e sem sobreposições
    ============================================================================== */
-.dna-service-wheel-wrapper {
-    position: relative;
-    width: 100%;
-    margin-top: 4px;
+
+/* Card de Dados Técnicos da Ordem de Serviço */
+.dna-service-order-card {
+    background: linear-gradient(145deg, rgba(14, 24, 42, 0.95), rgba(8, 14, 25, 0.98));
+    border: 1.5px solid rgba(0, 102, 255, 0.28);
+    border-radius: var(--dna-ws-radius-lg);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    margin-top: 8px;
 }
 
-.dna-service-wheel-container {
-    position: relative;
-    width: 100%;
-    height: 290px;
-    overflow: hidden;
-    border-radius: 18px;
-    background: radial-gradient(circle at 50% 50%, #0a172e 0%, #040810 100%);
-    border: 1.5px solid rgba(0, 102, 255, 0.3);
-    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8), 0 8px 24px rgba(0, 0, 0, 0.4);
-    perspective: 800px;
-}
-
-/* Sombras e máscaras nas bordas superior e inferior criando curvatura do cilindro */
-.dna-service-wheel-container::before,
-.dna-service-wheel-container::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 90px;
-    z-index: 10;
-    pointer-events: none;
-}
-
-.dna-service-wheel-container::before {
-    top: 0;
-    background: linear-gradient(to bottom, #040810 0%, rgba(4, 8, 16, 0.85) 40%, transparent 100%);
-}
-
-.dna-service-wheel-container::after {
-    bottom: 0;
-    background: linear-gradient(to top, #040810 0%, rgba(4, 8, 16, 0.85) 40%, transparent 100%);
-}
-
-/* Indicador central do item do meio (selecionado e aguardando clique) */
-.dna-service-wheel-highlight {
-    position: absolute;
-    top: 50%;
-    left: 8px;
-    right: 8px;
-    height: 68px;
-    transform: translateY(-50%);
-    background: linear-gradient(90deg, rgba(0, 102, 255, 0.22) 0%, rgba(0, 212, 255, 0.18) 100%);
-    border: 2px solid #00D4FF;
-    border-radius: 16px;
-    box-shadow: 0 0 25px rgba(0, 212, 255, 0.35), inset 0 0 15px rgba(0, 212, 255, 0.15);
-    z-index: 5;
-    pointer-events: none;
+.dna-so-card-header {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    padding-right: 14px;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.dna-service-wheel-highlight::after {
-    content: "● SELECIONADO";
-    font-size: 9px;
+.dna-so-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
     font-weight: 800;
-    color: #00D4FF;
-    letter-spacing: 0.8px;
-    background: rgba(0, 212, 255, 0.15);
+    color: var(--dna-ws-cyan);
+    letter-spacing: 0.5px;
+}
+
+.dna-so-status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #10B981;
+    background: rgba(16, 185, 129, 0.12);
     padding: 3px 8px;
     border-radius: 6px;
-    border: 1px solid rgba(0, 212, 255, 0.4);
-    animation: dnaPulseCyan 1.8s infinite ease-in-out;
+    border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-@keyframes dnaPulseCyan {
+.dna-status-dot.pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10B981;
+    box-shadow: 0 0 8px #10B981;
+    animation: dnaPulseGreen 1.8s infinite ease-in-out;
+}
+
+@keyframes dnaPulseGreen {
     0%, 100% { opacity: 0.8; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.05); }
+    50% { opacity: 1; transform: scale(1.2); }
 }
 
-/* Lista scrollável com snap no centro */
-.dna-service-wheel-scroll {
-    width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    scroll-snap-type: y mandatory;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding: 111px 10px;
-    box-sizing: border-box;
-    scroll-behavior: smooth;
+.dna-so-grid-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
 
-.dna-service-wheel-scroll::-webkit-scrollbar {
-    display: none;
+.dna-so-select {
+    height: 42px !important;
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    font-weight: 700 !important;
+    font-size: 12.5px !important;
+    padding: 0 10px !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(0, 102, 255, 0.3) !important;
 }
 
-/* Cada item no cilindro / rolo */
-.dna-service-wheel-item {
-    scroll-snap-align: center;
-    height: 68px;
+.dna-so-km-input {
+    height: 42px !important;
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    font-weight: 800 !important;
+    font-size: 13px !important;
+    padding: 0 10px !important;
+    border-radius: 10px !important;
+}
+
+.dna-so-type-selector {
     display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 0 16px;
-    border-radius: 14px;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dna-so-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.dna-so-pill {
+    flex: 1;
+    min-width: 90px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(10, 18, 32, 0.8);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    color: var(--dna-ws-text-dim);
+    font-size: 11.5px;
+    font-weight: 700;
     cursor: pointer;
-    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease, background 0.2s;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 13px;
-    font-weight: 600;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    opacity: 0.42;
-    transform: scale(0.92);
-}
-
-.dna-service-wheel-item:hover {
-    color: rgba(255, 255, 255, 0.75);
-    opacity: 0.7;
-}
-
-.dna-service-wheel-item.active {
-    color: #FFFFFF;
-    font-weight: 800;
-    font-size: 14.5px;
-    opacity: 1;
-    transform: scale(1.04);
-    z-index: 6;
-}
-
-.dna-service-wheel-item .wheel-icon {
-    width: 40px;
-    height: 40px;
-    min-width: 40px;
-    border-radius: 12px;
-    background: rgba(0, 102, 255, 0.2);
-    border: 1px solid rgba(0, 102, 255, 0.3);
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+}
+
+.dna-so-pill:hover {
+    color: #FFFFFF;
+    border-color: var(--dna-ws-cyan);
+}
+
+.dna-so-pill.active {
+    background: linear-gradient(135deg, rgba(0, 102, 255, 0.35), rgba(0, 212, 255, 0.2));
+    border: 1.5px solid var(--dna-ws-cyan);
+    color: #FFFFFF;
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.25);
+}
+
+/* Seção do Catálogo de Serviços */
+.dna-catalog-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dna-catalog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dna-catalog-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 800;
+    color: #FFFFFF;
+    font-family: var(--dna-ws-font-display);
+}
+
+.dna-catalog-subtitle {
+    margin: 2px 0 0 0;
+    font-size: 11.5px;
+    color: var(--dna-ws-text-muted);
+}
+
+.dna-catalog-counter {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--dna-ws-cyan);
+    background: rgba(0, 212, 255, 0.12);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    padding: 3px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+/* Abas de Categoria de Serviços (Segmented Tabs com Scroll Suave) */
+.dna-service-category-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.dna-service-category-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.dna-category-tab {
+    flex-shrink: 0;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 20px;
+    background: rgba(13, 22, 38, 0.85);
+    border: 1px solid rgba(0, 102, 255, 0.25);
+    color: var(--dna-ws-text-dim);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
     transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
 }
 
-.dna-service-wheel-item.active .wheel-icon {
-    background: linear-gradient(135deg, #0052CC, #00D4FF);
+.dna-category-tab:hover {
+    color: #FFFFFF;
+    border-color: rgba(0, 212, 255, 0.4);
+}
+
+.dna-category-tab.active {
+    background: linear-gradient(135deg, #0052CC, #0077FF);
     border-color: #00D4FF;
-    box-shadow: 0 0 18px rgba(0, 212, 255, 0.45);
-    transform: scale(1.05);
+    color: #FFFFFF;
+    box-shadow: 0 0 14px rgba(0, 212, 255, 0.35);
 }
 
-.dna-service-wheel-item .wheel-label {
+/* Grid de Cards de Serviços */
+.dna-service-cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Card Individual de Serviço (100% Nítido, Alta Legibilidade, Sem Opacidade Escura) */
+.dna-service-launch-card {
+    background: linear-gradient(145deg, rgba(14, 23, 40, 0.95), rgba(8, 14, 26, 0.98));
+    border: 1.5px solid rgba(0, 102, 255, 0.22);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.dna-service-launch-card:hover {
+    border-color: rgba(0, 212, 255, 0.5);
+    background: linear-gradient(145deg, rgba(18, 30, 52, 0.95), rgba(10, 18, 34, 0.98));
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.15);
+}
+
+.dna-service-launch-card:active {
+    transform: scale(0.985);
+    border-color: #00D4FF;
+}
+
+.dna-slc-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dna-slc-icon-wrap {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.dna-slc-icon {
+    font-size: 22px;
+}
+
+.dna-slc-header-text {
     flex: 1;
     min-width: 0;
 }
 
-.dna-service-wheel-item .wheel-title {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.dna-slc-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #FFFFFF !important;
+    line-height: 1.3;
 }
 
-.dna-service-wheel-item .wheel-tag {
-    font-size: 10.5px;
-    font-weight: 600;
-    color: var(--dna-ws-text-dim);
+.dna-slc-desc {
+    font-size: 11.5px;
+    color: var(--dna-ws-text-muted);
+    line-height: 1.35;
     margin-top: 2px;
 }
 
-.dna-service-wheel-item.active .wheel-tag {
-    color: var(--dna-ws-cyan);
-    font-weight: 700;
-}
-
-.dna-service-wheel-item .wheel-chevron {
-    font-size: 18px;
-    color: var(--dna-ws-text-dim);
-    transition: all 0.2s;
-}
-
-.dna-service-wheel-item.active .wheel-chevron {
-    color: var(--dna-ws-cyan);
-    transform: translateX(2px);
-    font-weight: 800;
-}
-
-/* Botões de navegação rápida para rolar o cilindro */
-.dna-wheel-nav-btn {
-    position: absolute;
-    right: 12px;
-    width: 32px;
-    height: 32px;
+.dna-slc-arrow-btn {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
     border-radius: 50%;
-    background: rgba(9, 17, 34, 0.9);
-    border: 1px solid rgba(0, 212, 255, 0.4);
+    background: rgba(0, 102, 255, 0.15);
+    border: 1px solid rgba(0, 212, 255, 0.3);
     color: var(--dna-ws-cyan);
+    font-size: 16px;
+    font-weight: 800;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    cursor: pointer;
-    z-index: 15;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     transition: all 0.15s ease;
+    cursor: pointer;
 }
 
-.dna-wheel-nav-btn:active {
-    transform: scale(0.9);
-    background: var(--dna-ws-blue);
+.dna-service-launch-card:hover .dna-slc-arrow-btn {
+    background: var(--dna-ws-cyan);
+    color: #040810;
+    transform: translateX(2px);
+}
+
+.dna-slc-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    flex-wrap: wrap;
+}
+
+.dna-slc-badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dna-slc-badge.km {
+    color: #38BDF8;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.dna-slc-badge.tempo {
+    color: #A78BFA;
+    background: rgba(167, 139, 250, 0.12);
+    border: 1px solid rgba(167, 139, 250, 0.25);
+}
+
+.dna-slc-badge.ambos {
+    color: #34D399;
+    background: rgba(52, 211, 153, 0.12);
+    border: 1px solid rgba(52, 211, 153, 0.25);
+}
+
+.dna-slc-cta {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--dna-ws-cyan);
+    letter-spacing: 0.3px;
+    margin-left: auto;
+    transition: color 0.15s ease;
+}
+
+.dna-service-launch-card:hover .dna-slc-cta {
     color: #FFFFFF;
-}
-
-.dna-wheel-nav-btn.up {
-    top: 8px;
-}
-
-.dna-wheel-nav-btn.down {
-    bottom: 8px;
 }
 
 /* ==============================================================================
