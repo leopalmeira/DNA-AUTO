@@ -258,39 +258,23 @@
                                 <path d="M2 12l10 5 10-5"></path>
                             </svg>
                         </div>
-                        <div class="dna-mobile-brand-text">
-                            <span class="dna-mobile-brand-title">DNA <span>AUTO</span></span>
-                            <span class="dna-mobile-brand-sub">Gestão Inteligente para sua Oficina</span>
-                        </div>
-                    </div>
-
-                    <!-- Botões Alternadores & Acesso Rápido -->
-                    <div class="dna-mobile-header-actions" style="display:flex; gap:5px; align-items:center;">
-                        <button type="button" class="dna-mobile-header-btn" onclick="WorkshopView.setDesktopMode(false)" title="Modo Aplicativo Rápido (Celular)" style="background:var(--dna-ws-blue-glow); border:1px solid var(--dna-ws-cyan); color:#ffffff; font-weight:800; font-size:11px; padding:4px 8px; border-radius:6px;">
-                            <span>📱</span> <span>App</span>
-                        </button>
-                        <button type="button" class="dna-mobile-header-btn" onclick="WorkshopView.setDesktopMode(true)" title="Modo Painel Web (Computador)" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:var(--dna-ws-text-muted); font-size:11px; padding:4px 8px; border-radius:6px;">
-                            <span>💻</span> <span>Web</span>
-                        </button>
-                        <button type="button" class="dna-mobile-header-btn" onclick="WorkshopView.switchMobileSection('auth')" title="Entrar ou Cadastrar Auto Center" style="background:rgba(16,185,129,0.15); border:1px solid #10B981; color:#10B981; font-weight:800; font-size:11px; padding:4px 8px; border-radius:6px;">
-                            <span>🔑</span> <span>Login</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Seletor / Indicador da Oficina Credenciada -->
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:2px;">
-                    <div class="dna-mobile-badge-workshop">
-                        <span>🏢</span>
-                        <span style="max-width:240px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${wsName}</span>
-                        <span class="online-dot" title="Oficina Conectada"></span>
-                        <span style="font-size:10px; color:#10B981; font-weight:700;">Online</span>
+                        <div class="dna-mobile-brand-title">DNA <span>AUTO</span></div>
                     </div>
 
                     <!-- Botão de Sair Rápido -->
-                    <button type="button" onclick="if(typeof App!=='undefined'&&App.logout) App.logout(); else window.location.href='/';" style="background:none; border:none; color:var(--dna-ws-text-dim); font-size:11px; cursor:pointer; padding:4px 6px;">
-                        Sair ↗
+                    <button type="button" class="dna-mobile-logout-btn" onclick="if(typeof App!=='undefined'&&App.logout) App.logout(); else window.location.href='/';">
+                        <span>Sair</span> <span>↗</span>
                     </button>
+                </div>
+
+                <!-- Linha Limpa da Oficina Credenciada -->
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
+                    <div class="dna-mobile-badge-workshop" style="max-width:100%; border:none; padding:0; background:transparent;">
+                        <span>🏢</span>
+                        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:240px; color:#E2E8F0; font-weight:700;">${wsName}</span>
+                        <span class="online-dot" title="Oficina Conectada"></span>
+                        <span style="font-size:10px; color:#10B981; font-weight:800;">Online</span>
+                    </div>
                 </div>
             </header>
         `;
@@ -368,16 +352,11 @@
         const countToday = stats.vehiclesToday || stats.vehicles_today || 6;
         const countInProgress = stats.inProgress || stats.active_services || 4;
         const countPending = stats.waiting || stats.pending_vehicles || 2;
-        const alerts = this.getMobileAlerts();
-        const pendingAlertsCount = alerts.filter(a => !this.mobileAlertsSent[a.id]).length;
-        const origin = window.location.origin || 'https://dna-auto-vua4.onrender.com';
-        const mobileUrl = origin + '/oficina';
-        const webUrl = origin + '/oficina?mode=web';
 
         return `
-            <div style="padding-bottom: 30px;">
-                <!-- 1. RESUMO OPERACIONAL TOTVS ERP -->
-                <div class="dna-mobile-stats-card">
+            <div style="padding-bottom: 24px; width:100%;">
+                <!-- 1. RESUMO OPERACIONAL COMPACTO NO TOPO -->
+                <div class="dna-mobile-stats-card" style="margin: 8px 12px 10px;">
                     <div class="dna-mobile-stat-col">
                         <span class="dna-mobile-stat-number blue">${countToday}</span>
                         <span class="dna-mobile-stat-label">Veículos hoje</span>
@@ -392,35 +371,8 @@
                     </div>
                 </div>
 
-                <!-- 2. BARRA RÁPIDA DE LINKS EXCLUSIVOS DE PRODUÇÃO -->
-                <div style="padding: 0 16px 8px;">
-                    <div style="background: rgba(13, 24, 44, 0.85); border: 1px solid rgba(0, 102, 255, 0.25); border-radius: 12px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="font-size:16px;">🔗</span>
-                            <div style="font-size:11.5px; color:#ffffff; font-weight:700;">
-                                Links Exclusivos: <span style="color:#00d4ff;">App Celular</span> • <span style="color:#60a5fa;">Painel Web PC</span>
-                            </div>
-                        </div>
-                        <div style="display:flex; gap:6px;">
-                            <button type="button" class="dna-ws-link-action-btn copy" style="height:28px; font-size:10px; padding:0 8px;" onclick="WorkshopView.copyLinkToClipboard('${mobileUrl}', this)">
-                                📋 Copiar App
-                            </button>
-                            <button type="button" class="dna-ws-link-action-btn copy" style="height:28px; font-size:10px; padding:0 8px;" onclick="WorkshopView.copyLinkToClipboard('${webUrl}', this)">
-                                📋 Copiar Web
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. TELA DA OFICINA 100% BASEADA EM CARDS DE ACESSO RÁPIDO (ESTILO TOTVS ERP) -->
+                <!-- 2. CARDS DE ACESSO RÁPIDO TOTVS ERP (100% DA TELA DIRETA AOS CARDS) -->
                 <div class="dna-mobile-grid-section">
-                    <div class="dna-mobile-section-header">
-                        <span class="dna-mobile-section-label" style="font-size:12px; color:var(--dna-ws-cyan); font-weight:800; letter-spacing:0.8px;">
-                            ⚡ Cards de Acesso Rápido da Oficina
-                        </span>
-                        <span style="font-size:11px; color:var(--dna-ws-text-muted);">16 Módulos Operacionais</span>
-                    </div>
-
                     <div class="dna-mobile-actions-grid">
                         <!-- Card 1: Entrada de Veículos -->
                         <div class="dna-mobile-action-card dna-card-blue" onclick="WorkshopView.switchMobileSection('entrada-veiculos')">
@@ -583,10 +535,10 @@
                 <!-- Barra Superior com Voltar -->
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Entrada de Veículos</span>
-                    <div style="width:50px;"></div>
+                    
                 </div>
 
                 <div class="dna-mobile-subpage-body">
@@ -758,10 +710,10 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Cadastrar Cliente</span>
-                    <div style="width:50px;"></div>
+                    
                 </div>
 
                 <div class="dna-mobile-subpage-body">
@@ -914,46 +866,46 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Lançar Serviços</span>
-                    <div style="width:50px;"></div>
                 </div>
 
                 <div class="dna-mobile-subpage-body">
-                    <!-- VEÍCULO ATIVO NO TOPO -->
-                    <div class="dna-vehicle-preview-card" style="margin-bottom:4px;">
-                        <div class="dna-vehicle-preview-thumb">🚗</div>
-                        <div class="dna-vehicle-preview-info">
-                            <div class="dna-vehicle-preview-title">${v.brand || ''} ${v.model || 'Honda Civic'}</div>
-                            <div class="dna-vehicle-preview-meta">${v.license_plate} • ${v.year || '2020'} • ${v.color || 'Prata'}</div>
-                            <div class="dna-vehicle-preview-owner">Cliente: ${v.client_name || 'João Silva'}</div>
+                    <!-- 1. BARRA UNIVERSAL DE BUSCA POR PLACA -->
+                    ${this.renderUniversalVehiclePlateBar()}
+
+                    <!-- 2. CAMPO DE OBSERVAÇÕES RÁPIDAS DO MECÂNICO -->
+                    <div class="dna-input-group" style="margin-top:6px;">
+                        <label class="dna-input-label">Observações Técnicas do Mecânico</label>
+                        <textarea 
+                            id="mobile-service-notes-input" 
+                            class="dna-input-field" 
+                            rows="2" 
+                            placeholder="Descreva o serviço, peças trocadas ou observações importantes..."
+                            style="resize:none; padding:10px; height:60px; font-size:12.5px;"
+                        ></textarea>
+                    </div>
+
+                    <!-- 3. FOTOS DA PEÇA & NOTA FISCAL (DUAS OPÇÕES: CÂMERA & GALERIA) -->
+                    ${this.renderDualPhotoUploadSection('service-launch-photos', 'Foto da Peça / Serviço', 'Câmera ou Galeria')}
+
+                    <!-- 4. BUSCADOR & LISTA DE SERVIÇOS TÉCNICOS POR MONITORAMENTO -->
+                    <div style="margin-top:8px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                            <span class="dna-mobile-section-label">Selecione o Serviço para Lançar</span>
+                            <span style="font-size:11px; color:var(--dna-ws-cyan); font-weight:700;">Sem Preços</span>
                         </div>
-                        <button type="button" onclick="WorkshopView.switchMobileSection('entrada-veiculos')" style="background:none; border:none; color:var(--dna-ws-cyan); font-size:12px; font-weight:700; cursor:pointer;">
-                            Alterar
-                        </button>
-                    </div>
 
-                    <!-- TABS: SERVIÇOS / PEÇAS -->
-                    <div class="dna-segmented-control">
-                        <button class="dna-segment-btn active">Serviços</button>
-                        <button class="dna-segment-btn" onclick="WorkshopView.switchMobileSection('estoque')">Peças</button>
-                    </div>
-
-                    <!-- BUSCADOR RÁPIDO DE SERVIÇO -->
-                    <div style="position:relative;">
+                        <!-- Buscador de Serviço -->
                         <input 
                             type="text" 
                             id="mobile-service-search-input" 
-                            placeholder="🔍 Buscar serviço..." 
+                            placeholder="🔍 Digite para filtrar serviços..." 
                             oninput="WorkshopView.handleMobileFilterServicesList(this.value)"
-                            style="width:100%; height:44px; background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.3); border-radius:12px; padding:0 14px; color:#fff; font-size:13.5px; box-sizing:border-box;"
+                            style="width:100%; height:42px; background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.3); border-radius:10px; padding:0 12px; color:#fff; font-size:13px; box-sizing:border-box; margin-bottom:10px;"
                         />
-                    </div>
 
-                    <!-- LISTA DE SERVIÇOS POR MONITORAMENTO (SEM PREÇOS!) -->
-                    <div>
-                        <span class="dna-mobile-section-label" style="display:block; margin-bottom:8px;">Serviços por Monitoramento</span>
                         <div class="dna-service-monitoring-list" id="mobile-services-items-container">
                             ${services.map(s => `
                                 <div class="dna-service-item-row" onclick="WorkshopView.handleMobileSelectServiceToDetail('${s.id}')">
@@ -969,18 +921,13 @@
                             `).join('')}
                         </div>
                     </div>
+
+                    <div style="margin-top:14px; text-align:center;">
+                        <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                            <span>‹</span> <span>Voltar para Todos os Cards</span>
+                        </button>
+                    </div>
                 </div>
-
-                <!-- Botão Inferior Fixo -->
-                <div class="dna-mobile-fixed-bottom-bar">
-                    <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSelectServiceToDetail('srv_oleo')">
-                        <span>+</span> <span>Adicionar Serviço</span>
-                    </button>
-
-                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar para Todos os Cards</span>
-                    </button>
-</div>
             </div>
         `;
     };
@@ -1030,34 +977,58 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">${s.num}. ${s.title}</span>
-                    <div style="width:50px;"></div>
                 </div>
 
                 <div class="dna-mobile-subpage-body">
-                    <!-- MINI-CARD DO VEÍCULO -->
-                    <div class="dna-vehicle-preview-card" style="padding:10px 14px;">
-                        <div class="dna-vehicle-preview-thumb" style="width:38px; height:38px; font-size:18px;">🔧</div>
-                        <div class="dna-vehicle-preview-info">
-                            <div class="dna-vehicle-preview-title" style="font-size:13.5px;">${v.brand || ''} ${v.model || 'Honda Civic'}</div>
-                            <div class="dna-vehicle-preview-meta" style="font-size:11px;">${v.license_plate} • ${v.year || '2020'} • ${v.color || 'Prata'}</div>
-                            <div class="dna-vehicle-preview-owner" style="font-size:10.5px;">Cliente: ${v.client_name || 'João Silva'}</div>
+                    <!-- 1. IDENTIFICAÇÃO DO VEÍCULO PELA PLACA -->
+                    ${this.renderUniversalVehiclePlateBar()}
+
+                    <!-- 2. CAMPO DE OBSERVAÇÕES TÉCNICAS DO MECÂNICO -->
+                    <div class="dna-input-group">
+                        <label class="dna-input-label">Observações Técnicas do Mecânico</label>
+                        <textarea 
+                            id="mobile-srv-detail-notes" 
+                            class="dna-input-field" 
+                            rows="2" 
+                            placeholder="Descreva detalhes específicos da manutenção realizada, marca da peça aplicada, etc..."
+                            style="resize:none; padding:10px; height:60px; font-size:12.5px;"
+                        ></textarea>
+                    </div>
+
+                    <!-- 3. FOTO DA PEÇA (DUAS OPÇÕES: CÂMERA & GALERIA) -->
+                    ${this.renderDualPhotoUploadSection('srv-detail-piece-photos', 'Foto da Peça / Serviço', 'Câmera ou Galeria')}
+
+                    <!-- 4. FOTO DA NOTA FISCAL (DUAS OPÇÕES: CÂMERA & GALERIA) -->
+                    <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                            <strong style="color:#ffffff; font-size:12.5px; font-weight:800;">Foto da Nota Fiscal da Peça</strong>
+                            <span style="font-size:10px; color:#10B981; font-weight:700;">Garantia</span>
+                        </div>
+
+                        <input type="file" id="srv-detail-nf-camera" accept="image/*" capture="environment" style="display:none;" onchange="WorkshopView.handleMobileInvoiceFileSelect(this)" />
+                        <input type="file" id="srv-detail-nf-gallery" accept="image/*,application/pdf" style="display:none;" onchange="WorkshopView.handleMobileInvoiceFileSelect(this)" />
+
+                        <div class="dna-photo-choice-grid">
+                            <button type="button" class="dna-photo-choice-btn camera" onclick="document.getElementById('srv-detail-nf-camera').click()">
+                                <span style="font-size:24px;">📸</span>
+                                <strong>Fotografar NF</strong>
+                                <small>Câmera do aparelho</small>
+                            </button>
+                            <button type="button" class="dna-photo-choice-btn gallery" onclick="document.getElementById('srv-detail-nf-gallery').click()">
+                                <span style="font-size:24px;">📄</span>
+                                <strong>Buscar NF</strong>
+                                <small>Galeria do celular</small>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- TABS: MONITORAMENTO / OBSERVAÇÕES -->
-                    <div class="dna-segmented-control">
-                        <button class="dna-segment-btn active">Monitoramento</button>
-                        <button class="dna-segment-btn" onclick="alert('Aba de observações habilitada.')">Observações</button>
-                    </div>
+                    <!-- 5. CONDIÇÃO PARA TROCA -->
+                    <div style="background:var(--dna-ws-bg-card); border:1px solid var(--dna-ws-border); border-radius:var(--dna-ws-radius-lg); padding:14px; display:flex; flex-direction:column; gap:12px;">
+                        <span class="dna-mobile-section-label">Condição para Próxima Troca</span>
 
-                    <!-- CONDIÇÃO PARA TROCA -->
-                    <div style="background:var(--dna-ws-bg-card); border:1px solid var(--dna-ws-border); border-radius:var(--dna-ws-radius-lg); padding:16px; display:flex; flex-direction:column; gap:12px;">
-                        <span class="dna-mobile-section-label">Condição para Troca</span>
-
-                        <!-- Opção por KM -->
                         <div style="display:flex; align-items:center; justify-content:space-between;">
                             <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:700; color:#fff; cursor:pointer;">
                                 <input type="radio" name="mobile_srv_condition" value="km" checked />
@@ -1070,7 +1041,6 @@
                             </div>
                         </div>
 
-                        <!-- Opção por Tempo -->
                         <div style="display:flex; align-items:center; justify-content:space-between;">
                             <label style="display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:700; color:#fff; cursor:pointer;">
                                 <input type="radio" name="mobile_srv_condition" value="tempo" />
@@ -1084,49 +1054,49 @@
                         </div>
                     </div>
 
-                    <!-- ÚLTIMA TROCA REGISTRADA -->
-                    <div style="background:var(--dna-ws-bg-card); border:1px solid var(--dna-ws-border); border-radius:var(--dna-ws-radius-lg); padding:16px; display:flex; flex-direction:column; gap:12px;">
-                        <span class="dna-mobile-section-label">Última Troca Registrada</span>
+                    <!-- 6. ÚLTIMA TROCA REGISTRADA -->
+                    <div style="background:var(--dna-ws-bg-card); border:1px solid var(--dna-ws-border); border-radius:var(--dna-ws-radius-lg); padding:14px; display:flex; flex-direction:column; gap:12px;">
+                        <span class="dna-mobile-section-label">Registro do Serviço Realizado</span>
                         
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                             <div class="dna-input-group">
-                                <label class="dna-input-label" style="font-size:11px;">Data</label>
+                                <label class="dna-input-label" style="font-size:11px;">Data do Serviço</label>
                                 <input type="date" id="mobile-srv-last-date" value="${todayStr}" style="height:42px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); border-radius:10px; color:#fff; padding:0 10px; font-size:12.5px;" />
                             </div>
                             <div class="dna-input-group">
-                                <label class="dna-input-label" style="font-size:11px;">Quilometragem</label>
+                                <label class="dna-input-label" style="font-size:11px;">Odômetro Atual (KM)</label>
                                 <input type="number" id="mobile-srv-last-km" value="${currentMileage}" style="height:42px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); border-radius:10px; color:#fff; padding:0 10px; font-size:12.5px; font-weight:700;" />
                             </div>
                         </div>
                     </div>
 
-                    <!-- PRÓXIMA TROCA PREVISTA (CÁLCULO AUTOMÁTICO) -->
-                    <div style="background:linear-gradient(145deg, rgba(0,102,255,0.12), rgba(0,212,255,0.06)); border:1px solid rgba(0,212,255,0.3); border-radius:var(--dna-ws-radius-lg); padding:16px; display:flex; flex-direction:column; gap:12px;">
-                        <span class="dna-mobile-section-label" style="color:var(--dna-ws-cyan);">Próxima Troca Prevista</span>
+                    <!-- 7. PRÓXIMA TROCA PREVISTA (CÁLCULO AUTOMÁTICO) -->
+                    <div style="background:linear-gradient(145deg, rgba(0,102,255,0.12), rgba(0,212,255,0.06)); border:1px solid rgba(0,212,255,0.3); border-radius:var(--dna-ws-radius-lg); padding:14px; display:flex; flex-direction:column; gap:12px;">
+                        <span class="dna-mobile-section-label" style="color:var(--dna-ws-cyan);">Previsão de Próxima Troca</span>
                         
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                             <div class="dna-input-group">
-                                <label class="dna-input-label" style="font-size:11px;">Data estimada</label>
+                                <label class="dna-input-label" style="font-size:11px;">Data Estimada</label>
                                 <input type="date" id="mobile-srv-next-date" value="${nextDateStr}" style="height:42px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,212,255,0.4); border-radius:10px; color:#fff; padding:0 10px; font-size:12.5px;" />
                             </div>
                             <div class="dna-input-group">
-                                <label class="dna-input-label" style="font-size:11px;">Quilometragem estimada</label>
+                                <label class="dna-input-label" style="font-size:11px;">Odômetro Estimado</label>
                                 <input type="number" id="mobile-srv-next-km" value="${nextMileage}" style="height:42px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,212,255,0.4); border-radius:10px; color:#fff; padding:0 10px; font-size:12.5px; font-weight:700;" />
                             </div>
                         </div>
                     </div>
+
+                    <!-- BOTÕES DE AÇÃO -->
+                    <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+                        <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSaveServiceRecord()">
+                            <span>✓</span> <span>Registrar Serviço no Veículo</span>
+                        </button>
+
+                        <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
+                            <span>‹</span> <span>Voltar para Lista de Serviços</span>
+                        </button>
+                    </div>
                 </div>
-
-                <!-- Botão Inferior Fixo -->
-                <div class="dna-mobile-fixed-bottom-bar">
-                    <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSaveServiceRecord()">
-                        <span>✓</span> <span>Registrar Serviço</span>
-                    </button>
-
-                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar para Todos os Cards</span>
-                    </button>
-</div>
             </div>
         `;
     };
@@ -1171,21 +1141,23 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
-                    <span class="dna-mobile-subpage-title">Manutenção dos Veículos</span>
-                    <div style="width:50px;"></div>
+                    <span class="dna-mobile-subpage-title">Manutenções</span>
                 </div>
 
                 <div class="dna-mobile-subpage-body">
-                    <!-- Segmented Filter Tabs -->
-                    <div class="dna-segmented-control">
+                    <!-- 1. BARRA UNIVERSAL DE BUSCA POR PLACA -->
+                    ${this.renderUniversalVehiclePlateBar()}
+
+                    <!-- 2. FILTRO DE MANUTENÇÃO -->
+                    <div class="dna-segmented-control" style="margin-top:4px;">
                         <button class="dna-segment-btn ${filter === 'todos' ? 'active' : ''}" onclick="WorkshopView.setMobileMaintFilter('todos')">Todas (${alerts.length})</button>
                         <button class="dna-segment-btn ${filter === 'atrasadas' ? 'active' : ''}" onclick="WorkshopView.setMobileMaintFilter('atrasadas')">Atrasadas</button>
                         <button class="dna-segment-btn ${filter === 'em_breve' ? 'active' : ''}" onclick="WorkshopView.setMobileMaintFilter('em_breve')">Em Breve</button>
                     </div>
 
-                    <!-- Cards de Veículos com Manutenção Próxima / Vencida -->
+                    <!-- 3. CARDS DE VEÍCULOS COM MANUTENÇÃO PRÓXIMA / VENCIDA -->
                     <div style="display:flex; flex-direction:column; gap:12px;">
                         ${filtered.map(item => `
                             <div class="dna-mobile-row-card" style="flex-direction:column; align-items:stretch; gap:10px;">
@@ -1194,48 +1166,38 @@
                                         <span style="font-size:20px;">🚗</span>
                                         <div>
                                             <span style="font-weight:800; color:#fff; font-size:15px;">${item.vehicle_model}</span>
-                                            <span style="font-family:monospace; color:var(--dna-ws-cyan); font-weight:700; margin-left:6px;">${item.license_plate}</span>
+                                            <span style="font-family:monospace; color:var(--dna-ws-cyan); font-weight:700; margin-left:6px;">${item.vehicle_plate}</span>
                                         </div>
                                     </div>
-                                    <span class="dna-mobile-row-badge ${item.status === 'ATRASADA' ? 'dna-badge-red' : 'dna-badge-amber'}">
-                                        ${item.status === 'ATRASADA' ? 'ATRASADA' : 'EM BREVE'}
+                                    <span class="dna-status-pill ${item.status === 'ATRASADA' ? 'dna-status-critical' : 'dna-status-warning'}">
+                                        ${item.status === 'ATRASADA' ? '⚠️ Atrasada' : '⏱️ Em Breve'}
                                     </span>
                                 </div>
 
-                                <div style="font-size:12px; color:var(--dna-ws-text-muted);">
-                                    Cliente: <strong style="color:#fff;">${item.client_name}</strong>
-                                </div>
-
-                                <div style="background:rgba(8,16,32,0.7); border-radius:10px; padding:10px 12px; border:1px solid rgba(255,255,255,0.05);">
-                                    <div style="font-size:13px; font-weight:700; color:var(--dna-ws-cyan);">
-                                        🔧 ${item.service_needed}
-                                    </div>
-                                    <div style="font-size:11.5px; color:var(--dna-ws-text-dim); margin-top:2px;">
-                                        Motivo: ${item.reason}
-                                    </div>
-                                    <div style="display:flex; justify-content:space-between; margin-top:8px; font-size:11px; color:#fff;">
-                                        <span>Atual: <strong>${item.current_km.toLocaleString('pt-BR')} km</strong></span>
-                                        <span>Próxima: <strong>${item.next_km.toLocaleString('pt-BR')} km</strong></span>
-                                        <span>Venc: <strong>${item.next_date}</strong></span>
+                                <div style="background:rgba(0,0,0,0.25); border-radius:8px; padding:8px 10px; font-size:12px;">
+                                    <strong style="color:#FFFFFF;">${item.service_title}</strong>
+                                    <div style="color:var(--dna-ws-text-muted); margin-top:2px;">
+                                        Troca prevista: ${item.due_date} (ou ${item.due_km.toLocaleString('pt-BR')} km)
                                     </div>
                                 </div>
 
-                                <div style="display:flex; gap:8px; margin-top:4px;">
-                                    <button class="dna-whatsapp-btn" style="flex:1; height:38px; font-size:12px;" onclick="WorkshopView.handleMobileSendWhatsAppAlert('${item.id}')">
-                                        <span>💬 Avisar no WhatsApp</span>
+                                <div style="display:flex; gap:8px;">
+                                    <button class="dna-small-action-btn" style="flex:1;" onclick="WorkshopView.handleMobileNotifyClientWhatsApp('${item.id}')">
+                                        <span>💬</span> <span>Avisar WhatsApp</span>
                                     </button>
-                                    <button class="dna-primary-btn-lg" style="flex:1; height:38px; font-size:12px;" onclick="WorkshopView.handleMobileDirectServiceLaunch('${item.license_plate}', '${item.service_needed}')">
-                                        <span>🔧 Lançar Serviço</span>
+                                    <button class="dna-small-action-btn cyan" style="flex:1;" onclick="WorkshopView.selectVehicleByPlate('${item.vehicle_plate}'); WorkshopView.switchMobileSection('lancar-servicos');">
+                                        <span>🔧</span> <span>Lançar Troca</span>
                                     </button>
                                 </div>
                             </div>
                         `).join('')}
                     </div>
 
-                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar para Todos os Cards</span>
-                    </button>
-
+                    <div style="margin-top:14px; text-align:center;">
+                        <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                            <span>‹</span> <span>Voltar para Todos os Cards</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
@@ -1268,10 +1230,10 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Avisos de Manutenção</span>
-                    <div style="width:50px;"></div>
+                    
                 </div>
 
                 <div class="dna-mobile-subpage-body">
@@ -1361,102 +1323,74 @@
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileSendPhotosView = function() {
         const v = this.selectedMobileVehicle || this.getDefaultMobileVehicles()[0];
-        const photos = this.mobileUploadedPhotos || [];
 
         return `
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Enviar Fotos</span>
-                    <div style="width:50px;"></div>
                 </div>
 
                 <div class="dna-mobile-subpage-body">
-                    <!-- VEÍCULO VINCULADO -->
-                    <div class="dna-vehicle-preview-card">
-                        <div class="dna-vehicle-preview-thumb">🚗</div>
-                        <div class="dna-vehicle-preview-info">
-                            <div class="dna-vehicle-preview-title">${v.brand || ''} ${v.model || 'Honda Civic'}</div>
-                            <div class="dna-vehicle-preview-meta">${v.license_plate} • ${v.year || '2020'} • ${v.color || 'Prata'}</div>
-                            <div class="dna-vehicle-preview-owner">Cliente: ${v.client_name || 'João Silva'}</div>
-                        </div>
-                    </div>
+                    <!-- 1. BARRA UNIVERSAL DE BUSCA POR PLACA -->
+                    ${this.renderUniversalVehiclePlateBar()}
 
-                    <!-- CAMPO DESCRIÇÃO OBRIGATÓRIA COM CONTADOR -->
+                    <!-- 2. OBSERVAÇÕES DO REGISTRO -->
                     <div class="dna-input-group">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <label class="dna-input-label">Descrição do serviço / foto *</label>
-                            <span id="mobile-photo-desc-counter" style="font-size:10.5px; color:var(--dna-ws-text-dim);">67/200</span>
-                        </div>
+                        <label class="dna-input-label">Descrição das Fotos / Peças</label>
                         <textarea 
-                            id="mobile-photo-desc-input" 
-                            rows="3" 
-                            maxlength="200" 
-                            oninput="document.getElementById('mobile-photo-desc-counter').innerText = this.value.length + '/200'"
-                            style="width:100%; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); border-radius:12px; padding:12px; color:#fff; font-size:13px; font-family:var(--dna-ws-font-main); box-sizing:border-box;"
-                        >Troca do filtro de óleo e filtro de ar. Peças originais.</textarea>
+                            id="mobile-photos-desc-input" 
+                            class="dna-input-field" 
+                            rows="2" 
+                            placeholder="Descreva as fotos das peças substituídas ou serviços realizados..."
+                            style="resize:none; padding:10px; height:60px; font-size:12.5px;"
+                        ></textarea>
                     </div>
 
-                    <!-- ÁREA DE UPLOAD DE FOTOS (CÂMERA / GALERIA) -->
-                    <div>
-                        <span class="dna-mobile-section-label" style="display:block; margin-bottom:8px;">Registro Fotográfico</span>
-                        
-                        <input type="file" id="mobile-photo-file-input" accept="image/*" multiple style="display:none;" onchange="WorkshopView.handleMobilePhotoFileSelect(this)" />
-                        
-                        <div class="dna-photo-upload-box" onclick="document.getElementById('mobile-photo-file-input').click()">
-                            <span style="font-size:32px;">📷</span>
-                            <strong style="color:#fff; font-size:14px;">Toque para adicionar fotos</strong>
-                            <span style="font-size:12px; color:var(--dna-ws-text-muted);">Tire fotos com a câmera ou escolha da galeria</span>
+                    <!-- 3. FOTO DA PEÇA (CÂMERA OU GALERIA) -->
+                    ${this.renderDualPhotoUploadSection('photos-pieces-box', 'Fotos da Peça / Serviço', 'Câmera ou Galeria')}
+
+                    <!-- 4. FOTO DA NOTA FISCAL (CÂMERA OU GALERIA) -->
+                    <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                            <strong style="color:#ffffff; font-size:12.5px; font-weight:800;">Foto da Nota Fiscal / Comprovante</strong>
+                            <span style="font-size:10px; color:#10B981; font-weight:700;">Anexo Oficial</span>
                         </div>
 
-                        <!-- Grid de Miniaturas de Fotos -->
-                        <div class="dna-photo-grid" id="mobile-photos-preview-grid">
-                            ${photos.length === 0 ? `
-                                <div class="dna-photo-thumb"><img src="./img/service-sample-1.jpg" onerror="this.src='./img/icons/icon-192x192.png'" alt="Foto" /><button class="dna-photo-remove-btn" onclick="WorkshopView.handleRemoveSamplePhoto(0)">×</button></div>
-                                <div class="dna-photo-thumb"><img src="./img/service-sample-2.jpg" onerror="this.src='./img/icons/icon-192x192.png'" alt="Foto" /><button class="dna-photo-remove-btn" onclick="WorkshopView.handleRemoveSamplePhoto(1)">×</button></div>
-                                <div class="dna-photo-thumb"><img src="./img/service-sample-3.jpg" onerror="this.src='./img/icons/icon-192x192.png'" alt="Foto" /><button class="dna-photo-remove-btn" onclick="WorkshopView.handleRemoveSamplePhoto(2)">×</button></div>
-                            ` : photos.map((p, idx) => `
-                                <div class="dna-photo-thumb">
-                                    <img src="${p}" alt="Foto ${idx+1}" />
-                                    <button class="dna-photo-remove-btn" onclick="WorkshopView.handleMobileRemovePhoto(${idx})">×</button>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
+                        <input type="file" id="nf-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="WorkshopView.handleMobileInvoiceFileSelect(this)" />
+                        <input type="file" id="nf-gallery-input" accept="image/*,application/pdf" style="display:none;" onchange="WorkshopView.handleMobileInvoiceFileSelect(this)" />
 
-                    <!-- NOTA FISCAL / COMPROVANTE -->
-                    <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:14px;">
-                        <span class="dna-mobile-section-label" style="display:block; margin-bottom:8px;">Nota Fiscal / Comprovante</span>
-                        
-                        <input type="file" id="mobile-invoice-file-input" accept="image/*,application/pdf" style="display:none;" onchange="WorkshopView.handleMobileInvoiceFileSelect(this)" />
-                        
-                        <div style="display:flex; align-items:center; gap:12px; background:rgba(8,16,32,0.8); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:10px 14px;">
-                            <span style="font-size:24px;">🧾</span>
-                            <div style="flex:1;">
-                                <strong style="color:#fff; font-size:12.5px; display:block;">Anexo do Documento</strong>
-                                <span style="font-size:11px; color:var(--dna-ws-text-muted);" id="mobile-invoice-label">
-                                    ${this.mobileInvoiceAttachment ? 'NF-e 009284 anexada ✓' : 'Nenhuma nota vinculada'}
-                                </span>
-                            </div>
-                            <button type="button" class="btn btn-sm btn-cyan" onclick="document.getElementById('mobile-invoice-file-input').click()" style="padding:6px 10px; font-size:11px; border-radius:8px;">
-                                + Adicionar nota fiscal
+                        <div class="dna-photo-choice-grid">
+                            <button type="button" class="dna-photo-choice-btn camera" onclick="document.getElementById('nf-camera-input').click()">
+                                <span style="font-size:24px;">📸</span>
+                                <strong>Fotografar NF</strong>
+                                <small>Câmera do aparelho</small>
+                            </button>
+                            <button type="button" class="dna-photo-choice-btn gallery" onclick="document.getElementById('nf-gallery-input').click()">
+                                <span style="font-size:24px;">📄</span>
+                                <strong>Buscar NF</strong>
+                                <small>Galeria ou Arquivos</small>
                             </button>
                         </div>
+
+                        <div style="margin-top:8px; font-size:11.5px; color:${this.mobileInvoiceAttachment ? '#10B981' : 'var(--dna-ws-text-muted)'}; text-align:center;">
+                            ${this.mobileInvoiceAttachment ? '✓ ' + this.mobileInvoiceAttachment : 'Nenhum comprovante anexado'}
+                        </div>
+                    </div>
+
+                    <!-- BOTÕES DE AÇÃO -->
+                    <div style="margin-top:14px; display:flex; flex-direction:column; gap:10px;">
+                        <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSavePhotos()">
+                            <span>✓</span> <span>Salvar Fotos no Veículo</span>
+                        </button>
+
+                        <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                            <span>‹</span> <span>Voltar para Todos os Cards</span>
+                        </button>
                     </div>
                 </div>
-
-                <!-- Botão Inferior Fixo -->
-                <div class="dna-mobile-fixed-bottom-bar">
-                    <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSavePhotos()">
-                        <span>✓</span> <span>Salvar Fotos</span>
-                    </button>
-
-                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar para Todos os Cards</span>
-                    </button>
-</div>
             </div>
         `;
     };
@@ -1508,50 +1442,58 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Nota Fiscal</span>
-                    <div style="width:50px;"></div>
                 </div>
 
                 <div class="dna-mobile-subpage-body">
-                    <!-- MINI-CARD DO VEÍCULO -->
-                    <div class="dna-vehicle-preview-card">
-                        <div class="dna-vehicle-preview-thumb">🚗</div>
-                        <div class="dna-vehicle-preview-info">
-                            <div class="dna-vehicle-preview-title">${v.brand || ''} ${v.model || 'Honda Civic'}</div>
-                            <div class="dna-vehicle-preview-meta">${v.license_plate} • ${v.year || '2020'} • ${v.color || 'Prata'}</div>
-                            <div class="dna-vehicle-preview-owner">Cliente: ${v.client_name || 'João Silva'}</div>
+                    <!-- 1. BARRA UNIVERSAL DE BUSCA POR PLACA -->
+                    ${this.renderUniversalVehiclePlateBar()}
+
+                    <!-- 2. OBSERVAÇÕES DA NOTA FISCAL -->
+                    <div class="dna-input-group" style="margin-top:4px;">
+                        <label class="dna-input-label">Observações da Nota Fiscal / Serviços</label>
+                        <textarea 
+                            id="mobile-invoice-notes-input" 
+                            class="dna-input-field" 
+                            rows="2" 
+                            placeholder="Descreva detalhes dos serviços, garantia das peças ou dados adicionais..."
+                            style="resize:none; padding:10px; height:60px; font-size:12.5px;"
+                        ></textarea>
+                    </div>
+
+                    <!-- 3. FOTO DA NOTA FISCAL / COMPROVANTE (DUAS OPÇÕES: CÂMERA & GALERIA) -->
+                    <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                            <strong style="color:#ffffff; font-size:12.5px; font-weight:800;">Anexar Nota Fiscal / Cupom Fiscal</strong>
+                            <span style="font-size:10px; color:#10B981; font-weight:700;">Documento Oficial</span>
+                        </div>
+
+                        <input type="file" id="invoice-nf-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="WorkshopView.handleMobileInvoiceFileSelect(this)" />
+                        <input type="file" id="invoice-nf-gallery-input" accept="image/*,application/pdf" style="display:none;" onchange="WorkshopView.handleMobileInvoiceFileSelect(this)" />
+
+                        <div class="dna-photo-choice-grid">
+                            <button type="button" class="dna-photo-choice-btn camera" onclick="document.getElementById('invoice-nf-camera-input').click()">
+                                <span style="font-size:24px;">📸</span>
+                                <strong>Fotografar NF</strong>
+                                <small>Câmera do aparelho</small>
+                            </button>
+                            <button type="button" class="dna-photo-choice-btn gallery" onclick="document.getElementById('invoice-nf-gallery-input').click()">
+                                <span style="font-size:24px;">📄</span>
+                                <strong>Buscar Arquivo / Galeria</strong>
+                                <small>Galeria do celular</small>
+                            </button>
+                        </div>
+
+                        <div style="margin-top:8px; font-size:11.5px; color:${this.mobileInvoiceAttachment ? '#10B981' : 'var(--dna-ws-text-muted)'}; text-align:center;">
+                            ${this.mobileInvoiceAttachment ? '✓ ' + this.mobileInvoiceAttachment : 'Nenhum comprovante anexado ainda'}
                         </div>
                     </div>
 
-                    <!-- TABS: VEÍCULO / SERVIÇOS -->
-                    <div class="dna-segmented-control">
-                        <button class="dna-segment-btn">🚗 Veículo</button>
-                        <button class="dna-segment-btn active">🔧 Serviços</button>
-                    </div>
-
-                    <!-- BUSCA POR PLACA -->
-                    <div class="dna-input-group">
-                        <label class="dna-input-label">Placa *</label>
-                        <div class="dna-input-search-row">
-                            <input type="text" class="dna-plate-input" value="${v.license_plate}" readonly />
-                            <button class="dna-search-action-btn" onclick="WorkshopView.switchMobileSection('entrada-veiculos')">🔍</button>
-                        </div>
-                    </div>
-
-                    <!-- CLIENTE -->
-                    <div class="dna-input-group">
-                        <label class="dna-input-label">Cliente</label>
-                        <div class="dna-input-search-row">
-                            <input type="text" class="form-control" value="${v.client_name || 'João Silva'}" readonly style="height:48px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); color:#fff; border-radius:12px; padding:0 14px; flex:1;" />
-                            <button class="dna-search-action-btn" onclick="WorkshopView.switchMobileSection('clientes')">🔍</button>
-                        </div>
-                    </div>
-
-                    <!-- CHECKLIST DE SERVIÇOS / PEÇAS COM VALORES -->
+                    <!-- 4. CHECKLIST DE SERVIÇOS / PEÇAS COM VALORES -->
                     <div>
-                        <span class="dna-mobile-section-label" style="display:block; margin-bottom:8px;">Serviços / Peças</span>
+                        <span class="dna-mobile-section-label" style="display:block; margin-bottom:8px;">Serviços & Peças a Faturar</span>
                         
                         <div style="display:flex; flex-direction:column; gap:8px;">
                             ${items.map((item, idx) => `
@@ -1568,36 +1510,35 @@
                         </div>
                     </div>
 
-                    <!-- TOTAIS -->
+                    <!-- 5. TOTAIS -->
                     <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,212,255,0.25); border-radius:14px; padding:14px 16px; display:flex; flex-direction:column; gap:6px;">
                         <div style="display:flex; justify-content:space-between; font-size:12.5px; color:var(--dna-ws-text-muted);">
                             <span>Subtotal</span>
                             <span>R$ ${subtotal.toFixed(2).replace('.', ',')}</span>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:12.5px; color:var(--dna-ws-text-muted);">
-                            <span>Desconto (opcional)</span>
+                            <span>Desconto</span>
                             <span>R$ 0,00</span>
                         </div>
                         <div style="display:flex; justify-content:space-between; font-size:15px; font-weight:800; color:#fff; border-top:1px solid rgba(255,255,255,0.08); padding-top:6px; margin-top:2px;">
-                            <span>Total</span>
+                            <span>Total Geral</span>
                             <span style="color:var(--dna-ws-green);">R$ ${subtotal.toFixed(2).replace('.', ',')}</span>
                         </div>
                     </div>
+
+                    <!-- BOTÕES DE AÇÃO -->
+                    <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+                        <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSaveInvoice(false)">
+                            <span>✓</span> <span>Salvar Registro de Nota Fiscal</span>
+                        </button>
+                        <button class="dna-primary-btn-lg cyan" onclick="WorkshopView.handleMobileSaveInvoice(true)">
+                            <span>↗</span> <span>Emitir Nota Fiscal Eletrônica</span>
+                        </button>
+                        <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                            <span>‹</span> <span>Voltar para Todos os Cards</span>
+                        </button>
+                    </div>
                 </div>
-
-                <!-- Botões Inferiores Fixos -->
-                <div class="dna-mobile-fixed-bottom-bar" style="display:flex; gap:10px;">
-                    <button class="dna-primary-btn-lg" style="flex:1;" onclick="WorkshopView.handleMobileSaveInvoice(false)">
-                        <span>✓</span> <span>Salvar e Emitir</span>
-                    </button>
-                    <button class="dna-primary-btn-lg cyan" style="flex:1;" onclick="WorkshopView.handleMobileSaveInvoice(true)">
-                        <span>↗</span> <span>Emitir Nota Fiscal</span>
-                    </button>
-
-                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar para Todos os Cards</span>
-                    </button>
-</div>
             </div>
         `;
     };
@@ -1629,10 +1570,10 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Clientes</span>
-                    <div style="width:50px;"></div>
+                    
                 </div>
 
                 <div class="dna-mobile-subpage-body">
@@ -1751,10 +1692,10 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Buscar Veículos</span>
-                    <div style="width:50px;"></div>
+                    
                 </div>
 
                 <div class="dna-mobile-subpage-body">
@@ -1868,10 +1809,10 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Relatórios</span>
-                    <div style="width:50px;"></div>
+                    
                 </div>
                 <div class="dna-mobile-subpage-body">
                     <div class="dna-mobile-row-card" onclick="alert('Relatório de serviços emitido em PDF.')">
@@ -1913,10 +1854,10 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Financeiro</span>
-                    <div style="width:50px;"></div>
+                    
                 </div>
                 <div class="dna-mobile-subpage-body">
                     <div style="background:var(--dna-ws-bg-card); border:1px solid var(--dna-ws-border); border-radius:var(--dna-ws-radius-lg); padding:20px; text-align:center;">
@@ -1956,10 +1897,10 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Estoque / Peças</span>
-                    <div style="width:50px;"></div>
+                    
                 </div>
                 <div class="dna-mobile-subpage-body">
                     <div class="dna-mobile-row-card">
@@ -1999,10 +1940,10 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Configurações</span>
-                    <div style="width:50px;"></div>
+                    
                 </div>
                 <div class="dna-mobile-subpage-body">
                     <div class="dna-mobile-row-card" onclick="WorkshopView.openDeviceModal()">
@@ -2044,10 +1985,10 @@
             <div class="dna-mobile-subpage">
                 <div class="dna-mobile-subpage-header">
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar aos Cards</span>
+                        <span>‹</span> <span>Voltar</span>
                     </button>
                     <span class="dna-mobile-subpage-title">Suporte DNA AUTO</span>
-                    <div style="width:50px;"></div>
+                    
                 </div>
                 <div class="dna-mobile-subpage-body">
                     <div style="text-align:center; padding:30px 16px;">
@@ -2562,6 +2503,177 @@
         if (container) {
             container.insertBefore(banner, container.firstChild);
         }
+    };
+
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // HELPER UNIVERSAL: BUSCA DE VEÍCULO POR PLACA EM QUALQUER SERVIÇO
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.renderUniversalVehiclePlateBar = function() {
+        const v = this.selectedMobileVehicle || this.getDefaultMobileVehicles()[0];
+        const recents = this.getEffectiveVehiclesList().slice(0, 4);
+
+        return `
+            <div class="dna-universal-plate-box">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <label style="margin:0; font-size:12px; color:var(--dna-ws-cyan); font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">
+                        🚗 Localizar Veículo Pela Placa:
+                    </label>
+                    <span style="font-size:11px; color:#10B981; font-weight:800;">Ativo: ${v.license_plate}</span>
+                </div>
+
+                <!-- Campo de Busca por Placa -->
+                <div class="dna-input-search-row" style="margin-bottom:8px; display:flex; gap:8px;">
+                    <input 
+                        type="text" 
+                        id="universal-plate-input" 
+                        class="dna-plate-input" 
+                        placeholder="DIGITE A PLACA (EX: ${v.license_plate})" 
+                        maxlength="8"
+                        value="${this.mobileActivePlate || v.license_plate || ''}"
+                        oninput="this.value = this.value.toUpperCase()"
+                        onkeydown="if(event.key==='Enter') WorkshopView.handleUniversalPlateSearch()"
+                        style="flex:1; height:44px; background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.35); border-radius:10px; color:#fff; text-align:center; font-weight:800; font-family:monospace; font-size:15px;"
+                    />
+                    <button type="button" class="dna-search-action-btn" onclick="WorkshopView.handleUniversalPlateSearch()" title="Localizar Placa" style="width:44px; height:44px; font-size:18px; border-radius:10px; background:linear-gradient(135deg, #0052cc, #00d4ff); border:none; color:#fff; cursor:pointer;">
+                        🔍
+                    </button>
+                </div>
+
+                <!-- Atalhos Rápidos dos Últimos Veículos -->
+                <div style="display:flex; align-items:center; gap:6px; overflow-x:auto; padding-bottom:2px;">
+                    <span style="font-size:10px; color:var(--dna-ws-text-dim); white-space:nowrap; text-transform:uppercase;">Recentes:</span>
+                    ${recents.map(r => `
+                        <button type="button" onclick="WorkshopView.selectVehicleByPlate('${r.license_plate}')" style="background:${r.license_plate === v.license_plate ? 'rgba(0,212,255,0.25)' : 'rgba(255,255,255,0.06)'}; border:1px solid ${r.license_plate === v.license_plate ? 'var(--dna-ws-cyan)' : 'rgba(255,255,255,0.15)'}; border-radius:6px; padding:3px 8px; font-size:11px; color:#fff; font-family:monospace; cursor:pointer; white-space:nowrap;">
+                            ${r.license_plate}
+                        </button>
+                    `).join('')}
+                </div>
+
+                <!-- Card Resumo do Veículo Ativo -->
+                <div class="dna-vehicle-preview-card" style="margin-top:10px; padding:10px 12px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:10px; display:flex; align-items:center; gap:10px;">
+                    <div style="width:38px; height:38px; border-radius:8px; background:linear-gradient(135deg, #0066FF, #00D4FF); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">🚗</div>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:13.5px; font-weight:800; color:#FFFFFF; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            ${v.brand || ''} ${v.model || 'Veículo'}
+                        </div>
+                        <div style="font-size:11px; color:var(--dna-ws-cyan); font-weight:700;">
+                            Placa: ${v.license_plate} • Odômetro: ${(v.mileage || 10000).toLocaleString('pt-BR')} km
+                        </div>
+                        <div style="font-size:10.5px; color:var(--dna-ws-text-muted);">
+                            Cliente: ${v.client_name || 'Cliente da Oficina'}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    WorkshopView.selectVehicleByPlate = function(plate) {
+        const found = this.findVehicleByPlate(plate);
+        if (found) {
+            this.selectedMobileVehicle = found;
+            this.mobileActivePlate = found.license_plate;
+            const input = document.getElementById('universal-plate-input');
+            if (input) input.value = found.license_plate;
+            const viewport = document.getElementById('ws-mobile-active-viewport');
+            if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
+        }
+    };
+
+    WorkshopView.handleUniversalPlateSearch = function() {
+        const input = document.getElementById('universal-plate-input');
+        const plate = (input ? input.value : this.mobileActivePlate || '').trim();
+        if (!plate) return;
+
+        const found = this.findVehicleByPlate(plate);
+        if (found) {
+            this.selectedMobileVehicle = found;
+            this.mobileActivePlate = found.license_plate;
+            alert('✅ Veículo ' + found.license_plate + ' (' + found.model + ') localizado com sucesso!');
+        } else {
+            // Cria registro imediato do veículo para a oficina não travar
+            const newVeh = {
+                id: 'veh_' + Date.now(),
+                license_plate: plate.toUpperCase(),
+                brand: 'Veículo',
+                model: 'Modelo Identificado',
+                year: '2022',
+                color: 'Prata',
+                mileage: 45000,
+                client_name: 'Cliente da Oficina',
+                client_phone: '(11) 99999-9999',
+                last_service_date: 'Hoje'
+            };
+            this.selectedMobileVehicle = newVeh;
+            this.mobileActivePlate = newVeh.license_plate;
+            alert('ℹ️ Placa ' + newVeh.license_plate + ' selecionada para este serviço.');
+        }
+
+        const viewport = document.getElementById('ws-mobile-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // HELPER: UPLOAD DUPLO DE FOTOS COM 2 OPÇÕES EXPLÍCITAS (CÂMERA & GALERIA)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.renderDualPhotoUploadSection = function(blockId, title, sublabel) {
+        const photos = this.mobileUploadedPhotos || [];
+        return `
+            <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px; margin-top:8px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <strong style="color:#ffffff; font-size:12.5px; font-weight:800;">${title}</strong>
+                    <span style="font-size:10px; color:var(--dna-ws-cyan); font-weight:700;">${sublabel || '2 Opções'}</span>
+                </div>
+
+                <!-- Inputs Nativos Separados: Câmera com capture="environment" vs Galeria sem capture -->
+                <input type="file" id="${blockId}-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="WorkshopView.handlePhotoInputFiles(this, '${blockId}')" />
+                <input type="file" id="${blockId}-gallery-input" accept="image/*" multiple style="display:none;" onchange="WorkshopView.handlePhotoInputFiles(this, '${blockId}')" />
+
+                <!-- Duas Opções Claras Lado a Lado -->
+                <div class="dna-photo-choice-grid">
+                    <button type="button" class="dna-photo-choice-btn camera" onclick="document.getElementById('${blockId}-camera-input').click()">
+                        <span style="font-size:24px;">📸</span>
+                        <strong>Tirar Foto</strong>
+                        <small>Câmera do aparelho</small>
+                    </button>
+                    <button type="button" class="dna-photo-choice-btn gallery" onclick="document.getElementById('${blockId}-gallery-input').click()">
+                        <span style="font-size:24px;">🖼️</span>
+                        <strong>Buscar Galeria</strong>
+                        <small>Fotos do celular</small>
+                    </button>
+                </div>
+
+                <!-- Miniaturas de Fotos Adicionadas -->
+                <div class="dna-photo-grid" id="${blockId}-preview-grid" style="margin-top:10px;">
+                    ${photos.map((p, idx) => `
+                        <div class="dna-photo-thumb">
+                            <img src="${p}" alt="Foto ${idx+1}" />
+                            <button type="button" class="dna-photo-remove-btn" onclick="WorkshopView.removePhotoByIndex(${idx})">×</button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    };
+
+    WorkshopView.handlePhotoInputFiles = function(input, blockId) {
+        if (!input.files || input.files.length === 0) return;
+        Array.from(input.files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.mobileUploadedPhotos.push(e.target.result);
+                const viewport = document.getElementById('ws-mobile-active-viewport');
+                if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    WorkshopView.removePhotoByIndex = function(idx) {
+        this.mobileUploadedPhotos.splice(idx, 1);
+        const viewport = document.getElementById('ws-mobile-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
     };
 
     WorkshopView.setDesktopMode = function(isWeb) {

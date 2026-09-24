@@ -1033,3 +1033,32 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   2. **16 Módulos em Cards Corporativos:** Entrada de Veículos, Lançar Serviços, Clientes, Notas Fiscais, Enviar Fotos, Buscar Veículos, Manutenções (Radar), Avisos WhatsApp, Relatórios, Financeiro, Estoque / Peças, Configurações, Suporte, App do Cliente, Login / Cadastro e Modo Web (PC).
   3. **Paleta de Cores e Estilo TOTVS:** Criação de gradientes corporativos de alta distinção para todos os 16 cards no `workshop-mobile.css`.
   4. **Sincronização & Testes:** Sincronizado integralmente para `public/` e aprovado com 100% de sucesso na suíte de 45 testes (`npm test`).
+
+---
+
+### Ciclo 53 — Mobile PWA 100% Full-Width: Topo Limpo, Zero Sobreposição no Botão Voltar, Busca Universal por Placa e Fotos com Opção Dupla (Câmera & Galeria)
+- **Data/Hora:** 24/09/2026
+- **Contexto & Escopo:**
+  1. **Topo Limpo e Zero Clutter no App:**
+     - Cabeçalho mobile (`.dna-mobile-header`) simplificado: eliminados os botões redundantes `Web`, `App` e `Login`. O topo agora exibe **apenas** `DNA AUTO` na esquerda e o botão `Sair ↗` na direita.
+     - Removida a sobrecarga de blocos de texto e links compridos sobre os cards, permitindo acesso direto e instantâneo à grade de Cards de Acesso Rápido.
+  2. **Largura 100% Real Edge-to-Edge (Sem Cortes Laterais):**
+     - Remoção de paddings e restrições de `.content-viewport` e `#view-content` no modo da oficina móvel, bem como anulação das regras de `max-width: 480px`.
+     - O container `.dna-mobile-shell` preenche 100% da tela do aparelho de borda a borda, sem sensação de CSS improvisado, sem margens escuras vazias e sem elementos esticados ou comprimidos.
+  3. **Eliminação Definitiva da Sobreposição de Texto no Botão Voltar:**
+     - Reestruturação completa de `.dna-mobile-subpage-header` em container Flex horizontal (`align-items: center; gap: 12px;`).
+     - Botão `‹ Voltar` estilizado como pill button de alta visibilidade e contraste ciano neon (`flex-shrink: 0`).
+     - Título da subpágina (`.dna-mobile-subpage-title`) agora em fluxo estático flexível (`position: static; flex: 1; text-align: left;`), eliminando o antigo posicionamento absoluto que causava letras sobrepostas e ilegibilidade.
+  4. **Busca Universal de Veículo por Placa em Todos os Serviços:**
+     - Implementado o componente `WorkshopView.renderUniversalVehiclePlateBar()` em Lançar Serviços, Detalhes de Serviços Técnicos, Enviar Fotos, Notas Fiscais e Manutenções.
+     - O mecânico pode simplesmente clicar no serviço, digitar a placa no topo (`[ DIGITE A PLACA ] [ 🔍 ]`) ou tocar em um dos atalhos de veículos recentes para vincular imediatamente o atendimento.
+  5. **Upload Duplo Explícito para Inserção de Fotos (Câmera vs Galeria):**
+     - Em todas as telas com inserção de fotos (peças substituídas, serviços técnicos e notas fiscais/comprovantes), foram implementados **dois botões explícitos lado a lado**:
+       - 📸 **Tirar Foto (Câmera do Aparelho)**: aciona nativamente a câmera do smartphone com `capture="environment"`.
+       - 🖼️ **Buscar na Galeria (Fotos do Celular)**: abre a galeria e arquivos locais do aparelho.
+  6. **Anotações Técnicas do Mecânico:**
+     - Inclusão de campos diretos de observações técnicas para registro de detalhes da manutenção, peças aplicadas e garantias.
+  7. **Qualidade e Testes:**
+     - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
+     - Sincronização automática para `public/css/` e `public/js/components/`.
+

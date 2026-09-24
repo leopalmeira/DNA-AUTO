@@ -1539,3 +1539,359 @@ body.is-workshop-erp:not(.force-desktop-mode) .dna-mobile-shell {
     background: linear-gradient(145deg, #1e293b 0%, #334155 60%, #475569 100%);
     box-shadow: 0 8px 20px rgba(30, 41, 59, 0.3);
 }
+
+
+
+
+/* ==========================================================================
+   DNA AUTO - REFINAMENTO OFICIAL MOBILE PWA (100% FULL-WIDTH & ZERO SOBREPOSIÇÃO)
+   ========================================================================== */
+
+/* 1. Largura 100% sem cortes laterais artificiais em toda a hierarquia */
+html, body {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #060B14 !important;
+}
+
+body.is-workshop-erp {
+    background: #060B14 !important;
+}
+
+body.is-workshop-erp:not(.force-desktop-mode) .content-viewport,
+body.is-workshop-erp:not(.force-desktop-mode) #view-content,
+body.is-workshop-erp:not(.force-desktop-mode) #app-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    border: none !important;
+    overflow-x: hidden !important;
+}
+
+body.is-workshop-erp:not(.force-desktop-mode) .dna-mobile-shell,
+.dna-mobile-shell {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 0 36px 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    background: #060B14 !important;
+}
+
+@media (min-width: 900px) {
+    body.is-workshop-erp:not(.force-desktop-mode) .dna-mobile-shell {
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+        box-shadow: none !important;
+    }
+}
+
+/* 2. Header superior limpo: apenas DNA AUTO na esquerda e botão Sair na direita */
+.dna-mobile-header {
+    padding: 12px 14px 10px !important;
+    background: #060B14 !important;
+    border-bottom: 1px solid rgba(0, 102, 255, 0.25) !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+
+.dna-mobile-header-top {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+}
+
+.dna-mobile-logout-btn {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    color: #F87171 !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    padding: 6px 14px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    white-space: nowrap !important;
+    transition: all 0.15s ease !important;
+}
+
+.dna-mobile-logout-btn:hover,
+.dna-mobile-logout-btn:active {
+    background: rgba(239, 68, 68, 0.25) !important;
+    transform: scale(0.97);
+}
+
+/* 3. Subpage Header com FLEX: ZERO SOBREPOSIÇÃO DE TEXTO DO BOTÃO VOLTAR */
+.dna-mobile-subpage-header {
+    min-height: 52px !important;
+    height: auto !important;
+    padding: 10px 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 12px !important;
+    background: #080F1E !important;
+    border-bottom: 1px solid rgba(0, 102, 255, 0.25) !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.dna-mobile-back-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: linear-gradient(135deg, rgba(0, 102, 255, 0.28), rgba(0, 212, 255, 0.22)) !important;
+    border: 1.5px solid #00D4FF !important;
+    color: #00D4FF !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    cursor: pointer !important;
+    padding: 7px 14px !important;
+    border-radius: 8px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    box-shadow: 0 2px 10px rgba(0, 212, 255, 0.25) !important;
+    z-index: 2 !important;
+    transition: all 0.15s ease !important;
+}
+
+.dna-mobile-back-btn:active {
+    background: rgba(0, 212, 255, 0.35) !important;
+    transform: scale(0.96);
+}
+
+.dna-mobile-subpage-title {
+    position: static !important;
+    transform: none !important;
+    left: auto !important;
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    color: #FFFFFF !important;
+    font-family: var(--dna-ws-font-display) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    flex: 1 !important;
+    text-align: left !important;
+    margin: 0 !important;
+    pointer-events: auto !important;
+    min-width: 0 !important;
+}
+
+/* 4. Subpage Body Responsivo (sem cortes nem elementos esticados/comprimidos) */
+.dna-mobile-subpage-body {
+    padding: 12px 12px 28px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    overflow-x: hidden !important;
+}
+
+/* 5. Cards de Acesso Rápido */
+.dna-mobile-grid-section {
+    padding: 8px 12px 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.dna-mobile-actions-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.dna-mobile-action-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    min-height: 120px !important;
+    padding: 14px 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    overflow: hidden !important;
+}
+
+.dna-card-title {
+    font-size: 14px !important;
+    font-weight: 800 !important;
+    color: #FFFFFF !important;
+    margin: 6px 0 3px !important;
+    word-break: break-word !important;
+    line-height: 1.25 !important;
+}
+
+.dna-card-desc {
+    font-size: 11px !important;
+    color: var(--dna-ws-text-muted) !important;
+    line-height: 1.3 !important;
+    word-break: break-word !important;
+    margin: 0 !important;
+}
+
+/* 6. Barra Universal de Identificação de Placa */
+.dna-universal-plate-box {
+    background: linear-gradient(145deg, rgba(13, 24, 44, 0.95), rgba(7, 14, 26, 0.95)) !important;
+    border: 1px solid rgba(0, 102, 255, 0.35) !important;
+    border-radius: 12px !important;
+    padding: 12px 14px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* 7. Controles Segmentados Responsivos */
+.dna-segmented-control {
+    display: flex !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    background: rgba(13, 24, 44, 0.9) !important;
+    border: 1px solid rgba(0, 102, 255, 0.25) !important;
+    border-radius: 10px !important;
+    padding: 3px !important;
+    gap: 3px !important;
+}
+
+.dna-segment-btn {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    padding: 8px 4px !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    border-radius: 8px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* 8. Botões Duplos Explícitos para Foto: Câmera vs Galeria */
+.dna-photo-choice-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-top: 8px !important;
+}
+
+.dna-photo-choice-btn {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    padding: 12px 8px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #FFFFFF !important;
+    transition: all 0.15s ease !important;
+    user-select: none !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+}
+
+.dna-photo-choice-btn.camera {
+    background: linear-gradient(145deg, rgba(0, 102, 255, 0.25), rgba(0, 212, 255, 0.15)) !important;
+    border-color: rgba(0, 212, 255, 0.5) !important;
+}
+
+.dna-photo-choice-btn.gallery {
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.15)) !important;
+    border-color: rgba(168, 85, 247, 0.5) !important;
+}
+
+.dna-photo-choice-btn:active {
+    transform: scale(0.97) !important;
+}
+
+.dna-photo-choice-btn strong {
+    font-size: 13px !important;
+    font-weight: 800 !important;
+}
+
+.dna-photo-choice-btn small {
+    font-size: 10px !important;
+    color: var(--dna-ws-text-muted) !important;
+}
+
+/* 9. Preview de Fotos */
+.dna-photo-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.dna-photo-thumb {
+    position: relative !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(0, 212, 255, 0.3) !important;
+}
+
+.dna-photo-thumb img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+.dna-photo-remove-btn {
+    position: absolute !important;
+    top: 3px !important;
+    right: 3px !important;
+    width: 22px !important;
+    height: 22px !important;
+    border-radius: 50% !important;
+    background: rgba(239, 68, 68, 0.85) !important;
+    color: #fff !important;
+    border: none !important;
+    font-size: 14px !important;
+    line-height: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+}
+
+/* 10. Inputs e Textareas Responsivos */
+.dna-input-group {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.dna-input-field,
+.dna-plate-input,
+textarea.dna-input-field,
+input.dna-plate-input {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
