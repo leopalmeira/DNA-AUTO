@@ -2110,79 +2110,136 @@ const OwnerView = {
                 </div>
             </div>
 
-            <!-- Grid 2x2 de Indicadores (Fiel à Imagem 2 do App) -->
-            <div class="dna-home-grid-2x2">
-                <!-- Card 1: Próxima Revisão -->
-                <div class="dna-home-grid-card" onclick="OwnerView.navigateTo('revisions')">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="dna-grid-card-title">Próxima revisão</span>
-                        <span style="color:#00D4FF;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                        </span>
-                    </div>
-                    <div class="dna-grid-card-val" style="color:#00D4FF;">8.752 km</div>
-                    <span style="font-size:10px; color:#94A3B8;">ou em ~3 meses</span>
-                </div>
-
-                <!-- Card 2: Inspeção Técnica -->
-                <div class="dna-home-grid-card" onclick="OwnerView.navigateTo('inspection')">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="dna-grid-card-title">Inspeção 360°</span>
-                        <span style="color:#10B981;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                        </span>
-                    </div>
-                    <div class="dna-grid-card-val" style="color:#10B981;">Em dia (100%)</div>
-                    <span style="font-size:10px; color:#94A3B8;">Laudo homologado</span>
-                </div>
-
-                <!-- Card 3: Mini OBD2 -->
-                <div class="dna-home-grid-card" onclick="OwnerView.navigateTo('${this.isObdPaired ? 'obd' : 'bluetooth-pair'}')">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="dna-grid-card-title">OBD2 Telemetria</span>
-                        <span style="color:${this.isObdPaired ? '#00E676' : '#F59E0B'}; display:flex; align-items:center; gap:4px;">
-                            <span style="width:6px; height:6px; border-radius:50%; background:${this.isObdPaired ? '#00E676' : '#F59E0B'}; ${this.isObdPaired ? 'box-shadow:0 0 6px #00E676;' : ''}"></span>
-                        </span>
-                    </div>
-                    <div class="dna-grid-card-val" style="color:${this.isObdPaired ? '#00E676' : '#F59E0B'}; font-size:13px;">${this.isObdPaired ? 'Conectado' : 'Não Pareado'}</div>
-                    <span style="font-size:10px; color:#94A3B8;">${this.isObdPaired ? 'Zero DTCs (0 erros)' : 'Toque p/ parear Bluetooth'}</span>
-                </div>
-
-                <!-- Card 4: Alertas e Lembretes -->
-                <div class="dna-home-grid-card" onclick="OwnerView.navigateTo('reminders')">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span class="dna-grid-card-title">Alertas</span>
-                        <span style="color:#F59E0B;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                        </span>
-                    </div>
-                    <div class="dna-grid-card-val" style="color:#FFFFFF;">4 Lembretes</div>
-                    <span style="font-size:10px; color:#F59E0B; font-weight:700;">1 ação preventiva</span>
-                </div>
+            <!-- Hub de Funções do Veículo em Cards (Padrão Oficina) -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 10px;">
+                <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Funções do Seu Veículo</span>
+                <span style="font-size:11px; color:#00D4FF; font-weight:700;">Acesso Rápido</span>
             </div>
 
-            <!-- Card Destaque: Relatório Completo de Manutenções Oficial -->
-            <div class="dna-home-report-card" onclick="OwnerView.openMaintenanceReport()" style="margin-top:14px; background:linear-gradient(135deg, rgba(0,212,255,0.16) 0%, rgba(0,102,255,0.22) 100%); border:1.5px solid #00D4FF; border-radius:12px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; box-shadow:0 0 20px rgba(0,212,255,0.18);">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <div style="width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg, #00D4FF 0%, #0066FF 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 10px rgba(0,212,255,0.3);">
-                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0B0F19" stroke-width="2.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            <div class="dna-client-actions-grid">
+                <!-- Card 1: Mini OBD2 Telemetria -->
+                <div class="dna-client-action-card dna-card-cyan" onclick="OwnerView.navigateTo('${this.isObdPaired ? 'obd' : 'bluetooth-pair'}')">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="dna-client-card-icon-box">📶</div>
+                        <span class="dna-client-card-badge" style="background:${this.isObdPaired ? 'rgba(0,230,118,0.25)' : 'rgba(0,0,0,0.3)'}; color:${this.isObdPaired ? '#00E676' : '#FFFFFF'};">${this.isObdPaired ? 'CONECTADO' : 'PAREAR'}</span>
                     </div>
                     <div>
-                        <div style="display:flex; align-items:center; gap:6px;">
-                            <strong style="font-size:13px; color:#FFFFFF;">Relatório Completo de Manutenções</strong>
-                            <span style="background:#00E676; color:#0B0F19; font-size:8.5px; font-weight:900; padding:1px 5px; border-radius:3px;">OFICIAL</span>
-                        </div>
-                        <span style="font-size:10.5px; color:#94A3B8;">Histórico, 40+ seções, peças, NF, custos e QR Code</span>
+                        <h3 class="dna-client-card-title">Mini OBD2</h3>
+                        <p class="dna-client-card-desc">${this.isObdPaired ? 'Telemetria & Scanner de Injeção' : 'Toque para parear com o carro'}</p>
                     </div>
                 </div>
-                <div style="display:flex; align-items:center; gap:4px; color:#00D4FF; font-size:11.5px; font-weight:800;">
-                    <span>Emitir</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+
+                <!-- Card 2: Serviços & Peças -->
+                <div class="dna-client-action-card dna-card-blue" onclick="OwnerView.navigateTo('services')">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="dna-client-card-icon-box">🔧</div>
+                        <span class="dna-client-card-badge">${v.timeline ? v.timeline.length : 0} REGISTROS</span>
+                    </div>
+                    <div>
+                        <h3 class="dna-client-card-title">Serviços & Peças</h3>
+                        <p class="dna-client-card-desc">Histórico com fotos e notas fiscais</p>
+                    </div>
+                </div>
+
+                <!-- Card 3: Relatório de Gastos -->
+                <div class="dna-client-action-card dna-card-gold" onclick="OwnerView.navigateTo('certification')">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="dna-client-card-icon-box">💰</div>
+                        <span class="dna-client-card-badge">SEMESTRE / ANO</span>
+                    </div>
+                    <div>
+                        <h3 class="dna-client-card-title">Gastos do Carro</h3>
+                        <p class="dna-client-card-desc">Relatório de custos e economias</p>
+                    </div>
+                </div>
+
+                <!-- Card 4: Inspeção Técnica 360° -->
+                <div class="dna-client-action-card dna-card-green" onclick="OwnerView.navigateTo('inspection')">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="dna-client-card-icon-box">🔍</div>
+                        <span class="dna-client-card-badge" style="background:rgba(0,0,0,0.25); color:#FFFFFF;">100% APROVADO</span>
+                    </div>
+                    <div>
+                        <h3 class="dna-client-card-title">Inspeção 360°</h3>
+                        <p class="dna-client-card-desc">Laudo técnico de conformidade</p>
+                    </div>
+                </div>
+
+                <!-- Card 5: Próxima Revisão -->
+                <div class="dna-client-action-card dna-card-indigo" onclick="OwnerView.navigateTo('revisions')">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="dna-client-card-icon-box">🛠️</div>
+                        <span class="dna-client-card-badge">8.752 KM</span>
+                    </div>
+                    <div>
+                        <h3 class="dna-client-card-title">Plano Revisões</h3>
+                        <p class="dna-client-card-desc">Óleo, filtros e itens preventivos</p>
+                    </div>
+                </div>
+
+                <!-- Card 6: Alertas & Manutenção -->
+                <div class="dna-client-action-card dna-card-amber" onclick="OwnerView.navigateTo('reminders')">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="dna-client-card-icon-box">🔔</div>
+                        <span class="dna-client-card-badge" style="background:rgba(0,0,0,0.3); color:#FFD21C;">4 LEMBRETES</span>
+                    </div>
+                    <div>
+                        <h3 class="dna-client-card-title">Alertas do Carro</h3>
+                        <p class="dna-client-card-desc">Manutenções preventivas e dicas</p>
+                    </div>
+                </div>
+
+                <!-- Card 7: Dossiê Completo para Venda -->
+                <div class="dna-client-action-card dna-card-violet" onclick="OwnerView.openMaintenanceReport()">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="dna-client-card-icon-box">📄</div>
+                        <span class="dna-client-card-badge" style="background:#00E676; color:#0B0F19;">OFICIAL</span>
+                    </div>
+                    <div>
+                        <h3 class="dna-client-card-title">Dossiê de Venda</h3>
+                        <p class="dna-client-card-desc">Relatório com QR Code para valorização</p>
+                    </div>
+                </div>
+
+                <!-- Card 8: Certificado Digital DNA AUTO -->
+                <div class="dna-client-action-card dna-card-emerald" onclick="OwnerView.navigateTo('certification')">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="dna-client-card-icon-box">🛡️</div>
+                        <span class="dna-client-card-badge" style="color:#00D4FF;">${v.dna_code || 'DNA'}</span>
+                    </div>
+                    <div>
+                        <h3 class="dna-client-card-title">Passaporte DNA</h3>
+                        <p class="dna-client-card-desc">Certificação oficial blockchain</p>
+                    </div>
+                </div>
+
+                <!-- Card 9: Oficinas Credenciadas -->
+                <div class="dna-client-action-card dna-card-teal" onclick="OwnerView.navigateTo('workshops')">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="dna-client-card-icon-box">🏢</div>
+                        <span class="dna-client-card-badge">REDE DNA</span>
+                    </div>
+                    <div>
+                        <h3 class="dna-client-card-title">Oficinas Parceiras</h3>
+                        <p class="dna-client-card-desc">Encontrar auto center credenciado</p>
+                    </div>
+                </div>
+
+                <!-- Card 10: Configurações & Suporte -->
+                <div class="dna-client-action-card dna-card-slate" onclick="OwnerView.navigateTo('settings')">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div class="dna-client-card-icon-box">⚙️</div>
+                        <span class="dna-client-card-badge">PERFIL</span>
+                    </div>
+                    <div>
+                        <h3 class="dna-client-card-title">Configurações</h3>
+                        <p class="dna-client-card-desc">Dados do motorista e preferências</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Seção Últimos Eventos (Fiel ao Mapa Oficial) -->
-            <div class="dna-events-section" style="margin-top:14px;">
+            <!-- Seção Últimos Eventos (Histórico Recente na Garagem) -->
+            <div class="dna-events-section" style="margin-top:6px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                     <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Últimos eventos</span>
                     <a href="javascript:void(0)" onclick="OwnerView.navigateTo('services')" style="font-size:11px; color:#00D4FF; font-weight:700; text-decoration:none;">Ver todos &gt;</a>
