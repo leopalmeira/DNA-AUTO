@@ -1283,15 +1283,10 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 ### Ciclo 62 — Redesenho Corporativo Estilo TOTVS Enterprise, Card Mini OBD2 Exclusivo para Pareamento, Revisão & Agendamento com Oficina Instaladora (Preferencial), Laudo de Procedência do Veículo com Cobrança Apenas no Download do PDF e Rede Credenciada Segmentada
 - **Data/Hora:** 27/09/2026
 - **Contexto & Escopo:**
-  1. **Redesenho do Cockpit do Veículo no Estilo TOTVS Enterprise:**
-     - Interface superior do app do cliente completamente reformulada com estética corporativa sóbria e refinada (`.dna-vehicle-card-totvs`).
-     - Barra de telemetria técnica superior com LED ativo verde neon (`TELEMETRIA ATIVA`) e chip de identificação (`ID DNA: DNA-BR-9928`).
-     - Stage do carro com iluminação sutil de cockpit (`.dna-totvs-car-glow`), imagem responsiva e botão executivo minimalista de troca de foto.
-     - Identificação com placa padrão Mercosul oficial (cabeçalho azul com bandeira do Brasil e brasão oficial).
-     - Painel métrico com 3 KPIs executivos no estilo ERP TOTVS:
-       - **Odômetro Total:** Leitura direta da injeção eletrônica (ECU) formatada em KM.
-       - **Combustível:** Percentual em tempo real com barra métrica progressiva e autonomia estimada calculada.
-       - **Situação Geral:** Indicador pericial "REGULAR / AUDITADO" com status do dossiê em dia.
+  1. **Preservação da Estrutura Original dos Cards com Visual Modernizado:**
+     - A estrutura original dos cards foi rigorosamente mantida (`.dna-client-actions-grid` e `.dna-client-action-card`), preservando o ícone no topo à esquerda (`.dna-client-card-icon-box`), badge em pílula no topo à direita (`.dna-client-card-badge`) e textos de título e descrição na base.
+     - Modernização estética aplicada com gradientes refinados de alto contraste, bordas translúcidas sutis, efeito de vidro fosco (`backdrop-filter`) e sombras volumétricas ricas.
+     - O card principal do veículo (`.dna-vehicle-card`) mantém sua estrutura original com o LED verde de DNA Ativo, stage do carro com troca de foto, placa Mercosul oficial e a grade de 3 medidores (Quilometragem com leitura da ECU, Combustível com barra métrica e Autonomia calculada).
   2. **Card Mini OBD2 Exclusivo para Pareamento Bluetooth:**
      - O card Mini OBD2 foi desvinculado de telas de telemetria complexas na navegação inicial, direcionando diretamente para o pareamento do dongle Bluetooth/BLE (`OwnerView.navigateTo('bluetooth-pair')`).
      - Badge dinâmico de status (`PAREAR` ou `CONECTADO`) com indicação imediata de conexão ao veículo.
