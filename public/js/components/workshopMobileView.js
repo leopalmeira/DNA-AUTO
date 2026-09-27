@@ -29,6 +29,81 @@
     WorkshopView.authActiveTab = 'login'; // 'login' | 'register'
     WorkshopView.authTargetMode = 'mobile'; // 'mobile' | 'web'
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // SISTEMA DE NOTIFICAÇÕES TOAST IN-APP (SUBSTITUI POPUPS NATIVOS BLOQUEANTES)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.showToast = function(message, type = 'success', duration = 3800) {
+        if (!message) return;
+        let container = document.getElementById('dna-mobile-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'dna-mobile-toast-container';
+            container.className = 'dna-mobile-toast-container';
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `dna-mobile-toast toast-${type}`;
+
+        // Determina ícone baseado no tipo ou no conteúdo
+        let icon = '✨';
+        const strMsg = String(message);
+        if (type === 'success' || strMsg.includes('✅') || strMsg.includes('🎉') || strMsg.includes('🟢') || strMsg.includes('📸') || strMsg.includes('💾')) {
+            icon = '✓';
+            toast.classList.add('toast-success');
+        } else if (type === 'error' || strMsg.includes('❌') || strMsg.toLowerCase().includes('erro')) {
+            icon = '✕';
+            toast.classList.add('toast-error');
+        } else if (type === 'warning' || strMsg.includes('⚠️') || strMsg.includes('Por favor') || strMsg.includes('Digite')) {
+            icon = '⚠️';
+            toast.classList.add('toast-warning');
+        } else if (strMsg.includes('📲') || strMsg.includes('WhatsApp')) {
+            icon = '💬';
+        }
+
+        // Separa título e descrição se contiver quebras de linha (\n)
+        let title = '';
+        let body = '';
+        const lines = strMsg.split('\n').filter(p => p.trim());
+        if (lines.length > 1) {
+            title = lines[0];
+            body = lines.slice(1).join('<br>');
+        } else {
+            title = lines[0] || strMsg;
+            body = '';
+        }
+
+        toast.innerHTML = `
+            <div class="dna-mobile-toast-icon">${icon}</div>
+            <div class="dna-mobile-toast-content">
+                <div class="dna-mobile-toast-title">${title}</div>
+                ${body ? `<div class="dna-mobile-toast-message">${body}</div>` : ''}
+            </div>
+            <button type="button" class="dna-mobile-toast-close" onclick="this.parentElement.remove()">✕</button>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.classList.add('toast-hiding');
+                setTimeout(() => { if (toast.parentElement) toast.remove(); }, 280);
+            }
+        }, duration);
+    };
+
+    // Redireciona alertas nativos do browser e exibe toasts in-app elegantes
+    if (typeof window !== 'undefined') {
+        const _origAlert = window.alert;
+        window.alert = function(msg) {
+            if (typeof WorkshopView !== 'undefined' && WorkshopView.showToast) {
+                WorkshopView.showToast(String(msg || ''));
+            } else if (_origAlert) {
+                _origAlert(msg);
+            }
+        };
+    }
+
     WorkshopView.mobileInvoiceItems = [
         { id: 'item_1', title: 'Troca de Óleo e Filtros', price: 420.00, checked: true },
         { id: 'item_2', title: 'Filtro de Ar', price: 85.00, checked: true },
@@ -720,7 +795,7 @@
         const input = document.getElementById('mobile-entry-plate-input');
         const plate = (input?.value || '').trim().toUpperCase();
         if (!plate) {
-            alert('Por favor, digite a placa do veículo.');
+            WorkshopView.showToast('Por favor, digite a placa do veículo.', 'warning');
             return;
         }
 
@@ -1275,15 +1350,16 @@
                     opacity = 0;
                 }
 
-                // Transformação centralizada no viewport (calc(50% - 38px + y))
+                // Transformação centralizada: .card possui top: 50% e margin-top: -38px no CSS (centro exato)
+                // translateY(${y}px) desloca a partir do centro perfeito
                 card.style.transform = `
-                    translateY(calc(50% - 38px + ${y}px))
+                    translateY(${y}px)
                     scale(${scale})
                     rotateX(${rotateX}deg)
                 `;
                 card.style.opacity = opacity;
                 card.style.filter = `blur(${blur}px)`;
-                card.style.zIndex = 50 - absDistance;
+                card.style.zIndex = (index === current) ? 60 : (40 - absDistance);
 
                 if (index === current) {
                     card.classList.add("active");
@@ -1886,14 +1962,14 @@
     };
 
     WorkshopView.handleRemoveSamplePhoto = function(idx) {
-        alert('Foto removida da prévia.');
+        WorkshopView.showToast('Foto removida da prévia.', 'info');
     };
 
     WorkshopView.handleMobileSavePhotos = function() {
         const v = this.selectedMobileVehicle || this.getDefaultMobileVehicles()[0];
         const desc = document.getElementById('mobile-photo-desc-input')?.value || 'Registro fotográfico';
 
-        alert(`📸 Fotos e comprovante salvos com sucesso para ${v.license_plate}!\nAs fotos foram integradas ao Dossiê 360° e já estão disponíveis no aplicativo do cliente.`);
+        WorkshopView.showToast(`📸 Fotos e comprovante salvos com sucesso para ${v.license_plate}!\nAs fotos foram integradas ao Dossiê 360° e já estão disponíveis no aplicativo do cliente.`, 'success');
         this.switchMobileSection('dashboard');
     };
 
@@ -3594,44 +3670,62 @@
                 <div class="dna-oficina-login-bg" style="background-image: url('${bgImageUrl}'), linear-gradient(180deg, #010C1A, #010712);"></div>
                 <div class="dna-oficina-login-gradient"></div>
 
-                <!-- Conteúdo de Login na Parte Inferior -->
-                <div class="dna-oficina-login-content">
-                    <!-- Frase Motivacional solicitada -->
+                <!-- Card de Login Flutuante de Alta Performance -->
+                <div class="dna-oficina-login-card">
+                    <!-- Badge de Identificação da Oficina -->
+                    <div class="dna-oficina-login-badge">
+                        <span class="dna-oficina-badge-dot"></span>
+                        <span>PORTAL OPERACIONAL DA OFICINA</span>
+                    </div>
+
+                    <!-- Frase Motivacional solicitada com tipografia ultra refinada -->
                     <div class="dna-oficina-login-motto">
                         Mais clientes + faturamento<br/>= <span>mais serviço</span>
                     </div>
                     <div class="dna-oficina-login-subtitle">
-                        Gestão inteligente & Fidelização para sua Auto Center
+                        Gestão inteligente, Dossiê 360° & Fidelização de Veículos
                     </div>
 
-                    <!-- Formulário de Login (letras pretas no input) -->
+                    <!-- Formulário de Login Profissional com Ícones -->
                     <div class="dna-oficina-login-form">
-                        <input 
-                            type="email" 
-                            id="oficina-login-email" 
-                            class="dna-oficina-login-input" 
-                            placeholder="E-mail da sua oficina"
-                            autocomplete="username"
-                        />
-                        <input 
-                            type="password" 
-                            id="oficina-login-password" 
-                            class="dna-oficina-login-input" 
-                            placeholder="Senha de acesso"
-                            autocomplete="current-password"
-                            onkeydown="if(event.key==='Enter') WorkshopView.handleOficinaLogin()"
-                        />
+                        <div class="dna-login-input-group">
+                            <span class="dna-login-input-icon">✉️</span>
+                            <input 
+                                type="email" 
+                                id="oficina-login-email" 
+                                class="dna-oficina-login-input" 
+                                placeholder="E-mail da sua oficina"
+                                autocomplete="username"
+                            />
+                        </div>
+
+                        <div class="dna-login-input-group">
+                            <span class="dna-login-input-icon">🔒</span>
+                            <input 
+                                type="password" 
+                                id="oficina-login-password" 
+                                class="dna-oficina-login-input" 
+                                placeholder="Senha de acesso"
+                                autocomplete="current-password"
+                                onkeydown="if(event.key==='Enter') WorkshopView.handleOficinaLogin()"
+                            />
+                        </div>
 
                         <button type="button" class="dna-oficina-login-btn" onclick="WorkshopView.handleOficinaLogin()">
-                            <span>🔓</span> Entrar no Painel
+                            <span>Entrar no Painel</span>
+                            <span style="font-size:18px;">›</span>
                         </button>
+
+                        <div class="dna-oficina-login-divider">
+                            <span>ou</span>
+                        </div>
 
                         <button type="button" class="dna-oficina-login-register" onclick="WorkshopView.currentSection='auth'; WorkshopView.authActiveTab='register'; WorkshopView.renderMobileShell();">
                             <span>📝</span> Cadastrar minha Auto Center
                         </button>
 
                         <button type="button" class="dna-oficina-login-demo" onclick="WorkshopView.handleWorkshopDemoLogin()">
-                            Acessar como oficina de demonstração
+                            ⚡ Acessar como oficina de demonstração
                         </button>
                     </div>
                 </div>
@@ -3644,7 +3738,7 @@
         const password = (document.getElementById('oficina-login-password')?.value || '').trim();
 
         if (!email || !password) {
-            alert('Por favor, preencha e-mail e senha.');
+            WorkshopView.showToast('Por favor, preencha e-mail e senha.', 'warning');
             return;
         }
 

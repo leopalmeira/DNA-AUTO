@@ -2070,12 +2070,17 @@ input.dna-plate-input {
 /* ==================================================
    CARROSSEL VERTICAL OFICIAL DNA AUTO
    ================================================== */
+/* ==================================================
+   CARROSSEL VERTICAL OFICIAL DNA AUTO (PERFEITAMENTE CENTRALIZADO & AURA CYBER)
+   ================================================== */
 .carousel {
     width: 100%;
     height: 330px;
     position: relative;
     perspective: 1000px;
-    margin-top: 6px;
+    margin-top: 14px;
+    margin-bottom: 8px;
+    box-sizing: border-box;
 }
 
 .viewport {
@@ -2083,20 +2088,26 @@ input.dna-plate-input {
     height: 100%;
     position: relative;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
+/* Área útil dos cards: deixa 16px à esquerda para indicadores e 44px à direita para botões de controle */
 .cards {
     position: absolute;
-    inset: 0;
+    inset: 0 44px 0 16px;
+    pointer-events: auto;
 }
 
-/* CARD ESTREITO NO TAMANHO (ALTURA COMPACTA) E LARGURA NORMAL */
+/* CARD ESTREITO NO TAMANHO (ALTURA COMPACTA) E LARGURA ADAPTATIVA */
 .card {
     position: absolute;
     left: 0;
-    width: 100%;
+    right: 0;
+    width: auto;
     height: 76px;
-    padding: 12px 18px;
+    top: 50%;
+    margin-top: -38px;
+    padding: 12px 16px;
     border-radius: 18px;
     background:
         linear-gradient(
@@ -2117,6 +2128,7 @@ input.dna-plate-input {
         border 350ms ease;
     will-change: transform, opacity, filter;
     overflow: hidden;
+    box-sizing: border-box;
 }
 
 /* brilho muito discreto interno */
@@ -2199,25 +2211,25 @@ input.dna-plate-input {
 }
 
 /* ==================================================
-   CARD SELECIONADO
-   SOMENTE BORDA + AURA
+   CARD SELECIONADO (AURA CYAN DNA AUTO + SOBREPOSIÇÃO PRIORITÁRIA)
    ================================================== */
 .card.active {
     background:
         linear-gradient(
             145deg,
-            #171c22,
-            #0e1217
+            #162438,
+            #0d1726
         );
-    border: 1px solid #2388ff;
+    border: 1.5px solid #00D4FF;
     box-shadow:
-        0 0 6px rgba(35,136,255,.75),
-        0 0 18px rgba(35,136,255,.35),
-        0 0 38px rgba(35,136,255,.12);
-    position: absolute;
+        0 0 10px rgba(0, 212, 255, 0.75),
+        0 0 25px rgba(0, 212, 255, 0.4),
+        0 0 50px rgba(0, 102, 255, 0.25),
+        inset 0 0 14px rgba(0, 212, 255, 0.12);
+    z-index: 60 !important;
 }
 
-/* brilho interno MUITO discreto */
+/* brilho interno no card ativo */
 .card.active::before {
     content: "";
     position: absolute;
@@ -2225,32 +2237,32 @@ input.dna-plate-input {
     border-radius: 18px;
     pointer-events: none;
     box-shadow:
-        inset 0 0 18px rgba(35,136,255,.07);
+        inset 0 0 18px rgba(0, 212, 255, 0.15);
 }
 
 /* ÍCONE DO CARD ATIVO */
 .card.active .icon {
-    background: rgba(35,136,255,.08);
-    border: 1px solid rgba(35,136,255,.35);
+    background: rgba(0, 212, 255, 0.15);
+    border: 1.5px solid rgba(0, 212, 255, 0.5);
     box-shadow:
-        0 0 12px rgba(35,136,255,.18);
+        0 0 14px rgba(0, 212, 255, 0.35);
 }
 
 /* SETA DO CARD ATIVO */
 .card.active .arrow {
-    color: #5da8ff;
-    background: rgba(35,136,255,.08);
-    border: 1px solid rgba(35,136,255,.18);
+    color: #00D4FF;
+    background: rgba(0, 212, 255, 0.12);
+    border: 1.5px solid rgba(0, 212, 255, 0.35);
 }
 
 /* ==================================================
-   MÁSCARAS DE FADE
+   MÁSCARAS DE FADE SUAVES (NÃO COBREM O CARD CENTRAL)
    ================================================== */
 .fade {
     position: absolute;
     left: 0;
     width: 100%;
-    height: 70px;
+    height: 60px;
     z-index: 50;
     pointer-events: none;
 }
@@ -2261,7 +2273,7 @@ input.dna-plate-input {
         linear-gradient(
             to bottom,
             #07090c 5%,
-            rgba(7,9,12,.85) 35%,
+            rgba(7,9,12,.85) 40%,
             rgba(7,9,12,0) 100%
         );
 }
@@ -2272,17 +2284,17 @@ input.dna-plate-input {
         linear-gradient(
             to top,
             #07090c 5%,
-            rgba(7,9,12,.85) 35%,
+            rgba(7,9,12,.85) 40%,
             rgba(7,9,12,0) 100%
         );
 }
 
 /* ==================================================
-   INDICADORES
+   INDICADORES LATERAIS (À ESQUERDA, SEM TOCAR NOS CARDS)
    ================================================== */
 .indicator {
     position: absolute;
-    left: -8px;
+    left: 4px;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
@@ -2305,17 +2317,17 @@ input.dna-plate-input {
 
 .dot.active {
     height: 18px;
-    background: #2388ff;
+    background: #00D4FF;
     box-shadow:
-        0 0 8px rgba(35,136,255,.8);
+        0 0 10px rgba(0, 212, 255, 0.85);
 }
 
 /* ==================================================
-   CONTROLES
+   CONTROLES (À DIREITA, EM COLUNA DEDICADA SEM COBRIR CARDS)
    ================================================== */
 .controls {
     position: absolute;
-    right: -2px;
+    right: 4px;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
@@ -2328,9 +2340,9 @@ input.dna-plate-input {
     width: 34px;
     height: 34px;
     border-radius: 50%;
-    border: 1px solid rgba(255,255,255,.07);
-    background: rgba(15,18,23,.9);
-    color: #77818c;
+    border: 1px solid rgba(255,255,255,.1);
+    background: rgba(15,18,23,.92);
+    color: #94A3B8;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2340,17 +2352,151 @@ input.dna-plate-input {
         background 200ms ease,
         color 200ms ease,
         border 200ms ease,
-        transform 200ms ease;
+        transform 200ms ease,
+        box-shadow 200ms ease;
 }
 
 .control:hover {
     color: #ffffff;
     background: #151a20;
-    border-color: rgba(35,136,255,.4);
+    border-color: rgba(0, 212, 255, 0.5);
+    box-shadow: 0 0 12px rgba(0, 212, 255, 0.25);
 }
 
 .control:active {
     transform: scale(.92);
+}
+
+/* ==============================================================================
+   TOAST / NOTIFICAÇÃO IN-APP MODERNA (SUBSTITUI ALERT NATIVO DO BROWSER)
+   ============================================================================== */
+.dna-mobile-toast-container {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: 410px;
+    z-index: 99999;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dna-mobile-toast {
+    pointer-events: auto;
+    background: linear-gradient(145deg, rgba(14, 25, 44, 0.96), rgba(8, 14, 26, 0.98));
+    border: 1.5px solid rgba(0, 212, 255, 0.45);
+    box-shadow:
+        0 14px 35px rgba(0, 0, 0, 0.75),
+        0 0 25px rgba(0, 212, 255, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 13px 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: #FFFFFF;
+    animation: dnaToastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: all 0.3s ease;
+}
+
+.dna-mobile-toast.toast-hiding {
+    animation: dnaToastSlideOut 0.28s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+
+.dna-mobile-toast-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 10px;
+    background: rgba(0, 212, 255, 0.15);
+    border: 1px solid rgba(0, 212, 255, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.dna-mobile-toast.toast-success .dna-mobile-toast-icon {
+    background: rgba(16, 185, 129, 0.18);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #10B981;
+}
+
+.dna-mobile-toast.toast-error .dna-mobile-toast-icon {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #EF4444;
+}
+
+.dna-mobile-toast.toast-warning .dna-mobile-toast-icon {
+    background: rgba(245, 158, 11, 0.18);
+    border-color: rgba(245, 158, 11, 0.4);
+    color: #F59E0B;
+}
+
+.dna-mobile-toast-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dna-mobile-toast-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin-bottom: 2px;
+    line-height: 1.35;
+    letter-spacing: -0.2px;
+}
+
+.dna-mobile-toast-message {
+    font-size: 12px;
+    color: #94A3B8;
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+.dna-mobile-toast-close {
+    background: none;
+    border: none;
+    color: #64748B;
+    font-size: 18px;
+    padding: 0 4px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+    align-self: flex-start;
+}
+
+.dna-mobile-toast-close:hover {
+    color: #FFFFFF;
+}
+
+@keyframes dnaToastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-24px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes dnaToastSlideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
 }
 
 @media (max-width: 500px) {
@@ -2520,8 +2666,8 @@ input.dna-plate-input {
 }
 
 /* ==============================================================================
-   14. TELA DE LOGIN DO APP DA OFICINA (FUNDO COM IMAGEM + FRASE MOTIVACIONAL)
-   "ter uma frase Mais cliente + faturamento = mais serviço e a área de login em baixo e com a foto de fundo da terceira imagem"
+   14. TELA DE LOGIN DO APP DA OFICINA (DESIGN ULTRA PREMIUM GLASSMORPHISM)
+   "Mais clientes + faturamento = mais serviço"
    ============================================================================== */
 .dna-oficina-login-screen {
     width: 100%;
@@ -2532,16 +2678,17 @@ input.dna-plate-input {
     justify-content: flex-end;
     align-items: center;
     position: relative;
-    overflow: hidden;
-    background: #010A16;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: #020712;
 }
 
 .dna-oficina-login-bg {
     position: absolute;
     inset: 0;
     width: 100%;
-    height: 100%;
-    background-size: cover;
+    height: 60%;
+    background-size: contain;
     background-position: center top;
     background-repeat: no-repeat;
     z-index: 1;
@@ -2549,48 +2696,93 @@ input.dna-plate-input {
 
 .dna-oficina-login-gradient {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 60%;
-    background: linear-gradient(to top, rgba(1, 10, 22, 0.98) 0%, rgba(1, 10, 22, 0.88) 50%, transparent 100%);
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgba(2, 7, 18, 0.1) 0%,
+        rgba(2, 7, 18, 0.4) 30%,
+        rgba(2, 7, 18, 0.85) 52%,
+        #020712 78%
+    );
     z-index: 2;
     pointer-events: none;
 }
 
-.dna-oficina-login-content {
+.dna-oficina-login-card {
     position: relative;
     z-index: 10;
-    width: 100%;
-    max-width: 400px;
-    padding: 0 20px;
-    padding-bottom: calc(28px + env(safe-area-inset-bottom, 16px));
+    width: 92%;
+    max-width: 410px;
+    margin: 0 auto;
+    margin-bottom: calc(20px + env(safe-area-inset-bottom, 12px));
+    padding: 22px 18px 18px;
+    background: linear-gradient(165deg, rgba(14, 25, 44, 0.94) 0%, rgba(8, 14, 26, 0.98) 100%);
+    border: 1.5px solid rgba(0, 212, 255, 0.28);
+    border-radius: 24px;
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.8),
+        0 0 35px rgba(0, 212, 255, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     box-sizing: border-box;
+}
+
+.dna-oficina-login-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.35);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    color: var(--dna-ws-cyan);
+    text-transform: uppercase;
+}
+
+.dna-oficina-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #00D4FF;
+    box-shadow: 0 0 8px #00D4FF;
+    animation: dnaPulseDot 2s infinite;
+}
+
+@keyframes dnaPulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
 }
 
 .dna-oficina-login-motto {
     font-family: var(--dna-ws-font-display);
-    font-size: 21px;
-    font-weight: 800;
+    font-size: 20px;
+    font-weight: 900;
     color: #FFFFFF;
     text-align: center;
-    line-height: 1.35;
-    text-shadow: 0 2px 20px rgba(0, 0, 0, 0.8);
+    line-height: 1.3;
+    letter-spacing: -0.3px;
+    margin: 0;
 }
 
 .dna-oficina-login-motto span {
     color: var(--dna-ws-cyan);
+    text-shadow: 0 0 16px rgba(0, 212, 255, 0.4);
 }
 
 .dna-oficina-login-subtitle {
-    font-size: 12.5px;
-    color: var(--dna-ws-text-muted);
+    font-size: 12px;
+    color: #94A3B8;
     text-align: center;
-    line-height: 1.4;
+    line-height: 1.45;
+    margin-top: -4px;
 }
 
 .dna-oficina-login-form {
@@ -2598,15 +2790,54 @@ input.dna-plate-input {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-top: 4px;
+}
+
+.dna-login-input-group {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.dna-login-input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    pointer-events: none;
+    z-index: 5;
+    color: #64748B;
+}
+
+.dna-oficina-login-input {
+    width: 100% !important;
+    height: 48px !important;
+    padding: 0 16px 0 42px !important;
+    border-radius: 13px !important;
+    background-color: #FFFFFF !important;
+    color: #0F172A !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    border: 1.5px solid #CBD5E1 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    box-sizing: border-box !important;
+    transition: all 0.25s ease !important;
+}
+
+.dna-oficina-login-input:focus {
+    border-color: #00D4FF !important;
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.3), 0 4px 14px rgba(0, 212, 255, 0.15) !important;
+    outline: none !important;
 }
 
 .dna-oficina-login-btn {
     width: 100%;
-    height: 52px;
-    border-radius: 14px;
+    height: 48px;
+    border-radius: 13px;
     background: linear-gradient(135deg, #0084FF 0%, #0052CC 100%);
     color: #FFFFFF;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 800;
     border: none;
     cursor: pointer;
@@ -2614,35 +2845,61 @@ input.dna-plate-input {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 6px 24px rgba(0, 102, 255, 0.55);
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0, 102, 255, 0.45);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    margin-top: 2px;
+}
+
+.dna-oficina-login-btn:hover {
+    box-shadow: 0 8px 26px rgba(0, 102, 255, 0.6);
 }
 
 .dna-oficina-login-btn:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
+}
+
+.dna-oficina-login-divider {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 2px 0;
+}
+
+.dna-oficina-login-divider::before,
+.dna-oficina-login-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.dna-oficina-login-divider span {
+    padding: 0 10px;
+    font-size: 11px;
+    color: #64748B;
+    text-transform: uppercase;
+    font-weight: 700;
 }
 
 .dna-oficina-login-register {
     width: 100%;
-    height: 46px;
-    border-radius: 14px;
-    background: transparent;
-    border: 1.5px solid rgba(0, 212, 255, 0.45);
+    height: 44px;
+    border-radius: 13px;
+    background: rgba(0, 212, 255, 0.06);
+    border: 1.5px solid rgba(0, 212, 255, 0.35);
     color: #FFFFFF;
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
 .dna-oficina-login-register:hover {
-    background: rgba(0, 212, 255, 0.12);
+    background: rgba(0, 212, 255, 0.14);
     border-color: var(--dna-ws-cyan);
 }
 
@@ -2650,12 +2907,18 @@ input.dna-plate-input {
     background: none;
     border: none;
     color: var(--dna-ws-cyan);
-    font-size: 12.5px;
+    font-size: 12px;
     font-weight: 700;
     cursor: pointer;
-    padding: 4px 0;
+    padding: 6px 0;
     text-decoration: underline;
     text-underline-offset: 3px;
+    transition: color 0.2s;
+    text-align: center;
+}
+
+.dna-oficina-login-demo:hover {
+    color: #5da8ff;
 }
 
 /* ==============================================================================

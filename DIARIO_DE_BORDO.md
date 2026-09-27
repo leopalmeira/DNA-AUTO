@@ -1163,3 +1163,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - 45 de 45 testes automatizados aprovados com 100% de sucesso (`npm test`).
      - Arquivos sincronizados em `public/` e `oficina.app/`.
 
+
+---
+
+### Ciclo 55 — Centralização & Aura Cyber do Carrossel de Serviços, Sistema In-App de Notificações Toast e Redesign Glassmorphic da Tela de Login
+- **Data/Hora:** 26/09/2026
+- **Contexto & Escopo:**
+  1. **Centralização Perfeita & Aura Neon Cyber no Carrossel Vertical de Serviços (Lançar Serviços):**
+     - Correção no alinhamento vertical dos cards utilizando base de 	op: 50%; margin-top: -38px no CSS e translação relativa 	ranslateY(y) no JS, eliminando o deslocamento para o topo e garantindo que o serviço selecionado fique exatamente no centro vertical da viewport sem esbarrar no cabeçalho.
+     - Aplicação de canaleta lateral de segurança (inset: 0 44px 0 16px) para isolar os botões de navegação (↑ e ↓) e indicadores, impedindo que os controles fiquem por cima dos cards.
+     - Nova aura cibernética com borda e glow ciano vibrante (#00D4FF), com elevação de z-index: 60 para flutuar acima das máscaras de fade (height: 60px), preservando nitidez total do card ativo.
+  2. **Sistema In-App de Notificações Toast (Substituição de Popups Nativos lert):**
+     - Criação da função WorkshopView.showToast(message, type, duration) com layout flutuante em glassmorphism escuro, ícones dinâmicos (✓, ✕, ⚠️, 💬), tipografia estruturada e fechamento suave.
+     - Interceptação global de window.alert no ambiente mobile da oficina, garantindo que salvamento de fotos, confirmações e avisos nunca congelem o celular nem exibam caixas nativas invasivas do navegador.
+  3. **Redesign Ultra Premium da Tela de Login da Oficina:**
+     - Transformação completa da tela inicial de acesso para um card flutuante em glassmorphism tecnológico (ackdrop-filter: blur(24px) e gradiente obsidian com contorno ciano).
+     - Badge luminoso pulsante: PORTAL OPERACIONAL DA OFICINA.
+     - Tipografia hierárquica e cristalina para o lema oficial: Mais clientes + faturamento = mais serviço com brilho neon.
+     - Inputs modernos com ícones dedicados (✉️ e 🔒), mantendo texto preto de alta visibilidade e foco iluminado.
+     - Ações com botão primário com gradiente e transição tátil, botão secundário e atalho de demonstração em 1 clique.
+  4. **Qualidade e Testes:**
+     - 45 de 45 testes automatizados aprovados (pm test) com 100% de sucesso.
+     - Sincronização completa entre oficina.app/ e public/.

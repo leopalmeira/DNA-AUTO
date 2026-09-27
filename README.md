@@ -9,7 +9,7 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 55):** Reestruturação Completa Mobile-First do Painel da Oficina / Auto Center (`oficina.app`). Letras pretas em todos os campos de digitação com alto contraste e legibilidade impecável para o mecânico. Seletor de serviços vertical em visão de rolo 3D (*picker wheel*) com moldura central pulsante, botões de navegação e snap magnético. Cards de Estoque interativos para entrada/saída de peças sempre protegidos por senha confidencial do financeiro (`123456`). Nova Tela de Login exclusiva da Auto Center acionada ao sair, destacando o wallpaper oficial com carro azul e o lema *"Mais clientes + faturamento = mais serviço"*. 45 de 45 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 55):** Carrossel vertical de serviços perfeitamente centralizado no visor com aura cyber neon (`#00D4FF`), eliminação de colisões no topo e espaçamento lateral seguro para botões e indicadores. Sistema moderno de notificações Toast In-App com glassmorphism escuro e auto-dispensa (substituindo popups nativos `alert`). Redesign Ultra-Premium em glassmorphism tecnológico da tela de login da oficina com badge pulsante, campos com ícones (`✉️`, `🔒`) e lema *"Mais clientes + faturamento = mais serviço"*. 45 de 45 testes automatizados aprovados (100%).
 
 ---
 
