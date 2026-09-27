@@ -3938,7 +3938,7 @@
                     <button type="button" class="dna-oficina-btn-entrar" onclick="WorkshopView.showOficinaLoginForm()">
                         Entrar
                     </button>
-                    <button type="button" class="dna-oficina-btn-cadastrar" onclick="WorkshopView.currentSection='auth'; WorkshopView.authActiveTab='register'; WorkshopView.renderMobileShell();">
+                    <button type="button" class="dna-oficina-btn-cadastrar" onclick="WorkshopView.showOficinaRegisterForm();">
                         Cadastrar
                     </button>
                     <button type="button" class="dna-oficina-login-demo" onclick="WorkshopView.handleWorkshopDemoLogin()">
@@ -3961,19 +3961,26 @@
                 <div class="dna-oficina-login-bg" style="background-image: url('${bgImageUrl}');"></div>
                 <div class="dna-oficina-login-gradient"></div>
 
-                <div class="dna-oficina-login-card">
-                    <div class="dna-oficina-login-badge">
-                        <span class="dna-oficina-badge-dot"></span>
-                        <span>PORTAL OPERACIONAL DA OFICINA</span>
-                    </div>
+                <!-- Seta de Voltar (igual ao app do cliente) -->
+                <button
+                    type="button"
+                    onclick="WorkshopView.showOficinaLoginScreen()"
+                    style="position:absolute; top:calc(18px + env(safe-area-inset-top,0px)); left:16px; z-index:20; background:rgba(0,0,0,0.45); border:none; border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);"
+                    aria-label="Voltar"
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </button>
 
+                <div class="dna-oficina-login-card">
                     <div class="dna-oficina-login-form">
                         <div class="dna-login-input-group">
                             <span class="dna-login-input-icon">✉️</span>
-                            <input 
-                                type="email" 
-                                id="oficina-login-email" 
-                                class="dna-oficina-login-input" 
+                            <input
+                                type="email"
+                                id="oficina-login-email"
+                                class="dna-oficina-login-input"
                                 placeholder="E-mail da sua oficina"
                                 autocomplete="username"
                             />
@@ -3981,10 +3988,10 @@
 
                         <div class="dna-login-input-group">
                             <span class="dna-login-input-icon">🔒</span>
-                            <input 
-                                type="password" 
-                                id="oficina-login-password" 
-                                class="dna-oficina-login-input" 
+                            <input
+                                type="password"
+                                id="oficina-login-password"
+                                class="dna-oficina-login-input"
                                 placeholder="Senha de acesso"
                                 autocomplete="current-password"
                                 onkeydown="if(event.key==='Enter') WorkshopView.handleOficinaLogin()"
@@ -3992,31 +3999,152 @@
                         </div>
 
                         <button type="button" class="dna-oficina-login-btn" onclick="WorkshopView.handleOficinaLogin()">
-                            <span>Entrar no Painel</span>
-                            <span style="font-size:18px;">›</span>
+                            <span>Entrar</span>
                         </button>
 
-                        <div class="dna-oficina-login-divider">
-                            <span>ou</span>
+                        <div style="text-align:center; margin-top:8px;">
+                            <span style="color:#64748B; font-size:12.5px;">Não tem conta? </span>
+                            <a href="javascript:void(0)" onclick="WorkshopView.showOficinaRegisterForm()" style="color:#00D4FF; font-size:12.5px; font-weight:700; text-decoration:none;">Cadastre-se</a>
                         </div>
-
-                        <button type="button" class="dna-oficina-login-register" onclick="WorkshopView.currentSection='auth'; WorkshopView.authActiveTab='register'; WorkshopView.renderMobileShell();">
-                            <span>📝</span> Cadastre-se
-                        </button>
-
-                        <button type="button" class="dna-oficina-login-demo" onclick="WorkshopView.handleWorkshopDemoLogin()">
-                            ⚡ Acessar como oficina de demonstração
-                        </button>
                     </div>
                 </div>
             </div>
         `;
 
-        // Foca automaticamente no campo de e-mail
         setTimeout(() => {
             const emailField = document.getElementById('oficina-login-email');
             if (emailField) emailField.focus();
         }, 120);
+    };
+
+    // Tela de cadastro simples da oficina (chamada ao clicar "Cadastre-se")
+    WorkshopView.showOficinaRegisterForm = function() {
+        const container = document.getElementById('view-content');
+        if (!container) return;
+
+        const bgImageUrl = './img/dna-auto-login-hero.jpg';
+
+        container.innerHTML = `
+            <div class="dna-oficina-login-screen">
+                <div class="dna-oficina-login-bg" style="background-image: url('${bgImageUrl}');"></div>
+                <div class="dna-oficina-login-gradient"></div>
+
+                <!-- Seta de Voltar -->
+                <button
+                    type="button"
+                    onclick="WorkshopView.showOficinaLoginForm()"
+                    style="position:absolute; top:calc(18px + env(safe-area-inset-top,0px)); left:16px; z-index:20; background:rgba(0,0,0,0.45); border:none; border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);"
+                    aria-label="Voltar"
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </button>
+
+                <div class="dna-oficina-login-card" style="max-height:85vh; overflow-y:auto;">
+                    <div style="text-align:center; margin-bottom:14px;">
+                        <strong style="font-size:16px; color:#FFFFFF; display:block;">Cadastrar Oficina</strong>
+                        <span style="font-size:11.5px; color:#94A3B8;">Preencha os dados para criar sua conta</span>
+                    </div>
+
+                    <div class="dna-oficina-login-form">
+                        <div class="dna-login-input-group">
+                            <span class="dna-login-input-icon">🏢</span>
+                            <input
+                                type="text"
+                                id="reg-oficina-nome"
+                                class="dna-oficina-login-input"
+                                placeholder="Nome da Oficina / Auto Center"
+                                required
+                            />
+                        </div>
+
+                        <div class="dna-login-input-group">
+                            <span class="dna-login-input-icon">✉️</span>
+                            <input
+                                type="email"
+                                id="reg-oficina-email"
+                                class="dna-oficina-login-input"
+                                placeholder="E-mail comercial"
+                                autocomplete="email"
+                                required
+                            />
+                        </div>
+
+                        <div class="dna-login-input-group">
+                            <span class="dna-login-input-icon">💬</span>
+                            <input
+                                type="tel"
+                                id="reg-oficina-whatsapp"
+                                class="dna-oficina-login-input"
+                                placeholder="WhatsApp (ex: 11 99999-9999)"
+                                required
+                            />
+                        </div>
+
+                        <div class="dna-login-input-group">
+                            <span class="dna-login-input-icon">🔒</span>
+                            <input
+                                type="password"
+                                id="reg-oficina-senha"
+                                class="dna-oficina-login-input"
+                                placeholder="Criar senha de acesso"
+                                autocomplete="new-password"
+                                required
+                            />
+                        </div>
+
+                        <div id="reg-error-box" style="display:none; color:#EF4444; font-size:12px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); padding:8px 12px; border-radius:8px;"></div>
+
+                        <button type="button" class="dna-oficina-login-btn" onclick="WorkshopView.handleOficinaRegister()">
+                            <span>Criar Conta</span>
+                        </button>
+
+                        <div style="text-align:center; margin-top:8px;">
+                            <span style="color:#64748B; font-size:12.5px;">Já tem conta? </span>
+                            <a href="javascript:void(0)" onclick="WorkshopView.showOficinaLoginForm()" style="color:#00D4FF; font-size:12.5px; font-weight:700; text-decoration:none;">Entrar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    // Handler do cadastro simples
+    WorkshopView.handleOficinaRegister = async function() {
+        const nome = (document.getElementById('reg-oficina-nome')?.value || '').trim();
+        const email = (document.getElementById('reg-oficina-email')?.value || '').trim();
+        const whatsapp = (document.getElementById('reg-oficina-whatsapp')?.value || '').trim();
+        const senha = (document.getElementById('reg-oficina-senha')?.value || '').trim();
+        const errBox = document.getElementById('reg-error-box');
+
+        if (!nome || !email || !whatsapp || !senha) {
+            if (errBox) { errBox.style.display = 'block'; errBox.textContent = 'Preencha todos os campos.'; }
+            return;
+        }
+        if (senha.length < 6) {
+            if (errBox) { errBox.style.display = 'block'; errBox.textContent = 'A senha precisa ter pelo menos 6 caracteres.'; }
+            return;
+        }
+
+        try {
+            if (typeof API !== 'undefined' && API.request) {
+                const res = await API.request('/workshops/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ trade_name: nome, email, phone: whatsapp, password: senha })
+                });
+                if (res && res.token) {
+                    localStorage.setItem('dna_token', res.token);
+                    if (res.user) localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
+                }
+            }
+        } catch (err) {
+            console.warn('Cadastro offline — prosseguindo com conta local:', err);
+        }
+
+        this.officialWorkshopName = nome;
+        localStorage.removeItem('dna_logged_out');
+        this.renderMobileShell();
     };
 
     WorkshopView.handleOficinaLogin = async function() {
