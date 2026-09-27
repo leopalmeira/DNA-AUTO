@@ -1152,6 +1152,20 @@ const SaleReportModal = {
     },
 
     printReport() {
+        const v = (typeof OwnerView !== 'undefined' && OwnerView.vehicleData) || {};
+        const plate = (v.license_plate || 'bra2e19').toLowerCase();
+        const isPaid = (typeof OwnerView !== 'undefined' && OwnerView.isProvenancePaid) || 
+                       (typeof localStorage !== 'undefined' && (localStorage.getItem('dna_provenance_paid_' + plate) === 'true' || localStorage.getItem('dna_cert_paid_' + plate) === 'true'));
+
+        if (!isPaid && typeof OwnerView !== 'undefined' && OwnerView.openProvenancePurchaseModal) {
+            OwnerView.openProvenancePurchaseModal(() => this.executePrint());
+            return;
+        }
+
+        this.executePrint();
+    },
+
+    executePrint() {
         document.body.classList.add('printing-sale-report');
         const cleanup = () => {
             document.body.classList.remove('printing-sale-report');

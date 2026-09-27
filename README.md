@@ -487,3 +487,11 @@ Para evitar que o servidor no plano gratuito do Render entre em modo de suspens�
 ## 📄 Licença e Direitos
 
 Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os direitos reservados à marca **DNA AUTO**.
+
+### Ciclo 62 — Redesenho TOTVS Enterprise, Pareamento Mini OBD2, Agendamento com Oficina Instaladora e Laudo de Procedência
+- Cockpit executivo do carro no estilo TOTVS com 3 KPIs técnicos (Odômetro ECU, Nível de Combustível com barra métrica e Situação Geral).
+- Card Mini OBD2 dedicado exclusivamente para pareamento Bluetooth.
+- Revisão & Agendamento priorizando a oficina de instalação com opção de escolha de qualquer credenciada da rede.
+- Laudo de Procedência do Veículo (dossiê completo) sem valor no card da capa e com taxa de R$ 15,90 apenas ao baixar o PDF.
+- Oficinas e Auto Centers credenciados com busca e abas segmentadas.
+- 45/45 testes automatizados aprovados.

@@ -1277,3 +1277,35 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   3. **Qualidade e Testes:**
      - 45 de 45 testes automatizados aprovados (`npm test`) com 100% de sucesso.
      - Sincronização rigorosa entre `cliente.app/` e `public/`.
+
+---
+
+### Ciclo 62 — Redesenho Corporativo Estilo TOTVS Enterprise, Card Mini OBD2 Exclusivo para Pareamento, Revisão & Agendamento com Oficina Instaladora (Preferencial), Laudo de Procedência do Veículo com Cobrança Apenas no Download do PDF e Rede Credenciada Segmentada
+- **Data/Hora:** 27/09/2026
+- **Contexto & Escopo:**
+  1. **Redesenho do Cockpit do Veículo no Estilo TOTVS Enterprise:**
+     - Interface superior do app do cliente completamente reformulada com estética corporativa sóbria e refinada (`.dna-vehicle-card-totvs`).
+     - Barra de telemetria técnica superior com LED ativo verde neon (`TELEMETRIA ATIVA`) e chip de identificação (`ID DNA: DNA-BR-9928`).
+     - Stage do carro com iluminação sutil de cockpit (`.dna-totvs-car-glow`), imagem responsiva e botão executivo minimalista de troca de foto.
+     - Identificação com placa padrão Mercosul oficial (cabeçalho azul com bandeira do Brasil e brasão oficial).
+     - Painel métrico com 3 KPIs executivos no estilo ERP TOTVS:
+       - **Odômetro Total:** Leitura direta da injeção eletrônica (ECU) formatada em KM.
+       - **Combustível:** Percentual em tempo real com barra métrica progressiva e autonomia estimada calculada.
+       - **Situação Geral:** Indicador pericial "REGULAR / AUDITADO" com status do dossiê em dia.
+  2. **Card Mini OBD2 Exclusivo para Pareamento Bluetooth:**
+     - O card Mini OBD2 foi desvinculado de telas de telemetria complexas na navegação inicial, direcionando diretamente para o pareamento do dongle Bluetooth/BLE (`OwnerView.navigateTo('bluetooth-pair')`).
+     - Badge dinâmico de status (`PAREAR` ou `CONECTADO`) com indicação imediata de conexão ao veículo.
+  3. **Revisão & Agendamento com Vinculação Direta à Oficina de Instalação (Preferencial):**
+     - O card Revisão & Agendamento abre o modal executivo `OwnerView.openSchedulingModal()`.
+     - Destaque nobre com banner ouro/ciano da **Oficina Onde Foi Instalado o Equipamento (Preferencial)**, com botão de 1 clique para agendar revisão periódica via WhatsApp oficial com mensagem inteligente personalizada (marca, modelo e placa do veículo).
+     - Opção nativa para selecionar qualquer outra oficina ou auto center credenciado da rede DNA AUTO.
+  4. **Substituição de Certificado por Laudo de Procedência do Veículo (Cobrança R$ 15,90 Apenas no Download):**
+     - O antigo conceito de "Certificado" foi substituído pelo **Laudo de Procedência do Veículo** (o Dossiê Pericial Completo do carro).
+     - **Sem exibição de preço na capa do card**: O card na Home exibe exclusivamente o badge de auditoria oficial `OFICIAL AUDITADO` e o nome `Laudo de Procedência`, abrindo o dossiê pericial 360° completo (`SaleReportModal`).
+     - **Cobrança justa e transparente**: A taxa única de **R$ 15,90 via PIX** é solicitada estritamente quando o usuário clica para baixar ou imprimir o PDF oficial do laudo (`OwnerView.checkProvenancePaymentBeforeDownload`), liberando a impressão e download imediato após a confirmação.
+  5. **Card Oficinas & Auto Centers com Filtros Segmentados da Rede Credenciada:**
+     - Tela de oficinas atualizada com suporte a abas segmentadas: **"Todas"**, **"Oficinas Mecânicas"** e **"Auto Centers"**, permitindo busca por nome, bairro, cidade ou especialidades técnicas.
+     - Marcação destacada da oficina instaladora com badge `★ ONDE FOI INSTALADO (PREFERENCIAL)`.
+  6. **Qualidade e Testes:**
+     - 45 de 45 testes automatizados aprovados (`npm test`) com 100% de sucesso.
+     - Sincronização rigorosa entre `cliente.app/` e `public/`.

@@ -400,39 +400,68 @@ const OwnerView = {
         }
     ],
 
-    // Oficinas da Rede Credenciadas (Tela 9 do Mapa)
+    // Oficinas e Auto Centers da Rede Credenciada DNA AUTO (Tela 9 do Mapa)
     workshopsList: [
         {
             id: 'ws_autotech',
             name: 'AutoTech Centro Automotivo',
+            type: 'Auto Center',
             rating: '4.9',
             distance: '1.2 km',
             neighborhood: 'Centro',
-            phone: '(11) 99876-5432'
+            city: 'São Paulo - SP',
+            phone: '(11) 99876-5432',
+            installed_here: true,
+            badge: 'Oficina de Instalação (Preferencial)',
+            specialties: 'Auto Center Completo • Diagnóstico Injeção • Geometria 3D & Pneus'
         },
         {
             id: 'ws_speedcar',
-            name: 'Speed Car Oficina',
-            rating: '4.7',
+            name: 'Speed Car Oficina Especializada',
+            type: 'Oficina',
+            rating: '4.8',
             distance: '3.4 km',
             neighborhood: 'Jd. das Flores',
-            phone: '(11) 98765-4321'
+            city: 'São Paulo - SP',
+            phone: '(11) 98765-4321',
+            badge: 'Credenciada DNA AUTO',
+            specialties: 'Mecânica Geral • Câmbio Automático • Freios & Suspensão'
         },
         {
             id: 'ws_topmotors',
-            name: 'Top Motors',
-            rating: '4.5',
+            name: 'Top Motors Auto Center Prime',
+            type: 'Auto Center',
+            rating: '4.7',
             distance: '4.1 km',
             neighborhood: 'Brasil',
-            phone: '(11) 97654-3210'
+            city: 'São Paulo - SP',
+            phone: '(11) 97654-3210',
+            badge: 'Credenciada DNA AUTO',
+            specialties: 'Auto Center • Alinhamento Laser • Ar-Condicionado & Elétrica'
         },
         {
             id: 'ws_marcelo',
-            name: 'Oficina do Marcelo',
-            rating: '4.8',
-            distance: '7.8 km',
-            neighborhood: 'Centro',
-            phone: '(11) 96543-2109'
+            name: 'Oficina Mecânica do Marcelo',
+            type: 'Oficina',
+            rating: '4.9',
+            distance: '5.8 km',
+            neighborhood: 'Vila Mariana',
+            city: 'São Paulo - SP',
+            phone: '(11) 96543-2109',
+            badge: 'Credenciada DNA AUTO',
+            specialties: 'Motores Turbo & Injeção Direta • Revisões Preventivas'
+        },
+        {
+            id: 'ws_veloce',
+            name: 'Veloce Centro Automotivo',
+            type: 'Auto Center',
+            rating: '4.9',
+            distance: '6.2 km',
+            neighborhood: 'Pinheiros',
+            city: 'São Paulo - SP',
+            phone: '(11) 99999-8888',
+            badge: 'Credenciada DNA AUTO',
+            specialties: 'Centro Automotivo Homologado • Inspeção 360° • Telemetria OBD2'
         }
     ],
 
@@ -2180,14 +2209,20 @@ const OwnerView = {
         }
     },
 
-    // ── 1. TELA INICIAL (HOME) — FIEL AO MAPA VISUAL OFICIAL ──
+    // ── 1. TELA INICIAL (HOME) — FIEL AO MAPA VISUAL OFICIAL (ESTILO TOTVS ENTERPRISE) ──
     renderHomeScreen() {
         const v = this.vehicleData;
         return `
             <!-- Saudação Oficial do Usuário -->
-            <div class="dna-owner-welcome-bar" style="margin-bottom:12px;">
-                <h2 style="font-size:18px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">Olá, ${v.user_name && v.user_name !== 'Proprietário' ? v.user_name.split(' ')[0] : (v.user_name || 'Cliente')}!</h2>
-                <p style="font-size:12px; color:#94A3B8; margin:0;">Seu veículo em boas mãos.</p>
+            <div class="dna-owner-welcome-bar" style="margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2 style="font-size:18px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">Olá, ${v.user_name && v.user_name !== 'Proprietário' ? v.user_name.split(' ')[0] : (v.user_name || 'Cliente')}!</h2>
+                    <p style="font-size:12px; color:#94A3B8; margin:0;">Painel de Telemetria e Gestão Veicular</p>
+                </div>
+                <div style="font-size:11px; background:rgba(0,102,255,0.15); color:#00D4FF; border:1px solid rgba(0,102,255,0.3); padding:4px 10px; border-radius:12px; font-weight:700; display:flex; align-items:center; gap:5px;">
+                    <span style="width:6px; height:6px; border-radius:50%; background:#00E676; box-shadow:0 0 6px #00E676;"></span>
+                    <span>ONLINE</span>
+                </div>
             </div>
 
             ${this.userVehicles && this.userVehicles.length > 1 ? `
@@ -2201,230 +2236,250 @@ const OwnerView = {
                 </div>
             ` : ''}
 
-            <!-- Card Principal do Veículo com DNA ATIVO -->
-            <div class="dna-vehicle-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <span style="font-size:11px; font-weight:800; color:#00E676; background:rgba(0,230,118,0.12); border:1px solid rgba(0,230,118,0.3); padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:5px;">
-                        <span style="width:6px; height:6px; border-radius:50%; background:#00E676; box-shadow:0 0 6px #00E676;"></span>
-                        DNA ATIVO
-                    </span>
-                    <span style="font-size:11px; color:#94A3B8; font-family:var(--font-mono, monospace);">${v.dna_code}</span>
+            <!-- CARD PRINCIPAL DO VEÍCULO: COCKPIT EXECUTIVO TOTVS ENTERPRISE -->
+            <div class="dna-vehicle-card-totvs">
+                <!-- Topbar Técnica TOTVS -->
+                <div class="dna-totvs-topbar">
+                    <div class="dna-totvs-status-badge">
+                        <span class="dna-totvs-led-active"></span>
+                        <span>TELEMETRIA ATIVA</span>
+                    </div>
+                    <div class="dna-totvs-code-pill">
+                        <span>ID DNA:</span>
+                        <strong>${v.dna_code || 'DNA-BR-9928'}</strong>
+                    </div>
                 </div>
 
-                <!-- Foto do Carro com Botão de Trocar Foto -->
-                <div class="dna-car-stage" onclick="OwnerView.openChangePhotoModal()" style="cursor:pointer;" title="Clique para trocar foto">
-                    <div class="dna-car-neon-glow"></div>
-                    <img class="dna-car-image" src="${v.photo_url || '/img/splash-car-hero.png'}" alt="${v.full_title}" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
-                    <button class="dna-car-change-photo-btn" onclick="event.stopPropagation(); OwnerView.openChangePhotoModal();" title="Trocar foto do meu carro">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <!-- Stage do Veículo com Iluminação Técnica & Troca de Foto -->
+                <div class="dna-totvs-car-stage" onclick="OwnerView.openChangePhotoModal()" title="Toque para alterar a foto do veículo">
+                    <div class="dna-totvs-car-glow"></div>
+                    <img class="dna-totvs-car-img" src="${v.photo_url || '/img/splash-car-hero.png'}" alt="${v.full_title}" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
+                    <button class="dna-totvs-change-photo-btn" onclick="event.stopPropagation(); OwnerView.openChangePhotoModal();" title="Trocar foto do meu carro">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                         <span>Trocar Foto</span>
                     </button>
                 </div>
 
-                <!-- Título do Veículo, Ano e Placa Mercosul -->
-                <div style="margin: 10px 0 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <div>
-                        <h3 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">${v.full_title}</h3>
-                        <div style="font-size:12px; color:#94A3B8; font-weight:600;">${v.manufacture_year}/${v.model_year}</div>
+                <!-- Identificação Principal & Placa Mercosul Oficial -->
+                <div class="dna-totvs-vehicle-info">
+                    <div class="dna-totvs-info-main">
+                        <h3 class="dna-totvs-vehicle-title">${v.full_title}</h3>
+                        <div class="dna-totvs-vehicle-sub">${v.manufacture_year}/${v.model_year} • ${v.fuel_type || 'Flex'} • Câmbio ${v.transmission_type || 'Automático'}</div>
                     </div>
-                    <div class="dna-plate-mercosul" style="background:#FFFFFF; color:#0B0F19; border-radius:6px; padding:2px 8px; font-family:var(--font-mono, monospace); font-weight:800; font-size:12px; border:1.5px solid #000; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(0,0,0,0.4);">
-                        <span style="background:#003399; color:#FFF; font-size:8px; padding:1px 3px; border-radius:2px;">BR</span>
-                        <span>${v.license_plate}</span>
+                    <div class="dna-totvs-plate-box">
+                        <div class="dna-totvs-plate-header">
+                            <span class="dna-totvs-plate-flag">🇧🇷</span>
+                            <span class="dna-totvs-plate-country">BRASIL</span>
+                            <span class="dna-totvs-plate-br">BR</span>
+                        </div>
+                        <div class="dna-totvs-plate-text">${v.license_plate}</div>
                     </div>
                 </div>
 
-                <!-- 3 Medidores em Grade (Quilometragem | Combustível | Autonomia) -->
-                <div class="dna-metrics-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-                    <div class="dna-metric-box" onclick="OwnerView.navigateTo('${this.isObdPaired ? 'obd' : 'bluetooth-pair'}')" style="cursor:pointer;" title="Ver odômetro da ECU">
-                        <div class="dna-metric-label" style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Quilometragem</div>
-                        <div class="dna-metric-value" style="font-size:13.5px; font-weight:800; color:#FFFFFF;">${Number(v.current_mileage).toLocaleString('pt-BR')} km</div>
+                <!-- Painel de Métricas Técnicas TOTVS (3 KPIs Corporativos) -->
+                <div class="dna-totvs-metrics-panel">
+                    <div class="dna-totvs-kpi-card" onclick="OwnerView.navigateTo('bluetooth-pair')" title="Odômetro sincronizado via ECU">
+                        <div class="dna-totvs-kpi-head">ODÔMETRO TOTAL</div>
+                        <div class="dna-totvs-kpi-val">${Number(v.current_mileage).toLocaleString('pt-BR')} <span style="font-size:10px; font-weight:700; color:#64748B;">KM</span></div>
+                        <div class="dna-totvs-kpi-sub">Leitura direta da injeção</div>
                     </div>
-                    <div class="dna-metric-box">
-                        <div class="dna-metric-label" style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Combustível</div>
-                        <div class="dna-metric-value" style="font-size:13.5px; font-weight:800; color:#00D4FF;">${v.fuel_level}%</div>
-                        <div class="dna-fuel-bar" style="height:3px; background:rgba(255,255,255,0.1); border-radius:2px; margin-top:4px;"><div class="dna-fuel-fill" style="width:${v.fuel_level}%; height:100%; background:#00D4FF; border-radius:2px;"></div></div>
+                    <div class="dna-totvs-kpi-card" title="Nível de combustível do tanque">
+                        <div class="dna-totvs-kpi-head">COMBUSTÍVEL</div>
+                        <div class="dna-totvs-kpi-val" style="color:#00D4FF;">${v.fuel_level}%</div>
+                        <div class="dna-fuel-track">
+                            <div class="dna-fuel-bar" style="width:${v.fuel_level}%;"></div>
+                        </div>
+                        <div class="dna-totvs-kpi-sub">Autonomia ~${v.estimated_range} km</div>
                     </div>
-                    <div class="dna-metric-box">
-                        <div class="dna-metric-label" style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Autonomia</div>
-                        <div class="dna-metric-value" style="font-size:13.5px; font-weight:800; color:#10B981;">~ ${v.estimated_range} km</div>
+                    <div class="dna-totvs-kpi-card" onclick="OwnerView.openProvenanceReport()" title="Situação pericial do veículo">
+                        <div class="dna-totvs-kpi-head">SITUAÇÃO GERAL</div>
+                        <div class="dna-totvs-kpi-val" style="color:#00E676; font-size:12.5px;">REGULAR</div>
+                        <div class="dna-totvs-kpi-sub">Dossiê 100% Auditado</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Hub de Funções do Veículo em Cards (Padrão Oficina) -->
-            <div style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 10px;">
-                <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Funções do Seu Veículo</span>
-                <span style="font-size:11px; color:#00D4FF; font-weight:700;">Acesso Rápido</span>
+            <!-- TÍTULO DA CENTRAL DE OPERAÇÕES TOTVS -->
+            <div class="dna-totvs-section-header" style="margin: 16px 0 10px; display: flex; justify-content: space-between; align-items: center;">
+                <span class="dna-totvs-section-title" style="font-size: 11.5px; font-weight: 800; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.6px;">Central de Operações do Veículo</span>
+                <span class="dna-totvs-section-tag" style="font-size: 10.5px; color: #00D4FF; font-weight: 700;">PADRÃO TOTVS</span>
             </div>
 
-            <div class="dna-client-actions-grid">
-                <!-- Card 1: Mini OBD2 Telemetria -->
-                <div class="dna-client-action-card dna-card-cyan" onclick="OwnerView.navigateTo('${this.isObdPaired ? 'obd' : 'bluetooth-pair'}')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">📶</div>
-                        <span class="dna-client-card-badge" style="background:${this.isObdPaired ? 'rgba(0,230,118,0.25)' : 'rgba(0,0,0,0.3)'}; color:${this.isObdPaired ? '#00E676' : '#FFFFFF'};">${this.isObdPaired ? 'CONECTADO' : 'PAREAR'}</span>
+            <!-- GRADE DE 9 CARDS DE AÇÃO EXECUTIVOS ESTILO TOTVS -->
+            <div class="dna-totvs-cards-grid">
+                <!-- Card 1: Mini OBD2 (APENAS PAREAMENTO DO EQUIPAMENTO) -->
+                <div class="dna-totvs-action-card dna-accent-cyan" onclick="OwnerView.navigateTo('bluetooth-pair')">
+                    <div class="dna-totvs-card-top">
+                        <div class="dna-totvs-card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                        </div>
+                        <span class="dna-totvs-card-badge ${this.isObdPaired ? 'badge-connected' : 'badge-pair'}">${this.isObdPaired ? 'CONECTADO' : 'PAREAR'}</span>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Mini OBD2</h3>
-                        <p class="dna-client-card-desc">${this.isObdPaired ? 'Telemetria & Scanner de Injeção' : 'Toque para parear com o carro'}</p>
+                    <div class="dna-totvs-card-body">
+                        <h3 class="dna-totvs-card-title">Mini OBD2</h3>
+                        <p class="dna-totvs-card-desc">${this.isObdPaired ? 'Equipamento conectado via Bluetooth' : 'Parear equipamento no veículo'}</p>
                     </div>
                 </div>
 
                 <!-- Card 2: Serviços & Peças -->
-                <div class="dna-client-action-card dna-card-blue" onclick="OwnerView.navigateTo('services')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">🔧</div>
-                        <span class="dna-client-card-badge">${v.timeline ? v.timeline.length : 0} REGISTROS</span>
+                <div class="dna-totvs-action-card dna-accent-blue" onclick="OwnerView.navigateTo('services')">
+                    <div class="dna-totvs-card-top">
+                        <div class="dna-totvs-card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                        </div>
+                        <span class="dna-totvs-card-badge">${v.timeline ? v.timeline.length : 0} REGISTROS</span>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Serviços & Peças</h3>
-                        <p class="dna-client-card-desc">Histórico com fotos e notas fiscais</p>
-                    </div>
-                </div>
-
-                <!-- Card 3: Relatório de Gastos -->
-                <div class="dna-client-action-card dna-card-gold" onclick="OwnerView.navigateTo('certification')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">💰</div>
-                        <span class="dna-client-card-badge">SEMESTRE / ANO</span>
-                    </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Gastos do Carro</h3>
-                        <p class="dna-client-card-desc">Relatório de custos e economias</p>
+                    <div class="dna-totvs-card-body">
+                        <h3 class="dna-totvs-card-title">Serviços & Peças</h3>
+                        <p class="dna-totvs-card-desc">Histórico com fotos de peças e notas fiscais</p>
                     </div>
                 </div>
 
-                <!-- Card 4: Inspeção Técnica 360° -->
-                <div class="dna-client-action-card dna-card-green" onclick="OwnerView.navigateTo('inspection')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">🔍</div>
-                        <span class="dna-client-card-badge" style="background:rgba(0,0,0,0.25); color:#FFFFFF;">100% APROVADO</span>
+                <!-- Card 3: Revisão & Agendamento (DIRETO COM OFICINA DE INSTALAÇÃO OU ESCOLHER OUTRA) -->
+                <div class="dna-totvs-action-card dna-accent-amber" onclick="OwnerView.openSchedulingModal()">
+                    <div class="dna-totvs-card-top">
+                        <div class="dna-totvs-card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M12 14v4"/><path d="M10 16h4"/></svg>
+                        </div>
+                        <span class="dna-totvs-card-badge badge-schedule">PREFERENCIAL</span>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Inspeção 360°</h3>
-                        <p class="dna-client-card-desc">Laudo técnico de conformidade</p>
+                    <div class="dna-totvs-card-body">
+                        <h3 class="dna-totvs-card-title">Revisão & Agendamento</h3>
+                        <p class="dna-totvs-card-desc">Agende com sua oficina de instalação</p>
                     </div>
                 </div>
 
-                <!-- Card 5: Próxima Revisão -->
-                <div class="dna-client-action-card dna-card-indigo" onclick="OwnerView.navigateTo('revisions')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">🛠️</div>
-                        <span class="dna-client-card-badge">8.752 KM</span>
+                <!-- Card 4: Laudo de Procedência do Veículo (DOSSIÊ COMPLETO - SEM PREÇO NA CAPA) -->
+                <div class="dna-totvs-action-card dna-accent-emerald" onclick="OwnerView.openProvenanceReport()">
+                    <div class="dna-totvs-card-top">
+                        <div class="dna-totvs-card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        </div>
+                        <span class="dna-totvs-card-badge badge-provenance">OFICIAL</span>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Plano Revisões</h3>
-                        <p class="dna-client-card-desc">Óleo, filtros e itens preventivos</p>
+                    <div class="dna-totvs-card-body">
+                        <h3 class="dna-totvs-card-title">Laudo de Procedência</h3>
+                        <p class="dna-totvs-card-desc">Dossiê pericial veicular completo com QR Code</p>
+                    </div>
+                </div>
+
+                <!-- Card 5: Inspeção Técnica 360° -->
+                <div class="dna-totvs-action-card dna-accent-green" onclick="OwnerView.navigateTo('inspection')">
+                    <div class="dna-totvs-card-top">
+                        <div class="dna-totvs-card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                        </div>
+                        <span class="dna-totvs-card-badge" style="background:rgba(0,230,118,0.18); color:#00E676;">100% APROVADO</span>
+                    </div>
+                    <div class="dna-totvs-card-body">
+                        <h3 class="dna-totvs-card-title">Inspeção 360°</h3>
+                        <p class="dna-totvs-card-desc">Laudo técnico pericial de conformidade</p>
                     </div>
                 </div>
 
                 <!-- Card 6: Alertas & Manutenção -->
-                <div class="dna-client-action-card dna-card-amber" onclick="OwnerView.navigateTo('reminders')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">🔔</div>
-                        <span class="dna-client-card-badge" style="background:rgba(0,0,0,0.3); color:#FFD21C;">4 LEMBRETES</span>
+                <div class="dna-totvs-action-card dna-accent-orange" onclick="OwnerView.navigateTo('reminders')">
+                    <div class="dna-totvs-card-top">
+                        <div class="dna-totvs-card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                        </div>
+                        <span class="dna-totvs-card-badge" style="background:rgba(251,146,60,0.18); color:#FB923C;">4 ALERTAS</span>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Alertas do Carro</h3>
-                        <p class="dna-client-card-desc">Manutenções preventivas e dicas</p>
-                    </div>
-                </div>
-
-                <!-- Card 7: Dossiê Completo para Venda -->
-                <div class="dna-client-action-card dna-card-violet" onclick="OwnerView.openMaintenanceReport()">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">📄</div>
-                        <span class="dna-client-card-badge" style="background:#00E676; color:#0B0F19;">OFICIAL</span>
-                    </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Dossiê de Venda</h3>
-                        <p class="dna-client-card-desc">Relatório com QR Code para valorização</p>
+                    <div class="dna-totvs-card-body">
+                        <h3 class="dna-totvs-card-title">Alertas do Carro</h3>
+                        <p class="dna-totvs-card-desc">Itens preventivos e lembretes de troca</p>
                     </div>
                 </div>
 
-                <!-- Card 8: Certificado DNA AUTO (Função Paga R$ 15,90) -->
-                <div class="dna-client-action-card dna-card-emerald" onclick="OwnerView.openCertificatePurchaseModal()">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">🛡️</div>
-                        <span class="dna-client-card-badge" style="background:#10B981; color:#0B0F19; font-weight:900;">R$ 15,90</span>
+                <!-- Card 7: Gastos do Carro -->
+                <div class="dna-totvs-action-card dna-accent-indigo" onclick="OwnerView.navigateTo('certification')">
+                    <div class="dna-totvs-card-top">
+                        <div class="dna-totvs-card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </div>
+                        <span class="dna-totvs-card-badge">FINANCEIRO</span>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Certificado DNA</h3>
-                        <p class="dna-client-card-desc">Emissão oficial autenticada (R$ 15,90)</p>
-                    </div>
-                </div>
-
-                <!-- Card 9: Oficinas Credenciadas -->
-                <div class="dna-client-action-card dna-card-teal" onclick="OwnerView.navigateTo('workshops')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">🏢</div>
-                        <span class="dna-client-card-badge">REDE DNA</span>
-                    </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Oficinas Parceiras</h3>
-                        <p class="dna-client-card-desc">Encontrar auto center credenciado</p>
+                    <div class="dna-totvs-card-body">
+                        <h3 class="dna-totvs-card-title">Gastos do Carro</h3>
+                        <p class="dna-totvs-card-desc">Relatório financeiro de custos e economias</p>
                     </div>
                 </div>
 
-                <!-- Card 10: Configurações & Suporte -->
-                <div class="dna-client-action-card dna-card-slate" onclick="OwnerView.navigateTo('settings')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">⚙️</div>
-                        <span class="dna-client-card-badge">PERFIL</span>
+                <!-- Card 8: Oficinas & Auto Centers (REDE CREDENCIADA DNA AUTO) -->
+                <div class="dna-totvs-action-card dna-accent-teal" onclick="OwnerView.navigateTo('workshops')">
+                    <div class="dna-totvs-card-top">
+                        <div class="dna-totvs-card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-3"/><line x1="9" y1="9" x2="9" y2="9.01"/><line x1="9" y1="13" x2="9" y2="13.01"/><line x1="9" y1="17" x2="9" y2="17.01"/></svg>
+                        </div>
+                        <span class="dna-totvs-card-badge">REDE DNA</span>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Configurações</h3>
-                        <p class="dna-client-card-desc">Dados do motorista e preferências</p>
+                    <div class="dna-totvs-card-body">
+                        <h3 class="dna-totvs-card-title">Oficinas & Auto Centers</h3>
+                        <p class="dna-totvs-card-desc">Rede credenciada mecânica e auto centers</p>
+                    </div>
+                </div>
+
+                <!-- Card 9: Configurações & Perfil -->
+                <div class="dna-totvs-action-card dna-accent-slate" onclick="OwnerView.navigateTo('settings')">
+                    <div class="dna-totvs-card-top">
+                        <div class="dna-totvs-card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        </div>
+                        <span class="dna-totvs-card-badge">PERFIL</span>
+                    </div>
+                    <div class="dna-totvs-card-body">
+                        <h3 class="dna-totvs-card-title">Configurações</h3>
+                        <p class="dna-totvs-card-desc">Dados do motorista e preferências do app</p>
                     </div>
                 </div>
             </div>
 
             <!-- Seção Últimos Eventos (Histórico Recente na Garagem) -->
-            <div class="dna-events-section" style="margin-top:6px;">
+            <div class="dna-events-section" style="margin-top:16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Últimos eventos</span>
+                    <span style="font-size:11.5px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Últimos eventos</span>
                     <a href="javascript:void(0)" onclick="OwnerView.navigateTo('services')" style="font-size:11px; color:#00D4FF; font-weight:700; text-decoration:none;">Ver todos &gt;</a>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:8px;">
-                    <div class="dna-event-item" onclick="OwnerView.navigateTo('services')" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-radius:12px; padding:10px 14px; display:flex; align-items:center; gap:12px; cursor:pointer;">
-                        <div style="width:30px; height:30px; border-radius:50%; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; color:#10B981; flex-shrink:0;">
+                    <div class="dna-event-item" onclick="OwnerView.navigateTo('services')" style="background:#101B2E; border:1px solid rgba(0,102,255,0.22); border-radius:12px; padding:10px 14px; display:flex; align-items:center; gap:12px; cursor:pointer;">
+                        <div style="width:32px; height:32px; border-radius:8px; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; color:#10B981; flex-shrink:0;">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
                         </div>
                         <div style="flex:1;">
-                            <strong style="color:#FFFFFF; font-size:12.5px; display:block;">Revisão realizada - 80.000 km</strong>
-                            <span style="color:#94A3B8; font-size:11px;">12/04/2025 - Oficina AutoTech</span>
+                            <strong style="color:#FFFFFF; font-size:12.5px; display:block;">Revisão periódica realizada - 80.000 km</strong>
+                            <span style="color:#94A3B8; font-size:11px;">Oficina AutoTech (Instaladora) • Óleo Sintético e Filtros</span>
                         </div>
                     </div>
-                    <div class="dna-event-item" onclick="OwnerView.navigateTo('inspection')" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-radius:12px; padding:10px 14px; display:flex; align-items:center; gap:12px; cursor:pointer;">
-                        <div style="width:30px; height:30px; border-radius:50%; background:rgba(0,212,255,0.15); display:flex; align-items:center; justify-content:center; color:#00D4FF; flex-shrink:0;">
+                    <div class="dna-event-item" onclick="OwnerView.navigateTo('inspection')" style="background:#101B2E; border:1px solid rgba(0,102,255,0.22); border-radius:12px; padding:10px 14px; display:flex; align-items:center; gap:12px; cursor:pointer;">
+                        <div style="width:32px; height:32px; border-radius:8px; background:rgba(0,212,255,0.15); display:flex; align-items:center; justify-content:center; color:#00D4FF; flex-shrink:0;">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                         </div>
                         <div style="flex:1;">
-                            <strong style="color:#FFFFFF; font-size:12.5px; display:block;">Inspeção técnica - Aprovada</strong>
-                            <span style="color:#94A3B8; font-size:11px;">10/02/2025 - DNA AUTO</span>
+                            <strong style="color:#FFFFFF; font-size:12.5px; display:block;">Inspeção técnica pericial - Aprovada</strong>
+                            <span style="color:#94A3B8; font-size:11px;">DNA AUTO • Dossiê de Procedência 100% Válido</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card de Proteção Inferior -->
-            <div class="dna-protection-card" onclick="OwnerView.navigateTo('certification')" style="cursor:pointer; margin-top:14px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:12px;">
+            <!-- Card de Proteção e Laudo de Procedência -->
+            <div class="dna-protection-card" onclick="OwnerView.openProvenanceReport()" style="cursor:pointer; margin-top:14px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:12px;">
                 <div class="dna-prot-icon" style="color:#10B981; display:flex; align-items:center;">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                         <polyline points="9 12 11 14 15 10"/>
                     </svg>
                 </div>
-                <div class="dna-prot-text">
-                    <strong style="color:#FFFFFF; font-size:12.5px; display:block;">Seu veículo protegido</strong>
-                    <span style="color:#10B981; font-size:11px; font-weight:700;">Com a certificação DNA AUTO</span>
+                <div class="dna-prot-text" style="flex:1;">
+                    <strong style="color:#FFFFFF; font-size:12.5px; display:block;">Laudo de Procedência Ativo</strong>
+                    <span style="color:#10B981; font-size:11px; font-weight:700;">Dossiê completo com validação pericial e QR Code</span>
                 </div>
+                <span style="color:#00D4FF; font-size:11px; font-weight:800;">Acessar &gt;</span>
             </div>
 
             <div style="height:10px;"></div>
         `;
     },
-
     // ── 2. TELA: MEU VEÍCULO (TELA 2 DO MAPA) ──
     renderVehicleScreen() {
         const v = this.vehicleData;
@@ -3626,7 +3681,7 @@ const OwnerView = {
         `;
     },
 
-    // ── 9. TELA: OFICINAS DA REDE (TELA 9 DO MAPA) ──
+    // ── 9. TELA: OFICINAS E AUTO CENTERS DA REDE (TELA 9 DO MAPA) ──
     renderWorkshopsScreen() {
         let list = this.workshopsList || [];
         const tab = this.workshopFilterTab || 'all';
@@ -3640,56 +3695,91 @@ const OwnerView = {
 
         if (q) {
             list = list.filter(w => 
-                (w.name && w.name.toLowerCase().includes(q)) || 
-                (w.city && w.city.toLowerCase().includes(q)) ||
-                (w.neighborhood && w.neighborhood.toLowerCase().includes(q))
+                (w.name && w.name.toLowerCase().includes(q.toLowerCase())) || 
+                (w.city && w.city.toLowerCase().includes(q.toLowerCase())) ||
+                (w.neighborhood && w.neighborhood.toLowerCase().includes(q.toLowerCase())) ||
+                (w.specialties && w.specialties.toLowerCase().includes(q.toLowerCase()))
             );
         }
 
+        const v = this.vehicleData;
+
         return `
             <div style="display:flex; flex-direction:column; gap:12px;">
-                <!-- Campo de Busca de Oficinas -->
+                <!-- Cabeçalho Informativo -->
+                <div style="background:#101B2E; border:1px solid #1E293B; border-radius:12px; padding:12px 14px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h4 style="margin:0; font-size:13px; font-weight:800; color:#FFFFFF;">Rede Credenciada DNA AUTO</h4>
+                        <span style="font-size:10.5px; background:rgba(0,212,255,0.12); color:#00D4FF; padding:2px 8px; border-radius:6px; font-weight:700;">OFICINAS & AUTO CENTERS</span>
+                    </div>
+                    <p style="margin:4px 0 0; font-size:11px; color:#94A3B8;">Encontre oficinas mecânicas e centros automotivos homologados para o seu veículo.</p>
+                </div>
+
+                <!-- Campo de Busca -->
                 <div style="position:relative;">
-                    <input type="text" class="form-control" placeholder="Buscar oficina ou cidade..." value="${this.workshopSearchQuery || ''}" oninput="OwnerView.setWorkshopSearch(this.value)" style="width:100%; background:#050B14; border:1px solid rgba(0,102,255,0.3); border-radius:10px; padding:10px 14px; font-size:12.5px; color:#FFFFFF;" />
+                    <input type="text" class="form-control" placeholder="Buscar oficina, auto center, bairro ou serviço..." value="${this.workshopSearchQuery || ''}" oninput="OwnerView.setWorkshopSearch(this.value)" style="width:100%; background:#050B14; border:1px solid rgba(0,102,255,0.3); border-radius:10px; padding:10px 14px; font-size:12.5px; color:#FFFFFF;" />
                 </div>
 
                 <!-- Filtros em Abas Segmentadas -->
                 <div class="dna-workshops-filter-chips">
                     <button class="dna-history-filter-btn ${tab === 'all' ? 'active' : ''}" onclick="OwnerView.setWorkshopFilter('all')">Todas</button>
-                    <button class="dna-history-filter-btn ${tab === 'workshops' ? 'active' : ''}" onclick="OwnerView.setWorkshopFilter('workshops')">Oficinas</button>
+                    <button class="dna-history-filter-btn ${tab === 'workshops' ? 'active' : ''}" onclick="OwnerView.setWorkshopFilter('workshops')">Oficinas Mecânicas</button>
                     <button class="dna-history-filter-btn ${tab === 'centers' ? 'active' : ''}" onclick="OwnerView.setWorkshopFilter('centers')">Auto Centers</button>
                 </div>
 
                 <!-- Lista de Oficinas Credenciadas -->
-                <div style="display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; flex-direction:column; gap:10px;">
                     ${list.length === 0 ? `
-                        <div style="text-align:center; padding:24px 10px; color:#94A3B8; font-size:12px;">
-                            Nenhuma oficina credenciada encontrada com o filtro atual.
+                        <div style="text-align:center; padding:24px 10px; color:#94A3B8; font-size:12px; background:#101B2E; border-radius:12px;">
+                            Nenhuma oficina ou auto center credenciado encontrado com o filtro atual.
                         </div>
-                    ` : list.map(w => `
-                        <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <h4 style="font-size:13px; font-weight:800; color:#FFFFFF; margin:0 0 3px;">${w.name}</h4>
-                                <div style="font-size:11px; color:#94A3B8; display:flex; align-items:center; gap:8px;">
-                                    <span style="color:#FFD21C; font-weight:700;">⭐ ${w.rating}</span>
-                                    <span>•</span>
-                                    <span>${w.distance} - ${w.neighborhood}</span>
+                    ` : list.map(w => {
+                        const cleanPhone = (w.phone || '11998765432').replace(/\D/g, '');
+                        const waMsg = encodeURIComponent(`Olá ${w.name}! Sou cliente DNA AUTO com o veículo ${v.full_title} (Placa ${v.license_plate}). Gostaria de agendar um atendimento.`);
+                        const isInstalled = !!w.installed_here;
+
+                        return `
+                            <div style="background:${isInstalled ? 'linear-gradient(135deg, rgba(0,212,255,0.08) 0%, #101B2E 100%)' : '#101B2E'}; border:1px solid ${isInstalled ? '#00D4FF' : '#1E293B'}; border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; box-shadow:${isInstalled ? '0 4px 18px rgba(0,212,255,0.12)' : 'none'};">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                                    <div>
+                                        ${isInstalled ? `
+                                            <div style="margin-bottom:4px;">
+                                                <span style="background:#00D4FF; color:#0B132B; font-size:9.5px; font-weight:900; padding:2px 7px; border-radius:4px; letter-spacing:0.5px; text-transform:uppercase;">
+                                                    ★ ONDE FOI INSTALADO (PREFERENCIAL)
+                                                </span>
+                                            </div>
+                                        ` : ''}
+                                        <div style="display:flex; align-items:center; gap:6px;">
+                                            <h4 style="font-size:14px; font-weight:800; color:#FFFFFF; margin:0;">${w.name}</h4>
+                                            <span style="font-size:9.5px; background:rgba(0,212,255,0.12); color:#00D4FF; padding:1px 6px; border-radius:4px; font-weight:700;">${w.type || 'Oficina'}</span>
+                                        </div>
+                                        <div style="font-size:11.5px; color:#94A3B8; margin-top:3px; display:flex; align-items:center; gap:8px;">
+                                            <span style="color:#FFD21C; font-weight:700;">⭐ ${w.rating}</span>
+                                            <span>•</span>
+                                            <span>${w.neighborhood} (${w.distance})</span>
+                                        </div>
+                                    </div>
+                                    <a href="https://wa.me/55${cleanPhone}?text=${waMsg}" target="_blank" class="btn btn-primary btn-sm" style="background:${isInstalled ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : '#0066FF'}; color:#FFFFFF; font-weight:800; font-size:11.5px; padding:7px 14px; border-radius:6px; text-decoration:none; white-space:nowrap; display:flex; align-items:center; gap:5px;">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                                        <span>Agendar</span>
+                                    </a>
                                 </div>
+                                ${w.specialties ? `
+                                    <div style="font-size:10.5px; color:#CBD5E1; background:rgba(0,0,0,0.25); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
+                                        <strong style="color:#00D4FF;">Especialidades:</strong> ${w.specialties}
+                                    </div>
+                                ` : ''}
                             </div>
-                            <a href="https://wa.me/55${(w.phone || '11998765432').replace(/\\D/g, '')}?text=Olá,%20gostaria%20de%20agendar%20um%20serviço%20pelo%20DNA%20AUTO" target="_blank" class="btn btn-primary btn-sm" style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:11px; padding:6px 14px; border-radius:6px; text-decoration:none;">
-                                Agendar
-                            </a>
-                        </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
 
-                <button class="btn btn-secondary" onclick="OwnerView.navigateTo('reminders')" style="background:rgba(15,23,42,0.8); color:#FFFFFF; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:12px; padding:10px; border-radius:8px; cursor:pointer;">
-                    Agendar mais próximo
+                <button class="btn btn-secondary" onclick="OwnerView.openSchedulingModal()" style="background:#101B2E; color:#FFFFFF; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:12px; padding:10px; border-radius:8px; cursor:pointer;">
+                    Agendar Revisão Rápida
                 </button>
             </div>
         `;
     },
-
     // ── 10. SUB-TELA: CONFIGURAÇÕES COM BOTÃO DE SAIR ──
     renderSettingsScreen() {
         const v = this.vehicleData;
@@ -3749,7 +3839,18 @@ const OwnerView = {
         `;
     },
 
-    // ── EMISSÃO DO RELATÓRIO COMPLETO DE MANUTENÇÕES & LAUDO 360° ──
+    // ── LAUDO DE PROCEDÊNCIA DO VEÍCULO (DOSSIÊ PERICIAL COMPLETO) ──
+    openProvenanceReport() {
+        const v = this.vehicleData;
+        const targetId = v.id || v.license_plate || 'veh_civic_touring';
+        if (typeof SaleReportModal !== 'undefined' && SaleReportModal.open) {
+            SaleReportModal.open(targetId);
+        } else {
+            this.openMaintenanceReport();
+        }
+    },
+
+    // ── EMISSÃO DO RELATÓRIO COMPLETO DE MANUTENÇÕES & LAUDO 360° (ALIAS) ──
     openMaintenanceReport() {
         const v = this.vehicleData;
         const targetId = v.id || v.license_plate || 'veh_civic_touring';
@@ -3760,6 +3861,261 @@ const OwnerView = {
         }
     },
 
+    // ── VERIFICAÇÃO DE PAGAMENTO ANTES DE BAIXAR O PDF DO LAUDO (COBRANÇA R$ 15,90) ──
+    checkProvenancePaymentBeforeDownload(callback) {
+        const v = this.vehicleData;
+        const plate = (v.license_plate || 'bra2e19').toLowerCase();
+        const isPaid = (typeof localStorage !== 'undefined' && (
+            localStorage.getItem('dna_provenance_paid_' + plate) === 'true' ||
+            localStorage.getItem('dna_cert_paid_' + plate) === 'true'
+        ));
+
+        if (isPaid) {
+            if (typeof callback === 'function') callback();
+        } else {
+            this.openProvenancePurchaseModal(callback);
+        }
+    },
+
+    // ── MODAL DE PAGAMENTO PIX R$ 15,90 APENAS NO DOWNLOAD DO LAUDO DE PROCEDÊNCIA ──
+    openProvenancePurchaseModal(callback) {
+        const v = this.vehicleData;
+        let modal = document.getElementById('provenance-purchase-modal');
+        if (!modal) {
+            const div = document.createElement('div');
+            div.id = 'provenance-purchase-modal';
+            div.className = 'modal-overlay';
+            document.body.appendChild(div);
+            modal = div;
+        }
+
+        const pixCode = '00020126580014br.gov.bcb.pix0136dna-laudo-1590-' + (v.license_plate || 'bra2e19').toLowerCase() + '520400005303986540515.905802BR5908DNA AUTO6009SAO PAULO62070503***6304';
+
+        modal.innerHTML = `
+            <div class="modal-container" style="max-width:440px; background:#0B132B; border:1.5px solid #00D4FF; box-shadow:0 12px 40px rgba(0,0,0,0.85); border-radius:18px; padding:0; overflow:hidden;">
+                <div class="modal-header" style="border-bottom:1px solid rgba(0,212,255,0.2); padding:16px 20px; display:flex; justify-content:space-between; align-items:center; background:#101B2E;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:36px; height:36px; border-radius:8px; background:rgba(0,212,255,0.12); display:flex; align-items:center; justify-content:center; font-size:18px;">📋</div>
+                        <div>
+                            <h3 style="margin:0; font-size:15px; font-weight:800; color:#FFFFFF;">Laudo de Procedência do Veículo</h3>
+                            <span style="font-size:11px; color:#00D4FF; font-family:var(--font-mono, monospace); font-weight:700;">Dossiê Oficial DNA AUTO • Autenticação Pericial</span>
+                        </div>
+                    </div>
+                    <button class="modal-close-btn" style="color:#94A3B8; font-size:22px; cursor:pointer; background:none; border:none; padding:4px;" onclick="document.getElementById('provenance-purchase-modal').classList.remove('active')">&times;</button>
+                </div>
+
+                <div class="modal-body" style="padding:18px; display:flex; flex-direction:column; gap:14px;">
+                    <!-- Destaque da Taxa de Emissão de R$ 15,90 -->
+                    <div style="background:rgba(16,185,129,0.1); border:1.5px solid #10B981; border-radius:12px; padding:14px; text-align:center;">
+                        <span style="font-size:11px; font-weight:800; color:#10B981; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px;">Taxa Única para Baixar / Imprimir PDF Oficial</span>
+                        <div style="display:flex; align-items:baseline; justify-content:center; gap:4px;">
+                            <span style="font-size:16px; font-weight:700; color:#FFFFFF;">R$</span>
+                            <span style="font-size:32px; font-weight:900; color:#10B981; font-family:var(--font-mono, monospace); line-height:1;">15,90</span>
+                        </div>
+                        <span style="font-size:11px; color:#94A3B8; display:block; margin-top:4px;">Emissão autenticada do Dossiê Completo com QR Code anti-fraude</span>
+                    </div>
+
+                    <!-- Dados do Veículo -->
+                    <div style="background:#101B2E; border:1px solid #1E293B; border-radius:10px; padding:10px 14px; font-size:11.5px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span style="color:#94A3B8;">Veículo:</span>
+                            <strong style="color:#FFFFFF;">${v.full_title}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span style="color:#94A3B8;">Placa Mercosul:</span>
+                            <strong style="color:#00D4FF; font-family:var(--font-mono, monospace);">${v.license_plate}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="color:#94A3B8;">Código DNA:</span>
+                            <strong style="color:#FFD21C; font-family:var(--font-mono, monospace);">${v.dna_code}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Itens Inclusos no Laudo -->
+                    <div style="display:flex; flex-direction:column; gap:6px; font-size:11.5px; color:#CBD5E1;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="color:#10B981; font-weight:900;">✓</span>
+                            <span>Dossiê pericial veicular completo com validação de dados</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="color:#10B981; font-weight:900;">✓</span>
+                            <span>Histórico comprovado de revisões com fotos de peças e notas fiscais</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="color:#10B981; font-weight:900;">✓</span>
+                            <span>QR Code público para apresentação imediata ao comprador na venda</span>
+                        </div>
+                    </div>
+
+                    <!-- Pagamento Instantâneo PIX -->
+                    <div style="background:#070E1A; border:1px dashed rgba(0,212,255,0.4); border-radius:12px; padding:12px; text-align:center;">
+                        <span style="font-size:11px; font-weight:800; color:#00D4FF; text-transform:uppercase; display:block; margin-bottom:10px;">Pague via PIX Instantâneo (R$ 15,90)</span>
+                        <div style="width:130px; height:130px; margin:0 auto 10px; background:#FFFFFF; padding:6px; border-radius:8px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 15px rgba(0,212,255,0.3);">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(pixCode)}" alt="QR Code PIX R$ 15,90" style="width:100%; height:100%; object-fit:contain;" />
+                        </div>
+                        <div style="display:flex; gap:6px; margin-bottom:8px;">
+                            <input type="text" id="provenance-pix-input" value="${pixCode}" readonly style="flex:1; background:rgba(15,23,42,0.9); border:1px solid rgba(255,255,255,0.15); color:#94A3B8; font-size:10px; font-family:var(--font-mono, monospace); padding:7px 8px; border-radius:6px;" />
+                            <button class="btn btn-sm" onclick="OwnerView.copyProvenancePixCode()" style="background:#0066FF; color:#FFFFFF; font-weight:700; font-size:11px; padding:7px 12px; border-radius:6px; border:none; cursor:pointer; white-space:nowrap;">
+                                Copiar PIX
+                            </button>
+                        </div>
+                        <span id="provenance-pix-feedback" style="font-size:10.5px; color:#10B981; font-weight:700; display:none;">✓ Chave PIX copiada com sucesso!</span>
+                    </div>
+
+                    <!-- Botão de Confirmação & Download do Laudo -->
+                    <button class="btn btn-primary" onclick="OwnerView.confirmProvenancePayment()" style="background:linear-gradient(135deg, #10B981 0%, #059669 100%); color:#FFFFFF; font-weight:800; font-size:13.5px; padding:12px; border-radius:10px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 15px rgba(16,185,129,0.35);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Confirmar Pagamento e Baixar Laudo PDF</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        this._pendingProvenanceCallback = callback;
+        modal.classList.add('active');
+    },
+
+    copyProvenancePixCode() {
+        const input = document.getElementById('provenance-pix-input');
+        const feedback = document.getElementById('provenance-pix-feedback');
+        if (input) {
+            input.select();
+            navigator.clipboard.writeText(input.value).then(() => {
+                if (feedback) {
+                    feedback.style.display = 'block';
+                    setTimeout(() => feedback.style.display = 'none', 3000);
+                }
+            }).catch(() => {
+                alert('Código PIX copiado!');
+            });
+        }
+    },
+
+    confirmProvenancePayment() {
+        const v = this.vehicleData;
+        const plate = (v.license_plate || 'bra2e19').toLowerCase();
+        localStorage.setItem('dna_provenance_paid_' + plate, 'true');
+        localStorage.setItem('dna_cert_paid_' + plate, 'true');
+        this.isProvenancePaid = true;
+
+        const modal = document.getElementById('provenance-purchase-modal');
+        if (modal) modal.classList.remove('active');
+
+        const cb = this._pendingProvenanceCallback;
+        this._pendingProvenanceCallback = null;
+        if (typeof cb === 'function') {
+            cb();
+        } else {
+            alert('Pagamento confirmado com sucesso! O Laudo de Procedência está liberado.');
+        }
+    },
+
+    // ── MODAL: REVISÃO E AGENDAMENTO (LINK DIRETO COM OFICINA DE INSTALAÇÃO OU ESCOLHER OUTRA) ──
+    openSchedulingModal() {
+        const v = this.vehicleData;
+        let modal = document.getElementById('dna-scheduling-modal');
+        if (!modal) {
+            const div = document.createElement('div');
+            div.id = 'dna-scheduling-modal';
+            div.className = 'modal-overlay';
+            document.body.appendChild(div);
+            modal = div;
+        }
+
+        const list = this.workshopsList || [];
+        const installedWorkshop = list.find(w => w.installed_here) || list[0] || {
+            name: 'AutoTech Centro Automotivo',
+            type: 'Auto Center',
+            rating: '4.9',
+            distance: '1.2 km',
+            neighborhood: 'Centro',
+            phone: '(11) 99876-5432',
+            specialties: 'Auto Center Completo • Diagnóstico Injeção • Geometria 3D'
+        };
+
+        const otherWorkshops = list.filter(w => w.id !== installedWorkshop.id);
+        const cleanPhone = (installedWorkshop.phone || '11998765432').replace(/\D/g, '');
+        const waText = encodeURIComponent(`Olá ${installedWorkshop.name}! Sou cliente DNA AUTO com o veículo ${v.full_title} (Placa ${v.license_plate}). Gostaria de agendar uma revisão periódica.`);
+
+        modal.innerHTML = `
+            <div class="modal-container" style="max-width:480px; background:#0B132B; border:1.5px solid #00D4FF; box-shadow:0 12px 40px rgba(0,0,0,0.85); border-radius:18px; padding:0; overflow:hidden;">
+                <!-- Topbar TOTVS do Modal -->
+                <div class="modal-header" style="border-bottom:1px solid #1E293B; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; background:#101B2E;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:36px; height:36px; border-radius:8px; background:rgba(255,210,28,0.12); display:flex; align-items:center; justify-content:center; font-size:18px;">🛠️</div>
+                        <div>
+                            <h3 style="margin:0; font-size:15px; font-weight:800; color:#FFFFFF;">Revisão & Agendamento</h3>
+                            <span style="font-size:11px; color:#FFD21C; font-weight:700;">Rede Credenciada DNA AUTO</span>
+                        </div>
+                    </div>
+                    <button class="modal-close-btn" style="color:#94A3B8; font-size:22px; cursor:pointer; background:none; border:none; padding:4px;" onclick="document.getElementById('dna-scheduling-modal').classList.remove('active')">&times;</button>
+                </div>
+
+                <div class="modal-body" style="padding:18px; display:flex; flex-direction:column; gap:14px; max-height:80vh; overflow-y:auto;">
+                    <!-- Card Destacado: Oficina Onde Foi Instalado o Equipamento (PREFERENCIAL) -->
+                    <div style="background:linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(16,27,46,0.95) 100%); border:2px solid #00D4FF; border-radius:14px; padding:16px; position:relative; box-shadow:0 4px 20px rgba(0,212,255,0.15);">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                            <span style="background:#00D4FF; color:#0B132B; font-size:10px; font-weight:900; padding:3px 8px; border-radius:4px; letter-spacing:0.5px; text-transform:uppercase;">
+                                ★ OFICINA ONDE INSTALOU (PREFERENCIAL)
+                            </span>
+                            <span style="font-size:11px; font-weight:800; color:#FFD21C;">⭐ ${installedWorkshop.rating}</span>
+                        </div>
+
+                        <h4 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:4px 0 2px;">${installedWorkshop.name}</h4>
+                        <div style="font-size:12px; color:#94A3B8; margin-bottom:8px;">
+                            <span>${installedWorkshop.type || 'Auto Center'}</span> • <span>${installedWorkshop.neighborhood} (${installedWorkshop.distance})</span>
+                        </div>
+                        <div style="font-size:11px; color:#CBD5E1; background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.06);">
+                            <strong style="color:#00D4FF;">Especialidades:</strong> ${installedWorkshop.specialties}
+                        </div>
+
+                        <!-- Botão Agendar Direto via WhatsApp -->
+                        <a href="https://wa.me/55${cleanPhone}?text=${waText}" target="_blank" class="btn btn-primary" style="background:linear-gradient(135deg, #10B981 0%, #059669 100%); color:#FFFFFF; font-weight:800; font-size:13px; padding:12px; border-radius:8px; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 15px rgba(16,185,129,0.35);">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                            <span>Agendar Revisão na Oficina Preferencial</span>
+                        </a>
+                    </div>
+
+                    <!-- Divisor / Opção de escolher outras -->
+                    <div style="display:flex; align-items:center; gap:10px; margin:4px 0;">
+                        <div style="flex:1; height:1px; background:#1E293B;"></div>
+                        <span style="font-size:11px; color:#64748B; font-weight:700; text-transform:uppercase;">Ou escolha outra credenciada</span>
+                        <div style="flex:1; height:1px; background:#1E293B;"></div>
+                    </div>
+
+                    <!-- Lista de outras Oficinas e Auto Centers credenciados -->
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        ${otherWorkshops.map(w => {
+                            const wPhone = (w.phone || '11998765432').replace(/\D/g, '');
+                            const wMsg = encodeURIComponent(`Olá ${w.name}! Sou cliente DNA AUTO com o veículo ${v.full_title} (Placa ${v.license_plate}). Gostaria de agendar uma revisão.`);
+                            return `
+                                <div style="background:#101B2E; border:1px solid #1E293B; border-radius:10px; padding:12px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                                    <div style="flex:1;">
+                                        <div style="display:flex; align-items:center; gap:6px;">
+                                            <h5 style="margin:0; font-size:13px; font-weight:800; color:#FFFFFF;">${w.name}</h5>
+                                            <span style="font-size:9.5px; background:rgba(0,212,255,0.12); color:#00D4FF; padding:1px 5px; border-radius:4px; font-weight:700;">${w.type || 'Oficina'}</span>
+                                        </div>
+                                        <div style="font-size:11px; color:#94A3B8; margin-top:2px;">
+                                            <span>⭐ ${w.rating}</span> • <span>${w.neighborhood} (${w.distance})</span>
+                                        </div>
+                                    </div>
+                                    <a href="https://wa.me/55${wPhone}?text=${waMsg}" target="_blank" class="btn btn-sm" style="background:#0066FF; color:#FFFFFF; font-weight:700; font-size:11px; padding:6px 12px; border-radius:6px; text-decoration:none; white-space:nowrap;">
+                                        Agendar
+                                    </a>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <button class="btn btn-secondary" onclick="document.getElementById('dna-scheduling-modal').classList.remove('active'); OwnerView.navigateTo('workshops');" style="background:#0E1726; color:#00D4FF; border:1px solid rgba(0,212,255,0.3); font-weight:700; font-size:12px; padding:10px; border-radius:8px; cursor:pointer;">
+                        Ver Todas as Credenciadas & Auto Centers
+                    </button>
+                </div>
+            </div>
+        `;
+
+        modal.classList.add('active');
+    },
     // ── GESTÃO E TROCA DA FOTO DO CARRO PELO PROPRIETÁRIO ──
     openChangePhotoModal() {
         this.isPhotoModalOpen = true;
