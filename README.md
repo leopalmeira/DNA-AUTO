@@ -9,7 +9,7 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 55):** Carrossel vertical de serviços perfeitamente centralizado no visor com aura cyber neon (`#00D4FF`), eliminação de colisões no topo e espaçamento lateral seguro para botões e indicadores. Sistema moderno de notificações Toast In-App com glassmorphism escuro e auto-dispensa (substituindo popups nativos `alert`). Redesign Ultra-Premium em glassmorphism tecnológico da tela de login da oficina com badge pulsante, campos com ícones (`✉️`, `🔒`) e lema *"Mais clientes + faturamento = mais serviço"*. 45 de 45 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 58):** Nova tela de login da oficina com wallpaper imersivo tecnológico (carro azul neon em tela cheia) e dock inferior de credenciais. Entrada de Veículos reformulada: busca por placa integrada ao dossiê unificado da rede DNA AUTO (exibindo todo o histórico do veículo, mesmo de outras oficinas), carrossel dinâmico de serviços, descrição técnica e envio opcional de foto da peça. Removidos os cards desnecessários "Enviar Fotos" e "Últimos Veículos Atendidos". 45 de 45 testes automatizados aprovados (100%).
 
 ---
 

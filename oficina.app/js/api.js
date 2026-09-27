@@ -56,9 +56,10 @@ const API = {
 
     // Auth
     login(email, password) {
+        const payload = (typeof email === 'object' && email !== null) ? email : { email, password };
         return this.request('/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify(payload)
         });
     },
     registerClient(data) {

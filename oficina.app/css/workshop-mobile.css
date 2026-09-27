@@ -2680,15 +2680,15 @@ input.dna-plate-input {
     position: relative;
     overflow-x: hidden;
     overflow-y: auto;
-    background: #020712;
+    background: #010712;
 }
 
 .dna-oficina-login-bg {
     position: absolute;
     inset: 0;
     width: 100%;
-    height: 60%;
-    background-size: contain;
+    height: 100%;
+    background-size: cover;
     background-position: center top;
     background-repeat: no-repeat;
     z-index: 1;
@@ -2699,10 +2699,11 @@ input.dna-plate-input {
     inset: 0;
     background: linear-gradient(
         180deg,
-        rgba(2, 7, 18, 0.1) 0%,
-        rgba(2, 7, 18, 0.4) 30%,
-        rgba(2, 7, 18, 0.85) 52%,
-        #020712 78%
+        rgba(1, 7, 18, 0.0) 0%,
+        rgba(1, 7, 18, 0.08) 45%,
+        rgba(1, 7, 18, 0.65) 68%,
+        rgba(1, 7, 18, 0.94) 86%,
+        #010712 100%
     );
     z-index: 2;
     pointer-events: none;
@@ -2714,21 +2715,21 @@ input.dna-plate-input {
     width: 92%;
     max-width: 410px;
     margin: 0 auto;
-    margin-bottom: calc(20px + env(safe-area-inset-bottom, 12px));
-    padding: 22px 18px 18px;
-    background: linear-gradient(165deg, rgba(14, 25, 44, 0.94) 0%, rgba(8, 14, 26, 0.98) 100%);
-    border: 1.5px solid rgba(0, 212, 255, 0.28);
+    margin-bottom: calc(18px + env(safe-area-inset-bottom, 12px));
+    padding: 16px 18px 16px;
+    background: linear-gradient(170deg, rgba(8, 18, 36, 0.88) 0%, rgba(3, 8, 18, 0.98) 100%);
+    border: 1.5px solid rgba(0, 212, 255, 0.35);
     border-radius: 24px;
     box-shadow:
-        0 20px 50px rgba(0, 0, 0, 0.8),
-        0 0 35px rgba(0, 212, 255, 0.12),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        0 20px 50px rgba(0, 0, 0, 0.88),
+        0 0 35px rgba(0, 212, 255, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     box-sizing: border-box;
 }
 
@@ -2919,6 +2920,326 @@ input.dna-plate-input {
 
 .dna-oficina-login-demo:hover {
     color: #5da8ff;
+}
+
+/* ==============================================================================
+   14.1 ENTRADA DE VEÍCULOS: HISTÓRICO COMPLETO DNA AUTO & LANÇAR SERVIÇOS
+   ============================================================================== */
+.dna-entry-full-card {
+    background: linear-gradient(165deg, rgba(14, 25, 46, 0.95) 0%, rgba(6, 12, 22, 0.98) 100%);
+    border: 1.5px solid rgba(0, 212, 255, 0.35);
+    border-radius: 18px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 212, 255, 0.1);
+}
+
+.dna-entry-car-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+}
+
+.dna-entry-car-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #0052cc, #00d4ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(0, 212, 255, 0.3);
+    overflow: hidden;
+}
+
+.dna-entry-car-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dna-entry-car-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.dna-entry-car-model {
+    font-size: 15.5px;
+    font-weight: 800;
+    color: #FFFFFF;
+    line-height: 1.25;
+    margin-bottom: 4px;
+}
+
+.dna-entry-plate-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #0f172a;
+    border: 1px solid #38bdf8;
+    color: #38bdf8;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+.dna-entry-dna-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 800;
+    margin-top: 6px;
+}
+
+.dna-entry-dna-badge.active {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid #10b981;
+    color: #10b981;
+}
+
+.dna-entry-dna-badge.inactive {
+    background: rgba(234, 179, 8, 0.15);
+    border: 1px solid #eab308;
+    color: #eab308;
+}
+
+.dna-entry-specs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px;
+    background: rgba(4, 9, 18, 0.7);
+    border-radius: 12px;
+    margin-top: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dna-entry-spec-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.dna-entry-spec-item span:first-child {
+    font-size: 10.5px;
+    color: #94A3B8;
+}
+
+.dna-entry-spec-item span:last-child {
+    font-size: 12.5px;
+    color: #FFFFFF;
+    font-weight: 700;
+}
+
+/* Histórico de Manutenções da Rede */
+.dna-history-section {
+    margin-top: 18px;
+    margin-bottom: 20px;
+}
+
+.dna-history-title-row {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 12px;
+}
+
+.dna-history-title-row h3 {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dna-history-subtitle {
+    font-size: 11.5px;
+    color: #94A3B8;
+}
+
+.dna-history-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dna-history-card {
+    background: rgba(6, 14, 28, 0.9);
+    border: 1px solid rgba(0, 102, 255, 0.28);
+    border-left: 4px solid #00D4FF;
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+}
+
+.dna-history-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #94A3B8;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.dna-history-card-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin-bottom: 6px;
+    line-height: 1.3;
+}
+
+.dna-history-workshop-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0, 212, 255, 0.12);
+    border: 1px solid rgba(0, 212, 255, 0.35);
+    color: #38BDF8;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+.dna-history-card-desc {
+    font-size: 12px;
+    color: #CBD5E1;
+    line-height: 1.45;
+}
+
+/* Seção Lançar Serviço com Carrossel */
+.dna-launch-section-box {
+    background: linear-gradient(165deg, rgba(8, 18, 36, 0.95) 0%, rgba(4, 10, 20, 0.98) 100%);
+    border: 1.5px solid rgba(16, 185, 129, 0.4);
+    border-radius: 18px;
+    padding: 16px;
+    margin-top: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.dna-launch-section-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dna-launch-section-subtitle {
+    font-size: 11.5px;
+    color: #94A3B8;
+    margin-bottom: 12px;
+}
+
+.dna-services-carousel {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 6px 2px 10px;
+    margin: 6px 0 12px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+.dna-services-carousel::-webkit-scrollbar {
+    height: 4px;
+}
+
+.dna-services-carousel::-webkit-scrollbar-thumb {
+    background: rgba(0, 212, 255, 0.4);
+    border-radius: 4px;
+}
+
+.dna-service-chip {
+    flex: 0 0 125px;
+    scroll-snap-align: start;
+    background: rgba(8, 16, 32, 0.9);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.dna-service-chip:hover {
+    border-color: rgba(0, 212, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.dna-service-chip.active {
+    background: linear-gradient(145deg, rgba(0, 102, 255, 0.3), rgba(0, 212, 255, 0.25));
+    border-color: #00D4FF;
+    box-shadow: 0 0 14px rgba(0, 212, 255, 0.4);
+}
+
+.dna-service-chip-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.dna-service-chip-title {
+    font-size: 11px;
+    font-weight: 800;
+    color: #FFFFFF;
+    line-height: 1.25;
+}
+
+/* Upload Foto da Peça */
+.dna-entry-part-photo-box {
+    background: rgba(6, 12, 24, 0.8);
+    border: 1.5px dashed rgba(0, 212, 255, 0.35);
+    border-radius: 14px;
+    padding: 12px;
+    margin-top: 12px;
+}
+
+.dna-photo-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #0052cc, #0084ff);
+    color: #FFFFFF;
+    font-weight: 700;
+    font-size: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: none;
+    transition: opacity 0.2s, transform 0.15s;
+    text-align: center;
+}
+
+.dna-photo-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.dna-photo-btn.secondary {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #E2E8F0;
 }
 
 /* ==============================================================================

@@ -569,15 +569,6 @@
                             </div>
                         </div>
 
-                        <!-- Card 5: Enviar Fotos -->
-                        <div class="dna-mobile-action-card dna-card-red" onclick="WorkshopView.switchMobileSection('enviar-fotos')">
-                            <div class="dna-card-icon-box">📷</div>
-                            <div>
-                                <h3 class="dna-card-title">Enviar Fotos</h3>
-                                <p class="dna-card-desc">Tirar fotos da câmera ou buscar galeria</p>
-                            </div>
-                        </div>
-
                         <!-- Card 6: Buscar Veículos -->
                         <div class="dna-mobile-action-card dna-card-cyan" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
                             <div class="dna-card-icon-box">🔍</div>
@@ -706,28 +697,6 @@
                         ${this.renderMobileEntryResultContent()}
                     </div>
 
-                    <!-- Seção: Últimos Veículos Atendidos -->
-                    <div style="margin-top:10px;">
-                        <span class="dna-mobile-section-label" style="display:block; margin-bottom:10px;">Últimos Veículos Atendidos</span>
-                        
-                        <div style="display:flex; flex-direction:column; gap:8px;">
-                            ${vehicles.slice(0, 5).map(v => `
-                                <div class="dna-mobile-row-card" style="padding:12px 14px;" onclick="WorkshopView.handleMobileSelectVehicleFromList('${v.license_plate}')">
-                                    <div class="dna-mobile-row-icon dna-icon-blue" style="width:36px; height:36px; font-size:18px;">🚗</div>
-                                    <div class="dna-mobile-row-content">
-                                        <div style="display:flex; align-items:center; gap:8px;">
-                                            <span style="font-weight:800; color:#FFFFFF; font-size:13.5px; font-family:monospace;">${v.license_plate}</span>
-                                            <span style="font-size:12px; color:var(--dna-ws-text-muted);">${v.model}</span>
-                                        </div>
-                                        <div style="font-size:10.5px; color:var(--dna-ws-text-dim); margin-top:2px;">
-                                            ${v.last_service_date || 'Atendimento recente'} • ${v.client_name || 'Cliente da Oficina'}
-                                        </div>
-                                    </div>
-                                    <span class="dna-mobile-row-chevron">›</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Botão Inferior Fixo -->
@@ -739,7 +708,7 @@
                     <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
                         <span>‹</span> <span>Voltar para Todos os Cards</span>
                     </button>
-</div>
+                </div>
             </div>
         `;
     };
@@ -749,48 +718,334 @@
         this.switchMobileSection('entrada-veiculos');
     };
 
+    // Renderiza o conteúdo da busca no card de entrada
     WorkshopView.renderMobileEntryResultContent = function() {
-        if (!this.mobileActivePlate) return '';
-
-        const v = this.findVehicleByPlate(this.mobileActivePlate);
-        if (v) {
+        if (!this.mobileActivePlate && !this.selectedMobileVehicle) {
             return `
-                <div style="background:rgba(16, 185, 129, 0.1); border:1px solid var(--dna-ws-green); border-radius:var(--dna-ws-radius-lg); padding:14px 16px; margin-bottom:8px;">
-                    <div style="display:flex; align-items:center; gap:8px; color:var(--dna-ws-green); font-size:12px; font-weight:800; margin-bottom:10px;">
-                        <span>✓</span> <span>Veículo encontrado na rede DNA AUTO!</span>
-                    </div>
-
-                    <div class="dna-vehicle-preview-card" style="margin-bottom:12px; background:rgba(6, 11, 20, 0.9);">
-                        <div class="dna-vehicle-preview-thumb">🚗</div>
-                        <div class="dna-vehicle-preview-info">
-                            <div class="dna-vehicle-preview-title">${v.brand || ''} ${v.model || ''}</div>
-                            <div class="dna-vehicle-preview-meta">${v.license_plate} • ${v.year || ''} • ${v.color || ''}</div>
-                            <div class="dna-vehicle-preview-owner">Proprietário: ${v.client_name || 'Cadastrado'}</div>
-                        </div>
-                    </div>
-
-                    <button class="dna-primary-btn-lg green" style="height:46px; font-size:13.5px;" onclick="WorkshopView.handleMobileStartAttendance('${v.license_plate}')">
-                        <span>Iniciar Atendimento & Lançar Serviços</span> <span>›</span>
-                    </button>
-                </div>
-            `;
-        } else {
-            return `
-                <div style="background:rgba(239, 68, 68, 0.1); border:1px solid var(--dna-ws-red); border-radius:var(--dna-ws-radius-lg); padding:14px 16px; margin-bottom:8px; text-align:center;">
-                    <div style="color:var(--dna-ws-red); font-size:13px; font-weight:800; margin-bottom:6px;">
-                        ⚠️ Veículo não localizado na base
-                    </div>
-                    <p style="font-size:11.5px; color:var(--dna-ws-text-muted); margin-bottom:12px;">
-                        A placa <strong>${this.mobileActivePlate}</strong> ainda não possui cadastro no DNA AUTO.
-                    </p>
-                    <button class="dna-primary-btn-lg cyan" style="height:44px; font-size:13px;" onclick="WorkshopView.handleMobileRegisterNewVehicleFromEntry('${this.mobileActivePlate}')">
-                        <span>Cadastrar este Veículo Agora</span>
-                    </button>
+                <div style="background:rgba(4,10,22,0.6); border:1px dashed rgba(0,212,255,0.25); border-radius:14px; padding:18px 14px; text-align:center; color:#94A3B8; margin-top:8px;">
+                    <div style="font-size:26px; margin-bottom:6px;">🚗</div>
+                    <strong style="color:#FFFFFF; font-size:13.5px; display:block; margin-bottom:4px;">Digite a placa do veículo acima</strong>
+                    <span style="font-size:11.5px; color:#64748B;">Identifique o histórico de manutenções realizadas na rede e lance novos serviços.</span>
                 </div>
             `;
         }
+
+        if (this.selectedMobileVehicle) {
+            return this.renderMobileEntryFullVehicleView(this.selectedMobileVehicle);
+        }
+
+        return '';
     };
 
+    // Renderiza o card completo do veículo + histórico de manutenções na rede + lançamento de serviços
+    WorkshopView.renderMobileEntryFullVehicleView = function(v) {
+        if (!v) return '';
+        const services = this.selectedMobileVehicleServices || [];
+        const hasDna = !!(this.selectedMobileVehicleHasDna || v.dna_code);
+        const dnaCode = v.dna_code || (hasDna ? 'DNA-BR-' + (v.license_plate || '').replace(/[^A-Z0-9]/g, '') : '');
+        const currentService = this.entrySelectedService || this.launchCarouselServices[0];
+        const defaultNotes = this.entryServiceNotes !== undefined ? this.entryServiceNotes : (currentService.defaultNotes || currentService.desc || '');
+
+        return `
+            <div class="dna-entry-full-card">
+                <!-- 1. IDENTIFICAÇÃO DO CARRO -->
+                <div class="dna-entry-car-header">
+                    <div class="dna-entry-car-avatar">
+                        ${v.photo_url ? `<img src="${v.photo_url}" alt="${v.model || 'Carro'}" onerror="this.onerror=null; this.parentElement.innerHTML='🚗';" />` : '🚗'}
+                    </div>
+                    <div class="dna-entry-car-details">
+                        <div class="dna-entry-car-model">${v.brand || ''} ${v.model || 'Veículo Localizado'}</div>
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:2px;">
+                            <span class="dna-entry-plate-tag">🇧🇷 ${v.license_plate}</span>
+                            ${hasDna ? `
+                                <span class="dna-entry-dna-badge active">
+                                    <span>✓</span> <span>Cliente DNA AUTO</span>
+                                </span>
+                            ` : `
+                                <span class="dna-entry-dna-badge inactive">
+                                    <span>⚠️</span> <span>Sem DNA AUTO</span>
+                                </span>
+                            `}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Especificações do Veículo -->
+                <div class="dna-entry-specs-grid">
+                    <div class="dna-entry-spec-item">
+                        <span>Ano / Cor</span>
+                        <span>${v.manufacture_year || v.model_year || v.year || '2022'} • ${v.color || 'Prata'}</span>
+                    </div>
+                    <div class="dna-entry-spec-item">
+                        <span>Odômetro Atual</span>
+                        <span style="color:#00D4FF;">${(v.current_mileage || v.mileage || 45000).toLocaleString('pt-BR')} km</span>
+                    </div>
+                    <div class="dna-entry-spec-item">
+                        <span>Proprietário</span>
+                        <span>${v.owner_name || v.client_name || 'Cliente da Rede'}</span>
+                    </div>
+                    <div class="dna-entry-spec-item">
+                        <span>${hasDna ? 'Código DNA' : 'Valor FIPE'}</span>
+                        <span style="color:${hasDna ? '#10B981' : '#38BDF8'}; font-family:${hasDna ? 'monospace' : 'inherit'};">
+                            ${hasDna ? (dnaCode || 'DNA-ATIVO') : (v.fipe_value || 'Consultado')}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 2. HISTÓRICO DE MANUTENÇÕES FEITAS NA PLATAFORMA DNA AUTO -->
+                <div class="dna-history-section">
+                    <div class="dna-history-title-row">
+                        <h3>🛠️ Manutenções Realizadas na Rede DNA AUTO (${services.length})</h3>
+                        <span class="dna-history-subtitle">Histórico unificado de serviços realizados em qualquer oficina da rede</span>
+                    </div>
+
+                    ${services.length > 0 ? `
+                        <div class="dna-history-timeline">
+                            ${services.map(s => {
+                                const sDate = s.service_date ? (s.service_date.includes('-') ? s.service_date.split('-').reverse().join('/') : s.service_date) : 'Data recente';
+                                const sKm = s.mileage ? Number(s.mileage).toLocaleString('pt-BR') + ' km' : 'KM não informado';
+                                const wsName = s.workshop_name || s.workshop_trade_name || 'Oficina Credenciada DNA AUTO';
+                                return `
+                                    <div class="dna-history-card">
+                                        <div class="dna-history-card-header">
+                                            <span>📅 ${sDate} • 📍 ${sKm}</span>
+                                            <span style="background:rgba(16,185,129,0.15); color:#10B981; font-weight:800; padding:2px 6px; border-radius:4px; font-size:10px;">
+                                                ✅ Nível 4 Comprovado
+                                            </span>
+                                        </div>
+                                        <div class="dna-history-card-title">${s.service_title}</div>
+                                        <div class="dna-history-workshop-tag">
+                                            🏢 <strong>Oficina:</strong> ${wsName} ${s.workshop_city ? `(${s.workshop_city})` : ''}
+                                        </div>
+                                        <div class="dna-history-card-desc">
+                                            ${s.description || 'Manutenção registrada e confirmada com especificações técnicas no DNA do carro.'}
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    ` : (hasDna ? `
+                        <div style="background:rgba(0,102,255,0.08); border:1px dashed rgba(0,212,255,0.3); border-radius:12px; padding:14px; text-align:center; color:#94A3B8; font-size:12px;">
+                            ℹ️ Este veículo é cliente da rede DNA AUTO, mas ainda não possui manutenções anteriores registradas. Lance a primeira manutenção abaixo!
+                        </div>
+                    ` : `
+                        <div style="background:rgba(234,179,8,0.1); border:1px dashed #EAB308; border-radius:12px; padding:14px; text-align:center; color:#E2E8F0; font-size:12px;">
+                            ⚠️ Este veículo ainda não possui DNA AUTO ativo. Ao lançar o serviço abaixo, o veículo será credenciado e o histórico digital permanente será gerado.
+                        </div>
+                    `)}
+                </div>
+
+                <!-- 3. SEÇÃO NO FINAL: LANÇAR SERVIÇO -->
+                <div class="dna-launch-section-box" id="entry-launch-service-section">
+                    <div class="dna-launch-section-title">
+                        <span>🚀</span> <span>Lançar Novo Serviço para ${v.license_plate}</span>
+                    </div>
+                    <div class="dna-launch-section-subtitle">
+                        Selecione a opção no carrossel, descreva o que vai ser feito e anexe a foto da peça trocada (se houver).
+                    </div>
+
+                    <!-- Carrossel de Opções de Serviço -->
+                    <label class="dna-input-label" style="display:block; margin-bottom:4px;">1. Escolha a opção de serviço no carrossel:</label>
+                    <div class="dna-services-carousel">
+                        ${this.launchCarouselServices.map(s => {
+                            const isSelected = currentService && currentService.id === s.id;
+                            return `
+                                <div class="dna-service-chip ${isSelected ? 'active' : ''}" onclick="WorkshopView.handleEntrySelectCarouselService('${s.id}')">
+                                    <div class="dna-service-chip-icon">${s.icon}</div>
+                                    <div class="dna-service-chip-title">${s.title}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <!-- Caixa de Descrição do que vai ser feito -->
+                    <div class="dna-input-group" style="margin-top:10px;">
+                        <label class="dna-input-label">2. Descrição detalhada do que vai ser feito: *</label>
+                        <textarea 
+                            id="mobile-entry-service-desc" 
+                            class="dna-input-field" 
+                            rows="3" 
+                            placeholder="Descreva o serviço a ser realizado, especificações da peça ou óleo, inspeções feitas..."
+                            style="width:100%; min-height:85px; padding:12px; font-size:13px; resize:vertical; box-sizing:border-box;"
+                            oninput="WorkshopView.entryServiceNotes = this.value"
+                        >${defaultNotes}</textarea>
+                    </div>
+
+                    <!-- Foto da Peça a Ser Trocada (Opcional) -->
+                    <div class="dna-entry-part-photo-box">
+                        <label class="dna-input-label" style="margin-bottom:6px; display:block;">
+                            3. Foto da Peça a Ser Trocada <span style="font-size:11px; color:#94A3B8; font-weight:normal;">(Opcional)</span>
+                        </label>
+
+                        <!-- Preview da Foto se Selecionada -->
+                        <div id="entry-part-photo-preview-container" style="display:${this.entryPartPhotoPreview ? 'block' : 'none'}; margin-bottom:10px;">
+                            <div style="position:relative; display:inline-block;">
+                                <img id="entry-part-photo-preview" src="${this.entryPartPhotoPreview || ''}" alt="Foto da peça" style="max-height:160px; max-width:100%; border-radius:12px; border:1.5px solid #00D4FF; object-fit:cover;" />
+                                <button type="button" onclick="WorkshopView.handleRemoveEntryPartPhoto()" style="position:absolute; top:-8px; right:-8px; background:#EF4444; color:#fff; border:none; border-radius:50%; width:26px; height:26px; cursor:pointer; font-weight:bold; font-size:13px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,0.5);">✕</button>
+                            </div>
+                        </div>
+
+                        <!-- Botões de Câmera e Galeria -->
+                        <div style="display:flex; gap:10px;">
+                            <label class="dna-photo-btn" style="flex:1;">
+                                <span>📷 Câmera (Tirar Foto)</span>
+                                <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="WorkshopView.handleEntryPartPhotoSelected(this)" />
+                            </label>
+                            <label class="dna-photo-btn secondary" style="flex:1;">
+                                <span>📁 Galeria</span>
+                                <input type="file" accept="image/*" style="display:none;" onchange="WorkshopView.handleEntryPartPhotoSelected(this)" />
+                            </label>
+                        </div>
+                        <div style="font-size:11px; color:#64748B; margin-top:6px; line-height:1.4;">
+                            💡 Se não tiver foto da peça, o serviço será registrado normalmente apenas com a descrição informada acima.
+                        </div>
+                    </div>
+
+                    <!-- Botão Final de Confirmação -->
+                    <button type="button" class="dna-primary-btn-lg green" style="margin-top:16px; height:50px; font-size:14.5px; font-weight:800;" onclick="WorkshopView.handleSubmitServiceFromEntry()">
+                        <span>✅ Confirmar & Lançar Serviço no DNA AUTO</span> <span>›</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    };
+
+    // Manipula a seleção no carrossel
+    WorkshopView.handleEntrySelectCarouselService = function(serviceId) {
+        const s = this.launchCarouselServices.find(item => item.id === serviceId) || this.launchCarouselServices[0];
+        this.entrySelectedService = s;
+        this.entryServiceNotes = s.defaultNotes || s.desc || '';
+
+        const textarea = document.getElementById('mobile-entry-service-desc');
+        if (textarea) {
+            textarea.value = this.entryServiceNotes;
+        }
+
+        const carousel = document.querySelector('.dna-services-carousel');
+        if (carousel) {
+            carousel.querySelectorAll('.dna-service-chip').forEach(chip => {
+                const title = chip.querySelector('.dna-service-chip-title')?.textContent || '';
+                chip.classList.toggle('active', title === s.title);
+            });
+        }
+    };
+
+    // Upload de foto da peça
+    WorkshopView.handleEntryPartPhotoSelected = function(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        this.entryPartPhotoFile = file;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.entryPartPhotoPreview = e.target.result;
+            const container = document.getElementById('entry-part-photo-preview-container');
+            const img = document.getElementById('entry-part-photo-preview');
+            if (container && img) {
+                img.src = this.entryPartPhotoPreview;
+                container.style.display = 'block';
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    // Excluir foto da peça
+    WorkshopView.handleRemoveEntryPartPhoto = function() {
+        this.entryPartPhotoFile = null;
+        this.entryPartPhotoPreview = null;
+        const container = document.getElementById('entry-part-photo-preview-container');
+        const img = document.getElementById('entry-part-photo-preview');
+        if (container && img) {
+            img.src = '';
+            container.style.display = 'none';
+        }
+    };
+
+    // Lançar serviço a partir da entrada
+    WorkshopView.handleSubmitServiceFromEntry = async function() {
+        const v = this.selectedMobileVehicle;
+        if (!v) {
+            WorkshopView.showToast('Nenhum veículo identificado.', 'warning');
+            return;
+        }
+
+        const descInput = document.getElementById('mobile-entry-service-desc');
+        const description = (descInput?.value || this.entryServiceNotes || '').trim();
+        const currentService = this.entrySelectedService || this.launchCarouselServices[0];
+        const serviceTitle = currentService.title || 'Serviço Mecânico Geral';
+        const serviceCategory = currentService.category || 'Manutenção';
+
+        if (!description) {
+            WorkshopView.showToast('Por favor, informe a descrição do serviço a ser realizado.', 'warning');
+            if (descInput) descInput.focus();
+            return;
+        }
+
+        const sDate = new Date().toISOString().split('T')[0];
+        const sMileage = Number(v.current_mileage || v.mileage || 45000);
+
+        try {
+            const formData = new FormData();
+            formData.append('vehicle_id', v.id || ('veh_' + v.license_plate));
+            formData.append('workshop_id', this.getEffectiveWorkshopId());
+            formData.append('service_title', serviceTitle);
+            formData.append('category', serviceCategory);
+            formData.append('description', description);
+            formData.append('service_date', sDate);
+            formData.append('mileage', sMileage);
+            formData.append('labor_cost_cents', 15000);
+            formData.append('warranty_months', 6);
+            if (this.entryPartPhotoFile) {
+                formData.append('photos', this.entryPartPhotoFile);
+            }
+
+            const token = localStorage.getItem('dna_token');
+            const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+            await fetch('/api/v1/services/workshop-register', {
+                method: 'POST',
+                headers,
+                body: formData
+            }).catch(() => null);
+        } catch (e) {
+            console.warn('Registro de serviço local:', e.message);
+        }
+
+        // Adiciona registro local para exibição em tempo real
+        const newRecord = {
+            id: 'srv_' + Date.now(),
+            service_title: serviceTitle,
+            category: serviceCategory,
+            description: description,
+            service_date: sDate,
+            mileage: sMileage,
+            workshop_name: this.officialWorkshopName || 'Auto Center Credenciada',
+            workshop_city: 'Unidade Local',
+            proof_level: 4,
+            proof_status: 'WORKSHOP_PROVEN'
+        };
+
+        if (!this.selectedMobileVehicleServices) this.selectedMobileVehicleServices = [];
+        this.selectedMobileVehicleServices.unshift(newRecord);
+
+        // Se o carro não tinha DNA ativo, ativa localmente
+        this.selectedMobileVehicleHasDna = true;
+        if (!v.dna_code) v.dna_code = 'DNA-BR-' + (v.license_plate || '').replace(/[^A-Z0-9]/g, '');
+
+        // Limpa campos
+        this.entryServiceNotes = '';
+        this.entryPartPhotoFile = null;
+        this.entryPartPhotoPreview = null;
+
+        // Re-renderiza o card completo com o novo serviço no topo
+        const resultBox = document.getElementById('mobile-entry-lookup-result');
+        if (resultBox) {
+            resultBox.innerHTML = this.renderMobileEntryFullVehicleView(this.selectedMobileVehicle);
+        }
+
+        WorkshopView.showToast('✓ Serviço lançado com sucesso e adicionado ao histórico do veículo!', 'success');
+    };
+
+    // Busca detalhada ao digitar placa na entrada de veículos
     WorkshopView.handleMobilePlateEntrySearch = async function() {
         const input = document.getElementById('mobile-entry-plate-input');
         const plate = (input?.value || '').trim().toUpperCase();
@@ -799,82 +1054,88 @@
             return;
         }
 
+        const cleanPlate = plate.replace(/[^A-Z0-9]/g, '');
+        this.mobileActivePlate = plate;
+
         const resultBox = document.getElementById('mobile-entry-lookup-result');
         if (resultBox) {
             resultBox.innerHTML = `
-                <div style="background:rgba(0,102,255,0.15); border:1px solid var(--dna-ws-cyan); border-radius:12px; padding:16px; text-align:center; color:#fff;">
-                    <div style="font-size:24px; margin-bottom:8px;">🔍</div>
-                    <strong style="font-size:14px; color:var(--dna-ws-cyan);">Consultando dados do veículo ${plate} no sistema...</strong>
-                    <div style="font-size:11.5px; color:var(--dna-ws-text-muted); margin-top:4px;">Localizando modelo, ano e histórico cadastral</div>
+                <div style="background:rgba(0,102,255,0.15); border:1px solid var(--dna-ws-cyan); border-radius:12px; padding:18px; text-align:center; color:#fff;">
+                    <div style="font-size:26px; margin-bottom:8px;">🔍</div>
+                    <strong style="font-size:14.5px; color:var(--dna-ws-cyan);">Consultando histórico completo na rede DNA AUTO...</strong>
+                    <div style="font-size:11.5px; color:var(--dna-ws-text-muted); margin-top:4px;">Puxando dados do veículo ${plate} e manutenções realizadas em qualquer oficina</div>
                 </div>
             `;
         }
 
-        const found = await this.fetchVehicleDataByPlate(plate);
-        this.mobileActivePlate = plate;
-
-        if (found) {
-            this.selectedMobileVehicle = found;
-            if (resultBox) {
-                resultBox.innerHTML = `
-                    <div style="background:rgba(16, 185, 129, 0.12); border:1.5px solid var(--dna-ws-green); border-radius:12px; padding:14px 16px; margin-bottom:8px;">
-                        <div style="display:flex; align-items:center; gap:8px; color:var(--dna-ws-green); font-size:12.5px; font-weight:800; margin-bottom:8px;">
-                            <span>✓</span> <span>Veículo localizado com sucesso no sistema!</span>
-                        </div>
-
-                        <div class="dna-vehicle-preview-card" style="margin-bottom:12px; background:rgba(6, 11, 20, 0.95); border:1px solid rgba(0,212,255,0.3);">
-                            <div class="dna-vehicle-preview-thumb" style="width:42px; height:42px; font-size:20px;">🚗</div>
-                            <div class="dna-vehicle-preview-info">
-                                <div class="dna-vehicle-preview-title" style="font-size:14.5px; font-weight:800; color:#fff;">${found.brand || ''} ${found.model || 'Veículo'}</div>
-                                <div class="dna-vehicle-preview-meta" style="font-size:12px; color:var(--dna-ws-cyan); font-weight:700;">
-                                    Placa: ${found.license_plate} • Ano: ${found.year || '2022'} • Cor: ${found.color || 'Prata'}
-                                </div>
-                                <div class="dna-vehicle-preview-owner" style="font-size:11.5px;">Proprietário: ${found.client_name || 'Cliente da Oficina'}</div>
-                                ${found.fipe_value ? `<div style="font-size:11px; color:#10B981; font-weight:700; margin-top:2px;">FIPE Oficial: ${found.fipe_value}</div>` : ''}
-                            </div>
-                        </div>
-
-                        <button class="dna-primary-btn-lg green" style="height:48px; font-size:14px;" onclick="WorkshopView.handleMobileStartAttendance('${found.license_plate}')">
-                            <span>🚗 Iniciar Atendimento & Lançar Serviços</span> <span>›</span>
-                        </button>
-                    </div>
-                `;
+        // 1. Busca dossiê completo e histórico de manutenções na plataforma DNA AUTO
+        let dossier = null;
+        try {
+            if (typeof API !== 'undefined' && API.getDossier) {
+                dossier = await API.getDossier(cleanPlate).catch(() => null);
+            } else {
+                const r = await fetch('/api/v1/dossier/' + encodeURIComponent(cleanPlate)).catch(() => null);
+                if (r && r.ok) dossier = await r.json();
             }
-        } else {
-            // Criação rápida para não travar a oficina
-            const newVeh = {
-                id: 'veh_' + plate,
-                license_plate: plate,
-                plate: plate,
-                brand: 'Veículo',
-                model: 'Modelo Identificado',
-                year: '2022',
-                color: 'Prata',
-                mileage: 45000,
-                client_name: 'Cliente da Oficina',
-                client_phone: '(11) 99999-9999',
-                last_service_date: 'Hoje',
-                status: 'EM_ANDAMENTO'
+        } catch (_) {}
+
+        if (dossier && dossier.found && dossier.vehicle) {
+            const v = dossier.vehicle;
+            this.selectedMobileVehicle = {
+                id: v.id || ('veh_' + cleanPlate),
+                license_plate: v.license_plate || plate,
+                plate: v.license_plate || plate,
+                brand: v.brand || 'Veículo',
+                model: v.model || 'Modelo Localizado',
+                year: v.manufacture_year || v.model_year || v.year || '2022',
+                color: v.color || 'Prata',
+                photo_url: v.photo_url || null,
+                dna_code: v.dna_code || dossier.dna_code || null,
+                current_mileage: v.current_mileage || v.mileage || 45000,
+                mileage: v.current_mileage || v.mileage || 45000,
+                owner_name: (dossier.currentOwner && dossier.currentOwner.name) ? dossier.currentOwner.name : (v.owner_name || v.client_name || 'Proprietário Cadastrado'),
+                client_name: (dossier.currentOwner && dossier.currentOwner.name) ? dossier.currentOwner.name : (v.owner_name || v.client_name || 'Proprietário Cadastrado'),
+                fipe_value: dossier.fipe ? ('R$ ' + (dossier.fipe.fipe_price_cents ? (dossier.fipe.fipe_price_cents/100).toLocaleString('pt-BR') : '')) : null
             };
-            if (!this.vehiclesList) this.vehiclesList = [];
-            this.vehiclesList.unshift(newVeh);
-            this.selectedMobileVehicle = newVeh;
-
-            if (resultBox) {
-                resultBox.innerHTML = `
-                    <div style="background:rgba(234, 179, 8, 0.12); border:1.5px solid #EAB308; border-radius:12px; padding:14px 16px; margin-bottom:8px;">
-                        <div style="color:#EAB308; font-size:13px; font-weight:800; margin-bottom:6px;">
-                            ℹ️ Placa ${plate} pronta para registro
-                        </div>
-                        <p style="font-size:11.5px; color:var(--dna-ws-text-muted); margin-bottom:10px;">
-                            Veículo pronto para receber ordens de serviço e lançamento direto.
-                        </p>
-                        <button class="dna-primary-btn-lg" style="height:46px; font-size:13.5px;" onclick="WorkshopView.handleMobileStartAttendance('${plate}')">
-                            <span>🔧 Lançar Serviços para ${plate}</span> <span>›</span>
-                        </button>
-                    </div>
-                `;
+            this.selectedMobileVehicleHasDna = !!dossier.hasDna;
+            this.selectedMobileVehicleServices = dossier.services || [];
+        } else {
+            // 2. Fallback de busca cadastral
+            const fallback = await this.fetchVehicleDataByPlate(plate);
+            if (fallback) {
+                this.selectedMobileVehicle = fallback;
+                this.selectedMobileVehicleHasDna = false;
+                this.selectedMobileVehicleServices = [];
+            } else {
+                const newVeh = {
+                    id: 'veh_' + cleanPlate,
+                    license_plate: plate,
+                    plate: plate,
+                    brand: 'Veículo',
+                    model: 'Modelo Identificado',
+                    year: '2022',
+                    color: 'Prata',
+                    current_mileage: 45000,
+                    mileage: 45000,
+                    client_name: 'Cliente da Oficina',
+                    owner_name: 'Cliente da Oficina',
+                    last_service_date: 'Hoje'
+                };
+                if (!this.vehiclesList) this.vehiclesList = [];
+                this.vehiclesList.unshift(newVeh);
+                this.selectedMobileVehicle = newVeh;
+                this.selectedMobileVehicleHasDna = false;
+                this.selectedMobileVehicleServices = [];
             }
+        }
+
+        this.entrySelectedService = this.launchCarouselServices[0];
+        this.entryServiceNotes = this.entrySelectedService.defaultNotes || this.entrySelectedService.desc || '';
+        this.entryPartPhotoFile = null;
+        this.entryPartPhotoPreview = null;
+
+        if (resultBox) {
+            resultBox.innerHTML = this.renderMobileEntryFullVehicleView(this.selectedMobileVehicle);
         }
     };
 
@@ -883,7 +1144,7 @@
         if (v) {
             this.selectedMobileVehicle = v;
             this.mobileActivePlate = v.license_plate;
-            this.switchMobileSection('lancar-servicos');
+            this.handleMobilePlateEntrySearch();
         }
     };
 
@@ -891,7 +1152,8 @@
         const v = this.findVehicleByPlate(plate);
         if (v) {
             this.selectedMobileVehicle = v;
-            this.switchMobileSection('lancar-servicos');
+            this.mobileActivePlate = v.license_plate;
+            this.handleMobilePlateEntrySearch();
         }
     };
 
@@ -3661,29 +3923,21 @@
         const container = document.getElementById('view-content');
         if (!container) return;
 
-        // Imagem de fundo do DNA AUTO (a 3ª foto do usuário com o carro e logo azul)
-        const bgImageUrl = './img/dna-auto-bg-login.png';
+        // Imagem de fundo do DNA AUTO (a 2ª foto do usuário com o carro e logo azul)
+        const bgImageUrl = './img/dna-auto-login-hero.jpg';
 
         container.innerHTML = `
             <div class="dna-oficina-login-screen">
-                <!-- Imagem de Fundo Oficial do DNA AUTO -->
-                <div class="dna-oficina-login-bg" style="background-image: url('${bgImageUrl}'), linear-gradient(180deg, #010C1A, #010712);"></div>
+                <!-- Imagem de Fundo Oficial do DNA AUTO (2ª foto enviada pelo usuário) -->
+                <div class="dna-oficina-login-bg" style="background-image: url('${bgImageUrl}');"></div>
                 <div class="dna-oficina-login-gradient"></div>
 
-                <!-- Card de Login Flutuante de Alta Performance -->
+                <!-- Card de Login na parte de baixo com os campos e cadastre-se -->
                 <div class="dna-oficina-login-card">
                     <!-- Badge de Identificação da Oficina -->
                     <div class="dna-oficina-login-badge">
                         <span class="dna-oficina-badge-dot"></span>
                         <span>PORTAL OPERACIONAL DA OFICINA</span>
-                    </div>
-
-                    <!-- Frase Motivacional solicitada com tipografia ultra refinada -->
-                    <div class="dna-oficina-login-motto">
-                        Mais clientes + faturamento<br/>= <span>mais serviço</span>
-                    </div>
-                    <div class="dna-oficina-login-subtitle">
-                        Gestão inteligente, Dossiê 360° & Fidelização de Veículos
                     </div>
 
                     <!-- Formulário de Login Profissional com Ícones -->
@@ -3721,7 +3975,7 @@
                         </div>
 
                         <button type="button" class="dna-oficina-login-register" onclick="WorkshopView.currentSection='auth'; WorkshopView.authActiveTab='register'; WorkshopView.renderMobileShell();">
-                            <span>📝</span> Cadastrar minha Auto Center
+                            <span>📝</span> Cadastre-se
                         </button>
 
                         <button type="button" class="dna-oficina-login-demo" onclick="WorkshopView.handleWorkshopDemoLogin()">

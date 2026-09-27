@@ -1109,3 +1109,29 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   4. **Qualidade e Testes:**
      - 45 de 45 testes automatizados aprovados (pm test) com 100% de sucesso.
      - Sincronização completa entre oficina.app/ e public/.
+
+---
+
+### Ciclo 58 — Entrada de Veículos com Histórico de Manutenções da Rede DNA AUTO, Lançamento de Serviços via Carrossel e Foto da Peça, Remoção de "Enviar Fotos" e Novo Fundo da Tela de Login
+- **Data/Hora:** 27/09/2026
+- **Contexto & Escopo:**
+  1. **Remoção do Card "Enviar Fotos":**
+     - Eliminado o card "Enviar Fotos" do painel de controle e menu de ações rápidas da oficina, despoluindo a navegação móvel.
+  2. **Entrada de Veículos com Histórico Completo da Rede DNA AUTO:**
+     - Ao digitar a placa na Entrada de Veículos:
+       - Removida a lista de "Últimos Veículos Atendidos".
+       - Consulta instantânea ao Dossiê 360° da plataforma (/api/v1/dossier/:identifier).
+       - Exibição de card proeminente do carro com avatar fotográfico, marca, modelo, ano, cor, placa Mercosul estilizada, odômetro, proprietário, valor FIPE e selo de Cliente DNA AUTO com código permanente (DNA-BR-XXXX-XXXX-XXX).
+       - Abaixo do veículo, listagem de todas as manutenções prévias realizadas na rede DNA AUTO, inclusive manutenções efetuadas em outras oficinas credenciadas, destacando o nome da oficina responsável, data, quilometragem, categoria e descrição técnica com selo Nível 4 Comprovado.
+  3. **Lançamento de Serviços no Final do Card:**
+     - Carrossel horizontal de opções de serviços (Troca de Óleo, Pastilhas, Correia Dentada, Velas, Pneus, Amortecedores, Injeção, Filtro Combustível, Bateria, Ar Condicionado, Revisão Geral, etc.) com chips clicáveis que sugerem automaticamente a descrição técnica correspondente.
+     - Caixa de texto (textarea) para descrição detalhada do que vai ser feito com letras pretas e fundo branco de alta visibilidade.
+     - Campo de foto da peça a ser trocada (opcional), com suporte a câmera e galeria, preview e exclusão rápida, sem impedir o lançamento caso não haja foto.
+     - Botão de confirmação para gravar via API (/api/v1/services/workshop-register) com inclusão em tempo real no topo do histórico do carro e notificação toast.
+  4. **Novo Wallpaper Cyber Car na Tela de Login da Oficina:**
+     - Aplicação da 2ª imagem oficial enviada pelo usuário (dna-auto-login-hero.jpg) como plano de fundo imersivo em tela cheia.
+     - Carro com faróis de neon, nós diagnósticos e logo "DNA AUTO - Monitorando seus clientes" 100% visíveis no topo e centro.
+     - Dock de formulário elegante e translúcido posicionado na parte inferior com e-mail, senha, botão "Entrar no Painel ›", divisor "ou", botão "Cadastre-se" e atalho de demonstração.
+  5. **Qualidade e Testes:**
+     - 45 de 45 testes automatizados aprovados (npm test) com 100% de sucesso.
+     - Sincronização automática para public/ e oficina.app/.
