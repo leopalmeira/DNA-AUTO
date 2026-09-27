@@ -3573,40 +3573,50 @@
         this.authTargetMode = mode;
     };
 
-    // Processar Login da Auto Center
+    // Processar Login da Auto Center (painel web)
     WorkshopView.handleWorkshopAuthLogin = async function(e) {
         if (e && e.preventDefault) e.preventDefault();
         const email = (document.getElementById('ws-auth-email')?.value || '').trim();
         const password = (document.getElementById('ws-auth-password')?.value || '').trim();
         const errEl = document.getElementById('ws-auth-error-msg');
+        const btn = e && e.target ? e.target.querySelector('[type="submit"]') || e.target : null;
 
         if (!email || !password) {
-            if (errEl) {
-                errEl.style.display = 'block';
-                errEl.textContent = 'Por favor, informe e-mail e senha.';
-            }
+            if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Por favor, informe e-mail e senha.'; }
             return;
         }
 
+        if (btn) { btn.disabled = true; }
+
         try {
-            if (typeof API !== 'undefined' && API.login) {
-                const res = await API.login(email, password);
-                if (res && res.user) {
-                    if (res.user.workshop && res.user.workshop.trade_name) {
-                        this.officialWorkshopName = res.user.workshop.trade_name;
-                    }
-                    localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
-                    if (res.token) localStorage.setItem('dna_token', res.token);
+            if (typeof API === 'undefined' || !API.login) {
+                throw new Error('Serviço de autenticação indisponível.');
+            }
+
+            const res = await API.login({ email, password });
+
+            if (!res || !res.token) {
+                throw new Error((res && res.error) || (res && res.message) || 'E-mail ou senha incorretos.');
+            }
+
+            // ✅ Login aprovado
+            localStorage.setItem('dna_token', res.token);
+            if (res.user) {
+                localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
+                if (res.user.workshop && res.user.workshop.trade_name) {
+                    this.officialWorkshopName = res.user.workshop.trade_name;
                 }
             }
-        } catch (err) {
-            console.warn('API login offline ou credencial alternativa, prosseguindo com perfil autenticado:', err);
-            // Simula login aceito para o proprietário da oficina
-            this.officialWorkshopName = email.split('@')[0].toUpperCase() + ' Auto Center';
-        }
+            localStorage.removeItem('dna_logged_out');
+            const isWeb = this.authTargetMode === 'web';
+            this.setDesktopMode(isWeb);
 
-        const isWeb = this.authTargetMode === 'web';
-        this.setDesktopMode(isWeb);
+        } catch (err) {
+            // ❌ Login negado
+            const msg = err.message || 'Falha na autenticação.';
+            if (errEl) { errEl.style.display = 'block'; errEl.textContent = msg; }
+            if (btn) { btn.disabled = false; }
+        }
     };
 
     // Processar Cadastro da Auto Center
@@ -4117,6 +4127,7 @@
         const whatsapp = (document.getElementById('reg-oficina-whatsapp')?.value || '').trim();
         const senha = (document.getElementById('reg-oficina-senha')?.value || '').trim();
         const errBox = document.getElementById('reg-error-box');
+        const btn = document.querySelector('.dna-oficina-login-btn');
 
         if (!nome || !email || !whatsapp || !senha) {
             if (errBox) { errBox.style.display = 'block'; errBox.textContent = 'Preencha todos os campos.'; }
@@ -4127,70 +4138,94 @@
             return;
         }
 
-        try {
-            if (typeof API !== 'undefined' && API.request) {
-                const res = await API.request('/workshops/register', {
-                    method: 'POST',
-                    body: JSON.stringify({ trade_name: nome, email, phone: whatsapp, password: senha })
-                });
-                if (res && res.token) {
-                    localStorage.setItem('dna_token', res.token);
-                    if (res.user) localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
-                }
-            }
-        } catch (err) {
-            console.warn('Cadastro offline — prosseguindo com conta local:', err);
-        }
+        if (btn) { btn.disabled = true; btn.innerHTML = '<span>Criando conta...</span>'; }
 
-        this.officialWorkshopName = nome;
-        localStorage.removeItem('dna_logged_out');
-        this.renderMobileShell();
+        try {
+            if (typeof API === 'undefined' || !API.request) {
+                throw new Error('Serviço indisponível no momento.');
+            }
+
+            const res = await API.request('/workshops/register', {
+                method: 'POST',
+                body: JSON.stringify({ trade_name: nome, email, phone: whatsapp, password: senha })
+            });
+
+            if (!res || (!res.token && !res.id && !res.workshop_id)) {
+                throw new Error((res && res.error) || (res && res.message) || 'Não foi possível criar a conta. Tente novamente.');
+            }
+
+            // ✅ Cadastro aprovado
+            if (res.token) localStorage.setItem('dna_token', res.token);
+            if (res.user) localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
+            this.officialWorkshopName = nome;
+            localStorage.removeItem('dna_logged_out');
+            this.currentSection = 'dashboard';
+            this.renderMobileShell();
+
+        } catch (err) {
+            // ❌ Cadastro negado
+            const msg = err.message || 'Erro ao criar conta. Verifique os dados e tente novamente.';
+            if (errBox) { errBox.style.display = 'block'; errBox.textContent = msg; }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<span>Criar Conta</span>'; }
+        }
     };
 
     WorkshopView.handleOficinaLogin = async function() {
         const email = (document.getElementById('oficina-login-email')?.value || '').trim();
         const password = (document.getElementById('oficina-login-password')?.value || '').trim();
+        const btn = document.querySelector('.dna-oficina-login-btn');
 
         if (!email || !password) {
             WorkshopView.showToast('Por favor, preencha e-mail e senha.', 'warning');
             return;
         }
 
-        localStorage.removeItem('dna_logged_out');
+        // Bloqueia botão durante a requisição
+        if (btn) { btn.disabled = true; btn.innerHTML = '<span>Verificando...</span>'; }
 
-        // Tenta autenticar via API
         try {
-            if (typeof API !== 'undefined' && API.login) {
-                const res = await API.login({ email, password });
-                if (res && res.token) {
-                    localStorage.setItem('dna_token', res.token);
-                    if (res.user) localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
-                    if (res.user && res.user.workshop) {
-                        this.officialWorkshopName = res.user.workshop.trade_name || 'Auto Center';
-                    }
-                    this.currentSection = 'dashboard';
-                    this.renderMobileShell();
-                    return;
-                }
+            if (typeof API === 'undefined' || !API.login) {
+                throw new Error('Serviço de autenticação indisponível.');
             }
-        } catch (e) {
-            console.warn('Login via sistema:', e.message);
+
+            const res = await API.login({ email, password });
+
+            // A API precisa retornar token — qualquer outra resposta é credencial inválida
+            if (!res || !res.token) {
+                throw new Error((res && res.error) || (res && res.message) || 'E-mail ou senha incorretos.');
+            }
+
+            // ✅ Login aprovado pela API
+            localStorage.removeItem('dna_logged_out');
+            localStorage.setItem('dna_token', res.token);
+            if (res.user) localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
+            if (res.user && res.user.workshop) {
+                this.officialWorkshopName = res.user.workshop.trade_name || 'Auto Center';
+            }
+            this.currentSection = 'dashboard';
+            this.renderMobileShell();
+
+        } catch (err) {
+            // ❌ Login negado — mostra erro sem entrar no app
+            const msg = err.message || 'Falha na autenticação. Verifique seus dados.';
+            WorkshopView.showToast(msg, 'error');
+
+            // Exibe erro inline na tela de login
+            const container = document.getElementById('view-content');
+            const existingErr = container && container.querySelector('#login-error-inline');
+            if (container && !existingErr) {
+                const errDiv = document.createElement('div');
+                errDiv.id = 'login-error-inline';
+                errDiv.style.cssText = 'color:#EF4444;font-size:12.5px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);padding:8px 12px;border-radius:8px;margin-top:6px;text-align:center;';
+                errDiv.textContent = msg;
+                const loginBtn = container.querySelector('.dna-oficina-login-btn');
+                if (loginBtn && loginBtn.parentNode) loginBtn.parentNode.insertBefore(errDiv, loginBtn);
+            } else if (existingErr) {
+                existingErr.textContent = msg;
+            }
+
+            if (btn) { btn.disabled = false; btn.innerHTML = '<span>Entrar</span>'; }
         }
-
-        // Login local simplificado para demonstração
-        this.officialWorkshopName = 'Auto Center ' + email.split('@')[0];
-        const user = {
-            id: 'usr_' + Date.now(),
-            name: email.split('@')[0],
-            email: email,
-            role_code: 'WORKSHOP',
-            workshop: { trade_name: this.officialWorkshopName }
-        };
-        localStorage.setItem('dna_logged_user', JSON.stringify(user));
-        localStorage.setItem('dna_token', 'sess_' + Date.now());
-
-        this.currentSection = 'dashboard';
-        this.renderMobileShell();
     };
 
     // Login com Oficina de Demonstração
