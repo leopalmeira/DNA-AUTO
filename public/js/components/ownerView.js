@@ -23,6 +23,7 @@ const OwnerView = {
     expandedModules: {},
     isAddVehicleOpen: false,
     isActivationModalOpen: false,
+    expensePeriod: 'semester',
 
     // Estado do Fluxo de Autenticação & Onboarding (Imagem 1 - 12 Telas)
     authScreen: (typeof localStorage !== 'undefined' && (localStorage.getItem('dna_owner_session') === 'active' || localStorage.getItem('dna_owner_auth_screen') === 'app' || localStorage.getItem('dna_logged_user'))) ? null : 'splash',
@@ -2613,37 +2614,82 @@ const OwnerView = {
                     </div>
                 </div>
 
-                <!-- Gastos nos Últimos 6 Meses -->
+                <!-- Relatório de Gastos do Veículo (Semestre e Ano) -->
                 <div class="dna-expense-summary">
-                    <div class="dna-expense-summary-title">Gastos nos últimos 6 meses</div>
-                    <div class="dna-expense-row">
-                        <span class="dna-expense-label">Revisão periódica - 80.000 km</span>
-                        <span class="dna-expense-value">R$ 1.450,00</span>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <div class="dna-expense-summary-title" style="margin-bottom:0;">Relatório de Gastos</div>
+                        <div style="display:inline-flex; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:2px;">
+                            <button type="button" onclick="OwnerView.setExpensePeriod('semester')" style="background:${this.expensePeriod !== 'year' ? '#0066FF' : 'transparent'}; color:${this.expensePeriod !== 'year' ? '#FFFFFF' : '#94A3B8'}; border:none; border-radius:6px; font-size:11px; font-weight:700; padding:4px 9px; cursor:pointer;">Semestre</button>
+                            <button type="button" onclick="OwnerView.setExpensePeriod('year')" style="background:${this.expensePeriod === 'year' ? '#0066FF' : 'transparent'}; color:${this.expensePeriod === 'year' ? '#FFFFFF' : '#94A3B8'}; border:none; border-radius:6px; font-size:11px; font-weight:700; padding:4px 9px; cursor:pointer;">Ano</button>
+                        </div>
                     </div>
-                    <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:58%; background:#0066FF;"></div></div>
-                    <div class="dna-expense-row" style="margin-top:6px;">
-                        <span class="dna-expense-label">Troca de correia dentada</span>
-                        <span class="dna-expense-value">R$ 980,00</span>
-                    </div>
-                    <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:39%; background:#00D4FF;"></div></div>
-                    <div class="dna-expense-row" style="margin-top:6px;">
-                        <span class="dna-expense-label">Suspensão e direção</span>
-                        <span class="dna-expense-value">R$ 720,00</span>
-                    </div>
-                    <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:29%; background:#10B981;"></div></div>
-                    <div class="dna-expense-row" style="margin-top:6px;">
-                        <span class="dna-expense-label">Peças avulsas</span>
-                        <span class="dna-expense-value">R$ 350,00</span>
-                    </div>
-                    <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:14%; background:#F59E0B;"></div></div>
+                    ${this.expensePeriod === 'year' ? `
+                        <div class="dna-expense-row">
+                            <span class="dna-expense-label">Revisões periódicas (anual)</span>
+                            <span class="dna-expense-value">R$ 2.900,00</span>
+                        </div>
+                        <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:65%; background:#0066FF;"></div></div>
+                        <div class="dna-expense-row" style="margin-top:6px;">
+                            <span class="dna-expense-label">Pneus, alinhamento & balanceamento</span>
+                            <span class="dna-expense-value">R$ 1.840,00</span>
+                        </div>
+                        <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:45%; background:#00D4FF;"></div></div>
+                        <div class="dna-expense-row" style="margin-top:6px;">
+                            <span class="dna-expense-label">Sistema de freios & correia</span>
+                            <span class="dna-expense-value">R$ 1.700,00</span>
+                        </div>
+                        <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:38%; background:#10B981;"></div></div>
+                        <div class="dna-expense-row" style="margin-top:6px;">
+                            <span class="dna-expense-label">Suspensão e amortecedores</span>
+                            <span class="dna-expense-value">R$ 1.250,00</span>
+                        </div>
+                        <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:28%; background:#F59E0B;"></div></div>
+                        <div class="dna-expense-row" style="margin-top:6px;">
+                            <span class="dna-expense-label">Peças e fluidos avulsos</span>
+                            <span class="dna-expense-value">R$ 680,00</span>
+                        </div>
+                        <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:15%; background:#8B5CF6;"></div></div>
 
-                    <div class="dna-expense-total">
-                        <span class="dna-expense-label">Total (6 meses)</span>
-                        <span class="dna-expense-value">R$ 3.500,00</span>
-                    </div>
+                        <div class="dna-expense-total">
+                            <span class="dna-expense-label">Total no Ano (12 meses)</span>
+                            <span class="dna-expense-value" style="color:#00D4FF;">R$ 8.370,00</span>
+                        </div>
+                    ` : `
+                        <div class="dna-expense-row">
+                            <span class="dna-expense-label">Revisão periódica - 80.000 km</span>
+                            <span class="dna-expense-value">R$ 1.450,00</span>
+                        </div>
+                        <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:58%; background:#0066FF;"></div></div>
+                        <div class="dna-expense-row" style="margin-top:6px;">
+                            <span class="dna-expense-label">Troca de correia dentada</span>
+                            <span class="dna-expense-value">R$ 980,00</span>
+                        </div>
+                        <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:39%; background:#00D4FF;"></div></div>
+                        <div class="dna-expense-row" style="margin-top:6px;">
+                            <span class="dna-expense-label">Suspensão e direção</span>
+                            <span class="dna-expense-value">R$ 720,00</span>
+                        </div>
+                        <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:29%; background:#10B981;"></div></div>
+                        <div class="dna-expense-row" style="margin-top:6px;">
+                            <span class="dna-expense-label">Peças avulsas</span>
+                            <span class="dna-expense-value">R$ 350,00</span>
+                        </div>
+                        <div class="dna-expense-bar"><div class="dna-expense-bar-fill" style="width:14%; background:#F59E0B;"></div></div>
+
+                        <div class="dna-expense-total">
+                            <span class="dna-expense-label">Total no Semestre (6 meses)</span>
+                            <span class="dna-expense-value" style="color:#00D4FF;">R$ 3.500,00</span>
+                        </div>
+                    `}
                 </div>
             </div>
         `;
+    },
+
+    // Definir período do relatório de gastos (Semestre ou Ano)
+    setExpensePeriod(period) {
+        this.expensePeriod = period;
+        this.render();
     },
 
     // Toggle de expansão de módulo de inspeção

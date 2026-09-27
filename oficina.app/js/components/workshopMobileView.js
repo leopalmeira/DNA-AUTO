@@ -3951,9 +3951,6 @@
                     <button type="button" class="dna-oficina-btn-cadastrar" onclick="WorkshopView.showOficinaRegisterForm();">
                         Cadastrar
                     </button>
-                    <button type="button" class="dna-oficina-login-demo" onclick="WorkshopView.handleWorkshopDemoLogin()">
-                        ⚡ Acessar como oficina de demonstração
-                    </button>
                 </div>
             </div>
         `;
