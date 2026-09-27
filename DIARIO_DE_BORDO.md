@@ -1260,3 +1260,20 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   4. **Qualidade e Testes:**
      - 45 de 45 testes automatizados aprovados (`npm test`) com 100% de sucesso.
      - Sincronização completa entre `cliente.app/` e `public/`.
+
+---
+
+### Ciclo 61 — Reestruturação Profissional em 4 Blocos do Card de Serviços & Peças (Anti-Slop CSS)
+- **Data/Hora:** 27/09/2026
+- **Contexto & Escopo:**
+  1. **Separação Estrutural em 4 Blocos Visuais Independentes:**
+     - **Bloco 1 (Cabeçalho):** Data do serviço em destaque ciano (#00D4FF), nome da oficina com selo credenciado (#CBD5E1) e badge de quilometragem (KM) em chip metálico mono.
+     - **Bloco 2 (Serviço Realizado):** Título com 100% de largura disponível (eliminando quebras estranhas e esmagamento horizontal em telas de smartphones), descrição técnica objetiva e chips visuais das peças substituídas.
+     - **Bloco 3 (Investimento / Preço):** Container dedicado com gradiente esmeralda translúcido, indicação de total com mão de obra inclusa e valor em destaque verde neon (`#10B981`, ex: `R$ 1.450,00`).
+     - **Bloco 4 (Comprovações Digitais Auditadas):** Grid com 2 botões modernos, confortáveis ao toque (mínimo de 46px de altura) com ícones SVG e subtítulos legíveis para abrir em 1 clique a **Foto da Peça / Serviço** e a **Nota Fiscal Oficial (NF)** no modal de zoom em alta definição.
+  2. **Correção de Parser HTML & CSS Responsivo:**
+     - Fechamento da tag `<div>` do bloco de conteúdo que causava o esmagamento das ações e quebra de palavras no layout mobile.
+     - CSS refinado com gradientes nobres, sombras volumétricas (box-shadow com glow sutil), microinterações de hover/active e tratamento responsivo para telas estreitas (<= 360px).
+  3. **Qualidade e Testes:**
+     - 45 de 45 testes automatizados aprovados (`npm test`) com 100% de sucesso.
+     - Sincronização rigorosa entre `cliente.app/` e `public/`.

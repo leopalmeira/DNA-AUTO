@@ -3393,7 +3393,7 @@ const OwnerView = {
                 </div>
 
                 <!-- Lista Organizada em Blocos / Mapa de Serviços (Sem poluição) -->
-                <div class="dna-service-map-container" style="display:flex; flex-direction:column; gap:10px;">
+                <div class="dna-service-map-container" style="display:flex; flex-direction:column; gap:12px;">
                     ${list.length === 0 ? `
                         <div style="text-align:center; padding:30px 16px; background:rgba(8,16,32,0.8); border:1px dashed rgba(255,255,255,0.15); border-radius:12px;">
                             <span style="font-size:24px; display:block; margin-bottom:6px;">🛠️</span>
@@ -3410,40 +3410,71 @@ const OwnerView = {
 
                         return `
                             <div class="dna-service-map-card">
-                                <!-- Topo do Bloco: Data • Oficina | KM -->
-                                <div class="dna-service-map-header">
-                                    <div class="dna-service-map-meta">
-                                        <span class="dna-service-map-date">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                            ${t.date}
-                                        </span>
-                                        <span class="dna-service-map-dot">•</span>
-                                        <span class="dna-service-map-workshop">
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 21h18"/><path d="M9 8h1"/><path d="M9 12h1"/><path d="M9 16h1"/><path d="M14 8h1"/><path d="M14 12h1"/><path d="M14 16h1"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>
-                                            <strong>${t.workshop || 'Oficina AutoTech'}</strong>
-                                        </span>
+                                <!-- BLOCO 1: CABEÇALHO (DATA, OFICINA E QUILOMETRAGEM) -->
+                                <div class="dna-srv-header-block">
+                                    <div class="dna-srv-header-meta">
+                                        <div class="dna-srv-date-badge">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                            <span>${t.date}</span>
+                                        </div>
+                                        <div class="dna-srv-workshop-tag">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18"/><path d="M9 8h1"/><path d="M9 12h1"/><path d="M9 16h1"/><path d="M14 8h1"/><path d="M14 12h1"/><path d="M14 16h1"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>
+                                            <span>${t.workshop || 'Oficina AutoTech'}</span>
+                                        </div>
                                     </div>
-                                    <span class="dna-service-map-km">${t.km || '80.000 km'}</span>
+                                    <div class="dna-srv-km-badge">
+                                        ${t.km || '80.000 km'}
+                                    </div>
                                 </div>
 
-                                <!-- Meio: Título do Serviço Feito e Preço em Destaque -->
-                                <div class="dna-service-map-main">
-                                    <h4 class="dna-service-map-title">${t.title}</h4>
-                                    <div class="dna-service-map-price-box">
-                                        <span class="dna-service-map-price-label">Preço</span>
-                                        <strong class="dna-service-map-price-val">${price}</strong>
-                                    </div>
+                                <!-- BLOCO 2: SERVIÇO EXECUTADO (TÍTULO, DESCRIÇÃO E PEÇAS) -->
+                                <div class="dna-srv-content-block">
+                                    <span class="dna-srv-block-tag">Serviço Realizado</span>
+                                    <h4 class="dna-srv-title">${t.title}</h4>
+                                    ${t.details ? `<p class="dna-srv-desc">${t.details}</p>` : ''}
+                                    ${t.parts && t.parts.length ? `
+                                        <div class="dna-srv-parts-list">
+                                            ${t.parts.map(p => `
+                                                <span class="dna-srv-part-chip">
+                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                                    <span>${p.name} ${p.manufacturer ? `(${p.manufacturer})` : ''}</span>
+                                                </span>
+                                            `).join('')}
+                                        </div>
+                                    ` : ''}
+                                </div>
 
-                                <!-- Ações / Links: Foto da Peça/Serviço e Nota Fiscal (NF) Disponíveis para Visualizar -->
-                                <div class="dna-service-map-actions">
-                                    <button type="button" class="dna-service-proof-link dna-service-proof-photo" onclick="OwnerView.openPhotoZoom('${photoUrl}', '${t.title} — Foto da Peça / Serviço')">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                                        <span>Ver Foto da Peça</span>
-                                    </button>
-                                    <button type="button" class="dna-service-proof-link dna-service-proof-invoice" onclick="OwnerView.openPhotoZoom('${invoiceUrl}', '${t.title} — Nota Fiscal Oficial')">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                                        <span>Ver Nota Fiscal (NF)</span>
-                                    </button>
+                                <!-- BLOCO 3: INVESTIMENTO / VALOR DO SERVIÇO -->
+                                <div class="dna-srv-price-block">
+                                    <div class="dna-srv-price-info">
+                                        <span class="dna-srv-price-label">Valor Total do Serviço</span>
+                                        <span class="dna-srv-price-sub">Mão de obra e peças inclusas</span>
+                                    </div>
+                                    <div class="dna-srv-price-amount">${price}</div>
+                                </div>
+
+                                <!-- BLOCO 4: COMPROVAÇÃO E DOCUMENTOS (FOTO E NF) -->
+                                <div class="dna-srv-proofs-block">
+                                    <div class="dna-srv-proofs-header">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                        <span>Comprovação Cadastrada & Auditada</span>
+                                    </div>
+                                    <div class="dna-srv-proofs-actions">
+                                        <button type="button" class="dna-srv-btn-proof dna-srv-btn-photo" onclick="OwnerView.openPhotoZoom('${photoUrl}', '${t.title} — Foto da Peça / Serviço')">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                            <div class="dna-srv-btn-text">
+                                                <strong>Foto da Peça</strong>
+                                                <small>Visualizar comprovante</small>
+                                            </div>
+                                        </button>
+                                        <button type="button" class="dna-srv-btn-proof dna-srv-btn-invoice" onclick="OwnerView.openPhotoZoom('${invoiceUrl}', '${t.title} — Nota Fiscal Oficial')">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                            <div class="dna-srv-btn-text">
+                                                <strong>Nota Fiscal (NF)</strong>
+                                                <small>Visualizar documento</small>
+                                            </div>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         `;

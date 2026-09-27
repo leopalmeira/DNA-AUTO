@@ -4705,178 +4705,266 @@
 }
 
 /* ==============================================================================
-   MAPA DE SERVIÇOS & COMPROVAÇÃO DE PEÇAS E NOTA FISCAL (ANTI-SLOP)
+   MAPA DE SERVIÇOS & COMPROVAÇÃO DE PEÇAS E NOTA FISCAL (PROFISSIONAL EM BLOCOS)
    ============================================================================== */
 
 .dna-service-map-container {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 14px;
 }
 
 .dna-service-map-card {
-    background: linear-gradient(145deg, rgba(12, 22, 42, 0.95) 0%, rgba(6, 12, 24, 0.98) 100%);
-    border: 1px solid rgba(0, 102, 255, 0.28);
-    border-radius: 14px;
-    padding: 14px 16px;
+    background: linear-gradient(160deg, #101B30 0%, #09101E 100%);
+    border: 1px solid rgba(0, 102, 255, 0.22);
+    border-radius: 16px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
     position: relative;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .dna-service-map-card:hover {
     border-color: rgba(0, 212, 255, 0.45);
-    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.12);
-    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(0, 212, 255, 0.12);
 }
 
-.dna-service-map-header {
+/* BLOCO 1: Cabeçalho (Data, Oficina e KM) */
+.dna-srv-header-block {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    padding-bottom: 10px;
 }
 
-.dna-service-map-meta {
+.dna-srv-header-meta {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
-    font-size: 11.5px;
 }
 
-.dna-service-map-date {
+.dna-srv-date-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     color: #00D4FF;
+    font-size: 12px;
     font-weight: 700;
     font-family: var(--font-mono, monospace);
+}
+
+.dna-srv-workshop-tag {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-}
-
-.dna-service-map-dot {
-    color: #64748B;
-    font-size: 9px;
-}
-
-.dna-service-map-workshop {
-    color: #94A3B8;
+    color: #CBD5E1;
+    font-size: 11.5px;
     font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
 }
 
-.dna-service-map-workshop strong {
-    color: #F1F5F9;
-}
-
-.dna-service-map-km {
+.dna-srv-km-badge {
     background: rgba(0, 212, 255, 0.12);
     color: #00D4FF;
-    border: 1px solid rgba(0, 212, 255, 0.25);
-    font-size: 10.5px;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    font-size: 11px;
     font-weight: 800;
-    padding: 2px 8px;
+    padding: 3px 9px;
     border-radius: 6px;
     font-family: var(--font-mono, monospace);
     white-space: nowrap;
+    letter-spacing: 0.3px;
 }
 
-.dna-service-map-main {
+/* BLOCO 2: Serviço Executado (Título, Descrição e Peças) */
+.dna-srv-content-block {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    gap: 4px;
 }
 
-.dna-service-map-title {
-    font-size: 14.5px;
+.dna-srv-block-tag {
+    font-size: 9.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #64748B;
+}
+
+.dna-srv-title {
+    font-size: 15px;
     font-weight: 700;
     color: #FFFFFF;
     margin: 0;
-    line-height: 1.35;
-    flex: 1;
+    line-height: 1.4;
 }
 
-.dna-service-map-price-box {
-    text-align: right;
-    flex-shrink: 0;
-}
-
-.dna-service-map-price-label {
-    font-size: 9.5px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.dna-srv-desc {
+    font-size: 12px;
     color: #94A3B8;
-    display: block;
-    font-weight: 700;
-    line-height: 1;
-    margin-bottom: 2px;
+    line-height: 1.45;
+    margin: 3px 0 0 0;
 }
 
-.dna-service-map-price-val {
-    font-size: 15px;
+.dna-srv-parts-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.dna-srv-part-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-size: 11px;
+    color: #CBD5E1;
+    font-weight: 500;
+}
+
+/* BLOCO 3: Preço / Financeiro */
+.dna-srv-price-block {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.09) 0%, rgba(5, 150, 105, 0.04) 100%);
+    border: 1px solid rgba(16, 185, 129, 0.22);
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.dna-srv-price-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dna-srv-price-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #94A3B8;
+}
+
+.dna-srv-price-sub {
+    font-size: 10px;
+    color: #64748B;
+}
+
+.dna-srv-price-amount {
+    font-size: 17px;
     font-weight: 800;
     color: #10B981;
     font-family: var(--font-mono, monospace);
     letter-spacing: 0.3px;
     text-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+    white-space: nowrap;
 }
 
-.dna-service-map-actions {
+/* BLOCO 4: Comprovantes (Foto e Nota Fiscal) */
+.dna-srv-proofs-block {
+    background: rgba(11, 19, 35, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 11px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dna-srv-proofs-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #00D4FF;
+}
+
+.dna-srv-proofs-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 8px;
-    margin-top: 2px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    padding-top: 9px;
 }
 
-.dna-service-proof-link {
-    display: inline-flex;
+.dna-srv-btn-proof {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 700;
+    gap: 9px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    border: 1px solid transparent;
     cursor: pointer;
-    text-decoration: none;
-    transition: all 0.15s ease;
-    border: none;
-    outline: none;
+    text-align: left;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: 46px;
 }
 
-.dna-service-proof-photo {
-    background: rgba(0, 102, 255, 0.15);
+.dna-srv-btn-photo {
+    border-color: rgba(0, 212, 255, 0.32);
+    background: linear-gradient(135deg, rgba(0, 102, 255, 0.15) 0%, rgba(0, 212, 255, 0.06) 100%);
     color: #00D4FF;
-    border: 1px solid rgba(0, 212, 255, 0.35);
 }
 
-.dna-service-proof-photo:hover {
-    background: rgba(0, 212, 255, 0.25);
+.dna-srv-btn-photo:hover, .dna-srv-btn-photo:active {
     border-color: #00D4FF;
-    color: #FFFFFF;
+    background: rgba(0, 212, 255, 0.22);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
 }
 
-.dna-service-proof-invoice {
-    background: rgba(16, 185, 129, 0.12);
+.dna-srv-btn-invoice {
+    border-color: rgba(16, 185, 129, 0.32);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.06) 100%);
     color: #10B981;
-    border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
-.dna-service-proof-invoice:hover {
-    background: rgba(16, 185, 129, 0.22);
+.dna-srv-btn-invoice:hover, .dna-srv-btn-invoice:active {
     border-color: #10B981;
-    color: #FFFFFF;
+    background: rgba(16, 185, 129, 0.22);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
+
+.dna-srv-btn-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    overflow: hidden;
+}
+
+.dna-srv-btn-text strong {
+    font-size: 12px;
+    font-weight: 700;
+    color: #F8FAFC;
+    white-space: nowrap;
+}
+
+.dna-srv-btn-text small {
+    font-size: 9.5px;
+    color: #94A3B8;
+    white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+    .dna-srv-proofs-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
 
 
 
