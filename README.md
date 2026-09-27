@@ -9,7 +9,7 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 59):** Portal de autenticação da oficina 100% alinhado ao padrão do cliente (`dna-auto-login.html`): telas integradas de Splash (Boas-vindas com Entrar e Cadastrar), Login e Cadastro completo de Auto Center com o wallpaper imersivo tecnológico (carro azul neon em tela cheia) e alternador dinâmico de abas. Entrada de Veículos com histórico unificado de toda a rede DNA AUTO e carrossel de lançamento de serviços com foto opcional da peça. 45 de 45 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 60):** Despoluição do Card do Veículo na Home do cliente (remoção do box do certificado para visual limpo do carro), emissão do Certificado Oficial DNA AUTO como função paga por R$ 15,90 via PIX com liberação instantânea e reestruturação da tela de serviços como um **Mapa de Serviços Anti-Slop** objetivo, contendo Data, Oficina, Serviço Feito, Preço em destaque e botões com 1 toque para Foto da Peça e Nota Fiscal (NF). 45 de 45 testes automatizados aprovados (100%).
 
 ---
 

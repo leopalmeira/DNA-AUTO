@@ -4704,4 +4704,179 @@
     overscroll-behavior: none !important;
 }
 
+/* ==============================================================================
+   MAPA DE SERVIÇOS & COMPROVAÇÃO DE PEÇAS E NOTA FISCAL (ANTI-SLOP)
+   ============================================================================== */
+
+.dna-service-map-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.dna-service-map-card {
+    background: linear-gradient(145deg, rgba(12, 22, 42, 0.95) 0%, rgba(6, 12, 24, 0.98) 100%);
+    border: 1px solid rgba(0, 102, 255, 0.28);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dna-service-map-card:hover {
+    border-color: rgba(0, 212, 255, 0.45);
+    box-shadow: 0 6px 20px rgba(0, 212, 255, 0.12);
+    transform: translateY(-1px);
+}
+
+.dna-service-map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding-bottom: 8px;
+}
+
+.dna-service-map-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 11.5px;
+}
+
+.dna-service-map-date {
+    color: #00D4FF;
+    font-weight: 700;
+    font-family: var(--font-mono, monospace);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dna-service-map-dot {
+    color: #64748B;
+    font-size: 9px;
+}
+
+.dna-service-map-workshop {
+    color: #94A3B8;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dna-service-map-workshop strong {
+    color: #F1F5F9;
+}
+
+.dna-service-map-km {
+    background: rgba(0, 212, 255, 0.12);
+    color: #00D4FF;
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    font-size: 10.5px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-family: var(--font-mono, monospace);
+    white-space: nowrap;
+}
+
+.dna-service-map-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.dna-service-map-title {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0;
+    line-height: 1.35;
+    flex: 1;
+}
+
+.dna-service-map-price-box {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.dna-service-map-price-label {
+    font-size: 9.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94A3B8;
+    display: block;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.dna-service-map-price-val {
+    font-size: 15px;
+    font-weight: 800;
+    color: #10B981;
+    font-family: var(--font-mono, monospace);
+    letter-spacing: 0.3px;
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+}
+
+.dna-service-map-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 2px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 9px;
+}
+
+.dna-service-proof-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    border: none;
+    outline: none;
+}
+
+.dna-service-proof-photo {
+    background: rgba(0, 102, 255, 0.15);
+    color: #00D4FF;
+    border: 1px solid rgba(0, 212, 255, 0.35);
+}
+
+.dna-service-proof-photo:hover {
+    background: rgba(0, 212, 255, 0.25);
+    border-color: #00D4FF;
+    color: #FFFFFF;
+}
+
+.dna-service-proof-invoice {
+    background: rgba(16, 185, 129, 0.12);
+    color: #10B981;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.dna-service-proof-invoice:hover {
+    background: rgba(16, 185, 129, 0.22);
+    border-color: #10B981;
+    color: #FFFFFF;
+}
+
+
 

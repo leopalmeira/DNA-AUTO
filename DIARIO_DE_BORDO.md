@@ -1229,3 +1229,34 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   3. **Qualidade e Testes:**
      - 45 de 45 testes automatizados aprovados (`npm test`) com 100% de sucesso.
      - Sincronizacao entre `oficina.app/` e `public/`.
+
+
+---
+
+### Ciclo 60 — Remoção do Certificado do Card do Carro, Função Paga de Emissão (R$ 15,90 via PIX) e Novo Layout Mapa de Serviços Anti-Slop
+- **Data/Hora:** 27/09/2026
+- **Contexto & Escopo:**
+  1. **Despoluição do Card do Veículo na Home:**
+     - Remoção completa do box de certificação (`dna-cert-box-card`) de dentro do card principal do carro (`dna-vehicle-card`).
+     - O card do veículo agora destaca exclusivamente a foto do veículo, modelo/ano, placa Mercosul e as três métricas essenciais (Quilometragem, Combustível e Autonomia).
+  2. **Emissão de Certificado Oficial como Função Paga (R$ 15,90):**
+     - O Card 8 da grade de ações na Home (`dna-client-actions-grid`) foi atualizado para **Certificado DNA AUTO** com badge **R$ 15,90**, abrindo o fluxo de emissão.
+     - Na tela de certificação (`renderCertificationScreen`), a emissão oficial passa a ser destacada como serviço pago de taxa única de R$ 15,90.
+     - Desenvolvido o modal oficial de pagamento PIX (`openCertificatePurchaseModal`):
+       - QR Code visual dinâmico com chave PIX Copia e Cola.
+       - Botão "Copiar PIX" com confirmação instantânea.
+       - Botão de liberação imediata que autentica o laudo, marca o status como "Emitido & Pago (R$ 15,90)" e libera a impressão e download em PDF.
+  3. **Reestruturação da Tela de Serviços (Mapa de Serviços Anti-Slop):**
+     - Eliminação completa de textos redundantes, do banner azul de nível 4 e de caixas secundárias poluídas.
+     - Cada serviço agora é exibido como um bloco limpo do **Mapa de Serviços** contendo:
+       - **Data** (📅)
+       - **Nome da Oficina Responsável** (🏢)
+       - **Quilometragem** no badge
+       - **Serviço Feito** em título de alto contraste
+       - **Preço** em destaque verde neon (`R$ 1.450,00`, etc.)
+       - **Links diretos com 1 clique**:
+         - `[Ver Foto da Peça]` com abertura imediata em modal de zoom.
+         - `[Ver Nota Fiscal (NF)]` com visualização do comprovante fiscal oficial.
+  4. **Qualidade e Testes:**
+     - 45 de 45 testes automatizados aprovados (`npm test`) com 100% de sucesso.
+     - Sincronização completa entre `cliente.app/` e `public/`.

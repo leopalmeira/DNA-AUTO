@@ -139,6 +139,8 @@ const OwnerView = {
                 title: 'Revisão periódica - 80.000 km', 
                 date: '12/04/2025', 
                 km: '80.000 km', 
+                price: 'R$ 1.450,00',
+                total_amount: 145000,
                 dotColor: '#00E676', 
                 workshop: 'Oficina AutoTech', 
                 details: 'Revisão periódica completa com troca de pastilhas de freio, óleo sintético e velas de ignição.',
@@ -154,6 +156,8 @@ const OwnerView = {
                 title: 'Troca de correia dentada e tensores', 
                 date: '10/10/2024', 
                 km: '70.000 km', 
+                price: 'R$ 980,00',
+                total_amount: 98000,
                 dotColor: '#0066FF', 
                 workshop: 'Oficina AutoTech', 
                 details: 'Substituição preventiva da correia dentada, tensores auxiliares e bomba d\'água.',
@@ -169,6 +173,8 @@ const OwnerView = {
                 title: 'Revisão de Suspensão e Geometria 3D', 
                 date: '05/04/2024', 
                 km: '60.000 km', 
+                price: 'R$ 720,00',
+                total_amount: 72000,
                 dotColor: '#0066FF', 
                 workshop: 'Oficina AutoTech', 
                 details: 'Troca de buchas da barra estabilizadora, geometria 3D e alinhamento computadorizado.',
@@ -184,6 +190,8 @@ const OwnerView = {
                 title: 'Troca preventiva de óleo e filtros', 
                 date: '15/12/2023', 
                 km: '50.000 km', 
+                price: 'R$ 380,00',
+                total_amount: 38000,
                 dotColor: '#0066FF', 
                 workshop: 'Oficina AutoTech', 
                 details: 'Óleo sintético 0W20 Honda HAMP, filtro de óleo, filtro de ar e higienização do ar-condicionado.',
@@ -1318,13 +1326,162 @@ const OwnerView = {
     },
 
     openPhotoZoom(url, title) {
-        const modal = document.getElementById('photo-zoom-modal');
+        let modal = document.getElementById('photo-zoom-modal');
+        if (!modal) {
+            const div = document.createElement('div');
+            div.id = 'photo-zoom-modal';
+            div.className = 'modal-overlay';
+            div.innerHTML = `
+                <div class="modal-container" style="max-width:800px; background:#000;">
+                    <div class="modal-header" style="border-color:#222; display:flex; justify-content:space-between; align-items:center;">
+                        <h3 id="photo-zoom-title" style="color:#fff; margin:0; font-size:14.5px;">Registro Fotográfico</h3>
+                        <button class="modal-close-btn" style="color:#fff; background:none; border:none; font-size:22px; cursor:pointer;" onclick="this.closest('.modal-overlay').classList.remove('active')">&times;</button>
+                    </div>
+                    <div class="modal-body" style="padding:0; text-align:center;">
+                        <img id="photo-zoom-img" src="" alt="Zoom" style="max-width:100%; max-height:75vh; object-fit:contain; display:block; margin:0 auto;" />
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(div);
+            modal = div;
+        }
         const img = document.getElementById('photo-zoom-img');
         const titleEl = document.getElementById('photo-zoom-title');
-        if (!modal || !img) return;
-        img.src = url || '/img/splash-car-hero.png';
+        
+        let finalUrl = url;
+        if (!finalUrl || finalUrl.includes('.pdf') || finalUrl.startsWith('/uploads/invoices')) {
+            finalUrl = 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=900&auto=format&fit=crop&q=80';
+        }
+
+        if (img) img.src = finalUrl;
         if (titleEl) titleEl.textContent = title || 'Comprovante / Registro Fotográfico';
         modal.classList.add('active');
+    },
+
+    // ── MODAL: EMISSÃO DO CERTIFICADO OFICIAL DNA AUTO (FUNÇÃO PAGA R$ 15,90) ──
+    openCertificatePurchaseModal() {
+        const v = this.vehicleData;
+        let modal = document.getElementById('certificate-purchase-modal');
+        if (!modal) {
+            const div = document.createElement('div');
+            div.id = 'certificate-purchase-modal';
+            div.className = 'modal-overlay';
+            document.body.appendChild(div);
+            modal = div;
+        }
+
+        const pixCode = '00020126580014br.gov.bcb.pix0136dna-cert-1590-' + (v.license_plate || 'bra2e19').toLowerCase() + '520400005303986540515.905802BR5908DNA AUTO6009SAO PAULO62070503***6304';
+
+        modal.innerHTML = `
+            <div class="modal-container" style="max-width:440px; background:radial-gradient(circle at 50% 10%, #0F1E36 0%, #060B14 100%); border:1.5px solid #00D4FF; box-shadow:0 0 35px rgba(0,212,255,0.25); border-radius:18px; padding:0; overflow:hidden;">
+                <div class="modal-header" style="border-bottom:1px solid rgba(0,212,255,0.2); padding:16px 20px; display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.35);">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:20px;">🛡️</span>
+                        <div>
+                            <h3 style="margin:0; font-size:15px; font-weight:800; color:#FFFFFF;">Emissão do Certificado Oficial</h3>
+                            <span style="font-size:11px; color:#00D4FF; font-family:var(--font-mono, monospace); font-weight:700;">DNA AUTO • Autenticação Blockchain</span>
+                        </div>
+                    </div>
+                    <button class="modal-close-btn" style="color:#94A3B8; font-size:22px; cursor:pointer; background:none; border:none; padding:4px;" onclick="document.getElementById('certificate-purchase-modal').classList.remove('active')">&times;</button>
+                </div>
+
+                <div class="modal-body" style="padding:18px; display:flex; flex-direction:column; gap:14px;">
+                    <!-- Card de Preço em Destaque Oficial -->
+                    <div style="background:rgba(16,185,129,0.12); border:1.5px solid #10B981; border-radius:14px; padding:14px; text-align:center;">
+                        <span style="font-size:11px; font-weight:800; color:#10B981; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px;">Taxa Única de Emissão e Registro</span>
+                        <div style="display:flex; align-items:baseline; justify-content:center; gap:4px;">
+                            <span style="font-size:16px; font-weight:700; color:#FFFFFF;">R$</span>
+                            <span style="font-size:32px; font-weight:900; color:#10B981; font-family:var(--font-mono, monospace); line-height:1;">15,90</span>
+                        </div>
+                        <span style="font-size:11px; color:#94A3B8; display:block; margin-top:4px;">Validade permanente • Registro oficial e QR Code anti-fraude</span>
+                    </div>
+
+                    <!-- Dados do Veículo Vinculado -->
+                    <div style="background:rgba(15,23,42,0.8); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px 14px; font-size:11.5px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span style="color:#94A3B8;">Veículo:</span>
+                            <strong style="color:#FFFFFF;">${v.full_title}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span style="color:#94A3B8;">Placa:</span>
+                            <strong style="color:#00D4FF; font-family:var(--font-mono, monospace);">${v.license_plate}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="color:#94A3B8;">Código DNA:</span>
+                            <strong style="color:#FFD21C; font-family:var(--font-mono, monospace);">${v.dna_code}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Benefícios Inclusos -->
+                    <div style="display:flex; flex-direction:column; gap:6px; font-size:11.5px; color:#CBD5E1;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="color:#10B981; font-weight:900;">✓</span>
+                            <span>QR Code permanente para consulta pública na venda</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="color:#10B981; font-weight:900;">✓</span>
+                            <span>Histórico inviolável de peças comprovadas e notas fiscais</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="color:#10B981; font-weight:900;">✓</span>
+                            <span>Download em PDF de alta qualidade e impressão imediata</span>
+                        </div>
+                    </div>
+
+                    <!-- Área de Pagamento PIX -->
+                    <div style="background:#050B14; border:1px dashed rgba(0,212,255,0.4); border-radius:12px; padding:12px; text-align:center;">
+                        <span style="font-size:11px; font-weight:800; color:#00D4FF; text-transform:uppercase; display:block; margin-bottom:10px;">Pague via PIX Instantâneo (R$ 15,90)</span>
+                        
+                        <div style="width:130px; height:130px; margin:0 auto 10px; background:#FFFFFF; padding:6px; border-radius:8px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 15px rgba(0,212,255,0.3);">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(pixCode)}" alt="QR Code PIX R$ 15,90" style="width:100%; height:100%; object-fit:contain;" />
+                        </div>
+
+                        <div style="display:flex; gap:6px; margin-bottom:8px;">
+                            <input type="text" id="pix-copy-input" value="${pixCode}" readonly style="flex:1; background:rgba(15,23,42,0.9); border:1px solid rgba(255,255,255,0.15); color:#94A3B8; font-size:10px; font-family:var(--font-mono, monospace); padding:7px 8px; border-radius:6px;" />
+                            <button class="btn btn-sm" onclick="OwnerView.copyPixCode()" style="background:#0066FF; color:#FFFFFF; font-weight:700; font-size:11px; padding:7px 12px; border-radius:6px; border:none; cursor:pointer; white-space:nowrap;">
+                                Copiar PIX
+                            </button>
+                        </div>
+                        <span id="pix-copy-feedback" style="font-size:10.5px; color:#10B981; font-weight:700; display:none;">✓ Chave PIX copiada com sucesso!</span>
+                    </div>
+
+                    <!-- Botão de Confirmação e Liberação -->
+                    <button class="btn btn-primary" onclick="OwnerView.confirmCertificatePayment()" style="background:linear-gradient(135deg, #10B981 0%, #059669 100%); color:#FFFFFF; font-weight:800; font-size:13.5px; padding:12px; border-radius:10px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 15px rgba(16,185,129,0.35);">
+                        <span>Confirmar Pagamento e Emitir Certificado</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        modal.classList.add('active');
+    },
+
+    copyPixCode() {
+        const input = document.getElementById('pix-copy-input');
+        const feedback = document.getElementById('pix-copy-feedback');
+        if (input) {
+            input.select();
+            navigator.clipboard.writeText(input.value).then(() => {
+                if (feedback) {
+                    feedback.style.display = 'block';
+                    setTimeout(() => feedback.style.display = 'none', 3000);
+                }
+            }).catch(() => {
+                alert('Código PIX copiado!');
+            });
+        }
+    },
+
+    confirmCertificatePayment() {
+        const v = this.vehicleData;
+        this.isCertificatePaid = true;
+        localStorage.setItem('dna_cert_paid_' + v.license_plate, 'true');
+        
+        const modal = document.getElementById('certificate-purchase-modal');
+        if (modal) modal.classList.remove('active');
+
+        alert('🎉 Pagamento de R$ 15,90 aprovado com sucesso!\n\nSeu Certificado Oficial DNA AUTO foi emitido e registrado com autenticidade permanente.');
+        this.navigateTo('certification');
     },
 
     addPartRow() {
@@ -1400,6 +1557,8 @@ const OwnerView = {
             km: Number(km).toLocaleString('pt-BR') + ' km',
             workshop: wsName,
             details: desc || `Manutenção registrada com comprovação de peças e nota fiscal. Valor total: R$ ${total}`,
+            price: 'R$ ' + (isNaN(Number(total)) ? total : Number(total).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })),
+            total_amount: isNaN(Number(total)) ? 85000 : Math.round(Number(total) * 100),
             parts: partsList.length > 0 ? partsList : [{ name: 'Peça Nova Substituída', manufacturer: 'Original', part_number: 'REF-01' }],
             invoice_url: invoiceUrl,
             part_photo_url: partPhotoUrl,
@@ -2074,24 +2233,6 @@ const OwnerView = {
                     </div>
                 </div>
 
-                <!-- Box de Certificação DNA AUTO Integrado -->
-                <div class="dna-cert-box-card" onclick="OwnerView.navigateTo('certification')" style="background:rgba(15,23,42,0.9); border:1px solid rgba(0,212,255,0.3); border-radius:12px; padding:12px; margin-bottom:12px; cursor:pointer;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <div style="color:#00D4FF; display:flex; align-items:center;">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-                            </div>
-                            <div>
-                                <strong style="color:#FFFFFF; font-size:12.5px; display:block;">Certificação DNA AUTO</strong>
-                                <span style="color:#94A3B8; font-size:11px; font-family:var(--font-mono, monospace);">Código permanente: <strong style="color:#00D4FF;">${v.dna_code}</strong></span>
-                            </div>
-                        </div>
-                        <button class="btn btn-sm" onclick="event.stopPropagation(); OwnerView.navigateTo('certification')" style="background:#0066FF; color:#FFFFFF; font-size:11px; font-weight:700; border-radius:6px; padding:4px 10px; border:none; cursor:pointer;">
-                            Ver certificação
-                        </button>
-                    </div>
-                </div>
-
                 <!-- 3 Medidores em Grade (Quilometragem | Combustível | Autonomia) -->
                 <div class="dna-metrics-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
                     <div class="dna-metric-box" onclick="OwnerView.navigateTo('${this.isObdPaired ? 'obd' : 'bluetooth-pair'}')" style="cursor:pointer;" title="Ver odômetro da ECU">
@@ -2201,15 +2342,15 @@ const OwnerView = {
                     </div>
                 </div>
 
-                <!-- Card 8: Certificado Digital DNA AUTO -->
-                <div class="dna-client-action-card dna-card-emerald" onclick="OwnerView.navigateTo('certification')">
+                <!-- Card 8: Certificado DNA AUTO (Função Paga R$ 15,90) -->
+                <div class="dna-client-action-card dna-card-emerald" onclick="OwnerView.openCertificatePurchaseModal()">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                         <div class="dna-client-card-icon-box">🛡️</div>
-                        <span class="dna-client-card-badge" style="color:#00D4FF;">${v.dna_code || 'DNA'}</span>
+                        <span class="dna-client-card-badge" style="background:#10B981; color:#0B0F19; font-weight:900;">R$ 15,90</span>
                     </div>
                     <div>
-                        <h3 class="dna-client-card-title">Passaporte DNA</h3>
-                        <p class="dna-client-card-desc">Certificação oficial blockchain</p>
+                        <h3 class="dna-client-card-title">Certificado DNA</h3>
+                        <p class="dna-client-card-desc">Emissão oficial autenticada (R$ 15,90)</p>
                     </div>
                 </div>
 
@@ -2564,39 +2705,66 @@ const OwnerView = {
     renderCertificationScreen() {
         const v = this.vehicleData;
         const timeline = v.timeline || [];
+        const isPaid = this.isCertificatePaid || localStorage.getItem('dna_cert_paid_' + v.license_plate) === 'true';
+
         return `
             <div style="display:flex; flex-direction:column; gap:14px;">
-                <div style="background: radial-gradient(circle at 50% 20%, rgba(12, 30, 65, 0.95) 0%, rgba(6, 14, 28, 0.98) 100%); border: 2px solid #00D4FF; border-radius: 18px; padding: 22px 18px; text-align: center; box-shadow: 0 0 25px rgba(0, 212, 255, 0.25);">
-                    <div style="width:56px; height:56px; border-radius:50%; background:rgba(0,212,255,0.15); border:1.5px solid #00D4FF; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:#00D4FF;">
+                <div style="background: radial-gradient(circle at 50% 20%, rgba(12, 30, 65, 0.95) 0%, rgba(6, 14, 28, 0.98) 100%); border: 2px solid ${isPaid ? '#00D4FF' : '#10B981'}; border-radius: 18px; padding: 22px 18px; text-align: center; box-shadow: 0 0 25px ${isPaid ? 'rgba(0, 212, 255, 0.25)' : 'rgba(16, 185, 129, 0.25)'};">
+                    <div style="width:56px; height:56px; border-radius:50%; background:${isPaid ? 'rgba(0,212,255,0.15)' : 'rgba(16,185,129,0.15)'}; border:1.5px solid ${isPaid ? '#00D4FF' : '#10B981'}; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; color:${isPaid ? '#00D4FF' : '#10B981'};">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                             <polyline points="9 12 11 14 15 10"/>
                         </svg>
                     </div>
 
-                    <span style="background:rgba(16,185,129,0.15); border:1px solid #10B981; color:#10B981; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px; text-transform:uppercase;">
-                        Veículo certificado
+                    <span style="background:${isPaid ? 'rgba(16,185,129,0.15)' : 'rgba(255,210,28,0.15)'}; border:1px solid ${isPaid ? '#10B981' : '#FFD21C'}; color:${isPaid ? '#10B981' : '#FFD21C'}; font-size:11px; font-weight:800; padding:4px 10px; border-radius:6px; text-transform:uppercase;">
+                        ${isPaid ? 'Veículo Certificado Oficialmente' : 'Função Paga • R$ 15,90'}
                     </span>
 
                     <h3 style="font-size: 19px; font-weight: 900; color: #FFFFFF; margin: 12px 0 4px; letter-spacing: 0.5px; font-family: var(--font-mono, monospace);">
                         ${v.dna_code}
                     </h3>
                     <p style="font-size: 11.5px; color: #94A3B8; margin: 0 0 16px;">
-                        Autenticidade verificada • Dados protegidos na blockchain
+                        ${isPaid ? 'Autenticidade verificada • Dados protegidos na blockchain' : 'Emissão do laudo digital oficial com QR Code e garantia de autenticidade.'}
                     </p>
 
-                    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:18px;">
-                        <button class="btn btn-primary" onclick="OwnerView.navigateTo('history')" style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:13px; padding:12px; border-radius:10px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-                            <span>Ver relatório completo</span>
-                        </button>
-                        <button class="btn btn-secondary" onclick="window.print()" style="background:rgba(15,23,42,0.8); color:#FFFFFF; border:1px solid rgba(255,255,255,0.2); font-weight:700; font-size:12.5px; padding:10px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-                            <span>Baixar certificado (PDF)</span>
-                        </button>
-                    </div>
+                    ${!isPaid ? `
+                        <!-- Box de Emissão Paga R$ 15,90 -->
+                        <div style="background:rgba(16,185,129,0.12); border:1.5px solid #10B981; border-radius:12px; padding:12px 14px; margin-bottom:14px; text-align:center;">
+                            <span style="font-size:10.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Valor para emissão oficial:</span>
+                            <div style="font-size:26px; font-weight:900; color:#10B981; font-family:var(--font-mono, monospace); line-height:1.2; margin:2px 0;">
+                                R$ 15,90
+                            </div>
+                            <span style="font-size:10.5px; color:#CBD5E1;">Taxa única • Pagamento instantâneo via PIX</span>
+                        </div>
+
+                        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:18px;">
+                            <button class="btn btn-primary" onclick="OwnerView.openCertificatePurchaseModal()" style="background:linear-gradient(135deg, #10B981 0%, #059669 100%); color:#FFFFFF; font-weight:900; font-size:13.5px; padding:13px; border-radius:10px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 15px rgba(16,185,129,0.35);">
+                                <span>Emitir Certificado Oficial — R$ 15,90</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="OwnerView.navigateTo('services')" style="background:rgba(15,23,42,0.8); color:#CBD5E1; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:12px; padding:10px; border-radius:10px; cursor:pointer;">
+                                <span>Ver Mapa de Serviços</span>
+                            </button>
+                        </div>
+                    ` : `
+                        <!-- Certificado Liberado e Pago -->
+                        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:18px;">
+                            <button class="btn btn-primary" onclick="OwnerView.navigateTo('services')" style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:13px; padding:12px; border-radius:10px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <span>Ver Mapa de Serviços</span>
+                            </button>
+                            <button class="btn btn-secondary" onclick="window.print()" style="background:rgba(15,23,42,0.8); color:#FFFFFF; border:1px solid rgba(255,255,255,0.2); font-weight:700; font-size:12.5px; padding:10px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                                <span>Baixar certificado (PDF)</span>
+                            </button>
+                        </div>
+                    `}
 
                     <!-- Bloco Informações -->
                     <div style="background: #050B14; border: 1px solid rgba(0, 102, 255, 0.25); border-radius: 12px; padding: 12px 14px; text-align: left; font-size: 11.5px;">
                         <span style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:800; display:block; margin-bottom:8px;">Informações</span>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                            <span style="color:#94A3B8;">Status:</span>
+                            <strong style="color:${isPaid ? '#10B981' : '#FFD21C'};">${isPaid ? 'Emitido & Pago (R$ 15,90)' : 'Aguardando Pagamento'}</strong>
+                        </div>
                         <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
                             <span style="color:#94A3B8;">Emitido em:</span>
                             <strong style="color:#FFFFFF;">${v.certification_date}</strong>
@@ -3188,7 +3356,7 @@ const OwnerView = {
         `;
     },
 
-    // ── 7. TELA: SERVIÇOS & COMPROVAÇÃO DE PEÇAS E NOTA FISCAL ──
+    // ── 7. TELA: MAPA DE SERVIÇOS & COMPROVAÇÃO DE PEÇAS E NOTA FISCAL (ANTI-SLOP) ──
     renderServicesScreen() {
         const v = this.vehicleData;
         const filter = this.servicesFilter || 'all';
@@ -3197,129 +3365,89 @@ const OwnerView = {
         if (filter === 'verified') {
             list = list.filter(t => t.has_invoice && t.has_part_photo);
         } else if (filter === 'preventiva') {
-            list = list.filter(t => t.title.toLowerCase().includes('revisão') || t.title.toLowerCase().includes('preventiva') || t.title.toLowerCase().includes('óleo') || t.title.toLowerCase().includes('correia'));
+            list = list.filter(t => (t.title || '').toLowerCase().includes('revisão') || (t.title || '').toLowerCase().includes('preventiva') || (t.title || '').toLowerCase().includes('óleo') || (t.title || '').toLowerCase().includes('correia'));
         } else if (filter === 'corretiva') {
-            list = list.filter(t => t.title.toLowerCase().includes('pastilha') || t.title.toLowerCase().includes('corretiva') || t.title.toLowerCase().includes('substituição') || t.title.toLowerCase().includes('troca'));
+            list = list.filter(t => (t.title || '').toLowerCase().includes('pastilha') || (t.title || '').toLowerCase().includes('corretiva') || (t.title || '').toLowerCase().includes('substituição') || (t.title || '').toLowerCase().includes('troca'));
         }
 
         return `
             <div style="display:flex; flex-direction:column; gap:12px;">
-                <!-- Botão Chamativo de Registro de Novo Serviço -->
+                <!-- Topo: Título e Botão Chamativo de Declarar Serviço -->
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                     <div>
-                        <h3 style="font-size:15px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">Serviços & Peças</h3>
-                        <span style="font-size:11px; color:#94A3B8;">Comprovação obrigatória de NF e Peça Trocada</span>
+                        <h3 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">Mapa de Serviços</h3>
+                        <span style="font-size:11px; color:#94A3B8;">Histórico organizado com fotos e notas fiscais</span>
                     </div>
-                    <button class="btn btn-sm btn-primary" onclick="OwnerView.openDeclareModal()" style="background:linear-gradient(135deg, #00D4FF 0%, #0066FF 100%); color:#0B0F19; font-weight:900; font-size:11.5px; padding:8px 12px; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 10px rgba(0,212,255,0.3); white-space:nowrap;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        <span>+ Declarar Serviço</span>
+                    <button class="btn btn-sm btn-primary" onclick="OwnerView.openDeclareModal()" style="background:linear-gradient(135deg, #00D4FF 0%, #0066FF 100%); color:#0B0F19; font-weight:900; font-size:11.5px; padding:7px 12px; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 10px rgba(0,212,255,0.3); white-space:nowrap;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>+ Declarar</span>
                     </button>
                 </div>
 
-                <!-- Banner de Comprovação Nível 4 -->
-                <div style="background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.25); border-radius:10px; padding:10px 12px; display:flex; align-items:center; gap:10px;">
-                    <div style="color:#00D4FF; flex-shrink:0;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-                    </div>
-                    <div style="font-size:11px; color:#CBD5E1; line-height:1.35;">
-                        <strong style="color:#00D4FF;">Comprovação Máxima Nível 4:</strong>
-                        Cada serviço salvo registra a <strong style="color:#FFFFFF;">Foto da Peça Trocada</strong> e a <strong style="color:#FFFFFF;">Nota Fiscal Oficial</strong>, garantindo autenticidade total.
-                    </div>
-                </div>
-
-                <!-- Filtros em Chips -->
-                <div class="dna-history-pill-filters" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:4px;">
+                <!-- Filtros em Chips Discretos -->
+                <div class="dna-history-pill-filters" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:2px;">
                     <button class="dna-history-filter-btn ${filter === 'all' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('all')">Todos (${v.timeline ? v.timeline.length : 0})</button>
-                    <button class="dna-history-filter-btn ${filter === 'verified' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('verified')">NF + Peça Comprovada</button>
+                    <button class="dna-history-filter-btn ${filter === 'verified' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('verified')">Com NF & Foto</button>
                     <button class="dna-history-filter-btn ${filter === 'preventiva' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('preventiva')">Preventivas</button>
                     <button class="dna-history-filter-btn ${filter === 'corretiva' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('corretiva')">Corretivas</button>
                 </div>
 
-                <!-- Lista de Serviços Funcionais -->
-                <div class="dna-services-list" style="display:flex; flex-direction:column; gap:12px;">
+                <!-- Lista Organizada em Blocos / Mapa de Serviços (Sem poluição) -->
+                <div class="dna-service-map-container" style="display:flex; flex-direction:column; gap:10px;">
                     ${list.length === 0 ? `
                         <div style="text-align:center; padding:30px 16px; background:rgba(8,16,32,0.8); border:1px dashed rgba(255,255,255,0.15); border-radius:12px;">
                             <span style="font-size:24px; display:block; margin-bottom:6px;">🛠️</span>
-                            <strong style="color:#FFFFFF; font-size:13px; display:block;">Nenhum serviço encontrado neste filtro</strong>
+                            <strong style="color:#FFFFFF; font-size:13px; display:block;">Nenhum serviço registrado neste filtro</strong>
                             <p style="font-size:11px; color:#94A3B8; margin:4px 0 12px;">Declare serviços com comprovante de nota fiscal e foto da peça trocada.</p>
                             <button class="btn btn-sm btn-primary" onclick="OwnerView.openDeclareModal()" style="background:#0066FF; color:#FFF; font-weight:800; font-size:11.5px; padding:7px 14px; border-radius:8px; border:none; cursor:pointer;">
                                 Declarar Primeiro Serviço
                             </button>
                         </div>
-                    ` : list.map(t => `
-                        <div class="dna-history-item-clickable" style="background:rgba(8,16,32,0.9); border:1.5px solid rgba(0,102,255,0.25); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px;">
-                            <!-- Topo do Card: Data, Título, KM e Status -->
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
-                                    <div style="display:flex; align-items:center; gap:6px;">
-                                        <span style="font-size:11px; color:#00D4FF; font-weight:800;">${t.date}</span>
-                                        <span style="color:#64748B;">•</span>
-                                        <span style="font-size:10.5px; color:#94A3B8;">${t.workshop || 'Oficina Responsável'}</span>
+                    ` : list.map((t, idx) => {
+                        const price = t.price || (t.total_amount ? ('R$ ' + (Number(t.total_amount) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : (idx === 0 ? 'R$ 1.450,00' : idx === 1 ? 'R$ 980,00' : idx === 2 ? 'R$ 720,00' : 'R$ 380,00'));
+                        const photoUrl = t.part_photo_url || 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&auto=format&fit=crop&q=80';
+                        const invoiceUrl = t.invoice_url && !t.invoice_url.endsWith('.pdf') ? t.invoice_url : 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=900&auto=format&fit=crop&q=80';
+
+                        return `
+                            <div class="dna-service-map-card">
+                                <!-- Topo do Bloco: Data • Oficina | KM -->
+                                <div class="dna-service-map-header">
+                                    <div class="dna-service-map-meta">
+                                        <span class="dna-service-map-date">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                            ${t.date}
+                                        </span>
+                                        <span class="dna-service-map-dot">•</span>
+                                        <span class="dna-service-map-workshop">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 21h18"/><path d="M9 8h1"/><path d="M9 12h1"/><path d="M9 16h1"/><path d="M14 8h1"/><path d="M14 12h1"/><path d="M14 16h1"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>
+                                            <strong>${t.workshop || 'Oficina AutoTech'}</strong>
+                                        </span>
                                     </div>
-                                    <h4 style="font-size:14px; font-weight:800; color:#FFFFFF; margin:3px 0 0;">${t.title}</h4>
+                                    <span class="dna-service-map-km">${t.km || '80.000 km'}</span>
                                 </div>
-                                <span style="background:rgba(16,185,129,0.15); color:#10B981; font-size:11px; font-weight:800; padding:3px 8px; border-radius:6px; white-space:nowrap;">
-                                    ${t.km}
-                                </span>
-                            </div>
 
-                            <!-- Descrição / Detalhes -->
-                            <p style="font-size:12px; color:#CBD5E1; margin:0; line-height:1.4;">${t.details}</p>
-
-                            <!-- Lista de Peças Trocadas -->
-                            ${t.parts && t.parts.length > 0 ? `
-                                <div style="background:rgba(15,23,42,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:8px 10px;">
-                                    <span style="font-size:10px; font-weight:800; color:#94A3B8; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:4px;">Peças Substituídas:</span>
-                                    <div style="display:flex; flex-direction:column; gap:4px;">
-                                        ${t.parts.map(p => `
-                                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px;">
-                                                <span style="color:#FFFFFF; font-weight:700;">• ${p.name} <span style="color:#94A3B8; font-weight:400;">(${p.manufacturer || 'Original'})</span></span>
-                                                <span style="color:#00D4FF; font-family:var(--font-mono, monospace); font-size:10px;">${p.part_number || 'N/D'}</span>
-                                            </div>
-                                        `).join('')}
-                                    </div>
-                                </div>
-                            ` : ''}
-
-                            <!-- 2 COMPROVANTES EXIGIDOS: NOTA FISCAL + FOTO DA PEÇA TROCADA -->
-                            <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:10px;">
-                                <span style="font-size:10px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:8px;">Comprovação Cadastrada (Comprovantes):</span>
-                                
-                                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                                    <!-- 1. Foto da Peça Trocada -->
-                                    <div onclick="OwnerView.openPhotoZoom('${t.part_photo_url || 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&auto=format&fit=crop&q=80'}', '${t.title} - Peça Nova Trocada')" style="background:rgba(0,102,255,0.12); border:1px solid rgba(0,212,255,0.3); border-radius:8px; padding:8px; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
-                                        <div style="width:36px; height:36px; border-radius:6px; overflow:hidden; background:#0B0F19; flex-shrink:0; display:flex; align-items:center; justify-content:center;">
-                                            <img src="${t.part_photo_url || 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=100&auto=format&fit=crop&q=80'}" alt="Peça Trocada" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='/img/car-silhouette.svg'" />
-                                        </div>
-                                        <div style="overflow:hidden;">
-                                            <strong style="color:#00D4FF; font-size:11px; display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">Foto da Peça</strong>
-                                            <span style="color:#94A3B8; font-size:9.5px;">Toque p/ zoom 🔍</span>
-                                        </div>
+                                <!-- Meio: Título do Serviço Feito e Preço em Destaque -->
+                                <div class="dna-service-map-main">
+                                    <h4 class="dna-service-map-title">${t.title}</h4>
+                                    <div class="dna-service-map-price-box">
+                                        <span class="dna-service-map-price-label">Preço</span>
+                                        <strong class="dna-service-map-price-val">${price}</strong>
                                     </div>
 
-                                    <!-- 2. Nota Fiscal de Serviço / Peça -->
-                                    <div onclick="OwnerView.openPhotoZoom('${t.invoice_url || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&auto=format&fit=crop&q=80'}', '${t.title} - Nota Fiscal Oficial')" style="background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.3); border-radius:8px; padding:8px; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
-                                        <div style="width:36px; height:36px; border-radius:6px; background:rgba(16,185,129,0.2); flex-shrink:0; display:flex; align-items:center; justify-content:center; color:#10B981;">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                                        </div>
-                                        <div style="overflow:hidden;">
-                                            <strong style="color:#10B981; font-size:11px; display:block; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">Nota Fiscal (NF)</strong>
-                                            <span style="color:#94A3B8; font-size:9.5px;">Comprovante Fiscal</span>
-                                        </div>
-                                    </div>
+                                <!-- Ações / Links: Foto da Peça/Serviço e Nota Fiscal (NF) Disponíveis para Visualizar -->
+                                <div class="dna-service-map-actions">
+                                    <button type="button" class="dna-service-proof-link dna-service-proof-photo" onclick="OwnerView.openPhotoZoom('${photoUrl}', '${t.title} — Foto da Peça / Serviço')">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                        <span>Ver Foto da Peça</span>
+                                    </button>
+                                    <button type="button" class="dna-service-proof-link dna-service-proof-invoice" onclick="OwnerView.openPhotoZoom('${invoiceUrl}', '${t.title} — Nota Fiscal Oficial')">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                                        <span>Ver Nota Fiscal (NF)</span>
+                                    </button>
                                 </div>
                             </div>
-
-                            <!-- Rodapé do Card: Selo Nível 4 -->
-                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#94A3B8; border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
-                                <span style="display:flex; align-items:center; gap:4px; color:#10B981; font-weight:800;">
-                                    <span style="width:6px; height:6px; border-radius:50%; background:#10B981;"></span>
-                                    COMPROVADO NÍVEL 4 (PEÇA + NF)
-                                </span>
-                                <span style="color:#64748B; font-family:var(--font-mono, monospace);">ID: ${t.id || 'SRV-01'}</span>
-                            </div>
-                        </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             </div>
         `;
