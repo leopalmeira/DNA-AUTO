@@ -3923,24 +3923,50 @@
         const container = document.getElementById('view-content');
         if (!container) return;
 
-        // Imagem de fundo do DNA AUTO (a 2ª foto do usuário com o carro e logo azul)
+        // Segunda imagem (oficinas/auto centers): DNA AUTO com carro Hyundai e ícones de monitoramento
+        const bgImageUrl = './img/dna-auto-login-hero.jpg';
+
+        container.innerHTML = `
+            <div class="dna-oficina-splash-screen">
+                <!-- Imagem de Fundo em Tela Cheia -->
+                <img src="${bgImageUrl}" alt="DNA AUTO Oficinas" class="dna-oficina-splash-bg" />
+                <!-- Gradiente suave na parte inferior para destacar os botões -->
+                <div class="dna-oficina-splash-gradient"></div>
+
+                <!-- Botões na parte inferior (igual ao app do cliente) -->
+                <div class="dna-oficina-splash-actions">
+                    <button type="button" class="dna-oficina-btn-entrar" onclick="WorkshopView.showOficinaLoginForm()">
+                        Entrar
+                    </button>
+                    <button type="button" class="dna-oficina-btn-cadastrar" onclick="WorkshopView.currentSection='auth'; WorkshopView.authActiveTab='register'; WorkshopView.renderMobileShell();">
+                        Cadastrar
+                    </button>
+                    <button type="button" class="dna-oficina-login-demo" onclick="WorkshopView.handleWorkshopDemoLogin()">
+                        ⚡ Acessar como oficina de demonstração
+                    </button>
+                </div>
+            </div>
+        `;
+    };
+
+    // Exibe o formulário de login (chamado ao clicar "Entrar" na tela splash)
+    WorkshopView.showOficinaLoginForm = function() {
+        const container = document.getElementById('view-content');
+        if (!container) return;
+
         const bgImageUrl = './img/dna-auto-login-hero.jpg';
 
         container.innerHTML = `
             <div class="dna-oficina-login-screen">
-                <!-- Imagem de Fundo Oficial do DNA AUTO (2ª foto enviada pelo usuário) -->
                 <div class="dna-oficina-login-bg" style="background-image: url('${bgImageUrl}');"></div>
                 <div class="dna-oficina-login-gradient"></div>
 
-                <!-- Card de Login na parte de baixo com os campos e cadastre-se -->
                 <div class="dna-oficina-login-card">
-                    <!-- Badge de Identificação da Oficina -->
                     <div class="dna-oficina-login-badge">
                         <span class="dna-oficina-badge-dot"></span>
                         <span>PORTAL OPERACIONAL DA OFICINA</span>
                     </div>
 
-                    <!-- Formulário de Login Profissional com Ícones -->
                     <div class="dna-oficina-login-form">
                         <div class="dna-login-input-group">
                             <span class="dna-login-input-icon">✉️</span>
@@ -3985,6 +4011,12 @@
                 </div>
             </div>
         `;
+
+        // Foca automaticamente no campo de e-mail
+        setTimeout(() => {
+            const emailField = document.getElementById('oficina-login-email');
+            if (emailField) emailField.focus();
+        }, 120);
     };
 
     WorkshopView.handleOficinaLogin = async function() {

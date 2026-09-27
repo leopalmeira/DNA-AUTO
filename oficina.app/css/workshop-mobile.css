@@ -2923,6 +2923,128 @@ input.dna-plate-input {
 }
 
 /* ==============================================================================
+   14.0 SPLASH SCREEN DA OFICINA (IGUAL AO APP DO CLIENTE: FUNDO + 2 BOTÕES)
+   ============================================================================== */
+.dna-oficina-splash-screen {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    overflow: hidden;
+    background: #010712;
+}
+
+/* Imagem de fundo em tela cheia (cover = sem bordas brancas, centralizada) */
+.dna-oficina-splash-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    z-index: 1;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Gradiente escuro suave na parte inferior para destacar os botões */
+.dna-oficina-splash-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 220px;
+    background: linear-gradient(
+        to top,
+        rgba(1, 7, 18, 0.96) 0%,
+        rgba(1, 7, 18, 0.6) 55%,
+        transparent 100%
+    );
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Container dos 2 botões na parte inferior */
+.dna-oficina-splash-actions {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 400px;
+    padding: 0 24px;
+    padding-bottom: calc(28px + env(safe-area-inset-bottom, 12px));
+    margin-bottom: clamp(12px, 2vh, 24px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-sizing: border-box;
+}
+
+/* Botão "Entrar" — azul sólido (igual ao app do cliente) */
+.dna-oficina-btn-entrar {
+    width: 100%;
+    height: 52px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #0084FF 0%, #0052CC 100%);
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 24px rgba(0, 102, 255, 0.55);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    font-family: var(--dna-ws-font-main);
+    letter-spacing: 0.2px;
+}
+
+.dna-oficina-btn-entrar:hover {
+    box-shadow: 0 8px 30px rgba(0, 132, 255, 0.7);
+    transform: translateY(-1px);
+}
+
+.dna-oficina-btn-entrar:active {
+    transform: scale(0.98);
+}
+
+/* Botão "Cadastrar" — outline cyan (igual ao app do cliente) */
+.dna-oficina-btn-cadastrar {
+    width: 100%;
+    height: 52px;
+    border-radius: 9999px;
+    background: rgba(3, 12, 26, 0.75);
+    border: 2px solid #00D4FF;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), inset 0 0 12px rgba(0, 212, 255, 0.1);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    font-family: var(--dna-ws-font-main);
+    letter-spacing: 0.2px;
+}
+
+.dna-oficina-btn-cadastrar:hover {
+    background: rgba(0, 180, 255, 0.15);
+    box-shadow: 0 6px 24px rgba(0, 212, 255, 0.35), inset 0 0 16px rgba(0, 212, 255, 0.18);
+    transform: translateY(-1px);
+}
+
+.dna-oficina-btn-cadastrar:active {
+    transform: scale(0.98);
+}
+
+/* ==============================================================================
    14.1 ENTRADA DE VEÍCULOS: HISTÓRICO COMPLETO DNA AUTO & LANÇAR SERVIÇOS
    ============================================================================== */
 .dna-entry-full-card {
