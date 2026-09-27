@@ -2666,260 +2666,591 @@ input.dna-plate-input {
 }
 
 /* ==============================================================================
-   14. TELA DE LOGIN DO APP DA OFICINA (DESIGN ULTRA PREMIUM GLASSMORPHISM)
-   "Mais clientes + faturamento = mais serviço"
+   14. TELA DE AUTENTICAÇÃO DA OFICINA: MODELO IDÊNTICO AO CLIENTE (SPLASH / LOGIN / CADASTRO)
    ============================================================================== */
-.dna-oficina-login-screen {
+.dna-auth-container {
+    position: relative;
+    z-index: 10;
     width: 100%;
+    max-width: 440px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    box-sizing: border-box;
+    margin: 0 auto;
+}
+
+.screen {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.98) translateY(6px);
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+}
+
+.screen.active {
+    display: flex;
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+#screen-splash,
+#screen-login,
+#screen-register {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    justify-content: flex-start;
+    background: #010A16;
+    background: linear-gradient(180deg, #010C1A 0%, #010712 40%, #000812 100%);
+}
+
+#screen-splash.active,
+#screen-login.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+#screen-register.active {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.splash-layout {
+    position: relative;
+    width: 100%;
+    height: 100%;
     min-height: 100vh;
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
-    position: relative;
-    overflow-x: hidden;
-    overflow-y: auto;
-    background: #010712;
+    overflow: hidden;
+    box-sizing: border-box;
+    background: #010A16;
 }
 
-.dna-oficina-login-bg {
+.splash-bg-img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    background-size: cover;
-    background-position: center top;
-    background-repeat: no-repeat;
+    object-fit: cover;
+    object-position: center top;
     z-index: 1;
-}
-
-.dna-oficina-login-gradient {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-        180deg,
-        rgba(1, 7, 18, 0.0) 0%,
-        rgba(1, 7, 18, 0.08) 45%,
-        rgba(1, 7, 18, 0.65) 68%,
-        rgba(1, 7, 18, 0.94) 86%,
-        #010712 100%
-    );
-    z-index: 2;
+    user-select: none;
+    -webkit-user-drag: none;
     pointer-events: none;
 }
 
-.dna-oficina-login-card {
+.splash-bg-fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.35;
+}
+
+.splash-bottom-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 220px;
+    background: linear-gradient(to top, rgba(1, 10, 22, 0.96) 0%, rgba(1, 10, 22, 0.72) 60%, transparent 100%);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.splash-actions {
     position: relative;
     z-index: 10;
-    width: 92%;
-    max-width: 410px;
-    margin: 0 auto;
-    margin-bottom: calc(18px + env(safe-area-inset-bottom, 12px));
-    padding: 16px 18px 16px;
-    background: linear-gradient(170deg, rgba(8, 18, 36, 0.88) 0%, rgba(3, 8, 18, 0.98) 100%);
-    border: 1.5px solid rgba(0, 212, 255, 0.35);
-    border-radius: 24px;
-    box-shadow:
-        0 20px 50px rgba(0, 0, 0, 0.88),
-        0 0 35px rgba(0, 212, 255, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.14);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    width: 100%;
+    max-width: 390px;
+    padding: 0 20px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 12px));
+    margin-bottom: clamp(16px, 2.5vh, 28px);
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 10px;
+    gap: 12px;
     box-sizing: border-box;
 }
 
-.dna-oficina-login-badge {
+.login-form-container {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 390px;
+    padding: 0 20px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 12px));
+    margin-bottom: clamp(14px, 2.2vh, 24px);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.login-fields-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.register-layout {
+    justify-content: flex-start;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: calc(30px + env(safe-area-inset-bottom, 15px));
+}
+
+.register-header-bar {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: clamp(14px, 2.4vh, 20px) 16px 8px;
+    z-index: 30;
+    background: linear-gradient(to bottom, rgba(1, 10, 22, 0.95) 0%, rgba(1, 10, 22, 0.7) 70%, transparent 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-sizing: border-box;
+}
+
+.register-brand-pill {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    background: rgba(0, 212, 255, 0.1);
-    border: 1px solid rgba(0, 212, 255, 0.35);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 11px;
+    gap: 8px;
+    background: rgba(3, 14, 30, 0.75);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    padding: 6px 14px;
+    border-radius: 9999px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.register-logo-img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.6));
+}
+
+.register-logo-text {
+    font-size: 13px;
     font-weight: 800;
-    letter-spacing: 0.6px;
-    color: var(--dna-ws-cyan);
-    text-transform: uppercase;
-}
-
-.dna-oficina-badge-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #00D4FF;
-    box-shadow: 0 0 8px #00D4FF;
-    animation: dnaPulseDot 2s infinite;
-}
-
-@keyframes dnaPulseDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.85); }
-}
-
-.dna-oficina-login-motto {
-    font-family: var(--dna-ws-font-display);
-    font-size: 20px;
-    font-weight: 900;
     color: #FFFFFF;
-    text-align: center;
-    line-height: 1.3;
+    letter-spacing: 0.5px;
+}
+
+.register-form-container {
+    position: relative;
+    z-index: 20;
+    width: 100%;
+    max-width: 440px;
+    padding: 10px 20px 28px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.register-title-box {
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.register-title {
+    font-size: clamp(22px, 3.2vh, 26px);
+    font-weight: 800;
+    color: #FFFFFF;
+    margin: 0 0 6px;
     letter-spacing: -0.3px;
+    font-family: var(--dna-ws-font-display);
+}
+
+.register-subtitle {
+    font-size: 13px;
+    color: #94A3B8;
+    margin: 0;
+    line-height: 1.45;
+}
+
+.register-fields-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.form-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    text-align: left;
+}
+
+.cyber-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #E2E8F0;
     margin: 0;
 }
 
-.dna-oficina-login-motto span {
-    color: var(--dna-ws-cyan);
-    text-shadow: 0 0 16px rgba(0, 212, 255, 0.4);
-}
-
-.dna-oficina-login-subtitle {
-    font-size: 12px;
-    color: #94A3B8;
-    text-align: center;
-    line-height: 1.45;
-    margin-top: -4px;
-}
-
-.dna-oficina-login-form {
-    width: 100%;
+/* Tabs Toggle (Entrar / Cadastrar) */
+.auth-toggle-tabs {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 4px;
-}
-
-.dna-login-input-group {
-    position: relative;
-    width: 100%;
+    background: rgba(4, 14, 28, 0.85);
+    border: 1.5px solid rgba(0, 180, 255, 0.3);
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 14px;
+    gap: 4px;
     box-sizing: border-box;
-}
-
-.dna-login-input-icon {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 16px;
-    pointer-events: none;
-    z-index: 5;
-    color: #64748B;
-}
-
-.dna-oficina-login-input {
-    width: 100% !important;
-    height: 48px !important;
-    padding: 0 16px 0 42px !important;
-    border-radius: 13px !important;
-    background-color: #FFFFFF !important;
-    color: #0F172A !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    border: 1.5px solid #CBD5E1 !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-    box-sizing: border-box !important;
-    transition: all 0.25s ease !important;
-}
-
-.dna-oficina-login-input:focus {
-    border-color: #00D4FF !important;
-    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.3), 0 4px 14px rgba(0, 212, 255, 0.15) !important;
-    outline: none !important;
-}
-
-.dna-oficina-login-btn {
     width: 100%;
-    height: 48px;
-    border-radius: 13px;
-    background: linear-gradient(135deg, #0084FF 0%, #0052CC 100%);
-    color: #FFFFFF;
-    font-size: 15px;
-    font-weight: 800;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    box-shadow: 0 6px 20px rgba(0, 102, 255, 0.45);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    margin-top: 2px;
 }
 
-.dna-oficina-login-btn:hover {
-    box-shadow: 0 8px 26px rgba(0, 102, 255, 0.6);
-}
-
-.dna-oficina-login-btn:active {
-    transform: scale(0.98);
-}
-
-.dna-oficina-login-divider {
-    display: flex;
-    align-items: center;
-    width: 100%;
-    margin: 2px 0;
-}
-
-.dna-oficina-login-divider::before,
-.dna-oficina-login-divider::after {
-    content: "";
+.auth-toggle-tab {
     flex: 1;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.dna-oficina-login-divider span {
-    padding: 0 10px;
-    font-size: 11px;
-    color: #64748B;
-    text-transform: uppercase;
-    font-weight: 700;
-}
-
-.dna-oficina-login-register {
-    width: 100%;
-    height: 44px;
-    border-radius: 13px;
-    background: rgba(0, 212, 255, 0.06);
-    border: 1.5px solid rgba(0, 212, 255, 0.35);
-    color: #FFFFFF;
-    font-size: 13px;
+    padding: 9px 0;
+    text-align: center;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: #94A3B8;
+    font-size: 13.5px;
     font-weight: 700;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
     transition: all 0.2s ease;
 }
 
-.dna-oficina-login-register:hover {
-    background: rgba(0, 212, 255, 0.14);
-    border-color: var(--dna-ws-cyan);
+.auth-toggle-tab.active {
+    background: linear-gradient(135deg, #0084FF 0%, #0055D4 100%);
+    color: #FFFFFF;
+    box-shadow: 0 2px 10px rgba(0, 102, 255, 0.45);
 }
 
-.dna-oficina-login-demo {
-    background: none;
+/* Cyber Input Pill */
+.cyber-input-pill {
+    width: 100%;
+    height: 52px;
+    min-height: 52px;
+    border-radius: 16px;
+    background: rgba(3, 14, 30, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1.5px solid #0099FF;
+    box-shadow: 0 0 16px rgba(0, 153, 255, 0.2), inset 0 0 10px rgba(0, 153, 255, 0.08);
+    display: flex;
+    align-items: center;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
+    position: relative;
+}
+
+.cyber-input-pill:focus-within {
+    border-color: #00D4FF;
+    box-shadow: 0 0 24px rgba(0, 212, 255, 0.45), inset 0 0 14px rgba(0, 212, 255, 0.15);
+    background: rgba(4, 18, 38, 0.95);
+}
+
+.pill-icon-left {
+    width: 46px;
+    min-width: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00D4FF;
+    font-size: 17px;
+    flex-shrink: 0;
+}
+
+.pill-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(0, 180, 255, 0.4);
+    flex-shrink: 0;
+}
+
+.cyber-input-pill .pill-input {
+    flex: 1;
+    height: 100%;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    font-family: var(--dna-ws-font-main);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    padding: 0 14px !important;
+    box-sizing: border-box;
+    box-shadow: none !important;
+}
+
+.cyber-input-pill .pill-input::placeholder {
+    color: #7E9EBE !important;
+    -webkit-text-fill-color: #7E9EBE !important;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.pill-icon-right {
+    width: 46px;
+    min-width: 46px;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00B4D8;
+    background: transparent;
     border: none;
-    color: var(--dna-ws-cyan);
-    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.pill-icon-right:hover {
+    color: #00F0FF;
+    transform: scale(1.08);
+}
+
+.login-options-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 2px 4px 4px 4px;
+    box-sizing: border-box;
+}
+
+.remember-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cyber-checkbox {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.custom-checkbox {
+    width: 17px;
+    height: 17px;
+    min-width: 17px;
+    border: 1.5px solid #0099FF;
+    border-radius: 4px;
+    background: rgba(3, 14, 30, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.cyber-checkbox:checked ~ .custom-checkbox {
+    background: #0084FF;
+    border-color: #00D4FF;
+    box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+}
+
+.cyber-checkbox:checked ~ .custom-checkbox::after {
+    content: "";
+    width: 4px;
+    height: 8px;
+    border: solid #FFFFFF;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    margin-bottom: 2px;
+}
+
+.remember-text {
+    color: #B5CEE6;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.forgot-link {
+    color: #00A3FF;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.forgot-link:hover {
+    color: #38C7FF;
+    text-shadow: 0 0 12px rgba(0, 180, 255, 0.6);
+}
+
+.login-back-btn {
+    position: absolute;
+    top: clamp(16px, 2.8vh, 26px);
+    left: clamp(16px, 3.5vw, 22px);
+    z-index: 25;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(3, 12, 26, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: #00D4FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.login-back-btn:hover {
+    background: rgba(0, 212, 255, 0.2);
+    border-color: #00D4FF;
+    transform: translateX(-2px);
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.4);
+}
+
+.btn-entrar {
+    background: linear-gradient(135deg, #0084FF 0%, #0055D4 100%);
+    color: #FFFFFF;
+    box-shadow: 0 6px 24px rgba(0, 102, 255, 0.55), 0 0 0 1px rgba(0, 212, 255, 0.4) inset;
+    border: none;
+    border-radius: 9999px;
+    width: 100%;
+    height: 52px;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-entrar:hover {
+    box-shadow: 0 8px 30px rgba(0, 132, 255, 0.75), 0 0 0 1.5px rgba(0, 212, 255, 0.6) inset;
+    transform: translateY(-1px);
+}
+
+.btn-entrar-login {
+    border-radius: 16px;
+    height: 52px;
+}
+
+.btn-cadastrar {
+    background: rgba(3, 12, 26, 0.82);
+    border: 2px solid #00D4FF;
+    color: #FFFFFF;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55), 0 0 16px rgba(0, 212, 255, 0.2), inset 0 0 12px rgba(0, 212, 255, 0.12);
+    border-radius: 9999px;
+    width: 100%;
+    height: 52px;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn-cadastrar:hover {
+    background: rgba(0, 180, 255, 0.16);
+    box-shadow: 0 6px 26px rgba(0, 212, 255, 0.42), inset 0 0 16px rgba(0, 212, 255, 0.22);
+    transform: translateY(-1px);
+}
+
+.btn-demo-pill {
+    background: rgba(255, 210, 28, 0.08);
+    border: 1px dashed rgba(255, 210, 28, 0.5);
+    color: #FFD21C;
+    border-radius: 14px;
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    padding: 6px 0;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    transition: color 0.2s;
-    text-align: center;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
 }
 
-.dna-oficina-login-demo:hover {
-    color: #5da8ff;
+.btn-demo-pill:hover {
+    background: rgba(255, 210, 28, 0.16);
+    border-color: #FFD21C;
+}
+
+.auth-alert-box {
+    background: rgba(239, 68, 68, 0.16);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #FCA5A5;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 12.5px;
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+@media (min-width: 601px) {
+    #screen-splash .splash-layout,
+    #screen-login .splash-layout,
+    #screen-register .splash-layout {
+        width: 100%;
+        max-width: 440px;
+        height: min(920px, calc(100dvh - 32px));
+        border-radius: 36px;
+        border: 1px solid rgba(0, 212, 255, 0.25);
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.9), 0 0 50px rgba(0, 102, 255, 0.3);
+    }
 }
 
 /* ==============================================================================

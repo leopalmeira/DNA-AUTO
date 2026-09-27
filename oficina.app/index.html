@@ -424,6 +424,22 @@
 
             // Renderizar ERP da Oficina
             await WorkshopView.render();
+
+            // Sincronização dinâmica de telas via hash (#splash, #login, #register)
+            window.addEventListener('hashchange', () => {
+                const hash = window.location.hash;
+                if (['#login', '#register', '#cadastro', '#entrar', '#splash'].includes(hash)) {
+                    if (typeof WorkshopView !== 'undefined') {
+                        const targetScreen = (hash === '#register' || hash === '#cadastro') ? 'register' : (hash === '#splash' ? 'splash' : 'login');
+                        const screenEl = document.getElementById('screen-' + targetScreen);
+                        if (screenEl && WorkshopView.showOficinaScreen) {
+                            WorkshopView.showOficinaScreen(targetScreen);
+                        } else if (WorkshopView.showOficinaLoginScreen) {
+                            WorkshopView.showOficinaLoginScreen(targetScreen);
+                        }
+                    }
+                }
+            });
         });
     </script>
 </body>

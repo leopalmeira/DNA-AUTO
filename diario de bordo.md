@@ -1135,3 +1135,21 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   5. **Qualidade e Testes:**
      - 45 de 45 testes automatizados aprovados (npm test) com 100% de sucesso.
      - Sincronização automática para public/ e oficina.app/.
+
+---
+
+### Ciclo 59 - Reformulacao Completa da Autenticacao da Oficina no Padrao do Cliente (Splash, Login e Cadastro com Imagem de Fundo)
+- **Data/Hora:** 27/09/2026
+- **Contexto & Escopo:**
+  1. **Arquitetura Identica ao App do Cliente (`cliente.app/dna-auto-login.html`):**
+     - O acesso da oficina foi totalmente alinhado com o design e a experiencia do portal do cliente, eliminando o card estatico anterior e implementando tres telas dinamicas e interconectadas:
+       - **`screen-splash` (Boas-vindas):** Exibe em tela cheia a 2a imagem oficial enviada pelo usuario com o carro azul neon e nos de telemetria (`dna-auto-login-hero.jpg`), gradiente suave inferior e botoes principais **"Entrar"** e **"Cadastrar"**, alem do atalho para a oficina demonstrativa.
+       - **`screen-login` (Entrar no Painel):** Imagem de fundo imersiva preservada, botao de retorno circular no topo esquerdo (`<`), seletor de abas `[ Entrar ] [ Cadastrar ]`, inputs estilizados com icones e divisores para E-mail e Senha (com botao de olho para exibir/ocultar senha), opcoes "Lembrar de mim" e "Esqueceu a senha?", botao primario "Entrar no Painel", link "Nao tem uma conta? Cadastre sua oficina" e atalho de demonstracao.
+       - **`screen-register` (Cadastrar Auto Center):** Imagem de fundo fixa, cabecalho sticky com botao voltar e logotipo oficial do DNA AUTO, seletor de abas, formulario completo de credenciamento (Nome da Oficina / Auto Center, CNPJ/CPF com mascara, Nome do Responsavel, E-mail Comercial, WhatsApp com formatacao e Senha de Acesso com toggle de visibilidade), botao "Concluir Credenciamento" e link "Ja possui uma conta? Fazer Login".
+  2. **Interatividade, Navegacao e Credenciamento:**
+     - Navegacao fluida entre telas via `WorkshopView.showOficinaScreen(name)`.
+     - Suporte a navegacao por hash da URL (`#splash`, `#login`, `#register`, `#cadastro`) com listener de `hashchange` integrado.
+     - Credenciamento conectado ao endpoint `/api/v1/auth/register-workshop`, efetuando login automatico e transicao suave para o painel com notificacao Toast.
+  3. **Qualidade e Testes:**
+     - 45 de 45 testes automatizados aprovados (`npm test`) com 100% de sucesso.
+     - Sincronizacao entre `oficina.app/` e `public/`.

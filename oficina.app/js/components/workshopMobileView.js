@@ -3910,9 +3910,9 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA DE LOGIN EXCLUSIVA DO APP DA OFICINA (ESTILO WALLPAPER DNA AUTO)
+    // TELA DE AUTENTICAÇÃO DA OFICINA: MODELO IDÊNTICO AO CLIENTE (SPLASH / LOGIN / CADASTRO)
     // ──────────────────────────────────────────────────────────────────────────
-    WorkshopView.showOficinaLoginScreen = function() {
+    WorkshopView.showOficinaLoginScreen = function(initialScreen = 'splash') {
         // Limpa sessão e registra estado de logout
         this.financialAuthenticated = false;
         this.stockAuthenticated = false;
@@ -3926,75 +3926,282 @@
         // Imagem de fundo do DNA AUTO (a 2ª foto do usuário com o carro e logo azul)
         const bgImageUrl = './img/dna-auto-login-hero.jpg';
 
+        // Determina qual tela exibir inicialmente com base na hash da URL ou parâmetro
+        let activeScreen = initialScreen;
+        if (window.location.hash === '#register' || window.location.hash === '#cadastro') {
+            activeScreen = 'register';
+        } else if (window.location.hash === '#login' || window.location.hash === '#entrar') {
+            activeScreen = 'login';
+        }
+
         container.innerHTML = `
-            <div class="dna-oficina-login-screen">
-                <!-- Imagem de Fundo Oficial do DNA AUTO (2ª foto enviada pelo usuário) -->
-                <div class="dna-oficina-login-bg" style="background-image: url('${bgImageUrl}');"></div>
-                <div class="dna-oficina-login-gradient"></div>
-
-                <!-- Card de Login na parte de baixo com os campos e cadastre-se -->
-                <div class="dna-oficina-login-card">
-                    <!-- Badge de Identificação da Oficina -->
-                    <div class="dna-oficina-login-badge">
-                        <span class="dna-oficina-badge-dot"></span>
-                        <span>PORTAL OPERACIONAL DA OFICINA</span>
+            <div class="dna-auth-container" id="dna-oficina-auth-container">
+                <!-- ══════════════════════════════════════════════════════════════════
+                     01. TELA DE BOAS-VINDAS / SPLASH SCREEN DA OFICINA
+                     ══════════════════════════════════════════════════════════════════ -->
+                <section id="screen-splash" class="screen ${activeScreen === 'splash' ? 'active' : ''}">
+                    <div class="splash-layout">
+                        <img src="${bgImageUrl}" alt="DNA AUTO — Monitorando seus clientes" class="splash-bg-img" />
+                        <div class="splash-bottom-gradient"></div>
+                        <nav class="splash-actions" aria-label="Acesso ao DNA AUTO">
+                            <button class="btn btn-entrar" id="btnEntrar" type="button" onclick="WorkshopView.showOficinaScreen('login')">
+                                <span>Entrar</span>
+                            </button>
+                            <button class="btn btn-cadastrar" id="btnCadastrar" type="button" onclick="WorkshopView.showOficinaScreen('register')">
+                                <span>Cadastrar</span>
+                            </button>
+                            <button class="btn-demo-pill" type="button" onclick="WorkshopView.handleWorkshopDemoLogin()">
+                                ⚡ Acessar como oficina de demonstração
+                            </button>
+                        </nav>
                     </div>
+                </section>
 
-                    <!-- Formulário de Login Profissional com Ícones -->
-                    <div class="dna-oficina-login-form">
-                        <div class="dna-login-input-group">
-                            <span class="dna-login-input-icon">✉️</span>
-                            <input 
-                                type="email" 
-                                id="oficina-login-email" 
-                                class="dna-oficina-login-input" 
-                                placeholder="E-mail da sua oficina"
-                                autocomplete="username"
-                            />
-                        </div>
-
-                        <div class="dna-login-input-group">
-                            <span class="dna-login-input-icon">🔒</span>
-                            <input 
-                                type="password" 
-                                id="oficina-login-password" 
-                                class="dna-oficina-login-input" 
-                                placeholder="Senha de acesso"
-                                autocomplete="current-password"
-                                onkeydown="if(event.key==='Enter') WorkshopView.handleOficinaLogin()"
-                            />
-                        </div>
-
-                        <button type="button" class="dna-oficina-login-btn" onclick="WorkshopView.handleOficinaLogin()">
-                            <span>Entrar no Painel</span>
-                            <span style="font-size:18px;">›</span>
+                <!-- ══════════════════════════════════════════════════════════════════
+                     02. TELA DO FLUXO DE LOGIN DA OFICINA ("ENTRAR NO PAINEL")
+                     ══════════════════════════════════════════════════════════════════ -->
+                <section id="screen-login" class="screen ${activeScreen === 'login' ? 'active' : ''}">
+                    <div class="splash-layout">
+                        <img src="${bgImageUrl}" alt="DNA AUTO — Login Oficina" class="splash-bg-img" />
+                        <button class="login-back-btn" type="button" onclick="WorkshopView.showOficinaScreen('splash')" aria-label="Voltar para início" title="Voltar">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
                         </button>
-
-                        <div class="dna-oficina-login-divider">
-                            <span>ou</span>
+                        <div class="splash-bottom-gradient"></div>
+                        <div class="login-form-container">
+                            <div class="auth-toggle-tabs">
+                                <button type="button" class="auth-toggle-tab active" onclick="WorkshopView.showOficinaScreen('login')">Entrar</button>
+                                <button type="button" class="auth-toggle-tab" onclick="WorkshopView.showOficinaScreen('register')">Cadastrar</button>
+                            </div>
+                            <div id="login-error-box" class="auth-alert-box" style="display:none;"></div>
+                            <form id="form-login" onsubmit="event.preventDefault(); WorkshopView.handleOficinaLogin();" class="login-fields-form">
+                                <div class="cyber-input-pill">
+                                    <div class="pill-icon-left">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="pill-divider"></div>
+                                    <input id="oficina-login-email" class="pill-input" type="email" placeholder="E-mail da sua oficina" required autocomplete="username" />
+                                </div>
+                                <div class="cyber-input-pill">
+                                    <div class="pill-icon-left">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="pill-divider"></div>
+                                    <input id="oficina-login-password" class="pill-input" type="password" placeholder="Senha de acesso" required autocomplete="current-password" />
+                                    <button type="button" class="pill-icon-right btn-toggle-pass" onclick="WorkshopView.togglePasswordVisibility('oficina-login-password')" aria-label="Mostrar ou ocultar senha">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="login-options-row">
+                                    <label class="remember-checkbox-label">
+                                        <input type="checkbox" id="remember-me" checked class="cyber-checkbox" />
+                                        <span class="custom-checkbox"></span>
+                                        <span class="remember-text">Lembrar de mim</span>
+                                    </label>
+                                    <a class="forgot-link" href="javascript:void(0)" onclick="WorkshopView.handleForgotPassword()">Esqueceu a senha?</a>
+                                </div>
+                                <button id="btn-submit-login" class="btn btn-entrar btn-entrar-login" type="submit">
+                                    <span>Entrar no Painel</span>
+                                </button>
+                                <div style="display:flex; justify-content:center; align-items:center; margin-top:14px; padding:0 4px; font-size:13.5px;">
+                                    <a href="javascript:void(0)" onclick="WorkshopView.showOficinaScreen('register')" style="color:#00D4FF; font-weight:600; text-decoration:none;">Não tem uma conta? Cadastre sua oficina</a>
+                                </div>
+                                <div style="margin-top:10px;">
+                                    <button type="button" class="btn-demo-pill" onclick="WorkshopView.handleWorkshopDemoLogin()">
+                                        ⚡ Acessar como oficina de demonstração
+                                    </button>
+                                </div>
+                            </form>
                         </div>
-
-                        <button type="button" class="dna-oficina-login-register" onclick="WorkshopView.currentSection='auth'; WorkshopView.authActiveTab='register'; WorkshopView.renderMobileShell();">
-                            <span>📝</span> Cadastre-se
-                        </button>
-
-                        <button type="button" class="dna-oficina-login-demo" onclick="WorkshopView.handleWorkshopDemoLogin()">
-                            ⚡ Acessar como oficina de demonstração
-                        </button>
                     </div>
-                </div>
+                </section>
+
+                <!-- ══════════════════════════════════════════════════════════════════
+                     03. TELA DO FLUXO DE CADASTRO DA OFICINA ("CADASTRAR AUTO CENTER")
+                     ══════════════════════════════════════════════════════════════════ -->
+                <section id="screen-register" class="screen ${activeScreen === 'register' ? 'active' : ''}">
+                    <div class="splash-layout register-layout">
+                        <div class="splash-bg-fixed" style="background-image: url('${bgImageUrl}');"></div>
+                        <div class="register-header-bar">
+                            <button class="login-back-btn" type="button" onclick="WorkshopView.showOficinaScreen('splash')" aria-label="Voltar para início" title="Voltar">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m15 18-6-6 6-6"></path>
+                                </svg>
+                            </button>
+                            <div class="brand-top-pill register-brand-pill">
+                                <img src="./img/icons/icon-192x192.png" class="register-logo-img" alt="DNA AUTO" onerror="this.src='/img/splash-d-logo.png';" />
+                                <span class="register-logo-text">DNA <b style="color:#00D4FF;">AUTO</b></span>
+                            </div>
+                        </div>
+                        <div class="register-form-container">
+                            <div class="auth-toggle-tabs">
+                                <button type="button" class="auth-toggle-tab" onclick="WorkshopView.showOficinaScreen('login')">Entrar</button>
+                                <button type="button" class="auth-toggle-tab active" onclick="WorkshopView.showOficinaScreen('register')">Cadastrar</button>
+                            </div>
+                            <div class="register-title-box">
+                                <h1 class="register-title">Cadastrar Auto Center</h1>
+                                <p class="register-subtitle">Junte-se à rede de credenciamento e emissão de laudos DNA AUTO</p>
+                            </div>
+                            <div id="reg-error-box" class="auth-alert-box" style="display:none;"></div>
+                            <form id="form-register" onsubmit="event.preventDefault(); WorkshopView.handleOficinaRegister();" class="register-fields-form">
+                                <div class="form-field-group">
+                                    <label class="cyber-label" for="reg-oficina-nome">Nome da Oficina / Auto Center</label>
+                                    <div class="cyber-input-pill">
+                                        <div class="pill-icon-left">🏢</div>
+                                        <div class="pill-divider"></div>
+                                        <input id="reg-oficina-nome" class="pill-input" type="text" placeholder="Ex: Veloce Auto Center" required />
+                                    </div>
+                                </div>
+                                <div class="form-field-group">
+                                    <label class="cyber-label" for="reg-oficina-cnpj">CNPJ ou CPF</label>
+                                    <div class="cyber-input-pill">
+                                        <div class="pill-icon-left">📄</div>
+                                        <div class="pill-divider"></div>
+                                        <input id="reg-oficina-cnpj" class="pill-input" type="text" placeholder="00.000.000/0001-00" required oninput="WorkshopView.maskCnpj(this)" />
+                                    </div>
+                                </div>
+                                <div class="form-field-group">
+                                    <label class="cyber-label" for="reg-oficina-resp">Nome do Responsável / Mecânico Chefe</label>
+                                    <div class="cyber-input-pill">
+                                        <div class="pill-icon-left">👤</div>
+                                        <div class="pill-divider"></div>
+                                        <input id="reg-oficina-resp" class="pill-input" type="text" placeholder="Seu nome completo" required />
+                                    </div>
+                                </div>
+                                <div class="form-field-group">
+                                    <label class="cyber-label" for="reg-oficina-email">E-mail Comercial</label>
+                                    <div class="cyber-input-pill">
+                                        <div class="pill-icon-left">✉️</div>
+                                        <div class="pill-divider"></div>
+                                        <input id="reg-oficina-email" class="pill-input" type="email" placeholder="contato@suaoficina.com.br" required />
+                                    </div>
+                                </div>
+                                <div class="form-field-group">
+                                    <label class="cyber-label" for="reg-oficina-whatsapp">WhatsApp (para receber agendamentos)</label>
+                                    <div class="cyber-input-pill">
+                                        <div class="pill-icon-left">💬</div>
+                                        <div class="pill-divider"></div>
+                                        <input id="reg-oficina-whatsapp" class="pill-input" type="tel" placeholder="(11) 99999-9999" required oninput="WorkshopView.maskPhone(this)" />
+                                    </div>
+                                </div>
+                                <div class="form-field-group">
+                                    <label class="cyber-label" for="reg-oficina-senha">Senha de Acesso</label>
+                                    <div class="cyber-input-pill">
+                                        <div class="pill-icon-left">🔒</div>
+                                        <div class="pill-divider"></div>
+                                        <input id="reg-oficina-senha" class="pill-input" type="password" placeholder="Mínimo de 6 caracteres" required autocomplete="new-password" />
+                                        <button type="button" class="pill-icon-right btn-toggle-pass" onclick="WorkshopView.togglePasswordVisibility('reg-oficina-senha')">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                <button id="btn-submit-register" class="btn btn-entrar btn-entrar-login" type="submit" style="margin-top:8px;">
+                                    <span>Concluir Credenciamento</span>
+                                </button>
+                                <div style="display:flex; justify-content:center; align-items:center; margin-top:14px; padding:0 4px; font-size:13.5px;">
+                                    <span style="color:#94A3B8; margin-right:6px;">Já possui uma conta?</span>
+                                    <a href="javascript:void(0)" onclick="WorkshopView.showOficinaScreen('login')" style="color:#00D4FF; font-weight:700; text-decoration:none;">Fazer Login</a>
+                                </div>
+                                <div style="margin-top:10px;">
+                                    <button type="button" class="btn-demo-pill" onclick="WorkshopView.handleWorkshopDemoLogin()">
+                                        ⚡ Acessar como oficina de demonstração
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
             </div>
         `;
     };
 
+    WorkshopView.showOficinaScreen = function(name) {
+        const screens = document.querySelectorAll('#dna-oficina-auth-container .screen');
+        screens.forEach(el => el.classList.remove('active'));
+        const target = document.getElementById('screen-' + name);
+        if (target) {
+            target.classList.add('active');
+            if (name === 'splash') {
+                if (window.location.hash) {
+                    history.replaceState(null, null, window.location.pathname);
+                }
+            } else {
+                window.location.hash = '#' + name;
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    WorkshopView.togglePasswordVisibility = function(id) {
+        const input = document.getElementById(id);
+        if (input) {
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+    };
+
+    WorkshopView.maskPhone = function(input) {
+        let v = input.value.replace(/\D/g, '');
+        if (v.length > 11) v = v.substring(0, 11);
+        if (v.length > 10) {
+            input.value = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+        } else if (v.length > 6) {
+            input.value = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+        } else if (v.length > 2) {
+            input.value = v.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+        } else {
+            input.value = v;
+        }
+    };
+
+    WorkshopView.maskCnpj = function(input) {
+        let v = input.value.replace(/\D/g, '');
+        if (v.length > 14) v = v.substring(0, 14);
+        if (v.length > 11) {
+            input.value = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+        } else if (v.length > 9) {
+            input.value = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4');
+        } else {
+            input.value = v;
+        }
+    };
+
+    WorkshopView.handleForgotPassword = function() {
+        this.showToast('Para recuperar ou redefinir a sua senha, consulte o administrador ou suporte da rede DNA AUTO.', 'info');
+    };
+
     WorkshopView.handleOficinaLogin = async function() {
+        const errBox = document.getElementById('login-error-box');
+        if (errBox) { errBox.style.display = 'none'; errBox.innerText = ''; }
+
         const email = (document.getElementById('oficina-login-email')?.value || '').trim();
         const password = (document.getElementById('oficina-login-password')?.value || '').trim();
 
         if (!email || !password) {
-            WorkshopView.showToast('Por favor, preencha e-mail e senha.', 'warning');
+            if (errBox) {
+                errBox.style.display = 'block';
+                errBox.innerText = 'Por favor, preencha seu e-mail e senha de acesso.';
+            } else {
+                WorkshopView.showToast('Por favor, preencha e-mail e senha.', 'warning');
+            }
             return;
         }
+
+        const btn = document.getElementById('btn-submit-login');
+        const oldBtnText = btn ? btn.innerHTML : '';
+        if (btn) btn.innerHTML = '<span>Entrando...</span>';
 
         localStorage.removeItem('dna_logged_out');
 
@@ -4010,11 +4217,18 @@
                     }
                     this.currentSection = 'dashboard';
                     this.renderMobileShell();
+                    this.showToast('Login realizado com sucesso! Bem-vindo.', 'success');
                     return;
                 }
             }
         } catch (e) {
             console.warn('Login via sistema:', e.message);
+            if (errBox) {
+                errBox.style.display = 'block';
+                errBox.innerText = e.message || 'Credenciais inválidas. Verifique seu e-mail e senha.';
+            }
+            if (btn) btn.innerHTML = oldBtnText;
+            return;
         }
 
         // Login local simplificado para demonstração
@@ -4031,6 +4245,81 @@
 
         this.currentSection = 'dashboard';
         this.renderMobileShell();
+        this.showToast('Acesso autorizado ao painel da oficina.', 'success');
+    };
+
+    WorkshopView.handleOficinaRegister = async function() {
+        const errBox = document.getElementById('reg-error-box');
+        if (errBox) { errBox.style.display = 'none'; errBox.innerText = ''; }
+
+        const tradeName = (document.getElementById('reg-oficina-nome')?.value || '').trim();
+        const cnpj = (document.getElementById('reg-oficina-cnpj')?.value || '').trim();
+        const technicianName = (document.getElementById('reg-oficina-resp')?.value || '').trim();
+        const email = (document.getElementById('reg-oficina-email')?.value || '').trim();
+        const phone = (document.getElementById('reg-oficina-whatsapp')?.value || '').trim();
+        const password = (document.getElementById('reg-oficina-senha')?.value || '').trim();
+
+        if (!tradeName || !cnpj || !email || !password) {
+            if (errBox) {
+                errBox.style.display = 'block';
+                errBox.innerText = 'Preencha todos os campos obrigatórios (Nome da Oficina, CNPJ/CPF, E-mail e Senha).';
+            }
+            return;
+        }
+
+        const btn = document.getElementById('btn-submit-register');
+        const oldBtnText = btn ? btn.innerHTML : '';
+        if (btn) btn.innerHTML = '<span>Credenciando Auto Center...</span>';
+
+        try {
+            if (typeof API !== 'undefined' && API.registerWorkshop) {
+                const res = await API.registerWorkshop({
+                    tradeName,
+                    cnpj,
+                    technicianName,
+                    email,
+                    phone,
+                    password
+                });
+                if (res && res.token) {
+                    localStorage.removeItem('dna_logged_out');
+                    localStorage.setItem('dna_token', res.token);
+                    if (res.user) localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
+                    this.officialWorkshopName = tradeName;
+                    this.currentSection = 'dashboard';
+                    this.renderMobileShell();
+                    this.showToast('🎉 Auto Center credenciada com sucesso! Bem-vindo ao DNA AUTO.', 'success');
+                    return;
+                }
+            }
+        } catch (e) {
+            console.warn('Erro ao registrar oficina via API:', e.message);
+            if (errBox) {
+                errBox.style.display = 'block';
+                errBox.innerText = e.message || 'Erro ao realizar credenciamento. Verifique os dados digitados.';
+            }
+            if (btn) btn.innerHTML = oldBtnText;
+            return;
+        }
+
+        // Fallback local se estiver offline
+        localStorage.removeItem('dna_logged_out');
+        this.officialWorkshopName = tradeName;
+        const user = {
+            id: 'ws_usr_' + Date.now(),
+            name: technicianName || tradeName,
+            email: email,
+            role_code: 'WORKSHOP',
+            workshop: {
+                trade_name: tradeName,
+                cnpj: cnpj
+            }
+        };
+        localStorage.setItem('dna_logged_user', JSON.stringify(user));
+        localStorage.setItem('dna_token', 'sess_ws_' + Date.now());
+        this.currentSection = 'dashboard';
+        this.renderMobileShell();
+        this.showToast('Auto Center credenciada com sucesso!', 'success');
     };
 
     // Login com Oficina de Demonstração
@@ -4081,9 +4370,10 @@
         this.currentWorkshopId = activeWorkshopId;
         document.body.classList.add('is-workshop-erp');
 
-        // Se o usuário estiver deslogado ou a URL solicitar login, exibe a tela de login com imagem DNA AUTO
+        // Se o usuário estiver deslogado ou a URL solicitar login/cadastro, exibe o portal de autenticação da oficina
         const isLoggedOut = localStorage.getItem('dna_logged_out') === 'true';
-        if (isLoggedOut || window.location.hash === '#login') {
+        const isAuthHash = ['#login', '#register', '#cadastro', '#entrar', '#splash'].includes(window.location.hash);
+        if (isLoggedOut || isAuthHash) {
             document.body.classList.remove('force-desktop-mode');
             this.showOficinaLoginScreen();
             return;
