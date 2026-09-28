@@ -131,77 +131,8 @@
 
     // Veículos Padrão de Demonstração para Mecânicos
     WorkshopView.getDefaultMobileVehicles = function() {
-        return [
-            {
-                id: 'veh_civic',
-                license_plate: 'ABC1D23',
-                plate: 'ABC1D23',
-                brand: 'Honda',
-                model: 'Civic Touring 1.5 Turbo',
-                year: '2020',
-                color: 'Prata',
-                chassis: '9BWCA41JX9P029348',
-                mileage: 9950, // Faltam 50 km para os 10.000 km!
-                client_name: 'João da Silva',
-                client_phone: '(21) 98765-4321',
-                client_email: 'joao@email.com',
-                photo_url: './img/vehicles/civic.png',
-                last_service_date: 'Hoje',
-                status: 'EM_ANDAMENTO'
-            },
-            {
-                id: 'veh_corolla',
-                license_plate: 'XY29A87',
-                plate: 'XY29A87',
-                brand: 'Toyota',
-                model: 'Corolla XEi 2.0 Flex',
-                year: '2018',
-                color: 'Branco',
-                chassis: '9BRBL48E8K0184729',
-                mileage: 19920, // Faltam 80 km para os 20.000 km!
-                client_name: 'Maria Fernandes',
-                client_phone: '(21) 97654-3210',
-                client_email: 'maria@email.com',
-                photo_url: './img/vehicles/corolla.png',
-                last_service_date: 'Ontem',
-                status: 'AGUARDANDO'
-            },
-            {
-                id: 'veh_uno',
-                license_plate: 'QWE2F34',
-                plate: 'QWE2F34',
-                brand: 'Fiat',
-                model: 'Uno Way 1.0 Fire',
-                year: '2015',
-                color: 'Vermelho',
-                chassis: '9BD158229F6819234',
-                mileage: 30120, // Atrasada por 120 km!
-                client_name: 'Carlos Almeida',
-                client_phone: '(21) 91234-5678',
-                client_email: 'carlos@email.com',
-                photo_url: './img/vehicles/uno.png',
-                last_service_date: '10 dias atrás',
-                status: 'AGUARDANDO'
-            },
-            {
-                id: 'veh_hb20',
-                license_plate: 'BRA2E19',
-                plate: 'BRA2E19',
-                brand: 'Hyundai',
-                model: 'HB20 Evolution 1.0',
-                year: '2021',
-                color: 'Cinza',
-                chassis: '9BHBH41DXMP019284',
-                mileage: 29940, // Faltam 60 km para os 30.000 km!
-                client_name: 'Carlos Alberto Silva',
-                client_phone: '(11) 98888-7777',
-                client_email: 'carlos.alberto@email.com',
-                last_service_date: 'Hoje',
-                status: 'EM_ANDAMENTO'
-            }
-        ];
+        return [];
     };
-
     // Alertas de Manutenção para o Mecânico
     WorkshopView.getMobileAlerts = function() {
         const list = this.getEffectiveVehiclesList();
@@ -253,12 +184,11 @@
 
     // Obter lista consolidada de veículos
     WorkshopView.getEffectiveVehiclesList = function() {
-        if (this.vehiclesList && this.vehiclesList.length > 0) {
+        if (Array.isArray(this.vehiclesList) && this.vehiclesList.length > 0) {
             return this.vehiclesList;
         }
-        return this.getDefaultMobileVehicles();
+        return [];
     };
-
     // Localizar veículo por placa
     
     // ──────────────────────────────────────────────────────────────────────────
@@ -1169,15 +1099,15 @@
     // TELA 4: CADASTRAR CLIENTE (PLACA PRIMEIRO!)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileClientRegisterView = function() {
-        const plate = this.mobileActivePlate || 'ABC1D23';
-        const v = this.findVehicleByPlate(plate) || {
-            brand: 'Honda',
-            model: 'Civic Touring',
+        const plate = this.mobileActivePlate || '';
+        const v = plate ? (this.findVehicleByPlate(plate) || {
+            brand: '',
+            model: '',
             license_plate: plate,
-            year: '2020',
-            color: 'Prata',
-            client_name: 'João Silva'
-        };
+            year: '',
+            color: '',
+            client_name: ''
+        }) : { brand: '', model: '', license_plate: '', year: '', color: '', client_name: '' };
 
         return `
             <div class="dna-mobile-subpage">
@@ -1314,16 +1244,17 @@
         } catch (_) {}
 
         alert(`🎉 Cliente ${name} cadastrado com sucesso e vinculado à placa ${plate}!\nO passaporte digital DNA AUTO foi ativado.`);
+        const existingVeh = this.findVehicleByPlate(plate);
         this.selectedMobileVehicle = {
             license_plate: plate,
             client_name: name,
             client_phone: phone,
             client_email: email,
-            model: 'Honda Civic',
-            brand: 'Honda',
-            year: '2020',
-            color: 'Prata',
-            mileage: 10000
+            model: existingVeh?.model || 'Veículo Cadastrado',
+            brand: existingVeh?.brand || '',
+            year: existingVeh?.year || '',
+            color: existingVeh?.color || '',
+            mileage: existingVeh?.mileage || 0
         };
         this.switchMobileSection('lancar-servicos');
     };
@@ -1749,7 +1680,7 @@
 
         // Se nenhum veículo foi digitado ainda, define o padrão de demonstração para a tela não falhar
         if (!this.selectedMobileVehicle) {
-            this.selectedMobileVehicle = this.getDefaultMobileVehicles()[0];
+            this.selectedMobileVehicle = (this.getEffectiveVehiclesList()[0] || null);
         }
 
         this.switchMobileSection('detalhe-servico');
@@ -1770,7 +1701,7 @@
     // TELA 6: DETALHE DO SERVIÇO (EX: TROCA DE ÓLEO E FILTROS)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileServiceDetailView = function() {
-        const v = this.selectedMobileVehicle || this.getDefaultMobileVehicles()[0];
+        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
         const s = this.selectedMobileService || this.monitoredServicesCatalog[0];
 
         const todayStr = new Date().toISOString().split('T')[0];
@@ -1910,7 +1841,7 @@
     };
 
     WorkshopView.handleMobileSaveServiceRecord = async function() {
-        const v = this.selectedMobileVehicle || this.getDefaultMobileVehicles()[0];
+        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
         const s = this.selectedMobileService || this.monitoredServicesCatalog[0];
         const lastKm = document.getElementById('mobile-srv-last-km')?.value || v.mileage;
         const nextKm = document.getElementById('mobile-srv-next-km')?.value || (Number(lastKm) + 10000);
@@ -1948,83 +1879,7 @@
         }); // 'problemas' | 'preventiva' | 'normais' | 'todos'
 
         // Lista de veículos monitorados com alertas OBD e preventivos
-        const vehicles = [
-            {
-                id: 'prob_1',
-                client_name: 'João da Silva',
-                client_phone: '(11) 98765-4321',
-                vehicle_model: 'Fiat Argo 1.0 Flex 2021',
-                license_plate: 'BRA2E19',
-                current_km: '82.450 km',
-                status_type: 'PROBLEM',
-                status_badge: '🔴 Problema identificado',
-                status_color: '#EF4444',
-                issue_title: 'Falha identificada no sistema do motor',
-                issue_desc: 'Foi identificada uma falha relacionada ao funcionamento do motor (Falha de ignição / Sensor O2). Recomendada avaliação imediata.',
-                tech_code: 'P0301 (Cilindro 1) • Sonda Lambda O2',
-                default_msg: 'Olá, João. Aqui é da sua oficina. O acompanhamento do seu veículo Fiat Argo pelo DNA Auto identificou uma condição que recomendamos verificar. Gostaríamos de convidá-lo a trazer o veículo para uma avaliação. Podemos agendar um horário?'
-            },
-            {
-                id: 'prob_2',
-                client_name: 'Roberto Silva',
-                client_phone: '(11) 96543-2109',
-                vehicle_model: 'Jeep Compass Longitude 2.0',
-                license_plate: 'QWE7A32',
-                current_km: '56.890 km',
-                status_type: 'PROBLEM',
-                status_badge: '🔴 Problema identificado',
-                status_color: '#EF4444',
-                issue_title: 'Anomalia no circuito de injeção',
-                issue_desc: 'Sonda lambda enviando sinal fora da faixa ideal de mistura. Avaliação preventiva necessária para evitar aumento de consumo.',
-                tech_code: 'P0130 (Sensor O2 Banco 1)',
-                default_msg: 'Olá, Roberto. Aqui é da sua oficina. O DNA Auto detectou uma condição no circuito de injeção do seu Jeep Compass. Gostaríamos de convidá-lo a trazer o veículo para um diagnóstico preventivo. Podemos agendar um horário?'
-            },
-            {
-                id: 'upc_1',
-                client_name: 'Maria Oliveira',
-                client_phone: '(11) 97654-3210',
-                vehicle_model: 'VW Fox 1.0 Trendline 2013',
-                license_plate: 'FOX1013',
-                current_km: '103.200 km',
-                status_type: 'UPCOMING',
-                status_badge: '🟡 Troca de óleo próxima',
-                status_color: '#F59E0B',
-                issue_title: 'Troca de óleo aos 105.000 km',
-                issue_desc: 'Próxima troca de óleo estimada para 105.000 km (faltam 1.800 km). Lubrificação é vital para a longevidade do motor.',
-                tech_code: 'Regra de Manutenção 10.000 km',
-                default_msg: 'Olá, Maria. Aqui é da sua oficina. O DNA Auto identificou que seu veículo VW Fox está se aproximando da próxima manutenção (Troca de óleo aos 105.000 km). Gostaríamos de convidá-la para realizar a revisão. Podemos agendar um horário?'
-            },
-            {
-                id: 'upc_2',
-                client_name: 'Marcos Lima',
-                client_phone: '(11) 94321-0987',
-                vehicle_model: 'Jeep Renegade Sport 1.8',
-                license_plate: 'KLM1H23',
-                current_km: '62.000 km',
-                status_type: 'UPCOMING',
-                status_badge: '🟡 Manutenção próxima',
-                status_color: '#F59E0B',
-                issue_title: 'Inspeção de pastilhas de freio',
-                issue_desc: 'Veículo atingiu 62.000 km. Estimativa de desgaste de pastilhas dianteiras atinge 80% conforme ciclo operacional.',
-                tech_code: 'Regra de Revisão Periódica',
-                default_msg: 'Olá, Marcos. Aqui é da sua oficina. O monitoramento DNA Auto identificou que seu Jeep Renegade atingiu 62.000 km, momento ideal para a inspeção preventiva das pastilhas de freio. Gostaria de reservar um horário para avaliação?'
-            },
-            {
-                id: 'norm_1',
-                client_name: 'Patrícia Souza',
-                client_phone: '(11) 95432-1098',
-                vehicle_model: 'Honda HR-V EXL 1.8',
-                license_plate: 'XY29D10',
-                current_km: '38.120 km',
-                status_type: 'NORMAL',
-                status_badge: '🟢 Tudo normal',
-                status_color: '#10B981',
-                issue_title: 'Veículo 100% monitorado e em conformidade',
-                issue_desc: 'Telemetria do OBD ativa, zero falhas na ECU e manutenções preventivas rigorosamente em dia.',
-                tech_code: '0 DTCs • Sistemas em conformidade',
-                default_msg: 'Olá, Patrícia! Aqui é da sua oficina. Passando para parabenizá-la: seu Honda HR-V está 100% em dia no monitoramento DNA Auto!'
-            }
-        ];
+        const vehicles = [];
 
         const filtered = vehicles.filter(v => {
             if (filter === 'problemas') return v.status_type === 'PROBLEM';
@@ -2240,7 +2095,7 @@
     // TELA 9: ENVIAR FOTOS (SEÇÃO 13 DO PROMPT)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileSendPhotosView = function() {
-        const v = this.selectedMobileVehicle || this.getDefaultMobileVehicles()[0];
+        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
 
         return `
             <div class="dna-mobile-subpage">
@@ -2341,7 +2196,7 @@
     };
 
     WorkshopView.handleMobileSavePhotos = function() {
-        const v = this.selectedMobileVehicle || this.getDefaultMobileVehicles()[0];
+        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
         const desc = document.getElementById('mobile-photo-desc-input')?.value || 'Registro fotográfico';
 
         WorkshopView.showToast(`📸 Fotos e comprovante salvos com sucesso para ${v.license_plate}!\nAs fotos foram integradas ao Dossiê 360° e já estão disponíveis no aplicativo do cliente.`, 'success');
@@ -2352,7 +2207,7 @@
     // TELA 10: NOTA FISCAL (SEÇÃO 14 DO PROMPT)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileInvoiceView = function() {
-        const v = this.selectedMobileVehicle || this.getDefaultMobileVehicles()[0];
+        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
         const items = this.mobileInvoiceItems || [];
         const subtotal = items.filter(i => i.checked).reduce((acc, curr) => acc + curr.price, 0);
 
@@ -2469,7 +2324,7 @@
     };
 
     WorkshopView.handleMobileSaveInvoice = function(isIssue) {
-        const v = this.selectedMobileVehicle || this.getDefaultMobileVehicles()[0];
+        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
         alert(isIssue 
             ? `📄 Nota Fiscal Eletrônica emitida com sucesso para o veículo ${v.license_plate}!\nO documento foi transmitido e vinculado à Ficha Digital.`
             : `💾 Dados da Nota Fiscal salvos com sucesso para ${v.license_plate}.`
@@ -3822,7 +3677,7 @@
     // HELPER UNIVERSAL: BUSCA DE VEÍCULO POR PLACA EM QUALQUER SERVIÇO
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderUniversalVehiclePlateBar = function() {
-        const v = this.selectedMobileVehicle || this.getDefaultMobileVehicles()[0];
+        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
         const recents = this.getEffectiveVehiclesList().slice(0, 4);
 
         return `

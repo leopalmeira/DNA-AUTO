@@ -142,7 +142,7 @@ const DossierView = {
                     <p style="color:var(--text-muted); margin-bottom:20px;">Não encontramos nenhum veículo correspondente a "<strong>${identifier}</strong>".</p>
                     <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
                         <button class="btn btn-secondary" onclick="DossierView.render(null)">Voltar para Busca</button>
-                        <button class="btn btn-cyan" onclick="DossierView.render('DNA-BR-8F72-29A4-X91')">Carregar Honda Civic Demo</button>
+                        
                     </div>
                 </div>
             `;
@@ -179,13 +179,7 @@ const DossierView = {
                         </div>
                     </form>
 
-                    <!-- Veículos de Demonstração para Teste Rápido -->
-                    <div class="search-sample-pills">
-                        <span style="font-size:11px; color:var(--text-dim); display:flex; align-items:center; margin-right:4px;">Testar veículos homologados:</span>
-                        <button class="search-sample-btn" onclick="DossierView.render('BRA2E19')">🚗 Honda Civic (BRA2E19)</button>
-                        <button class="search-sample-btn" onclick="DossierView.render('ABC1D23')">🚗 Toyota Corolla (ABC1D23)</button>
-                        <button class="search-sample-btn" onclick="DossierView.render('KXZ9012')">🚗 VW Gol (KXZ9012)</button>
-                    </div>
+                    
 
                     <!-- Pilares do DNA AUTO -->
                     <div class="search-pillars-grid">

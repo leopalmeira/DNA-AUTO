@@ -1129,24 +1129,43 @@ router.get('/:identifier/inspection', (req, res) => {
         const cleanPlate = identifier.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
         const vehicle = db.prepare(`
-            SELECT v.id, v.brand, v.model, v.license_plate, v.manufacture_year, v.model_year, v.chassis_vin, v.renavam, v.photo_url,
+            SELECT v.id, v.brand, v.model, v.license_plate, v.manufacture_year, v.model_year, v.chassis_vin, v.renavam, v.photo_url, v.is_demo,
                    (SELECT mileage FROM mileage_records WHERE vehicle_id = v.id ORDER BY recorded_at DESC LIMIT 1) as current_mileage
             FROM vehicles v
             WHERE v.id = ? OR UPPER(REPLACE(v.license_plate, '-', '')) = ? OR UPPER(v.license_plate) = ?
         `).get(identifier, cleanPlate, identifier.toUpperCase());
 
         const plate = vehicle ? vehicle.license_plate : identifier.toUpperCase();
-        const brand = vehicle ? vehicle.brand : 'Volkswagen';
-        const model = vehicle ? vehicle.model : 'Gol 1.0';
-        const currentKm = (vehicle && vehicle.current_mileage) ? Number(vehicle.current_mileage) : 87542;
+        const brand = vehicle ? vehicle.brand : 'Veículo';
+        const model = vehicle ? vehicle.model : 'Cadastrado';
+        const currentKm = (vehicle && vehicle.current_mileage) ? Number(vehicle.current_mileage) : 0;
+
+        // Se for um veículo real cadastrado sem inspeção ou não for veículo demo
+        const isDemo = cleanPlate === 'BRA2E19' || (vehicle && vehicle.is_demo === 1);
+        if (!isDemo) {
+            return res.json({
+                success: true,
+                vehicle: {
+                    brand: vehicle ? vehicle.brand : brand,
+                    model: vehicle ? vehicle.model : model,
+                    license_plate: plate,
+                    current_mileage: currentKm
+                },
+                inspection: null,
+                revisions: {
+                    next_revision: null,
+                    history: []
+                }
+            });
+        }
 
         res.json({
             success: true,
             vehicle: {
-                brand,
-                model,
+                brand: vehicle ? vehicle.brand : 'Volkswagen',
+                model: vehicle ? vehicle.model : 'Gol 1.0',
                 license_plate: plate,
-                current_mileage: currentKm
+                current_mileage: currentKm || 87542
             },
             inspection: {
                 score: 98,

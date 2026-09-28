@@ -5,13 +5,36 @@
 
 const SaleReportModal = {
     async open(vehicleId) {
-        const modal = document.getElementById('sale-report-modal');
-        const contentBox = document.getElementById('sale-report-modal-content');
+        let modal = document.getElementById('sale-report-modal');
+        if (!modal) {
+            const div = document.createElement('div');
+            div.id = 'sale-report-modal';
+            div.className = 'modal-overlay';
+            div.innerHTML = `
+                <div class="modal-container wide">
+                    <div class="modal-header" style="flex-direction:column; align-items:stretch; gap:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+                            <h3 style="margin:0; font-size:16px; font-weight:800; color:var(--text-highlight, #fff);">Relatório Oficial DNA AUTO para Venda</h3>
+                            <button class="modal-close-btn" style="font-size:24px; padding:0 6px;" onclick="document.getElementById('sale-report-modal').classList.remove('active')">&times;</button>
+                        </div>
+                        <div style="display:flex; gap:8px; width:100%;">
+                            <button id="btn-print-sale-report" class="btn btn-cyan btn-sm" style="flex:1; justify-content:center; font-weight:700; height:38px;" onclick="SaleReportModal.printReport()">
+                                🖨️ IMPRIMIR / SALVAR PDF
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-body" id="sale-report-modal-content"></div>
+                </div>
+            `;
+            document.body.appendChild(div);
+            modal = div;
+        }
+        const contentBox = document.getElementById('sale-report-modal-content') || modal.querySelector('.modal-body');
 
         contentBox.innerHTML = `
             <div style="padding:40px; text-align:center; color:var(--text-muted);">
                 <div class="pulse-dot" style="margin:0 auto 16px;"></div>
-                Gerando Laudo Oficial DNA AUTO para Venda com 40+ seções de informação detalhada...
+                Gerando Laudo Oficial DNA AUTO para Venda com validação de procedência e conformidade técnica...
             </div>
         `;
         modal.classList.add('active');
@@ -898,19 +921,52 @@ const SaleReportModal = {
 
     generateFallbackReport(vehicleId) {
         const v = (window.OwnerView && window.OwnerView.vehicleData) ? window.OwnerView.vehicleData : {};
-        const yearFab = v.manufacture_year || 2021;
-        const yearMod = v.model_year || 2022;
-        const plate = v.license_plate || 'BRA2E19';
-        const brand = v.brand || 'Honda';
-        const model = v.model || 'Civic';
-        const version = v.version_label || 'Touring 1.5 Turbo 173cv';
-        const currentKm = v.current_mileage || 87542;
-        const dnaCode = v.dna_code || 'DNA-BR-BF72-29A4-X91';
-        const age = new Date().getFullYear() - yearFab;
+        const yearFab = v.manufacture_year || '----';
+        const yearMod = v.model_year || '----';
+        const plate = v.license_plate || v.plate || '---';
+        const brand = v.brand || 'Veículo';
+        const model = v.model || '';
+        const version = v.version_label || '';
+        const currentKm = Number(v.current_mileage || 0);
+        const dnaCode = v.dna_code || 'DNA-BR-PENDENTE';
+        const age = (typeof yearFab === 'number' && yearFab > 1900) ? (new Date().getFullYear() - yearFab) : 1;
+
+        // Inspeção e Conformidade
+        const insp = (typeof OwnerView !== 'undefined' && OwnerView.inspectionData) || null;
+        const isInspected = insp && insp.inspected_at && insp.inspected_at !== '---' && insp.status !== 'SEM INSPEÇÃO REGISTRADA';
+        const score = isInspected ? Number(insp.score || 0) : 0;
+
+        // Linha do tempo real de serviços
+        const timeline = Array.isArray(v.timeline) ? v.timeline : [];
+        let totalInvestedCents = 0;
+        const mappedServices = timeline.map((t, idx) => {
+            let cost = 0;
+            if (typeof t.total_cost_cents === 'number') cost = t.total_cost_cents;
+            else if (typeof t.cost_cents === 'number') cost = t.cost_cents;
+            else if (typeof t.cost === 'number') cost = Math.round(t.cost * 100);
+            totalInvestedCents += cost;
+
+            return {
+                date: t.date || '---',
+                title: t.title || 'Manutenção Registrada',
+                description: t.details || t.description || 'Serviço realizado em oficina credenciada.',
+                category: t.category || 'Revisão Periódica',
+                mileage: parseInt(String(t.km || '0').replace(/[^0-9]/g, '')) || 0,
+                workshopName: t.workshop || 'Oficina Credenciada DNA AUTO',
+                workshopVerified: true,
+                workshopCity: t.city || 'Rede Nacional',
+                technician: t.technician || 'Responsável Técnico',
+                totalCostCents: cost,
+                proofLevel: t.proof_level || 4,
+                warrantyMonths: t.warranty_months || 12
+            };
+        });
 
         return {
             validationCode: `DNA-VAL-${new Date().getFullYear()}-` + Math.random().toString(36).substring(2, 8).toUpperCase(),
             generatedAt: new Date().toISOString(),
+            isApprovedForPrint: isInspected && score >= 70,
+            inspectionScore: score,
             vehicle: {
                 brand,
                 model,
@@ -919,253 +975,96 @@ const SaleReportModal = {
                 manufactureYear: yearFab,
                 modelYear: yearMod,
                 plate,
-                chassis: v.chassis_vin || '93HFC1670MZ102934',
-                renavam: v.renavam || '01239847120',
-                color: v.color || 'Cinza Barium Metálico',
-                fuel: v.fuel_type || 'Gasolina',
-                transmission: v.transmission_type || 'Automático CVT',
+                chassis: v.chassis_vin || 'Não informado',
+                renavam: v.renavam || 'Não informado',
+                color: v.color || 'Não informada',
+                fuel: v.fuel_type || 'Flex',
+                transmission: v.transmission_type || 'Manual/Automático',
                 currentMileage: currentKm,
                 vehicleAgeYears: age > 0 ? age : 1,
-                avgKmPerYear: Math.round(currentKm / (age > 0 ? age : 1)),
-                avgKmPerMonth: Math.round(currentKm / ((age > 0 ? age : 1) * 12)),
+                avgKmPerYear: currentKm > 0 ? Math.round(currentKm / (age > 0 ? age : 1)) : 0,
+                avgKmPerMonth: currentKm > 0 ? Math.round(currentKm / ((age > 0 ? age : 1) * 12)) : 0,
                 dnaCode
             },
             dna: {
                 code: dnaCode,
                 status: 'ACTIVE',
-                activatedAt: '2025-03-12T14:30:00.000Z',
+                activatedAt: v.created_at || new Date().toISOString(),
                 activationModality: 'DIGITAL_CERTIFIED',
-                certificateHash: '9a8f3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a',
-                activatedByWorkshop: 'Oficina AutoTech / DNA AUTO Credenciada',
-                activatedByCity: 'Campinas/SP',
-                activatedByCnpj: '12.345.678/0001-90',
+                certificateHash: 'dna-' + (plate.toLowerCase()) + '-' + Date.now().toString(16),
+                activatedByWorkshop: 'Oficina Credenciada DNA AUTO',
+                activatedByCity: 'Rede Nacional',
+                activatedByCnpj: '---',
                 workshopVerified: true
             },
             healthScore: {
-                overallScore: 98,
-                documentedPercentage: 100,
-                continuityStatus: 'Histórico 100% Contínuo e Sem Quebras',
-                scoreRationale: 'Todas as manutenções e revisões foram realizadas em rede credenciada com peças homologadas e fotos registradas.',
-                provenServicesCount: 4,
-                totalServicesCount: 6,
-                invoicesCount: 5,
-                photosCount: 8,
-                mileageRecordsCount: 7
+                overallScore: score,
+                documentedPercentage: isInspected ? 100 : 0,
+                continuityStatus: isInspected ? (score >= 70 ? 'Inspeção 360° Aprovada' : 'Inspeção 360° com Apontamentos') : 'Inspeção 360° Pendente',
+                scoreRationale: isInspected 
+                    ? `Avaliação pericial presencial concluída com índice técnico de ${score}% de conformidade.` 
+                    : 'Aguardando vistoria técnica presencial em oficina credenciada DNA AUTO.',
+                provenServicesCount: mappedServices.length,
+                totalServicesCount: mappedServices.length,
+                invoicesCount: mappedServices.filter(s => s.totalCostCents > 0).length,
+                photosCount: 0,
+                mileageRecordsCount: mappedServices.length
             },
             kpi: {
-                totalServices: 6,
-                provenServices: 4,
-                totalInvestedCents: 752000,
-                totalPartsCount: 12,
-                workshopsCount: 2,
-                activeWarrantiesCount: 2,
-                firstServiceDate: '2023-12-15',
-                lastServiceDate: '2025-04-12'
+                totalServices: mappedServices.length,
+                provenServices: mappedServices.length,
+                totalInvestedCents: totalInvestedCents,
+                totalPartsCount: 0,
+                workshopsCount: mappedServices.length > 0 ? 1 : 0,
+                activeWarrantiesCount: mappedServices.length,
+                firstServiceDate: mappedServices[0]?.date || '---',
+                lastServiceDate: mappedServices[mappedServices.length - 1]?.date || '---'
             },
             ownership: {
-                totalOwners: 2,
-                currentOwner: { name: v.user_name || 'João Silva', cpfMasked: '***.482.918-**' },
-                firstOwner: { name: 'Mariana Duarte Alencar', cpfMasked: '***.129.834-**' },
-                transfers: [
-                    { date: '2025-03-12', fromOwner: 'Mariana Duarte Alencar', toOwner: v.user_name || 'João Silva', mileageAtTransfer: 82000 }
-                ]
+                totalOwners: 1,
+                currentOwner: { name: v.user_name || 'Proprietário Cadastrado', cpfMasked: '***.***.***-**' },
+                firstOwner: null,
+                transfers: []
             },
             financials: {
-                totalInvestedCents: 752000,
-                totalPartsValueCents: 468000,
-                totalLaborCostCents: 284000,
-                totalInvoicesValueCents: 752000,
-                averageCostPerServiceCents: 125333,
-                fipePrice: 12850000,
-                fipeCode: '004495-4',
-                fipeReference: 'Setembro de 2026',
-                fipeHistory: [
-                    { reference: '09/2026', priceCents: 12850000 },
-                    { reference: '08/2026', priceCents: 12790000 },
-                    { reference: '07/2026', priceCents: 12720000 }
-                ],
-                marketValues: [
-                    { date: '2026-09-10', priceCents: 13100000, source: 'Webmotors SP' },
-                    { date: '2026-09-02', priceCents: 12950000, source: 'iCarros SP' }
-                ]
+                totalInvestedCents: totalInvestedCents,
+                totalPartsValueCents: Math.round(totalInvestedCents * 0.6),
+                totalLaborCostCents: Math.round(totalInvestedCents * 0.4),
+                totalInvoicesValueCents: totalInvestedCents,
+                averageCostPerServiceCents: mappedServices.length > 0 ? Math.round(totalInvestedCents / mappedServices.length) : 0,
+                fipePrice: v.fipe_price_cents || 0,
+                fipeCode: v.fipe_code || '---',
+                fipeReference: 'Tabela FIPE Oficial',
+                fipeHistory: [],
+                marketValues: []
             },
-            services: (v.timeline && v.timeline.length > 0) ? v.timeline.map((t, idx) => ({
-                date: t.date || '2025-04-12',
-                title: t.title || 'Manutenção Periódica',
-                description: t.details || 'Serviço preventivo homologado.',
-                category: 'Revisão Periódica',
-                mileage: parseInt((t.km || '80000').replace(/[^0-9]/g, '')) || 80000,
-                workshopName: t.workshop || 'Oficina AutoTech Credenciada',
-                workshopVerified: true,
-                workshopCity: 'Campinas - SP',
-                technician: 'Eng. Marcelo Antunes',
-                totalCostCents: 145000 - (idx * 20000),
-                proofLevel: 4,
-                warrantyMonths: 12
-            })) : [
-                {
-                    date: '2025-04-12',
-                    title: 'Revisão Periódica Completa dos 80.000 km',
-                    description: 'Substituição completa do óleo 0W20 Honda HAMP, filtros de óleo e ar, velas de irídio e inspeção 360°.',
-                    category: 'Revisão Periódica',
-                    mileage: 80000,
-                    workshopName: 'Oficina AutoTech Credenciada',
-                    workshopVerified: true,
-                    workshopCity: 'Campinas - SP',
-                    technician: 'Eng. Marcelo Antunes',
-                    totalCostCents: 145000,
-                    proofLevel: 4,
-                    warrantyMonths: 12
-                },
-                {
-                    date: '2024-10-10',
-                    title: 'Substituição Preventiva da Correia Dentada e Tensores',
-                    description: 'Troca preventiva do kit correia dentada Continental, tensores e bomba d\'água original.',
-                    category: 'Motor & Transmissão',
-                    mileage: 70000,
-                    workshopName: 'Oficina AutoTech Credenciada',
-                    workshopVerified: true,
-                    workshopCity: 'Campinas - SP',
-                    technician: 'Roberto Guimarães',
-                    totalCostCents: 98000,
-                    proofLevel: 4,
-                    warrantyMonths: 12
-                }
-            ],
-            parts: [
-                {
-                    name: 'Kit Correia Dentada e Tensor',
-                    manufacturer: 'Continental ContiTech',
-                    partNumber: 'CT1192K1',
-                    condition: 'NEW',
-                    quantity: 1,
-                    unitPriceCents: 58000,
-                    serviceDate: '2024-10-10',
-                    installedBy: 'Oficina AutoTech',
-                    warrantyMonths: 12
-                },
-                {
-                    name: 'Pastilhas de Freio Dianteiras Cerâmica',
-                    manufacturer: 'Bosch Ceramic Premium',
-                    partNumber: 'BP1234-CER',
-                    condition: 'NEW',
-                    quantity: 1,
-                    unitPriceCents: 32000,
-                    serviceDate: '2025-04-12',
-                    installedBy: 'Oficina AutoTech',
-                    warrantyMonths: 6
-                },
-                {
-                    name: 'Óleo Sintético 0W20 HAMP Original',
-                    manufacturer: 'Honda Genuine Parts',
-                    partNumber: 'HAMP-0W20-4L',
-                    condition: 'NEW',
-                    quantity: 4,
-                    unitPriceCents: 7500,
-                    serviceDate: '2025-04-12',
-                    installedBy: 'Oficina AutoTech',
-                    warrantyMonths: 6
-                }
-            ],
-            activeWarranties: [
-                {
-                    partName: 'Pastilhas de Freio Dianteiras Cerâmica',
-                    manufacturer: 'Bosch Ceramic Premium',
-                    serviceDate: '2025-04-12',
-                    warrantyEndDate: '2025-10-12',
-                    remainingDays: 140,
-                    workshop: 'Oficina AutoTech'
-                },
-                {
-                    partName: 'Kit Correia Dentada e Tensores',
-                    manufacturer: 'Continental ContiTech',
-                    serviceDate: '2024-10-10',
-                    warrantyEndDate: '2025-10-10',
-                    remainingDays: 138,
-                    workshop: 'Oficina AutoTech'
-                }
-            ],
-            invoices: [
-                {
-                    invoice_number: 'NFS-e 004829',
-                    issue_date: '2025-04-12',
-                    total_amount_cents: 145000,
-                    workshop_name: 'Oficina AutoTech Ltda',
-                    service_title: 'Revisão Periódica dos 80.000 km',
-                    verification_status: 'AUTHENTIC'
-                },
-                {
-                    invoice_number: 'DANFE 019284',
-                    issue_date: '2024-10-10',
-                    total_amount_cents: 98000,
-                    workshop_name: 'Oficina AutoTech Ltda',
-                    service_title: 'Troca da Correia Dentada e Tensores',
-                    verification_status: 'AUTHENTIC'
-                }
-            ],
-            mileages: [
-                { mileage: 50000, recorded_at: '2023-12-15' },
-                { mileage: 60000, recorded_at: '2024-04-05' },
-                { mileage: 70000, recorded_at: '2024-10-10' },
-                { mileage: 80000, recorded_at: '2025-04-12' },
-                { mileage: currentKm, recorded_at: '2026-09-15' }
-            ],
-            workshops: [
-                {
-                    trade_name: 'Oficina AutoTech Credenciada',
-                    cnpj: '12.345.678/0001-90',
-                    city: 'Campinas',
-                    state: 'SP',
-                    phone: '(19) 3871-9000',
-                    services_count: 5,
-                    total_spent_cents: 680000,
-                    verified_badge: 1
-                }
-            ],
-            serviceCategories: {
-                'Revisão Periódica': 3,
-                'Motor & Transmissão': 1,
-                'Suspensão & Direção': 1,
-                'Lubrificação': 1
-            },
-            photos: [
-                { photo_category: 'INSPECTION', count: 4 },
-                { photo_category: 'PARTS', count: 3 },
-                { photo_category: 'INVOICE', count: 2 }
-            ],
+            services: mappedServices,
+            parts: [],
+            mileages: currentKm > 0 ? [{ mileage: currentKm, recorded_at: new Date().toISOString().split('T')[0] }] : [],
+            workshops: [],
+            serviceCategories: {},
+            photos: [],
             documents: [
-                { document_type: 'CRLV-e Digital 2026', issue_date: '2026-01-15', status: 'VÁLIDO' },
-                { document_type: 'Laudo Pericial Cautelar 360°', issue_date: '2025-04-12', status: 'APROVADO' }
+                { document_type: 'Certificado Digital DNA AUTO', issue_date: new Date().toLocaleDateString('pt-BR'), status: 'VÁLIDO' }
             ],
-            taxes: [
-                { description: 'IPVA 2026', reference_year: 2026, status: 'PAID', amount_cents: 514000 },
-                { description: 'Licenciamento Anual 2026', reference_year: 2026, status: 'PAID', amount_cents: 16000 }
-            ],
+            taxes: [],
             fines: [],
             debts: [],
             auctions: [],
-            maintenances: [
-                { title: 'Revisão dos 90.000 km', recommended_km: 90000, status: 'PLANNED' },
-                { title: 'Troca de Fluido de Transmissão CVT', recommended_km: 100000, status: 'PLANNED' }
-            ]
+            maintenances: []
         };
     },
 
     printReport() {
-        const v = (typeof OwnerView !== 'undefined' && OwnerView.vehicleData) || {};
-        const plate = (v.license_plate || 'bra2e19').toLowerCase();
-        const isPaid = (typeof OwnerView !== 'undefined' && OwnerView.isProvenancePaid) || 
-                       (typeof localStorage !== 'undefined' && (localStorage.getItem('dna_provenance_paid_' + plate) === 'true' || localStorage.getItem('dna_cert_paid_' + plate) === 'true'));
+        const insp = (typeof OwnerView !== 'undefined' && OwnerView.inspectionData) || null;
+        const score = insp ? Number(insp.score || 0) : 0;
+        const isInspected = insp && insp.inspected_at && insp.inspected_at !== '---' && insp.status !== 'SEM INSPEÇÃO REGISTRADA';
 
-        if (!isPaid && typeof OwnerView !== 'undefined' && OwnerView.openProvenancePurchaseModal) {
-            OwnerView.openProvenancePurchaseModal(() => this.executePrint());
+        if (!isInspected || score < 70) {
+            alert('🔒 Impressão Bloqueada: O Laudo Oficial de Procedência DNA AUTO só pode ser impresso ou gerado em PDF após a realização da Inspeção Técnica 360° em uma Oficina Credenciada DNA AUTO com índice de conformidade técnica superior a 70%.\n\nStatus atual: ' + (isInspected ? ('Índice ' + score + '% (mínimo 70%)') : 'Inspeção 360° Não Realizada') + '\n\nPor favor, agende uma inspeção em uma oficina credenciada para certificar seu veículo.');
             return;
         }
 
-        this.executePrint();
-    },
-
-    executePrint() {
         document.body.classList.add('printing-sale-report');
         const cleanup = () => {
             document.body.classList.remove('printing-sale-report');
