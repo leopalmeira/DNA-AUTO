@@ -582,8 +582,11 @@
                         <div class="dna-mobile-action-card dna-card-indigo" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
                             <div class="dna-card-icon-box">🛠️</div>
                             <div>
-                                <h3 class="dna-card-title">Manutenções</h3>
-                                <p class="dna-card-desc">Radar preventivo e revisões a 100km</p>
+                                <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                <h3 class="dna-card-title" style="margin:0;">Alerta de Manutenção dos Veículos</h3>
+                <span class="badge-proof" style="background:#ef4444; color:#fff; font-size:9.5px; padding:2px 6px; border-radius:10px; font-weight:800; white-space:nowrap;">4 Alertas</span>
+            </div>
+            <p class="dna-card-desc" style="margin-top:3px;">Problemas identificados, OBD2, preventiva e WhatsApp</p>
                             </div>
                         </div>
 
@@ -1933,14 +1936,106 @@
     // TELA 7: MANUTENÇÃO DOS VEÍCULOS (SEÇÃO 10 DO PROMPT)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileMaintenanceVehiclesView = function() {
-        const alerts = this.getMobileAlerts();
-        const filter = this.mobileMaintFilter || 'todos';
+        const filter = this.mobileMaintFilter || 'problemas';
+        let savedContacts = [];
+        try {
+            const raw = localStorage.getItem('dna_monitoring_contacts');
+            if (raw) savedContacts = JSON.parse(raw);
+        } catch (_) {}
+        const contactMap = {};
+        savedContacts.forEach(c => {
+            if (!contactMap[c.vehicle_plate]) contactMap[c.vehicle_plate] = c;
+        }); // 'problemas' | 'preventiva' | 'normais' | 'todos'
 
-        const filtered = alerts.filter(a => {
-            if (filter === 'atrasadas') return a.status === 'ATRASADA';
-            if (filter === 'em_breve') return a.status === 'EM_BREVE';
+        // Lista de veículos monitorados com alertas OBD e preventivos
+        const vehicles = [
+            {
+                id: 'prob_1',
+                client_name: 'João da Silva',
+                client_phone: '(11) 98765-4321',
+                vehicle_model: 'Fiat Argo 1.0 Flex 2021',
+                license_plate: 'BRA2E19',
+                current_km: '82.450 km',
+                status_type: 'PROBLEM',
+                status_badge: '🔴 Problema identificado',
+                status_color: '#EF4444',
+                issue_title: 'Falha identificada no sistema do motor',
+                issue_desc: 'Foi identificada uma falha relacionada ao funcionamento do motor (Falha de ignição / Sensor O2). Recomendada avaliação imediata.',
+                tech_code: 'P0301 (Cilindro 1) • Sonda Lambda O2',
+                default_msg: 'Olá, João. Aqui é da sua oficina. O acompanhamento do seu veículo Fiat Argo pelo DNA Auto identificou uma condição que recomendamos verificar. Gostaríamos de convidá-lo a trazer o veículo para uma avaliação. Podemos agendar um horário?'
+            },
+            {
+                id: 'prob_2',
+                client_name: 'Roberto Silva',
+                client_phone: '(11) 96543-2109',
+                vehicle_model: 'Jeep Compass Longitude 2.0',
+                license_plate: 'QWE7A32',
+                current_km: '56.890 km',
+                status_type: 'PROBLEM',
+                status_badge: '🔴 Problema identificado',
+                status_color: '#EF4444',
+                issue_title: 'Anomalia no circuito de injeção',
+                issue_desc: 'Sonda lambda enviando sinal fora da faixa ideal de mistura. Avaliação preventiva necessária para evitar aumento de consumo.',
+                tech_code: 'P0130 (Sensor O2 Banco 1)',
+                default_msg: 'Olá, Roberto. Aqui é da sua oficina. O DNA Auto detectou uma condição no circuito de injeção do seu Jeep Compass. Gostaríamos de convidá-lo a trazer o veículo para um diagnóstico preventivo. Podemos agendar um horário?'
+            },
+            {
+                id: 'upc_1',
+                client_name: 'Maria Oliveira',
+                client_phone: '(11) 97654-3210',
+                vehicle_model: 'VW Fox 1.0 Trendline 2013',
+                license_plate: 'FOX1013',
+                current_km: '103.200 km',
+                status_type: 'UPCOMING',
+                status_badge: '🟡 Troca de óleo próxima',
+                status_color: '#F59E0B',
+                issue_title: 'Troca de óleo aos 105.000 km',
+                issue_desc: 'Próxima troca de óleo estimada para 105.000 km (faltam 1.800 km). Lubrificação é vital para a longevidade do motor.',
+                tech_code: 'Regra de Manutenção 10.000 km',
+                default_msg: 'Olá, Maria. Aqui é da sua oficina. O DNA Auto identificou que seu veículo VW Fox está se aproximando da próxima manutenção (Troca de óleo aos 105.000 km). Gostaríamos de convidá-la para realizar a revisão. Podemos agendar um horário?'
+            },
+            {
+                id: 'upc_2',
+                client_name: 'Marcos Lima',
+                client_phone: '(11) 94321-0987',
+                vehicle_model: 'Jeep Renegade Sport 1.8',
+                license_plate: 'KLM1H23',
+                current_km: '62.000 km',
+                status_type: 'UPCOMING',
+                status_badge: '🟡 Manutenção próxima',
+                status_color: '#F59E0B',
+                issue_title: 'Inspeção de pastilhas de freio',
+                issue_desc: 'Veículo atingiu 62.000 km. Estimativa de desgaste de pastilhas dianteiras atinge 80% conforme ciclo operacional.',
+                tech_code: 'Regra de Revisão Periódica',
+                default_msg: 'Olá, Marcos. Aqui é da sua oficina. O monitoramento DNA Auto identificou que seu Jeep Renegade atingiu 62.000 km, momento ideal para a inspeção preventiva das pastilhas de freio. Gostaria de reservar um horário para avaliação?'
+            },
+            {
+                id: 'norm_1',
+                client_name: 'Patrícia Souza',
+                client_phone: '(11) 95432-1098',
+                vehicle_model: 'Honda HR-V EXL 1.8',
+                license_plate: 'XY29D10',
+                current_km: '38.120 km',
+                status_type: 'NORMAL',
+                status_badge: '🟢 Tudo normal',
+                status_color: '#10B981',
+                issue_title: 'Veículo 100% monitorado e em conformidade',
+                issue_desc: 'Telemetria do OBD ativa, zero falhas na ECU e manutenções preventivas rigorosamente em dia.',
+                tech_code: '0 DTCs • Sistemas em conformidade',
+                default_msg: 'Olá, Patrícia! Aqui é da sua oficina. Passando para parabenizá-la: seu Honda HR-V está 100% em dia no monitoramento DNA Auto!'
+            }
+        ];
+
+        const filtered = vehicles.filter(v => {
+            if (filter === 'problemas') return v.status_type === 'PROBLEM';
+            if (filter === 'preventiva') return v.status_type === 'UPCOMING';
+            if (filter === 'normais') return v.status_type === 'NORMAL';
             return true;
         });
+
+        const probCount = vehicles.filter(v => v.status_type === 'PROBLEM').length;
+        const upcCount = vehicles.filter(v => v.status_type === 'UPCOMING').length;
+        const normCount = vehicles.filter(v => v.status_type === 'NORMAL').length;
 
         return `
             <div class="dna-mobile-subpage">
@@ -1948,57 +2043,75 @@
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
                         <span>‹</span> <span>Voltar</span>
                     </button>
-                    <span class="dna-mobile-subpage-title">Manutenções</span>
+                    <span class="dna-mobile-subpage-title">Alerta de Manutenção</span>
                 </div>
 
                 <div class="dna-mobile-subpage-body">
-                    <!-- 1. BARRA UNIVERSAL DE BUSCA POR PLACA -->
-                    ${this.renderUniversalVehiclePlateBar()}
-
-                    <!-- 2. FILTRO DE MANUTENÇÃO -->
-                    <div class="dna-segmented-control" style="margin-top:4px;">
-                        <button class="dna-segment-btn ${filter === 'todos' ? 'active' : ''}" onclick="WorkshopView.setMobileMaintFilter('todos')">Todas (${alerts.length})</button>
-                        <button class="dna-segment-btn ${filter === 'atrasadas' ? 'active' : ''}" onclick="WorkshopView.setMobileMaintFilter('atrasadas')">Atrasadas</button>
-                        <button class="dna-segment-btn ${filter === 'em_breve' ? 'active' : ''}" onclick="WorkshopView.setMobileMaintFilter('em_breve')">Em Breve</button>
+                    <!-- Banner Informativo -->
+                    <div style="background:linear-gradient(135deg, rgba(239,68,68,0.12), rgba(245,158,11,0.08)); border:1px solid rgba(239,68,68,0.3); border-radius:12px; padding:12px 14px; margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:20px;">🛠️</span>
+                            <div>
+                                <strong style="color:#FFFFFF; font-size:13.5px; display:block;">Alerta de Manutenção dos Veículos</strong>
+                                <span style="font-size:11px; color:#94A3B8;">Comunique clientes leigos diretamente pelo WhatsApp com mensagem pré-preenchida</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- 3. CARDS DE VEÍCULOS COM MANUTENÇÃO PRÓXIMA / VENCIDA -->
+                    <!-- Abas de Segmentação -->
+                    <div class="dna-segmented-control" style="margin-bottom:12px; display:grid; grid-template-columns:repeat(3, 1fr); gap:4px;">
+                        <button class="dna-segment-btn ${filter === 'problemas' ? 'active' : ''}" onclick="WorkshopView.setMobileMaintFilter('problemas')" style="${filter === 'problemas' ? 'background:#EF4444; color:#fff;' : ''}">
+                            🔴 Problemas (${probCount})
+                        </button>
+                        <button class="dna-segment-btn ${filter === 'preventiva' ? 'active' : ''}" onclick="WorkshopView.setMobileMaintFilter('preventiva')" style="${filter === 'preventiva' ? 'background:#F59E0B; color:#000;' : ''}">
+                            🟡 Preventiva (${upcCount})
+                        </button>
+                        <button class="dna-segment-btn ${filter === 'normais' ? 'active' : ''}" onclick="WorkshopView.setMobileMaintFilter('normais')" style="${filter === 'normais' ? 'background:#10B981; color:#fff;' : ''}">
+                            🟢 Normais (${normCount})
+                        </button>
+                    </div>
+
+                    <!-- Lista de Cards de Veículos -->
                     <div style="display:flex; flex-direction:column; gap:12px;">
                         ${filtered.map(item => `
-                            <div class="dna-mobile-row-card" style="flex-direction:column; align-items:stretch; gap:10px;">
-                                <div style="display:flex; align-items:center; justify-content:space-between;">
-                                    <div style="display:flex; align-items:center; gap:8px;">
-                                        <span style="font-size:20px;">🚗</span>
-                                        <div>
-                                            <span style="font-weight:800; color:#fff; font-size:15px;">${item.vehicle_model}</span>
-                                            <span style="font-family:monospace; color:var(--dna-ws-cyan); font-weight:700; margin-left:6px;">${item.vehicle_plate}</span>
+                            <div class="dna-mobile-row-card" style="flex-direction:column; align-items:stretch; gap:10px; border-left:4px solid ${item.status_color}; background:#0B132B;">
+                                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
+                                    <div>
+                                        <div style="font-size:15px; font-weight:800; color:#FFFFFF;">${item.client_name}</div>
+                                        <div style="font-size:12px; color:#94A3B8; margin-top:2px;">
+                                            ${item.vehicle_model} • <strong style="color:#00D4FF; font-family:monospace;">${item.license_plate}</strong>
+                                        </div>
+                                        <div style="font-size:11.5px; color:#64748B; margin-top:2px;">
+                                            Quilometragem: <strong style="color:#F1F5F9;">${item.current_km}</strong>
                                         </div>
                                     </div>
-                                    <span class="dna-status-pill ${item.status === 'ATRASADA' ? 'dna-status-critical' : 'dna-status-warning'}">
-                                        ${item.status === 'ATRASADA' ? '⚠️ Atrasada' : '⏱️ Em Breve'}
+                                    <span class="dna-status-pill" style="background:${item.status_color}22; color:${item.status_color}; border:1px solid ${item.status_color}55; font-size:10.5px; font-weight:800; white-space:nowrap;">
+                                        ${item.status_badge}
                                     </span>
                                 </div>
 
-                                <div style="background:rgba(0,0,0,0.25); border-radius:8px; padding:8px 10px; font-size:12px;">
-                                    <strong style="color:#FFFFFF;">${item.service_title}</strong>
-                                    <div style="color:var(--dna-ws-text-muted); margin-top:2px;">
-                                        Troca prevista: ${item.due_date} (ou ${item.due_km.toLocaleString('pt-BR')} km)
+                                <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:10px 12px; font-size:12px;">
+                                    <strong style="color:${item.status_color}; display:block; margin-bottom:2px;">${item.issue_title}</strong>
+                                    <div style="color:#CBD5E1; line-height:1.35;">${item.issue_desc}</div>
+                                    <div style="margin-top:6px; font-size:10.5px; color:#64748B; font-family:monospace;">
+                                        Detalhe técnico: ${item.tech_code}
                                     </div>
                                 </div>
 
-                                <div style="display:flex; gap:8px;">
-                                    <button class="dna-small-action-btn" style="flex:1;" onclick="WorkshopView.handleMobileNotifyClientWhatsApp('${item.id}')">
-                                        <span>💬</span> <span>Avisar WhatsApp</span>
-                                    </button>
-                                    <button class="dna-small-action-btn cyan" style="flex:1;" onclick="WorkshopView.selectVehicleByPlate('${item.vehicle_plate}'); WorkshopView.switchMobileSection('lancar-servicos');">
-                                        <span>🔧</span> <span>Lançar Troca</span>
+                                <div id="contact-badge-mobile-${item.license_plate}" style="${contactMap[item.license_plate] ? 'display:block;' : 'display:none;'} font-size:11px; color:#10B981; font-weight:700; padding:6px 10px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.25); border-radius:6px;">
+                                    ✅ Cliente comunicado via WhatsApp ${contactMap[item.license_plate] ? 'em ' + contactMap[item.license_plate].contact_timestamp : ''}
+                                </div>
+
+                                <div style="display:flex; gap:8px; margin-top:2px;">
+                                    <button class="dna-whatsapp-btn" style="flex:1; justify-content:center; padding:10px; font-size:12.5px;" onclick="WorkshopView.openClientMonitoringWhatsAppModal('${item.client_name}', '${item.client_phone}', '${item.license_plate}', '${item.vehicle_model}', '${item.issue_title}', '${item.status_type}', '${encodeURIComponent(item.default_msg)}')">
+                                        <span>💬</span> <span>Enviar WhatsApp</span>
                                     </button>
                                 </div>
                             </div>
                         `).join('')}
                     </div>
 
-                    <div style="margin-top:14px; text-align:center;">
+                    <div style="margin-top:16px; text-align:center;">
                         <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
                             <span>‹</span> <span>Voltar para Todos os Cards</span>
                         </button>

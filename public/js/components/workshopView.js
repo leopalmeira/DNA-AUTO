@@ -400,10 +400,7 @@ const WorkshopView = {
                                     <div class="ws-erp-menu-left"><span>⚡</span> <span>Serviços em Potencial</span></div>
                                     <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(239,68,68,0.15); color:#ef4444; border-radius:12px;">4</span>
                                 </div>
-                                <div class="ws-erp-menu-item ${this.currentSection === 'monitoramento-clientes' ? 'active' : ''}" onclick="WorkshopView.switchSection('monitoramento-clientes')" style="position:relative;">
-                                    <div class="ws-erp-menu-left"><span>📡</span> <span>Monitoramento Clientes</span></div>
-                                    <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(239,68,68,0.2); color:#ef4444; font-weight:800; border-radius:12px;">OBD Alertas</span>
-                                </div>
+
                             </div>
 
                             <!-- SETOR 3: COMUNICAÇÃO & CONTATO -->
@@ -718,15 +715,16 @@ const WorkshopView = {
                     <div class="ws-dash-kpi-subtext">Capacidade: 8 boxes (75%)</div>
                 </div>
 
-                <!-- 4. Serviços em Potencial -->
-                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('manutencao-alertas')">
-                    <div class="ws-dash-kpi-header">
-                        <span class="ws-dash-kpi-label">Serviços em Potencial</span>
+                <!-- 4. Alerta de Manutenção dos Veículos -->
+                <div class="ws-dash-kpi-card" onclick="WorkshopView.switchSection('manutencao-alertas')" title="Ver Alertas de Manutenção dos Veículos (OBD2 & Preventiva)">
+                    <div class="ws-dash-kpi-header" style="display:flex; justify-content:space-between; align-items:center;">
+                        <span class="ws-dash-kpi-label">Alerta de Manutenção dos Veículos</span>
+                        <span style="font-size:10px; color:#ef4444; background:rgba(239,68,68,0.15); padding:1px 6px; border-radius:4px; font-weight:800;">4 Alertas</span>
                     </div>
                     <div class="ws-dash-kpi-value-row">
                         <span class="ws-dash-kpi-value text-danger">4</span>
                     </div>
-                    <div class="ws-dash-kpi-subtext text-danger">2 urgentes, 2 preventivos</div>
+                    <div class="ws-dash-kpi-subtext text-danger">2 problemas identificados, 2 preventiva</div>
                 </div>
 
                 <!-- 5. Ativações DNA do Mês (Equipamentos Ativados & Faturado em Vendas) -->
@@ -790,6 +788,132 @@ const WorkshopView = {
                 </button>
             </div>
 
+
+            <!-- CARD ESPECÍFICO: ALERTA DE MANUTENÇÃO DOS VEÍCULOS (NA TELA PRINCIPAL / SEM NADA LATERAL) -->
+            <div class="panel-box" style="margin-bottom:18px; border:1.5px solid rgba(239,68,68,0.35); background:linear-gradient(135deg, rgba(239,68,68,0.04), rgba(11,19,43,0.9)); box-shadow:0 8px 30px rgba(0,0,0,0.45); border-radius:14px; padding:18px;">
+                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:12px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, rgba(239,68,68,0.25), rgba(245,158,11,0.2)); display:flex; align-items:center; justify-content:center; border:1px solid rgba(239,68,68,0.4);">
+                            <span style="font-size:18px;">🛠️</span>
+                        </div>
+                        <div>
+                            <h3 style="margin:0; font-size:16px; font-weight:800; color:#FFFFFF; letter-spacing:0.3px;">Alerta de Manutenção dos Veículos</h3>
+                            <span style="font-size:11.5px; color:#94A3B8;">Acompanhamento contínuo via OBD2 e histórico de revisões dos clientes</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="badge-proof" style="background:rgba(239,68,68,0.18); color:#ef4444; font-weight:800; font-size:11px; padding:4px 10px; border-radius:20px; border:1px solid rgba(239,68,68,0.3);">
+                            🔴 2 Problemas
+                        </span>
+                        <span class="badge-proof" style="background:rgba(245,158,11,0.18); color:#fbbf24; font-weight:800; font-size:11px; padding:4px 10px; border-radius:20px; border:1px solid rgba(245,158,11,0.3);">
+                            🟡 2 Preventivas
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Grid de Cards de Veículos com Alertas Diretos -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(290px, 1fr)); gap:12px;">
+                    <!-- Veículo 1: João da Silva (Problema Identificado) -->
+                    <div style="background:#0F172A; border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; gap:10px;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                                <div>
+                                    <strong style="color:#FFFFFF; font-size:14px; display:block;">João da Silva</strong>
+                                    <span style="font-size:11px; color:#94A3B8;">Fiat Argo 1.0 Flex 2021 • 82.450 km</span>
+                                </div>
+                                <span class="mono" style="background:#1E293B; color:#00D4FF; font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px;">BRA2E19</span>
+                            </div>
+                            <div style="background:rgba(239,68,68,0.1); border-left:3px solid #EF4444; padding:8px 10px; border-radius:4px; margin-top:4px;">
+                                <div style="color:#EF4444; font-size:11.5px; font-weight:800; display:flex; align-items:center; gap:4px;">
+                                    <span>🔴</span> <span>Problema identificado</span>
+                                </div>
+                                <div style="color:#E2E8F0; font-size:11px; margin-top:2px;">Falha identificada no sistema do motor (P0301 • Ignição / Sonda Lambda)</div>
+                            </div>
+                            <div id="contact-badge-BRA2E19" style="margin-top:6px; font-size:10.5px; color:#10B981; font-weight:600; display:none;">
+                                ✅ Cliente comunicado via WhatsApp
+                            </div>
+                        </div>
+                        <button onclick="WorkshopView.openClientMonitoringWhatsAppModal('João da Silva', '(11) 98765-4321', 'BRA2E19', 'Fiat Argo 1.0 Flex 2021', 'Falha identificada no sistema do motor', 'PROBLEM', 'Ol%C3%A1%2C%20Jo%C3%A3o.%20Aqui%20%C3%A9%20da%20sua%20oficina.%20O%20acompanhamento%20do%20seu%20ve%C3%ADculo%20pelo%20DNA%20Auto%20identificou%20uma%20condi%C3%A7%C3%A3o%20que%20recomendamos%20verificar.%20Gostar%C3%ADamos%20de%20convid%C3%A1-lo%20a%20trazer%20o%20ve%C3%ADculo%20para%20uma%20avalia%C3%A7%C3%A3o.%20Podemos%20agendar%20um%20hor%C3%A1rio%3F')" style="background:#25D366; color:#0A101D; border:none; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 10px rgba(37,211,102,0.3); width:100%;">
+                            <span>💬</span> <span>Enviar WhatsApp</span>
+                        </button>
+                    </div>
+
+                    <!-- Veículo 2: Roberto Silva (Problema Identificado) -->
+                    <div style="background:#0F172A; border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; gap:10px;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                                <div>
+                                    <strong style="color:#FFFFFF; font-size:14px; display:block;">Roberto Silva</strong>
+                                    <span style="font-size:11px; color:#94A3B8;">Jeep Compass Longitude 2.0 • 56.890 km</span>
+                                </div>
+                                <span class="mono" style="background:#1E293B; color:#00D4FF; font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px;">QWE7A32</span>
+                            </div>
+                            <div style="background:rgba(239,68,68,0.1); border-left:3px solid #EF4444; padding:8px 10px; border-radius:4px; margin-top:4px;">
+                                <div style="color:#EF4444; font-size:11.5px; font-weight:800; display:flex; align-items:center; gap:4px;">
+                                    <span>🔴</span> <span>Problema identificado</span>
+                                </div>
+                                <div style="color:#E2E8F0; font-size:11px; margin-top:2px;">Anomalia no circuito de injeção (P0130 • Sensor O2 Banco 1)</div>
+                            </div>
+                            <div id="contact-badge-QWE7A32" style="margin-top:6px; font-size:10.5px; color:#10B981; font-weight:600; display:none;">
+                                ✅ Cliente comunicado via WhatsApp
+                            </div>
+                        </div>
+                        <button onclick="WorkshopView.openClientMonitoringWhatsAppModal('Roberto Silva', '(11) 96543-2109', 'QWE7A32', 'Jeep Compass Longitude 2.0', 'Anomalia no circuito de injeção', 'PROBLEM', 'Ol%C3%A1%2C%20Roberto.%20Aqui%20%C3%A9%20da%20sua%20oficina.%20O%20DNA%20Auto%20detectou%20uma%20condi%C3%A7%C3%A3o%20no%20circuito%20de%20inje%C3%A7%C3%A3o%20do%20seu%20ve%C3%ADculo.%20Gostar%C3%ADamos%20de%20convid%C3%A1-lo%20a%20trazer%20o%20carro%20para%20avalia%C3%A7%C3%A3o.%20Podemos%20agendar%20um%20hor%C3%A1rio%3F')" style="background:#25D366; color:#0A101D; border:none; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 10px rgba(37,211,102,0.3); width:100%;">
+                            <span>💬</span> <span>Enviar WhatsApp</span>
+                        </button>
+                    </div>
+
+                    <!-- Veículo 3: Maria Oliveira (Manutenção Próxima) -->
+                    <div style="background:#0F172A; border:1px solid rgba(245,158,11,0.3); border-radius:10px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; gap:10px;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                                <div>
+                                    <strong style="color:#FFFFFF; font-size:14px; display:block;">Maria Oliveira</strong>
+                                    <span style="font-size:11px; color:#94A3B8;">VW Fox 1.0 2013 • 103.200 km</span>
+                                </div>
+                                <span class="mono" style="background:#1E293B; color:#00D4FF; font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px;">FOX1013</span>
+                            </div>
+                            <div style="background:rgba(245,158,11,0.1); border-left:3px solid #F59E0B; padding:8px 10px; border-radius:4px; margin-top:4px;">
+                                <div style="color:#F59E0B; font-size:11.5px; font-weight:800; display:flex; align-items:center; gap:4px;">
+                                    <span>🟡</span> <span>Troca de óleo próxima</span>
+                                </div>
+                                <div style="color:#E2E8F0; font-size:11px; margin-top:2px;">Próxima revisão aos 105.000 km (faltam 1.800 km para o limite)</div>
+                            </div>
+                            <div id="contact-badge-FOX1013" style="margin-top:6px; font-size:10.5px; color:#10B981; font-weight:600; display:none;">
+                                ✅ Cliente comunicada via WhatsApp
+                            </div>
+                        </div>
+                        <button onclick="WorkshopView.openClientMonitoringWhatsAppModal('Maria Oliveira', '(11) 97654-3210', 'FOX1013', 'VW Fox 1.0 2013', 'Troca de óleo próxima', 'ATTENTION', 'Ol%C3%A1%2C%20Maria.%20Aqui%20%C3%A9%20da%20sua%20oficina.%20O%20DNA%20Auto%20identificou%20que%20seu%20ve%C3%ADculo%20est%C3%A1%20se%20aproximando%20da%20pr%C3%B3xima%20manuten%C3%A7%C3%A3o%20(Troca%20de%20%C3%B3leo%20aos%20105.000%20km).%20Gostar%C3%ADamos%20de%20convid%C3%A1-la%20para%20realizar%20a%20revis%C3%A3o.%20Podemos%20agendar%20um%20hor%C3%A1rio%3F')" style="background:#25D366; color:#0A101D; border:none; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 10px rgba(37,211,102,0.3); width:100%;">
+                            <span>💬</span> <span>Enviar WhatsApp</span>
+                        </button>
+                    </div>
+
+                    <!-- Veículo 4: Marcos Lima (Manutenção Próxima) -->
+                    <div style="background:#0F172A; border:1px solid rgba(245,158,11,0.3); border-radius:10px; padding:14px; display:flex; flex-direction:column; justify-content:space-between; gap:10px;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                                <div>
+                                    <strong style="color:#FFFFFF; font-size:14px; display:block;">Marcos Lima</strong>
+                                    <span style="font-size:11px; color:#94A3B8;">Jeep Renegade Sport 1.8 • 62.000 km</span>
+                                </div>
+                                <span class="mono" style="background:#1E293B; color:#00D4FF; font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px;">KLM1H23</span>
+                            </div>
+                            <div style="background:rgba(245,158,11,0.1); border-left:3px solid #F59E0B; padding:8px 10px; border-radius:4px; margin-top:4px;">
+                                <div style="color:#F59E0B; font-size:11.5px; font-weight:800; display:flex; align-items:center; gap:4px;">
+                                    <span>🟡</span> <span>Inspeção de pastilhas de freio</span>
+                                </div>
+                                <div style="color:#E2E8F0; font-size:11px; margin-top:2px;">Revisão prevista de 60.000 km (estimativa de desgaste 80%)</div>
+                            </div>
+                            <div id="contact-badge-KLM1H23" style="margin-top:6px; font-size:10.5px; color:#10B981; font-weight:600; display:none;">
+                                ✅ Cliente comunicado via WhatsApp
+                            </div>
+                        </div>
+                        <button onclick="WorkshopView.openClientMonitoringWhatsAppModal('Marcos Lima', '(11) 94321-0987', 'KLM1H23', 'Jeep Renegade Sport 1.8', 'Inspeção de pastilhas de freio', 'ATTENTION', 'Ol%C3%A1%2C%20Marcos.%20Aqui%20%C3%A9%20da%20sua%20oficina.%20O%20monitoramento%20DNA%20Auto%20identificou%20que%20seu%20ve%C3%ADculo%20atingiu%2062.000%20km%2C%20momento%20ideal%20para%20inspe%C3%A7%C3%A3o%20das%20pastilhas%20de%20freio.%20Gostaria%20de%20reservar%20um%20hor%C3%A1rio%20para%20avalia%C3%A7%C3%A3o%3F')" style="background:#25D366; color:#0A101D; border:none; padding:8px 14px; border-radius:6px; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 3px 10px rgba(37,211,102,0.3); width:100%;">
+                            <span>💬</span> <span>Enviar WhatsApp</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <!-- FILA DO PÁTIO / VEÍCULOS EM ATENDIMENTO HOJE -->
             <div class="panel-box" style="margin-bottom:16px;">
@@ -1843,9 +1967,29 @@ const WorkshopView = {
         const waUrl = 'https://api.whatsapp.com/send?phone=55' + cleanPhone + '&text=' + encodeURIComponent(message);
         window.open(waUrl, '_blank');
 
-        // Atualizar tela
+        // Atualizar badges visuais imediatos
+        const badge = document.getElementById('contact-badge-' + plate);
+        if (badge) {
+            badge.style.display = 'block';
+            badge.innerHTML = '✅ Cliente comunicado via WhatsApp em ' + contactTimestamp;
+        }
+        const badgeMobile = document.getElementById('contact-badge-mobile-' + plate);
+        if (badgeMobile) {
+            badgeMobile.style.display = 'block';
+            badgeMobile.innerHTML = '✅ Cliente comunicado via WhatsApp em ' + contactTimestamp;
+        }
+
+        // Atualizar tela ativa
         const viewport = document.getElementById('ws-erp-active-viewport');
-        if (viewport) viewport.innerHTML = this.renderClientMonitoringView();
+        if (viewport && (this.currentSection === 'manutencao-alertas' || this.currentSection === 'monitoramento-clientes')) {
+            viewport.innerHTML = this.renderMaintenanceCenterView();
+        }
+        const mobileViewport = document.getElementById('ws-mobile-active-viewport');
+        if (mobileViewport && (this.currentMobileSection === 'manutencao-veiculos' || this.currentSection === 'manutencao-veiculos')) {
+            if (this.renderMobileMaintenanceVehiclesView) {
+                mobileViewport.innerHTML = this.renderMobileMaintenanceVehiclesView();
+            }
+        }
     },
 
     // ──────────────────────────────────────────────────────────────────────────

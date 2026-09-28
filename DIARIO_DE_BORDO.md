@@ -1334,3 +1334,9 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   4. **Qualidade e Testes:**
      - 48 de 48 testes automatizados aprovados com 100% de sucesso (`npm test`), cobrindo os novos testes 46, 47 e 48.
      - Sincronização rigorosa entre as pastas `cliente.app/`, `oficina.app/` e `public/`.
+
+- **Ajuste Fino Operacional (Ciclo 63.1 - Eliminação de Item Lateral & Consolidação no Card):**
+  - **Zero Menus Laterais:** Removido qualquer item ou link lateral para monitoramento no painel da oficina (`monitoramento-clientes`), atendendo expressamente à diretriz *"não deve ser nada lateral"*.
+  - **Card com Alerta de Manutenção dos Veículos:**
+    - **No Modo Desktop (`workshopView.js`):** KPI Card #4 renomeado para *"Alerta de Manutenção dos Veículos"* e inserido um card/painel nobre na própria tela principal da Dashboard com os veículos em atenção (problemas identificados e preventivas) e botões diretos de *Enviar WhatsApp*.
+    - **No Modo Mobile (`workshopMobileView.js`):** Card 7 da Home oficializado como *"Alerta de Manutenção dos Veículos"* (com badge *4 Alertas*), abrindo a visualização segmentada por 🔴 *Problemas Identificados*, 🟡 *Manutenção Próxima*, 🟢 *Normais* e botão para disparo de WhatsApp com mensagem pré-preenchida inteligente e registro imediato do contato no histórico.
