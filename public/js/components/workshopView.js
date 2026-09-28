@@ -94,7 +94,17 @@ const WorkshopView = {
                 return App.currentUser.workshop_id;
             }
         }
-        return this.currentWorkshopId || 'ws_veloce';
+        try {
+            const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('dna_logged_user') : null;
+            if (raw) {
+                const u = JSON.parse(raw);
+                if (u && u.workshop && (u.workshop.id || u.workshop.workshop_id)) {
+                    return u.workshop.id || u.workshop.workshop_id;
+                }
+                if (u && u.workshop_id) return u.workshop_id;
+            }
+        } catch (_) {}
+        return this.currentWorkshopId || null;
     },
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -106,6 +116,15 @@ const WorkshopView = {
 
         const activeWorkshopId = this.getEffectiveWorkshopId();
         this.currentWorkshopId = activeWorkshopId;
+
+        // Se o usuário estiver deslogado, sem oficina ativa ou requisitou login, direciona para login
+        const isLoggedOut = typeof localStorage !== 'undefined' && localStorage.getItem('dna_logged_out') === 'true';
+        if (isLoggedOut || !activeWorkshopId || window.location.hash === '#login') {
+            document.body.classList.remove('force-desktop-mode');
+            if (typeof this.showOficinaLoginScreen === 'function') {
+                return this.showOficinaLoginScreen();
+            }
+        }
 
         // Ativa classe de isolamento de tela cheia para o painel ERP
         document.body.classList.add('is-workshop-erp');
@@ -166,6 +185,15 @@ const WorkshopView = {
             }, 500);
         } catch (err) {
             console.error('Erro ao renderizar painel da oficina:', err);
+            if (err && err.message && (err.message.includes('não encontrada') || err.message.includes('404'))) {
+                localStorage.removeItem('dna_logged_user');
+                localStorage.removeItem('dna_token');
+                localStorage.setItem('dna_logged_out', 'true');
+                if (typeof this.showOficinaLoginScreen === 'function') {
+                    document.body.classList.remove('force-desktop-mode');
+                    return this.showOficinaLoginScreen();
+                }
+            }
             container.innerHTML = `
                 <div class="panel-box" style="padding:40px; text-align:center; max-width:500px; margin:40px auto; background:#0f172a; border-color:var(--status-rejected);">
                     <div style="color:var(--status-rejected); font-size:16px; font-weight:800; margin-bottom:8px;">

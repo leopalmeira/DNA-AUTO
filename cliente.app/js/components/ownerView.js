@@ -135,59 +135,6 @@ const OwnerView = {
         notifications_count: 0,
         timeline: []
     },
-            { 
-                id: 2, 
-                title: 'Troca de correia dentada e tensores', 
-                date: '10/10/2024', 
-                km: '70.000 km', 
-                price: 'R$ 980,00',
-                total_amount: 98000,
-                dotColor: '#0066FF', 
-                workshop: 'Oficina AutoTech', 
-                details: 'Substituição preventiva da correia dentada, tensores auxiliares e bomba d\'água.',
-                has_invoice: true,
-                has_part_photo: true,
-                invoice_url: '/uploads/invoices/nfe_002812.pdf',
-                part_photo_url: 'https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?w=600&auto=format&fit=crop&q=80',
-                proof_level: 4,
-                parts: [{ name: 'Kit Correia Dentada + Tensor', manufacturer: 'Continental', part_number: 'CT1192', qty: 1 }]
-            },
-            { 
-                id: 3, 
-                title: 'Revisão de Suspensão e Geometria 3D', 
-                date: '05/04/2024', 
-                km: '60.000 km', 
-                price: 'R$ 720,00',
-                total_amount: 72000,
-                dotColor: '#0066FF', 
-                workshop: 'Oficina AutoTech', 
-                details: 'Troca de buchas da barra estabilizadora, geometria 3D e alinhamento computadorizado.',
-                has_invoice: true,
-                has_part_photo: true,
-                invoice_url: '/uploads/invoices/nfe_007621.pdf',
-                part_photo_url: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&auto=format&fit=crop&q=80',
-                proof_level: 4,
-                parts: [{ name: 'Buchas de Suspensão PU', manufacturer: 'Axios', part_number: 'AX-904', qty: 2 }]
-            },
-            { 
-                id: 4, 
-                title: 'Troca preventiva de óleo e filtros', 
-                date: '15/12/2023', 
-                km: '50.000 km', 
-                price: 'R$ 380,00',
-                total_amount: 38000,
-                dotColor: '#0066FF', 
-                workshop: 'Oficina AutoTech', 
-                details: 'Óleo sintético 0W20 Honda HAMP, filtro de óleo, filtro de ar e higienização do ar-condicionado.',
-                has_invoice: true,
-                has_part_photo: true,
-                invoice_url: '/uploads/invoices/nfe_001948.pdf',
-                part_photo_url: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&auto=format&fit=crop&q=80',
-                proof_level: 4,
-                parts: [{ name: 'Óleo Sintético 0W20 HAMP 4L', manufacturer: 'Honda HAMP', part_number: '0W20-HP', qty: 1 }]
-            }
-        ]
-    },
 
     // Dados da Inspeção Técnica 360° Homologada (Tela 4 do Mapa)
     inspectionData: {
@@ -200,242 +147,47 @@ const OwnerView = {
         technical_lead: '---',
         modules: []
     },
-            {
-                id: 'mod_brakes',
-                name: 'Sistema de Freios',
-                score: 96,
-                status: 'CONFORME',
-                icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>',
-                items: [
-                    { name: 'Pastilhas Dianteiras', status: 'OK', detail: '8.5 mm de espessura (Desgaste 25% - Seguro)' },
-                    { name: 'Pastilhas Traseiras', status: 'OK', detail: '7.0 mm de espessura (Desgaste 30%)' },
-                    { name: 'Discos de Freio Ventilados', status: 'OK', detail: 'Espessura dentro da tolerância de fábrica' },
-                    { name: 'Fluido de Freio DOT 4', status: 'OK', detail: 'Ponto de ebulição 242°C • Umidade 0.7%' }
-                ]
-            },
-            {
-                id: 'mod_suspension',
-                name: 'Suspensão & Direção',
-                score: 97,
-                status: 'CONFORME',
-                icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M5 7l7-5 7 5M5 17l7 5 7-5"/></svg>',
-                items: [
-                    { name: 'Amortecedores Dianteiros/Traseiros', status: 'OK', detail: 'Eficiência 88% no dinamômetro • Sem vazamentos' },
-                    { name: 'Buchas, Pivôs e Terminais', status: 'OK', detail: 'Coifas íntegras e zero folgas mecânicas' },
-                    { name: 'Geometria 3D & Direção Elétrica', status: 'OK', detail: 'Alinhamento conforme tolerância original' }
-                ]
-            },
-            {
-                id: 'mod_tires',
-                name: 'Pneus & Rodas',
-                score: 98,
-                status: 'CONFORME',
-                icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4"/></svg>',
-                items: [
-                    { name: 'Pneus Dianteiros (215/50 R17)', status: 'OK', detail: 'Sulco 6.5 mm (Mínimo legal 1.6 mm)' },
-                    { name: 'Pneus Traseiros (215/50 R17)', status: 'OK', detail: 'Sulco 6.8 mm • Calibrados em 32 PSI' },
-                    { name: 'Rodas de Liga Leve Diamantadas', status: 'OK', detail: 'Sem trincas ou deformações' }
-                ]
-            },
-            {
-                id: 'mod_electric',
-                name: 'Elétrica & Módulos',
-                score: 100,
-                status: 'CONFORME',
-                icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="13" rx="2"/><line x1="6" y1="11" x2="10" y2="11"/><line x1="14" y1="11" x2="18" y2="11"/></svg>',
-                items: [
-                    { name: 'Bateria 60Ah Heliar', status: 'OK', detail: '12.6V em repouso • 14.2V em carga plena' },
-                    { name: 'Módulos Eletrônicos (ECU/BCM)', status: 'OK', detail: 'Zero DTC / Sem falhas registradas' },
-                    { name: 'Faróis Full LED e Lanternas', status: 'OK', detail: 'Iluminação 100% calibrada' }
-                ]
-            },
-            {
-                id: 'mod_fluids',
-                name: 'Fluidos & Arrefecimento',
-                score: 98,
-                status: 'CONFORME',
-                icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>',
-                items: [
-                    { name: 'Líquido de Arrefecimento', status: 'OK', detail: 'Proporção ideal, ponto de congelamento -35°C' },
-                    { name: 'Filtro de Ar do Motor & Cabine', status: 'OK', detail: 'Elementos limpos e desobstruídos' },
-                    { name: 'Fluido de Freio e Lavador', status: 'OK', detail: 'Níveis plenos e sem contaminação' }
-                ]
-            }
-        ]
-    },
 
     // Plano de Revisões Preventivas (Tela 5 do Mapa)
     revisionsData: {
-        next_revision: {
-            target_mileage: 90000,
-            current_mileage: 87542,
-            remaining_km: 2458,
-            estimated_days: 45,
-            status: 'PRÓXIMA REVISÃO',
-            items: [
-                'Óleo do motor',
-                'Filtro de óleo',
-                'Filtro de ar',
-                'Pastilhas de freio'
-            ]
-        },
-        history: [
-            {
-                revision_label: '80.000 km',
-                performed_at: '12/04/2025',
-                mileage_at_service: 80000,
-                workshop: 'AutoTech',
-                proof_level: 'Nível 4',
-                items_summary: 'Revisão periódica programada, troca de fluidos, velas de ignição e inspeção geral de suspensão.'
-            },
-            {
-                revision_label: '70.000 km',
-                performed_at: '10/10/2024',
-                mileage_at_service: 70000,
-                workshop: 'AutoTech',
-                proof_level: 'Nível 4',
-                items_summary: 'Troca de correia dentada, tensores auxiliares e bomba d\'água.'
-            },
-            {
-                revision_label: '60.000 km',
-                performed_at: '05/04/2024',
-                mileage_at_service: 60000,
-                workshop: 'AutoTech',
-                proof_level: 'Nível 4',
-                items_summary: 'Revisão completa do sistema de suspensão e direção, alinhamento e balanceamento.'
-            }
-        ]
+        next_revision: null,
+        history: []
     },
 
     // Dados de Telemetria Mini OBD2 (Tela 6 do Mapa)
     obdData: {
         device: {
-            name: 'Mini OBD2 ELM327 BLE 5.2 AutoLink',
-            protocol: 'ISO 15765-4 (CAN 11-bit / 500 kbaud)',
-            connected: true,
-            status_label: 'Conectado via BLE / Escaneamento ativo'
+            name: 'Mini OBD2 ELM327 BLE',
+            protocol: '---',
+            connected: false,
+            status_label: 'Desconectado / Aguardando pareamento BLE'
         },
         telemetry: {
-            rpm: 2480,
-            coolant_temp_c: 90,
-            battery_voltage: 14.2,
-            ecu_odometer_km: 87542,
-            fuel_level_percent: 72,
-            lambda_ratio: '1.00',
-            map_pressure_kpa: 32,
-            throttle_pos_percent: 14,
-            intake_temp_c: 34
+            rpm: 0,
+            coolant_temp_c: 0,
+            battery_voltage: 0,
+            ecu_odometer_km: 0,
+            fuel_level_percent: 0,
+            lambda_ratio: '0.00',
+            map_pressure_kpa: 0,
+            throttle_pos_percent: 0,
+            intake_temp_c: 0
         },
         diagnostics: {
             mil_lamp: 'OFF',
             dtc_count: 0,
-            dtc_label: '0 erros detectados',
-            ecu_name: 'Bosch Honda Motronic',
-            system_health: '100% OPERACIONAL',
-            last_scan: 'Hoje às 18:20'
+            dtc_label: 'Nenhum erro detectado',
+            ecu_name: '---',
+            system_health: 'Desconectado',
+            last_scan: 'Nenhum'
         }
     },
 
     // Alertas e Lembretes Preventivos (Tela 8 do Mapa)
-    remindersList: [
-        {
-            id: 'rem_1',
-            severity: 'URGENTE',
-            severity_color: '#EF4444',
-            title: 'Troca da correia dentada',
-            subtitle: 'Venceu há 12 dias',
-            action_text: 'Agendar agora'
-        },
-        {
-            id: 'rem_2',
-            severity: 'ATENÇÃO',
-            severity_color: '#F59E0B',
-            title: 'Revisão dos 90.000 km',
-            subtitle: 'Faltam 2.458 km',
-            action_text: null
-        },
-        {
-            id: 'rem_3',
-            severity: 'EM DIA',
-            severity_color: '#10B981',
-            title: 'Óleo do motor',
-            subtitle: 'Próxima em 10.458 km',
-            action_text: null
-        },
-        {
-            id: 'rem_4',
-            severity: 'EM DIA',
-            severity_color: '#10B981',
-            title: 'Freios',
-            subtitle: 'Inspeção em 5.000 km',
-            action_text: null
-        }
-    ],
+    remindersList: [],
 
     // Oficinas e Auto Centers da Rede Credenciada DNA AUTO (Tela 9 do Mapa)
-    workshopsList: [
-        {
-            id: 'ws_autotech',
-            name: 'AutoTech Centro Automotivo',
-            type: 'Auto Center',
-            rating: '4.9',
-            distance: '1.2 km',
-            neighborhood: 'Centro',
-            city: 'São Paulo - SP',
-            phone: '(11) 99876-5432',
-            installed_here: true,
-            badge: 'Oficina de Instalação (Preferencial)',
-            specialties: 'Auto Center Completo • Diagnóstico Injeção • Geometria 3D & Pneus'
-        },
-        {
-            id: 'ws_speedcar',
-            name: 'Speed Car Oficina Especializada',
-            type: 'Oficina',
-            rating: '4.8',
-            distance: '3.4 km',
-            neighborhood: 'Jd. das Flores',
-            city: 'São Paulo - SP',
-            phone: '(11) 98765-4321',
-            badge: 'Credenciada DNA AUTO',
-            specialties: 'Mecânica Geral • Câmbio Automático • Freios & Suspensão'
-        },
-        {
-            id: 'ws_topmotors',
-            name: 'Top Motors Auto Center Prime',
-            type: 'Auto Center',
-            rating: '4.7',
-            distance: '4.1 km',
-            neighborhood: 'Brasil',
-            city: 'São Paulo - SP',
-            phone: '(11) 97654-3210',
-            badge: 'Credenciada DNA AUTO',
-            specialties: 'Auto Center • Alinhamento Laser • Ar-Condicionado & Elétrica'
-        },
-        {
-            id: 'ws_marcelo',
-            name: 'Oficina Mecânica do Marcelo',
-            type: 'Oficina',
-            rating: '4.9',
-            distance: '5.8 km',
-            neighborhood: 'Vila Mariana',
-            city: 'São Paulo - SP',
-            phone: '(11) 96543-2109',
-            badge: 'Credenciada DNA AUTO',
-            specialties: 'Motores Turbo & Injeção Direta • Revisões Preventivas'
-        },
-        {
-            id: 'ws_veloce',
-            name: 'Veloce Centro Automotivo',
-            type: 'Auto Center',
-            rating: '4.9',
-            distance: '6.2 km',
-            neighborhood: 'Pinheiros',
-            city: 'São Paulo - SP',
-            phone: '(11) 99999-8888',
-            badge: 'Credenciada DNA AUTO',
-            specialties: 'Centro Automotivo Homologado • Inspeção 360° • Telemetria OBD2'
-        }
-    ],
+    workshopsList: [],
 
     // ── Botão de Sair / Logout Oficial (Direciona para Splash/Boas-Vindas) ──
     logout() {
@@ -2544,20 +2296,20 @@ const OwnerView = {
                 <div class="dna-vehicle-specs-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                     <div class="dna-spec-card" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px;">
                         <span style="font-size:10.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Quilometragem atual</span>
-                        <span style="font-size:15px; font-weight:800; color:#FFFFFF; display:block; margin-top:2px;">${Number(v.current_mileage || 87542).toLocaleString('pt-BR')} km</span>
+                        <span style="font-size:15px; font-weight:800; color:#FFFFFF; display:block; margin-top:2px;">${v.current_mileage ? Number(v.current_mileage).toLocaleString('pt-BR') + ' km' : '---'}</span>
                     </div>
                     <div class="dna-spec-card" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px;">
                         <span style="font-size:10.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Próxima revisão</span>
-                        <span style="font-size:15px; font-weight:800; color:#00D4FF; display:block; margin-top:2px;">90.000 km</span>
-                        <span style="font-size:10.5px; color:#94A3B8;">(em 2.458 km)</span>
+                        <span style="font-size:15px; font-weight:800; color:#00D4FF; display:block; margin-top:2px;">${this.revisionsData && this.revisionsData.next_revision ? Number(this.revisionsData.next_revision.target_mileage).toLocaleString('pt-BR') + ' km' : '---'}</span>
+                        <span style="font-size:10.5px; color:#94A3B8;">${this.revisionsData && this.revisionsData.next_revision ? `(em ${Number(this.revisionsData.next_revision.remaining_km).toLocaleString('pt-BR')} km)` : '(Aguardando)'}</span>
                     </div>
                     <div class="dna-spec-card" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px;">
                         <span style="font-size:10.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Combustível</span>
-                        <span style="font-size:15px; font-weight:800; color:#FFFFFF; display:block; margin-top:2px;">${v.fuel_level || 72}%</span>
+                        <span style="font-size:15px; font-weight:800; color:#FFFFFF; display:block; margin-top:2px;">${v.fuel_level ? v.fuel_level + '%' : '---'}</span>
                     </div>
                     <div class="dna-spec-card" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px;">
                         <span style="font-size:10.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Autonomia estimada</span>
-                        <span style="font-size:15px; font-weight:800; color:#10B981; display:block; margin-top:2px;">~ ${v.estimated_range || 520} km</span>
+                        <span style="font-size:15px; font-weight:800; color:#10B981; display:block; margin-top:2px;">${v.estimated_range ? '~ ' + v.estimated_range + ' km' : '---'}</span>
                     </div>
                 </div>
 
@@ -3077,6 +2829,7 @@ const OwnerView = {
                     </button>
                 </div>
 
+                ${rev && rev.next_revision ? `
                 <!-- Card Próxima Revisão -->
                 <div class="dna-rev-next-card" style="background:radial-gradient(circle at 50% 20%, rgba(12,30,65,0.9) 0%, rgba(6,14,28,0.95) 100%); border:1.5px solid rgba(0,102,255,0.35); border-radius:14px; padding:14px;">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
@@ -3093,7 +2846,7 @@ const OwnerView = {
                     <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:10px;">
                         <span style="font-size:11px; font-weight:800; color:#CBD5E1; display:block; margin-bottom:6px;">Itens para substituição</span>
                         <div style="display:flex; flex-direction:column; gap:5px;">
-                            ${rev.next_revision.items.map(it => `
+                            ${(rev.next_revision.items || []).map(it => `
                                 <div style="display:flex; align-items:center; gap:8px; font-size:11.5px; color:#FFFFFF;">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
                                     <span>${it}</span>
@@ -3106,6 +2859,17 @@ const OwnerView = {
                         <span>Agendar Revisão na Rede homologada</span>
                     </button>
                 </div>
+                ` : `
+                <!-- Sem Próxima Revisão Programada -->
+                <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.2); border-radius:14px; padding:20px; text-align:center;">
+                    <div style="font-size:24px; margin-bottom:6px;">📅</div>
+                    <strong style="color:#FFFFFF; font-size:13.5px; display:block;">Nenhuma revisão agendada</strong>
+                    <span style="color:#94A3B8; font-size:11.5px; display:block; margin:4px 0 14px;">As próximas revisões preventivas serão sugeridas conforme os serviços realizados forem registrados pela oficina.</span>
+                    <button class="btn btn-primary" onclick="OwnerView.navigateTo('workshops')" style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:12px; padding:10px 16px; border-radius:8px; border:none; cursor:pointer;">
+                        Consultar Rede de Oficinas
+                    </button>
+                </div>
+                `}
 
                 <!-- Banner: Emitir Relatório Completo de Manutenções -->
                 <div onclick="OwnerView.openMaintenanceReport()" style="background:linear-gradient(135deg, rgba(0,212,255,0.15) 0%, rgba(0,102,255,0.2) 100%); border:1.5px solid #00D4FF; border-radius:12px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; box-shadow:0 0 16px rgba(0,212,255,0.16);">
@@ -3129,7 +2893,7 @@ const OwnerView = {
                 <!-- Histórico de revisões -->
                 <div style="display:flex; flex-direction:column; gap:8px;">
                     <span style="font-size:11px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Histórico de revisões</span>
-                    ${rev.history.map(h => `
+                    ${(rev && rev.history && rev.history.length > 0) ? rev.history.map(h => `
                         <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.2); border-radius:10px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
                             <div>
                                 <strong style="color:#FFFFFF; font-size:12.5px; display:block;">${h.revision_label}</strong>
@@ -3139,7 +2903,11 @@ const OwnerView = {
                                 ${h.proof_level}
                             </span>
                         </div>
-                    `).join('')}
+                    `).join('') : `
+                        <div style="background:rgba(8,16,32,0.6); border:1px dashed rgba(255,255,255,0.1); border-radius:10px; padding:14px; text-align:center; color:#94A3B8; font-size:11.5px;">
+                            Nenhuma revisão registrada ainda.
+                        </div>
+                    `}
                 </div>
             </div>
         `;
@@ -4065,8 +3833,8 @@ const OwnerView = {
     renderObdMonitoringCard() {
         const v = this.vehicleData;
         const isConnected = !!this.isObdPaired;
-        const currentKm = Number(v.current_mileage || 87542);
-        const fuel = v.fuel_level || 72;
+        const currentKm = Number(v.current_mileage || 0);
+        const fuel = v.fuel_level || 0;
 
         return `
             <!-- CARD PRINCIPAL: MONITORAMENTO OBD (INTEGRADO À ÁREA DO VEÍCULO) -->

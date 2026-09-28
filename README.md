@@ -3,13 +3,13 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto-vua4.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-45%2F45%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-48%2F48%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto-vua4.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 61):** Reestruturação profissional em 4 blocos visuais independentes do card de serviços e peças no App do Cliente (Data/Oficina, Serviço Executado, Investimento/Preço em verde neon e Comprovantes Auditados com botões amplos para Foto da Peça e Nota Fiscal NF), corrigindo espaçamentos e esmagamento horizontal em dispositivos móveis. 45 de 45 testes automatizados aprovados (100%). 45 de 45 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 65):** Correção definitiva de sintaxe no App do Cliente (`ownerView.js`) e App da Oficina (`workshopMobileView.js`), fluxo seguro e imediato de autenticação da Auto Center (`showOficinaLoginScreen()`) sem erro 404, e remoção integral de resíduos de mock em toda a plataforma. 48 de 48 testes automatizados aprovados (100%).
 
 ---
 

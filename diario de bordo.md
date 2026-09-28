@@ -1289,3 +1289,30 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   5. **Qualidade e Testes:**
      - 48 de 48 testes automatizados aprovados (`npm test`) com 100% de sucesso.
      - Banco SQLite restaurado e verificado: 0 oficinas, 0 veículos, 0 clientes, apenas 1 usuário (`usr_admin`).
+
+---
+
+### Ciclo 65 — Correção Definitiva de Sintaxe em ownerView.js e workshopMobileView.js, Fluxo Seguro de Login para Oficinas Não Autenticadas e Higienização Total do App do Cliente
+- **Data/Hora:** 28/09/2026
+- **Contexto & Escopo:**
+  1. **Diagnóstico dos Erros Relatados em Produção (Render):**
+     - **Tela 1 (/cliente/):** Loader congelado em *"Carregando Garagem Digital... Sincronizando veículo, revisões e laudo com o servidor"*.
+       - **Causa Raiz:** Fragmentos soltos de objetos de mock deixados na limpeza anterior fora de propriedades válidas em ownerView.js, disparando `SyntaxError: Unexpected token '{'`. Com o arquivo quebrado, o navegador interrompia a execução e `OwnerView.render()` nunca era executado.
+     - **Tela 2 (/oficina/):** Caixa de erro em vermelho *"Erro ao conectar à plataforma da oficina. Oficina não encontrada."*.
+       - **Causa Raiz 1:** Em `workshopView.js`, `getEffectiveWorkshopId()` continha fallback hardcoded `'ws_veloce'`. Com a remoção correta dos mocks do banco, a busca por ws_veloce retornava 404.
+       - **Causa Raiz 2:** Em `workshopMobileView.js`, sobraram instruções soltas de demoUser gerando `SyntaxError: Unexpected token ';'`. Isso impedia a execução do render hook mobile que direciona para a tela de login.
+  2. **Correções Cirúrgicas Realizadas:**
+     - `ownerView.js` (`cliente.app/` e `public/`):
+       - Eliminados todos os fragmentos residuais em `vehicleData`, `inspectionData`, `revisionsData`, `obdData`, `remindersList` e `workshopsList`.
+       - Eliminados fallbacks hardcoded de quilometragem (87542), nível de combustível (72%) e valores de revisão em `renderVehicleSpecsGrid` e `renderObdMonitoringCard`.
+       - Protegido `renderRevisionsScreen` para renderizar estado vazio amigável quando `next_revision` for nulo.
+     - `workshopMobileView.js` (`oficina.app/` e `public/`):
+       - Eliminados blocos residuais de `handleWorkshopDemoLogin` e `demoUser`.
+       - Ajustado render hook para direcionar imediatamente para a tela oficial de login/cadastro (`showOficinaLoginScreen()`) se não houver oficina autenticada ou se a oficina retornar 404.
+     - `workshopView.js` (`oficina.app/` e `public/`):
+       - `getEffectiveWorkshopId()` agora lê da sessão real do usuário autenticado no `localStorage` ou retorna `null` (removido `'ws_veloce'`).
+       - Tratamento no `render()` e no bloco `catch(err)` para abrir a tela de login/credenciamento sem emitir caixa vermelha de erro 404.
+  3. **Validação Rigorosa de Código e Testes:**
+     - Verificação de sintaxe `node -c` executada em 100% dos arquivos JavaScript do repositório: zero erros encontrados.
+     - Bateria completa de testes automatizados (`npm test`): **48 de 48 testes aprovados (100% de sucesso)**.
+     - Banco SQLite verificado em estado limpo: apenas Administrador Geral cadastrado.

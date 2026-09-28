@@ -3785,16 +3785,6 @@
     WorkshopView.handleWorkshopDemoLogin = function() {
         alert('O modo de demonstração foi desativado. Por favor, acesse com o e-mail e senha da sua oficina credenciada.');
     };
-        localStorage.setItem('dna_logged_user', JSON.stringify(demoUser));
-        localStorage.setItem('dna_token', 'sess_workshop_usr_workshop_marcos');
-        if (typeof API !== 'undefined') {
-            API.setToken('sess_workshop_usr_workshop_marcos');
-            API.setDemoUser('usr_workshop_marcos');
-        }
-
-        const isWeb = this.authTargetMode === 'web';
-        this.setDesktopMode(isWeb);
-    };
 
     // Injetor de Banner Mobile no Painel Desktop (Web ERP)
     WorkshopView.injectDesktopMobileBanner = function() {
@@ -4322,16 +4312,6 @@
     WorkshopView.handleWorkshopDemoLogin = function() {
         alert('O modo de demonstração foi desativado. Por favor, acesse com o e-mail e senha da sua oficina credenciada.');
     };
-        localStorage.setItem('dna_logged_user', JSON.stringify(demoUser));
-        localStorage.setItem('dna_token', 'sess_workshop_usr_workshop_marcos');
-        if (typeof API !== 'undefined') {
-            API.setToken('sess_workshop_usr_workshop_marcos');
-            API.setDemoUser('usr_workshop_marcos');
-        }
-
-        this.currentSection = 'dashboard';
-        this.renderMobileShell();
-    };
 
     // Verificação de dispositivo na inicialização
     WorkshopView.checkDevicePrompt = function() {
@@ -4353,9 +4333,9 @@
         this.currentWorkshopId = activeWorkshopId;
         document.body.classList.add('is-workshop-erp');
 
-        // Se o usuário estiver deslogado ou a URL solicitar login, exibe a tela de login com imagem DNA AUTO
+        // Se o usuário estiver deslogado, sem oficina ativa, ou a URL solicitar login, exibe a tela de login com imagem DNA AUTO
         const isLoggedOut = localStorage.getItem('dna_logged_out') === 'true';
-        if (isLoggedOut || window.location.hash === '#login') {
+        if (isLoggedOut || !activeWorkshopId || window.location.hash === '#login') {
             document.body.classList.remove('force-desktop-mode');
             this.showOficinaLoginScreen();
             return;
@@ -4368,7 +4348,16 @@
             if (data.workshop && data.workshop.trade_name) {
                 this.officialWorkshopName = data.workshop.trade_name;
             }
-        } catch (_) {}
+        } catch (err) {
+            if (err && err.message && (err.message.includes('não encontrada') || err.message.includes('404'))) {
+                localStorage.removeItem('dna_logged_user');
+                localStorage.removeItem('dna_token');
+                localStorage.setItem('dna_logged_out', 'true');
+                document.body.classList.remove('force-desktop-mode');
+                this.showOficinaLoginScreen();
+                return;
+            }
+        }
 
         try {
             const alertsRes = await API.getMaintenanceAlertsForWorkshop(activeWorkshopId);
