@@ -57,13 +57,12 @@ function seedBase(dbInstance) {
         ];
         for (const r of roles) insertRole.run(r);
 
-        // 3. Usuários Padrão (senhas hasheadas)
-        const passwordHash = bcrypt.hashSync('senha123', 10);
+        // 3. Usuários Padrão (Apenas o Administrador da Plataforma)
         const adminHash = bcrypt.hashSync('admin123', 10);
 
         const insertUser = db.prepare(`
             INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
-            VALUES (@id, @name, @email, @password_hash, @phone, @role_id, @status, 1)
+            VALUES (@id, @name, @email, @password_hash, @phone, @role_id, @status, 0)
         `);
 
         insertUser.run({
@@ -75,6 +74,111 @@ function seedBase(dbInstance) {
             role_id: 'role_admin',
             status: 'ACTIVE'
         });
+
+        // 4. Planos e Preços Configuráveis da Plataforma
+        const insertPlan = db.prepare(`
+            INSERT INTO pricing_plans (id, code, title, description, price_cents, workshop_price_cents, discount_percentage, is_courtesy, commission_percentage, is_active)
+            VALUES (@id, @code, @title, @description, @price_cents, @workshop_price_cents, @discount_percentage, @is_courtesy, @commission_percentage, 1)
+        `);
+
+        insertPlan.run({
+            id: 'plan_normal',
+            code: 'PLAN_NORMAL',
+            title: 'Passaporte Digital DNA AUTO (Vitalício)',
+            description: 'Histórico completo de manutenções, trocas de peças e atividades do veículo',
+            price_cents: 5990,
+            workshop_price_cents: 3990,
+            discount_percentage: 0,
+            is_courtesy: 0,
+            commission_percentage: 25
+        });
+
+        insertPlan.run({
+            id: 'plan_workshop_promo',
+            code: 'PLAN_WORKSHOP_PROMO',
+            title: 'Campanha Oficina Credenciada',
+            description: 'Preço promocional aplicado durante serviços na oficina',
+            price_cents: 7900,
+            workshop_price_cents: 4900,
+            discount_percentage: 47,
+            is_courtesy: 0,
+            commission_percentage: 25
+        });
+
+        insertPlan.run({
+            id: 'plan_discount_50',
+            code: 'PLAN_DISCOUNT_50',
+            title: 'Cupom 50% de Desconto',
+            description: 'Condição especial de incentivo para novos veículos',
+            price_cents: 7450,
+            workshop_price_cents: 4900,
+            discount_percentage: 50,
+            is_courtesy: 0,
+            commission_percentage: 15
+        });
+
+        insertPlan.run({
+            id: 'plan_courtesy',
+            code: 'PLAN_COURTESY',
+            title: 'Cortesia Fidelidade da Oficina',
+            description: 'Oferecido gratuitamente pela oficina para fidelização',
+            price_cents: 0,
+            workshop_price_cents: 0,
+            discount_percentage: 100,
+            is_courtesy: 1,
+            commission_percentage: 0
+        });
+
+        // 5. Integrações Oficiais
+        const insertIntegration = db.prepare(`
+            INSERT OR IGNORE INTO integrations (id, service_code, service_name, is_enabled, is_connected, endpoint_url, api_key_masked, status_message)
+            VALUES (@id, @service_code, @service_name, @is_enabled, @is_connected, @endpoint_url, @api_key_masked, @status_message)
+        `);
+        insertIntegration.run({ id: 'int_fipe', service_code: 'FIPE', service_name: 'Tabela FIPE Oficial API', is_enabled: 1, is_connected: 1, endpoint_url: 'https://parallelum.com.br/fipe/api/v1', api_key_masked: 'fipe_live_****9821', status_message: 'Conexão ativa com cotações oficiais mensais' });
+        insertIntegration.run({ id: 'int_placas', service_code: 'API_PLACAS', service_name: 'API Placas Nacional (WDAPI2)', is_enabled: 1, is_connected: 1, endpoint_url: 'https://wdapi2.com.br', api_key_masked: 'be1425****22dd', status_message: 'Conexão ativa com 1.000 consultas contratadas e FIPE oficial por score' });
+        insertIntegration.run({ id: 'int_detran', service_code: 'DETRAN', service_name: 'Detran Base Estadual', is_enabled: 1, is_connected: 0, endpoint_url: 'https://api.detran.sp.gov.br/v2', api_key_masked: 'detran_live_****3124', status_message: 'Informação não disponível nesta fonte no momento' });
+        insertIntegration.run({ id: 'int_ipva', service_code: 'IPVA', service_name: 'Sefaz IPVA & Taxas Veiculares', is_enabled: 1, is_connected: 1, endpoint_url: 'https://sefaz.sp.gov.br/api/ipva', api_key_masked: 'sefaz_****5519', status_message: 'Consulta sincronizada com a Secretaria da Fazenda' });
+        insertIntegration.run({ id: 'int_multas', service_code: 'MULTAS', service_name: 'RENAINF Base Nacional', is_enabled: 1, is_connected: 1, endpoint_url: 'https://renainf.denatran.serpro.gov.br/api', api_key_masked: 'serpro_****7721', status_message: 'Consulta ativa sem multas pendentes' });
+        insertIntegration.run({ id: 'int_leiloes', service_code: 'LEILOES', service_name: 'Central Nacional de Leilões', is_enabled: 1, is_connected: 1, endpoint_url: 'https://leiloesbrasil.api/v1/search', api_key_masked: 'leilao_****1290', status_message: 'Certidão negativa de leilão confirmada' });
+        insertIntegration.run({ id: 'int_whatsapp', service_code: 'WHATSAPP', service_name: 'WhatsApp Business API Gateway', is_enabled: 1, is_connected: 1, endpoint_url: 'https://graph.facebook.com/v19.0/messages', api_key_masked: 'wh_token_****8819', status_message: 'Canal configurado para envio de códigos de transferência e alertas de revisão' });
+
+        // 6. Log Inicial do Sistema
+        const insertAudit = db.prepare(`
+            INSERT OR IGNORE INTO audit_logs (id, user_id, user_role, user_name, action, entity_type, entity_id, vehicle_dna_code, ip_address, data_before, data_after, created_at)
+            VALUES (@id, @user_id, @user_role, @user_name, @action, @entity_type, @entity_id, @vehicle_dna_code, @ip_address, @data_before, @data_after, @created_at)
+        `);
+
+        insertAudit.run({
+            id: 'aud_1',
+            user_id: 'usr_admin',
+            user_role: 'ADMIN',
+            user_name: 'Administrador Geral',
+            action: 'INITIALIZE_NETWORK',
+            entity_type: 'SYSTEM',
+            entity_id: 'system_core',
+            vehicle_dna_code: null,
+            ip_address: '127.0.0.1',
+            data_before: null,
+            data_after: JSON.stringify({ message: 'Rede DNA AUTO inicializada com sucesso em modo limpo oficial' }),
+            created_at: '2026-03-01 08:00:00'
+        });
+    })();
+
+    console.log('✅ Estrutura base limpa criada com sucesso. Apenas Administrador Geral cadastrado.');
+}
+
+function seedDemoCars(dbInstance) {
+    const db = dbInstance || require('./db');
+    console.log('🚗 Inserindo veículos de demonstração e histórico (Fixtures de Teste)...');
+
+    db.transaction(() => {
+        const passwordHash = bcrypt.hashSync('senha123', 10);
+
+        // Usuários de Demonstração para Testes
+        const insertUser = db.prepare(`
+            INSERT OR REPLACE INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
+            VALUES (@id, @name, @email, @password_hash, @phone, @role_id, @status, 1)
+        `);
 
         insertUser.run({
             id: 'usr_workshop_marcos',
@@ -116,16 +220,16 @@ function seedBase(dbInstance) {
             status: 'ACTIVE'
         });
 
-        // 4. Oficinas Credenciadas
+        // Oficinas de Demonstração para Testes
         const insertWorkshop = db.prepare(`
-            INSERT INTO workshops (id, company_name, trade_name, cnpj, phone, email, address_street, address_number, address_neighborhood, city, state, zip_code, status, verified_badge, notes)
+            INSERT OR REPLACE INTO workshops (id, company_name, trade_name, cnpj, phone, email, address_street, address_number, address_neighborhood, city, state, zip_code, status, verified_badge, notes)
             VALUES (@id, @company_name, @trade_name, @cnpj, @phone, @email, @address_street, @address_number, @address_neighborhood, @city, @state, @zip_code, @status, @verified_badge, @notes)
         `);
 
         insertWorkshop.run({
             id: 'ws_veloce',
             company_name: 'Auto Center Veloce Premium LTDA',
-            trade_name: 'Veloce Auto Center Premium [DEMO]',
+            trade_name: 'Veloce Auto Center Premium',
             cnpj: '12.345.678/0001-90',
             phone: '(19) 3241-8900',
             email: 'contato@veloce.com.br',
@@ -143,7 +247,7 @@ function seedBase(dbInstance) {
         insertWorkshop.run({
             id: 'ws_mastercar',
             company_name: 'Oficina Mecânica MasterCar Serviços Automotivos',
-            trade_name: 'MasterCar Bosch Service [DEMO]',
+            trade_name: 'MasterCar Bosch Service',
             cnpj: '98.765.432/0001-11',
             phone: '(11) 5012-3400',
             email: 'contato@mastercar.com.br',
@@ -161,7 +265,7 @@ function seedBase(dbInstance) {
         insertWorkshop.run({
             id: 'ws_pitstop',
             company_name: 'PitStop Centro Automotivo Litoral',
-            trade_name: 'PitStop Express Santos [DEMO]',
+            trade_name: 'PitStop Express Santos',
             cnpj: '44.555.666/0001-22',
             phone: '(13) 3284-5500',
             email: 'pitstop@litoral.com.br',
@@ -176,9 +280,8 @@ function seedBase(dbInstance) {
             notes: 'Aguardando aprovação de credenciamento do administrativo.'
         });
 
-        // Vínculo Equipe da Oficina
         const insertWorkshopUser = db.prepare(`
-            INSERT INTO workshop_users (id, workshop_id, user_id, position_title, can_activate_dna, can_prove_services)
+            INSERT OR REPLACE INTO workshop_users (id, workshop_id, user_id, position_title, can_activate_dna, can_prove_services)
             VALUES (@id, @workshop_id, @user_id, @position_title, @can_activate_dna, @can_prove_services)
         `);
 
@@ -200,70 +303,6 @@ function seedBase(dbInstance) {
             can_prove_services: 1
         });
 
-        // 5. Planos e Preços Configuráveis
-        const insertPlan = db.prepare(`
-            INSERT INTO pricing_plans (id, code, title, description, price_cents, workshop_price_cents, discount_percentage, is_courtesy, commission_percentage, is_active)
-            VALUES (@id, @code, @title, @description, @price_cents, @workshop_price_cents, @discount_percentage, @is_courtesy, @commission_percentage, 1)
-        `);
-
-        insertPlan.run({
-            id: 'plan_normal',
-            code: 'PLAN_NORMAL',
-            title: 'Passaporte Digital DNA AUTO (Vitalício)',
-            description: 'Histórico completo de manutenções, trocas de peças e atividades do veículo',
-            price_cents: 5990,
-            workshop_price_cents: 3990,
-            discount_percentage: 0,
-            is_courtesy: 0,
-            commission_percentage: 25
-        });
-
-
-        insertPlan.run({
-            id: 'plan_workshop_promo',
-            code: 'PLAN_WORKSHOP_PROMO',
-            title: 'Campanha Oficina Credenciada',
-            description: 'Preço promocional aplicado durante serviços na oficina',
-            price_cents: 7900,
-            workshop_price_cents: 4900,
-            discount_percentage: 47,
-            is_courtesy: 0,
-            commission_percentage: 25
-        });
-
-        insertPlan.run({
-            id: 'plan_discount_50',
-            code: 'PLAN_DISCOUNT_50',
-            title: 'Cupom 50% de Desconto',
-            description: 'Condição especial de incentivo para novos veículos',
-            price_cents: 7450,
-            workshop_price_cents: 4900,
-            discount_percentage: 50,
-            is_courtesy: 0,
-            commission_percentage: 15
-        });
-
-        insertPlan.run({
-            id: 'plan_courtesy',
-            code: 'PLAN_COURTESY',
-            title: 'Cortesia Fidelidade da Oficina',
-            description: 'Oferecido gratuitamente pela oficina para fidelização',
-            price_cents: 0,
-            workshop_price_cents: 0,
-            discount_percentage: 100,
-            is_courtesy: 1,
-            commission_percentage: 0
-        });
-    })();
-
-    console.log('✅ Estrutura base e usuários criados com sucesso (Ambiente limpo pronto para uso).');
-}
-
-function seedDemoCars(dbInstance) {
-    const db = dbInstance || require('./db');
-    console.log('🚗 Inserindo veículos de demonstração e histórico...');
-
-    db.transaction(() => {
         // 6. Veículos
         const insertVehicle = db.prepare(`
             INSERT INTO vehicles (id, license_plate, chassis_vin, renavam, brand, model, version_label, manufacture_year, model_year, fuel_type, transmission_type, color, photo_url, is_demo)

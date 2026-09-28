@@ -12,12 +12,12 @@ const LoginView = {
 
     credentials: {
         OWNER: {
-            email: 'carlos.silva@email.com',
-            password: 'senha123',
+            email: '',
+            password: '',
         },
         WORKSHOP: {
-            email: 'marcos@veloce.com.br',
-            password: 'senha123',
+            email: '',
+            password: '',
         },
         ADMIN: {
             email: 'admin@dnaauto.com.br',

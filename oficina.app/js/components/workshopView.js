@@ -4,7 +4,7 @@
 // ==============================================================================
 
 const WorkshopView = {
-    currentWorkshopId: 'ws_veloce',
+    currentWorkshopId: null,
     dashboardData: null,
     alertsData: [],
     appointmentsData: [],
@@ -38,7 +38,7 @@ const WorkshopView = {
     selectedSlotDate: null,
     selectedSlotTime: null,
     officialPhone: '(19) 3245-6789',
-    officialWorkshopName: 'Veloce Auto Center Premium',
+    officialWorkshopName: 'Oficina Credenciada',
     agendaConfig: {
         days: ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'],
         startHour: 8,

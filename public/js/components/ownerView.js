@@ -107,50 +107,34 @@ const OwnerView = {
 
     // Dados Oficiais do Veículo Padrão (Fallback Seguro com Imagem Local)
     vehicleData: {
-        id: 'veh_civic_touring',
-        brand: 'Honda',
-        model: 'Civic',
-        full_title: 'Honda Civic Touring 1.5 Turbo',
-        version_label: 'Touring 1.5 Turbo 173cv',
-        license_plate: 'BRA2E19',
-        manufacture_year: 2021,
-        model_year: 2022,
-        current_mileage: 87542,
-        fuel_level: 72,
-        estimated_range: 520,
-        fuel_type: 'Gasolina',
-        transmission_type: 'Automático CVT',
-        color: 'Cinza Barium Metálico',
-        chassis_vin: '93HFC1670MZ102934',
-        renavam: '01239847120',
-        dna_code: 'DNA-BR-BF72-29A4-X91',
-        certification_date: '12/03/2025',
-        certification_status: 'Permanente',
-        status_badge: 'EM DIA',
-        status_subtext: '(Sem pendências)',
+        id: null,
+        brand: '',
+        model: '',
+        full_title: 'Nenhum veículo selecionado',
+        version_label: '',
+        license_plate: '---',
+        manufacture_year: '',
+        model_year: '',
+        current_mileage: 0,
+        fuel_level: 0,
+        estimated_range: 0,
+        fuel_type: '',
+        transmission_type: '',
+        color: '',
+        chassis_vin: '',
+        renavam: '',
+        dna_code: null,
+        certification_date: '',
+        certification_status: 'Pendente',
+        status_badge: 'SEM REGISTRO',
+        status_subtext: '(Aguardando cadastro)',
         photo_url: '/img/splash-car-hero.png',
         user_name: 'Proprietário',
         user_email: '',
         user_role: 'Cliente Proprietário',
-        notifications_count: 4,
-        timeline: [
-            { 
-                id: 1, 
-                title: 'Revisão periódica - 80.000 km', 
-                date: '12/04/2025', 
-                km: '80.000 km', 
-                price: 'R$ 1.450,00',
-                total_amount: 145000,
-                dotColor: '#00E676', 
-                workshop: 'Oficina AutoTech', 
-                details: 'Revisão periódica completa com troca de pastilhas de freio, óleo sintético e velas de ignição.',
-                has_invoice: true,
-                has_part_photo: true,
-                invoice_url: '/uploads/invoices/nfe_001948.pdf',
-                part_photo_url: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&auto=format&fit=crop&q=80',
-                proof_level: 4,
-                parts: [{ name: 'Pastilhas de Freio Cerâmica', manufacturer: 'Bosch', part_number: 'BP1234', qty: 1 }]
-            },
+        notifications_count: 0,
+        timeline: []
+    },
             { 
                 id: 2, 
                 title: 'Troca de correia dentada e tensores', 
@@ -207,27 +191,15 @@ const OwnerView = {
 
     // Dados da Inspeção Técnica 360° Homologada (Tela 4 do Mapa)
     inspectionData: {
-        score: 98,
-        status: '100% APROVADO / LAUDO CONFORME',
-        inspection_code: 'INSP-2026-8819',
-        inspected_at: '10/02/2025',
-        valid_until: 'Permanente',
-        workshop: 'Oficina AutoTech / DNA AUTO',
-        technical_lead: 'Eng. Marcelo Antunes (CREA 506.892-SP)',
-        modules: [
-            {
-                id: 'mod_engine',
-                name: 'Motor & Transmissão',
-                score: 99,
-                status: 'CONFORME',
-                icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4m0 12v4M2 12h4m12 0h4m-3.17-6.83l-2.83 2.83M6 18l-2.83 2.83m0-13.66L6 6m12 12l2.83 2.83"/></svg>',
-                items: [
-                    { name: 'Nível e Viscosidade do Óleo', status: 'OK', detail: 'Óleo sintético 0W20 no nível máximo' },
-                    { name: 'Correia / Corrente de Comando', status: 'OK', detail: 'Tensão ideal sem trincas ou folgas' },
-                    { name: 'Sistema de Arrefecimento', status: 'OK', detail: 'Pressão 1.4 bar • Proporção 50% aditivo' },
-                    { name: 'Transmissão Automática CVT', status: 'OK', detail: 'Fluido HCF-2 translúcido, acoplamento suave' }
-                ]
-            },
+        score: 0,
+        status: 'SEM INSPEÇÃO REGISTRADA',
+        inspection_code: '---',
+        inspected_at: '---',
+        valid_until: '---',
+        workshop: 'DNA AUTO',
+        technical_lead: '---',
+        modules: []
+    },
             {
                 id: 'mod_brakes',
                 name: 'Sistema de Freios',
@@ -1291,46 +1263,103 @@ const OwnerView = {
     // ──────────────────────────────────────────────────────────────────────────
     // MÉTODOS DE BLUETOOTH E MINI OBD2
     // ──────────────────────────────────────────────────────────────────────────
-    startObdBluetoothSearch() {
-        this.obdPairingStep = 'searching';
-        this.render();
-        setTimeout(() => {
-            this.obdPairingStep = 'found';
-            this.obdFoundDevice = {
-                name: 'Mini OBD2 ELM327 BLE 5.2 AutoLink',
-                mac: '00:1D:A5:68:9B:F4',
-                signal: '-48 dBm (Excelente)',
-                protocol: 'ISO 15765-4 CAN (11 bit / 500 kbaud)'
-            };
+    async startObdBluetoothSearch() {
+        if (typeof navigator === 'undefined' || !navigator.bluetooth || !navigator.bluetooth.requestDevice) {
+            this.obdPairingStep = 'error';
+            this.obdErrorMessage = 'Navegador incompatível com a Web Bluetooth API. Para comunicação direta com o Mini OBD2, acesse pelo Google Chrome no Android ou navegador compatível sob conexão segura HTTPS.';
             this.render();
-        }, 1200);
+            return;
+        }
+
+        this.obdPairingStep = 'searching';
+        this.obdErrorMessage = null;
+        this.render();
+
+        try {
+            // Solicitação direta ao hardware Bluetooth do dispositivo
+            const device = await navigator.bluetooth.requestDevice({
+                acceptAllDevices: true,
+                optionalServices: ['battery_service', 0xFFE0, 0xFFF0, 0x1800, 0x1801]
+            });
+
+            if (!device) {
+                throw new Error('Nenhum dispositivo Bluetooth foi selecionado.');
+            }
+
+            this.obdFoundDevice = {
+                device: device,
+                name: device.name || 'Mini OBD2 ELM327 BLE',
+                id: device.id,
+                mac: device.id ? device.id.substring(0, 17) : 'Dispositivo BLE Local'
+            };
+            this.obdPairingStep = 'found';
+            this.render();
+        } catch (err) {
+            console.warn('Erro ao buscar dispositivo Bluetooth OBD2:', err);
+            this.obdPairingStep = 'error';
+            if (err.name === 'NotFoundError') {
+                this.obdErrorMessage = 'Nenhum dispositivo Bluetooth foi selecionado ou a busca foi cancelada.';
+            } else if (err.name === 'SecurityError') {
+                this.obdErrorMessage = 'Permissão de Bluetooth negada ou bloqueada pelas políticas de segurança.';
+            } else {
+                this.obdErrorMessage = 'O Bluetooth do aparelho parece estar desligado ou inacessível. Por favor, ligue o Bluetooth nas configurações do seu celular e tente novamente.';
+            }
+            this.render();
+        }
     },
 
-    pairObdBluetoothDevice() {
+    async pairObdBluetoothDevice() {
+        if (!this.obdFoundDevice || !this.obdFoundDevice.device) {
+            this.obdPairingStep = 'error';
+            this.obdErrorMessage = 'Nenhum dispositivo Bluetooth válido selecionado para conexão.';
+            this.render();
+            return;
+        }
+
         this.obdPairingStep = 'pairing';
         this.render();
-        setTimeout(() => {
+
+        try {
+            const dev = this.obdFoundDevice.device;
+            if (dev.gatt) {
+                await dev.gatt.connect();
+            }
+
             this.isObdPaired = true;
             this.obdPairingStep = 'paired';
             if (typeof localStorage !== 'undefined') {
                 localStorage.setItem('dna_obd_paired', 'true');
-                localStorage.setItem('dna_obd_device_name', 'Mini OBD2 ELM327 BLE 5.2 AutoLink');
+                localStorage.setItem('dna_obd_device_name', dev.name || 'Mini OBD2 ELM327 BLE');
+                localStorage.setItem('dna_obd_device_id', dev.id || '');
                 localStorage.setItem('dna_obd_paired_at', new Date().toISOString());
             }
             this.render();
             setTimeout(() => {
                 this.navigateTo('obd');
-            }, 700);
-        }, 1400);
+            }, 800);
+        } catch (err) {
+            console.error('Falha ao conectar via GATT Bluetooth:', err);
+            this.isObdPaired = false;
+            this.obdPairingStep = 'error';
+            this.obdErrorMessage = 'Falha ao estabelecer conexão com o Mini OBD2. Certifique-se de que a ignição do carro está ligada e o dongle alimentado na porta OBD.';
+            this.render();
+        }
     },
 
     unpairObdBluetooth() {
+        try {
+            if (this.obdFoundDevice && this.obdFoundDevice.device && this.obdFoundDevice.device.gatt && this.obdFoundDevice.device.gatt.connected) {
+                this.obdFoundDevice.device.gatt.disconnect();
+            }
+        } catch (_) {}
         this.isObdPaired = false;
         this.obdPairingStep = 'idle';
         this.obdFoundDevice = null;
+        this.obdErrorMessage = null;
         if (typeof localStorage !== 'undefined') {
             localStorage.removeItem('dna_obd_paired');
             localStorage.removeItem('dna_obd_device_name');
+            localStorage.removeItem('dna_obd_device_id');
             localStorage.removeItem('dna_obd_paired_at');
         }
         this.navigateTo('bluetooth-pair');
@@ -3217,6 +3246,17 @@ const OwnerView = {
                     </div>
 
                     <!-- Bloco Dinâmico de Busca / Pareamento -->
+                    ${step === 'error' ? `
+                        <div style="background:rgba(239,68,68,0.12); border:1.5px solid #EF4444; border-radius:12px; padding:16px; text-align:center;">
+                            <div style="color:#EF4444; font-size:26px; margin-bottom:6px;">⚠️</div>
+                            <strong style="color:#FFFFFF; font-size:13.5px; display:block;">Não foi possível conectar</strong>
+                            <span style="color:#FCA5A5; font-size:11.5px; display:block; margin:6px 0 12px; line-height:1.4;">${this.obdErrorMessage || 'Bluetooth desligado ou pareamento cancelado.'}</span>
+                            <button class="btn btn-primary" onclick="OwnerView.startObdBluetoothSearch()" style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:12px; padding:10px 18px; border-radius:8px; border:none; cursor:pointer;">
+                                Tentar Conectar Novamente
+                            </button>
+                        </div>
+                    ` : ''}
+
                     ${step === 'idle' ? `
                         <button class="btn btn-primary" onclick="OwnerView.startObdBluetoothSearch()" style="background:linear-gradient(135deg, #00D4FF 0%, #0066FF 100%); color:#0B0F19; font-weight:900; font-size:13px; padding:13px; border-radius:10px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 18px rgba(0,212,255,0.35);">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -3244,9 +3284,8 @@ const OwnerView = {
 
                             <div style="font-size:11.5px; color:#94A3B8; display:flex; flex-direction:column; gap:4px; margin-bottom:12px;">
                                 <div>Nome: <strong style="color:#FFFFFF;">${this.obdFoundDevice.name}</strong></div>
-                                <div>MAC: <span style="color:#00D4FF; font-family:var(--font-mono, monospace);">${this.obdFoundDevice.mac}</span></div>
-                                <div>Sinal: <span style="color:#10B981; font-weight:700;">${this.obdFoundDevice.signal}</span></div>
-                                <div>Protocolo: <span style="color:#CBD5E1;">${this.obdFoundDevice.protocol}</span></div>
+                                <div>Identificador: <span style="color:#00D4FF; font-family:var(--font-mono, monospace);">${this.obdFoundDevice.id || this.obdFoundDevice.mac || 'BLE Device'}</span></div>
+                                <div>Status: <span style="color:#10B981; font-weight:700;">Pronto para Pareamento</span></div>
                             </div>
 
                             <button class="btn btn-success" onclick="OwnerView.pairObdBluetoothDevice()" style="width:100%; background:#10B981; color:#0B0F19; font-weight:900; font-size:13px; padding:12px; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 14px rgba(16,185,129,0.35);">
@@ -4063,12 +4102,12 @@ const OwnerView = {
                 </div>
 
                 ${isConnected ? `
-                    <!-- 2. INFORMAÇÕES DENTRO DO CARD (PEQUENOS CARDS / INDICADORES VISUAIS LIMPOS) -->
+                    <!-- 2. INFORMAÇÕES DENTRO DO CARD (MÉTRICAS DO VEÍCULO) -->
                     <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom: 14px;">
                         <!-- Quilometragem -->
                         <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 6px; text-align:center;">
                             <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Quilometragem</span>
-                            <span style="font-size:13px; font-weight:800; color:#FFFFFF; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">${currentKm.toLocaleString('pt-BR')} km</span>
+                            <span style="font-size:13px; font-weight:800; color:#FFFFFF; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">${currentKm > 0 ? currentKm.toLocaleString('pt-BR') + ' km' : '---'}</span>
                         </div>
                         <!-- Velocidade -->
                         <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 6px; text-align:center;">
@@ -4078,27 +4117,27 @@ const OwnerView = {
                         <!-- RPM -->
                         <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 6px; text-align:center;">
                             <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">RPM</span>
-                            <span style="font-size:13px; font-weight:800; color:#38BDF8; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">840 rpm</span>
+                            <span style="font-size:13px; font-weight:800; color:#38BDF8; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">--</span>
                         </div>
                         <!-- Temp. Motor -->
                         <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 6px; text-align:center;">
                             <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Temp. Motor</span>
-                            <span style="font-size:13px; font-weight:800; color:#10B981; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">90 °C</span>
+                            <span style="font-size:13px; font-weight:800; color:#10B981; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">--</span>
                         </div>
                         <!-- Temp. Óleo -->
                         <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 6px; text-align:center;">
                             <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Temp. Óleo</span>
-                            <span style="font-size:13px; font-weight:800; color:#10B981; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">96 °C</span>
+                            <span style="font-size:13px; font-weight:800; color:#10B981; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">--</span>
                         </div>
                         <!-- Combustível -->
                         <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 6px; text-align:center;">
                             <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Combustível</span>
-                            <span style="font-size:13px; font-weight:800; color:#00D4FF; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">${fuel}%</span>
+                            <span style="font-size:13px; font-weight:800; color:#00D4FF; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">${v.fuel_level ? v.fuel_level + '%' : '--'}</span>
                         </div>
                         <!-- Tensão do Sistema -->
                         <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:9px 12px; text-align:center; grid-column: span 3; display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Tensão do Sistema (Bateria)</span>
-                            <span style="font-size:12.5px; font-weight:800; color:#10B981; font-family:var(--font-mono, monospace);">14,2 V • Carga Plena</span>
+                            <span style="font-size:12px; font-weight:800; color:#94A3B8; font-family:var(--font-mono, monospace);">Aguardando telemetria ativa...</span>
                         </div>
                     </div>
 

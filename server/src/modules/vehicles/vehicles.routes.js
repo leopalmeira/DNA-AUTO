@@ -823,16 +823,115 @@ router.get('/:identifier/obd', (req, res) => {
                OR v.id = ?
         `).get(identifier, identifier.replace('-', ''), identifier, identifier, identifier);
 
-        const currentMileage = vehicle 
-            ? (vehicle.latest_mileage || vehicle.service_mileage || 87542)
-            : 87542;
+        if (!vehicle) {
+            return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
 
-        const vehicleModel = vehicle 
-            ? `${vehicle.brand} ${vehicle.model} ${vehicle.version_label || ''}`.trim()
-            : 'Volkswagen Gol 1.0 MPI Flex 12V';
+        const currentMileage = vehicle.latest_mileage || vehicle.service_mileage || 0;
+        const vehicleModel = `${vehicle.brand} ${vehicle.model} ${vehicle.version_label || ''}`.trim();
+        const plate = vehicle.license_plate;
 
-        const plate = vehicle ? vehicle.license_plate : 'ABC1D23';
+        // Se for veículo de teste/fixture automatizada de teste
+        if (vehicle.is_demo === 1) {
+            return res.json({
+                success: true,
+                vehicle: {
+                    model: vehicleModel,
+                    license_plate: plate,
+                    ecu_odometer_km: currentMileage || 87542
+                },
+                device: {
+                    name: 'Mini OBD2 ELM327 BLE 5.2 AutoLink',
+                    protocol: 'ISO 15765-4 (CAN 11-bit / 500 kbaud)',
+                    connected: true,
+                    connection_type: 'BLUETOOTH_LOW_ENERGY',
+                    signal_strength_dbm: -62,
+                    dongle_battery_status: '100% (Porta OBD Alimentada 12V)',
+                    firmware: 'v2.3b Turbo Enterprise'
+                },
+                telemetry: {
+                    engine_status: 'RUNNING_IDLE',
+                    engine_status_label: 'Motor em Marcha Lenta',
+                    rpm: 840,
+                    rpm_max_safe: 6500,
+                    speed_kmh: 0,
+                    coolant_temp_c: 90,
+                    coolant_status: 'NORMAL',
+                    coolant_temp_range: '85°C - 98°C',
+                    battery_voltage: 14.2,
+                    battery_status: 'CHARGING_EXCELLENT',
+                    battery_voltage_range: '13.8V - 14.6V (Alternador em Carga Plena)',
+                    intake_temp_c: 34,
+                    fuel_level_percent: 72,
+                    ecu_odometer_km: currentMileage || 87542,
+                    throttle_pos_percent: 12,
+                    map_pressure_kpa: 32,
+                    lambda_ratio: 1.00,
+                    lambda_status: 'Estequiométrico Ideal (1.00)',
+                    fuel_pressure_bar: 3.8
+                },
+                diagnostics: {
+                    mil_lamp: 'OFF',
+                    mil_lamp_label: 'Luz de Injeção Apagada (Normal)',
+                    dtc_count: 0,
+                    dtc_codes: [],
+                    ecu_name: 'Bosch Motronic ME17.5.24',
+                    system_health: '100% OPERACIONAL',
+                    last_scan: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                    sensors_summary: 'Sistemas de Injeção, Ignição, Catalisador e Sensores O2 em conformidade total.'
+                },
+                client_monitoring: {
+                    obd_connected: true,
+                    status_obd: 'CONECTADO',
+                    status_obd_message: 'Seu veículo está sendo monitorado.',
+                    metrics: {
+                        mileage: currentMileage || 87542,
+                        mileage_formatted: Number(currentMileage || 87542).toLocaleString('pt-BR') + ' km',
+                        speed_kmh: 0,
+                        rpm: 840,
+                        engine_temp_c: 90,
+                        oil_temp_c: 96,
+                        fuel_percent: 72,
+                        voltage: 14.2
+                    },
+                    vehicle_state: 'NORMAL',
+                    vehicle_state_title: 'Tudo normal',
+                    vehicle_state_color: '#10B981',
+                    vehicle_state_desc: 'Todos os parâmetros e sistemas essenciais operando na faixa ideal de funcionamento.',
+                    diagnostics: {
+                        has_faults: false,
+                        fault_count: 0,
+                        simple_message: 'Nenhuma falha identificada no momento.',
+                        technical_codes: []
+                    },
+                    upcoming_maintenances: [
+                        {
+                            title: 'Troca de óleo',
+                            status: 'WARNING',
+                            status_label: 'Próxima manutenção: 2.458 km',
+                            badge_color: '#F59E0B',
+                            icon: '🛢️'
+                        },
+                        {
+                            title: 'Correia dentada',
+                            status: 'WARNING',
+                            status_label: 'Revisão prevista conforme quilometragem/histórico',
+                            badge_color: '#F59E0B',
+                            icon: '⚙️'
+                        },
+                        {
+                            title: 'Sistema de freios',
+                            status: 'OK',
+                            status_label: 'Sem alerta de manutenção no momento',
+                            badge_color: '#10B981',
+                            icon: '🛑'
+                        }
+                    ]
+                }
+            });
+        }
 
+        // Veículo real (sem simulação): Desconectado até que haja pareamento físico e envio de telemetria
         res.json({
             success: true,
             vehicle: {
@@ -841,92 +940,50 @@ router.get('/:identifier/obd', (req, res) => {
                 ecu_odometer_km: currentMileage
             },
             device: {
-                name: 'Mini OBD2 ELM327 BLE 5.2 AutoLink',
-                protocol: 'ISO 15765-4 (CAN 11-bit / 500 kbaud)',
-                connected: true,
-                connection_type: 'BLUETOOTH_LOW_ENERGY',
-                signal_strength_dbm: -62,
-                dongle_battery_status: '100% (Porta OBD Alimentada 12V)',
-                firmware: 'v2.3b Turbo Enterprise'
+                name: null,
+                protocol: null,
+                connected: false,
+                connection_type: null,
+                signal_strength_dbm: null,
+                dongle_battery_status: 'Desconectado',
+                firmware: null
             },
-            telemetry: {
-                engine_status: 'RUNNING_IDLE',
-                engine_status_label: 'Motor em Marcha Lenta',
-                rpm: 840,
-                rpm_max_safe: 6500,
-                speed_kmh: 0,
-                coolant_temp_c: 90,
-                coolant_status: 'NORMAL',
-                coolant_temp_range: '85°C - 98°C',
-                battery_voltage: 14.2,
-                battery_status: 'CHARGING_EXCELLENT',
-                battery_voltage_range: '13.8V - 14.6V (Alternador em Carga Plena)',
-                intake_temp_c: 34,
-                fuel_level_percent: 72,
-                ecu_odometer_km: currentMileage,
-                throttle_pos_percent: 12,
-                map_pressure_kpa: 32,
-                lambda_ratio: 1.00,
-                lambda_status: 'Estequiométrico Ideal (1.00)',
-                fuel_pressure_bar: 3.8
-            },
+            telemetry: null,
             diagnostics: {
-                mil_lamp: 'OFF',
-                mil_lamp_label: 'Luz de Injeção Apagada (Normal)',
+                mil_lamp: 'UNKNOWN',
+                mil_lamp_label: 'Dispositivo OBD desconectado',
                 dtc_count: 0,
                 dtc_codes: [],
-                ecu_name: 'Bosch Motronic ME17.5.24',
-                system_health: '100% OPERACIONAL',
-                last_scan: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                sensors_summary: 'Sistemas de Injeção, Ignição, Catalisador e Sensores O2 em conformidade total.'
+                ecu_name: null,
+                system_health: 'DESCONECTADO',
+                last_scan: null,
+                sensors_summary: 'Nenhum dispositivo OBD pareado no veículo.'
             },
             client_monitoring: {
-                obd_connected: true,
-                status_obd: 'CONECTADO',
-                status_obd_message: 'Seu veículo está sendo monitorado.',
+                obd_connected: false,
+                status_obd: 'DESCONECTADO',
+                status_obd_message: 'Nenhum dispositivo OBD2 conectado.',
                 metrics: {
                     mileage: currentMileage,
                     mileage_formatted: Number(currentMileage).toLocaleString('pt-BR') + ' km',
                     speed_kmh: 0,
-                    rpm: 840,
-                    engine_temp_c: 90,
-                    oil_temp_c: 96,
-                    fuel_percent: 72,
-                    voltage: 14.2
+                    rpm: 0,
+                    engine_temp_c: null,
+                    oil_temp_c: null,
+                    fuel_percent: null,
+                    voltage: null
                 },
-                vehicle_state: 'NORMAL',
-                vehicle_state_title: 'Tudo normal',
-                vehicle_state_color: '#10B981',
-                vehicle_state_desc: 'Todos os parâmetros e sistemas essenciais operando na faixa ideal de funcionamento.',
+                vehicle_state: 'DESCONHECIDO',
+                vehicle_state_title: 'Dispositivo desconectado',
+                vehicle_state_color: '#6B7280',
+                vehicle_state_desc: 'Conecte o mini scanner OBD2 Bluetooth para acompanhar os dados reais do veículo.',
                 diagnostics: {
                     has_faults: false,
                     fault_count: 0,
-                    simple_message: 'Nenhuma falha identificada no momento.',
+                    simple_message: 'Conecte o scanner OBD2 para leitura de diagnósticos.',
                     technical_codes: []
                 },
-                upcoming_maintenances: [
-                    {
-                        title: 'Troca de óleo',
-                        status: 'WARNING',
-                        status_label: 'Próxima manutenção: 2.458 km',
-                        badge_color: '#F59E0B',
-                        icon: '🛢️'
-                    },
-                    {
-                        title: 'Correia dentada',
-                        status: 'WARNING',
-                        status_label: 'Revisão prevista conforme quilometragem/histórico',
-                        badge_color: '#F59E0B',
-                        icon: '⚙️'
-                    },
-                    {
-                        title: 'Sistema de freios',
-                        status: 'OK',
-                        status_label: 'Sem alerta de manutenção no momento',
-                        badge_color: '#10B981',
-                        icon: '🛑'
-                    }
-                ]
+                upcoming_maintenances: []
             }
         });
     } catch (err) {
@@ -951,13 +1008,99 @@ router.get('/:identifier/documents', (req, res) => {
                OR v.id = ?
         `).get(identifier, identifier.replace('-', ''), identifier, identifier, identifier);
 
-        const plate = vehicle ? vehicle.license_plate : 'ABC1D23';
-        const dnaCode = (vehicle && vehicle.dna_code) ? vehicle.dna_code : 'DNA-2026-000184';
-        const model = vehicle ? `${vehicle.brand} ${vehicle.model}` : 'Volkswagen Gol 1.0';
-        const year = vehicle ? `${vehicle.manufacture_year}/${vehicle.model_year}` : '2021/2022';
-        const vin = vehicle ? vehicle.chassis_vin : '9BWCA05U8MP001842';
-        const renavam = vehicle ? (vehicle.renavam || '00539182741') : '00539182741';
+        if (!vehicle) {
+            return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
 
+        const plate = vehicle.license_plate;
+        const dnaCode = vehicle.dna_code || null;
+        const model = `${vehicle.brand} ${vehicle.model}`.trim();
+        const year = `${vehicle.manufacture_year || ''}/${vehicle.model_year || ''}`;
+        const vin = vehicle.chassis_vin || '';
+        const renavam = vehicle.renavam || '';
+
+        // Se for veículo de demonstração para testes automatizados
+        if (vehicle.is_demo === 1) {
+            return res.json({
+                success: true,
+                vehicle: {
+                    model,
+                    license_plate: plate,
+                    dna_code: dnaCode,
+                    year,
+                    chassis_vin: vin,
+                    renavam
+                },
+                documents: [
+                    {
+                        id: 'doc_crlv_2026',
+                        title: 'CRLV-e Digital 2026',
+                        subtitle: 'Certificado de Registro e Licenciamento Eletrônico',
+                        category: 'SENATRAN / DETRAN',
+                        badge: 'LICENCIADO 2026',
+                        badge_color: '#00E676',
+                        doc_number: '2026.0481.9201-9',
+                        issue_date: '10/01/2026',
+                        valid_until: '31/10/2026',
+                        hash: 'SHA256:7a9f82d1c04e2893f4125bce892a40b1',
+                        issuer: 'Secretaria Nacional de Trânsito',
+                        file_size: '248 KB (PDF Assinado)',
+                        legal_validity: 'Válido em todo o território nacional (Lei 14.071/20)',
+                        description: 'Documento oficial com quitação integral de IPVA, Taxa de Licenciamento Anual e DPVAT.'
+                    },
+                    {
+                        id: 'doc_laudo_cautelar',
+                        title: 'Laudo Pericial Cautelar 360°',
+                        subtitle: 'Perícia Técnica e Análise Estrutural Completa',
+                        category: 'VISTORIA PERICIAL',
+                        badge: '100% APROVADO',
+                        badge_color: '#00E676',
+                        doc_number: 'LAUDO-9942-2026',
+                        issue_date: '05/08/2026',
+                        valid_until: '05/08/2027',
+                        hash: 'SHA256:b3d19f8021c379a29881fc04918e77a2',
+                        issuer: 'Perícias Técnicas Automotivas Homologadas',
+                        file_size: '3.8 MB (Laudo Fotográfico Completo)',
+                        legal_validity: 'Conformidade com resolução CONTRAN n° 466',
+                        description: 'Zero indícios de sinistro grave, enchente ou leilão. Estrutura monobloco, motor e numerações íntegras.'
+                    },
+                    {
+                        id: 'doc_apolice_seguro',
+                        title: 'Apólice de Seguro Auto Protegido',
+                        subtitle: 'Proteção Compreensiva e Assistência 24h',
+                        category: 'SEGURO AUTOMOTIVO',
+                        badge: 'VIGENTE',
+                        badge_color: '#38BDF8',
+                        doc_number: 'SEG-882190-26',
+                        issue_date: '15/03/2026',
+                        valid_until: '15/03/2027',
+                        hash: 'SHA256:92e4827bb100fae4119e88b201f810aa',
+                        issuer: 'Companhia de Seguros Gerais',
+                        file_size: '512 KB',
+                        legal_validity: 'Registro SUSEP n° 05886',
+                        description: 'Cobertura 100% Tabela FIPE contra colisão, furto/roubo, danos a terceiros e socorro 24 horas.'
+                    },
+                    {
+                        id: 'doc_garantia_revisao',
+                        title: 'Termo de Garantia e Revisão',
+                        subtitle: 'Comprovação de Serviços e Peças Homologadas',
+                        category: 'GARANTIA MECÂNICA',
+                        badge: 'VIGENTE',
+                        badge_color: '#10B981',
+                        doc_number: 'GAR-2026-8819',
+                        issue_date: '15/08/2026',
+                        valid_until: '15/02/2027',
+                        hash: 'SHA256:4f88219c0012baef9182741005391827',
+                        issuer: 'Rede de Oficinas Homologadas',
+                        file_size: '312 KB',
+                        legal_validity: 'Garantia legal conforme Art. 26 do CDC',
+                        description: 'Certificado de garantia de peças genuínas e mão de obra técnica chancelada pela oficina credenciada.'
+                    }
+                ]
+            });
+        }
+
+        // Veículo real: retorna apenas dados reais do veículo sem inventar documentos falsos
         res.json({
             success: true,
             vehicle: {
@@ -968,72 +1111,7 @@ router.get('/:identifier/documents', (req, res) => {
                 chassis_vin: vin,
                 renavam
             },
-            documents: [
-                {
-                    id: 'doc_crlv_2026',
-                    title: 'CRLV-e Digital 2026',
-                    subtitle: 'Certificado de Registro e Licenciamento Eletrônico',
-                    category: 'SENATRAN / DETRAN',
-                    badge: 'LICENCIADO 2026',
-                    badge_color: '#00E676',
-                    doc_number: '2026.0481.9201-9',
-                    issue_date: '10/01/2026',
-                    valid_until: '31/10/2026',
-                    hash: 'SHA256:7a9f82d1c04e2893f4125bce892a40b1',
-                    issuer: 'Secretaria Nacional de Trânsito',
-                    file_size: '248 KB (PDF Assinado)',
-                    legal_validity: 'Válido em todo o território nacional (Lei 14.071/20)',
-                    description: 'Documento oficial com quitação integral de IPVA, Taxa de Licenciamento Anual e DPVAT.'
-                },
-                {
-                    id: 'doc_laudo_cautelar',
-                    title: 'Laudo Pericial Cautelar 360°',
-                    subtitle: 'Perícia Técnica e Análise Estrutural Completa',
-                    category: 'VISTORIA PERICIAL',
-                    badge: '100% APROVADO',
-                    badge_color: '#00E676',
-                    doc_number: 'LAUDO-9942-2026',
-                    issue_date: '05/08/2026',
-                    valid_until: '05/08/2027',
-                    hash: 'SHA256:b3d19f8021c379a29881fc04918e77a2',
-                    issuer: 'Perícias Técnicas Automotivas Homologadas',
-                    file_size: '3.8 MB (Laudo Fotográfico Completo)',
-                    legal_validity: 'Conformidade com resolução CONTRAN n° 466',
-                    description: 'Zero indícios de sinistro grave, enchente ou leilão. Estrutura monobloco, motor e numerações íntegras.'
-                },
-                {
-                    id: 'doc_apolice_seguro',
-                    title: 'Apólice de Seguro Auto Protegido',
-                    subtitle: 'Proteção Compreensiva e Assistência 24h',
-                    category: 'SEGURO AUTOMOTIVO',
-                    badge: 'VIGENTE',
-                    badge_color: '#38BDF8',
-                    doc_number: 'SEG-882190-26',
-                    issue_date: '15/03/2026',
-                    valid_until: '15/03/2027',
-                    hash: 'SHA256:92e4827bb100fae4119e88b201f810aa',
-                    issuer: 'Companhia de Seguros Gerais',
-                    file_size: '512 KB',
-                    legal_validity: 'Registro SUSEP n° 05886',
-                    description: 'Cobertura 100% Tabela FIPE contra colisão, furto/roubo, danos a terceiros e socorro 24 horas.'
-                },
-                {
-                    id: 'doc_garantia_revisao',
-                    title: 'Termo de Garantia e Revisão',
-                    subtitle: 'Comprovação de Serviços e Peças Homologadas',
-                    category: 'GARANTIA MECÂNICA',
-                    badge: 'VIGENTE',
-                    badge_color: '#10B981',
-                    doc_number: 'GAR-2026-8819',
-                    issue_date: '15/08/2026',
-                    valid_until: '15/02/2027',
-                    hash: 'SHA256:4f88219c0012baef9182741005391827',
-                    issuer: 'Rede de Oficinas Homologadas',
-                    file_size: '312 KB',
-                    legal_validity: 'Garantia legal conforme Art. 26 do CDC',
-                    description: 'Certificado de garantia de peças genuínas e mão de obra técnica chancelada pela oficina credenciada.'
-                }
-            ]
+            documents: []
         });
     } catch (err) {
         console.error('Erro ao consultar documentos:', err);

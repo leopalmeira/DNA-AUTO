@@ -273,49 +273,6 @@ const App = {
             return;
         }
 
-        // Se estiver acessando o app do cliente sem login prévio, define perfil padrão e persiste a sessão
-        if (viewName === 'owner' && (!this.currentUser || this.currentUser.role_code !== 'OWNER')) {
-            const defaultOwner = {
-                id: 'usr_owner_carlos',
-                name: 'Carlos Alberto Silva',
-                email: 'carlos.silva@email.com',
-                role_code: 'OWNER',
-                role_name: 'Cliente Proprietário'
-            };
-            this.currentUser = defaultOwner;
-            this.currentRole = 'OWNER';
-            this.setLoggedUser(defaultOwner);
-            const token = localStorage.getItem('dna_token') || 'sess_owner_usr_owner_carlos';
-            API.setToken(token);
-            API.setDemoUser('usr_owner_carlos');
-            this.syncProfileState('OWNER');
-        }
-
-        // Se estiver acessando a oficina sem login prévio, define perfil padrão da oficina e persiste a sessão
-        if (viewName === 'workshop' && (!this.currentUser || this.currentUser.role_code !== 'WORKSHOP')) {
-            const defaultWorkshop = {
-                id: 'usr_workshop_marcos',
-                name: 'Marcos Silveira',
-                email: 'marcos@veloce.com.br',
-                role_code: 'WORKSHOP',
-                role_name: 'Proprietário de Oficina',
-                workshop: {
-                    id: 'ws_veloce',
-                    workshop_id: 'ws_veloce',
-                    workshop_name: 'Veloce Auto Center Premium',
-                    trade_name: 'Veloce Auto Center Premium',
-                    cnpj: '12.345.678/0001-90'
-                }
-            };
-            this.currentUser = defaultWorkshop;
-            this.currentRole = 'WORKSHOP';
-            this.setLoggedUser(defaultWorkshop);
-            const token = localStorage.getItem('dna_token') || 'sess_workshop_usr_workshop_marcos';
-            API.setToken(token);
-            API.setDemoUser('usr_workshop_marcos');
-            this.syncProfileState('WORKSHOP');
-        }
-
         const isLandingGroup = ['landing', 'landing-home', 'landing-client', 'landing-workshop'].includes(viewName);
 
         // Se estiver saindo da landing page ou login para uma tela do sistema interno, restaura layout

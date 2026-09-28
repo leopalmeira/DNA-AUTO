@@ -508,3 +508,10 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
 - Laudo de Procedência do Veículo (dossiê completo) sem valor no card da capa e com taxa de R$ 15,90 apenas ao baixar o PDF.
 - Oficinas e Auto Centers credenciados com busca e abas segmentadas.
 - 45/45 testes automatizados aprovados.
+
+### Ciclo 64 — Remoção Integral de Dados Mock, Base Limpa Apenas com Admin e Pareamento Bluetooth OBD2 Real
+- **Base 100% Limpa:** Removidos todos os dados mock de oficinas e clientes em tempo de execução. O banco de dados mantém exclusivamente o Administrador Geral da plataforma (`admin@dnaauto.com.br` / `admin123`).
+- **Pareamento Bluetooth Real (Web Bluetooth API):** O fluxo de pareamento com dongles Mini OBD2 conecta diretamente ao rádio físico via `navigator.bluetooth.requestDevice`. Se o Bluetooth estiver desligado ou for cancelado, o sistema trata o erro real e não simula conexão nem inventa dados de telemetria.
+- **Telemetria Autêntica:** Se não houver telemetria real sendo transmitida, o app exibe estado desconectado ou aguardando leitura da ECU (`--`), eliminando rotações (RPM) e temperaturas fictícias.
+- **Frontends Despoluídos:** Removidos usuários e formulários pré-preenchidos em `cliente.app/`, `oficina.app/` e `public/`.
+- **48/48 Testes Automatizados Aprovados com 100% de Sucesso.**

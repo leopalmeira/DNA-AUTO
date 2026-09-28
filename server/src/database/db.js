@@ -38,17 +38,16 @@ initializeDatabase();
 // Exporta o banco imediatamente para que módulos dependentes (como seed) acessem a instância
 module.exports = db;
 
-// Executa seed automático caso o banco ou a tabela de veículos esteja vazia
+// Executa seed base (apenas permissões, roles e admin) caso o administrador não exista
 try {
-    const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get();
-    const vehCount = db.prepare('SELECT COUNT(*) as count FROM vehicles').get();
-    if (!userCount || userCount.count === 0 || !vehCount || vehCount.count === 0) {
-        console.log('🌱 Banco ou veículos vazios detectados. Executando seed inicial automatizado...');
-        const runSeed = require('./seed');
-        runSeed(db, true);
+    const adminUser = db.prepare("SELECT id FROM users WHERE id = 'usr_admin' OR email = 'admin@dnaauto.com.br'").get();
+    if (!adminUser) {
+        console.log('🌱 Inicializando estrutura base limpa com Administrador Geral...');
+        const { seedBase } = require('./seed');
+        seedBase(db);
     }
 } catch (e) {
-    console.warn('Verificação de seed ignorada:', e.message);
+    console.warn('Verificação de inicialização base ignorada:', e.message);
 }
 
 // Garantir presença do conector oficial da API Placas

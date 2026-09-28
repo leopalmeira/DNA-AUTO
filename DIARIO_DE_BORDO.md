@@ -1340,3 +1340,28 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - **Card com Alerta de Manutenção dos Veículos:**
     - **No Modo Desktop (`workshopView.js`):** KPI Card #4 renomeado para *"Alerta de Manutenção dos Veículos"* e inserido um card/painel nobre na própria tela principal da Dashboard com os veículos em atenção (problemas identificados e preventivas) e botões diretos de *Enviar WhatsApp*.
     - **No Modo Mobile (`workshopMobileView.js`):** Card 7 da Home oficializado como *"Alerta de Manutenção dos Veículos"* (com badge *4 Alertas*), abrindo a visualização segmentada por 🔴 *Problemas Identificados*, 🟡 *Manutenção Próxima*, 🟢 *Normais* e botão para disparo de WhatsApp com mensagem pré-preenchida inteligente e registro imediato do contato no histórico.
+
+---
+
+### Ciclo 64 — Remoção Integral de Dados Mock, Limpeza Completa do Banco de Dados (Apenas Administrador Geral) e Implementação de Pareamento Bluetooth OBD2 Real via Web Bluetooth API (Eliminação Definitiva de Simulações Falsas)
+- **Data/Hora:** 28/09/2026
+- **Contexto & Escopo:**
+  1. **Remoção Total e Irrestrita de Dados Mock e Poluição Visual/Lógica:**
+     - **Banco de Dados SQLite (`dna_auto.db`):** `seedBase()` higienizado para manter exclusivamente o Administrador Geral da plataforma (`admin@dnaauto.com.br` / `admin123`). Eliminadas do boot todas as oficinas de demonstração (`ws_veloce`, `ws_mastercar`, `ws_pitstop`), clientes mock (`usr_owner_carlos`, `usr_client`, etc.) e veículos fictícios.
+     - Veículos demo foram isolados estritamente na função `seedDemoCars()`, servindo unicamente como fixtures temporárias durante o ciclo de execução dos testes automatizados e restaurando a base limpa ao final de cada bateria.
+     - Removida a recriação forçada de mocks no boot de `server/src/database/db.js`.
+  2. **Correção do Pareamento Bluetooth/OBD2 (Eliminação da Falsa Simulação via `setTimeout`):**
+     - O pareamento com dongles Mini OBD2 foi completamente reescrito para utilizar a **Web Bluetooth API real** (`navigator.bluetooth.requestDevice`), comunicando diretamente com o rádio Bluetooth físico do dispositivo.
+     - Se o Bluetooth do smartphone estiver desligado, a busca for cancelada pelo usuário ou o navegador não suportar a API, o aplicativo exibe tratamento de erro real e assertivo (`NotFoundError`, `SecurityError`, adaptador desligado), **jamais simulando sucesso de pareamento ou forçando conexão artificial**.
+     - Se não houver telemetria ativa sendo transmitida pela ECU, o aplicativo exibe o status *"Aguardando telemetria ativa..."* com indicadores nulos (`--`), sem inventar RPM fictício (840 rpm), temperatura de motor ou dados inexistentes.
+  3. **Higienização Completa dos Frontends e Sessões:**
+     - `cliente.app/` e `public/cliente.html`: Removidos dados pré-preenchidos de Carlos Silva, Honda Civic Touring `BRA2E19`, histórico estático com notas fiscais fictícias e laudo de inspeção estático. Sessão agora lê do `localStorage` real do usuário autenticado ou inicia neutra.
+     - `oficina.app/` e `public/oficina.html`: Removidos logins automáticos como Marcos Silveira / Veloce Auto Center, botão *"Entrar com Oficina Demonstração (Veloce)"*, credenciais fixas nos campos de login e `<option>` estático de veículos no registro de novos serviços.
+     - `public/js/app.js`: Removida injeção forçada de `defaultOwner` e `defaultWorkshop` na navegação de rotas.
+     - `public/js/components/loginView.js`: Credenciais de OWNER e WORKSHOP limpas, mantendo apenas o Administrador Geral (`admin@dnaauto.com.br` / `admin123`).
+  4. **Backend de Veículos e Oficinas:**
+     - `/api/v1/vehicles/:identifier/obd` e `/documents`: Retornam `404` para veículos inexistentes e status desconectado sem inventar CRLVs ou laudos falsos para veículos de clientes reais.
+     - `/api/v1/workshops/:id/client-monitoring`: Corrigida query SQL e vinculada exclusivamente aos veículos reais associados à oficina no banco.
+  5. **Qualidade e Testes:**
+     - 48 de 48 testes automatizados aprovados (`npm test`) com 100% de sucesso.
+     - Banco SQLite restaurado e verificado: 0 oficinas, 0 veículos, 0 clientes, apenas 1 usuário (`usr_admin`).

@@ -1242,7 +1242,7 @@
                         <div class="dna-input-group">
                             <label class="dna-input-label">Senha de Acesso ao App *</label>
                             <div style="position:relative;">
-                                <input type="password" id="mobile-reg-owner-pass" class="form-control" placeholder="Crie uma senha" value="123456" style="height:48px; padding:0 40px 0 14px; font-weight:700;" />
+                                <input type="password" id="mobile-reg-owner-pass" class="form-control" placeholder="Crie uma senha" value="" style="height:48px; padding:0 40px 0 14px; font-weight:700;" />
                                 <button type="button" onclick="const p=document.getElementById('mobile-reg-owner-pass'); p.type = p.type==='password'?'text':'password';" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748B; cursor:pointer;">
                                     👁️
                                 </button>
@@ -3597,12 +3597,12 @@
             <form onsubmit="WorkshopView.handleWorkshopAuthLogin(event)" style="display:flex; flex-direction:column; gap:12px;">
                 <div class="dna-input-group">
                     <label class="dna-input-label">E-mail da Auto Center ou Responsável</label>
-                    <input type="email" id="ws-auth-email" class="dna-input-field" placeholder="exemplo@oficina.com.br" value="marcos@veloce.com.br" required />
+                    <input type="email" id="ws-auth-email" class="dna-input-field" placeholder="exemplo@oficina.com.br" value="" required />
                 </div>
 
                 <div class="dna-input-group">
                     <label class="dna-input-label">Senha de Acesso</label>
-                    <input type="password" id="ws-auth-password" class="dna-input-field" placeholder="••••••••" value="123456" required />
+                    <input type="password" id="ws-auth-password" class="dna-input-field" placeholder="••••••••" value="" required />
                 </div>
 
                 <div id="ws-auth-error-msg" style="display:none; color:#EF4444; font-size:12px; background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); padding:8px 12px; border-radius:8px;"></div>
@@ -3611,15 +3611,7 @@
                     <span>Acessar Auto Center ➔</span>
                 </button>
 
-                <!-- BOTÃO DE 1 TOQUE: DEMONSTRAÇÃO OFICIAL -->
-                <div style="text-align:center; position:relative; margin:8px 0;">
-                    <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin:10px 0;">
-                    <span style="position:absolute; top:-9px; left:50%; transform:translateX(-50%); background:#091222; padding:0 8px; font-size:10px; color:var(--dna-ws-text-dim); text-transform:uppercase;">ou acesso rápido</span>
-                </div>
-
-                <button type="button" class="dna-primary-btn-lg" style="background:rgba(16,185,129,0.18); border-color:#10B981; color:#10B981;" onclick="WorkshopView.handleWorkshopDemoLogin()">
-                    <span>⚡ Entrar com Oficina Demonstração (Veloce)</span>
-                </button>
+                
             </form>
         `;
     };
@@ -3791,20 +3783,8 @@
 
     // Login com Oficina de Demonstração
     WorkshopView.handleWorkshopDemoLogin = function() {
-        this.officialWorkshopName = 'Veloce Auto Center Premium';
-        const demoUser = {
-            id: 'usr_workshop_marcos',
-            name: 'Marcos Silveira',
-            email: 'marcos@veloce.com.br',
-            role_code: 'WORKSHOP',
-            role_name: 'Proprietário de Oficina',
-            workshop: {
-                id: 'ws_veloce',
-                workshop_id: 'ws_veloce',
-                trade_name: 'Veloce Auto Center Premium',
-                cnpj: '12.345.678/0001-90'
-            }
-        };
+        alert('O modo de demonstração foi desativado. Por favor, acesse com o e-mail e senha da sua oficina credenciada.');
+    };
         localStorage.setItem('dna_logged_user', JSON.stringify(demoUser));
         localStorage.setItem('dna_token', 'sess_workshop_usr_workshop_marcos');
         if (typeof API !== 'undefined') {
@@ -4340,21 +4320,8 @@
 
     // Login com Oficina de Demonstração
     WorkshopView.handleWorkshopDemoLogin = function() {
-        localStorage.removeItem('dna_logged_out');
-        this.officialWorkshopName = 'Veloce Auto Center Premium';
-        const demoUser = {
-            id: 'usr_workshop_marcos',
-            name: 'Marcos Silveira',
-            email: 'marcos@veloce.com.br',
-            role_code: 'WORKSHOP',
-            role_name: 'Proprietário de Oficina',
-            workshop: {
-                id: 'ws_veloce',
-                workshop_id: 'ws_veloce',
-                trade_name: 'Veloce Auto Center Premium',
-                cnpj: '12.345.678/0001-90'
-            }
-        };
+        alert('O modo de demonstração foi desativado. Por favor, acesse com o e-mail e senha da sua oficina credenciada.');
+    };
         localStorage.setItem('dna_logged_user', JSON.stringify(demoUser));
         localStorage.setItem('dna_token', 'sess_workshop_usr_workshop_marcos');
         if (typeof API !== 'undefined') {

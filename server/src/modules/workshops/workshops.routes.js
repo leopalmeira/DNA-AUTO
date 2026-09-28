@@ -427,27 +427,6 @@ try {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
     `);
-
-    // Inserir agendamentos de demonstração se a tabela estiver vazia
-    const countApps = db.prepare(`SELECT COUNT(*) as total FROM workshop_appointments`).get();
-    if (countApps.total === 0) {
-        const today = new Date().toISOString().split('T')[0];
-        const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-        const dayAfter = new Date(Date.now() + 172800000).toISOString().split('T')[0];
-
-        const insertStmt = db.prepare(`
-            INSERT INTO workshop_appointments (
-                id, workshop_id, vehicle_id, license_plate, vehicle_model,
-                owner_name, owner_phone, service_title, appointment_date,
-                appointment_time, status, notes
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `);
-
-        insertStmt.run('app_1', 'ws_veloce', 'veh_civic_touring', 'BRA2E19', 'Honda Civic Touring', 'Carlos Alberto Silva', '(11) 98888-1111', 'Revisão dos 130.000 km & Pastilhas', today, '09:00', 'CONFIRMED', 'Cliente confirmado via WhatsApp DNA AUTO');
-        insertStmt.run('app_2', 'ws_veloce', 'veh_gol_msi', 'KXZ9012', 'VW Gol MSI 1.6', 'Marcos Donizete', '(19) 99123-4567', 'Troca de Óleo e Filtros Sintético', today, '14:00', 'CONFIRMED', 'Agendamento automático aceito');
-        insertStmt.run('app_3', 'ws_veloce', 'veh_corolla_xei', 'ABC1D23', 'Toyota Corolla XEi 2.0', 'Renata Vasconcelos', '(11) 97654-3210', 'Troca de Fluido Câmbio CVT', tomorrow, '10:00', 'PENDING', 'Aguardando confirmação do cliente');
-        insertStmt.run('app_4', 'ws_veloce', null, 'LQZ9A42', 'VW Fox 1.0 GII', 'João da Silva', '(19) 98765-4321', 'Substituição Kit Correia Dentada', dayAfter, '11:00', 'CONFIRMED', 'Horário reservado pelo módulo de alerta preventivo');
-    }
 } catch (e) {
     console.warn('Tabela de agendamentos já inicializada ou erro:', e.message);
 }
@@ -559,17 +538,6 @@ try {
     db.prepare(`ALTER TABLE workshops ADD COLUMN operating_hours TEXT DEFAULT '08:00 às 18:00 (Segunda a Sexta)'`).run();
 } catch (_) {}
 
-// Garantir dados iniciais para a oficina de demonstração Veloce
-try {
-    db.prepare(`
-        UPDATE workshops
-        SET whatsapp_official = COALESCE(whatsapp_official, '(19) 3245-6789'),
-            whatsapp_status = COALESCE(whatsapp_status, 'VERIFIED'),
-            operating_hours = COALESCE(operating_hours, '08:00 às 18:00 (Segunda a Sexta)'),
-            auto_send_obd2_alerts = COALESCE(auto_send_obd2_alerts, 1)
-        WHERE id = 'ws_veloce'
-    `).run();
-} catch (_) {}
 
 // Atualizar status do agendamento
 router.patch('/:id/appointments/:appId/status', (req, res) => {
@@ -1309,9 +1277,9 @@ try {
 // ── MONITORAMENTO DOS CLIENTES (OBD, PROBLEMAS, MANUTENÇÃO & WHATSAPP) ──
 router.get('/:id/client-monitoring', async (req, res) => {
     try {
-        const workshopId = req.params.id || 'ws_veloce';
-        const ws = db.prepare('SELECT * FROM workshops WHERE id = ?').get(workshopId) || { trade_name: 'Veloce Auto Center' };
-        const wsName = ws.trade_name || 'Veloce Auto Center';
+        const workshopId = req.params.id;
+        const ws = db.prepare('SELECT * FROM workshops WHERE id = ?').get(workshopId);
+        const wsName = ws ? (ws.trade_name || ws.company_name) : 'Oficina';
 
         // Buscar contatos já realizados para enriquecer os cards
         const contacts = db.prepare('SELECT * FROM workshop_customer_contacts WHERE workshop_id = ? ORDER BY created_at DESC').all(workshopId) || [];
@@ -1320,97 +1288,80 @@ router.get('/:id/client-monitoring', async (req, res) => {
             if (!contactMap[c.vehicle_plate]) contactMap[c.vehicle_plate] = c;
         });
 
-        // 1. Veículos com Problemas Identificados (DTCs / Falhas)
-        const problems = [
-            {
-                id: 'mon_prob_1',
-                client_name: 'João da Silva',
-                client_phone: '(11) 98765-4321',
-                vehicle_model: 'Fiat Argo 1.0 Flex',
-                license_plate: 'BRA2E19',
-                current_km: 82450,
-                status: 'PROBLEM',
-                status_label: 'Problema identificado',
-                status_color: '#EF4444',
-                condition_title: 'Falha identificada no sistema do motor',
-                condition_desc: 'Foi identificada uma falha relacionada ao funcionamento do motor (Falha de ignição / Sensor O2). Recomendada avaliação imediata.',
-                technical_code: 'P0301 (Falha no Cilindro 1) • Sonda Lambda O2',
-                whatsapp_default_message: `Olá, João. Aqui é da sua oficina ${wsName}. O acompanhamento do seu veículo Fiat Argo 1.0 (Placa BRA2E19) pelo DNA Auto identificou uma condição que recomendamos verificar. Gostaríamos de convidá-lo a trazer o veículo para uma avaliação. Podemos agendar um horário?`,
-                last_contact: contactMap['BRA2E19'] || null
-            },
-            {
-                id: 'mon_prob_2',
-                client_name: 'Roberto Silva',
-                client_phone: '(11) 96543-2109',
-                vehicle_model: 'Jeep Compass Longitude 2.0',
-                license_plate: 'QWE7A32',
-                current_km: 56890,
-                status: 'PROBLEM',
-                status_label: 'Problema identificado',
-                status_color: '#EF4444',
-                condition_title: 'Anomalia no circuito de injeção',
-                condition_desc: 'Sonda lambda enviando sinal fora da faixa ideal de mistura. Avaliação preventiva necessária para evitar aumento de consumo.',
-                technical_code: 'P0130 (Sensor O2 Banco 1)',
-                whatsapp_default_message: `Olá, Roberto. Aqui é da sua oficina ${wsName}. O DNA Auto detectou uma condição no circuito de injeção do seu Jeep Compass (Placa QWE7A32). Gostaríamos de convidá-lo a trazer o veículo para um diagnóstico preventivo. Podemos agendar um horário?`,
-                last_contact: contactMap['QWE7A32'] || null
-            }
-        ];
+        // Buscar veículos reais no banco associados a esta oficina
+        const vehicles = db.prepare(`
+            SELECT v.*, o.name as client_name, o.phone as client_phone,
+                   COALESCE((SELECT MAX(mileage) FROM mileage_records mr WHERE mr.vehicle_id = v.id),
+                            (SELECT MAX(mileage) FROM service_records sr WHERE sr.vehicle_id = v.id),
+                            0) as current_km
+            FROM vehicles v
+            LEFT JOIN owners o ON o.id = v.current_owner_id
+            WHERE v.workshop_id = ? OR v.id IN (SELECT vehicle_id FROM vehicle_dna WHERE activated_by_workshop_id = ?)
+        `).all(workshopId, workshopId);
 
-        // 2. Veículos com Manutenção Próxima (Regras de KM e Histórico)
-        const upcoming = [
-            {
-                id: 'mon_upc_1',
-                client_name: 'Maria Oliveira',
-                client_phone: '(11) 97654-3210',
-                vehicle_model: 'VW Fox 1.0 Trendline',
-                license_plate: 'FOX1013',
-                current_km: 103200,
-                status: 'ATTENTION',
-                status_label: 'Manutenção próxima',
-                status_color: '#F59E0B',
-                condition_title: 'Troca de óleo próxima',
-                condition_desc: 'Próxima troca de óleo estimada para 105.000 km (faltam 1.800 km). Lubrificação é vital para a longevidade do motor.',
-                technical_code: 'Regra de Manutenção 10.000 km',
-                whatsapp_default_message: `Olá, Maria. Aqui é da sua oficina ${wsName}. O DNA Auto identificou que seu VW Fox (Placa FOX1013) está se aproximando da próxima manutenção (Troca de óleo aos 105.000 km). Gostaríamos de convidá-la para realizar a revisão. Podemos agendar um horário?`,
-                last_contact: contactMap['FOX1013'] || null
-            },
-            {
-                id: 'mon_upc_2',
-                client_name: 'Marcos Lima',
-                client_phone: '(11) 94321-0987',
-                vehicle_model: 'Jeep Renegade Sport 1.8',
-                license_plate: 'KLM1H23',
-                current_km: 62000,
-                status: 'ATTENTION',
-                status_label: 'Manutenção próxima',
-                status_color: '#F59E0B',
-                condition_title: 'Inspeção de pastilhas de freio',
-                condition_desc: 'Veículo atingiu 62.000 km. Estimativa de desgaste de pastilhas dianteiras atinge 80% conforme ciclo operacional.',
-                technical_code: 'Regra de Manutenção 30.000 km / 60.000 km',
-                whatsapp_default_message: `Olá, Marcos. Aqui é da sua oficina ${wsName}. O monitoramento DNA Auto identificou que seu Jeep Renegade (Placa KLM1H23) atingiu 62.000 km, momento ideal para a inspeção preventiva das pastilhas de freio. Gostaria de reservar um horário para avaliação?`,
-                last_contact: contactMap['KLM1H23'] || null
-            }
-        ];
+        const problems = [];
+        const upcoming = [];
+        const normal = [];
 
-        // 3. Veículos Normais (Em dia)
-        const normal = [
-            {
-                id: 'mon_norm_1',
-                client_name: 'Patrícia Souza',
-                client_phone: '(11) 95432-1098',
-                vehicle_model: 'Honda HR-V EXL 1.8',
-                license_plate: 'XY29D10',
-                current_km: 38120,
-                status: 'NORMAL',
-                status_label: 'Tudo normal',
-                status_color: '#10B981',
-                condition_title: 'Veículo 100% monitorado e em conformidade',
-                condition_desc: 'Telemetria do OBD ativa, zero falhas na ECU e manutenções preventivas rigorosamente em dia.',
-                technical_code: '0 DTCs • Sistemas em conformidade',
-                whatsapp_default_message: `Olá, Patrícia! Aqui é da ${wsName}. Passando para parabenizá-la: seu Honda HR-V está 100% em dia no monitoramento DNA Auto!`,
-                last_contact: contactMap['XY29D10'] || null
+        for (const veh of vehicles) {
+            const currentKm = Number(veh.current_km || 0);
+            const clientName = veh.client_name || veh.owner_name || 'Cliente';
+            const clientPhone = veh.client_phone || veh.owner_phone || '';
+            const modelName = `${veh.brand || ''} ${veh.model || ''}`.trim() || 'Veículo';
+
+            if (veh.vehicle_status && veh.vehicle_status.toLowerCase().includes('problema')) {
+                problems.push({
+                    id: 'mon_prob_' + veh.id,
+                    client_name: clientName,
+                    client_phone: clientPhone,
+                    vehicle_model: modelName,
+                    license_plate: veh.license_plate,
+                    current_km: currentKm,
+                    status: 'PROBLEM',
+                    status_label: 'Problema identificado',
+                    status_color: '#EF4444',
+                    condition_title: 'Falha identificada no veículo',
+                    condition_desc: 'Foi identificada uma anomalia que requer atenção da oficina.',
+                    technical_code: 'DTC Ativo',
+                    whatsapp_default_message: `Olá, ${clientName}. Aqui é da oficina ${wsName}. O acompanhamento do seu veículo ${modelName} (${veh.license_plate}) identificou uma condição que recomendamos verificar. Podemos agendar uma avaliação?`,
+                    last_contact: contactMap[veh.license_plate] || null
+                });
+            } else if (currentKm >= 60000) {
+                upcoming.push({
+                    id: 'mon_upc_' + veh.id,
+                    client_name: clientName,
+                    client_phone: clientPhone,
+                    vehicle_model: modelName,
+                    license_plate: veh.license_plate,
+                    current_km: currentKm,
+                    status: 'ATTENTION',
+                    status_label: 'Manutenção próxima',
+                    status_color: '#F59E0B',
+                    condition_title: 'Revisão preventiva periódica',
+                    condition_desc: `Veículo atingiu ${currentKm.toLocaleString('pt-BR')} km. Revisão preventiva recomendada.`,
+                    technical_code: 'Regra de Manutenção Preventiva',
+                    whatsapp_default_message: `Olá, ${clientName}. Aqui é da oficina ${wsName}. Seu veículo ${modelName} (${veh.license_plate}) está na quilometragem de revisão preventiva (${currentKm.toLocaleString('pt-BR')} km). Vamos agendar?`,
+                    last_contact: contactMap[veh.license_plate] || null
+                });
+            } else {
+                normal.push({
+                    id: 'mon_norm_' + veh.id,
+                    client_name: clientName,
+                    client_phone: clientPhone,
+                    vehicle_model: modelName,
+                    license_plate: veh.license_plate,
+                    current_km: currentKm,
+                    status: 'NORMAL',
+                    status_label: 'Tudo normal',
+                    status_color: '#10B981',
+                    condition_title: 'Veículo em dia',
+                    condition_desc: 'Histórico e manutenções preventivas em dia.',
+                    technical_code: '0 DTCs • Sistemas em conformidade',
+                    whatsapp_default_message: `Olá, ${clientName}! Aqui é da ${wsName}. O seu ${modelName} está 100% em dia no DNA Auto!`,
+                    last_contact: contactMap[veh.license_plate] || null
+                });
             }
-        ];
+        }
 
         res.json({
             success: true,
