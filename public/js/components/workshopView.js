@@ -400,6 +400,10 @@ const WorkshopView = {
                                     <div class="ws-erp-menu-left"><span>⚡</span> <span>Serviços em Potencial</span></div>
                                     <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(239,68,68,0.15); color:#ef4444; border-radius:12px;">4</span>
                                 </div>
+                                <div class="ws-erp-menu-item ${this.currentSection === 'monitoramento-clientes' ? 'active' : ''}" onclick="WorkshopView.switchSection('monitoramento-clientes')" style="position:relative;">
+                                    <div class="ws-erp-menu-left"><span>📡</span> <span>Monitoramento Clientes</span></div>
+                                    <span class="badge-proof" style="font-size:9.5px; padding:2px 7px; background:rgba(239,68,68,0.2); color:#ef4444; font-weight:800; border-radius:12px;">OBD Alertas</span>
+                                </div>
                             </div>
 
                             <!-- SETOR 3: COMUNICAÇÃO & CONTATO -->
@@ -574,12 +578,16 @@ const WorkshopView = {
             case 'servicos-comprovados':
                 return this.renderProvenServicesView();
 
-            // Módulo 5: Manutenção
+            // Módulo 5: Manutenção & Monitoramento OBD de Clientes
             case 'manutencao-alertas':
             case 'manutencao-atrasadas':
             case 'manutencao-proximas':
             case 'manutencao-historico':
                 return this.renderMaintenanceCenterView();
+
+            case 'monitoramento-clientes':
+            case 'monitoramento-obd':
+                return this.renderClientMonitoringView();
 
             // Módulo 6: Clientes
             case 'clientes-lista':
@@ -1463,6 +1471,381 @@ const WorkshopView = {
                 </div>
             </div>
         `;
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // SEÇÃO 8.5: MONITORAMENTO DOS CLIENTES (OBD, PROBLEMAS, MANUTENÇÃO & WHATSAPP)
+    // ──────────────────────────────────────────────────────────────────────────
+    activeClientMonitoringTab: 'problems', // 'problems' | 'upcoming' | 'normal' | 'history'
+    clientMonitoringData: null,
+    clientMonitoringContacts: [],
+
+    async loadClientMonitoringData() {
+        try {
+            const wsId = this.getEffectiveWorkshopId();
+            const res = await fetch('/api/v1/workshops/' + wsId + '/client-monitoring');
+            const data = await res.json();
+            if (data.success) {
+                this.clientMonitoringData = data;
+            }
+        } catch (e) {
+            console.warn('Erro ao carregar monitoramento:', e);
+        }
+    },
+
+    setClientMonitoringTab(tab) {
+        this.activeClientMonitoringTab = tab;
+        const viewport = document.getElementById('ws-erp-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderClientMonitoringView();
+    },
+
+    renderClientMonitoringView() {
+        const tab = this.activeClientMonitoringTab || 'problems';
+        const rawContacts = (typeof localStorage !== 'undefined' && localStorage.getItem('dna_monitoring_contacts')) 
+            ? JSON.parse(localStorage.getItem('dna_monitoring_contacts')) : [];
+
+        const data = this.clientMonitoringData || {
+            counts: { problems: 2, upcoming: 2, normal: 1, contacts_count: rawContacts.length },
+            groups: {
+                problems: [
+                    {
+                        id: 'mon_prob_1',
+                        client_name: 'João da Silva',
+                        client_phone: '(11) 98765-4321',
+                        vehicle_model: 'Fiat Argo 1.0 Flex',
+                        license_plate: 'BRA2E19',
+                        current_km: 82450,
+                        status: 'PROBLEM',
+                        status_label: 'Problema identificado',
+                        status_color: '#EF4444',
+                        condition_title: 'Falha identificada no sistema do motor',
+                        condition_desc: 'Foi identificada uma falha relacionada ao funcionamento do motor. Recomendamos convidar o cliente para avaliação.',
+                        technical_code: 'P0301 (Falha no Cilindro 1) • Sonda Lambda O2',
+                        whatsapp_default_message: 'Olá, João. Aqui é da sua oficina. O acompanhamento do seu veículo pelo DNA Auto identificou uma condição que recomendamos verificar. Gostaríamos de convidá-lo a trazer o veículo para uma avaliação. Podemos agendar um horário?'
+                    },
+                    {
+                        id: 'mon_prob_2',
+                        client_name: 'Roberto Silva',
+                        client_phone: '(11) 96543-2109',
+                        vehicle_model: 'Jeep Compass Longitude 2.0',
+                        license_plate: 'QWE7A32',
+                        current_km: 56890,
+                        status: 'PROBLEM',
+                        status_label: 'Problema identificado',
+                        status_color: '#EF4444',
+                        condition_title: 'Anomalia no circuito de injeção',
+                        condition_desc: 'Sonda lambda enviando sinal fora da faixa ideal de mistura. Avaliação preventiva necessária para evitar aumento de consumo.',
+                        technical_code: 'P0130 (Sensor O2 Banco 1)',
+                        whatsapp_default_message: 'Olá, Roberto. Aqui é da sua oficina. O acompanhamento do seu Jeep Compass pelo DNA Auto identificou uma condição que recomendamos verificar. Gostaríamos de convidá-lo para uma avaliação preventiva. Podemos agendar um horário?'
+                    }
+                ],
+                upcoming: [
+                    {
+                        id: 'mon_upc_1',
+                        client_name: 'Maria Oliveira',
+                        client_phone: '(11) 97654-3210',
+                        vehicle_model: 'VW Fox 1.0 Trendline',
+                        license_plate: 'FOX1013',
+                        current_km: 103200,
+                        status: 'ATTENTION',
+                        status_label: 'Manutenção próxima',
+                        status_color: '#F59E0B',
+                        condition_title: 'Troca de óleo próxima',
+                        condition_desc: 'Próxima manutenção estimada aos 105.000 km (faltam 1.800 km). Lubrificação é vital para a vida útil do motor.',
+                        technical_code: 'Regra de Manutenção 10.000 km',
+                        whatsapp_default_message: 'Olá, Maria. Aqui é da sua oficina. O DNA Auto identificou que seu veículo está se aproximando da próxima manutenção (Troca de óleo). Gostaríamos de convidá-la para realizar a revisão. Podemos agendar um horário?'
+                    },
+                    {
+                        id: 'mon_upc_2',
+                        client_name: 'Marcos Lima',
+                        client_phone: '(11) 94321-0987',
+                        vehicle_model: 'Jeep Renegade Sport 1.8',
+                        license_plate: 'KLM1H23',
+                        current_km: 62000,
+                        status: 'ATTENTION',
+                        status_label: 'Manutenção próxima',
+                        status_color: '#F59E0B',
+                        condition_title: 'Inspeção de pastilhas de freio',
+                        condition_desc: 'Veículo completou 62.000 km. Estimativa de desgaste de pastilhas dianteiras atinge 80% conforme histórico.',
+                        technical_code: 'Regra de Manutenção 30.000 km / 60.000 km',
+                        whatsapp_default_message: 'Olá, Marcos. Aqui é da sua oficina. O DNA Auto identificou que seu veículo está se aproximando da próxima manutenção preventiva (Pastilhas de freio). Gostaríamos de convidá-lo para realizar a revisão. Podemos agendar um horário?'
+                    }
+                ],
+                normal: [
+                    {
+                        id: 'mon_norm_1',
+                        client_name: 'Patrícia Souza',
+                        client_phone: '(11) 95432-1098',
+                        vehicle_model: 'Honda HR-V EXL 1.8',
+                        license_plate: 'XY29D10',
+                        current_km: 38120,
+                        status: 'NORMAL',
+                        status_label: 'Tudo normal',
+                        status_color: '#10B981',
+                        condition_title: 'Veículo 100% monitorado e em conformidade',
+                        condition_desc: 'Telemetria do OBD ativa, zero falhas na ECU e manutenções preventivas rigorosamente em dia.',
+                        technical_code: '0 DTCs • Sistemas em conformidade',
+                        whatsapp_default_message: 'Olá, Patrícia! Aqui é da sua oficina. Passando para confirmar que seu Honda HR-V está 100% em dia no monitoramento DNA Auto!'
+                    }
+                ]
+            }
+        };
+
+        const contactMap = {};
+        rawContacts.forEach(c => {
+            if (!contactMap[c.vehicle_plate]) contactMap[c.vehicle_plate] = c;
+        });
+
+        const list = tab === 'problems' 
+            ? data.groups.problems 
+            : tab === 'upcoming' 
+                ? data.groups.upcoming 
+                : tab === 'normal' 
+                    ? data.groups.normal 
+                    : [];
+
+        return `
+            <div class="panel-box" style="border-color:rgba(0,212,255,0.35); padding:16px 14px;">
+                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                    <span style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:20px;">📡</span>
+                        <strong>Monitoramento dos Clientes (OBD2)</strong>
+                    </span>
+                    <span class="badge-proof" style="background:rgba(0,212,255,0.15); color:#00D4FF; font-weight:800; font-size:10.5px; padding:3px 8px;">
+                        REDE DNA AUTO • TELEMETRIA ATIVA
+                    </span>
+                </div>
+
+                <p style="font-size:12px; color:#94a3b8; margin:6px 0 14px;">
+                    Acompanhe em tempo real a saúde dos veículos dos seus clientes. O DNA Auto cruza dados do OBD, DTCs e regras preventivas para avisar quando entrar em contato com o cliente.
+                </p>
+
+                <!-- ABAS DE NAVEGAÇÃO SEGMENTADAS COM CONTADORES -->
+                <div style="display:flex; gap:8px; overflow-x:auto; margin-bottom:14px; padding-bottom:4px; border-bottom:1px solid rgba(255,255,255,0.08);">
+                    <button onclick="WorkshopView.setClientMonitoringTab('problems')" style="background:${tab === 'problems' ? 'rgba(239,68,68,0.2)' : 'rgba(15,23,42,0.8)'}; color:${tab === 'problems' ? '#EF4444' : '#94A3B8'}; border:1px solid ${tab === 'problems' ? '#EF4444' : 'rgba(255,255,255,0.1)'}; padding:7px 14px; border-radius:8px; font-size:11.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;">
+                        <span>🔴 Problemas identificados</span>
+                        <span style="background:#EF4444; color:#FFFFFF; font-size:9.5px; padding:1px 6px; border-radius:10px;">${data.groups.problems.length}</span>
+                    </button>
+                    <button onclick="WorkshopView.setClientMonitoringTab('upcoming')" style="background:${tab === 'upcoming' ? 'rgba(245,158,11,0.2)' : 'rgba(15,23,42,0.8)'}; color:${tab === 'upcoming' ? '#F59E0B' : '#94A3B8'}; border:1px solid ${tab === 'upcoming' ? '#F59E0B' : 'rgba(255,255,255,0.1)'}; padding:7px 14px; border-radius:8px; font-size:11.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;">
+                        <span>🟡 Manutenção próxima</span>
+                        <span style="background:#F59E0B; color:#0B0F19; font-size:9.5px; padding:1px 6px; border-radius:10px;">${data.groups.upcoming.length}</span>
+                    </button>
+                    <button onclick="WorkshopView.setClientMonitoringTab('normal')" style="background:${tab === 'normal' ? 'rgba(16,185,129,0.2)' : 'rgba(15,23,42,0.8)'}; color:${tab === 'normal' ? '#10B981' : '#94A3B8'}; border:1px solid ${tab === 'normal' ? '#10B981' : 'rgba(255,255,255,0.1)'}; padding:7px 14px; border-radius:8px; font-size:11.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;">
+                        <span>🟢 Normais</span>
+                        <span style="background:#10B981; color:#0B0F19; font-size:9.5px; padding:1px 6px; border-radius:10px;">${data.groups.normal.length}</span>
+                    </button>
+                    <button onclick="WorkshopView.setClientMonitoringTab('history')" style="background:${tab === 'history' ? 'rgba(0,102,255,0.2)' : 'rgba(15,23,42,0.8)'}; color:${tab === 'history' ? '#00D4FF' : '#94A3B8'}; border:1px solid ${tab === 'history' ? '#00D4FF' : 'rgba(255,255,255,0.1)'}; padding:7px 14px; border-radius:8px; font-size:11.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;">
+                        <span>📋 Contatos Realizados</span>
+                        <span style="background:#0066FF; color:#FFFFFF; font-size:9.5px; padding:1px 6px; border-radius:10px;">${rawContacts.length}</span>
+                    </button>
+                </div>
+
+                ${tab === 'history' ? `
+                    <!-- HISTÓRICO DE CONTATOS REALIZADOS -->
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        ${rawContacts.length === 0 ? `
+                            <div style="text-align:center; padding:24px; color:#94A3B8; font-size:12px;">
+                                Nenhum contato registrado ainda. Ao clicar em "Enviar WhatsApp" em qualquer cliente, o registro é salvo automaticamente aqui.
+                            </div>
+                        ` : rawContacts.map(c => `
+                            <div style="background:#101B2E; border:1px solid #1E293B; border-left:4px solid #10B981; border-radius:10px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        <strong style="color:#FFFFFF; font-size:13px;">${c.client_name}</strong>
+                                        <span style="color:#00D4FF; font-family:var(--font-mono, monospace); font-size:11px; font-weight:700;">(${c.vehicle_plate})</span>
+                                        <span style="background:rgba(37,211,102,0.15); color:#25D366; font-size:9.5px; padding:1px 6px; border-radius:4px; font-weight:800;">WHATSAPP</span>
+                                    </div>
+                                    <div style="font-size:11px; color:#94A3B8; margin-top:2px;">
+                                        ${c.vehicle_model} • Motivo: <span style="color:#CBD5E1;">${c.contact_reason}</span>
+                                    </div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <span style="font-size:10.5px; color:#10B981; font-weight:800; display:block;">Cliente comunicado</span>
+                                    <span style="font-size:10px; color:#64748B;">${c.contact_timestamp}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : `
+                    <!-- CARDS DE CLIENTES / VEÍCULOS NO MONITORAMENTO -->
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        ${list.length === 0 ? `
+                            <div style="text-align:center; padding:24px; color:#94A3B8; font-size:12px;">
+                                Nenhum veículo encontrado nesta categoria.
+                            </div>
+                        ` : list.map(item => {
+                            const lastC = contactMap[item.license_plate];
+                            return `
+                                <div style="background:#101B2E; border:1px solid ${item.status === 'PROBLEM' ? 'rgba(239,68,68,0.35)' : item.status === 'ATTENTION' ? 'rgba(245,158,11,0.35)' : 'rgba(16,185,129,0.3)'}; border-left:4.5px solid ${item.status_color}; border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; box-shadow:0 4px 14px rgba(0,0,0,0.3);">
+                                    <!-- Topo do Card: Cliente e Veículo -->
+                                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+                                        <div>
+                                            <div style="display:flex; align-items:center; gap:8px;">
+                                                <h4 style="margin:0; font-size:14px; font-weight:800; color:#FFFFFF;">${item.client_name}</h4>
+                                                <span style="font-size:11px; color:#25D366; font-family:var(--font-mono, monospace); font-weight:700;">${item.client_phone}</span>
+                                            </div>
+                                            <div style="font-size:12px; color:#94A3B8; margin-top:2px;">
+                                                <strong style="color:#CBD5E1;">${item.vehicle_model}</strong> • Placa: <strong style="color:#00D4FF; font-family:var(--font-mono, monospace);">${item.license_plate}</strong>
+                                            </div>
+                                        </div>
+                                        <div style="text-align:right;">
+                                            <span style="background:${item.status === 'PROBLEM' ? 'rgba(239,68,68,0.2)' : item.status === 'ATTENTION' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)'}; color:${item.status_color}; font-size:10px; font-weight:800; padding:3px 8px; border-radius:6px; text-transform:uppercase;">
+                                                ${item.status === 'PROBLEM' ? '🔴 Problema identificado' : item.status === 'ATTENTION' ? '🟡 Manutenção próxima' : '🟢 Tudo normal'}
+                                            </span>
+                                            <div style="font-size:11px; color:#94A3B8; margin-top:3px; font-family:var(--font-mono, monospace);">
+                                                Odômetro: <strong style="color:#FFFFFF;">${Number(item.current_km).toLocaleString('pt-BR')} km</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Condição Identificada -->
+                                    <div style="background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:10px 12px;">
+                                        <div style="font-size:12.5px; font-weight:800; color:${item.status_color}; margin-bottom:2px;">
+                                            ${item.condition_title}
+                                        </div>
+                                        <p style="margin:0; font-size:11.5px; color:#CBD5E1; line-height:1.4;">
+                                            ${item.condition_desc}
+                                        </p>
+                                        <div style="margin-top:6px; font-size:10.5px; color:#64748B; font-family:var(--font-mono, monospace);">
+                                            Código técnico: ${item.technical_code}
+                                        </div>
+                                    </div>
+
+                                    <!-- Rodapé: Botão WhatsApp e Registro de Contato -->
+                                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:2px;">
+                                        <div>
+                                            ${lastC ? `
+                                                <div style="display:flex; align-items:center; gap:5px; font-size:11px; color:#10B981; font-weight:700;">
+                                                    <span style="font-size:13px;">✓</span>
+                                                    <span>Cliente comunicado via WhatsApp em ${lastC.contact_timestamp}</span>
+                                                </div>
+                                            ` : `
+                                                <span style="font-size:11px; color:#64748B;">Aguardando contato da oficina</span>
+                                            `}
+                                        </div>
+                                        <button onclick="WorkshopView.openClientMonitoringWhatsAppModal('${item.client_name}', '${item.client_phone}', '${item.license_plate}', '${item.vehicle_model}', '${item.condition_title}', '${item.status}', '${encodeURIComponent(item.whatsapp_default_message)}')" style="background:#25D366; color:#0B0F19; border:none; padding:8px 16px; border-radius:6px; font-size:11.5px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 3px 10px rgba(37,211,102,0.3);">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                                            <span>Enviar WhatsApp</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `}
+            </div>
+        `;
+    },
+
+    openClientMonitoringWhatsAppModal(clientName, clientPhone, plate, model, condition, type, encodedMsg) {
+        let modal = document.getElementById('ws-client-monitoring-modal');
+        if (!modal) {
+            const div = document.createElement('div');
+            div.id = 'ws-client-monitoring-modal';
+            div.className = 'modal-overlay';
+            document.body.appendChild(div);
+            modal = div;
+        }
+
+        const cleanPhone = (clientPhone || '11998765432').replace(/\D/g, '');
+        const decodedMsg = decodeURIComponent(encodedMsg || '');
+
+        modal.innerHTML = `
+            <div class="modal-container" style="max-width:480px; background:#0B132B; border:1.5px solid #25D366; border-radius:18px; padding:0; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.85);">
+                <div class="modal-header" style="background:#101B2E; border-bottom:1px solid rgba(37,211,102,0.25); padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:20px;">💬</span>
+                        <div>
+                            <h3 style="margin:0; font-size:15px; font-weight:800; color:#FFFFFF;">Enviar WhatsApp ao Cliente</h3>
+                            <span style="font-size:11px; color:#25D366; font-weight:700;">Acompanhamento DNA AUTO</span>
+                        </div>
+                    </div>
+                    <button class="modal-close-btn" style="color:#94A3B8; font-size:22px; cursor:pointer; background:none; border:none; padding:4px;" onclick="document.getElementById('ws-client-monitoring-modal').classList.remove('active')">&times;</button>
+                </div>
+
+                <div class="modal-body" style="padding:18px; display:flex; flex-direction:column; gap:12px;">
+                    <!-- Dados do Destinatário -->
+                    <div style="background:#101B2E; border:1px solid #1E293B; border-radius:10px; padding:10px 14px; font-size:12px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span style="color:#94A3B8;">Cliente:</span>
+                            <strong style="color:#FFFFFF;">${clientName} (${clientPhone})</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span style="color:#94A3B8;">Veículo:</span>
+                            <strong style="color:#00D4FF;">${model} • ${plate}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="color:#94A3B8;">Motivo:</span>
+                            <strong style="color:${type === 'PROBLEM' ? '#EF4444' : '#F59E0B'};">${condition}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Mensagem Editável -->
+                    <div>
+                        <label style="font-size:11px; font-weight:800; color:#CBD5E1; text-transform:uppercase; display:block; margin-bottom:6px;">Mensagem Pré-preenchida (Editável pela Oficina):</label>
+                        <textarea id="ws-mon-whatsapp-text" rows="5" style="width:100%; background:#050B14; border:1px solid rgba(0,212,255,0.3); border-radius:8px; padding:10px 12px; color:#FFFFFF; font-size:12px; line-height:1.4; font-family:inherit; resize:vertical;">${decodedMsg}</textarea>
+                    </div>
+
+                    <!-- Botão de Confirmação & Disparo -->
+                    <button onclick="WorkshopView.confirmAndSendClientMonitoringWhatsApp('${clientName}', '${cleanPhone}', '${plate}', '${model}', '${condition}')" class="btn btn-primary" style="background:linear-gradient(135deg, #10B981 0%, #059669 100%); color:#FFFFFF; font-weight:800; font-size:13px; padding:12px; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 15px rgba(16,185,129,0.35);">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                        <span>Abrir WhatsApp e Registrar Contato</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        modal.classList.add('active');
+    },
+
+    async confirmAndSendClientMonitoringWhatsApp(clientName, cleanPhone, plate, model, condition) {
+        const textarea = document.getElementById('ws-mon-whatsapp-text');
+        const message = textarea ? textarea.value : '';
+        const now = new Date();
+        const contactTimestamp = now.toLocaleDateString('pt-BR') + ' — ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+        const record = {
+            id: 'cont_' + Date.now(),
+            client_name: clientName,
+            vehicle_plate: plate,
+            vehicle_model: model,
+            contact_reason: condition,
+            contact_timestamp: contactTimestamp,
+            status: 'COMUNICADO'
+        };
+
+        // Salvar localmente
+        let saved = [];
+        try {
+            const raw = localStorage.getItem('dna_monitoring_contacts');
+            if (raw) saved = JSON.parse(raw);
+        } catch (_) {}
+        saved.unshift(record);
+        localStorage.setItem('dna_monitoring_contacts', JSON.stringify(saved));
+
+        // Salvar no backend via API
+        try {
+            const wsId = this.getEffectiveWorkshopId();
+            await fetch('/api/v1/workshops/' + wsId + '/contact-log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(record)
+            });
+        } catch (e) {
+            console.warn('Erro ao salvar log no servidor:', e);
+        }
+
+        // Fechar modal
+        const modal = document.getElementById('ws-client-monitoring-modal');
+        if (modal) modal.classList.remove('active');
+
+        // Disparar WhatsApp
+        const waUrl = 'https://api.whatsapp.com/send?phone=55' + cleanPhone + '&text=' + encodeURIComponent(message);
+        window.open(waUrl, '_blank');
+
+        // Atualizar tela
+        const viewport = document.getElementById('ws-erp-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderClientMonitoringView();
     },
 
     // ──────────────────────────────────────────────────────────────────────────

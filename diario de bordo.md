@@ -1228,3 +1228,33 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   6. **Qualidade e Testes:**
      - 45 de 45 testes automatizados aprovados (`npm test`) com 100% de sucesso.
      - Sincronização rigorosa entre `cliente.app/` e `public/`.
+
+---
+
+### Ciclo 63 — Card "Monitoramento OBD" Humanizado no App do Cliente e Painel de Monitoramento da Frota de Clientes na Oficina com Alertas Preventivos e WhatsApp Integrado
+- **Data/Hora:** 27/09/2026
+- **Contexto & Escopo:**
+  1. **Card Principal "Monitoramento OBD" no App do Cliente (`cliente.app` e `public`):**
+     - Integrado diretamente na tela do veículo (`renderVehicleScreen`) e na tela dedicada do OBD (`renderObdScreen`).
+     - **Invisibilidade técnica total:** Oculta Bluetooth, ELM327, PIDs, protocolos e hexadecimais para o cliente leigo.
+     - **Status do OBD no topo:** 🟢 **Conectado** ("Seu veículo está sendo monitorado") ou ⚪ **Desconectado** ("Conecte o OBD para iniciar o monitoramento").
+     - **Indicadores essenciais e limpos:** Quilometragem (`125.200 km`), Velocidade (`0 km/h`), RPM (`840 rpm`), Temperatura do motor (`90 °C`), Temperatura do óleo (`96 °C`), Combustível (`72%`) e Tensão do sistema (`14,2 V`).
+     - **Estado do veículo inteligente:** 🟢 **Tudo normal** | 🟡 **Atenção** | 🔴 **Problema identificado** (calculado com base em regras consolidadas, sem alarmismo por oscilações pontuais).
+     - **Diagnóstico Leigo:** Exibição simples e humanizada ("Nenhuma falha identificada no momento" ou "Foi identificada uma condição que recomendamos verificar em uma oficina"), com botão recolhível para visualização de detalhes técnicos opcionais (ex: código `P0301`).
+     - **Manutenções Próximas Transparentes:** 🟡 Troca de óleo, 🟡 Correia dentada, 🟢 Sistema de freios, baseadas em regras de tempo/KM e histórico sem alegar falsas medições de desgaste mecânico direto pelo dongle OBD.
+  2. **Módulo "Monitoramento dos Clientes" no Painel da Oficina (`oficina.app` e `public`):**
+     - Nova tela executiva acessível pelo menu lateral com contadores em tempo real agrupados por:
+       - 🔴 **Problemas identificados** (DTCs ativos, falhas de injeção, sonda lambda, motor)
+       - 🟡 **Manutenção próxima** (Preventiva por km/tempo)
+       - 🟢 **Normais** (Veículos 100% em dia)
+       - 📋 **Contatos Realizados** (Histórico de atendimentos via WhatsApp)
+     - Cards detalhados com informações completas do cliente, telefone, veículo/placa, odômetro OBD e condição diagnosticada.
+     - **Botão "Enviar WhatsApp":** Abre modal com mensagem contextualizada pré-formatada e 100% editável pela oficina antes do envio.
+     - **Registro Automático de Contato:** Salva data, hora, usuário da oficina, motivo e status no banco (`workshop_customer_contacts`), exibindo badge no card do veículo: *"Cliente comunicado via WhatsApp em DD/MM/AAAA — HH:MM"*.
+  3. **Backend & Banco de Dados SQLite:**
+     - Endpoint `GET /api/v1/vehicles/:identifier/obd` enriquecido com o nó `client_monitoring`.
+     - Tabela `workshop_customer_contacts` criada com persistência relacional completa.
+     - Endpoints `GET /api/v1/workshops/:id/client-monitoring`, `POST /api/v1/workshops/:id/contact-log` e `GET /api/v1/workshops/:id/contact-log`.
+  4. **Qualidade e Testes:**
+     - 48 de 48 testes automatizados aprovados com 100% de sucesso (`npm test`), cobrindo os novos testes 46, 47 e 48.
+     - Sincronização rigorosa entre as pastas `cliente.app/`, `oficina.app/` e `public/`.

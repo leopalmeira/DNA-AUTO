@@ -756,7 +756,60 @@ async function runTests() {
         console.assert(veloceWs.rating >= 4.5, 'Avaliação da oficina credenciada deve ser padrão ouro');
         console.log(`✅ 45. Rede Credenciada DNA AUTO (/workshops/network): ${dataNetwork.workshops.length} oficinas listadas com geolocalização, rating e especialidades.`);
 
-        console.log('\n🎉 TODOS OS 45 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 46: Monitoramento Veicular OBD do Cliente Leigo (/vehicles/:identifier/obd)
+        const resClientObd = await fetch(`${BASE_URL}/vehicles/BRA2E19/obd`);
+        const dataClientObd = await resClientObd.json();
+        console.assert(resClientObd.status === 200, 'Falha ao buscar telemetria OBD do veículo');
+        console.assert(dataClientObd.success === true, 'Telemetria deve retornar success: true');
+        console.assert(!!dataClientObd.client_monitoring, 'Deve conter o bloco client_monitoring formatado para o cliente');
+        console.assert(dataClientObd.client_monitoring.obd_connected === true, 'Status do OBD deve ser conectado');
+        console.assert(!!dataClientObd.client_monitoring.vehicle_state, 'Deve possuir vehicle_state');
+        console.assert(dataClientObd.client_monitoring.metrics.mileage_formatted.includes('km'), 'Quilometragem deve estar formatada com km');
+        console.assert(Array.isArray(dataClientObd.client_monitoring.upcoming_maintenances), 'Deve listar próximas manutenções');
+        console.log(`✅ 46. Monitoramento Veicular OBD para o Cliente: Status [${dataClientObd.client_monitoring.vehicle_state}], Odômetro [${dataClientObd.client_monitoring.metrics.mileage_formatted}], Falhas [${dataClientObd.client_monitoring.diagnostics.fault_count}].`);
+
+        // Teste 47: Monitoramento da Frota de Clientes no Painel da Oficina (/workshops/:id/client-monitoring)
+        const resWsMonitoring = await fetch(`${BASE_URL}/workshops/ws_veloce/client-monitoring`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        const dataWsMonitoring = await resWsMonitoring.json();
+        console.assert(resWsMonitoring.status === 200, 'Falha ao buscar monitoramento de clientes da oficina');
+        console.assert(dataWsMonitoring.success === true, 'Monitoramento de clientes deve retornar success: true');
+        console.assert(Array.isArray(dataWsMonitoring.groups.problems), 'Deve retornar lista de veículos com problemas');
+        console.assert(typeof dataWsMonitoring.counts.problems === 'number', 'Deve possuir contagem de problems');
+        console.log(`✅ 47. Painel de Monitoramento da Oficina: ${dataWsMonitoring.counts.total} veículos monitorados (${dataWsMonitoring.counts.normal} normais, ${dataWsMonitoring.counts.upcoming} preventiva, ${dataWsMonitoring.counts.problems} problemas).`);
+
+        // Teste 48: Registro de Contato via WhatsApp pela Oficina (/workshops/:id/contact-log)
+        const resContactLog = await fetch(`${BASE_URL}/workshops/ws_veloce/contact-log`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${adminToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                client_name: 'Carlos Alberto Silva',
+                client_phone: '11987654321',
+                vehicle_plate: 'BRA2E19',
+                vehicle_model: 'Honda Civic Touring 1.5 Turbo 2021',
+                contact_reason: 'problem',
+                related_condition: 'Falha identificada no sistema do motor'
+            })
+        });
+        const dataContactLog = await resContactLog.json();
+        console.assert(resContactLog.status === 201, 'Falha ao registrar contato com o cliente');
+        console.assert(dataContactLog.success === true, 'Registro de contato deve retornar success: true');
+
+        const resGetContacts = await fetch(`${BASE_URL}/workshops/ws_veloce/contact-log`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
+        const dataGetContacts = await resGetContacts.json();
+        console.assert(resGetContacts.status === 200, 'Falha ao listar contatos registrados');
+        console.assert(dataGetContacts.contacts.length >= 1, 'Histórico de contatos deve conter pelo menos 1 registro');
+        const lastContact = dataGetContacts.contacts[0];
+        console.assert(lastContact.client_name === 'Carlos Alberto Silva', 'Nome do cliente divergente no histórico');
+        console.log(`✅ 48. Registro de Contato WhatsApp da Oficina: Contato com [${lastContact.client_name}] para veículo [${lastContact.vehicle_plate}] registrado com sucesso.`);
+
+        console.log('\n🎉 TODOS OS 48 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

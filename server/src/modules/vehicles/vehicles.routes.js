@@ -879,6 +879,54 @@ router.get('/:identifier/obd', (req, res) => {
                 system_health: '100% OPERACIONAL',
                 last_scan: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
                 sensors_summary: 'Sistemas de Injeção, Ignição, Catalisador e Sensores O2 em conformidade total.'
+            },
+            client_monitoring: {
+                obd_connected: true,
+                status_obd: 'CONECTADO',
+                status_obd_message: 'Seu veículo está sendo monitorado.',
+                metrics: {
+                    mileage: currentMileage,
+                    mileage_formatted: Number(currentMileage).toLocaleString('pt-BR') + ' km',
+                    speed_kmh: 0,
+                    rpm: 840,
+                    engine_temp_c: 90,
+                    oil_temp_c: 96,
+                    fuel_percent: 72,
+                    voltage: 14.2
+                },
+                vehicle_state: 'NORMAL',
+                vehicle_state_title: 'Tudo normal',
+                vehicle_state_color: '#10B981',
+                vehicle_state_desc: 'Todos os parâmetros e sistemas essenciais operando na faixa ideal de funcionamento.',
+                diagnostics: {
+                    has_faults: false,
+                    fault_count: 0,
+                    simple_message: 'Nenhuma falha identificada no momento.',
+                    technical_codes: []
+                },
+                upcoming_maintenances: [
+                    {
+                        title: 'Troca de óleo',
+                        status: 'WARNING',
+                        status_label: 'Próxima manutenção: 2.458 km',
+                        badge_color: '#F59E0B',
+                        icon: '🛢️'
+                    },
+                    {
+                        title: 'Correia dentada',
+                        status: 'WARNING',
+                        status_label: 'Revisão prevista conforme quilometragem/histórico',
+                        badge_color: '#F59E0B',
+                        icon: '⚙️'
+                    },
+                    {
+                        title: 'Sistema de freios',
+                        status: 'OK',
+                        status_label: 'Sem alerta de manutenção no momento',
+                        badge_color: '#10B981',
+                        icon: '🛑'
+                    }
+                ]
             }
         });
     } catch (err) {

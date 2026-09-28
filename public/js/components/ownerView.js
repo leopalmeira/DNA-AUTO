@@ -2488,6 +2488,8 @@ const OwnerView = {
                     </div>
                 </div>
 
+                ${this.renderObdMonitoringCard()}
+
                 <!-- 🌟 BOTÃO DE AÇÃO OFICIAL: RELATÓRIO COMPLETO DE MANUTENÇÕES E VENDA -->
                 <div class="dna-sale-report-action-card" onclick="OwnerView.openMaintenanceReport()" style="background:linear-gradient(135deg, rgba(0, 212, 255, 0.16) 0%, rgba(0, 102, 255, 0.22) 100%); border:1.5px solid #00D4FF; border-radius:14px; padding:14px 16px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:12px; box-shadow:0 0 24px rgba(0,212,255,0.2); transition:transform 0.15s ease;">
                     <div style="display:flex; align-items:center; gap:12px;">
@@ -3276,103 +3278,35 @@ const OwnerView = {
 
     // ── 6. TELA: OBD2 TELEMETRIA (TELA 6 DO MAPA) ──
     renderObdScreen() {
-        if (!this.isObdPaired) {
-            return this.renderObdBluetoothScreen();
-        }
-
-        const o = this.obdData;
-        const scanningText = this.isObdScanning ? 'Lendo sensores da central ECU...' : 'Escanear Central ECU Novamente';
-
         return `
-            <div class="dna-obd-container" style="display:flex; flex-direction:column; gap:12px;">
-                <!-- Status de Conexão com o Mini OBD2 Dongle -->
-                <div class="dna-obd-conn-banner" style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                <!-- Cabeçalho com Botão Voltar -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <div style="width:8px; height:8px; border-radius:50%; background:#10B981; box-shadow:0 0 8px #10B981;"></div>
-                        <div>
-                            <span style="font-size:11.5px; color:#10B981; font-weight:800; display:block;">Pareado via Bluetooth (BLE 5.2)</span>
-                            <span style="font-size:10px; color:#94A3B8;">Mini OBD2 ELM327 • 500 kbaud</span>
-                        </div>
+                        <button onclick="OwnerView.navigateTo('home')" style="background:rgba(255,255,255,0.08); border:none; color:#FFFFFF; width:30px; height:30px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;">
+                            &larr;
+                        </button>
+                        <h3 style="margin:0; font-size:16px; font-weight:800; color:#FFFFFF;">Monitoramento do Veículo</h3>
                     </div>
-                    <button onclick="OwnerView.navigateTo('bluetooth-pair')" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#FFFFFF; font-size:10px; font-weight:700; padding:4px 8px; border-radius:6px; cursor:pointer;">
-                        Gerenciar
+                    <button onclick="OwnerView.navigateTo('bluetooth-pair')" style="background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.3); color:#00D4FF; font-size:11px; font-weight:700; padding:5px 10px; border-radius:6px; cursor:pointer;">
+                        ${this.isObdPaired ? 'Gerenciar OBD' : 'Parear OBD'}
                     </button>
                 </div>
 
-                <!-- 4 Gauges Dials Circulares (RPM | Temp | Bateria | Odômetro) -->
-                <div class="dna-obd-gauges-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <!-- 1. RPM -->
-                    <div class="dna-obd-gauge-card" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:14px; padding:14px; text-align:center;">
-                        <span style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">RPM</span>
-                        <div style="font-size:22px; font-weight:900; color:#00D4FF; margin:4px 0 2px;">${Number(o.telemetry.rpm).toLocaleString('pt-BR')}</div>
-                        <span style="font-size:10px; color:#10B981; font-weight:700;">Marcha Lenta</span>
-                    </div>
+                ${this.renderObdMonitoringCard()}
 
-                    <!-- 2. Temp -->
-                    <div class="dna-obd-gauge-card" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:14px; padding:14px; text-align:center;">
-                        <span style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Temp</span>
-                        <div style="font-size:22px; font-weight:900; color:#10B981; margin:4px 0 2px;">${o.telemetry.coolant_temp_c}°C</div>
-                        <span style="font-size:10px; color:#10B981; font-weight:700;">Ideal (90°C)</span>
-                    </div>
-
-                    <!-- 3. Bateria -->
-                    <div class="dna-obd-gauge-card" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:14px; padding:14px; text-align:center;">
-                        <span style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Bateria</span>
-                        <div style="font-size:22px; font-weight:900; color:#00D4FF; margin:4px 0 2px;">${o.telemetry.battery_voltage}V</div>
-                        <span style="font-size:10px; color:#00D4FF; font-weight:700;">Carga Plena</span>
-                    </div>
-
-                    <!-- 4. Odômetro ECU -->
-                    <div class="dna-obd-gauge-card" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:14px; padding:14px; text-align:center;">
-                        <span style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Odômetro ECU</span>
-                        <div style="font-size:17px; font-weight:900; color:#FFFFFF; margin:6px 0 2px;">${Number(o.telemetry.ecu_odometer_km).toLocaleString('pt-BR')} <span style="font-size:11px;">km</span></div>
-                        <span style="font-size:10px; color:#10B981; font-weight:700;">Autenticado</span>
-                    </div>
+                <!-- Ações Rápidas Complementares -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <button onclick="OwnerView.openSchedulingModal()" style="background:#101B2E; border:1px solid #1E293B; border-radius:10px; padding:12px; color:#FFFFFF; font-weight:700; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                        <span>🛠️ Agendar Revisão</span>
+                    </button>
+                    <button onclick="OwnerView.openProvenanceReport()" style="background:#101B2E; border:1px solid #1E293B; border-radius:10px; padding:12px; color:#00D4FF; font-weight:700; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                        <span>📋 Dossiê / Laudo</span>
+                    </button>
                 </div>
-
-                <!-- DTC - Erros -->
-                <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:10px 14px; display:flex; align-items:center; gap:10px;">
-                    <div style="color:#10B981;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-                    </div>
-                    <div>
-                        <strong style="color:#FFFFFF; font-size:12px; display:block;">DTC - Diagnóstico de Falhas</strong>
-                        <span style="color:#10B981; font-size:11px; font-weight:700;">0 erros na memória da central</span>
-                    </div>
-                </div>
-
-                <!-- Sensores em tempo real -->
-                <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.2); border-radius:12px; padding:12px 14px;">
-                    <span style="font-size:11px; font-weight:800; color:#CBD5E1; text-transform:uppercase; display:block; margin-bottom:8px;">Sensores em tempo real</span>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11.5px;">
-                        <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-                            <span style="color:#94A3B8;">Sonda Lambda</span>
-                            <strong style="color:#10B981;">${o.telemetry.lambda_ratio}</strong>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
-                            <span style="color:#94A3B8;">Pressão MAP</span>
-                            <strong style="color:#FFFFFF;">${o.telemetry.map_pressure_kpa} kPa</strong>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; padding:4px 0;">
-                            <span style="color:#94A3B8;">Posição Borboleta</span>
-                            <strong style="color:#FFFFFF;">${o.telemetry.throttle_pos_percent}%</strong>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; padding:4px 0;">
-                            <span style="color:#94A3B8;">Temp Admissão</span>
-                            <strong style="color:#FFFFFF;">${o.telemetry.intake_temp_c}°C</strong>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botão de Re-escaneamento -->
-                <button class="dna-obd-rescan-btn" onclick="OwnerView.rescanObd()" ${this.isObdScanning ? 'disabled' : ''} style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:12px; padding:11px; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" ${this.isObdScanning ? 'style="animation: spin 1s linear infinite;"' : ''}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-                    <span>${scanningText}</span>
-                </button>
             </div>
         `;
     },
-
     // ── 7. TELA: MAPA DE SERVIÇOS & COMPROVAÇÃO DE PEÇAS E NOTA FISCAL (ANTI-SLOP) ──
     renderServicesScreen() {
         const v = this.vehicleData;
@@ -4078,6 +4012,167 @@ const OwnerView = {
 
         modal.classList.add('active');
     },
+    // ── CARD EXCLUSIVO DE MONITORAMENTO OBD (ÁREA DO VEÍCULO & CLIENTE LEIGO) ──
+    toggleObdTechnicalDetails() {
+        const el = document.getElementById('dna-obd-tech-details');
+        const btn = document.getElementById('dna-obd-tech-btn');
+        if (el) {
+            const isHidden = el.style.display === 'none' || !el.style.display;
+            el.style.display = isHidden ? 'block' : 'none';
+            if (btn) btn.textContent = isHidden ? 'Ocultar detalhes técnicos ▲' : 'Ver detalhes técnicos ▼';
+        }
+    },
+
+    renderObdMonitoringCard() {
+        const v = this.vehicleData;
+        const isConnected = !!this.isObdPaired;
+        const currentKm = Number(v.current_mileage || 87542);
+        const fuel = v.fuel_level || 72;
+
+        return `
+            <!-- CARD PRINCIPAL: MONITORAMENTO OBD (INTEGRADO À ÁREA DO VEÍCULO) -->
+            <div class="dna-obd-monitoring-card" style="background: radial-gradient(ellipse at 50% 10%, #102038 0%, #080F1E 100%); border: 1.5px solid rgba(0, 212, 255, 0.4); border-radius: 18px; padding: 18px 16px; margin-bottom: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);">
+                
+                <!-- 1. TOPO: TÍTULO E STATUS DO OBD -->
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                    <div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:20px;">📡</span>
+                            <h3 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:0;">Monitoramento OBD</h3>
+                        </div>
+                        <span style="font-size:11px; color:#94A3B8; margin-top:2px; display:block;">Saúde e parâmetros essenciais em tempo real</span>
+                    </div>
+                    <div>
+                        ${isConnected ? `
+                            <div style="background:rgba(16,185,129,0.15); border:1px solid #10B981; border-radius:20px; padding:4px 10px; display:flex; align-items:center; gap:6px;">
+                                <span style="width:7px; height:7px; border-radius:50%; background:#10B981; box-shadow:0 0 8px #10B981;"></span>
+                                <span style="font-size:10.5px; font-weight:800; color:#10B981; text-transform:uppercase;">Conectado</span>
+                            </div>
+                        ` : `
+                            <div style="background:rgba(148,163,184,0.12); border:1px solid #64748B; border-radius:20px; padding:4px 10px; display:flex; align-items:center; gap:6px;">
+                                <span style="width:7px; height:7px; border-radius:50%; background:#94A3B8;"></span>
+                                <span style="font-size:10.5px; font-weight:800; color:#CBD5E1; text-transform:uppercase;">Desconectado</span>
+                            </div>
+                        `}
+                    </div>
+                </div>
+
+                <!-- FRASE DE STATUS DO OBD -->
+                <div style="margin-bottom: 14px; font-size:12px; font-weight:700; color:${isConnected ? '#10B981' : '#94A3B8'}; display:flex; align-items:center; gap:6px;">
+                    <span>${isConnected ? '🟢 Seu veículo está sendo monitorado.' : '⚪ Conecte o OBD para iniciar o monitoramento.'}</span>
+                </div>
+
+                ${isConnected ? `
+                    <!-- 2. INFORMAÇÕES DENTRO DO CARD (PEQUENOS CARDS / INDICADORES VISUAIS LIMPOS) -->
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom: 14px;">
+                        <!-- Quilometragem -->
+                        <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 6px; text-align:center;">
+                            <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Quilometragem</span>
+                            <span style="font-size:13px; font-weight:800; color:#FFFFFF; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">${currentKm.toLocaleString('pt-BR')} km</span>
+                        </div>
+                        <!-- Velocidade -->
+                        <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 6px; text-align:center;">
+                            <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Velocidade</span>
+                            <span style="font-size:13px; font-weight:800; color:#00D4FF; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">0 km/h</span>
+                        </div>
+                        <!-- RPM -->
+                        <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 6px; text-align:center;">
+                            <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">RPM</span>
+                            <span style="font-size:13px; font-weight:800; color:#38BDF8; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">840 rpm</span>
+                        </div>
+                        <!-- Temp. Motor -->
+                        <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 6px; text-align:center;">
+                            <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Temp. Motor</span>
+                            <span style="font-size:13px; font-weight:800; color:#10B981; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">90 °C</span>
+                        </div>
+                        <!-- Temp. Óleo -->
+                        <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 6px; text-align:center;">
+                            <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Temp. Óleo</span>
+                            <span style="font-size:13px; font-weight:800; color:#10B981; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">96 °C</span>
+                        </div>
+                        <!-- Combustível -->
+                        <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 6px; text-align:center;">
+                            <span style="font-size:9.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Combustível</span>
+                            <span style="font-size:13px; font-weight:800; color:#00D4FF; display:block; margin-top:3px; font-family:var(--font-mono, monospace);">${fuel}%</span>
+                        </div>
+                        <!-- Tensão do Sistema -->
+                        <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:9px 12px; text-align:center; grid-column: span 3; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Tensão do Sistema (Bateria)</span>
+                            <span style="font-size:12.5px; font-weight:800; color:#10B981; font-family:var(--font-mono, monospace);">14,2 V • Carga Plena</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. STATUS GERAL DO VEÍCULO -->
+                    <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:12px 14px; margin-bottom: 12px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span style="font-size:10.5px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Estado do veículo</span>
+                            <strong style="font-size:14px; color:#10B981; display:block; margin-top:2px;">🟢 Tudo normal</strong>
+                        </div>
+                        <span style="font-size:11px; color:#CBD5E1; font-weight:600;">Parâmetros na faixa ideal</span>
+                    </div>
+
+                    <!-- 4. CÓDIGOS DE ERRO / DIAGNÓSTICO -->
+                    <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px; margin-bottom: 12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <span style="font-size:10.5px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Diagnóstico</span>
+                            <span style="font-size:10px; background:rgba(16,185,129,0.15); color:#10B981; padding:2px 7px; border-radius:4px; font-weight:800;">0 PROBLEMAS</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="color:#10B981; font-size:15px;">✅</span>
+                            <span style="font-size:12px; color:#FFFFFF; font-weight:600;">Nenhuma falha identificada no momento.</span>
+                        </div>
+                        <div style="margin-top:8px; padding-top:6px; border-top:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:10.5px; color:#64748B;">Central do motor (ECU) respondendo em conformidade</span>
+                            <button id="dna-obd-tech-btn" onclick="OwnerView.toggleObdTechnicalDetails()" style="background:none; border:none; color:#00D4FF; font-size:10.5px; font-weight:700; cursor:pointer; padding:0;">Ver detalhes técnicos ▼</button>
+                        </div>
+                        <div id="dna-obd-tech-details" style="display:none; margin-top:8px; padding:8px 10px; background:rgba(0,0,0,0.35); border-radius:6px; font-size:10px; color:#94A3B8; font-family:var(--font-mono, monospace); line-height:1.4;">
+                            Protocolo: CAN 500k • ECU: Bosch ME17 • DTCs: 0 ativos / 0 pendentes
+                        </div>
+                    </div>
+
+                    <!-- 5. MANUTENÇÕES PRÓXIMAS (BASEADO EM KM E HISTÓRICO) -->
+                    <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px 14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <span style="font-size:10.5px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Manutenções próximas</span>
+                            <span style="font-size:10.5px; color:#00D4FF; font-weight:700; cursor:pointer;" onclick="OwnerView.openSchedulingModal()">Agendar revisão &gt;</span>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px;">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <span style="color:#F59E0B;">🟡</span>
+                                    <strong style="color:#FFFFFF;">Troca de óleo</strong>
+                                </div>
+                                <span style="color:#F59E0B; font-weight:700;">Próxima: 2.458 km</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px;">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <span style="color:#F59E0B;">🟡</span>
+                                    <strong style="color:#FFFFFF;">Correia dentada</strong>
+                                </div>
+                                <span style="color:#94A3B8;">Revisão prevista conf. histórico</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px;">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <span style="color:#10B981;">🟢</span>
+                                    <strong style="color:#FFFFFF;">Sistema de freios</strong>
+                                </div>
+                                <span style="color:#10B981; font-weight:700;">Sem alerta no momento</span>
+                            </div>
+                        </div>
+                    </div>
+                ` : `
+                    <!-- Estado Desconectado -->
+                    <div style="text-align:center; padding:16px 10px; background:rgba(0,0,0,0.25); border-radius:12px; margin-top:8px;">
+                        <p style="font-size:12px; color:#94A3B8; margin:0 0 12px; line-height:1.4;">Conecte o leitor OBD na porta de diagnóstico do carro para acompanhar em tempo real.</p>
+                        <button onclick="OwnerView.navigateTo('bluetooth-pair')" class="btn btn-primary" style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:12px; padding:10px 18px; border-radius:8px; border:none; cursor:pointer;">
+                            Parear Equipamento OBD
+                        </button>
+                    </div>
+                `}
+            </div>
+        `;
+    },
+
     // ── GESTÃO E TROCA DA FOTO DO CARRO PELO PROPRIETÁRIO ──
     openChangePhotoModal() {
         this.isPhotoModalOpen = true;

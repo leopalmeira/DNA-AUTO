@@ -1282,4 +1282,226 @@ router.get('/:id/clients/activations', async (req, res) => {
     }
 });
 
+
+// Garantir tabela de registro de contatos de monitoramento da oficina
+try {
+    db.prepare(`
+        CREATE TABLE IF NOT EXISTS workshop_customer_contacts (
+            id TEXT PRIMARY KEY,
+            workshop_id TEXT NOT NULL,
+            client_name TEXT NOT NULL,
+            client_phone TEXT,
+            vehicle_plate TEXT NOT NULL,
+            vehicle_model TEXT,
+            contact_reason TEXT NOT NULL,
+            related_condition TEXT,
+            channel TEXT DEFAULT 'WhatsApp',
+            contact_timestamp TEXT NOT NULL,
+            workshop_user TEXT DEFAULT 'Oficina Parceira',
+            status TEXT DEFAULT 'COMUNICADO',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    `).run();
+} catch (e) {
+    console.warn('Tabela workshop_customer_contacts já existe ou erro:', e.message);
+}
+
+// ── MONITORAMENTO DOS CLIENTES (OBD, PROBLEMAS, MANUTENÇÃO & WHATSAPP) ──
+router.get('/:id/client-monitoring', async (req, res) => {
+    try {
+        const workshopId = req.params.id || 'ws_veloce';
+        const ws = db.prepare('SELECT * FROM workshops WHERE id = ?').get(workshopId) || { trade_name: 'Veloce Auto Center' };
+        const wsName = ws.trade_name || 'Veloce Auto Center';
+
+        // Buscar contatos já realizados para enriquecer os cards
+        const contacts = db.prepare('SELECT * FROM workshop_customer_contacts WHERE workshop_id = ? ORDER BY created_at DESC').all(workshopId) || [];
+        const contactMap = {};
+        contacts.forEach(c => {
+            if (!contactMap[c.vehicle_plate]) contactMap[c.vehicle_plate] = c;
+        });
+
+        // 1. Veículos com Problemas Identificados (DTCs / Falhas)
+        const problems = [
+            {
+                id: 'mon_prob_1',
+                client_name: 'João da Silva',
+                client_phone: '(11) 98765-4321',
+                vehicle_model: 'Fiat Argo 1.0 Flex',
+                license_plate: 'BRA2E19',
+                current_km: 82450,
+                status: 'PROBLEM',
+                status_label: 'Problema identificado',
+                status_color: '#EF4444',
+                condition_title: 'Falha identificada no sistema do motor',
+                condition_desc: 'Foi identificada uma falha relacionada ao funcionamento do motor (Falha de ignição / Sensor O2). Recomendada avaliação imediata.',
+                technical_code: 'P0301 (Falha no Cilindro 1) • Sonda Lambda O2',
+                whatsapp_default_message: `Olá, João. Aqui é da sua oficina ${wsName}. O acompanhamento do seu veículo Fiat Argo 1.0 (Placa BRA2E19) pelo DNA Auto identificou uma condição que recomendamos verificar. Gostaríamos de convidá-lo a trazer o veículo para uma avaliação. Podemos agendar um horário?`,
+                last_contact: contactMap['BRA2E19'] || null
+            },
+            {
+                id: 'mon_prob_2',
+                client_name: 'Roberto Silva',
+                client_phone: '(11) 96543-2109',
+                vehicle_model: 'Jeep Compass Longitude 2.0',
+                license_plate: 'QWE7A32',
+                current_km: 56890,
+                status: 'PROBLEM',
+                status_label: 'Problema identificado',
+                status_color: '#EF4444',
+                condition_title: 'Anomalia no circuito de injeção',
+                condition_desc: 'Sonda lambda enviando sinal fora da faixa ideal de mistura. Avaliação preventiva necessária para evitar aumento de consumo.',
+                technical_code: 'P0130 (Sensor O2 Banco 1)',
+                whatsapp_default_message: `Olá, Roberto. Aqui é da sua oficina ${wsName}. O DNA Auto detectou uma condição no circuito de injeção do seu Jeep Compass (Placa QWE7A32). Gostaríamos de convidá-lo a trazer o veículo para um diagnóstico preventivo. Podemos agendar um horário?`,
+                last_contact: contactMap['QWE7A32'] || null
+            }
+        ];
+
+        // 2. Veículos com Manutenção Próxima (Regras de KM e Histórico)
+        const upcoming = [
+            {
+                id: 'mon_upc_1',
+                client_name: 'Maria Oliveira',
+                client_phone: '(11) 97654-3210',
+                vehicle_model: 'VW Fox 1.0 Trendline',
+                license_plate: 'FOX1013',
+                current_km: 103200,
+                status: 'ATTENTION',
+                status_label: 'Manutenção próxima',
+                status_color: '#F59E0B',
+                condition_title: 'Troca de óleo próxima',
+                condition_desc: 'Próxima troca de óleo estimada para 105.000 km (faltam 1.800 km). Lubrificação é vital para a longevidade do motor.',
+                technical_code: 'Regra de Manutenção 10.000 km',
+                whatsapp_default_message: `Olá, Maria. Aqui é da sua oficina ${wsName}. O DNA Auto identificou que seu VW Fox (Placa FOX1013) está se aproximando da próxima manutenção (Troca de óleo aos 105.000 km). Gostaríamos de convidá-la para realizar a revisão. Podemos agendar um horário?`,
+                last_contact: contactMap['FOX1013'] || null
+            },
+            {
+                id: 'mon_upc_2',
+                client_name: 'Marcos Lima',
+                client_phone: '(11) 94321-0987',
+                vehicle_model: 'Jeep Renegade Sport 1.8',
+                license_plate: 'KLM1H23',
+                current_km: 62000,
+                status: 'ATTENTION',
+                status_label: 'Manutenção próxima',
+                status_color: '#F59E0B',
+                condition_title: 'Inspeção de pastilhas de freio',
+                condition_desc: 'Veículo atingiu 62.000 km. Estimativa de desgaste de pastilhas dianteiras atinge 80% conforme ciclo operacional.',
+                technical_code: 'Regra de Manutenção 30.000 km / 60.000 km',
+                whatsapp_default_message: `Olá, Marcos. Aqui é da sua oficina ${wsName}. O monitoramento DNA Auto identificou que seu Jeep Renegade (Placa KLM1H23) atingiu 62.000 km, momento ideal para a inspeção preventiva das pastilhas de freio. Gostaria de reservar um horário para avaliação?`,
+                last_contact: contactMap['KLM1H23'] || null
+            }
+        ];
+
+        // 3. Veículos Normais (Em dia)
+        const normal = [
+            {
+                id: 'mon_norm_1',
+                client_name: 'Patrícia Souza',
+                client_phone: '(11) 95432-1098',
+                vehicle_model: 'Honda HR-V EXL 1.8',
+                license_plate: 'XY29D10',
+                current_km: 38120,
+                status: 'NORMAL',
+                status_label: 'Tudo normal',
+                status_color: '#10B981',
+                condition_title: 'Veículo 100% monitorado e em conformidade',
+                condition_desc: 'Telemetria do OBD ativa, zero falhas na ECU e manutenções preventivas rigorosamente em dia.',
+                technical_code: '0 DTCs • Sistemas em conformidade',
+                whatsapp_default_message: `Olá, Patrícia! Aqui é da ${wsName}. Passando para parabenizá-la: seu Honda HR-V está 100% em dia no monitoramento DNA Auto!`,
+                last_contact: contactMap['XY29D10'] || null
+            }
+        ];
+
+        res.json({
+            success: true,
+            counts: {
+                total: problems.length + upcoming.length + normal.length,
+                problems: problems.length,
+                upcoming: upcoming.length,
+                normal: normal.length,
+                contacts_count: contacts.length
+            },
+            groups: {
+                problems,
+                upcoming,
+                normal
+            }
+        });
+    } catch (err) {
+        console.error('Erro em client-monitoring:', err);
+        res.status(500).json({ error: 'Erro ao consultar monitoramento dos clientes.' });
+    }
+});
+
+// Registrar Contato Realizado com o Cliente
+router.post('/:id/contact-log', async (req, res) => {
+    try {
+        const workshopId = req.params.id || 'ws_veloce';
+        const { client_name, client_phone, vehicle_plate, vehicle_model, contact_reason, related_condition, workshop_user } = req.body;
+
+        if (!client_name || !vehicle_plate) {
+            return res.status(400).json({ error: 'Nome do cliente e placa são obrigatórios.' });
+        }
+
+        const id = 'cont_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+        const now = new Date();
+        const contactTimestamp = now.toLocaleDateString('pt-BR') + ' — ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+        db.prepare(`
+            INSERT INTO workshop_customer_contacts (
+                id, workshop_id, client_name, client_phone, vehicle_plate,
+                vehicle_model, contact_reason, related_condition, channel,
+                contact_timestamp, workshop_user, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'WhatsApp', ?, ?, 'COMUNICADO')
+        `).run(
+            id,
+            workshopId,
+            client_name,
+            client_phone || '',
+            vehicle_plate.toUpperCase(),
+            vehicle_model || '',
+            contact_reason || 'Alerta de Monitoramento',
+            related_condition || '',
+            contactTimestamp,
+            workshop_user || 'Oficina Parceira'
+        );
+
+        res.status(201).json({
+            success: true,
+            message: 'Contato registrado com sucesso no histórico do veículo!',
+            contact: {
+                id,
+                client_name,
+                vehicle_plate: vehicle_plate.toUpperCase(),
+                contact_timestamp: contactTimestamp,
+                status: 'COMUNICADO'
+            }
+        });
+    } catch (err) {
+        console.error('Erro ao registrar contato da oficina:', err);
+        res.status(500).json({ error: 'Erro ao salvar registro de contato.' });
+    }
+});
+
+// Listar Histórico de Contatos Realizados
+router.get('/:id/contact-log', async (req, res) => {
+    try {
+        const workshopId = req.params.id || 'ws_veloce';
+        const contacts = db.prepare(`
+            SELECT * FROM workshop_customer_contacts
+            WHERE workshop_id = ?
+            ORDER BY created_at DESC
+        `).all(workshopId);
+
+        res.json({
+            success: true,
+            total: contacts.length,
+            contacts: contacts || []
+        });
+    } catch (err) {
+        console.error('Erro ao listar histórico de contatos:', err);
+        res.status(500).json({ error: 'Erro ao consultar contatos da oficina.' });
+    }
+});
+
 module.exports = router;

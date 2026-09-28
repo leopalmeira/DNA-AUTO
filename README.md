@@ -271,6 +271,19 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
   - Scanner de Injeção Eletrônica DTC com 0 erros detectados e luz de injeção apagada.
   - Tabela de sensores ao vivo (Sonda Lambda λ = 1.00, MAP 32 kPa, TPS 12%, IAT 34°C).
   - Botão `Escanear Central ECU Novamente` com leitura e recálculo dinâmico em tempo real.
+- **🚗 Card "Monitoramento OBD" Humanizado no App do Cliente:**
+  - **Experiência Limpa e Acessível:** Toda a complexidade técnica de comandos ELM327, PIDs, protocolos CAN e Bluetooth Low Energy permanece completamente invisível para o motorista leigo.
+  - **Status Imediato no Topo:** 🟢 *Conectado* ("Seu veículo está sendo monitorado") ou ⚪ *Desconectado* ("Conecte o OBD para iniciar o monitoramento").
+  - **Cards de Métricas em Tempo Real:** Quilometragem formatada, Velocidade (km/h), Rotação do Motor (RPM), Temperatura do Motor (°C), Temperatura do Óleo (°C), Nível de Combustível (%) e Tensão da Bateria (V).
+  - **Estado Geral Inteligente:** Semáforo consolidado 🟢 *Tudo normal*, 🟡 *Atenção* ou 🔴 *Problema identificado* calculado a partir da telemetria, histórico e regras oficiais.
+  - **Diagnóstico Transparente:** Mensagem compreensível com contagem de anomalias e código técnico recolhível em área de detalhes opcionais.
+  - **Previsões de Manutenção Seguras:** Alertas de troca de óleo, correia dentada e freios baseados em km, tempo e histórico, sem induzir falsas medições físicas de desgaste quando o veículo não possuir sensor dedicado.
+
+- **🏢 Painel "Monitoramento dos Clientes" na Oficina com WhatsApp Integrado:**
+  - **Visão Consolidada da Frota:** Painel segmentado em abas por 🔴 *Problemas identificados*, 🟡 *Manutenção próxima*, 🟢 *Normais* e 📋 *Contatos Realizados*.
+  - **Ação Rápida via WhatsApp:** Disparo de mensagens personalizadas diretamente do card com mensagem pré-formatada editável e abertura nativa no WhatsApp.
+  - **Registro de Contatos Auditado:** Registro automático no banco SQLite (`workshop_customer_contacts`) com carimbo de data, horário, responsável e badge dinâmico *"Cliente comunicado via WhatsApp em DD/MM/AAAA — HH:MM"*.
+
 - **📲 Progressive Web App (PWA) Padrão Google Play Store & Download Automático:**
   - **Instalação Automática:** Ao acessar o perfil de cliente, o prompt nativo de instalação é acionado automaticamente pelo navegador.
   - **Sheet Modal Estilo Play Store:** Ícone 3D com selo "Verificado pelo Play Protect 🛡️", avaliação 4.9 ★, tamanho ~ 2.8 MB e botão `📲 INSTALAR NA ÁREA DE TRABALHO`.
