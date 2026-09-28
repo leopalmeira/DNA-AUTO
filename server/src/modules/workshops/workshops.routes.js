@@ -3,11 +3,13 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const bcrypt = require('bcryptjs');
 const db = require('../../database/db');
 const { authenticateToken, authorizeRoles } = require('../../middlewares/auth');
 const { logAudit } = require('../../middlewares/audit');
 const baileysService = require('./baileys.service');
 const evolutionService = require('./evolution.service');
+const authRoutes = require('../auth/auth.routes');
 
 // Diretório para upload de fotos, áudios e vídeos do WhatsApp da Central de Atendimento
 const WHATSAPP_UPLOADS_DIR = path.resolve(__dirname, '../../..', 'uploads', 'whatsapp');
@@ -29,6 +31,15 @@ const whatsappStorage = multer.diskStorage({
 const uploadWhatsAppMedia = multer({
     storage: whatsappStorage,
     limits: { fileSize: 30 * 1024 * 1024 } // 30MB
+});
+
+// Alias oficial para Cadastro de Oficina (Suporte a /api/v1/workshops/register e PWA mobile)
+router.post('/register', (req, res) => {
+    if (authRoutes.handleRegisterWorkshop) {
+        return authRoutes.handleRegisterWorkshop(req, res);
+    }
+    req.url = '/register-workshop';
+    return authRoutes(req, res);
 });
 
 // Listagem de oficinas com métricas consolidadas
@@ -1138,6 +1149,8 @@ router.post('/:id/clients/register-activation', async (req, res) => {
         const plate = (req.body.license_plate || req.body.plate || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
         const clientName = (req.body.client_name || req.body.name || '').trim();
         const rawPhone = (req.body.whatsapp || req.body.phone || req.body.client_phone || '').trim();
+        const cleanEmail = (req.body.email || req.body.client_email || '').trim().toLowerCase();
+        const rawPassword = req.body.password || req.body.client_password || '';
         const brand = (req.body.brand || '').trim();
         const model = (req.body.model || req.body.vehicle_model || '').trim();
 
@@ -1179,18 +1192,69 @@ router.post('/:id/clients/register-activation', async (req, res) => {
             db.prepare(`UPDATE vehicles SET model = ?, brand = COALESCE(NULLIF(brand, 'Veículo'), ?), updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(model, brand || model.split(' ')[0], vehicle.id);
         }
 
-        // 2. Verifica ou cria Proprietário
-        let owner = db.prepare(`SELECT * FROM owners WHERE phone = ? OR name = ?`).get(rawPhone, clientName);
+        // 2. Provisiona Usuário e Proprietário caso e-mail tenha sido fornecido
+        let userId = null;
+        if (cleanEmail && cleanEmail.includes('@')) {
+            let existingUser = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanEmail);
+            if (existingUser) {
+                userId = existingUser.id;
+                if (rawPassword && rawPassword.length >= 6) {
+                    const passHash = bcrypt.hashSync(rawPassword, 10);
+                    db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(passHash, userId);
+                }
+            } else {
+                userId = `usr_${Date.now()}`;
+                const cleanPhoneDigits = rawPhone.replace(/\D/g, '');
+                const initialPass = (rawPassword && rawPassword.length >= 6) ? rawPassword : (cleanPhoneDigits.length >= 6 ? cleanPhoneDigits.slice(-6) : '123456');
+                const passHash = bcrypt.hashSync(initialPass, 10);
+                db.prepare(`
+                    INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
+                    VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0)
+                `).run(userId, clientName, cleanEmail, passHash, rawPhone || null);
+            }
+        }
+
+        // 3. Verifica ou cria Proprietário
+        let owner = null;
+        if (userId) {
+            owner = db.prepare(`SELECT * FROM owners WHERE user_id = ? OR LOWER(email) = ?`).get(userId, cleanEmail);
+        }
         if (!owner) {
+            owner = db.prepare(`SELECT * FROM owners WHERE phone = ? OR name = ?`).get(rawPhone, clientName);
+        }
+
+        if (owner) {
+            db.prepare(`
+                UPDATE owners 
+                SET user_id = COALESCE(user_id, ?), 
+                    email = COALESCE(NULLIF(email, ''), ?), 
+                    phone = COALESCE(NULLIF(?, ''), phone), 
+                    name = COALESCE(NULLIF(?, ''), name) 
+                WHERE id = ?
+            `).run(userId, cleanEmail || null, rawPhone, clientName, owner.id);
+            owner = db.prepare(`SELECT * FROM owners WHERE id = ?`).get(owner.id);
+        } else {
             const ownerId = `own_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
             db.prepare(`
-                INSERT INTO owners (id, name, document_cpf, phone, created_at)
-                VALUES (?, ?, '000.000.000-00', ?, CURRENT_TIMESTAMP)
-            `).run(ownerId, clientName, rawPhone);
+                INSERT INTO owners (id, user_id, name, document_cpf, email, phone, created_at)
+                VALUES (?, ?, ?, '000.000.000-00', ?, ?, CURRENT_TIMESTAMP)
+            `).run(ownerId, userId, clientName, cleanEmail || null, rawPhone);
             owner = db.prepare(`SELECT * FROM owners WHERE id = ?`).get(ownerId);
         }
 
-        // 3. Gera Código de Ativação Único
+        // 4. Vincula o Veículo ao Proprietário diretamente
+        if (owner && vehicle) {
+            db.prepare('UPDATE vehicles SET current_owner_id = ? WHERE id = ?').run(owner.id, vehicle.id);
+            const existsTransfer = db.prepare('SELECT id FROM ownership_transfers WHERE vehicle_id = ? AND new_owner_id = ?').get(vehicle.id, owner.id);
+            if (!existsTransfer) {
+                db.prepare(`
+                    INSERT INTO ownership_transfers (id, vehicle_id, new_owner_id, status, requested_at, completed_at, transfer_mileage, notes)
+                    VALUES (?, ?, ?, 'COMPLETED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0, 'Vinculação direta via oficina')
+                `).run(`trf_${Date.now()}`, vehicle.id, owner.id);
+            }
+        }
+
+        // 5. Gera Código de Ativação Único (para compartilhamento via WhatsApp)
         let activationCode = generateActivationCode();
         let attempts = 0;
         while (attempts < 10) {
@@ -1201,26 +1265,28 @@ router.post('/:id/clients/register-activation', async (req, res) => {
         }
 
         const actId = `act_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        const activationStatus = cleanEmail ? 'ACTIVATED' : 'PENDING';
         db.prepare(`
             INSERT INTO client_activations (id, workshop_id, client_name, whatsapp, license_plate, activation_code, vehicle_id, owner_id, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', CURRENT_TIMESTAMP)
-        `).run(actId, workshopId, clientName, rawPhone, plate, activationCode, vehicle.id, owner.id);
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        `).run(actId, workshopId, clientName, rawPhone, plate, activationCode, vehicle.id, owner.id, activationStatus);
 
         const baseUrl = process.env.SERVER_URL || 'https://dna-auto-vua4.onrender.com';
         const clientAppUrl = `${baseUrl}/cliente?code=${activationCode}`;
 
         res.status(201).json({
             success: true,
-            message: `Cliente ${clientName} cadastrado com sucesso! Código de ativação gerado.`,
+            message: `Cliente ${clientName} cadastrado com sucesso! Veículo vinculado à garagem digital.`,
             activation_code: activationCode,
             client_app_url: clientAppUrl,
             client: {
                 name: clientName,
                 whatsapp: rawPhone,
+                email: cleanEmail || null,
                 plate: plate,
                 vehicle_id: vehicle.id
             },
-            whatsapp_share_text: `Olá ${clientName}! Seu cadastro no DNA AUTO foi iniciado pela oficina ${workshop.trade_name}.\n\n📲 Para acompanhar o histórico, inspeções e manutenções do seu veículo (${plate}), acesse o App do Cliente pelo link direto:\n${clientAppUrl}\n\nCódigo de ativação: *${activationCode}*`
+            whatsapp_share_text: `Olá ${clientName}! Seu cadastro no DNA AUTO foi realizado pela oficina ${workshop.trade_name}.\n\n📲 Seu veículo (${plate}) já está disponível na sua Garagem Digital!\nBasta acessar: ${clientAppUrl}\nCódigo de acesso: *${activationCode}*`
         });
     } catch (err) {
         console.error('Erro ao cadastrar cliente e gerar ativação:', err);

@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const bcrypt = require('bcryptjs');
 const db = require('../../database/db');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'dna_auto_secret_jwt_key_2026_super_secure';
@@ -457,13 +458,59 @@ router.post('/register', authenticateToken, (req, res) => {
                 finalPhoto
             );
 
-            // 2. Vincular dados do proprietário (Nome e Telefone/WhatsApp)
-            if (cleanOwnerName) {
-                const ownerId = 'own_' + Date.now();
+            // 2. Vincular dados do proprietário (Nome, Telefone, WhatsApp e E-mail com auto-provisionamento de usuário)
+            let ownerId = null;
+            let userId = null;
+            const cleanOwnerEmail = (req.body.owner_email || req.body.client_email || req.body.email || '').trim().toLowerCase();
+            const rawOwnerPassword = req.body.owner_password || req.body.password || '';
+
+            if (cleanOwnerEmail && cleanOwnerEmail.includes('@')) {
+                const existingUser = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanOwnerEmail);
+                if (existingUser) {
+                    userId = existingUser.id;
+                    if (rawOwnerPassword && rawOwnerPassword.length >= 6) {
+                        const passHash = bcrypt.hashSync(rawOwnerPassword, 10);
+                        db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(passHash, userId);
+                    }
+                } else {
+                    userId = 'usr_' + Date.now();
+                    const cleanPhoneDigits = cleanOwnerPhone.replace(/\D/g, '');
+                    const initialPass = (rawOwnerPassword && rawOwnerPassword.length >= 6) ? rawOwnerPassword : (cleanPhoneDigits.length >= 6 ? cleanPhoneDigits.slice(-6) : '123456');
+                    const passHash = bcrypt.hashSync(initialPass, 10);
+                    db.prepare(`
+                        INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
+                        VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0)
+                    `).run(userId, cleanOwnerName || 'Cliente', cleanOwnerEmail, passHash, cleanOwnerPhone || null);
+                }
+
+                const existingOwner = db.prepare('SELECT id FROM owners WHERE user_id = ? OR LOWER(email) = ?').get(userId, cleanOwnerEmail);
+                if (existingOwner) {
+                    ownerId = existingOwner.id;
+                    db.prepare(`
+                        UPDATE owners 
+                        SET user_id = ?, 
+                            name = COALESCE(NULLIF(?, ''), name), 
+                            phone = COALESCE(NULLIF(?, ''), phone),
+                            email = ?
+                        WHERE id = ?
+                    `).run(userId, cleanOwnerName || '', cleanOwnerPhone || '', cleanOwnerEmail, ownerId);
+                } else {
+                    ownerId = 'own_' + Date.now();
+                    db.prepare(`
+                        INSERT INTO owners (id, user_id, name, document_cpf, email, phone, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                    `).run(ownerId, userId, cleanOwnerName || 'Cliente', cleanOwnerCpf, cleanOwnerEmail, cleanOwnerPhone);
+                }
+            } else if (cleanOwnerName) {
+                ownerId = 'own_' + Date.now();
                 db.prepare(`
                     INSERT INTO owners (id, name, document_cpf, phone, created_at)
                     VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
                 `).run(ownerId, cleanOwnerName, cleanOwnerCpf, cleanOwnerPhone);
+            }
+
+            if (ownerId) {
+                db.prepare('UPDATE vehicles SET current_owner_id = ? WHERE id = ?').run(ownerId, vehicleId);
 
                 const transferId = 'trf_' + Date.now();
                 db.prepare(`
@@ -720,13 +767,59 @@ router.post('/register-from-api', authenticateToken, async (req, res) => {
                 fipeScore, fipeModelText, fipeBrandText, fipeFuelText, allFipeJson
             );
 
-            // Vincular dados do proprietário (Nome e Telefone/WhatsApp)
-            if (cleanOwnerName) {
-                const ownerId = 'own_' + Date.now();
+            // Vincular dados do proprietário (Nome, Telefone, WhatsApp e E-mail com auto-provisionamento de usuário)
+            let ownerId = null;
+            let userId = null;
+            const cleanOwnerEmail = (req.body.owner_email || req.body.client_email || req.body.email || (customData && (customData.owner_email || customData.email)) || '').trim().toLowerCase();
+            const rawOwnerPassword = req.body.owner_password || req.body.password || '';
+
+            if (cleanOwnerEmail && cleanOwnerEmail.includes('@')) {
+                const existingUser = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanOwnerEmail);
+                if (existingUser) {
+                    userId = existingUser.id;
+                    if (rawOwnerPassword && rawOwnerPassword.length >= 6) {
+                        const passHash = bcrypt.hashSync(rawOwnerPassword, 10);
+                        db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(passHash, userId);
+                    }
+                } else {
+                    userId = 'usr_' + Date.now();
+                    const cleanPhoneDigits = cleanOwnerPhone.replace(/\D/g, '');
+                    const initialPass = (rawOwnerPassword && rawOwnerPassword.length >= 6) ? rawOwnerPassword : (cleanPhoneDigits.length >= 6 ? cleanPhoneDigits.slice(-6) : '123456');
+                    const passHash = bcrypt.hashSync(initialPass, 10);
+                    db.prepare(`
+                        INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
+                        VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0)
+                    `).run(userId, cleanOwnerName || 'Cliente', cleanOwnerEmail, passHash, cleanOwnerPhone || null);
+                }
+
+                const existingOwner = db.prepare('SELECT id FROM owners WHERE user_id = ? OR LOWER(email) = ?').get(userId, cleanOwnerEmail);
+                if (existingOwner) {
+                    ownerId = existingOwner.id;
+                    db.prepare(`
+                        UPDATE owners 
+                        SET user_id = ?, 
+                            name = COALESCE(NULLIF(?, ''), name), 
+                            phone = COALESCE(NULLIF(?, ''), phone),
+                            email = ?
+                        WHERE id = ?
+                    `).run(userId, cleanOwnerName || '', cleanOwnerPhone || '', cleanOwnerEmail, ownerId);
+                } else {
+                    ownerId = 'own_' + Date.now();
+                    db.prepare(`
+                        INSERT INTO owners (id, user_id, name, document_cpf, email, phone, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                    `).run(ownerId, userId, cleanOwnerName || 'Cliente', cleanOwnerCpf, cleanOwnerEmail, cleanOwnerPhone);
+                }
+            } else if (cleanOwnerName) {
+                ownerId = 'own_' + Date.now();
                 db.prepare(`
                     INSERT INTO owners (id, name, document_cpf, phone, created_at)
                     VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
                 `).run(ownerId, cleanOwnerName, cleanOwnerCpf, cleanOwnerPhone);
+            }
+
+            if (ownerId) {
+                db.prepare('UPDATE vehicles SET current_owner_id = ? WHERE id = ?').run(ownerId, vehicleId);
 
                 const transferId = 'trf_' + Date.now();
                 db.prepare(`

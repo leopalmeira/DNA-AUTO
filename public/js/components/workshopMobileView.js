@@ -1230,20 +1230,41 @@
         const name = document.getElementById('mobile-reg-owner-name')?.value?.trim() || 'Cliente';
         const phone = document.getElementById('mobile-reg-owner-wpp')?.value?.trim() || '';
         const email = document.getElementById('mobile-reg-owner-email')?.value?.trim() || '';
+        const password = document.getElementById('mobile-reg-owner-pass')?.value?.trim() || '';
 
         try {
-            // Tenta registrar na API se estiver disponível
-            if (API.registerClient) {
-                await API.registerClient({
-                    name,
-                    whatsapp: phone,
-                    email,
-                    license_plate: plate
-                }).catch(() => {});
+            // Registra cliente e ativa veículo no backend DNA AUTO
+            if (typeof API !== 'undefined') {
+                if (API.registerClient) {
+                    await API.registerClient({
+                        name,
+                        whatsapp: phone,
+                        phone,
+                        email,
+                        password,
+                        license_plate: plate
+                    }).catch(() => {});
+                }
+                const wsId = this.currentWorkshopId || (typeof localStorage !== 'undefined' ? localStorage.getItem('dna_workshop_id') : null) || 'ws_default';
+                if (API.registerClientActivation) {
+                    await API.registerClientActivation(wsId, {
+                        license_plate: plate,
+                        client_name: name,
+                        client_phone: phone,
+                        whatsapp: phone,
+                        email,
+                        password
+                    }).catch(() => {});
+                }
             }
         } catch (_) {}
 
-        alert(`🎉 Cliente ${name} cadastrado com sucesso e vinculado à placa ${plate}!\nO passaporte digital DNA AUTO foi ativado.`);
+        const successMsg = `🎉 Cliente ${name} cadastrado com sucesso e vinculado à placa ${plate}!\nO veículo já está disponível para o cliente acessar no App do Cliente com seu e-mail.`;
+        if (typeof this.showToast === 'function') {
+            this.showToast(successMsg, 'success', 5000);
+        } else {
+            alert(successMsg);
+        }
         const existingVeh = this.findVehicleByPlate(plate);
         this.selectedMobileVehicle = {
             license_plate: plate,
@@ -4080,19 +4101,38 @@
                 throw new Error('Serviço indisponível no momento.');
             }
 
-            const res = await API.request('/workshops/register', {
-                method: 'POST',
-                body: JSON.stringify({ trade_name: nome, email, phone: whatsapp, password: senha })
-            });
+            let res = null;
+            if (typeof API !== 'undefined' && API.registerWorkshop) {
+                res = await API.registerWorkshop({
+                    tradeName: nome,
+                    trade_name: nome,
+                    email,
+                    phone: whatsapp,
+                    whatsapp,
+                    password: senha
+                });
+            } else {
+                res = await API.request('/auth/register-workshop', {
+                    method: 'POST',
+                    body: JSON.stringify({ tradeName: nome, trade_name: nome, email, phone: whatsapp, password: senha })
+                }).catch(() => API.request('/workshops/register', {
+                    method: 'POST',
+                    body: JSON.stringify({ tradeName: nome, trade_name: nome, email, phone: whatsapp, password: senha })
+                }));
+            }
 
-            if (!res || (!res.token && !res.id && !res.workshop_id)) {
+            if (!res || (!res.token && !res.id && !res.workshop_id && (!res.user || !res.user.id))) {
                 throw new Error((res && res.error) || (res && res.message) || 'Não foi possível criar a conta. Tente novamente.');
             }
 
             // ✅ Cadastro aprovado
             if (res.token) localStorage.setItem('dna_token', res.token);
             if (res.user) localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
-            this.officialWorkshopName = nome;
+            if (res.user && res.user.workshop && res.user.workshop.workshop_id) {
+                localStorage.setItem('dna_workshop_id', res.user.workshop.workshop_id);
+                this.currentWorkshopId = res.user.workshop.workshop_id;
+            }
+            this.officialWorkshopName = (res.user && res.user.workshop && res.user.workshop.workshop_name) || nome;
             localStorage.removeItem('dna_logged_out');
             this.currentSection = 'dashboard';
             this.renderMobileShell();

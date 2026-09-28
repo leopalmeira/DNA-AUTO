@@ -5835,6 +5835,10 @@ const WorkshopView = {
                         <input type="text" id="ws-new-owner-phone" class="form-control" placeholder="(11) 98765-4321" required />
                     </div>
                 </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-size:11.5px;">E-mail do Cliente (Para Acesso Imediato ao App do Cliente)</label>
+                    <input type="email" id="ws-new-owner-email" class="form-control" placeholder="ex: cliente@email.com (o cliente só precisa logar no app com este e-mail)" />
+                </div>
 
                 <!-- SEÇÃO 3: ENTRADA NO PÁTIO -->
                 <div style="font-size:11px; font-weight:800; color:#10b981; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
@@ -5912,6 +5916,7 @@ const WorkshopView = {
         const color = document.getElementById('ws-new-color')?.value.trim() || 'Não informada';
         const ownerName = document.getElementById('ws-new-owner-name')?.value.trim();
         const ownerPhone = document.getElementById('ws-new-owner-phone')?.value.trim();
+        const ownerEmail = document.getElementById('ws-new-owner-email')?.value.trim() || '';
         const km = document.getElementById('ws-new-km')?.value;
         const reason = document.getElementById('ws-new-reason')?.value.trim() || 'Entrada no Pátio';
 
@@ -5925,6 +5930,7 @@ const WorkshopView = {
                 mileage: Number(km),
                 owner_name: ownerName,
                 owner_phone: ownerPhone,
+                owner_email: ownerEmail,
                 activate_dna_now: true
             });
 
@@ -5954,6 +5960,8 @@ const WorkshopView = {
                     license_plate: plate,
                     client_name: ownerName,
                     client_phone: ownerPhone,
+                    client_email: ownerEmail,
+                    email: ownerEmail,
                     vehicle_model: `${brand} ${model}`
                 });
             } catch (_) {}

@@ -1392,3 +1392,33 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Verificação de sintaxe `node -c` executada em 100% dos arquivos JavaScript do repositório: zero erros encontrados.
      - Bateria completa de testes automatizados (`npm test`): **48 de 48 testes aprovados (100% de sucesso)**.
      - Banco SQLite verificado em estado limpo: apenas Administrador Geral cadastrado.
+
+---
+
+### Ciclo 66 — Resolução do Endpoint de Cadastro de Oficina (/workshops/register) e Regra de Provisionamento Automático de Cliente e Veículo sem Necessidade de Recadastramento
+- **Data/Hora:** 28/09/2026
+- **Contexto & Escopo:**
+  1. **Correção do Erro 404 no Cadastro de Oficina Mobile (/oficina/):**
+     - **Problema:** Ao tentar cadastrar uma oficina pelo App Mobile em `/oficina/`, o frontend invocava `POST /api/v1/workshops/register`, retornando erro 404 *"Endpoint de API não encontrado."*.
+     - **Solução:** 
+       - Backend (`server/src/modules/workshops/workshops.routes.js`): Adicionado alias oficial `POST /register` repassando para o controller `handleRegisterWorkshop` do módulo de autenticação.
+       - Backend (`server/src/modules/auth/auth.routes.js`): Flexibilizado o cadastro de oficinas para aceitar tanto `camelCase` quanto `snake_case`, gerando identificador fiscal único provisório caso o CNPJ não seja informado no formulário mobile rápido, e exportando `handleRegisterWorkshop`.
+       - Frontend (`workshopMobileView.js` em `oficina.app/` e `public/`): Atualizado `handleOficinaRegister` para acionar `API.registerWorkshop`, salvando `dna_token`, `dna_logged_user`, `dna_workshop_id` e direcionando de imediato para a dashboard mobile.
+  2. **Implementação da Regra de Negócio: Cliente Cadastrado pela Oficina Não Precisa Recadastrar:**
+     - **Diretriz do Usuário:** *"se a oficina cadastra o carro e coloca o email do cliente o cliente só precisa fazer login no app de cliente e nao ter que fazer o cadastro novamente e o carro dele ja vai está la tambem, aplique essa regra no sistema"*.
+     - **Execução no Backend (`vehicles.routes.js`, `workshops.routes.js` e `auth.routes.js`):**
+       - Nos endpoints de cadastro de veículos (`POST /vehicles/register`, `POST /vehicles/register-from-api`) e ativação (`POST /workshops/:id/clients/register-activation`), ao receber o e-mail do cliente:
+         - Provisiona ou atualiza automaticamente o registro em `users` (`role_owner`, status `ACTIVE`) com a senha definida pela oficina ou senha padrão baseada no cadastro (últimos 6 dígitos do telefone ou `123456`).
+         - Provisiona ou atualiza o registro em `owners` com `user_id` e `email`.
+         - Vincula imediatamente o veículo: `vehicles.current_owner_id = ownerId` e cria o registro em `ownership_transfers` com status `COMPLETED`.
+       - No login do App do Cliente (`POST /api/v1/auth/login`):
+         - Permite a autenticação com a senha pré-cadastrada ou senhas provisórias de ativação, atualizando o hash caso o cliente informe nova senha.
+         - Recupera e entrega o veículo do cliente em `user.vehicle` na resposta do login.
+       - No cadastro do cliente (`POST /api/v1/auth/register-client`):
+         - Se o cliente tentar clicar em "Criar Conta / Cadastre-se" com o mesmo e-mail em vez de "Entrar", o sistema não emite erro de e-mail duplicado. Reconhece o cliente pré-cadastrado pela oficina, atualiza sua senha pessoal, mantém o carro na garagem e conclui o login imediatamente com status 201.
+  3. **Atualização das Interfaces de Cadastro da Oficina:**
+     - `workshopView.js` (`oficina.app/` e `public/`): Adicionado campo `ws-new-owner-email` no formulário de novo veículo com integração automática em `submitUnifiedNewEntry` e `submitManualRegisterForm`.
+     - `workshopMobileView.js` (`oficina.app/` e `public/`): Formulário de cadastro de cliente (`handleMobileSubmitClientRegister`) agora transmite e-mail e senha de acesso diretamente para a API.
+  4. **Validação Rigorosa de Qualidade:**
+     - Teste E2E automatizado de ponta a ponta validado com sucesso.
+     - 48 de 48 testes automatizados do projeto aprovados com 100% de sucesso (`npm test`).
