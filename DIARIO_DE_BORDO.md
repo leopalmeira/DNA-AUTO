@@ -1422,3 +1422,30 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   4. **Validação Rigorosa de Qualidade:**
      - Teste E2E automatizado de ponta a ponta validado com sucesso.
      - 48 de 48 testes automatizados do projeto aprovados com 100% de sucesso (`npm test`).
+
+---
+
+### Ciclo 67 — Implementação do Design System Oficial de 12 Telas do Figma com o Carrossel Vertical 3D Oficial de Serviços
+- **Data/Hora:** 29/09/2026
+- **Contexto & Escopo:**
+  1. **Atendimento Direto à Diretriz do Usuário:**
+     - Aplicação fiel do modelo visual de 12 telas do Figma para o aplicativo mobile da oficina, preservando rigorosamente o **Sistema de Carrossel Vertical 3D Oficial DNA AUTO** para a seleção de serviços (em vez de cards estáticos ou rolagem horizontal).
+  2. **Estrutura das 12 Telas Implementadas:**
+     - **Tela 1 (Login Dark):** Tema escuro automotivo, diamante luminoso azul, inputs com ícones embutidos, botão 'Entrar' e rodapé 'DNA AUTO v1.0.0'.
+     - **Tela 2 (Início / Home):** Top bar escura com menu hamburger, logo e notificações; saudação 'Olá, Leandro' com badge 'Oficina Conectada'; banner de destaque; botões rápidos 'Cadastrar Veículo' e 'Lançar Serviço'; grade 4x2 de categorias; outros serviços; alerta de manutenções pendentes; bottom navigation bar com 5 abas.
+     - **Telas 3 a 7 (Lançar Serviço - Stepper de 5 Passos):**
+       - Top bar com botão voltar '←' e indicador visual de 5 etapas (1. Veículo, 2. Serviço, 3. Detalhes, 4. Fotos, 5. Confirmar).
+       - *Etapa 1 (Veículo):* Campo de busca por placa e listagem de veículos cadastrados (Honda Civic, Corolla, Palio, Onix, Fiesta).
+       - *Etapa 2 (Serviço):* Card do veículo selecionado com link 'Trocar veículo' e **Carrossel Vertical 3D Oficial DNA AUTO** com rotação suave, física, perspectiva, botões ↑ ↓, swipe vertical e seleção instantânea.
+       - *Etapa 3 (Detalhes):* Resumo do veículo e do serviço com precificação (ex: R$ 120,00), slots de fotos da peça substituída com '+ Adicionar foto', textarea descritiva com contador regressivo (0/500) e botões '← Voltar' e 'Próximo →'.
+       - *Etapa 4 (Fotos):* Seção 'Fotos do serviço (opcional)' com fotos da peça substituída, slot tracejado 'Foto da nota fiscal (opcional)', textarea de observações adicionais (0/500) e botões '← Voltar' e 'Próximo →'.
+       - *Etapa 5 (Confirmar):* Tela de revisão final consolidada com veículo, serviço, valor, galeria de fotos anexadas, descrição técnica e botão em largura total '✓ Finalizar Serviço'.
+     - **Tela 8 (Clientes):** Campo de busca, lista de clientes com fotos dos veículos, placas, telefones e atalho 'Ver histórico >'.
+     - **Tela 9 (Agenda):** Seletor semanal de dias (Seg 26 a Dom 01 com dia ativo destacado) e timeline com badges coloridos ('Em andamento', 'Pendente', 'Confirmado').
+     - **Tela 10 (Serviços Realizados):** Busca, abas de filtro ('Todos', 'Em andamento', 'Concluídos') e histórico detalhado com data/hora e badges.
+     - **Tela 11 (Manutenções dos Clientes):** Cards preventivos com badges coloridos de urgência ('Vence em 5 dias', 'Em 20 dias', 'Em 45 dias', 'Em 60 dias', 'Promoção especial').
+     - **Tela 12 (Menu Drawer Lateral Obsidian):** Painel deslizante escuro com perfil de Leandro, status 'Oficina Conectada', atalhos operacionais e rodapé com identificação da oficina e CNPJ.
+  3. **Integração na Tela de Entrada de Veículos:**
+     - Substituição dos antigos cards horizontais pelo **Carrossel Vertical 3D Oficial**, garantindo coerência visual e de usabilidade em todo o ecossistema mobile.
+  4. **Validação Rigorosa:**
+     - 48 de 48 testes automatizados aprovados com 100% de sucesso (npm test).
