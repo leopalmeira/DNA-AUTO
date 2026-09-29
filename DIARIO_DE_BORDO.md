@@ -1449,3 +1449,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Substituição dos antigos cards horizontais pelo **Carrossel Vertical 3D Oficial**, garantindo coerência visual e de usabilidade em todo o ecossistema mobile.
   4. **Validação Rigorosa:**
      - 48 de 48 testes automatizados aprovados com 100% de sucesso (npm test).
+
+---
+
+### Ciclo 68 — Criação da Página Oficial de Apresentação e Parceria para Oficinas (/parceiro) e Mapeamento de Rotas no Servidor
+- **Data/Hora:** 29/09/2026
+- **Contexto & Escopo:**
+  1. **Atendimento Direto à Solicitação do Usuário:**
+     - Criação de link direto e página dedicada para apresentar a proposta comercial e tecnológica do DNA AUTO às oficinas mecânicas e auto centers, reproduzindo com fidelidade total o design oficial fornecido.
+  2. **Página Autônoma em Alta Resolução (public/parceiro.html e public/autocenter.html):**
+     - **Header:** Logotipo DNA AUTO com slogan 'Tecnologia que fortalece sua oficina.', menu de âncoras (Benefícios, Como funciona, Lucro para a oficina, Planos, Suporte) e botão de ação 'Quero ser parceiro →'.
+     - **Hero Section:** Headline 'Mais controle. Mais serviços. Mais faturamento.', foto do profissional técnico com tablet de diagnóstico, e 4 cards laterais de benefícios imediatos (Mais clientes, Aumento do faturamento, Instalação rápida e simples, Suporte e treinamento).
+     - **Seção O que você recebe:** Grade clara com Dispositivos OBD para venda, App do cliente, Plataforma DNA AUTO e Alertas/Recomendações.
+     - **Seção Como funciona:** 4 passos ilustrados (Recebimento dos equipamentos, Instalação no carro, Plataforma em nuvem e Faturamento de R$ 29,00 por instalação).
+     - **Seção Mais lucro:** Card de custo/lucro do dongle OBD (R$ 59,90 de custo e R$ 29,00 de lucro imediato), card de destaque com +35% de retorno de serviços após 30 dias, e condições especiais (100% sem mensalidade ou R$ 49,90/mês).
+     - **Modal e Rodapé:** Modal interativo de credenciamento rápido com direcionamento para o Painel/Cadastro da Oficina ou WhatsApp Oficial de Consultoria.
+  3. **Rotas Dedicadas no Servidor (server.js):**
+     - Mapeamento explícito das rotas: `/parceiro`, `/parceiros`, `/seja-parceiro`, `/autocenter`, `/autocente`, `/oficinas`, `/parceiro.html` e `/autocenter.html`.
+  4. **Distribuição dos Links no Ecossistema:**
+     - Inserção de link no topo e no card de oficina da Home Principal (`landingHomeView.js`).
+     - Inserção de atalho no Drawer e na Tela de Login do App da Oficina (`workshopMobileView.js`).
+  5. **Validação de Qualidade:**
+     - 48 de 48 testes automatizados aprovados com 100% de sucesso (npm test).

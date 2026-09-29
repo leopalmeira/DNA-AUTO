@@ -52,6 +52,9 @@ const LandingHomeView = {
                             <a href="/oficina" class="dna-nav-link" title="Link direto para o Painel da Oficina">
                                 🏭 Painel da Oficina
                             </a>
+                            <a href="/parceiro" class="dna-nav-link" style="color:#00D4FF; font-weight:700;" title="Apresentação para Oficinas Mecânicas">
+                                🤝 Seja Parceiro (Oficinas)
+                            </a>
                         </nav>
                     </div>
                 </header>
@@ -91,6 +94,11 @@ const LandingHomeView = {
                                     <span>Abrir Painel da Oficina</span>
                                     <span aria-hidden="true">→</span>
                                 </a>
+                                <div style="margin-top:12px; text-align:center;">
+                                    <a href="/parceiro" style="font-size:12px; color:#00D4FF; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:4px;" onclick="event.stopPropagation();">
+                                        <span>🤝</span> <span>Conheça a parceria para oficinas (+35% lucro) →</span>
+                                    </a>
+                                </div>
                             </article>
                         </div>
                     </div>

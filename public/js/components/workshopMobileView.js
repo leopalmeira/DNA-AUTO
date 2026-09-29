@@ -360,6 +360,11 @@
                         <div style="margin-top:6px;">
                             <a href="javascript:void(0)" onclick="WorkshopView.showOficinaRegisterScreen()" style="color:#94A3B8; text-decoration:underline;">Cadastre-se</a>
                         </div>
+                        <div style="margin-top:12px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.08);">
+                            <a href="/parceiro" style="color:#00D4FF; text-decoration:none; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
+                                <span>🤝</span> <span>Apresentação para Oficinas (+35% lucro) →</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
 
@@ -536,6 +541,9 @@
                         </div>
                         <div class="dna-v2-drawer-link" onclick="window.open('https://web.whatsapp.com', '_blank')">
                             <span>💬</span> <span>WhatsApp</span>
+                        </div>
+                        <div class="dna-v2-drawer-link" onclick="window.location.href='/parceiro'">
+                            <span>🤝</span> <span>Apresentação da Parceria</span>
                         </div>
                         <div class="dna-v2-drawer-link" onclick="alert('Configurações da Oficina: Emissão de Nota Fiscal, Dados Cadastrais e Integrações ativas.')">
                             <span>⚙️</span> <span>Configurações</span>

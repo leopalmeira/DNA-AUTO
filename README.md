@@ -9,7 +9,9 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 67):** Implementação fiel do Design System de 12 telas do Figma para o App Mobile da Oficina (`workshopMobileView.js` e `workshop-mobile.css`) com preservação integral do **Carrossel Vertical 3D Oficial DNA AUTO** na seleção de serviços. 48 de 48 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 68):** Criação da página oficial de apresentação e credenciamento para Oficinas e Auto Centers (`/parceiro` e `/autocenter`), com modelo de negócios (+35% de faturamento, lucro de R$ 29 por instalação, sem mensalidades) e links diretos no ecossistema. 48 de 48 testes automatizados aprovados (100%).
+> 
+> ✨ **Ciclo 67:** Implementação fiel do Design System de 12 telas do Figma para o App Mobile da Oficina (`workshopMobileView.js` e `workshop-mobile.css`) com preservação integral do **Carrossel Vertical 3D Oficial DNA AUTO** na seleção de serviços. 48 de 48 testes automatizados aprovados (100%).
 > 
 > ✨ **Ciclo 66:** Resolução do endpoint de cadastro de oficinas (`/workshops/register`) no app mobile e implantação da regra onde o cliente com carro cadastrado pela oficina só precisa fazer login com seu e-mail no App do Cliente para acessar seu veículo instantaneamente na Garagem Digital (sem recadastramento). 48 de 48 testes automatizados aprovados (100%).
 > 

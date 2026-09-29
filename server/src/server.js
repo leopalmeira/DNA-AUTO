@@ -155,6 +155,14 @@ app.get(['/oficina', '/oficina.html', '/painel', '/workshop', '/erp', '/oficina.
     res.sendFile(path.join(__dirname, '..', '..', 'oficina.app', 'index.html'));
 });
 
+// Rota Dedicada para a Landing de Oficinas Parceiras (/parceiro, /autocenter)
+app.get(['/parceiro', '/parceiros', '/seja-parceiro', '/autocenter', '/autocente', '/oficinas', '/parceiro.html', '/autocenter.html'], (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.sendFile(path.join(__dirname, '..', '..', 'public', 'parceiro.html'));
+});
+
 // Fallback para SPA no Frontend
 app.use((req, res) => {
     // Se a requisição não for de API, entrega o index.html com anti-cache
