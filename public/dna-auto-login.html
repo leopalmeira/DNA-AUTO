@@ -2417,7 +2417,7 @@
       }
       errBox.style.display = 'none';
       btn.disabled = true;
-      btn.innerHTML = '<span>Verificando código...</span>';
+      btn.innerHTML = '<span>Consultando oficina...</span>';
 
       try {
         const res = await fetch(`/api/v1/clients/activation-code/${encodeURIComponent(code)}`);
@@ -2431,38 +2431,50 @@
 
         currentActivationData = data;
 
-        // Se NÃO faltar nenhum dado, ativa imediatamente!
-        if (!data.needs_completion || !data.missing_fields || data.missing_fields.length === 0) {
-          await executarAtivacaoFinal({ code: data.activation_code });
-          return;
-        }
-
-        // Se faltar algum dado, avança para o Passo 2 mostrando apenas os campos que faltam
+        // Avança para o Passo 2 mostrando quase todos os dados já pré-preenchidos
         document.getElementById('step-ativacao-codigo').style.display = 'none';
         const step2 = document.getElementById('step-ativacao-dados');
         step2.style.display = 'block';
 
-        const vehTitle = `${data.vehicle?.brand || ''} ${data.vehicle?.model || ''} (${data.vehicle?.license_plate || ''})`.trim();
-        document.getElementById('ativacao-veiculo-titulo').innerText = vehTitle;
-        document.getElementById('ativacao-oficina-nome').innerText = `Oficina: ${data.workshop_name || 'Credenciada'}`;
+        const vehTitle = `${data.vehicle?.brand || ''} ${data.vehicle?.model || ''}`.trim() || 'Veículo Cadastrado';
+        const vehPlate = data.vehicle?.license_plate || '';
+        const vehDna = data.vehicle?.dna_code || 'DNA-BR-ATIVO';
 
-        const boxNome = document.getElementById('box-campo-nome');
-        const boxEmail = document.getElementById('box-campo-email');
-        const boxWpp = document.getElementById('box-campo-whatsapp');
+        document.getElementById('ativacao-veiculo-titulo').innerText = `${vehTitle} (${vehPlate})`;
+        const dnaEl = document.getElementById('ativacao-veiculo-dna');
+        if (dnaEl) dnaEl.innerText = `🧬 Passaporte DNA: ${vehDna}`;
+        document.getElementById('ativacao-oficina-nome').innerText = `Oficina: ${data.workshop_name || 'Credenciada DNA AUTO'}`;
 
-        if (boxNome) boxNome.style.display = data.missing_fields.includes('name') ? 'block' : 'none';
-        if (boxEmail) boxEmail.style.display = data.missing_fields.includes('email') ? 'block' : 'none';
-        if (boxWpp) boxWpp.style.display = data.missing_fields.includes('whatsapp') ? 'block' : 'none';
+        const nameInput = document.getElementById('ativacao-nome-input');
+        const emailInput = document.getElementById('ativacao-email-input');
+        const wppInput = document.getElementById('ativacao-whatsapp-input');
+        const tagNome = document.getElementById('tag-nome-origem');
+        const tagWpp = document.getElementById('tag-wpp-origem');
+        const tagEmail = document.getElementById('tag-email-origem');
 
-        // Preenche valores se já existirem
-        if (data.client?.name && document.getElementById('ativacao-nome-input')) {
-          document.getElementById('ativacao-nome-input').value = data.client.name;
+        // Pré-preenche os dados cadastrados na oficina
+        if (data.client?.name) {
+          nameInput.value = data.client.name;
+          if (tagNome) tagNome.style.display = 'inline-block';
+        } else {
+          nameInput.value = '';
+          if (tagNome) tagNome.style.display = 'none';
         }
-        if (data.client?.email && document.getElementById('ativacao-email-input')) {
-          document.getElementById('ativacao-email-input').value = data.client.email;
+
+        if (data.client?.whatsapp) {
+          wppInput.value = data.client.whatsapp;
+          if (tagWpp) tagWpp.style.display = 'inline-block';
+        } else {
+          wppInput.value = '';
+          if (tagWpp) tagWpp.style.display = 'none';
         }
-        if (data.client?.whatsapp && document.getElementById('ativacao-whatsapp-input')) {
-          document.getElementById('ativacao-whatsapp-input').value = data.client.whatsapp;
+
+        if (data.client?.email) {
+          emailInput.value = data.client.email;
+          if (tagEmail) tagEmail.style.display = 'inline-block';
+        } else {
+          emailInput.value = '';
+          if (tagEmail) tagEmail.style.display = 'none';
         }
       } catch (err) {
         errBox.innerText = 'Erro ao conectar ao servidor. Tente novamente.';
@@ -2481,33 +2493,34 @@
       const nameVal = (document.getElementById('ativacao-nome-input')?.value || '').trim();
       const emailVal = (document.getElementById('ativacao-email-input')?.value || '').trim();
       const wppVal = (document.getElementById('ativacao-whatsapp-input')?.value || '').trim();
+      const passVal = (document.getElementById('ativacao-senha-input')?.value || '').trim();
 
-      const missing = currentActivationData.missing_fields || [];
-      if (missing.includes('name') && !nameVal) {
+      if (!nameVal) {
         errBox.innerText = 'Por favor, informe seu nome completo.';
         errBox.style.display = 'block';
         return;
       }
-      if (missing.includes('email') && (!emailVal || !emailVal.includes('@'))) {
-        errBox.innerText = 'Por favor, informe um e-mail válido.';
+      if (!wppVal || wppVal.replace(/\D/g, '').length < 10) {
+        errBox.innerText = 'Por favor, informe seu WhatsApp com DDD.';
         errBox.style.display = 'block';
         return;
       }
-      if (missing.includes('whatsapp') && wppVal.replace(/\D/g, '').length < 10) {
-        errBox.innerText = 'Por favor, informe seu WhatsApp com DDD.';
+      if (!emailVal || !emailVal.includes('@')) {
+        errBox.innerText = 'Por favor, informe um e-mail válido para acessar o app.';
         errBox.style.display = 'block';
         return;
       }
 
       errBox.style.display = 'none';
       btn.disabled = true;
-      btn.innerHTML = '<span>Ativando veículo...</span>';
+      btn.innerHTML = '<span>Ativando e entrando...</span>';
 
       await executarAtivacaoFinal({
         code: currentActivationData.activation_code,
-        name: nameVal || currentActivationData.client?.name,
-        email: emailVal || currentActivationData.client?.email,
-        whatsapp: wppVal || currentActivationData.client?.whatsapp
+        name: nameVal,
+        email: emailVal,
+        whatsapp: wppVal,
+        password: passVal || '123456'
       });
     }
 
@@ -2520,11 +2533,18 @@
         });
         const data = await res.json();
         if (res.ok && data.success) {
+          if (data.token) {
+            localStorage.setItem('dna_token', data.token);
+            localStorage.setItem('dna_auto_token', data.token);
+          }
+          if (data.user) {
+            localStorage.setItem('dna_logged_user', JSON.stringify(data.user));
+          }
           if (data.vehicle) {
             localStorage.setItem('dna_registered_plate', data.vehicle.license_plate);
           }
-          if (data.client?.name) {
-            localStorage.setItem('dna_user_name', data.client.name);
+          if (data.client?.name || data.user?.name) {
+            localStorage.setItem('dna_user_name', data.client?.name || data.user?.name);
           }
           localStorage.setItem('dna_owner_session', 'active');
           localStorage.setItem('dna_owner_auth_screen', 'app');
@@ -2532,9 +2552,19 @@
           window.location.href = `/cliente?code=${encodeURIComponent(payload.code)}`;
         } else {
           alert(data.error || 'Erro ao ativar veículo.');
+          const btn = document.getElementById('btn-concluir-ativacao');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<span>✓ Concluir e Acessar Meu Veículo</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>';
+          }
         }
       } catch (err) {
         alert('Erro ao processar ativação com o servidor.');
+        const btn = document.getElementById('btn-concluir-ativacao');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>✓ Concluir e Acessar Meu Veículo</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>';
+        }
       }
     }
 
@@ -2635,13 +2665,24 @@
       if (hash === 'login') showScreen('login');
       else if (hash === 'register') showScreen('register');
       else showScreen('splash');
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const codeParam = urlParams.get('code');
+      if (codeParam) {
+        abrirAtivacaoOficina();
+        const input = document.getElementById('input-codigo-oficina');
+        if (input) {
+          input.value = codeParam.toUpperCase();
+          setTimeout(() => validarCodigoOficina(), 120);
+        }
+      }
     });
   </script>
   <!-- ══════════════════════════════════════════════════════════════════
        MODAL OFICIAL: ENTRAR COM CÓDIGO DA OFICINA (2 ETAPAS INTELIGENTES)
        ══════════════════════════════════════════════════════════════════ -->
   <div id="modal-ativacao-oficina" class="modal-overlay" style="display:none; position:fixed; inset:0; z-index:999999; background:rgba(4,9,20,0.88); backdrop-filter:blur(10px); align-items:center; justify-content:center; padding:16px;">
-    <div style="background:radial-gradient(ellipse at top, #132742 0%, #0B1220 100%); border:1.5px solid rgba(0,212,255,0.4); border-radius:20px; width:100%; max-width:400px; padding:24px 20px; box-shadow:0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0,212,255,0.2); position:relative; text-align:center;">
+    <div style="background:radial-gradient(ellipse at top, #132742 0%, #0B1220 100%); border:1.5px solid rgba(0,212,255,0.4); border-radius:20px; width:100%; max-width:410px; padding:22px 20px; box-shadow:0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0,212,255,0.2); position:relative; text-align:center;">
       
       <!-- Botão Fechar -->
       <button type="button" onclick="fecharAtivacaoOficina()" style="position:absolute; top:14px; right:14px; background:transparent; border:none; color:#94A3B8; font-size:22px; cursor:pointer; line-height:1;">&times;</button>
@@ -2672,38 +2713,56 @@
         </button>
       </div>
 
-      <!-- ETAPA 2: DADOS FALTANTES (SOMENTE SE FALTAR NOME, EMAIL OU WHATSAPP) -->
+      <!-- ETAPA 2: QUASE TODOS OS DADOS JÁ PREENCHIDOS PELA OFICINA -->
       <div id="step-ativacao-dados" style="display:none; text-align:left;">
-        <div style="text-align:center; margin-bottom:14px;">
-          <span style="background:rgba(0,230,118,0.15); border:1px solid #00E676; color:#00E676; padding:4px 10px; border-radius:9999px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:5px;">
+        <div style="text-align:center; margin-bottom:12px;">
+          <span style="background:rgba(0,230,118,0.15); border:1px solid #00E676; color:#00E676; padding:3px 10px; border-radius:9999px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:5px;">
             <span>✅</span> Veículo Localizado!
           </span>
-          <h3 id="ativacao-veiculo-titulo" style="font-size:16px; font-weight:800; color:#FFFFFF; margin:8px 0 2px; text-align:center;"></h3>
-          <p id="ativacao-oficina-nome" style="font-size:11.5px; color:#94A3B8; margin:0 0 12px; text-align:center;"></p>
-          <p style="font-size:12px; color:#CBD5E1; margin:0; line-height:1.4;">
-            Complete os dados que faltam para finalizar seu acesso:
-          </p>
+          <h3 id="ativacao-veiculo-titulo" style="font-size:15px; font-weight:800; color:#FFFFFF; margin:6px 0 2px; text-align:center;"></h3>
+          <div id="ativacao-veiculo-dna" style="font-size:12px; font-weight:800; color:#00D4FF; margin-bottom:2px; text-align:center; font-family:monospace;"></div>
+          <p id="ativacao-oficina-nome" style="font-size:11px; color:#94A3B8; margin:0 0 10px; text-align:center;"></p>
+          <div style="background:rgba(0,212,255,0.08); border:1px solid rgba(0,212,255,0.25); border-radius:10px; padding:8px 10px; margin-bottom:12px; text-align:center; font-size:11px; color:#CBD5E1; line-height:1.35;">
+            ✨ Quase todos os seus dados já foram pré-cadastrados pela oficina! Confira e preencha o que faltar para concluir:
+          </div>
         </div>
 
-        <div id="box-campo-nome" style="margin-bottom:12px; display:none;">
-          <label style="font-size:11.5px; color:#94A3B8; font-weight:700; display:block; margin-bottom:4px;">Nome Completo</label>
-          <input type="text" id="ativacao-nome-input" placeholder="Seu nome completo" style="width:100%; padding:10px 12px; font-size:13px; background:#070C16; border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#FFF; outline:none;" />
+        <div style="margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+            <label style="font-size:11.5px; color:#94A3B8; font-weight:700;">Nome Completo *</label>
+            <span id="tag-nome-origem" style="font-size:9.5px; background:rgba(0,230,118,0.2); color:#00E676; padding:1px 6px; border-radius:4px; font-weight:700; display:none;">✓ Oficina</span>
+          </div>
+          <input type="text" id="ativacao-nome-input" placeholder="Seu nome completo" style="width:100%; padding:9px 12px; font-size:13px; background:#070C16; border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#FFF; outline:none;" />
         </div>
 
-        <div id="box-campo-email" style="margin-bottom:12px; display:none;">
-          <label style="font-size:11.5px; color:#94A3B8; font-weight:700; display:block; margin-bottom:4px;">E-mail</label>
-          <input type="email" id="ativacao-email-input" placeholder="seuemail@exemplo.com" style="width:100%; padding:10px 12px; font-size:13px; background:#070C16; border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#FFF; outline:none;" />
+        <div style="margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+            <label style="font-size:11.5px; color:#94A3B8; font-weight:700;">WhatsApp (com DDD) *</label>
+            <span id="tag-wpp-origem" style="font-size:9.5px; background:rgba(0,230,118,0.2); color:#00E676; padding:1px 6px; border-radius:4px; font-weight:700; display:none;">✓ Oficina</span>
+          </div>
+          <input type="tel" id="ativacao-whatsapp-input" placeholder="(11) 99999-9999" style="width:100%; padding:9px 12px; font-size:13px; background:#070C16; border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#FFF; outline:none;" />
         </div>
 
-        <div id="box-campo-whatsapp" style="margin-bottom:16px; display:none;">
-          <label style="font-size:11.5px; color:#94A3B8; font-weight:700; display:block; margin-bottom:4px;">WhatsApp (com DDD)</label>
-          <input type="tel" id="ativacao-whatsapp-input" placeholder="(11) 99999-9999" style="width:100%; padding:10px 12px; font-size:13px; background:#070C16; border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#FFF; outline:none;" />
+        <div style="margin-bottom:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+            <label style="font-size:11.5px; color:#94A3B8; font-weight:700;">E-mail *</label>
+            <span id="tag-email-origem" style="font-size:9.5px; background:rgba(0,230,118,0.2); color:#00E676; padding:1px 6px; border-radius:4px; font-weight:700; display:none;">✓ Oficina</span>
+          </div>
+          <input type="email" id="ativacao-email-input" placeholder="seuemail@exemplo.com" style="width:100%; padding:9px 12px; font-size:13px; background:#070C16; border:1px solid rgba(0,212,255,0.4); border-radius:10px; color:#FFF; outline:none;" />
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:3px;">
+            <label style="font-size:11.5px; color:#94A3B8; font-weight:700;">Senha de Acesso</label>
+            <span style="font-size:9.5px; color:#94A3B8;">(Para entrar pelo app)</span>
+          </div>
+          <input type="password" id="ativacao-senha-input" placeholder="Sua senha pessoal (mínimo 6 dígitos)" style="width:100%; padding:9px 12px; font-size:13px; background:#070C16; border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#FFF; outline:none;" />
         </div>
 
         <div id="msg-erro-ativacao-step2" style="display:none; color:#EF4444; font-size:12px; font-weight:700; margin-bottom:12px;"></div>
 
-        <button type="button" id="btn-concluir-ativacao" onclick="concluirAtivacaoCompletada()" style="width:100%; padding:13px; font-size:14px; font-weight:900; border-radius:12px; border:none; background:linear-gradient(135deg, #00E676 0%, #00B0FF 100%); color:#0B0F19; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-          <span>Concluir e Acessar Meu Veículo</span>
+        <button type="button" id="btn-concluir-ativacao" onclick="concluirAtivacaoCompletada()" style="width:100%; padding:13px; font-size:14px; font-weight:900; border-radius:12px; border:none; background:linear-gradient(135deg, #00E676 0%, #00B0FF 100%); color:#0B0F19; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 0 20px rgba(0,230,118,0.3);">
+          <span>✓ Concluir Cadastro e Acessar Meu Veículo</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>

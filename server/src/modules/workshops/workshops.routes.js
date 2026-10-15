@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 const multer = require('multer');
 const bcrypt = require('bcryptjs');
 const db = require('../../database/db');
@@ -1132,6 +1133,21 @@ router.post('/:id/whatsapp/dispatch-batch', (req, res) => {
 // ==============================================================================
 // MÓDULO DE CADASTRO DE CLIENTE & CÓDIGO DE ATIVAÇÃO
 // ==============================================================================
+// MÓDULO DE CADASTRO DE CLIENTE & CÓDIGO DE ATIVAÇÃO
+// ==============================================================================
+
+function generateDnaCode() {
+    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const randomBlock = (len) => {
+        let str = '';
+        const bytes = crypto.randomBytes(len);
+        for (let i = 0; i < len; i++) {
+            str += chars[bytes[i] % chars.length];
+        }
+        return str;
+    };
+    return `DNA-BR-${randomBlock(4)}-${randomBlock(4)}-${randomBlock(3)}`;
+}
 
 function generateActivationCode() {
     const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -1203,6 +1219,27 @@ router.post('/:id/clients/register-activation', async (req, res) => {
             vehicle = db.prepare(`SELECT * FROM vehicles WHERE id = ?`).get(vehId);
         } else if (model && (!vehicle.model || vehicle.model === 'Padrão' || vehicle.model === 'Veículo')) {
             db.prepare(`UPDATE vehicles SET model = ?, brand = COALESCE(NULLIF(brand, 'Veículo'), ?), updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(model, brand || model.split(' ')[0], vehicle.id);
+        }
+
+        // 1.5. Garante que o Veículo tenha Passaporte DNA AUTO Oficial ativo e Health Score inicial zerado
+        let dna = db.prepare('SELECT * FROM vehicle_dna WHERE vehicle_id = ?').get(vehicle.id);
+        let dnaCode = dna ? dna.dna_code : null;
+        if (!dna) {
+            dnaCode = generateDnaCode();
+            const dnaId = `dna_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+            const certHash = crypto.createHash('sha256').update(dnaCode + (vehicle.chassis_vin || vehicle.license_plate)).digest('hex');
+            db.prepare(`
+                INSERT INTO vehicle_dna (id, vehicle_id, dna_code, status, activated_at, activated_by_workshop_id, activation_modality, activation_fee_cents, certificate_hash)
+                VALUES (?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP, ?, 'NORMAL', 5990, ?)
+            `).run(dnaId, vehicle.id, dnaCode, workshopId, certHash);
+
+            const existsScore = db.prepare('SELECT id FROM health_scores WHERE vehicle_id = ?').get(vehicle.id);
+            if (!existsScore) {
+                db.prepare(`
+                    INSERT INTO health_scores (id, vehicle_id, overall_score, documented_percentage, score_rationale)
+                    VALUES (?, ?, 100, 100, 'Passaporte DNA AUTO ativado na oficina credenciada com cadastro inicial.')
+                `).run(`hs_${Date.now()}`, vehicle.id);
+            }
         }
 
         // 2. Provisiona Usuário e Proprietário caso e-mail tenha sido fornecido
@@ -1280,9 +1317,9 @@ router.post('/:id/clients/register-activation', async (req, res) => {
         const actId = `act_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
         const activationStatus = cleanEmail ? 'ACTIVATED' : 'PENDING';
         db.prepare(`
-            INSERT INTO client_activations (id, workshop_id, client_name, whatsapp, license_plate, activation_code, vehicle_id, owner_id, status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-        `).run(actId, workshopId, clientName, rawPhone, plate, activationCode, vehicle.id, owner.id, activationStatus);
+            INSERT INTO client_activations (id, workshop_id, client_name, whatsapp, email, license_plate, activation_code, vehicle_id, owner_id, status, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        `).run(actId, workshopId, clientName, rawPhone, cleanEmail || null, plate, activationCode, vehicle.id, owner.id, activationStatus);
 
         // 6. Atualiza consumo de crédito pré-pago ou contagem de carros pós-pagos
         const billingResult = AbacatePayService.consumeOrIncrement(db, workshopId);
@@ -1307,8 +1344,9 @@ router.post('/:id/clients/register-activation', async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: `Cliente ${clientName} cadastrado com sucesso! Veículo vinculado à garagem digital.`,
+            message: `Cliente ${clientName} cadastrado com sucesso! Veículo vinculado à garagem digital com DNA gerado.`,
             activation_code: activationCode,
+            dna_code: dnaCode,
             client_app_url: clientAppUrl,
             client: {
                 name: clientName,
@@ -1316,6 +1354,13 @@ router.post('/:id/clients/register-activation', async (req, res) => {
                 email: cleanEmail || null,
                 plate: plate,
                 vehicle_id: vehicle.id
+            },
+            vehicle: {
+                id: vehicle.id,
+                license_plate: plate,
+                brand: vehicle.brand,
+                model: vehicle.model,
+                dna_code: dnaCode
             },
             pricing: {
                 dna_cost_per_car: 'R$ 30,00',
@@ -1331,7 +1376,7 @@ router.post('/:id/clients/register-activation', async (req, res) => {
                 postpaid_cycle_status: `${balance.unbilled_cars_count}/10 carros acumulados`
             },
             pix_charge: pixCharge,
-            whatsapp_share_text: `Olá ${clientName}! Seu cadastro no DNA AUTO foi realizado pela oficina ${workshop.trade_name}.\n\n📲 Seu veículo (${plate}) já está disponível na sua Garagem Digital!\nBasta acessar: ${clientAppUrl}\nCódigo de acesso: *${activationCode}*`
+            whatsapp_share_text: `Olá ${clientName}! Seu cadastro no DNA AUTO foi realizado pela oficina ${workshop.trade_name}.\n\n🚗 Veículo: *${plate}* (${model || vehicle.model || 'Veículo'})\n🧬 Passaporte DNA: *${dnaCode}*\n\n📲 Para acessar seu carro e histórico, acesse o link abaixo ou use o código:\nLink: ${clientAppUrl}\nCódigo de ativação: *${activationCode}*`
         });
     } catch (err) {
         console.error('Erro ao cadastrar cliente e gerar ativação:', err);

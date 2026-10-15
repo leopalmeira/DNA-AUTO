@@ -131,14 +131,20 @@ app.get('/api/v1/clients/activation-code/:code', (req, res) => {
     }
 });
 
-// Endpoint de Ativação do Cliente via Código da Oficina (com suporte a completar dados)
+// Endpoint de Ativação do Cliente via Código da Oficina (com suporte a completar dados e login automático)
 app.post('/api/v1/clients/activate', (req, res) => {
     try {
         const db = require('./database/db');
+        const jwt = require('jsonwebtoken');
+        const bcrypt = require('bcryptjs');
+        const crypto = require('crypto');
+        const JWT_SECRET = process.env.JWT_SECRET || 'dna_auto_secret_jwt_key_2026_super_secure';
+
         const code = (req.body.activation_code || req.body.code || '').trim().toUpperCase();
         const newName = (req.body.name || req.body.client_name || '').trim();
         const newEmail = (req.body.email || '').trim().toLowerCase();
         const newWhatsapp = (req.body.whatsapp || req.body.phone || '').trim();
+        const newPassword = (req.body.password || req.body.client_password || '').trim();
 
         if (!code) {
             return res.status(400).json({ error: 'Código de ativação é obrigatório.' });
@@ -155,7 +161,7 @@ app.post('/api/v1/clients/activate', (req, res) => {
             return res.status(404).json({ error: 'Código de ativação não encontrado. Verifique o código com a sua oficina.' });
         }
 
-        const finalName = newName || activation.client_name || '';
+        const finalName = newName || activation.client_name || 'Cliente DNA AUTO';
         const finalEmail = newEmail || activation.email || '';
         const finalWhatsapp = newWhatsapp || activation.whatsapp || '';
 
@@ -170,35 +176,134 @@ app.post('/api/v1/clients/activate', (req, res) => {
             WHERE id = ?
         `).run(finalName, finalEmail, finalWhatsapp, activation.id);
 
-        // Se tiver email e nome, garante usuário no banco para login futuro
-        if (finalEmail) {
-            const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(finalEmail);
-            if (!existingUser) {
-                const crypto = require('crypto');
-                const newUserId = 'usr_' + crypto.randomBytes(6).toString('hex');
-                const bcrypt = require('bcryptjs');
-                const randomPass = crypto.randomBytes(4).toString('hex');
-                const hash = bcrypt.hashSync(randomPass, 10);
-                db.prepare(`
-                    INSERT INTO users (id, name, email, password, role)
-                    VALUES (?, ?, ?, ?, 'owner')
-                `).run(newUserId, finalName || 'Cliente DNA AUTO', finalEmail, hash);
-            }
-        }
-
         // Busca dados do veículo
-        const vehicle = db.prepare(`
+        let vehicle = db.prepare(`
             SELECT v.*, d.dna_code, d.status as dna_status
             FROM vehicles v
             LEFT JOIN vehicle_dna d ON v.id = d.vehicle_id
             WHERE v.id = ? OR v.license_plate = ?
         `).get(activation.vehicle_id, activation.license_plate);
 
+        // Se o veículo não tiver DNA, gera o DNA ativo oficial zerado
+        if (vehicle && !vehicle.dna_code) {
+            const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+            const randomBlock = (len) => {
+                let str = '';
+                const bytes = crypto.randomBytes(len);
+                for (let i = 0; i < len; i++) {
+                    str += chars[bytes[i] % chars.length];
+                }
+                return str;
+            };
+            const generatedDna = `DNA-BR-${randomBlock(4)}-${randomBlock(4)}-${randomBlock(3)}`;
+            const dnaId = `dna_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+            const certHash = crypto.createHash('sha256').update(generatedDna + (vehicle.chassis_vin || vehicle.license_plate)).digest('hex');
+            
+            db.prepare(`
+                INSERT INTO vehicle_dna (id, vehicle_id, dna_code, status, activated_at, activated_by_workshop_id, activation_modality, activation_fee_cents, certificate_hash)
+                VALUES (?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP, ?, 'NORMAL', 5990, ?)
+            `).run(dnaId, vehicle.id, generatedDna, activation.workshop_id, certHash);
+
+            const existsScore = db.prepare('SELECT id FROM health_scores WHERE vehicle_id = ?').get(vehicle.id);
+            if (!existsScore) {
+                db.prepare(`
+                    INSERT INTO health_scores (id, vehicle_id, overall_score, documented_percentage, score_rationale)
+                    VALUES (?, ?, 100, 100, 'Passaporte DNA AUTO ativado na oficina.')
+                `).run(`hs_${Date.now()}`, vehicle.id);
+            }
+            vehicle.dna_code = generatedDna;
+            vehicle.dna_status = 'ACTIVE';
+        }
+
+        // Criar ou atualizar usuário
+        let user = null;
+        let userId = null;
+
+        if (finalEmail && finalEmail.includes('@')) {
+            const existingUser = db.prepare('SELECT * FROM users WHERE LOWER(email) = ?').get(finalEmail);
+            if (existingUser) {
+                userId = existingUser.id;
+                user = existingUser;
+                if (newPassword && newPassword.length >= 6) {
+                    const passHash = bcrypt.hashSync(newPassword, 10);
+                    db.prepare('UPDATE users SET password_hash = ?, name = COALESCE(NULLIF(?, ""), name), phone = COALESCE(NULLIF(?, ""), phone), updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(passHash, finalName, finalWhatsapp, userId);
+                } else {
+                    db.prepare('UPDATE users SET name = COALESCE(NULLIF(?, ""), name), phone = COALESCE(NULLIF(?, ""), phone), updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(finalName, finalWhatsapp, userId);
+                }
+            } else {
+                userId = 'usr_' + Date.now();
+                const phoneDigits = finalWhatsapp.replace(/\D/g, '');
+                const effectivePass = (newPassword && newPassword.length >= 6) ? newPassword : (phoneDigits.length >= 6 ? phoneDigits.slice(-6) : '123456');
+                const passHash = bcrypt.hashSync(effectivePass, 10);
+                db.prepare(`
+                    INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
+                    VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0)
+                `).run(userId, finalName, finalEmail, passHash, finalWhatsapp || null);
+            }
+            user = db.prepare('SELECT id, name, email, phone, role_id, status FROM users WHERE id = ?').get(userId);
+        }
+
+        // Vincular ou atualizar Proprietário
+        let owner = null;
+        if (userId) {
+            owner = db.prepare('SELECT * FROM owners WHERE user_id = ? OR (email IS NOT NULL AND LOWER(email) = ?)').get(userId, finalEmail);
+        }
+        if (!owner && finalWhatsapp) {
+            owner = db.prepare('SELECT * FROM owners WHERE phone = ?').get(finalWhatsapp);
+        }
+
+        if (owner) {
+            db.prepare(`
+                UPDATE owners
+                SET user_id = COALESCE(user_id, ?),
+                    name = COALESCE(NULLIF(?, ''), name),
+                    phone = COALESCE(NULLIF(?, ''), phone),
+                    email = COALESCE(NULLIF(?, ''), email)
+                WHERE id = ?
+            `).run(userId, finalName, finalWhatsapp, finalEmail, owner.id);
+        } else {
+            const ownerId = 'own_' + Date.now();
+            db.prepare(`
+                INSERT INTO owners (id, user_id, name, document_cpf, email, phone, created_at)
+                VALUES (?, ?, ?, '000.000.000-00', ?, ?, CURRENT_TIMESTAMP)
+            `).run(ownerId, userId, finalName, finalEmail || null, finalWhatsapp);
+            owner = { id: ownerId };
+        }
+
+        if (owner && vehicle) {
+            db.prepare('UPDATE vehicles SET current_owner_id = ? WHERE id = ?').run(owner.id, vehicle.id);
+            const existsTrf = db.prepare('SELECT id FROM ownership_transfers WHERE vehicle_id = ? AND new_owner_id = ?').get(vehicle.id, owner.id);
+            if (!existsTrf) {
+                db.prepare(`
+                    INSERT INTO ownership_transfers (id, vehicle_id, new_owner_id, status, requested_at, completed_at, transfer_mileage, notes)
+                    VALUES (?, ?, ?, 'COMPLETED', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 0, 'Ativação via código da oficina')
+                `).run(`trf_${Date.now()}`, vehicle.id, owner.id);
+            }
+        }
+
+        // Gerar token JWT se tivermos usuário
+        let token = null;
+        if (user) {
+            token = jwt.sign(
+                { id: user.id, email: user.email, name: user.name, role: 'OWNER' },
+                JWT_SECRET,
+                { expiresIn: '30d' }
+            );
+        }
+
         res.json({
             success: true,
             message: '🎉 Veículo ativado com sucesso!',
             activation_code: activation.activation_code,
             status: 'ACTIVATED',
+            token: token,
+            user: user ? {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: 'OWNER',
+                vehicle: vehicle
+            } : null,
             client: {
                 name: finalName,
                 email: finalEmail,

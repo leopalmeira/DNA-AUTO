@@ -1539,3 +1539,29 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   5. **Garantia de Qualidade:**
      - 56 de 56 testes automatizados mantidos com 100% de sucesso (`npm test`).
 
+---
+
+### Ciclo 71 — Geração Automática de Código de Ativação e DNA AUTO Zerado pela Oficina & Fluxo de Acesso com Quase Todos os Dados Já Preenchidos
+- **Data/Hora:** 15/10/2026
+- **Contexto & Escopo:**
+  1. **Painel da Oficina (Cadastro Completo com DNA Oficial e Código Automático):**
+     - No endpoint `POST /api/v1/workshops/:id/clients/register-activation` e nos modais da oficina (`workshopView.js` em `public/` e `oficina.app/`):
+       - A oficina cadastra o veículo informando a placa, o nome do dono, o WhatsApp e o e-mail (opcional).
+       - O sistema gera automaticamente o **Código de Ativação Único** (`DNA-XXXX`).
+       - O sistema gera e ativa imediatamente o **Passaporte DNA AUTO Oficial** do carro com dados zerados/iniciais (`DNA-BR-XXXX-XXXX-XXX`), com Score de Saúde 100/100 inicial.
+       - Provisionamento ativo do cliente (`users` com status `ACTIVE`, `role_owner` e `owners`), vinculando o veículo à titularidade.
+       - Exibição de card de confirmação para a oficina com o Código de Ativação em destaque amarelo, o DNA AUTO oficial gerado, botão de copiar link/código e botão de disparo imediato no WhatsApp com texto completo.
+  2. **App do Cliente (Box Focada de Código -> Tela com Quase Todos os Dados Já Preenchidos):**
+     - Ao clicar no botão "🔑 Entrar com Código da Oficina" no login (`dna-auto-login.html` em `cliente.app/` e `public/`):
+       - Abre uma box focada e limpa para colocar **apenas o código**.
+       - Ao avançar, o sistema valida o código com a API (`GET /api/v1/clients/activation-code/:code`) e transiciona para a tela de confirmação onde **quase todos os dados já estão preenchidos**:
+         - Card do veículo localizado com placa, modelo, oficina credenciada e o **Passaporte DNA AUTO oficial** (`DNA-BR-...`).
+         - **Nome Completo:** pré-preenchido com tag verde `✓ Oficina` (editável).
+         - **WhatsApp:** pré-preenchido com tag verde `✓ Oficina` (editável).
+         - **E-mail:** pré-preenchido se a oficina informou, ou em destaque caso falte para o cliente completar.
+         - **Senha de Acesso:** campo para o cliente definir sua senha pessoal.
+     - Ao clicar em "✓ Concluir Cadastro e Acessar Meu Veículo", o endpoint `POST /api/v1/clients/activate` autentica o usuário, emite o Token JWT e redireciona direto para a Garagem Digital (`/cliente`).
+     - Suporte a detecção automática do parâmetro `?code=DNA-XXXX` na URL para pré-carregamento instantâneo via link do WhatsApp.
+  3. **Garantia de Qualidade:**
+     - 56 de 56 testes automatizados mantidos com 100% de aprovação (`npm test`).
+

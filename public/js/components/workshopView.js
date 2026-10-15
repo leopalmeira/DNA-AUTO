@@ -6044,12 +6044,20 @@ const WorkshopView = {
                             </div>
 
                             <div class="form-group">
+                                <label class="form-label" style="font-size:12px; display:flex; justify-content:space-between;">
+                                    <span>E-mail do Cliente</span>
+                                    <span style="font-size:10.5px; color:#94a3b8;">Opcional (cliente pode completar no app)</span>
+                                </label>
+                                <input type="email" id="ws-act-email" class="form-control" placeholder="cliente@exemplo.com" />
+                            </div>
+
+                            <div class="form-group">
                                 <label class="form-label" style="font-size:12px;">Modelo / Veículo (Opcional)</label>
                                 <input type="text" id="ws-act-model" class="form-control" placeholder="Ex: Marca / Modelo" />
                             </div>
 
                             <div style="background:#090e1a; border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px; font-size:11.5px; color:#94a3b8; line-height:1.45;">
-                                💡 Um código exclusivo de ativação (ex: <strong>DNA-8421</strong>) será gerado. O cliente poderá usá-lo no app dele para ativar o carro e preencher dados adicionais.
+                                💡 Um código exclusivo de ativação (ex: <strong>DNA-8421</strong>) será gerado automaticamente com o <strong>Passaporte DNA AUTO</strong> do veículo. O cliente poderá usá-lo no app para acessar seu carro na hora.
                             </div>
 
                             <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:8px;">
@@ -6089,6 +6097,7 @@ const WorkshopView = {
         const searchBtn = document.getElementById('ws-act-search-btn');
         const nameInput = document.getElementById('ws-act-name');
         const phoneInput = document.getElementById('ws-act-phone');
+        const emailInput = document.getElementById('ws-act-email');
         const modelInput = document.getElementById('ws-act-model');
 
         if (feedback) {
@@ -6138,12 +6147,16 @@ const WorkshopView = {
 
             const ownerName = foundVehicle.owner_name && foundVehicle.owner_name !== 'Proprietário Particular' ? foundVehicle.owner_name : '';
             const ownerPhone = foundVehicle.owner_phone && foundVehicle.owner_phone !== '(11) 98888-0000' ? foundVehicle.owner_phone : '';
+            const ownerEmail = foundVehicle.owner_email || foundVehicle.email || '';
 
             if (ownerName && nameInput && !nameInput.value) {
                 nameInput.value = ownerName;
             }
             if (ownerPhone && phoneInput && !phoneInput.value) {
                 phoneInput.value = ownerPhone;
+            }
+            if (ownerEmail && emailInput && !emailInput.value) {
+                emailInput.value = ownerEmail;
             }
 
             if (ownerName) {
@@ -6184,6 +6197,7 @@ const WorkshopView = {
         const plate = document.getElementById('ws-act-plate').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
         const clientName = document.getElementById('ws-act-name').value.trim();
         const clientPhone = document.getElementById('ws-act-phone').value.trim();
+        const clientEmail = document.getElementById('ws-act-email')?.value.trim() || '';
         const vehicleModel = document.getElementById('ws-act-model')?.value.trim() || 'Veículo';
 
         if (!plate || !clientName || !clientPhone) {
@@ -6196,7 +6210,7 @@ const WorkshopView = {
             container.innerHTML = `
                 <div style="padding:24px; text-align:center;">
                     <div class="pulse-dot" style="margin:0 auto 12px;"></div>
-                    <strong style="color:#ffffff; font-size:14px; display:block;">Gerando código exclusivo DNA AUTO...</strong>
+                    <strong style="color:#ffffff; font-size:14px; display:block;">Gerando código e ativando DNA AUTO...</strong>
                     <span style="font-size:12px; color:#94a3b8;">Gravando na central de ativações</span>
                 </div>
             `;
@@ -6208,11 +6222,14 @@ const WorkshopView = {
                 client_name: clientName,
                 client_phone: clientPhone,
                 whatsapp: clientPhone,
+                client_email: clientEmail,
+                email: clientEmail,
                 vehicle_model: vehicleModel,
                 model: vehicleModel
             });
 
             const code = res.activation_code || 'DNA-8421';
+            const dnaCode = res.dna_code || res.vehicle?.dna_code || 'DNA-BR-ATIVO';
             const directAppUrl = `${window.location.origin}/cliente?code=${code}`;
             const qrCodeImg = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(directAppUrl)}&color=00D4FF&bgcolor=0B1220`;
 
@@ -6222,7 +6239,7 @@ const WorkshopView = {
                         <div style="width:52px; height:52px; margin:0 auto 12px; border-radius:50%; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; border:1px solid rgba(16,185,129,0.4);">
                             <span style="font-size:26px;">🎉</span>
                         </div>
-                        <h4 style="color:#ffffff; font-size:17px; font-weight:800; margin:0 0 4px;">Código Gerado com Sucesso!</h4>
+                        <h4 style="color:#ffffff; font-size:17px; font-weight:800; margin:0 0 4px;">Código & DNA Gerados com Sucesso!</h4>
                         <p style="color:#94a3b8; font-size:12px; margin:0 0 14px;">
                             O cliente <strong>${clientName}</strong> pode escanear o QR Code abaixo ou receber o link direto no WhatsApp.
                         </p>
@@ -6240,14 +6257,17 @@ const WorkshopView = {
                             </div>
                         </div>
 
-                        <!-- Card com Código em Destaque -->
+                        <!-- Card com Código e DNA em Destaque -->
                         <div style="background:#050811; border:2px dashed #FFD21C; border-radius:12px; padding:14px; margin-bottom:12px;">
                             <span style="font-size:10.5px; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:2px;">CÓDIGO DE ATIVAÇÃO MANUAL</span>
                             <div style="font-size:28px; font-weight:900; letter-spacing:4px; font-family:var(--font-mono); color:#FFD21C; text-shadow:0 0 12px rgba(255,210,28,0.3);">
                                 ${code}
                             </div>
-                            <div style="font-size:11.5px; color:#38bdf8; margin-top:4px;">
-                                Placa: <strong class="mono">${plate}</strong> • Cliente: <strong>${clientName}</strong>
+                            <div style="font-size:12px; color:#00D4FF; margin-top:6px; font-weight:700;">
+                                🧬 Passaporte DNA: <span class="mono">${dnaCode}</span>
+                            </div>
+                            <div style="font-size:11.5px; color:#94a3b8; margin-top:4px;">
+                                Placa: <strong class="mono" style="color:#FFF;">${plate}</strong> • Cliente: <strong style="color:#FFF;">${clientName}</strong>
                             </div>
                         </div>
 
