@@ -2380,21 +2380,146 @@
       }
     }
 
-    // ── Ativação Direta com Código da Oficina ──
-    async function abrirAtivacaoOficina() {
-      const code = prompt('Digite o código de ativação fornecido pela sua oficina (ex: DNA-8421):');
-      if (!code || !code.trim()) return;
+    // ── Ativação Direta com Código da Oficina (Modal em 2 Etapas Elegantes) ──
+    let currentActivationData = null;
 
-      const cleanCode = code.trim().toUpperCase();
+    function abrirAtivacaoOficina() {
+      const modal = document.getElementById('modal-ativacao-oficina');
+      const step1 = document.getElementById('step-ativacao-codigo');
+      const step2 = document.getElementById('step-ativacao-dados');
+      const input = document.getElementById('input-codigo-oficina');
+      const err1 = document.getElementById('msg-erro-ativacao-step1');
+      if (err1) err1.style.display = 'none';
+      if (step1) step1.style.display = 'block';
+      if (step2) step2.style.display = 'none';
+      if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(() => input?.focus(), 80);
+      }
+    }
+
+    function fecharAtivacaoOficina() {
+      const modal = document.getElementById('modal-ativacao-oficina');
+      if (modal) modal.style.display = 'none';
+      currentActivationData = null;
+    }
+
+    async function validarCodigoOficina() {
+      const input = document.getElementById('input-codigo-oficina');
+      const errBox = document.getElementById('msg-erro-ativacao-step1');
+      const btn = document.getElementById('btn-validar-codigo-oficina');
+      const code = (input?.value || '').trim().toUpperCase();
+
+      if (!code || code.length < 4) {
+        errBox.innerText = 'Digite o código da oficina (ex: DNA-8421)';
+        errBox.style.display = 'block';
+        return;
+      }
+      errBox.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = '<span>Verificando código...</span>';
+
+      try {
+        const res = await fetch(`/api/v1/clients/activation-code/${encodeURIComponent(code)}`);
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          errBox.innerText = data.error || 'Código de ativação não encontrado ou inválido.';
+          errBox.style.display = 'block';
+          return;
+        }
+
+        currentActivationData = data;
+
+        // Se NÃO faltar nenhum dado, ativa imediatamente!
+        if (!data.needs_completion || !data.missing_fields || data.missing_fields.length === 0) {
+          await executarAtivacaoFinal({ code: data.activation_code });
+          return;
+        }
+
+        // Se faltar algum dado, avança para o Passo 2 mostrando apenas os campos que faltam
+        document.getElementById('step-ativacao-codigo').style.display = 'none';
+        const step2 = document.getElementById('step-ativacao-dados');
+        step2.style.display = 'block';
+
+        const vehTitle = `${data.vehicle?.brand || ''} ${data.vehicle?.model || ''} (${data.vehicle?.license_plate || ''})`.trim();
+        document.getElementById('ativacao-veiculo-titulo').innerText = vehTitle;
+        document.getElementById('ativacao-oficina-nome').innerText = `Oficina: ${data.workshop_name || 'Credenciada'}`;
+
+        const boxNome = document.getElementById('box-campo-nome');
+        const boxEmail = document.getElementById('box-campo-email');
+        const boxWpp = document.getElementById('box-campo-whatsapp');
+
+        if (boxNome) boxNome.style.display = data.missing_fields.includes('name') ? 'block' : 'none';
+        if (boxEmail) boxEmail.style.display = data.missing_fields.includes('email') ? 'block' : 'none';
+        if (boxWpp) boxWpp.style.display = data.missing_fields.includes('whatsapp') ? 'block' : 'none';
+
+        // Preenche valores se já existirem
+        if (data.client?.name && document.getElementById('ativacao-nome-input')) {
+          document.getElementById('ativacao-nome-input').value = data.client.name;
+        }
+        if (data.client?.email && document.getElementById('ativacao-email-input')) {
+          document.getElementById('ativacao-email-input').value = data.client.email;
+        }
+        if (data.client?.whatsapp && document.getElementById('ativacao-whatsapp-input')) {
+          document.getElementById('ativacao-whatsapp-input').value = data.client.whatsapp;
+        }
+      } catch (err) {
+        errBox.innerText = 'Erro ao conectar ao servidor. Tente novamente.';
+        errBox.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Avançar com Código</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>';
+      }
+    }
+
+    async function concluirAtivacaoCompletada() {
+      if (!currentActivationData) return;
+      const errBox = document.getElementById('msg-erro-ativacao-step2');
+      const btn = document.getElementById('btn-concluir-ativacao');
+
+      const nameVal = (document.getElementById('ativacao-nome-input')?.value || '').trim();
+      const emailVal = (document.getElementById('ativacao-email-input')?.value || '').trim();
+      const wppVal = (document.getElementById('ativacao-whatsapp-input')?.value || '').trim();
+
+      const missing = currentActivationData.missing_fields || [];
+      if (missing.includes('name') && !nameVal) {
+        errBox.innerText = 'Por favor, informe seu nome completo.';
+        errBox.style.display = 'block';
+        return;
+      }
+      if (missing.includes('email') && (!emailVal || !emailVal.includes('@'))) {
+        errBox.innerText = 'Por favor, informe um e-mail válido.';
+        errBox.style.display = 'block';
+        return;
+      }
+      if (missing.includes('whatsapp') && wppVal.replace(/\D/g, '').length < 10) {
+        errBox.innerText = 'Por favor, informe seu WhatsApp com DDD.';
+        errBox.style.display = 'block';
+        return;
+      }
+
+      errBox.style.display = 'none';
+      btn.disabled = true;
+      btn.innerHTML = '<span>Ativando veículo...</span>';
+
+      await executarAtivacaoFinal({
+        code: currentActivationData.activation_code,
+        name: nameVal || currentActivationData.client?.name,
+        email: emailVal || currentActivationData.client?.email,
+        whatsapp: wppVal || currentActivationData.client?.whatsapp
+      });
+    }
+
+    async function executarAtivacaoFinal(payload) {
       try {
         const res = await fetch('/api/v1/clients/activate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: cleanCode })
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          alert('🎉 Veículo ativado com sucesso pela oficina ' + (data.workshop?.trade_name || 'DNA AUTO') + '!');
           if (data.vehicle) {
             localStorage.setItem('dna_registered_plate', data.vehicle.license_plate);
           }
@@ -2404,12 +2529,12 @@
           localStorage.setItem('dna_owner_session', 'active');
           localStorage.setItem('dna_owner_auth_screen', 'app');
           localStorage.setItem('dna_owner_current_screen', 'home');
-          window.location.href = `/cliente?code=${cleanCode}`;
+          window.location.href = `/cliente?code=${encodeURIComponent(payload.code)}`;
         } else {
-          alert(data.error || 'Código de ativação não encontrado ou expirado.');
+          alert(data.error || 'Erro ao ativar veículo.');
         }
       } catch (err) {
-        alert('Erro ao validar código com o servidor.');
+        alert('Erro ao processar ativação com o servidor.');
       }
     }
 
@@ -2512,5 +2637,78 @@
       else showScreen('splash');
     });
   </script>
+  <!-- ══════════════════════════════════════════════════════════════════
+       MODAL OFICIAL: ENTRAR COM CÓDIGO DA OFICINA (2 ETAPAS INTELIGENTES)
+       ══════════════════════════════════════════════════════════════════ -->
+  <div id="modal-ativacao-oficina" class="modal-overlay" style="display:none; position:fixed; inset:0; z-index:999999; background:rgba(4,9,20,0.88); backdrop-filter:blur(10px); align-items:center; justify-content:center; padding:16px;">
+    <div style="background:radial-gradient(ellipse at top, #132742 0%, #0B1220 100%); border:1.5px solid rgba(0,212,255,0.4); border-radius:20px; width:100%; max-width:400px; padding:24px 20px; box-shadow:0 20px 50px rgba(0,0,0,0.8), 0 0 30px rgba(0,212,255,0.2); position:relative; text-align:center;">
+      
+      <!-- Botão Fechar -->
+      <button type="button" onclick="fecharAtivacaoOficina()" style="position:absolute; top:14px; right:14px; background:transparent; border:none; color:#94A3B8; font-size:22px; cursor:pointer; line-height:1;">&times;</button>
+
+      <!-- ETAPA 1: APENAS O CÓDIGO -->
+      <div id="step-ativacao-codigo">
+        <div style="width:58px; height:58px; margin:0 auto 14px; border-radius:50%; background:rgba(0,212,255,0.12); border:1.5px solid #00D4FF; display:flex; align-items:center; justify-content:center; font-size:26px; box-shadow:0 0 20px rgba(0,212,255,0.3);">
+          🔑
+        </div>
+        <h3 style="font-size:18px; font-weight:800; color:#FFFFFF; margin:0 0 6px;">Código da Oficina</h3>
+        <p style="font-size:12px; color:#94A3B8; margin:0 0 20px; line-height:1.4;">
+          Digite o código de ativação fornecido pela sua oficina credenciada para acessar o seu veículo.
+        </p>
+
+        <div style="margin-bottom:16px;">
+          <input type="text" id="input-codigo-oficina" maxlength="12" placeholder="Ex: DNA-8421" 
+            style="width:100%; text-align:center; font-size:22px; font-weight:900; letter-spacing:3px; padding:12px; background:#070C16; border:2px solid #00D4FF; border-radius:12px; color:#FFD21C; font-family:monospace; text-transform:uppercase; outline:none; box-shadow:0 0 16px rgba(0,212,255,0.25);"
+            oninput="this.value = this.value.toUpperCase();"
+            onkeydown="if(event.key==='Enter') validarCodigoOficina();"
+          />
+        </div>
+
+        <div id="msg-erro-ativacao-step1" style="display:none; color:#EF4444; font-size:12px; font-weight:700; margin-bottom:12px;"></div>
+
+        <button type="button" id="btn-validar-codigo-oficina" onclick="validarCodigoOficina()" style="width:100%; padding:13px; font-size:14px; font-weight:900; border-radius:12px; border:none; background:linear-gradient(135deg, #00D4FF 0%, #0066FF 100%); color:#0B0F19; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span>Avançar com Código</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- ETAPA 2: DADOS FALTANTES (SOMENTE SE FALTAR NOME, EMAIL OU WHATSAPP) -->
+      <div id="step-ativacao-dados" style="display:none; text-align:left;">
+        <div style="text-align:center; margin-bottom:14px;">
+          <span style="background:rgba(0,230,118,0.15); border:1px solid #00E676; color:#00E676; padding:4px 10px; border-radius:9999px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:5px;">
+            <span>✅</span> Veículo Localizado!
+          </span>
+          <h3 id="ativacao-veiculo-titulo" style="font-size:16px; font-weight:800; color:#FFFFFF; margin:8px 0 2px; text-align:center;"></h3>
+          <p id="ativacao-oficina-nome" style="font-size:11.5px; color:#94A3B8; margin:0 0 12px; text-align:center;"></p>
+          <p style="font-size:12px; color:#CBD5E1; margin:0; line-height:1.4;">
+            Complete os dados que faltam para finalizar seu acesso:
+          </p>
+        </div>
+
+        <div id="box-campo-nome" style="margin-bottom:12px; display:none;">
+          <label style="font-size:11.5px; color:#94A3B8; font-weight:700; display:block; margin-bottom:4px;">Nome Completo</label>
+          <input type="text" id="ativacao-nome-input" placeholder="Seu nome completo" style="width:100%; padding:10px 12px; font-size:13px; background:#070C16; border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#FFF; outline:none;" />
+        </div>
+
+        <div id="box-campo-email" style="margin-bottom:12px; display:none;">
+          <label style="font-size:11.5px; color:#94A3B8; font-weight:700; display:block; margin-bottom:4px;">E-mail</label>
+          <input type="email" id="ativacao-email-input" placeholder="seuemail@exemplo.com" style="width:100%; padding:10px 12px; font-size:13px; background:#070C16; border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#FFF; outline:none;" />
+        </div>
+
+        <div id="box-campo-whatsapp" style="margin-bottom:16px; display:none;">
+          <label style="font-size:11.5px; color:#94A3B8; font-weight:700; display:block; margin-bottom:4px;">WhatsApp (com DDD)</label>
+          <input type="tel" id="ativacao-whatsapp-input" placeholder="(11) 99999-9999" style="width:100%; padding:10px 12px; font-size:13px; background:#070C16; border:1px solid rgba(255,255,255,0.15); border-radius:10px; color:#FFF; outline:none;" />
+        </div>
+
+        <div id="msg-erro-ativacao-step2" style="display:none; color:#EF4444; font-size:12px; font-weight:700; margin-bottom:12px;"></div>
+
+        <button type="button" id="btn-concluir-ativacao" onclick="concluirAtivacaoCompletada()" style="width:100%; padding:13px; font-size:14px; font-weight:900; border-radius:12px; border:none; background:linear-gradient(135deg, #00E676 0%, #00B0FF 100%); color:#0B0F19; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span>Concluir e Acessar Meu Veículo</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
 </body>
 </html>

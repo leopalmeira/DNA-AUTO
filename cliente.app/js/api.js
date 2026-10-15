@@ -73,11 +73,15 @@ const API = {
             body: JSON.stringify(data)
         });
     },
-    activateClientCode(code) {
+    activateClientCode(payload) {
+        const body = typeof payload === 'string' ? { code: payload } : payload;
         return this.request('/clients/activate', {
             method: 'POST',
-            body: JSON.stringify({ code })
+            body: JSON.stringify(body)
         });
+    },
+    checkClientCode(code) {
+        return this.request(`/clients/activation-code/${encodeURIComponent(code)}`);
     },
     getWorkshopsNetwork() {
         return this.request('/workshops');

@@ -1005,11 +1005,7 @@ const OwnerView = {
             return;
         }
         if (tab === 'obd') {
-            if (!this.isObdPaired) {
-                this.navigateTo('bluetooth-pair');
-            } else {
-                this.navigateTo('obd');
-            }
+            this.openMiniObdLockModal();
             return;
         }
         if (tab === 'reminders') {
@@ -1781,6 +1777,14 @@ const OwnerView = {
                             </div>
 
                             <div class="dna-header-right">
+                                <!-- Botão de Configurações no Canto Superior -->
+                                <div class="dna-notification-btn" onclick="OwnerView.navigateTo('settings')" title="Configurações e Perfil" style="cursor:pointer;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                    </svg>
+                                </div>
+
                                 <!-- Botão de Notificações com badge -->
                                 <div class="dna-notification-btn" onclick="OwnerView.navigateTo('notifications')" title="Notificações">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1868,8 +1872,8 @@ const OwnerView = {
                             <span class="dna-nav-label">Serviços</span>
                         </div>
 
-                        <div class="dna-nav-item ${this.activeTab === 'obd' ? 'active' : ''}" onclick="OwnerView.switchTab('obd')">
-                            <div class="dna-nav-icon">
+                        <div class="dna-nav-item ${this.activeTab === 'obd' ? 'active' : ''}" onclick="OwnerView.switchTab('obd')" title="Mini OBD2 (Em Breve)" style="position:relative;">
+                            <div class="dna-nav-icon" style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="4" y="4" width="16" height="16" rx="2"/>
                                     <rect x="9" y="9" width="6" height="6"/>
@@ -1878,8 +1882,9 @@ const OwnerView = {
                                     <line x1="9" y1="20" x2="9" y2="23"/>
                                     <line x1="15" y1="20" x2="15" y2="23"/>
                                 </svg>
+                                <span style="position:absolute; top:-3px; right:-6px; font-size:10px;">🔒</span>
                             </div>
-                            <span class="dna-nav-label">Diagnóstico OBD</span>
+                            <span class="dna-nav-label">OBD <span style="font-size:8.5px; color:#F59E0B; font-weight:800; display:block; line-height:1;">(Em Breve)</span></span>
                         </div>
 
                         <div class="dna-nav-item ${this.activeTab === 'reminders' ? 'active' : ''}" onclick="OwnerView.switchTab('reminders')">
@@ -2116,50 +2121,36 @@ const OwnerView = {
                     <span style="font-size:11px; color:#94A3B8; font-family:var(--font-mono, monospace); font-weight:700;">${v.dna_code || '---'}</span>
                 </div>
 
-                <!-- Foto do Carro com Botão de Trocar Foto -->
-                <div class="dna-car-stage" onclick="OwnerView.openChangePhotoModal()" style="cursor:pointer;" title="Clique para trocar foto">
-                    <div class="dna-car-neon-glow"></div>
-                    <img class="dna-car-image" src="${v.photo_url || '/img/splash-car-hero.png'}" alt="${v.full_title || 'Veículo'}" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
+                <!-- Foto do Carro Compacta com Botão de Trocar Foto -->
+                <div class="dna-car-stage" onclick="OwnerView.openChangePhotoModal()" style="cursor:pointer; min-height:80px; padding:2px 0 6px;" title="Clique para trocar foto">
+                    <div class="dna-car-neon-glow" style="height:12px; bottom:2px;"></div>
+                    <img class="dna-car-image" src="${v.photo_url || '/img/splash-car-hero.png'}" alt="${v.full_title || 'Veículo'}" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" style="max-height:90px; max-width:190px;" />
                     <button class="dna-car-change-photo-btn" onclick="event.stopPropagation(); OwnerView.openChangePhotoModal();" title="Trocar foto do meu carro">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                         <span>Trocar Foto</span>
                     </button>
                 </div>
 
-                <!-- Título do Veículo, Ano e Placa Mercosul -->
-                <div style="margin: 10px 0 12px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <!-- Título do Veículo, Ano, Placa e Quilometragem Integrada (Design Compacto) -->
+                <div style="margin: 6px 0 2px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
                     <div>
-                        <h3 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">${v.full_title || (v.brand + ' ' + v.model)}</h3>
-                        <div style="font-size:12px; color:#94A3B8; font-weight:600;">${v.manufacture_year || '----'}/${v.model_year || '----'} • ${v.fuel_type || 'Flex'}</div>
+                        <h3 style="font-size:15px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">${v.full_title || (v.brand + ' ' + v.model)}</h3>
+                        <div style="font-size:11.5px; color:#94A3B8; font-weight:600;">${v.manufacture_year || '----'}/${v.model_year || '----'} • ${v.fuel_type || 'Flex'}</div>
                     </div>
-                    <div class="dna-plate-mercosul" style="background:#FFFFFF; color:#0B0F19; border-radius:6px; padding:2px 8px; font-family:var(--font-mono, monospace); font-weight:800; font-size:12px; border:1.5px solid #000; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(0,0,0,0.4);">
-                        <span style="background:#003399; color:#FFF; font-size:8px; padding:1px 3px; border-radius:2px;">BR</span>
-                        <span>${v.license_plate || '---'}</span>
-                    </div>
-                </div>
-
-                <!-- 3 Medidores em Grade -->
-                <div class="dna-metrics-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-                    <div class="dna-metric-box" onclick="OwnerView.navigateTo('bluetooth-pair')" style="cursor:pointer;" title="Ver odômetro da ECU">
-                        <div class="dna-metric-label" style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Quilometragem</div>
-                        <div class="dna-metric-value" style="font-size:13.5px; font-weight:800; color:#FFFFFF;">${Number(v.current_mileage || 0).toLocaleString('pt-BR')} km</div>
-                    </div>
-                    <div class="dna-metric-box">
-                        <div class="dna-metric-label" style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Combustível</div>
-                        <div class="dna-metric-value" style="font-size:13.5px; font-weight:800; color:#00D4FF;">${v.fuel_level || 0}%</div>
-                        <div class="dna-fuel-bar" style="height:3px; background:rgba(255,255,255,0.1); border-radius:2px; margin-top:4px;"><div class="dna-fuel-fill" style="width:${v.fuel_level || 0}%; height:100%; background:#00D4FF; border-radius:2px;"></div></div>
-                    </div>
-                    <div class="dna-metric-box">
-                        <div class="dna-metric-label" style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Autonomia</div>
-                        <div class="dna-metric-value" style="font-size:13.5px; font-weight:800; color:#10B981;">~ ${v.estimated_range || 0} km</div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:4px 9px; text-align:right; cursor:pointer;" onclick="OwnerView.openOdometerModal()" title="Confirmar Hodômetro Oficial">
+                            <span style="font-size:9px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block; line-height:1;">Quilometragem</span>
+                            <span style="font-size:12.5px; font-weight:800; color:#FFFFFF; line-height:1.2;">${Number(v.current_mileage || 0).toLocaleString('pt-BR')} km</span>
+                        </div>
+                        <div class="dna-plate-mercosul" style="background:#FFFFFF; color:#0B0F19; border-radius:6px; padding:2px 8px; font-family:var(--font-mono, monospace); font-weight:800; font-size:12px; border:1.5px solid #000; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(0,0,0,0.4);">
+                            <span style="background:#003399; color:#FFF; font-size:8px; padding:1px 3px; border-radius:2px;">BR</span>
+                            <span>${v.license_plate || '---'}</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Card Nobre: Manutenção Preditiva & Estimativa de Uso (Ciclo 22) -->
-            ${this.renderPredictiveCard()}
-
-            <!-- Hub de Funções do Veículo em Cards (9 Cards Reorganizados) -->
+            <!-- Hub de Funções do Seu Veículo (Grade Despoluída) -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 10px;">
                 <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Funções do Seu Veículo</span>
                 <span style="font-size:11px; color:#00D4FF; font-weight:700;">Acesso Rápido</span>
@@ -2259,18 +2250,6 @@ const OwnerView = {
                     <div>
                         <h3 class="dna-client-card-title">Oficinas Parceiras</h3>
                         <p class="dna-client-card-desc">Oficinas mecânicas e auto centers</p>
-                    </div>
-                </div>
-
-                <!-- Card 9: Configurações & Perfil -->
-                <div class="dna-client-action-card dna-card-slate" onclick="OwnerView.navigateTo('settings')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">⚙️</div>
-                        <span class="dna-client-card-badge">PERFIL</span>
-                    </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Configurações</h3>
-                        <p class="dna-client-card-desc">Dados do motorista e preferências</p>
                     </div>
                 </div>
             </div>
@@ -4362,11 +4341,62 @@ const OwnerView = {
     closeActivationModal() {
         this.isActivationModalOpen = false;
         this.presetActivationCode = '';
+        this.pendingActivationData = null;
         this.render();
     },
 
     renderActivationModal() {
         const defaultVal = this.presetActivationCode || '';
+        const pending = this.pendingActivationData;
+
+        if (pending && pending.needs_completion) {
+            const vehTitle = `${pending.vehicle?.brand || ''} ${pending.vehicle?.model || ''} (${pending.vehicle?.license_plate || ''})`.trim();
+            const missing = pending.missing_fields || [];
+            return `
+                <div class="dna-photo-modal-overlay" onclick="if(event.target === this) OwnerView.closeActivationModal();" style="z-index:999999;">
+                    <div class="dna-photo-modal-sheet" style="max-width:380px; text-align:left; padding:24px 20px;">
+                        <div style="text-align:center; margin-bottom:14px;">
+                            <span style="background:rgba(0,230,118,0.15); border:1px solid #00E676; color:#00E676; padding:4px 10px; border-radius:9999px; font-size:11px; font-weight:800; display:inline-flex; align-items:center; gap:5px;">
+                                <span>✅</span> Veículo Localizado!
+                            </span>
+                            <h3 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:8px 0 2px; text-align:center;">${vehTitle}</h3>
+                            <p style="font-size:11.5px; color:#94A3B8; margin:0 0 10px; text-align:center;">Oficina: ${pending.workshop_name || 'Credenciada'}</p>
+                            <p style="font-size:12px; color:#CBD5E1; margin:0; line-height:1.4; text-align:center;">Complete seus dados para concluir o acesso:</p>
+                        </div>
+
+                        ${missing.includes('name') ? `
+                            <div style="margin-bottom:12px;">
+                                <label style="font-size:11.5px; color:#94A3B8; font-weight:700; display:block; margin-bottom:4px;">Nome Completo</label>
+                                <input type="text" id="dna-act-name" value="${pending.client?.name || ''}" placeholder="Seu nome completo" style="width:100%; padding:10px 12px; font-size:13px; background:#0B1220; border:1px solid rgba(255,255,255,0.18); border-radius:10px; color:#FFF; outline:none;" />
+                            </div>
+                        ` : ''}
+
+                        ${missing.includes('email') ? `
+                            <div style="margin-bottom:12px;">
+                                <label style="font-size:11.5px; color:#94A3B8; font-weight:700; display:block; margin-bottom:4px;">E-mail</label>
+                                <input type="email" id="dna-act-email" value="${pending.client?.email || ''}" placeholder="seuemail@exemplo.com" style="width:100%; padding:10px 12px; font-size:13px; background:#0B1220; border:1px solid rgba(255,255,255,0.18); border-radius:10px; color:#FFF; outline:none;" />
+                            </div>
+                        ` : ''}
+
+                        ${missing.includes('whatsapp') ? `
+                            <div style="margin-bottom:16px;">
+                                <label style="font-size:11.5px; color:#94A3B8; font-weight:700; display:block; margin-bottom:4px;">WhatsApp (com DDD)</label>
+                                <input type="tel" id="dna-act-whatsapp" value="${pending.client?.whatsapp || ''}" placeholder="(11) 99999-9999" style="width:100%; padding:10px 12px; font-size:13px; background:#0B1220; border:1px solid rgba(255,255,255,0.18); border-radius:10px; color:#FFF; outline:none;" />
+                            </div>
+                        ` : ''}
+
+                        <button id="dna-btn-submit-activation" class="dna-photo-btn-primary" onclick="OwnerView.submitCompletedClientActivation()" style="width:100%; margin-bottom:8px; justify-content:center; font-size:13.5px; padding:13px; background:linear-gradient(135deg, #00E676 0%, #00B0FF 100%); color:#0B0F19; font-weight:900; border:none; border-radius:10px; cursor:pointer;">
+                            <span>Concluir e Acessar Veículo</span>
+                        </button>
+
+                        <button class="dna-photo-btn-secondary" onclick="OwnerView.closeActivationModal()" style="width:100%; justify-content:center; font-size:12px; color:#94A3B8; background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px; cursor:pointer;">
+                            <span>Cancelar</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
         return `
             <div class="dna-photo-modal-overlay" onclick="if(event.target === this) OwnerView.closeActivationModal();" style="z-index:999999;">
                 <div class="dna-photo-modal-sheet" style="max-width:380px; text-align:center; padding:24px 20px;">
@@ -4376,7 +4406,7 @@ const OwnerView = {
 
                     <h3 style="font-size:18px; font-weight:800; color:#FFFFFF; margin:0 0 6px;">Ativar Meu Veículo no App</h3>
                     <p style="font-size:12.5px; color:#94A3B8; margin:0 0 18px; line-height:1.4;">
-                        Digite o código exclusivo fornecido pela sua oficina (ou recebido via WhatsApp/QR Code) para sincronizar o histórico do seu veículo.
+                        Digite o código exclusivo fornecido pela sua oficina credenciada para sincronizar o histórico do seu veículo.
                     </p>
 
                     <div style="margin-bottom:16px;">
@@ -4392,7 +4422,7 @@ const OwnerView = {
 
                     <button id="dna-btn-submit-activation" class="dna-photo-btn-primary" onclick="OwnerView.submitClientActivation()" style="width:100%; margin-bottom:8px; justify-content:center; font-size:13.5px; padding:13px; background:linear-gradient(135deg, #00D4FF 0%, #0066FF 100%); color:#000; font-weight:900; border:none; border-radius:10px; cursor:pointer;">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                        <span>Validar e Ativar Meu Carro</span>
+                        <span>Avançar com Código</span>
                     </button>
 
                     <button class="dna-photo-btn-secondary" onclick="OwnerView.closeActivationModal()" style="width:100%; justify-content:center; font-size:12px; color:#94A3B8; background:transparent; border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:10px; cursor:pointer;">
@@ -4413,14 +4443,69 @@ const OwnerView = {
         const submitBtn = document.getElementById('dna-btn-submit-activation');
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span>Validando código...</span>';
+            submitBtn.innerHTML = '<span>Verificando código...</span>';
         }
 
         try {
-            const data = await API.activateClientCode(inputCode);
+            const check = await API.checkClientCode(inputCode);
+            if (!check || !check.success) {
+                this.showOwnerToast(check?.error || 'Código de ativação não encontrado ou expirado.', 'error');
+                return;
+            }
+
+            if (check.needs_completion && check.missing_fields?.length > 0) {
+                this.pendingActivationData = check;
+                this.render();
+                return;
+            }
+
+            // Sem pendências, ativa direto!
+            await this.performActivation({ code: inputCode });
+        } catch (err) {
+            this.showOwnerToast(err.message || 'Código de ativação não encontrado ou expirado.', 'error');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Avançar com Código</span>';
+            }
+        }
+    },
+
+    async submitCompletedClientActivation() {
+        if (!this.pendingActivationData) return;
+        const name = (document.getElementById('dna-act-name')?.value || '').trim();
+        const email = (document.getElementById('dna-act-email')?.value || '').trim();
+        const whatsapp = (document.getElementById('dna-act-whatsapp')?.value || '').trim();
+
+        const missing = this.pendingActivationData.missing_fields || [];
+        if (missing.includes('name') && !name) {
+            this.showOwnerToast('Informe seu nome completo', 'error');
+            return;
+        }
+        if (missing.includes('email') && (!email || !email.includes('@'))) {
+            this.showOwnerToast('Informe um e-mail válido', 'error');
+            return;
+        }
+        if (missing.includes('whatsapp') && whatsapp.replace(/\D/g, '').length < 10) {
+            this.showOwnerToast('Informe seu WhatsApp com DDD', 'error');
+            return;
+        }
+
+        await this.performActivation({
+            code: this.pendingActivationData.activation_code,
+            name: name || this.pendingActivationData.client?.name,
+            email: email || this.pendingActivationData.client?.email,
+            whatsapp: whatsapp || this.pendingActivationData.client?.whatsapp
+        });
+    },
+
+    async performActivation(payload) {
+        try {
+            const data = await API.activateClientCode(payload);
             if (data && data.success) {
                 this.isActivationModalOpen = false;
-                this.showOwnerToast(`🎉 Veículo ativado com sucesso! (${data.vehicle?.license_plate || inputCode})`, 'success');
+                this.pendingActivationData = null;
+                this.showOwnerToast(`🎉 Veículo ativado com sucesso! (${data.vehicle?.license_plate || payload.code})`, 'success');
 
                 // Sincroniza e seleciona o veículo
                 if (data.vehicle) {
@@ -4442,11 +4527,6 @@ const OwnerView = {
             }
         } catch (err) {
             this.showOwnerToast(err.message || 'Código de ativação não encontrado ou expirado.', 'error');
-        } finally {
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span>Validar e Ativar Meu Carro</span>';
-            }
         }
     },
 

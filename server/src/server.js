@@ -69,10 +69,76 @@ app.get('/api/v1/health', (req, res) => {
 });
 
 // Endpoint de Ativação do Cliente via Código da Oficina
+// Endpoint de Consulta do Código da Oficina (Verifica código e identifica dados faltantes)
+app.get('/api/v1/clients/activation-code/:code', (req, res) => {
+    try {
+        const db = require('./database/db');
+        const code = (req.params.code || '').trim().toUpperCase();
+
+        if (!code) {
+            return res.status(400).json({ error: 'Código de ativação é obrigatório.' });
+        }
+
+        const activation = db.prepare(`
+            SELECT a.*, w.trade_name as workshop_name, w.phone as workshop_phone
+            FROM client_activations a
+            LEFT JOIN workshops w ON a.workshop_id = w.id
+            WHERE UPPER(a.activation_code) = ?
+        `).get(code);
+
+        if (!activation) {
+            return res.status(404).json({ error: 'Código de ativação não encontrado. Verifique com a sua oficina.' });
+        }
+
+        const vehicle = db.prepare(`
+            SELECT v.*, d.dna_code, d.status as dna_status
+            FROM vehicles v
+            LEFT JOIN vehicle_dna d ON v.id = d.vehicle_id
+            WHERE v.id = ? OR v.license_plate = ?
+        `).get(activation.vehicle_id, activation.license_plate);
+
+        const clientName = (activation.client_name || '').trim();
+        const clientEmail = (activation.email || '').trim();
+        const clientWhatsapp = (activation.whatsapp || '').trim();
+
+        const missingFields = [];
+        if (!clientName) missingFields.push('name');
+        if (!clientEmail) missingFields.push('email');
+        if (!clientWhatsapp) missingFields.push('whatsapp');
+
+        res.json({
+            success: true,
+            valid: true,
+            activation_code: activation.activation_code,
+            status: activation.status,
+            workshop_name: activation.workshop_name || 'Oficina Credenciada DNA AUTO',
+            vehicle: vehicle || {
+                license_plate: activation.license_plate,
+                brand: 'Veículo',
+                model: 'Cadastrado'
+            },
+            client: {
+                name: clientName,
+                email: clientEmail,
+                whatsapp: clientWhatsapp
+            },
+            missing_fields: missingFields,
+            needs_completion: missingFields.length > 0
+        });
+    } catch (err) {
+        console.error('Erro ao consultar código de ativação:', err);
+        res.status(500).json({ error: 'Erro ao verificar código com o servidor.' });
+    }
+});
+
+// Endpoint de Ativação do Cliente via Código da Oficina (com suporte a completar dados)
 app.post('/api/v1/clients/activate', (req, res) => {
     try {
         const db = require('./database/db');
         const code = (req.body.activation_code || req.body.code || '').trim().toUpperCase();
+        const newName = (req.body.name || req.body.client_name || '').trim();
+        const newEmail = (req.body.email || '').trim().toLowerCase();
+        const newWhatsapp = (req.body.whatsapp || req.body.phone || '').trim();
 
         if (!code) {
             return res.status(400).json({ error: 'Código de ativação é obrigatório.' });
@@ -89,14 +155,35 @@ app.post('/api/v1/clients/activate', (req, res) => {
             return res.status(404).json({ error: 'Código de ativação não encontrado. Verifique o código com a sua oficina.' });
         }
 
-        // Se ainda estava pendente, marca como ativado
-        if (activation.status === 'PENDING') {
-            db.prepare(`
-                UPDATE client_activations
-                SET status = 'ACTIVATED',
-                    activated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-            `).run(activation.id);
+        const finalName = newName || activation.client_name || '';
+        const finalEmail = newEmail || activation.email || '';
+        const finalWhatsapp = newWhatsapp || activation.whatsapp || '';
+
+        // Atualiza campos e marca como ativado
+        db.prepare(`
+            UPDATE client_activations
+            SET status = 'ACTIVATED',
+                activated_at = CURRENT_TIMESTAMP,
+                client_name = ?,
+                email = ?,
+                whatsapp = ?
+            WHERE id = ?
+        `).run(finalName, finalEmail, finalWhatsapp, activation.id);
+
+        // Se tiver email e nome, garante usuário no banco para login futuro
+        if (finalEmail) {
+            const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(finalEmail);
+            if (!existingUser) {
+                const crypto = require('crypto');
+                const newUserId = 'usr_' + crypto.randomBytes(6).toString('hex');
+                const bcrypt = require('bcryptjs');
+                const randomPass = crypto.randomBytes(4).toString('hex');
+                const hash = bcrypt.hashSync(randomPass, 10);
+                db.prepare(`
+                    INSERT INTO users (id, name, email, password, role)
+                    VALUES (?, ?, ?, ?, 'owner')
+                `).run(newUserId, finalName || 'Cliente DNA AUTO', finalEmail, hash);
+            }
         }
 
         // Busca dados do veículo
@@ -113,8 +200,9 @@ app.post('/api/v1/clients/activate', (req, res) => {
             activation_code: activation.activation_code,
             status: 'ACTIVATED',
             client: {
-                name: activation.client_name,
-                whatsapp: activation.whatsapp
+                name: finalName,
+                email: finalEmail,
+                whatsapp: finalWhatsapp
             },
             vehicle: vehicle || {
                 license_plate: activation.license_plate,

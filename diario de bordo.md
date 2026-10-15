@@ -1441,3 +1441,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   8. **Garantia de Qualidade e Bateria de Testes:**
      - 56 de 56 testes automatizados executados e aprovados com 100% de sucesso (`npm test`).
 
+---
+
+### Ciclo 70 — Despoluição Visual do App do Cliente, Compactação do Card do Veículo, Bloqueio da Aba OBD e Ativação em Duas Etapas com Código da Oficina
+- **Data/Hora:** 15/10/2026
+- **Contexto & Escopo:**
+  1. **Despoluição Visual do Dashboard do Cliente (`cliente.app` / `ownerView.js`):**
+     - Remoção do card de "Configurações" da grade principal de ações na tela inicial. Acesso a configurações transferido para o topo direito (`dna-header-right`, ícone ⚙️ ao lado de notificações e botão sair) e mantido no Drawer lateral.
+     - Remoção do card de "Manutenção Preditiva Inteligente" da tela inicial para eliminar poluição visual e acelerar a navegação (o motor analítico e os cronogramas continuam operacionais sob demanda nos modais de inspeção).
+  2. **Card do Veículo Compacto e Direto:**
+     - Remoção dos indicadores de "Combustível" e "Autonomia", que ocupavam espaço desnecessário sem dados telemétricos ativos.
+     - Redução da altura da área visual do veículo (`.dna-car-stage`) de 155px para ~90px, tornando o card do carro leve e proporcional.
+     - Quilometragem integrada de forma compacta e clicável ao lado da placa Mercosul em badge dinâmico para atualização rápida do hodômetro.
+  3. **Bloqueio da Aba Inferior do Diagnóstico OBD:**
+     - Aba inferior "Diagnóstico OBD" atualizada com ícone de cadeado e status `🔒 (Em Breve)`.
+     - Ao clicar na aba, o sistema abre o modal explicativo oficial de homologação técnica do Mini OBD2 BLE 5.2, prevenindo frustração e deixando clara a fase de lançamento do hardware.
+  4. **Fluxo de Ativação por Código da Oficina em Duas Etapas (`dna-auto-login.html` & `server.js`):**
+     - **Etapa 1:** Ao clicar no botão "🔑 Entrar com Código da Oficina", é exibido exclusivamente o campo para digitar o código de acesso (`Ex: DNA-8421`).
+     - **Etapa 2 (Condicional e Inteligente):** O endpoint `GET /api/v1/clients/activation-code/:code` valida o código e retorna os campos que faltam (`missing_fields`: `name`, `email`, `whatsapp`). Se faltar algum dado, abre o formulário focado para o cliente preencher apenas as informações pendentes; se todos os dados já tiverem sido informados pela oficina, a ativação é concluída imediatamente sem etapas redundantes.
+     - Endpoint `POST /api/v1/clients/activate` atualizado para receber e persistir os dados complementares diretamente na tabela `users` e `client_activations`.
+  5. **Garantia de Qualidade:**
+     - 56 de 56 testes automatizados mantidos com 100% de sucesso (`npm test`).
+

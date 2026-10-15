@@ -81,6 +81,9 @@ try {
         CREATE INDEX IF NOT EXISTS idx_client_activations_plate ON client_activations(license_plate);
         CREATE INDEX IF NOT EXISTS idx_client_activations_ws ON client_activations(workshop_id);
     `);
+    try {
+        db.exec(`ALTER TABLE client_activations ADD COLUMN email TEXT;`);
+    } catch (_) {}
 } catch (e) {
     console.warn('Erro ao criar client_activations:', e.message);
 }
