@@ -1395,3 +1395,49 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Inserção de atalho no Drawer e na Tela de Login do App da Oficina (`workshopMobileView.js`).
   5. **Validação de Qualidade:**
      - 48 de 48 testes automatizados aprovados com 100% de sucesso (npm test).
+
+---
+
+### Ciclo 69 — Plataforma Completa de Manutenção Preditiva OEM, Odômetro Inteligente com Reconciliação e Monetização Oficial AbacatePay (PIX / Webhook / Tiers de Créditos)
+- **Data/Hora:** 15/10/2026
+- **Contexto & Escopo:**
+  1. **Auditoria de Segundo Plano (Viabilidade PWA vs Nativo):**
+     - Realizada auditoria rigorosa das restrições do padrão W3C e navegadores móveis (Chrome Mobile, Safari iOS). PWA não possui permissão de Background Geolocation contínuo em tela apagada.
+     - Documentada a rota de transição técnica com Foreground Service persistente para Android e CoreLocation com Significant Location Changes no iOS via bridge Capacitor/nativo.
+  2. **Bloqueio Oficial do Mini OBD2 BLE:**
+     - Dongle Mini OBD2 travado com visual moderno e badge de roadmap `🔒 EM BREVE`.
+     - Modal explicativo informando o lançamento iminente do hardware homologado pela engenharia DNA AUTO.
+  3. **Motor de Classificação Probabilística de Viagens (Meta de 70%):**
+     - Algoritmo multissinal em `server/src/services/predictiveMaintenance.service.js` combinando velocidade média/máxima, filtro de anomalias (>180 km/h), perfil de acelerômetro (`VEHICLE_VIBRATION` vs `WALKING_STEPS`), conectividade Bluetooth do veículo e coerência temporal.
+     - Registro de feedbacks dos usuários com tracking contínuo da acurácia empírica (meta >= 70%).
+  4. **Reconciliação e Distinção de Odômetro com Proteção Monotônica:**
+     - Separação em 3 grandezas no app e na API:
+       1. **Odômetro Oficial:** Última leitura confirmada no painel ou por ordem de serviço chancelada pela oficina.
+       2. **Distância Estimada Pós-Oficial:** Quilometragem acumulada exclusivamente por viagens veiculares validadas após a leitura oficial.
+       3. **Odômetro Atual Estimado:** Soma das duas grandezas com margem explícita de incerteza dos sensores (`±X km`).
+     - Validação monotônica contra adulteração ou retrocesso de quilometragem (`requires_validation: true` e HTTP 400 em caso de redução sem laudo).
+  5. **Motor de Manutenção Preditiva OEM Baseado em Catálogo:**
+     - Regras personalizadas por montadora, modelo e motorização (ex: corrente de comando metálica no Honda Civic dispensando troca de correia dentada vs VW EA111 com correia de borracha a cada 60.000 km).
+     - Componentes de desgaste (pastilhas e discos) sinalizados para inspeção presencial obrigatória na oficina credenciada.
+     - Recálculo automático de todo o cronograma sempre que uma oficina credenciada lança e comprova uma nova ordem de serviço.
+  6. **Monetização B2B com AbacatePay (PIX Transparente, Tiers e Webhook):**
+     - **Regra de Negócio Oficial:** DNA AUTO custa R$ 30,00 por veículo; preço sugerido ao cliente final R$ 59,90 (lucro retido pela oficina: R$ 29,90).
+     - **Tiers de Créditos Pré-Pagos com Desconto Progressivo:**
+       - *Avulso (1 a 9 carros):* R$ 30,00 por crédito.
+       - *Lote Bronze (10 a 29 créditos):* R$ 29,00 por crédito (10 créditos = R$ 290,00 | Lucro da oficina: R$ 30,90 por carro).
+       - *Lote Ouro (30+ créditos):* R$ 28,00 por crédito (30 créditos = R$ 840,00 | Lucro da oficina: R$ 31,90 por carro).
+     - **Ciclo Pós-Pago com Bloqueio de 10 em 10 Carros:**
+       - A oficina pode cadastrar até 10 carros sem pagar na hora.
+       - Ao atingir o 11º carro, o sistema bloqueia novos cadastros até a quitação do lote anterior de 10 carros (10 x R$ 30,00 = R$ 300,00 via PIX AbacatePay).
+     - **Configuração Oficial do Webhook AbacatePay:**
+       - URL: `https://dna-auto-vua4.onrender.com/api/v1/billing/webhook/abacatepay`
+       - Secret: `dna_sec_abacate_2026`
+       - Eventos monitorados: `billing.paid`, `transparent.completed`, `checkout.completed`.
+       - Confirmação automática de recebimento liberando créditos ou desbloqueando o ciclo de cadastros da oficina.
+  7. **Fluxo de Ativação pelo Cliente via Código Fornecido pela Oficina:**
+     - A oficina cadastra o carro e fornece o código de ativação (`DNA-XXXX`).
+     - Botão `🔑 Entrar com Código da Oficina` adicionado na tela de login (`/cliente` / `dna-auto-login.html`).
+     - O cliente insere o código e acessa imediatamente o dossiê e a garagem digital do veículo.
+  8. **Garantia de Qualidade e Bateria de Testes:**
+     - 56 de 56 testes automatizados executados e aprovados com 100% de sucesso (`npm test`).
+

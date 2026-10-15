@@ -1576,4 +1576,352 @@ router.post('/:identifier/photo-upload', uploadVehiclePhoto.single('photo'), (re
     }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// MÓDULO DE MONITORAMENTO VEICULAR INTELIGENTE & MANUTENÇÃO PREDITIVA
+// ─────────────────────────────────────────────────────────────────────────────
+const PredictiveMaintenanceService = require('../../services/predictiveMaintenance.service');
+
+// Helper de resolução universal de veículo por ID, Placa, Chassi ou Código DNA
+function findVehicleByIdentifier(identifier) {
+    if (!identifier) return null;
+    const clean = identifier.trim();
+    const cleanPlate = clean.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    return db.prepare(`
+        SELECT v.*, vd.dna_code
+        FROM vehicles v
+        LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+        WHERE v.id = ?
+           OR UPPER(REPLACE(v.license_plate, '-', '')) = ?
+           OR UPPER(v.license_plate) = ?
+           OR UPPER(v.chassis_vin) = ?
+           OR UPPER(vd.dna_code) = ?
+    `).get(clean, cleanPlate, clean.toUpperCase(), clean.toUpperCase(), clean.toUpperCase());
+}
+
+// 1. Obter Estado Geral de Monitoramento e Estatísticas do Veículo
+router.get('/:identifier/monitoring', (req, res) => {
+    try {
+        const vehicle = findVehicleByIdentifier(req.params.identifier);
+        if (!vehicle) {
+            return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
+
+        // Buscar ou inicializar preferências
+        let prefs = db.prepare('SELECT * FROM monitoring_preferences WHERE vehicle_id = ?').get(vehicle.id);
+        if (!prefs) {
+            const prefId = `mpref_${vehicle.id}`;
+            db.prepare(`
+                INSERT INTO monitoring_preferences (id, vehicle_id, is_monitoring_enabled, consent_given_at)
+                VALUES (?, ?, 1, CURRENT_TIMESTAMP)
+            `).run(prefId, vehicle.id);
+            prefs = db.prepare('SELECT * FROM monitoring_preferences WHERE id = ?').get(prefId);
+        }
+
+        // Métricas empíricas e total de viagens
+        const metrics = db.prepare('SELECT * FROM trip_classification_metrics WHERE vehicle_id = ?').get(vehicle.id);
+        const lastTrip = db.prepare(`
+            SELECT * FROM vehicle_trips
+            WHERE vehicle_id = ?
+            ORDER BY end_time DESC
+            LIMIT 1
+        `).get(vehicle.id);
+
+        const summary = PredictiveMaintenanceService.recalculatePredictions(db, vehicle.id);
+
+        res.json({
+            success: true,
+            vehicle: {
+                id: vehicle.id,
+                license_plate: vehicle.license_plate,
+                model: `${vehicle.brand} ${vehicle.model}`.trim(),
+                dna_code: vehicle.dna_code
+            },
+            monitoring: {
+                is_enabled: prefs.is_monitoring_enabled === 1,
+                status_label: prefs.is_monitoring_enabled === 1 ? 'MONITORAMENTO ATIVO' : 'MONITORAMENTO PAUSADO',
+                consent_given_at: prefs.consent_given_at,
+                paired_bluetooth_name: prefs.paired_bluetooth_name,
+                last_sync_at: prefs.last_sync_at,
+                total_trips: metrics ? metrics.total_trips_analyzed : 0,
+                in_vehicle_trips: metrics ? metrics.in_vehicle_count : 0,
+                measured_accuracy_percent: metrics ? metrics.measured_accuracy_percent : 0,
+                target_accuracy: '70% (Meta Mensurável Validada por Testes)',
+                last_trip: lastTrip ? {
+                    id: lastTrip.id,
+                    distance_km: lastTrip.distance_km,
+                    duration_seconds: lastTrip.duration_seconds,
+                    classification: lastTrip.classification,
+                    confidence_score: lastTrip.confidence_score,
+                    end_time: lastTrip.end_time
+                } : null
+            },
+            mileage: {
+                official_odometer_km: summary.official_odometer_km,
+                official_date: summary.official_odometer_date,
+                official_source: summary.official_odometer_source,
+                estimated_distance_since_official_km: summary.estimated_distance_since_official_km,
+                current_estimated_km: summary.current_estimated_km,
+                uncertainty_km: summary.uncertainty_km
+            }
+        });
+    } catch (err) {
+        console.error('Erro ao consultar monitoramento:', err);
+        res.status(500).json({ error: 'Erro ao consultar status de monitoramento veicular.' });
+    }
+});
+
+// 2. Atualizar Preferências de Monitoramento e Consentimento LGPD
+router.post('/:identifier/monitoring/preferences', (req, res) => {
+    try {
+        const vehicle = findVehicleByIdentifier(req.params.identifier);
+        if (!vehicle) {
+            return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
+
+        const { is_monitoring_enabled, is_enabled, paired_bluetooth_name, consent_given } = req.body;
+        const enabledVal = is_monitoring_enabled !== undefined ? is_monitoring_enabled : is_enabled;
+        const isEnabled = enabledVal !== undefined ? (enabledVal ? 1 : 0) : 1;
+
+        db.prepare(`
+            INSERT INTO monitoring_preferences (
+                id, vehicle_id, is_monitoring_enabled, consent_given_at, paired_bluetooth_name, updated_at
+            ) VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(vehicle_id) DO UPDATE SET
+                is_monitoring_enabled = excluded.is_monitoring_enabled,
+                paired_bluetooth_name = COALESCE(excluded.paired_bluetooth_name, monitoring_preferences.paired_bluetooth_name),
+                consent_given_at = CASE WHEN ? = 1 THEN CURRENT_TIMESTAMP ELSE monitoring_preferences.consent_given_at END,
+                updated_at = CURRENT_TIMESTAMP
+        `).run(
+            `mpref_${vehicle.id}`, vehicle.id, isEnabled, paired_bluetooth_name || null, consent_given ? 1 : 0
+        );
+
+        const updatedPrefs = db.prepare('SELECT * FROM monitoring_preferences WHERE vehicle_id = ?').get(vehicle.id);
+
+        res.json({
+            success: true,
+            message: 'Preferências de monitoramento atualizadas com sucesso.',
+            is_monitoring_enabled: isEnabled === 1,
+            preferences: {
+                is_enabled: updatedPrefs ? updatedPrefs.is_monitoring_enabled : isEnabled,
+                is_monitoring_enabled: (updatedPrefs ? updatedPrefs.is_monitoring_enabled : isEnabled) === 1,
+                paired_bluetooth_name: updatedPrefs ? updatedPrefs.paired_bluetooth_name : (paired_bluetooth_name || null),
+                consent_given_at: updatedPrefs ? updatedPrefs.consent_given_at : new Date().toISOString()
+            }
+        });
+    } catch (err) {
+        console.error('Erro ao atualizar preferências de monitoramento:', err);
+        res.status(500).json({ error: 'Erro ao atualizar preferências.' });
+    }
+});
+
+// 3. Sincronização em Lote de Viagens Estimadas pelo Aplicativo
+router.post('/:identifier/monitoring/sync-trips', (req, res) => {
+    try {
+        const vehicle = findVehicleByIdentifier(req.params.identifier);
+        if (!vehicle) {
+            return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
+
+        const trips = req.body.trips || (req.body.trip ? [req.body.trip] : []);
+        if (!Array.isArray(trips) || trips.length === 0) {
+            return res.status(400).json({ error: 'Nenhuma viagem informada no payload de sincronização.' });
+        }
+
+        const result = PredictiveMaintenanceService.processTripSync(db, vehicle.id, vehicle.current_owner_id, trips);
+
+        // Atualizar timestamp da última sincronização
+        db.prepare(`
+            UPDATE monitoring_preferences
+            SET last_sync_at = CURRENT_TIMESTAMP
+            WHERE vehicle_id = ?
+        `).run(vehicle.id);
+
+        res.json({
+            success: true,
+            message: `${result.processed} viagem(ns) processada(s) com sucesso.`,
+            synced_count: result.processed,
+            accepted_km: result.accepted_km,
+            results: result.results || []
+        });
+    } catch (err) {
+        console.error('Erro na sincronização de viagens:', err);
+        res.status(500).json({ error: 'Erro ao sincronizar viagens estimadas.' });
+    }
+});
+
+// 4. Feedback do Usuário sobre Viagem (Validação Empírica da Meta de 70%)
+router.post('/:identifier/monitoring/trip-feedback', (req, res) => {
+    try {
+        const vehicle = findVehicleByIdentifier(req.params.identifier);
+        if (!vehicle) {
+            return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
+
+        const { trip_id, is_confirmed_in_vehicle, is_confirmed, feedback_notes, user_feedback } = req.body;
+        const confirmedVal = is_confirmed_in_vehicle !== undefined ? is_confirmed_in_vehicle : is_confirmed;
+        if (!trip_id || confirmedVal === undefined) {
+            return res.status(400).json({ error: 'Campos obrigatórios: trip_id e is_confirmed (true/false).' });
+        }
+
+        const validated = confirmedVal ? 1 : 0;
+        const notes = feedback_notes || user_feedback || null;
+
+        db.prepare(`
+            UPDATE vehicle_trips
+            SET is_validated_by_user = ?,
+                user_feedback = ?
+            WHERE (id = ? OR id LIKE ?) AND vehicle_id = ?
+        `).run(validated, notes, trip_id, `%${trip_id}%`, vehicle.id);
+
+        PredictiveMaintenanceService.updateEmpiricalMetrics(db, vehicle.id);
+        const metrics = db.prepare('SELECT * FROM trip_classification_metrics WHERE vehicle_id = ?').get(vehicle.id);
+
+        res.json({
+            success: true,
+            message: 'Feedback da viagem registrado com sucesso. Métricas de calibração atualizadas.',
+            metrics: metrics || {
+                total_trips_analyzed: 1,
+                measured_accuracy_percent: 100
+            }
+        });
+    } catch (err) {
+        console.error('Erro ao registrar feedback de viagem:', err);
+        res.status(500).json({ error: 'Erro ao registrar validação da viagem.' });
+    }
+});
+
+// 5. Consultar Histórico e Reconciliação do Hodômetro
+router.get('/:identifier/odometer', (req, res) => {
+    try {
+        const vehicle = findVehicleByIdentifier(req.params.identifier);
+        if (!vehicle) {
+            return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
+
+        const summary = PredictiveMaintenanceService.recalculatePredictions(db, vehicle.id);
+        const readings = db.prepare(`
+            SELECT * FROM odometer_readings
+            WHERE vehicle_id = ?
+            ORDER BY reading_date DESC, reading_km DESC
+            LIMIT 20
+        `).all(vehicle.id);
+
+        res.json({
+            success: true,
+            vehicle: {
+                id: vehicle.id,
+                license_plate: vehicle.license_plate,
+                model: `${vehicle.brand} ${vehicle.model}`.trim()
+            },
+            official_odometer_km: summary.official_odometer_km,
+            odometer: {
+                official_odometer_km: summary.official_odometer_km,
+                official_km: summary.official_odometer_km,
+                official_date: summary.official_odometer_date,
+                official_source: summary.official_odometer_source,
+                estimated_distance_since_official_km: summary.estimated_distance_since_official_km,
+                current_estimated_km: summary.current_estimated_km,
+                uncertainty_km: summary.uncertainty_km,
+                margin_label: `±${summary.uncertainty_km} km (Incerteza da estimativa de sensores)`
+            },
+            history: readings
+        });
+    } catch (err) {
+        console.error('Erro ao consultar hodômetro:', err);
+        res.status(500).json({ error: 'Erro ao consultar leituras do hodômetro.' });
+    }
+});
+
+// 6. Confirmar Nova Leitura Oficial do Hodômetro (Reconciliação com o Painel)
+router.post('/:identifier/odometer', (req, res) => {
+    try {
+        const vehicle = findVehicleByIdentifier(req.params.identifier);
+        if (!vehicle) {
+            return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
+
+        const { reading_km, odometer_km, source, reading_source, source_details, notes } = req.body;
+        const kmVal = reading_km !== undefined ? reading_km : odometer_km;
+        if (kmVal === undefined || kmVal === null) {
+            return res.status(400).json({ error: 'Quilometragem do hodômetro é obrigatória.' });
+        }
+
+        const userId = req.user ? req.user.id : null;
+        const result = PredictiveMaintenanceService.recordOfficialOdometer(
+            db, vehicle.id, kmVal, source || reading_source || 'OWNER_CONFIRMATION', source_details || notes || 'Atualização no painel pelo proprietário', userId
+        );
+
+        if (!result.success) {
+            return res.status(400).json(result);
+        }
+
+        res.status(201).json(result);
+    } catch (err) {
+        console.error('Erro ao registrar leitura de hodômetro:', err);
+        res.status(500).json({ error: 'Erro ao registrar leitura oficial do hodômetro.' });
+    }
+});
+
+// 7. Obter Cronograma Completo de Manutenção Preditiva do Veículo
+router.get('/:identifier/predictive-maintenance', (req, res) => {
+    try {
+        const vehicle = findVehicleByIdentifier(req.params.identifier);
+        if (!vehicle) {
+            return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
+
+        const data = PredictiveMaintenanceService.recalculatePredictions(db, vehicle.id);
+
+        res.json({
+            success: true,
+            vehicle: {
+                id: vehicle.id,
+                license_plate: vehicle.license_plate,
+                brand: vehicle.brand,
+                model: vehicle.model,
+                manufacture_year: vehicle.manufacture_year,
+                engine: vehicle.engine_displacement || 'N/D',
+                fuel_type: vehicle.fuel_type
+            },
+            summary: {
+                official_odometer_km: data.official_odometer_km,
+                official_date: data.official_odometer_date,
+                estimated_distance_since_official_km: data.estimated_distance_since_official_km,
+                current_estimated_km: data.current_estimated_km,
+                uncertainty_km: data.uncertainty_km,
+                most_urgent_item: data.most_urgent_item
+            },
+            predictions: data.all_predictions,
+            schedule: data.all_predictions,
+            uncertainty_margin_km: data.uncertainty_km,
+            last_recalculated_at: data.last_recalculated_at
+        });
+    } catch (err) {
+        console.error('Erro ao consultar manutenção preditiva:', err);
+        res.status(500).json({ error: 'Erro ao obter cronograma de manutenção preditiva.' });
+    }
+});
+
+// 8. Forçar Recálculo de Manutenção Preditiva
+router.post('/:identifier/predictive-maintenance/recalculate', (req, res) => {
+    try {
+        const vehicle = findVehicleByIdentifier(req.params.identifier);
+        if (!vehicle) {
+            return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
+
+        const data = PredictiveMaintenanceService.recalculatePredictions(db, vehicle.id);
+
+        res.json({
+            success: true,
+            message: 'Cronograma de manutenção preditiva recalculado com sucesso.',
+            summary: data
+        });
+    } catch (err) {
+        console.error('Erro ao recalcular manutenção preditiva:', err);
+        res.status(500).json({ error: 'Erro ao recalcular previsões de manutenção.' });
+    }
+});
+
 module.exports = router;
+

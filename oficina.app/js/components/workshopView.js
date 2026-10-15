@@ -6241,7 +6241,7 @@ const WorkshopView = {
                         </div>
 
                         <!-- Card com Código em Destaque -->
-                        <div style="background:#050811; border:2px dashed #FFD21C; border-radius:12px; padding:14px; margin-bottom:16px;">
+                        <div style="background:#050811; border:2px dashed #FFD21C; border-radius:12px; padding:14px; margin-bottom:12px;">
                             <span style="font-size:10.5px; color:#94a3b8; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:2px;">CÓDIGO DE ATIVAÇÃO MANUAL</span>
                             <div style="font-size:28px; font-weight:900; letter-spacing:4px; font-family:var(--font-mono); color:#FFD21C; text-shadow:0 0 12px rgba(255,210,28,0.3);">
                                 ${code}
@@ -6249,6 +6249,38 @@ const WorkshopView = {
                             <div style="font-size:11.5px; color:#38bdf8; margin-top:4px;">
                                 Placa: <strong class="mono">${plate}</strong> • Cliente: <strong>${clientName}</strong>
                             </div>
+                        </div>
+
+                        <!-- Card Financeiro & Cobrança PIX AbacatePay (R$ 30 DNA, R$ 59,90 Cliente, Lucro R$ 29,90) -->
+                        <div style="background:linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(16,185,129,0.08) 100%); border:1px solid rgba(0,212,255,0.3); border-radius:12px; padding:12px; margin-bottom:14px; text-align:left;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <span style="font-size:11px; font-weight:800; color:#00D4FF; text-transform:uppercase;">Demonstrativo Financeiro (AbacatePay)</span>
+                                <span style="font-size:9.5px; background:rgba(0,230,118,0.2); color:#00E676; padding:2px 6px; border-radius:4px; font-weight:800;">LUCRO R$ 29,90</span>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; font-size:11px; margin-bottom:8px;">
+                                <div style="background:rgba(0,0,0,0.3); padding:6px; border-radius:6px; text-align:center;">
+                                    <span style="color:#94A3B8; display:block; font-size:9px;">DNA AUTO</span>
+                                    <strong style="color:#FFFFFF;">R$ 30,00</strong>
+                                </div>
+                                <div style="background:rgba(0,0,0,0.3); padding:6px; border-radius:6px; text-align:center;">
+                                    <span style="color:#94A3B8; display:block; font-size:9px;">COBRE DO CLIENTE</span>
+                                    <strong style="color:#00D4FF;">R$ 59,90</strong>
+                                </div>
+                                <div style="background:rgba(0,0,0,0.3); padding:6px; border-radius:6px; text-align:center;">
+                                    <span style="color:#94A3B8; display:block; font-size:9px;">SEU LUCRO</span>
+                                    <strong style="color:#00E676;">+ R$ 29,90</strong>
+                                </div>
+                            </div>
+                            <div style="font-size:10.5px; color:#CBD5E1; line-height:1.4;">
+                                Ciclo Pós-Pago: <strong>${(res.pricing && res.pricing.postpaid_cycle_status) || '1/10 acumulados'}</strong>. A partir do 11º carro, quite o lote de 10 por R$ 300,00 ou compre créditos pré-pagos (R$ 29 para 10+ ou R$ 28 para 30+).
+                            </div>
+                            ${res.pix_charge ? `
+                                <div style="margin-top:8px; padding-top:8px; border-top:1px dashed rgba(255,255,255,0.1); display:flex; gap:6px;">
+                                    <button type="button" class="btn btn-secondary" onclick="WorkshopView.copyPixCode('${res.pix_charge.pix_code}')" style="flex:1; font-size:11px; padding:6px; font-weight:700;">
+                                        ⚡ Copiar PIX Avulso (R$ 30,00)
+                                    </button>
+                                </div>
+                            ` : ''}
                         </div>
 
                         <div style="display:flex; flex-direction:column; gap:8px;">
@@ -6268,9 +6300,60 @@ const WorkshopView = {
                 `;
             }
         } catch (err) {
+            if (err.status === 402 || (err.message && err.message.includes('Limite de 10 carros'))) {
+                const c = document.getElementById('ws-client-activation-content');
+                if (c) {
+                    c.innerHTML = `
+                        <div style="text-align:center; padding:14px 6px;">
+                            <div style="width:52px; height:52px; margin:0 auto 12px; border-radius:50%; background:rgba(239,68,68,0.15); display:flex; align-items:center; justify-content:center; border:1px solid rgba(239,68,68,0.4);">
+                                <span style="font-size:24px;">⚠️</span>
+                            </div>
+                            <h4 style="color:#FFFFFF; font-size:16px; font-weight:800; margin:0 0 6px;">Limite de 10 Carros Atingido</h4>
+                            <p style="color:#94A3B8; font-size:12px; margin:0 0 14px; line-height:1.5;">
+                                Você completou o ciclo de 10 veículos ativados no modelo pós-pago. Para cadastrar a partir do 11º carro, efetue a quitação do lote anterior (<strong>10 x R$ 30,00 = R$ 300,00</strong>).
+                            </p>
+                            <div style="background:#070C18; border:1.5px solid #00D4FF; border-radius:12px; padding:12px; margin-bottom:14px; text-align:left;">
+                                <span style="font-size:11px; color:#00D4FF; font-weight:800; display:block; margin-bottom:4px;">PAGAMENTO PIX (ABACATEPAY)</span>
+                                <span style="font-size:12px; color:#FFFFFF; display:block;">Valor: <strong>R$ 300,00</strong> (10 veículos liberados)</span>
+                                <button type="button" class="btn btn-primary" onclick="WorkshopView.payPostpaidBatch()" style="width:100%; margin-top:10px; font-weight:800; font-size:12px; padding:10px;">
+                                    ⚡ Gerar PIX Quitação (R$ 300,00)
+                                </button>
+                            </div>
+                            <button type="button" class="btn btn-secondary" onclick="WorkshopView.closeModal()" style="font-size:12px;">Fechar</button>
+                        </div>
+                    `;
+                    return;
+                }
+            }
             alert('Erro ao gerar código de ativação: ' + err.message);
             this.openClientActivationModal();
         }
+    },
+
+    copyPixCode(code) {
+        if (!code) return;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Chave Copia e Cola do PIX copiada para a área de transferência!');
+            }).catch(() => {
+                prompt('Copie o código PIX:', code);
+            });
+        } else {
+            prompt('Copie o código PIX:', code);
+        }
+    },
+
+    async payPostpaidBatch() {
+        try {
+            const res = await fetch(`/api/v1/billing/workshop/${this.currentWorkshopId}/pay-postpaid-10`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await res.json();
+            if (data.success && data.charge) {
+                prompt('PIX Copia e Cola gerado (R$ 300,00):', data.charge.pix_code);
+            }
+        } catch (_) {}
     },
 
     copyActivationCode(code, directUrl) {

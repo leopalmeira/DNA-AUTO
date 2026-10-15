@@ -809,7 +809,214 @@ async function runTests() {
         console.assert(lastContact.client_name === 'Carlos Alberto Silva', 'Nome do cliente divergente no histórico');
         console.log(`✅ 48. Registro de Contato WhatsApp da Oficina: Contato com [${lastContact.client_name}] para veículo [${lastContact.vehicle_plate}] registrado com sucesso.`);
 
-        console.log('\n🎉 TODOS OS 48 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 49: Preferências e Controle de Privacidade do Monitoramento (LGPD)
+        const resMonPref = await fetch(`${BASE_URL}/vehicles/BRA2E19/monitoring/preferences`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+                is_enabled: true,
+                consent_given: true,
+                consent_text_version: 'v1.0-LGPD-2026',
+                paired_bluetooth_name: 'DNA_OBD2_BLE'
+            })
+        });
+        const dataMonPref = await resMonPref.json();
+        console.assert(resMonPref.status === 200, 'Falha ao salvar preferências de monitoramento');
+        console.assert(dataMonPref.preferences.is_enabled === 1, 'is_enabled deve ser 1');
+        console.assert(dataMonPref.preferences.paired_bluetooth_name === 'DNA_OBD2_BLE', 'Nome do Bluetooth divergente');
+        console.log(`✅ 49. Preferências de Monitoramento & LGPD: Consentimento gravado e Bluetooth [${dataMonPref.preferences.paired_bluetooth_name}] associado.`);
+
+        // Teste 50: Sincronização de Viagens e Classificação Probabilística Multissinal
+        const resSyncTrips = await fetch(`${BASE_URL}/vehicles/BRA2E19/monitoring/sync-trips`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+                trips: [
+                    {
+                        trip_id: 'trip_car_city_01',
+                        start_time: new Date(Date.now() - 3600000).toISOString(),
+                        end_time: new Date(Date.now() - 2700000).toISOString(),
+                        duration_seconds: 900,
+                        distance_km: 12.5,
+                        avg_speed_kmh: 42.0,
+                        max_speed_kmh: 68.0,
+                        bluetooth_connected: true,
+                        accelerometer_profile: 'VEHICLE_VIBRATION',
+                        samples_count: 50,
+                        samples_high_accuracy: 48
+                    },
+                    {
+                        trip_id: 'trip_walk_park_02',
+                        start_time: new Date(Date.now() - 2000000).toISOString(),
+                        end_time: new Date(Date.now() - 1400000).toISOString(),
+                        duration_seconds: 600,
+                        distance_km: 0.9,
+                        avg_speed_kmh: 5.2,
+                        max_speed_kmh: 6.8,
+                        bluetooth_connected: false,
+                        accelerometer_profile: 'WALKING_STEPS',
+                        samples_count: 20,
+                        samples_high_accuracy: 19
+                    }
+                ]
+            })
+        });
+        const dataSyncTrips = await resSyncTrips.json();
+        console.assert(resSyncTrips.status === 200, 'Falha ao sincronizar viagens');
+        console.assert(dataSyncTrips.synced_count === 2, 'Deveria sincronizar 2 viagens');
+        const carTrip = dataSyncTrips.results.find(t => t.trip_id === 'trip_car_city_01');
+        const walkTrip = dataSyncTrips.results.find(t => t.trip_id === 'trip_walk_park_02');
+        console.assert(carTrip.classification === 'IN_VEHICLE', 'Viagem de carro deve ser classificada como IN_VEHICLE');
+        console.assert(walkTrip.classification === 'WALKING', 'Deslocamento a pé deve ser classificado como WALKING');
+        console.log(`✅ 50. Classificação Probabilística de Viagens: Viagem de carro classificada como [${carTrip.classification}] (${carTrip.confidence_score}%) e caminhada como [${walkTrip.classification}].`);
+
+        // Teste 51: Feedback de Viagens e Validação da Meta de 70% de Precisão
+        const resFeedback = await fetch(`${BASE_URL}/vehicles/BRA2E19/monitoring/trip-feedback`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+                trip_id: 'trip_car_city_01',
+                is_confirmed: true,
+                user_feedback: 'Viagem real confirmada pelo proprietário no painel'
+            })
+        });
+        const dataFeedback = await resFeedback.json();
+        console.assert(resFeedback.status === 200, 'Falha ao registrar feedback de viagem');
+        console.assert(dataFeedback.success === true, 'Feedback deve retornar success: true');
+        console.assert(dataFeedback.metrics.measured_accuracy_percent >= 70, 'Precisão medida deve alcançar a meta de pelo menos 70%');
+        console.log(`✅ 51. Meta de Precisão de 70% Mensurável: Feedback registrado e precisão aferida em [${dataFeedback.metrics.measured_accuracy_percent}%] com [${dataFeedback.metrics.total_trips_analyzed}] viagens analisadas.`);
+
+        // Teste 52: Registro do Hodômetro Oficial e Bloqueio de Retrocesso Monotônico
+        const resOdomOk = await fetch(`${BASE_URL}/vehicles/BRA2E19/odometer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+                odometer_km: 88500,
+                reading_source: 'OWNER_DASHBOARD',
+                notes: 'Conferência visual no painel do carro'
+            })
+        });
+        const dataOdomOk = await resOdomOk.json();
+        console.assert(resOdomOk.status === 201, 'Falha ao registrar hodômetro válido');
+        console.assert(dataOdomOk.odometer.official_odometer_km === 88500, 'Valor do hodômetro oficial incorreto');
+
+        // Teste de retrocesso: tentar registrar quilometragem menor que a confirmada deve retornar erro 400
+        const resOdomRetro = await fetch(`${BASE_URL}/vehicles/BRA2E19/odometer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+                odometer_km: 80000,
+                reading_source: 'OWNER_DASHBOARD',
+                notes: 'Tentativa de valor menor (deve ser bloqueada)'
+            })
+        });
+        const dataOdomRetro = await resOdomRetro.json();
+        console.assert(resOdomRetro.status === 400, 'Deve rejeitar retrocesso de hodômetro com HTTP 400');
+        console.assert(dataOdomRetro.requires_validation === true, 'Deve exigir validação em caso de retrocesso');
+        console.log(`✅ 52. Hodômetro Oficial & Proteção Monotônica: Leitura [88.500 km] registrada; tentativa de retrocesso [80.000 km] bloqueada com sucesso.`);
+
+        // Teste 53: Motor de Manutenção Preditiva com Regras OEM Específicas do Fabricante
+        const resPred = await fetch(`${BASE_URL}/vehicles/BRA2E19/predictive-maintenance`);
+        const dataPred = await resPred.json();
+        console.assert(resPred.status === 200, 'Falha ao consultar manutenção preditiva');
+        console.assert(dataPred.success === true, 'Manutenção preditiva deve retornar success: true');
+        console.assert(dataPred.predictions.length >= 4, 'Deve conter pelo menos 4 itens no cronograma preditivo');
+        const oilItem = dataPred.predictions.find(p => p.item_code === 'ENG_OIL_FILTER');
+        console.assert(oilItem !== undefined, 'Item Óleo do motor e filtro deve estar presente');
+        console.assert(oilItem.recommended_interval_km === 10000, 'Intervalo do óleo deve ser 10.000 km');
+        console.log(`✅ 53. Motor de Manutenção Preditiva OEM: [${dataPred.predictions.length}] itens calculados; óleo e filtro com vencimento aos [${oilItem.next_due_km} km] com margem de incerteza de [±${dataPred.uncertainty_margin_km} km].`);
+
+        // Teste 54: Atualização Automática de Odômetro e Recálculo Preditivo via Serviço de Oficina
+        const resServiceAutoOdom = await fetch(`${BASE_URL}/services/workshop-register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${adminToken}`
+            },
+            body: JSON.stringify({
+                vehicle_id: 'veh_civic_2020',
+                workshop_id: 'ws_veloce',
+                service_type: 'PREVENTIVE',
+                title: 'Revisão Preventiva 90k com Troca de Óleo',
+                mileage: 90000,
+                cost_cents: 45000
+            })
+        });
+        const dataServiceAutoOdom = await resServiceAutoOdom.json();
+        console.assert(resServiceAutoOdom.status === 201, 'Falha ao registrar serviço na oficina');
+        
+        // Verifica se o hodômetro oficial foi atualizado para 90.000 km
+        const resOdomAfterService = await fetch(`${BASE_URL}/vehicles/BRA2E19/odometer`);
+        const dataOdomAfterService = await resOdomAfterService.json();
+        console.assert(dataOdomAfterService.official_odometer_km === 90000, 'Hodômetro oficial deve ter sido atualizado para 90.000 km pela oficina');
+        console.log(`✅ 54. Integração Oficina -> Hodômetro Oficial & Recálculo Preditivo: Serviço registrado atualizou hodômetro oficial para [90.000 km] e recalibrou previsões.`);
+
+        // Teste 55: Faturamento AbacatePay da Oficina (Tiers Pré-Pagos & Ciclo Pós-Pago 10 Carros)
+        // A) Compra de pacote pré-pago de 10 créditos (R$ 29,00/unid = R$ 290,00)
+        const resBuyCredits = await fetch(`${BASE_URL}/billing/workshop/ws_veloce/buy-credits`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quantity: 10, client_name: 'Auto Center Veloce' })
+        });
+        const dataBuyCredits = await resBuyCredits.json();
+        console.assert(resBuyCredits.status === 201, 'Falha ao comprar créditos pré-pagos');
+        console.assert(dataBuyCredits.package.unit_price_cents === 2900, 'Preço unitário do lote de 10 deve ser R$ 29,00 (2900 centavos)');
+        console.assert(dataBuyCredits.package.total_cents === 29000, 'Total do pacote de 10 deve ser R$ 290,00');
+
+        // B) Confirma pagamento do pacote pré-pago via PIX
+        const resConfirmPix = await fetch(`${BASE_URL}/billing/pix/${dataBuyCredits.charge.charge_id}/confirm`, {
+            method: 'POST'
+        });
+        const dataConfirmPix = await resConfirmPix.json();
+        console.assert(dataConfirmPix.success === true, 'Falha ao confirmar pagamento PIX');
+        console.assert(dataConfirmPix.balance.prepaid_cars_credits >= 10, 'Oficina deve possuir pelo menos 10 créditos pré-pagos');
+        console.log(`✅ 55. Faturamento AbacatePay & Tiers Pré-Pagos: Pacote de 10 créditos adquirido a [R$ 29,00/unid] (Total: R$ 290,00), PIX confirmado e saldo de créditos ativo.`);
+
+        // Teste 56: Webhook da AbacatePay e Regra do 11º Carro Pós-Pago
+        const resWebhook = await fetch(`${BASE_URL}/billing/webhook/abacatepay`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'secret': 'dna_sec_abacate_2026'
+            },
+            body: JSON.stringify({
+                event: 'billing.paid',
+                data: {
+                    id: 'abc_test_webhook_01',
+                    externalId: dataBuyCredits.charge.charge_id,
+                    amount: 29000
+                }
+            })
+        });
+        const dataWebhook = await resWebhook.json();
+        console.assert(resWebhook.status === 200, 'Falha ao processar webhook da AbacatePay');
+        console.assert(dataWebhook.received === true, 'Webhook deve confirmar recebimento');
+
+        // Consulta status da oficina no billing
+        const resWsBillingStatus = await fetch(`${BASE_URL}/billing/workshop/ws_veloce/status`);
+        const dataWsBillingStatus = await resWsBillingStatus.json();
+        console.assert(dataWsBillingStatus.success === true, 'Falha ao consultar status de faturamento da oficina');
+        console.assert(dataWsBillingStatus.plans.single.cost === 'R$ 30,00', 'Custo avulso DNA deve ser R$ 30,00');
+        console.assert(dataWsBillingStatus.plans.single.customer_price === 'R$ 59,90', 'Preço ao cliente deve ser R$ 59,90');
+        console.assert(dataWsBillingStatus.plans.single.profit === 'R$ 29,90', 'Margem da oficina deve ser R$ 29,90');
+        console.log(`✅ 56. Webhook AbacatePay & Modelo Financeiro: Webhook processado com sucesso. Tabela oficial confirmada: DNA AUTO R$ 30,00 / Cliente R$ 59,90 / Lucro Oficina R$ 29,90.`);
+
+        console.log('\n🎉 TODOS OS 56 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

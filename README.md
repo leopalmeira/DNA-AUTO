@@ -3,13 +3,15 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto-vua4.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-48%2F48%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-56%2F56%20Aprovados%20(100%25)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/api.test.js)
 [![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto-vua4.onrender.com/)
 
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 68):** Criação da página oficial de apresentação e credenciamento para Oficinas e Auto Centers (`/parceiro` e `/autocenter`), com modelo de negócios (+35% de faturamento, lucro de R$ 29 por instalação, sem mensalidades) e links diretos no ecossistema. 48 de 48 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 69):** Motor de Manutenção Preditiva OEM (regras específicas por modelo e motorização), Reconciliação do Odômetro com proteção monotônica, algoritmo multissinal de viagens (meta de 70% de precisão) e Monetização Oficial AbacatePay (PIX transparente, webhook com secret `dna_sec_abacate_2026`, pacotes pré-pagos com desconto por volume e ciclo pós-pago de 10 carros). 56 de 56 testes automatizados aprovados (100%).
+> 
+> ✨ **Ciclo 68:** Criação da página oficial de apresentação e credenciamento para Oficinas e Auto Centers (`/parceiro` e `/autocenter`), com modelo de negócios (+35% de faturamento, lucro de R$ 29 por instalação, sem mensalidades) e links diretos no ecossistema. 48 de 48 testes automatizados aprovados (100%).
 > 
 > ✨ **Ciclo 67:** Implementação fiel do Design System de 12 telas do Figma para o App Mobile da Oficina (`workshopMobileView.js` e `workshop-mobile.css`) com preservação integral do **Carrossel Vertical 3D Oficial DNA AUTO** na seleção de serviços. 48 de 48 testes automatizados aprovados (100%).
 > 

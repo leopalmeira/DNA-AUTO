@@ -420,6 +420,46 @@ const API = {
     // Oficinas da Rede Credenciadas
     getWorkshopsNetwork() {
         return this.request('/workshops/network');
+    },
+
+    // Monitoramento Inteligente, Hodômetro e Manutenção Preditiva (Ciclo 22)
+    getVehicleMonitoring(identifier) {
+        return this.request(`/vehicles/${encodeURIComponent(identifier)}/monitoring`);
+    },
+    saveVehicleMonitoringPreferences(identifier, prefs) {
+        return this.request(`/vehicles/${encodeURIComponent(identifier)}/monitoring/preferences`, {
+            method: 'POST',
+            body: JSON.stringify(prefs)
+        });
+    },
+    syncVehicleTrips(identifier, trips) {
+        return this.request(`/vehicles/${encodeURIComponent(identifier)}/monitoring/sync-trips`, {
+            method: 'POST',
+            body: JSON.stringify({ trips })
+        });
+    },
+    sendVehicleTripFeedback(identifier, payload) {
+        return this.request(`/vehicles/${encodeURIComponent(identifier)}/monitoring/trip-feedback`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+    getVehicleOdometer(identifier) {
+        return this.request(`/vehicles/${encodeURIComponent(identifier)}/odometer`);
+    },
+    registerVehicleOdometer(identifier, data) {
+        return this.request(`/vehicles/${encodeURIComponent(identifier)}/odometer`, {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+    getVehiclePredictiveMaintenance(identifier) {
+        return this.request(`/vehicles/${encodeURIComponent(identifier)}/predictive-maintenance`);
+    },
+    recalculateVehiclePredictiveMaintenance(identifier) {
+        return this.request(`/vehicles/${encodeURIComponent(identifier)}/predictive-maintenance/recalculate`, {
+            method: 'POST'
+        });
     }
 };
 

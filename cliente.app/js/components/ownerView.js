@@ -24,6 +24,13 @@ const OwnerView = {
     isAddVehicleOpen: false,
     isActivationModalOpen: false,
     expensePeriod: 'semester',
+    predictiveData: null,
+    odometerData: null,
+    monitoringData: null,
+    isMiniObdLockModalOpen: false,
+    isOdometerModalOpen: false,
+    isPredictiveModalOpen: false,
+    isPrivacyModalOpen: false,
 
     // Estado do Fluxo de Autenticação & Onboarding (Imagem 1 - 12 Telas)
     authScreen: (typeof localStorage !== 'undefined' && (localStorage.getItem('dna_owner_session') === 'active' || localStorage.getItem('dna_owner_auth_screen') === 'app' || localStorage.getItem('dna_logged_user'))) ? null : 'splash',
@@ -1650,24 +1657,50 @@ const OwnerView = {
         }
     },
 
-    // Buscar Documentos e OBD2 para o Veículo Ativo
+    // Buscar Documentos, OBD2, Manutenção Preditiva e Monitoramento para o Veículo Ativo
     async fetchVehicleExtras(plate) {
         try {
-            const [rInsp, rObd] = await Promise.all([
-                fetch(`/api/v1/vehicles/${plate}/inspection`),
-                fetch(`/api/v1/vehicles/${plate}/obd`)
+            const [rInsp, rObd, rPred, rOdom, rMon] = await Promise.all([
+                fetch(`/api/v1/vehicles/${plate}/inspection`).catch(() => null),
+                fetch(`/api/v1/vehicles/${plate}/obd`).catch(() => null),
+                fetch(`/api/v1/vehicles/${plate}/predictive-maintenance`).catch(() => null),
+                fetch(`/api/v1/vehicles/${plate}/odometer`).catch(() => null),
+                fetch(`/api/v1/vehicles/${plate}/monitoring`).catch(() => null)
             ]);
-            if (rInsp.ok) {
+            if (rInsp && rInsp.ok) {
                 const data = await rInsp.json();
                 if (data.success && data.inspection) {
                     this.inspectionData = data.inspection;
                 }
             }
-            if (rObd.ok) {
+            if (rObd && rObd.ok) {
                 const data = await rObd.json();
                 if (data.success && data.telemetry) {
                     this.obdData = data;
                 }
+            }
+            if (rPred && rPred.ok) {
+                const data = await rPred.json();
+                if (data.success) {
+                    this.predictiveData = data;
+                }
+            }
+            if (rOdom && rOdom.ok) {
+                const data = await rOdom.json();
+                if (data.success) {
+                    this.odometerData = data;
+                }
+            }
+            if (rMon && rMon.ok) {
+                const data = await rMon.json();
+                if (data.success) {
+                    this.monitoringData = data;
+                }
+            }
+
+            // Inicializar motor de rastreamento com respeito à privacidade LGPD
+            if (typeof window.DnaTrackingEngine !== 'undefined') {
+                window.DnaTrackingEngine.init(plate);
             }
         } catch (_) {}
     },
@@ -1801,6 +1834,18 @@ const OwnerView = {
 
                     <!-- 5.1. Modal de Ativação com Código da Oficina -->
                     ${this.isActivationModalOpen ? this.renderActivationModal() : ''}
+
+                    <!-- 5.2. Modal de Bloqueio do Mini OBD2 (Em Breve) -->
+                    ${this.isMiniObdLockModalOpen ? this.renderMiniObdLockModal() : ''}
+
+                    <!-- 5.3. Modal de Confirmação do Hodômetro Oficial -->
+                    ${this.isOdometerModalOpen ? this.renderOdometerModal() : ''}
+
+                    <!-- 5.4. Modal do Cronograma de Manutenção Preditiva -->
+                    ${this.isPredictiveModalOpen ? this.renderPredictiveScheduleModal() : ''}
+
+                    <!-- 5.5. Modal de Privacidade, Sensores e LGPD -->
+                    ${this.isPrivacyModalOpen ? this.renderPrivacyModal() : ''}
 
                     <!-- 5. Barra de Navegação Inferior Fixa (5 Itens: Início, Serviços, Diagnóstico OBD, Alertas, Mais) -->
                     <nav class="dna-bottom-nav">
@@ -2111,22 +2156,25 @@ const OwnerView = {
                 </div>
             </div>
 
-            <!-- Hub de Funções do Veículo em Cards -->
+            <!-- Card Nobre: Manutenção Preditiva & Estimativa de Uso (Ciclo 22) -->
+            ${this.renderPredictiveCard()}
+
+            <!-- Hub de Funções do Veículo em Cards (9 Cards Reorganizados) -->
             <div style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 10px;">
                 <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Funções do Seu Veículo</span>
                 <span style="font-size:11px; color:#00D4FF; font-weight:700;">Acesso Rápido</span>
             </div>
 
             <div class="dna-client-actions-grid">
-                <!-- Card 1: Mini OBD2 -->
-                <div class="dna-client-action-card dna-card-cyan" onclick="OwnerView.navigateTo('bluetooth-pair')">
+                <!-- Card 1: Mini OBD2 (Bloqueado: Em Breve) -->
+                <div class="dna-client-action-card dna-card-cyan dna-card-locked" onclick="OwnerView.openMiniObdLockModal()" title="Hardware Mini OBD2 em homologação técnica">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                         <div class="dna-client-card-icon-box">📶</div>
-                        <span class="dna-client-card-badge" style="background:${this.isObdPaired ? 'rgba(0,230,118,0.25)' : 'rgba(0,0,0,0.3)'}; color:${this.isObdPaired ? '#00E676' : '#FFFFFF'};">${this.isObdPaired ? 'CONECTADO' : 'PAREAR'}</span>
+                        <span class="dna-client-card-badge dna-card-badge-soon">🔒 EM BREVE</span>
                     </div>
                     <div>
                         <h3 class="dna-client-card-title">Mini OBD2</h3>
-                        <p class="dna-client-card-desc">${this.isObdPaired ? 'Equipamento conectado via Bluetooth' : 'Toque para parear com o carro'}</p>
+                        <p class="dna-client-card-desc">Hardware e telemetria direta em breve</p>
                     </div>
                 </div>
 
@@ -4626,9 +4674,14 @@ const OwnerView = {
                             <span>Entrar</span>
                         </button>
 
-                        <!-- Link para Cadastro (Sem Demo 1-Clique) -->
-                        <div style="display: flex; justify-content: center; align-items: center; margin-top: 14px; padding: 0 4px; font-size: 13.5px;">
+                        <!-- Link para Cadastro & Ativação com Código da Oficina -->
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 14px; padding: 0 4px; font-size: 13px;">
                             <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('register')" style="color: #00D4FF; font-weight: 600; text-decoration: none;">Não tem uma conta? Criar cadastro</a>
+                            <div style="width: 100%; border-top: 1px dashed rgba(0, 212, 255, 0.25); margin: 6px 0;"></div>
+                            <span style="font-size: 11.5px; color: #94A3B8;">Recebeu o código de acesso da sua oficina?</span>
+                            <button type="button" onclick="OwnerView.openActivationModal()" style="background: rgba(0, 212, 255, 0.12); border: 1.5px solid #00D4FF; color: #00D4FF; border-radius: 9999px; padding: 7px 16px; font-weight: 800; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                <span>🔑 Entrar com Código da Oficina</span>
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -5088,6 +5141,466 @@ const OwnerView = {
                 </div>
             </div>
         `;
+    },
+
+    // ── MÉTODOS DE MANUTENÇÃO PREDITIVA, HODÔMETRO & MONITORAMENTO (CICLO 22) ──
+    renderPredictiveCard() {
+        const pred = this.predictiveData || {};
+        const odom = this.odometerData || {};
+        const mon = this.monitoringData || {};
+        const prefs = mon.preferences || {};
+        const isTracking = (typeof window.DnaTrackingEngine !== 'undefined' && window.DnaTrackingEngine.isTracking);
+
+        let statusBadge = '<span class="dna-pred-status-badge is-active"><span class="dna-pred-dot"></span> Monitoramento Ativo</span>';
+        if (prefs.is_enabled === 0 || prefs.is_enabled === false) {
+            statusBadge = '<span class="dna-pred-status-badge is-paused">⏸️ Monitoramento Pausado</span>';
+        } else if (!isTracking) {
+            statusBadge = '<span class="dna-pred-status-badge is-standby">💤 Aguardando Movimento</span>';
+        }
+
+        const officialKm = odom.official_odometer_km || this.vehicleData.current_mileage || 0;
+        const estimatedDistance = odom.estimated_distance_since_official_km || 0;
+        const currentEstimated = odom.current_estimated_km || officialKm;
+        const uncertaintyKm = odom.uncertainty_margin_km || (estimatedDistance > 0 ? Math.max(5, Math.round(estimatedDistance * 0.08)) : 0);
+        const lastOfficialDate = odom.last_official_reading_date ? new Date(odom.last_official_reading_date).toLocaleDateString('pt-BR') : 'Cadastro';
+        const lastSyncDate = odom.last_sync_date ? new Date(odom.last_sync_date).toLocaleDateString('pt-BR') : 'Hoje';
+
+        const items = pred.predictions || [];
+        const urgentItem = items.find(i => i.alert_status === 'VENCIDA') || 
+                           items.find(i => i.alert_status === 'RECOMENDADA') || 
+                           items.find(i => i.alert_status === 'APROXIMANDO') || 
+                           items[0] || null;
+
+        let urgentTitle = 'Plano de Revisão em Dia';
+        let urgentDesc = 'Nenhuma manutenção urgente pendente no momento.';
+        let urgentBadge = '<span class="dna-pred-badge is-ok">EM DIA</span>';
+
+        if (urgentItem) {
+            urgentTitle = urgentItem.item_name;
+            const remainingKm = urgentItem.remaining_km_min;
+            if (remainingKm !== null && remainingKm !== undefined) {
+                if (remainingKm <= 0) {
+                    urgentDesc = `Vencido há ~ ${Math.abs(remainingKm).toLocaleString('pt-BR')} km. Agende a revisão na rede credenciada.`;
+                    urgentBadge = '<span class="dna-pred-badge is-danger">VENCIDA</span>';
+                } else if (remainingKm < 1500) {
+                    urgentDesc = `Restam ~ ${remainingKm.toLocaleString('pt-BR')} km ou até ${urgentItem.next_due_date ? new Date(urgentItem.next_due_date).toLocaleDateString('pt-BR') : 'breve'}.`;
+                    urgentBadge = '<span class="dna-pred-badge is-warning">RECOMENDADA</span>';
+                } else {
+                    urgentDesc = `Próxima troca em ~ ${remainingKm.toLocaleString('pt-BR')} km (${urgentItem.next_due_km ? urgentItem.next_due_km.toLocaleString('pt-BR') : ''} km).`;
+                    urgentBadge = '<span class="dna-pred-badge is-ok">ACOMPANHAR</span>';
+                }
+            } else if (urgentItem.next_due_date) {
+                urgentDesc = `Previsão por tempo: até ${new Date(urgentItem.next_due_date).toLocaleDateString('pt-BR')}.`;
+                urgentBadge = '<span class="dna-pred-badge is-warning">POR TEMPO</span>';
+            }
+        }
+
+        return `
+            <div class="dna-pred-card">
+                <div class="dna-pred-header">
+                    <div>
+                        <span class="dna-pred-kicker">MANUTENÇÃO PREDITIVA INTELIGENTE</span>
+                        <h4 class="dna-pred-title">${urgentTitle}</h4>
+                    </div>
+                    ${statusBadge}
+                </div>
+
+                <div class="dna-pred-urgent-box">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span style="font-size:12px; color:#CBD5E1; font-weight:700;">Item Prioritário</span>
+                        ${urgentBadge}
+                    </div>
+                    <p style="font-size:12px; color:#94A3B8; margin:0 0 6px;">${urgentDesc}</p>
+                    <div style="font-size:10.5px; color:#64748B;">Regra OEM: ${urgentItem && urgentItem.source ? urgentItem.source : 'Manual do Fabricante'} • Confiança: ${pred.confidence_label || 'Alta'}</div>
+                </div>
+
+                <!-- Comparativo Tríplice de Hodômetro e Distância -->
+                <div class="dna-pred-meters-grid">
+                    <div class="dna-pred-meter-col">
+                        <span class="dna-pred-meter-label">HODÔMETRO OFICIAL</span>
+                        <span class="dna-pred-meter-val is-official">${Number(officialKm).toLocaleString('pt-BR')} km</span>
+                        <span class="dna-pred-meter-sub">Confirmado em ${lastOfficialDate}</span>
+                    </div>
+                    <div class="dna-pred-meter-col">
+                        <span class="dna-pred-meter-label">USO ESTIMADO (GPS)</span>
+                        <span class="dna-pred-meter-val is-estimated">+${Number(estimatedDistance).toLocaleString('pt-BR')} km</span>
+                        <span class="dna-pred-meter-sub">Margem: ±${uncertaintyKm} km</span>
+                    </div>
+                    <div class="dna-pred-meter-col">
+                        <span class="dna-pred-meter-label">ESTIMATIVA ATUAL</span>
+                        <span class="dna-pred-meter-val is-total">~ ${Number(currentEstimated).toLocaleString('pt-BR')} km</span>
+                        <span class="dna-pred-meter-sub">Sincronizado: ${lastSyncDate}</span>
+                    </div>
+                </div>
+
+                <div class="dna-pred-notice">
+                    <div style="display:flex; align-items:flex-start; gap:8px;">
+                        <span style="font-size:14px;">ℹ️</span>
+                        <span style="font-size:11px; color:#94A3B8; line-height:1.4;">
+                            Estimativa de uso: aproximadamente <strong>${Number(estimatedDistance).toLocaleString('pt-BR')} km</strong> desde a última confirmação do hodômetro. Confirme a quilometragem no painel para melhorar suas previsões.
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Ações do Card Nobre -->
+                <div class="dna-pred-actions">
+                    <button type="button" class="dna-pred-btn-primary" onclick="OwnerView.openOdometerModal()">
+                        <span>📝 Confirmar Hodômetro</span>
+                    </button>
+                    <button type="button" class="dna-pred-btn-secondary" onclick="OwnerView.openPredictiveScheduleModal()">
+                        <span>📊 Ver Cronograma</span>
+                    </button>
+                    <button type="button" class="dna-pred-btn-ghost" onclick="OwnerView.openPrivacyModal()" title="Configurações de Privacidade e Sensores">
+                        <span>🛡️</span>
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    renderMiniObdLockModal() {
+        return `
+            <div class="dna-modal-overlay active" onclick="if(event.target === this) OwnerView.closeMiniObdLockModal();">
+                <div class="dna-modal-content" style="max-width: 440px;">
+                    <div class="dna-modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:16px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:40px; height:40px; border-radius:10px; background:rgba(0,212,255,0.15); border:1px solid #00D4FF; display:flex; align-items:center; justify-content:center; font-size:20px;">
+                                📶
+                            </div>
+                            <div>
+                                <h3 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:0;">Mini OBD2 Bluetooth</h3>
+                                <span class="dna-card-badge-soon">🔒 RECURSO EM HOMOLOGAÇÃO</span>
+                            </div>
+                        </div>
+                        <button class="modal-close-btn" onclick="OwnerView.closeMiniObdLockModal()" style="background:none; border:none; color:#94A3B8; font-size:20px; cursor:pointer;">&times;</button>
+                    </div>
+
+                    <div style="background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.2); border-radius:12px; padding:14px; margin-bottom:16px;">
+                        <div style="font-size:13px; font-weight:800; color:#00D4FF; margin-bottom:6px;">🚀 Em Breve no DNA AUTO</div>
+                        <p style="font-size:12px; color:#E2E8F0; line-height:1.5; margin:0;">
+                            O suporte a hardware físico <strong>Mini OBD2 ELM327 BLE</strong> está atualmente bloqueado para aprimoramento de protocolo e homologação de segurança automotiva junto às centrais eletrônicas (ECU).
+                        </p>
+                    </div>
+
+                    <div style="font-size:12px; color:#94A3B8; line-height:1.5; margin-bottom:16px;">
+                        <strong style="color:#FFFFFF; display:block; margin-bottom:4px;">Como funciona hoje?</strong>
+                        O DNA AUTO monitora deslocamentos e prevê manutenções através da <strong>Estimativa Inteligente por Sensores e GPS do celular</strong> em conjunto com os <strong>Registros Oficiais das Oficinas Credenciadas</strong>.
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; gap:10px;">
+                        <button type="button" class="btn btn-primary" onclick="OwnerView.closeMiniObdLockModal()" style="width:100%; padding:12px; font-weight:800;">
+                            Entendido
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    renderOdometerModal() {
+        const odom = this.odometerData || {};
+        const officialKm = odom.official_odometer_km || this.vehicleData.current_mileage || 0;
+        const currentEst = odom.current_estimated_km || officialKm;
+
+        return `
+            <div class="dna-modal-overlay active" onclick="if(event.target === this) OwnerView.closeOdometerModal();">
+                <div class="dna-modal-content" style="max-width: 440px;">
+                    <div class="dna-modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:14px;">
+                        <div>
+                            <h3 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:0;">Confirmar Quilometragem Real</h3>
+                            <p style="font-size:11.5px; color:#94A3B8; margin:2px 0 0;">Leitura oficial do painel (Hodômetro)</p>
+                        </div>
+                        <button class="modal-close-btn" onclick="OwnerView.closeOdometerModal()" style="background:none; border:none; color:#94A3B8; font-size:20px; cursor:pointer;">&times;</button>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px;">
+                        <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px;">
+                            <span style="font-size:10px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block;">Último Registro</span>
+                            <strong style="font-size:14px; color:#00E676;">${Number(officialKm).toLocaleString('pt-BR')} km</strong>
+                        </div>
+                        <div style="background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.2); border-radius:10px; padding:10px;">
+                            <span style="font-size:10px; color:#00D4FF; text-transform:uppercase; font-weight:700; display:block;">Estimativa GPS</span>
+                            <strong style="font-size:14px; color:#00D4FF;">~ ${Number(currentEst).toLocaleString('pt-BR')} km</strong>
+                        </div>
+                    </div>
+
+                    <form onsubmit="event.preventDefault(); OwnerView.submitOdometerReading();">
+                        <div class="form-group" style="margin-bottom:12px;">
+                            <label style="font-size:11.5px; font-weight:700; color:#CBD5E1; display:block; margin-bottom:4px;">Quilometragem Atual no Painel (km) *</label>
+                            <input type="number" id="dna-input-odometer-km" class="form-control" placeholder="Ex: ${Math.round(currentEst || officialKm)}" required min="${officialKm}" style="background:#081020; border:1.5px solid #00D4FF; color:#FFFFFF; font-size:16px; font-weight:800;" />
+                            <span style="font-size:10.5px; color:#94A3B8; display:block; margin-top:3px;">
+                                Não pode ser inferior ao último registro (${Number(officialKm).toLocaleString('pt-BR')} km).
+                            </span>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom:12px;">
+                            <label style="font-size:11.5px; font-weight:700; color:#CBD5E1; display:block; margin-bottom:4px;">Anotações / Motivo (opcional)</label>
+                            <input type="text" id="dna-input-odometer-notes" class="form-control" placeholder="Ex: Conferência do painel ou revisão" style="background:#081020; border:1px solid rgba(255,255,255,0.15); color:#FFFFFF; font-size:12px;" />
+                        </div>
+
+                        <div id="dna-odometer-error" style="display:none; color:#EF4444; font-size:11px; margin-bottom:10px; font-weight:700;"></div>
+
+                        <div style="display:flex; justify-content:flex-end; gap:8px;">
+                            <button type="button" class="btn btn-secondary" onclick="OwnerView.closeOdometerModal()">Cancelar</button>
+                            <button type="submit" id="dna-btn-save-odometer" class="btn btn-primary" style="padding:10px 18px; font-weight:800;">
+                                Confirmar & Recalcular
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+    },
+
+    renderPredictiveScheduleModal() {
+        const pred = this.predictiveData || {};
+        const predictions = pred.predictions || [];
+        const vehicle = this.vehicleData || {};
+
+        return `
+            <div class="dna-modal-overlay active" onclick="if(event.target === this) OwnerView.closePredictiveScheduleModal();">
+                <div class="dna-modal-content" style="max-width: 520px; max-height:85vh; overflow-y:auto;">
+                    <div class="dna-modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:14px;">
+                        <div>
+                            <h3 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:0;">Plano de Manutenção Preditiva</h3>
+                            <p style="font-size:11.5px; color:#94A3B8; margin:2px 0 0;">Regras de Engenharia (${vehicle.brand || 'Veículo'} ${vehicle.model || ''})</p>
+                        </div>
+                        <button class="modal-close-btn" onclick="OwnerView.closePredictiveScheduleModal()" style="background:none; border:none; color:#94A3B8; font-size:20px; cursor:pointer;">&times;</button>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; background:rgba(0,102,255,0.1); border:1px solid rgba(0,212,255,0.2); border-radius:10px; padding:10px 12px;">
+                        <div style="font-size:11.5px; color:#E2E8F0;">
+                            Referência: <strong style="color:#00D4FF;">${Number(pred.current_estimated_km || vehicle.current_mileage || 0).toLocaleString('pt-BR')} km</strong> (±${pred.uncertainty_margin_km || 0} km)
+                        </div>
+                        <button type="button" class="btn btn-secondary" onclick="OwnerView.recalculatePredictions()" style="padding:4px 10px; font-size:11px; font-weight:700;">
+                            🔄 Recalcular
+                        </button>
+                    </div>
+
+                    <!-- Lista de itens do plano -->
+                    <div style="display:flex; flex-direction:column; gap:8px;">
+                        ${predictions.map(item => {
+                            let badgeColor = '#10B981';
+                            let badgeBg = 'rgba(16,185,129,0.15)';
+                            if (item.alert_status === 'VENCIDA') {
+                                badgeColor = '#EF4444';
+                                badgeBg = 'rgba(239,68,68,0.2)';
+                            } else if (item.alert_status === 'RECOMENDADA') {
+                                badgeColor = '#F59E0B';
+                                badgeBg = 'rgba(245,158,11,0.2)';
+                            } else if (item.alert_status === 'APROXIMANDO') {
+                                badgeColor = '#FFD21C';
+                                badgeBg = 'rgba(255,210,28,0.15)';
+                            }
+
+                            return `
+                                <div style="background:rgba(8,16,32,0.9); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 12px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                                        <strong style="font-size:12.5px; color:#FFFFFF;">${item.item_name}</strong>
+                                        <span style="font-size:10px; font-weight:800; color:${badgeColor}; background:${badgeBg}; padding:2px 6px; border-radius:4px;">${item.alert_status}</span>
+                                    </div>
+                                    <div style="font-size:11px; color:#94A3B8; display:flex; justify-content:space-between; margin-bottom:4px;">
+                                        <span>Intervalo: ${item.interval_km ? Number(item.interval_km).toLocaleString('pt-BR') + ' km' : ''} ${item.interval_months ? item.interval_months + ' meses' : ''}</span>
+                                        <span>${item.remaining_km_min !== null ? (item.remaining_km_min <= 0 ? 'Vencido há ' + Math.abs(item.remaining_km_min) + ' km' : 'Restam ~ ' + Number(item.remaining_km_min).toLocaleString('pt-BR') + ' km') : ''}</span>
+                                    </div>
+                                    <div style="font-size:10px; color:#64748B;">
+                                        Fonte: ${item.source || 'Manual da Montadora'} • Vencimento: ${item.next_due_km ? Number(item.next_due_km).toLocaleString('pt-BR') + ' km' : ''} ${item.next_due_date ? 'ou ' + new Date(item.next_due_date).toLocaleDateString('pt-BR') : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+
+                    <div style="margin-top:14px; text-align:center;">
+                        <button type="button" class="btn btn-secondary" onclick="OwnerView.closePredictiveScheduleModal()" style="width:100%; padding:10px;">
+                            Fechar Cronograma
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    renderPrivacyModal() {
+        const isTracking = (typeof window.DnaTrackingEngine !== 'undefined' && window.DnaTrackingEngine.isTracking);
+        const prefs = (typeof window.DnaTrackingEngine !== 'undefined' && window.DnaTrackingEngine.preferences) || { isEnabled: true };
+
+        return `
+            <div class="dna-modal-overlay active" onclick="if(event.target === this) OwnerView.closePrivacyModal();">
+                <div class="dna-modal-content" style="max-width: 480px; max-height:85vh; overflow-y:auto;">
+                    <div class="dna-modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:12px; margin-bottom:14px;">
+                        <div>
+                            <h3 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:0;">Privacidade & Sensores (LGPD)</h3>
+                            <p style="font-size:11.5px; color:#94A3B8; margin:2px 0 0;">Controle transparente de localização e telemetria</p>
+                        </div>
+                        <button class="modal-close-btn" onclick="OwnerView.closePrivacyModal()" style="background:none; border:none; color:#94A3B8; font-size:20px; cursor:pointer;">&times;</button>
+                    </div>
+
+                    <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:12px; margin-bottom:14px;">
+                        <strong style="font-size:12px; color:#10B981; display:block; margin-bottom:4px;">🛡️ Proteção de Dados e Transparência</strong>
+                        <p style="font-size:11px; color:#E2E8F0; line-height:1.4; margin:0;">
+                            Suas coordenadas geográficas pontuais <strong>nunca são transmitidas continuamente ou vendidas</strong>. O aplicativo calcula a distância e a probabilidade de deslocamento no aparelho celular e envia ao servidor apenas o resumo da viagem e os quilômetros percorridos.
+                        </p>
+                    </div>
+
+                    <!-- Controles -->
+                    <div style="background:rgba(8,16,32,0.9); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:12px; margin-bottom:14px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <div>
+                                <strong style="font-size:12.5px; color:#FFFFFF; display:block;">Monitoramento de Deslocamento</strong>
+                                <span style="font-size:11px; color:#94A3B8;">Estima quilometragem por GPS e movimento</span>
+                            </div>
+                            <label style="position:relative; display:inline-block; width:44px; height:24px;">
+                                <input type="checkbox" id="dna-toggle-tracking" ${prefs.isEnabled ? 'checked' : ''} onchange="OwnerView.savePrivacyPreferences(this.checked)" style="opacity:0; width:0; height:0;">
+                                <span style="position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:${prefs.isEnabled ? '#10B981' : '#334155'}; border-radius:24px; transition:.3s;"></span>
+                            </label>
+                        </div>
+
+                        <div style="font-size:11px; color:#94A3B8; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
+                            Status Atual: <strong style="color:${isTracking ? '#10B981' : '#F59E0B'};">${isTracking ? 'Ativo em 1º plano' : 'Pausado'}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Simulação de Testes em Bancada -->
+                    <div style="background:rgba(0,102,255,0.06); border:1px solid rgba(0,212,255,0.15); border-radius:10px; padding:12px; margin-bottom:14px;">
+                        <strong style="font-size:12px; color:#00D4FF; display:block; margin-bottom:4px;">🧪 Simulação de Viagens (Validação)</strong>
+                        <p style="font-size:10.5px; color:#94A3B8; margin-bottom:8px;">
+                            Dispare um deslocamento controlado para testar o classificador probabilístico e o cálculo de distância:
+                        </p>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                            <button type="button" class="btn btn-secondary" onclick="OwnerView.simulateTrip('city')" style="font-size:10.5px; padding:6px;">🚗 Cidade (6.8 km)</button>
+                            <button type="button" class="btn btn-secondary" onclick="OwnerView.simulateTrip('highway')" style="font-size:10.5px; padding:6px;">🛣️ Rodovia (52.4 km)</button>
+                            <button type="button" class="btn btn-secondary" onclick="OwnerView.simulateTrip('walking')" style="font-size:10.5px; padding:6px;">🚶 Caminhada (850m)</button>
+                            <button type="button" class="btn btn-secondary" onclick="OwnerView.simulateTrip('bus')" style="font-size:10.5px; padding:6px;">🚌 Ônibus (5.2 km)</button>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; justify-content:space-between; gap:10px;">
+                        <button type="button" class="btn btn-secondary" onclick="OwnerView.clearLocalTrips()" style="font-size:11px; color:#EF4444; border-color:rgba(239,68,68,0.3);">
+                            Limpar Dados Locais
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="OwnerView.closePrivacyModal()" style="font-size:11px; padding:8px 16px;">
+                            Concluir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    openMiniObdLockModal() {
+        this.isMiniObdLockModalOpen = true;
+        this.render();
+    },
+    closeMiniObdLockModal() {
+        this.isMiniObdLockModalOpen = false;
+        this.render();
+    },
+    openOdometerModal() {
+        this.isOdometerModalOpen = true;
+        this.render();
+    },
+    closeOdometerModal() {
+        this.isOdometerModalOpen = false;
+        this.render();
+    },
+    async submitOdometerReading() {
+        const inputKm = document.getElementById('dna-input-odometer-km');
+        const inputNotes = document.getElementById('dna-input-odometer-notes');
+        const errBox = document.getElementById('dna-odometer-error');
+        const km = Number(inputKm ? inputKm.value : 0);
+        const notes = inputNotes ? inputNotes.value : '';
+
+        if (!km || km <= 0) {
+            if (errBox) {
+                errBox.textContent = 'Informe uma quilometragem válida maior que zero.';
+                errBox.style.display = 'block';
+            }
+            return;
+        }
+
+        try {
+            const plate = this.vehicleData.license_plate;
+            const res = await API.registerVehicleOdometer(plate, {
+                odometer_km: km,
+                reading_source: 'OWNER_DASHBOARD',
+                notes: notes
+            });
+
+            if (res.success) {
+                this.showOwnerToast('Hodômetro oficial confirmado com sucesso!', 'success');
+                this.closeOdometerModal();
+                await this.fetchVehicleExtras(plate);
+                this.render();
+            } else {
+                if (errBox) {
+                    errBox.textContent = res.error || 'Erro ao registrar leitura.';
+                    errBox.style.display = 'block';
+                }
+            }
+        } catch (e) {
+            if (errBox) {
+                errBox.textContent = e.message || 'Erro ao salvar quilometragem.';
+                errBox.style.display = 'block';
+            }
+        }
+    },
+    openPredictiveScheduleModal() {
+        this.isPredictiveModalOpen = true;
+        this.render();
+    },
+    closePredictiveScheduleModal() {
+        this.isPredictiveModalOpen = false;
+        this.render();
+    },
+    async recalculatePredictions() {
+        try {
+            const plate = this.vehicleData.license_plate;
+            const res = await API.recalculateVehiclePredictiveMaintenance(plate);
+            if (res.success) {
+                this.predictiveData = res;
+                this.showOwnerToast('Cronograma preditivo recalculado!', 'success');
+                this.render();
+            }
+        } catch (e) {
+            this.showOwnerToast('Erro ao recalcular previsões.', 'error');
+        }
+    },
+    openPrivacyModal() {
+        this.isPrivacyModalOpen = true;
+        this.render();
+    },
+    closePrivacyModal() {
+        this.isPrivacyModalOpen = false;
+        this.render();
+    },
+    async savePrivacyPreferences(enabled) {
+        if (typeof window.DnaTrackingEngine !== 'undefined') {
+            window.DnaTrackingEngine.savePreferences({ isEnabled: enabled });
+        }
+        try {
+            const plate = this.vehicleData.license_plate;
+            await API.saveVehicleMonitoringPreferences(plate, { is_enabled: enabled });
+            await this.fetchVehicleExtras(plate);
+        } catch (_) {}
+        this.render();
+    },
+    clearLocalTrips() {
+        if (typeof window.DnaTrackingEngine !== 'undefined') {
+            window.DnaTrackingEngine.clearData();
+        }
+        this.showOwnerToast('Histórico local de viagens limpo com sucesso.', 'info');
+        this.closePrivacyModal();
+    },
+    async simulateTrip(type) {
+        if (typeof window.DnaTrackingEngine !== 'undefined') {
+            this.showOwnerToast(`Simulando viagem: ${type}...`, 'info');
+            await window.DnaTrackingEngine.simulateTrip(type);
+            const plate = this.vehicleData.license_plate;
+            await this.fetchVehicleExtras(plate);
+            this.render();
+            this.showOwnerToast('Viagem processada e sincronizada!', 'success');
+        }
     }
 };
 

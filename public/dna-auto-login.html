@@ -1821,8 +1821,13 @@
             </button>
 
             <!-- Link para Cadastro (Sem Demo 1-Clique) -->
-            <div style="display: flex; justify-content: center; align-items: center; margin-top: 14px; padding: 0 4px; font-size: 13.5px;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 14px; padding: 0 4px; font-size: 13px;">
               <a href="javascript:void(0)" onclick="cadastrar()" style="color: #00D4FF; font-weight: 600; text-decoration: none;">Não tem uma conta? Criar cadastro</a>
+              <div style="width: 100%; border-top: 1px dashed rgba(0, 212, 255, 0.25); margin: 6px 0;"></div>
+              <span style="font-size: 11.5px; color: #94A3B8;">Recebeu o código de acesso da sua oficina?</span>
+              <button type="button" onclick="abrirAtivacaoOficina()" style="background: rgba(0, 212, 255, 0.12); border: 1.5px solid #00D4FF; color: #00D4FF; border-radius: 9999px; padding: 8px 18px; font-weight: 800; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <span>🔑 Entrar com Código da Oficina</span>
+              </button>
             </div>
 
           </form>
@@ -2372,6 +2377,39 @@
         errBox.style.display = 'block';
         btn.disabled = false;
         btn.innerHTML = '<span>Entrar</span>';
+      }
+    }
+
+    // ── Ativação Direta com Código da Oficina ──
+    async function abrirAtivacaoOficina() {
+      const code = prompt('Digite o código de ativação fornecido pela sua oficina (ex: DNA-8421):');
+      if (!code || !code.trim()) return;
+
+      const cleanCode = code.trim().toUpperCase();
+      try {
+        const res = await fetch('/api/v1/clients/activate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: cleanCode })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert('🎉 Veículo ativado com sucesso pela oficina ' + (data.workshop?.trade_name || 'DNA AUTO') + '!');
+          if (data.vehicle) {
+            localStorage.setItem('dna_registered_plate', data.vehicle.license_plate);
+          }
+          if (data.client?.name) {
+            localStorage.setItem('dna_user_name', data.client.name);
+          }
+          localStorage.setItem('dna_owner_session', 'active');
+          localStorage.setItem('dna_owner_auth_screen', 'app');
+          localStorage.setItem('dna_owner_current_screen', 'home');
+          window.location.href = `/cliente?code=${cleanCode}`;
+        } else {
+          alert(data.error || 'Código de ativação não encontrado ou expirado.');
+        }
+      } catch (err) {
+        alert('Erro ao validar código com o servidor.');
       }
     }
 

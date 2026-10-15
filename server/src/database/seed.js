@@ -2,6 +2,9 @@ const bcrypt = require('bcryptjs');
 
 // Limpar tabelas existentes para reset limpo e idempotente
 const clearTables = [
+    'workshop_pix_charges', 'workshop_billing_balances',
+    'trip_classification_metrics', 'vehicle_maintenance_predictions', 'maintenance_rules',
+    'vehicle_trips', 'odometer_readings', 'monitoring_preferences',
     'client_activations', 'whatsapp_messages', 'whatsapp_sessions',
     'audit_logs', 'commissions', 'dna_activations', 'pricing_plans', 'reports',
     'notifications', 'health_scores', 'fipe_values', 'market_values', 'auctions',

@@ -134,3 +134,161 @@ for (const col of fipeColumns) {
     } catch (_) {}
 }
 
+// Inicialização segura de tabelas de monitoramento e manutenção preventiva
+try {
+    db.exec(`
+        CREATE TABLE IF NOT EXISTS monitoring_preferences (
+            id TEXT PRIMARY KEY,
+            vehicle_id TEXT NOT NULL UNIQUE REFERENCES vehicles(id) ON DELETE CASCADE,
+            owner_id TEXT REFERENCES owners(id) ON DELETE CASCADE,
+            is_monitoring_enabled INTEGER NOT NULL DEFAULT 1,
+            consent_given_at DATETIME,
+            consent_version TEXT DEFAULT '1.0',
+            paired_bluetooth_name TEXT,
+            paired_bluetooth_mac TEXT,
+            last_sync_at DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS odometer_readings (
+            id TEXT PRIMARY KEY,
+            vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+            reading_km INTEGER NOT NULL,
+            reading_date DATE NOT NULL,
+            source TEXT NOT NULL,
+            source_details TEXT,
+            recorded_by_user_id TEXT REFERENCES users(id),
+            verified INTEGER NOT NULL DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS vehicle_trips (
+            id TEXT PRIMARY KEY,
+            vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+            owner_id TEXT REFERENCES owners(id),
+            start_time DATETIME NOT NULL,
+            end_time DATETIME NOT NULL,
+            duration_seconds INTEGER NOT NULL,
+            distance_km REAL NOT NULL,
+            avg_speed_kmh REAL,
+            max_speed_kmh REAL,
+            confidence_score INTEGER NOT NULL,
+            classification TEXT NOT NULL,
+            signals_used TEXT,
+            bluetooth_connected INTEGER DEFAULT 0,
+            algorithm_version TEXT DEFAULT 'v1.0-probabilistic',
+            is_validated_by_user INTEGER DEFAULT NULL,
+            user_feedback TEXT,
+            synced_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS maintenance_rules (
+            id TEXT PRIMARY KEY,
+            brand TEXT NOT NULL,
+            model_pattern TEXT NOT NULL,
+            fuel_type TEXT DEFAULT 'ALL',
+            engine_pattern TEXT DEFAULT '%',
+            item_code TEXT NOT NULL,
+            item_name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            interval_km INTEGER NOT NULL,
+            interval_months INTEGER NOT NULL,
+            has_timing_belt INTEGER DEFAULT 1,
+            is_wear_item INTEGER DEFAULT 0,
+            notes TEXT,
+            source TEXT DEFAULT 'Manual do Fabricante'
+        );
+
+        CREATE TABLE IF NOT EXISTS vehicle_maintenance_predictions (
+            id TEXT PRIMARY KEY,
+            vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+            item_code TEXT NOT NULL,
+            item_name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            last_service_km INTEGER,
+            last_service_date DATE,
+            recommended_interval_km INTEGER NOT NULL,
+            recommended_interval_months INTEGER NOT NULL,
+            next_due_km INTEGER NOT NULL,
+            next_due_date DATE,
+            current_odometer_official_km INTEGER NOT NULL,
+            estimated_distance_since_official_km REAL NOT NULL DEFAULT 0,
+            current_estimated_km INTEGER NOT NULL,
+            remaining_km_min INTEGER,
+            remaining_km_max INTEGER,
+            remaining_days INTEGER,
+            alert_status TEXT NOT NULL,
+            confidence_level TEXT DEFAULT 'ALTA',
+            rationale TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(vehicle_id, item_code)
+        );
+
+        CREATE TABLE IF NOT EXISTS trip_classification_metrics (
+            id TEXT PRIMARY KEY,
+            vehicle_id TEXT REFERENCES vehicles(id),
+            total_trips_analyzed INTEGER DEFAULT 0,
+            in_vehicle_count INTEGER DEFAULT 0,
+            walking_count INTEGER DEFAULT 0,
+            other_transport_count INTEGER DEFAULT 0,
+            inconclusive_count INTEGER DEFAULT 0,
+            confirmed_true_positives INTEGER DEFAULT 0,
+            confirmed_false_positives INTEGER DEFAULT 0,
+            confirmed_true_negatives INTEGER DEFAULT 0,
+            confirmed_false_negatives INTEGER DEFAULT 0,
+            measured_accuracy_percent REAL DEFAULT 0,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_odometer_readings_veh ON odometer_readings(vehicle_id);
+        CREATE INDEX IF NOT EXISTS idx_vehicle_trips_veh ON vehicle_trips(vehicle_id);
+        CREATE INDEX IF NOT EXISTS idx_vehicle_trips_class ON vehicle_trips(classification);
+        CREATE INDEX IF NOT EXISTS idx_predictions_veh ON vehicle_maintenance_predictions(vehicle_id);
+        CREATE INDEX IF NOT EXISTS idx_predictions_status ON vehicle_maintenance_predictions(alert_status);
+        CREATE INDEX IF NOT EXISTS idx_monitoring_prefs_veh ON monitoring_preferences(vehicle_id);
+
+        -- Cobrança e PIX da Oficina via AbacatePay (Ciclo 22)
+        CREATE TABLE IF NOT EXISTS workshop_pix_charges (
+            id TEXT PRIMARY KEY,
+            workshop_id TEXT NOT NULL,
+            vehicle_id TEXT,
+            activation_id TEXT,
+            activation_code TEXT,
+            charge_type TEXT NOT NULL,
+            amount_cents INTEGER NOT NULL,
+            customer_price_cents INTEGER NOT NULL,
+            workshop_profit_cents INTEGER NOT NULL,
+            cars_count INTEGER NOT NULL DEFAULT 1,
+            status TEXT NOT NULL DEFAULT 'PENDING',
+            abacate_id TEXT,
+            pix_code TEXT,
+            pix_qr_code_base64 TEXT,
+            pix_url TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            paid_at DATETIME,
+            FOREIGN KEY (workshop_id) REFERENCES workshops(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS workshop_billing_balances (
+            workshop_id TEXT PRIMARY KEY,
+            unbilled_cars_count INTEGER NOT NULL DEFAULT 0,
+            prepaid_cars_credits INTEGER NOT NULL DEFAULT 0,
+            total_cars_registered INTEGER NOT NULL DEFAULT 0,
+            total_paid_cents INTEGER NOT NULL DEFAULT 0,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (workshop_id) REFERENCES workshops(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_workshop_pix_ws ON workshop_pix_charges(workshop_id);
+        CREATE INDEX IF NOT EXISTS idx_workshop_pix_status ON workshop_pix_charges(status);
+    `);
+
+    // Inicializar regras padrão se ainda não existirem
+    const PredictiveMaintenanceService = require('../services/predictiveMaintenance.service');
+    PredictiveMaintenanceService.seedRulesIfEmpty(db);
+} catch (err) {
+    console.warn('Verificação de tabelas preditivas:', err.message);
+}
+
+

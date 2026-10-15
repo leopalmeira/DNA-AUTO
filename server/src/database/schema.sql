@@ -521,6 +521,116 @@ CREATE TABLE IF NOT EXISTS client_activations (
     activated_at DATETIME
 );
 
+-- 37. Preferências de Monitoramento e Consentimento LGPD
+CREATE TABLE IF NOT EXISTS monitoring_preferences (
+    id TEXT PRIMARY KEY,
+    vehicle_id TEXT NOT NULL UNIQUE REFERENCES vehicles(id) ON DELETE CASCADE,
+    owner_id TEXT REFERENCES owners(id) ON DELETE CASCADE,
+    is_monitoring_enabled INTEGER NOT NULL DEFAULT 1,
+    consent_given_at DATETIME,
+    consent_version TEXT DEFAULT '1.0',
+    paired_bluetooth_name TEXT,
+    paired_bluetooth_mac TEXT,
+    last_sync_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 38. Leituras Oficiais do Hodômetro (Histórico e Reconciliação)
+CREATE TABLE IF NOT EXISTS odometer_readings (
+    id TEXT PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+    reading_km INTEGER NOT NULL,
+    reading_date DATE NOT NULL,
+    source TEXT NOT NULL, -- 'WORKSHOP_SERVICE', 'OWNER_CONFIRMATION', 'INSPECTION', 'TRANSFER'
+    source_details TEXT,
+    recorded_by_user_id TEXT REFERENCES users(id),
+    verified INTEGER NOT NULL DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 39. Viagens e Estimativas Probabilísticas de Deslocamento
+CREATE TABLE IF NOT EXISTS vehicle_trips (
+    id TEXT PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+    owner_id TEXT REFERENCES owners(id),
+    start_time DATETIME NOT NULL,
+    end_time DATETIME NOT NULL,
+    duration_seconds INTEGER NOT NULL,
+    distance_km REAL NOT NULL,
+    avg_speed_kmh REAL,
+    max_speed_kmh REAL,
+    confidence_score INTEGER NOT NULL, -- 0 a 100
+    classification TEXT NOT NULL, -- 'IN_VEHICLE', 'WALKING', 'OTHER_TRANSPORT', 'STATIONARY', 'INSUFFICIENT_DATA'
+    signals_used TEXT, -- JSON com dados de sensores
+    bluetooth_connected INTEGER DEFAULT 0,
+    algorithm_version TEXT DEFAULT 'v1.0-probabilistic',
+    is_validated_by_user INTEGER DEFAULT NULL, -- 1=Sim, 0=Não
+    user_feedback TEXT,
+    synced_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 40. Regras e Catálogo de Intervalos Preventivos dos Fabricantes
+CREATE TABLE IF NOT EXISTS maintenance_rules (
+    id TEXT PRIMARY KEY,
+    brand TEXT NOT NULL,
+    model_pattern TEXT NOT NULL,
+    fuel_type TEXT DEFAULT 'ALL',
+    engine_pattern TEXT DEFAULT '%',
+    item_code TEXT NOT NULL,
+    item_name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    interval_km INTEGER NOT NULL,
+    interval_months INTEGER NOT NULL,
+    has_timing_belt INTEGER DEFAULT 1, -- 0 se corrente de comando
+    is_wear_item INTEGER DEFAULT 0, -- 1 se freios/desgaste que exigem inspeção física
+    notes TEXT,
+    source TEXT DEFAULT 'Manual do Fabricante'
+);
+
+-- 41. Previsões e Alertas Dinâmicos de Manutenção
+CREATE TABLE IF NOT EXISTS vehicle_maintenance_predictions (
+    id TEXT PRIMARY KEY,
+    vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+    item_code TEXT NOT NULL,
+    item_name TEXT NOT NULL,
+    category TEXT NOT NULL,
+    last_service_km INTEGER,
+    last_service_date DATE,
+    recommended_interval_km INTEGER NOT NULL,
+    recommended_interval_months INTEGER NOT NULL,
+    next_due_km INTEGER NOT NULL,
+    next_due_date DATE,
+    current_odometer_official_km INTEGER NOT NULL,
+    estimated_distance_since_official_km REAL NOT NULL DEFAULT 0,
+    current_estimated_km INTEGER NOT NULL,
+    remaining_km_min INTEGER,
+    remaining_km_max INTEGER,
+    remaining_days INTEGER,
+    alert_status TEXT NOT NULL, -- 'EM_DIA', 'ACOMPANHAR', 'APROXIMANDO', 'RECOMENDADA', 'VENCIDA', 'DADOS_INSUFICIENTES', 'CONFIRMACAO_OFICINA'
+    confidence_level TEXT DEFAULT 'ALTA', -- 'ALTA', 'MEDIA', 'ESTIMADA'
+    rationale TEXT,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(vehicle_id, item_code)
+);
+
+-- 42. Métricas de Validação Empírica da Meta de 70% de Precisão
+CREATE TABLE IF NOT EXISTS trip_classification_metrics (
+    id TEXT PRIMARY KEY,
+    vehicle_id TEXT REFERENCES vehicles(id),
+    total_trips_analyzed INTEGER DEFAULT 0,
+    in_vehicle_count INTEGER DEFAULT 0,
+    walking_count INTEGER DEFAULT 0,
+    other_transport_count INTEGER DEFAULT 0,
+    inconclusive_count INTEGER DEFAULT 0,
+    confirmed_true_positives INTEGER DEFAULT 0,
+    confirmed_false_positives INTEGER DEFAULT 0,
+    confirmed_true_negatives INTEGER DEFAULT 0,
+    confirmed_false_negatives INTEGER DEFAULT 0,
+    measured_accuracy_percent REAL DEFAULT 0,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Índices Estratégicos de Alta Performance
 CREATE INDEX IF NOT EXISTS idx_vehicle_dna_code ON vehicle_dna(dna_code);
 CREATE INDEX IF NOT EXISTS idx_vehicles_license_plate ON vehicles(license_plate);
@@ -541,3 +651,45 @@ CREATE INDEX IF NOT EXISTS idx_whatsapp_templates_ws ON whatsapp_templates(works
 CREATE INDEX IF NOT EXISTS idx_client_activations_code ON client_activations(activation_code);
 CREATE INDEX IF NOT EXISTS idx_client_activations_plate ON client_activations(license_plate);
 CREATE INDEX IF NOT EXISTS idx_client_activations_ws ON client_activations(workshop_id);
+CREATE INDEX IF NOT EXISTS idx_odometer_readings_veh ON odometer_readings(vehicle_id);
+CREATE INDEX IF NOT EXISTS idx_vehicle_trips_veh ON vehicle_trips(vehicle_id);
+CREATE INDEX IF NOT EXISTS idx_vehicle_trips_class ON vehicle_trips(classification);
+CREATE INDEX IF NOT EXISTS idx_predictions_veh ON vehicle_maintenance_predictions(vehicle_id);
+CREATE INDEX IF NOT EXISTS idx_predictions_status ON vehicle_maintenance_predictions(alert_status);
+CREATE INDEX IF NOT EXISTS idx_monitoring_prefs_veh ON monitoring_preferences(vehicle_id);
+
+-- Cobrança e PIX da Oficina via AbacatePay (Ciclo 22)
+CREATE TABLE IF NOT EXISTS workshop_pix_charges (
+    id TEXT PRIMARY KEY,
+    workshop_id TEXT NOT NULL,
+    vehicle_id TEXT,
+    activation_id TEXT,
+    activation_code TEXT,
+    charge_type TEXT NOT NULL,
+    amount_cents INTEGER NOT NULL,
+    customer_price_cents INTEGER NOT NULL,
+    workshop_profit_cents INTEGER NOT NULL,
+    cars_count INTEGER NOT NULL DEFAULT 1,
+    status TEXT NOT NULL DEFAULT 'PENDING',
+    abacate_id TEXT,
+    pix_code TEXT,
+    pix_qr_code_base64 TEXT,
+    pix_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    paid_at DATETIME,
+    FOREIGN KEY (workshop_id) REFERENCES workshops(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS workshop_billing_balances (
+    workshop_id TEXT PRIMARY KEY,
+    unbilled_cars_count INTEGER NOT NULL DEFAULT 0,
+    prepaid_cars_credits INTEGER NOT NULL DEFAULT 0,
+    total_cars_registered INTEGER NOT NULL DEFAULT 0,
+    total_paid_cents INTEGER NOT NULL DEFAULT 0,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (workshop_id) REFERENCES workshops(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_workshop_pix_ws ON workshop_pix_charges(workshop_id);
+CREATE INDEX IF NOT EXISTS idx_workshop_pix_status ON workshop_pix_charges(status);
+

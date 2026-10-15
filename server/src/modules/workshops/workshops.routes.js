@@ -1169,6 +1169,19 @@ router.post('/:id/clients/register-activation', async (req, res) => {
             return res.status(404).json({ error: 'Oficina não encontrada.' });
         }
 
+        // 0. Verificação de permissão de faturamento da oficina (Regra dos 10 carros pós-pagos)
+        const AbacatePayService = require('../../services/abacatePay.service');
+        const perm = AbacatePayService.checkRegistrationPermission(db, workshopId);
+        if (!perm.allowed) {
+            return res.status(402).json({
+                error: perm.message,
+                requires_payment: true,
+                mode: perm.mode,
+                pending_cars: perm.pending_cars,
+                cost_to_unblock: perm.cost_formatted
+            });
+        }
+
         // 1. Verifica ou cria Veículo
         let vehicle = db.prepare(`SELECT * FROM vehicles WHERE license_plate = ?`).get(plate);
         if (!vehicle) {
@@ -1271,6 +1284,24 @@ router.post('/:id/clients/register-activation', async (req, res) => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         `).run(actId, workshopId, clientName, rawPhone, plate, activationCode, vehicle.id, owner.id, activationStatus);
 
+        // 6. Atualiza consumo de crédito pré-pago ou contagem de carros pós-pagos
+        const billingResult = AbacatePayService.consumeOrIncrement(db, workshopId);
+        const balance = AbacatePayService.getOrCreateBalance(db, workshopId);
+
+        // 7. Gera cobrança PIX vinculada via AbacatePay (opção para quitação avulsa imediata)
+        let pixCharge = null;
+        try {
+            pixCharge = await AbacatePayService.createPixCharge(db, {
+                workshopId,
+                chargeType: 'SINGLE',
+                vehicleId: vehicle.id,
+                activationId: actId,
+                activationCode: activationCode,
+                clientName: clientName,
+                clientPhone: rawPhone
+            });
+        } catch (_) {}
+
         const baseUrl = process.env.SERVER_URL || 'https://dna-auto-vua4.onrender.com';
         const clientAppUrl = `${baseUrl}/cliente?code=${activationCode}`;
 
@@ -1286,6 +1317,20 @@ router.post('/:id/clients/register-activation', async (req, res) => {
                 plate: plate,
                 vehicle_id: vehicle.id
             },
+            pricing: {
+                dna_cost_per_car: 'R$ 30,00',
+                dna_cost_cents: 3000,
+                customer_price_suggested: 'R$ 59,90',
+                customer_price_cents: 5990,
+                workshop_profit_reais: 'R$ 29,90',
+                workshop_profit_cents: 2990,
+                billing_status: billingResult.billing_status,
+                consumed_prepaid_credit: billingResult.consumed_credit,
+                remaining_prepaid_credits: balance.prepaid_cars_credits,
+                unbilled_cars_count: balance.unbilled_cars_count,
+                postpaid_cycle_status: `${balance.unbilled_cars_count}/10 carros acumulados`
+            },
+            pix_charge: pixCharge,
             whatsapp_share_text: `Olá ${clientName}! Seu cadastro no DNA AUTO foi realizado pela oficina ${workshop.trade_name}.\n\n📲 Seu veículo (${plate}) já está disponível na sua Garagem Digital!\nBasta acessar: ${clientAppUrl}\nCódigo de acesso: *${activationCode}*`
         });
     } catch (err) {
