@@ -1431,7 +1431,7 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
        - Ao atingir o 11º carro, o sistema bloqueia novos cadastros até a quitação do lote anterior de 10 carros (10 x R$ 30,00 = R$ 300,00 via PIX AbacatePay).
      - **Configuração Oficial do Webhook AbacatePay:**
        - URL: `https://dna-auto-vua4.onrender.com/api/v1/billing/webhook/abacatepay`
-       - Secret: `dna_sec_abacate_2026`
+       - Secret: `dna_sec_abacatepay_prod_2026_webhook_key` (40 caracteres, atende a exigência mínima de 32 caracteres do AbacatePay)
        - Eventos monitorados: `billing.paid`, `transparent.completed`, `checkout.completed`.
        - Confirmação automática de recebimento liberando créditos ou desbloqueando o ciclo de cadastros da oficina.
   7. **Fluxo de Ativação pelo Cliente via Código Fornecido pela Oficina:**

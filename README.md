@@ -9,7 +9,7 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 69):** Motor de Manutenção Preditiva OEM (regras específicas por modelo e motorização), Reconciliação do Odômetro com proteção monotônica, algoritmo multissinal de viagens (meta de 70% de precisão) e Monetização Oficial AbacatePay (PIX transparente, webhook com secret `dna_sec_abacate_2026`, pacotes pré-pagos com desconto por volume e ciclo pós-pago de 10 carros). 56 de 56 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 69):** Motor de Manutenção Preditiva OEM (regras específicas por modelo e motorização), Reconciliação do Odômetro com proteção monotônica, algoritmo multissinal de viagens (meta de 70% de precisão) e Monetização Oficial AbacatePay (PIX transparente, webhook com secret `dna_sec_abacatepay_prod_2026_webhook_key`, pacotes pré-pagos com desconto por volume e ciclo pós-pago de 10 carros). 56 de 56 testes automatizados aprovados (100%).
 > 
 > ✨ **Ciclo 68:** Criação da página oficial de apresentação e credenciamento para Oficinas e Auto Centers (`/parceiro` e `/autocenter`), com modelo de negócios (+35% de faturamento, lucro de R$ 29 por instalação, sem mensalidades) e links diretos no ecossistema. 48 de 48 testes automatizados aprovados (100%).
 > 

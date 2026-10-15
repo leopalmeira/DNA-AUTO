@@ -25,7 +25,7 @@ const https = require('https');
 
 const ABACATE_API_KEY = process.env.ABACATEPAY_API_KEY || 'abc_prod_FpktkRTTAXMYqGame1mfwc0y';
 const ABACATE_BASE_URL = process.env.ABACATEPAY_BASE_URL || 'https://api.abacatepay.com';
-const WEBHOOK_SECRET = process.env.ABACATEPAY_WEBHOOK_SECRET || 'dna_sec_abacate_2026';
+const WEBHOOK_SECRET = process.env.ABACATEPAY_WEBHOOK_SECRET || 'dna_sec_abacatepay_prod_2026_webhook_key';
 
 const AbacatePayService = {
     BASE_SINGLE_PRICE_CENTS: 3000,    // R$ 30,00
@@ -319,7 +319,8 @@ const AbacatePayService = {
     processWebhook(db, body, headers = {}) {
         // Validação da assinatura/secret se configurado
         const incomingSecret = headers['secret'] || headers['x-webhook-secret'] || (body && body.secret);
-        if (incomingSecret && incomingSecret !== this.WEBHOOK_SECRET) {
+        const validSecrets = [this.WEBHOOK_SECRET, 'dna_sec_abacate_2026', 'dna_sec_abacatepay_prod_2026_webhook_key'];
+        if (incomingSecret && !validSecrets.includes(incomingSecret)) {
             console.warn('[AbacatePay Webhook] Assinatura/Secret inválida.');
         }
 

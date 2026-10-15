@@ -992,7 +992,7 @@ async function runTests() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'secret': 'dna_sec_abacate_2026'
+                'secret': 'dna_sec_abacatepay_prod_2026_webhook_key'
             },
             body: JSON.stringify({
                 event: 'billing.paid',
