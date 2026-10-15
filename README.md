@@ -9,7 +9,13 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 69):** Motor de Manutenção Preditiva OEM (regras específicas por modelo e motorização), Reconciliação do Odômetro com proteção monotônica, algoritmo multissinal de viagens (meta de 70% de precisão) e Monetização Oficial AbacatePay (PIX transparente, webhook com secret `dna_sec_abacatepay_prod_2026_webhook_key`, pacotes pré-pagos com desconto por volume e ciclo pós-pago de 10 carros). 56 de 56 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 72):** Implantação da **IA de Remoção Automática de Fundo de Veículos (DNA AI Studio)** baseada no repositório de maior avaliação do GitHub (`@imgly/background-removal` - 4.5k+ stars). Processamento in-browser com WebAssembly/WebGPU que extrai a silhueta limpa com transparência alpha, deixando apenas o veículo no estúdio neon da DNA AUTO sem custos de API ou sobrecarga de memória no servidor. Suporte no card do cliente (`ownerView.js`) e no cadastro da oficina (`workshopView.js`). 56 de 56 testes automatizados aprovados (100%).
+> 
+> ✨ **Ciclo 71:** Cadastro simplificado com código da oficina em 2 etapas, geração automática de código e Passaporte DNA AUTO Oficial ativo no cadastro da oficina, bloqueio temporário do OBD com homologação e card de veículo compacto. 56 de 56 testes automatizados aprovados (100%).
+> 
+> ✨ **Ciclo 70:** Refinamento do card do carro (removendo combustível/autonomia), remoção dos cards redundantes e migração da engrenagem de configuração para o menu superior. 56 de 56 testes automatizados aprovados (100%).
+> 
+> ✨ **Ciclo 69:** Motor de Manutenção Preditiva OEM (regras específicas por modelo e motorização), Reconciliação do Odômetro com proteção monotônica, algoritmo multissinal de viagens (meta de 70% de precisão) e Monetização Oficial AbacatePay (PIX transparente, webhook com secret `dna_sec_abacatepay_prod_2026_webhook_key`, pacotes pré-pagos com desconto por volume e ciclo pós-pago de 10 carros). 56 de 56 testes automatizados aprovados (100%).
 > 
 > ✨ **Ciclo 68:** Criação da página oficial de apresentação e credenciamento para Oficinas e Auto Centers (`/parceiro` e `/autocenter`), com modelo de negócios (+35% de faturamento, lucro de R$ 29 por instalação, sem mensalidades) e links diretos no ecossistema. 48 de 48 testes automatizados aprovados (100%).
 > 

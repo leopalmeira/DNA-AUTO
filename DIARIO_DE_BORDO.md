@@ -1565,3 +1565,31 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   3. **Garantia de Qualidade:**
      - 56 de 56 testes automatizados mantidos com 100% de aprovação (`npm test`).
 
+---
+
+### Ciclo 72 — IA de Remoção Inteligente de Fundo de Fotos de Veículos (DNA AI Studio) via `@imgly/background-removal`
+- **Data/Hora:** 15/10/2026
+- **Contexto & Escopo:**
+  1. **Seleção do Repositório GitHub Referência de Mercado:**
+     - Integração de [`imgly/background-removal-js`](https://github.com/imgly/background-removal-js) (`@imgly/background-removal`), repositório de ponta no GitHub com mais de 4.500 estrelas mantido pela IMG.LY.
+     - **Arquitetura 100% In-Browser:** O modelo de segmentação neural roda diretamente no dispositivo do usuário através de WebAssembly (WASM) e aceleração WebGPU (ONNX Runtime Web), garantindo privacidade total, custo zero de infraestrutura e zero sobrecarga de memória RAM no servidor Render (512MB RAM).
+  2. **Componente Universal `DnaAiStudio` (`public/js/components/dnaAiStudio.js`):**
+     - Módulo unificado para carregamento dinâmico via ESM da CDN (`https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm` com fallback unpkg).
+     - Callback de progresso com estágios de download do modelo neural e inferência (`progress: (key, current, total) => ...`).
+     - Conversor `blobToFile` para geração automática de imagem PNG transparente (`image/png`).
+     - Fallback automático para modo single-thread caso `SharedArrayBuffer` não esteja disponível, com fallback gracioso para a imagem original em caso de falta de conectividade.
+  3. **App do Cliente — Card do Carro e Modal de Troca de Foto (`ownerView.js` & `owner-app.css`):**
+     - **Switch IA DNA Studio:** Toggle estilizado `[✓] ✨ IA DNA Studio: Auto Recorte (Apaga o fundo da foto mantendo apenas o veículo)` ativo por padrão.
+     - **Feedback Visual Futurista:** Ao selecionar ou tirar uma foto do celular, exibe scanline animada neon ciano/verde, spinner com pulso e barra de progresso em tempo real `[0% a 100%]`.
+     - **Prévia Transparente sobre Palco Escuro:** A imagem do veículo sem fundo é exibida com fundo xadrez sutil e sobreposta ao neon do chão (`.dna-car-stage`), criando o efeito de showroom iluminado oficial da DNA AUTO.
+     - **Botão de Comparação:** Opção `👁️ Ver Foto com Fundo` / `✨ Ver Carro Isolado por IA` para alternar antes de salvar.
+     - Upload direto do PNG com canal alpha para o endpoint `/api/v1/vehicles/:plate/photo-upload`.
+  4. **Painel da Oficina — Cadastro de Veículo na Recepção com IA (`workshopView.js` & `components.css`):**
+     - Adição da **Seção 4: 📷 Foto do Veículo (IA DNA Studio Auto Recorte)** no formulário de entrada no pátio e novo cadastro.
+     - Permite que a oficina tire uma foto rápida do carro no pátio na hora da recepção e a IA remova imediatamente as paredes, outras vagas e chão da oficina.
+     - Envio automático do arquivo tratado junto ao cadastro unificado (`submitUnifiedNewEntry`), garantindo que o cliente já veja seu veículo com a foto limpa e isolada assim que acessar o app.
+  5. **Garantia de Qualidade & Paridade de Arquivos:**
+     - Paridade absoluta mantida entre `cliente.app/`, `oficina.app/` e `public/`.
+     - 56 de 56 testes automatizados executados e 100% aprovados (`npm test`).
+
+
