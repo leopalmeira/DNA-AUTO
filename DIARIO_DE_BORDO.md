@@ -1592,4 +1592,21 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Paridade absoluta mantida entre `cliente.app/`, `oficina.app/` e `public/`.
      - 56 de 56 testes automatizados executados e 100% aprovados (`npm test`).
 
+---
+
+### Ciclo 73 (15/10/2026) — Processamento Silencioso de Fotos & Remoção de Qualquer Menção a IA na Interface
+- **Contexto:** Solicitação do usuário para que a foto do carro seja processada primeiro e exibida somente após o término da remoção de fundo, sem exibir qualquer menção, texto, toggle ou badge de Inteligência Artificial.
+- **Implementações:**
+  1. **Interface Clean & Livre de Menções a IA:**
+     - Removidos toggles, cards `.dna-ai-toggle-card` e badges de "IA DNA Studio" tanto no App do Cliente quanto na Seção 4 do painel da Oficina.
+     - Removidos os botões de alternância e comparação de fundo (`#dna-ai-compare-btn` e `#ws-photo-compare-btn`).
+     - Neutralizados os textos de progresso e mensagens de status: substituídos por "Processando foto do veículo...", sem emojis de robô ou menção a inteligência artificial.
+  2. **Processamento Antes da Exibição (Foto Bruta Oculta):**
+     - Ao selecionar ou tirar a foto pelo celular ou computador, a imagem com fundo antigo da rua/garagem/oficina não é exibida.
+     - O container exibe diretamente um indicador de carregamento discreto com barra de progresso suave.
+     - Assim que o recorte com fundo transparente é concluído, o veículo limpo é revelado no preview com fundo escuro oficial e o badge "Foto Pronta para Salvar".
+     - O botão "Salvar Foto do Veículo" faz o upload multipart do PNG recortado definitivo.
+  3. **Paridade & Testes Automatizados:**
+     - Atualizados em paridade: `cliente.app/js/components/ownerView.js`, `oficina.app/js/components/workshopView.js` e equivalentes em `public/js/components/`.
+     - 56 de 56 testes automatizados aprovados com 100% de sucesso (`npm test`).
 

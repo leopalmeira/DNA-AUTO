@@ -9,7 +9,9 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 72):** Implantação da **IA de Remoção Automática de Fundo de Veículos (DNA AI Studio)** baseada no repositório de maior avaliação do GitHub (`@imgly/background-removal` - 4.5k+ stars). Processamento in-browser com WebAssembly/WebGPU que extrai a silhueta limpa com transparência alpha, deixando apenas o veículo no estúdio neon da DNA AUTO sem custos de API ou sobrecarga de memória no servidor. Suporte no card do cliente (`ownerView.js`) e no cadastro da oficina (`workshopView.js`). 56 de 56 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 73):** **Processamento Silencioso de Fotos & Remoção de Menções a IA na Interface**: Após envio da foto, o fundo é processado e removido silenciosamente em segundo plano antes da exibição; a imagem com fundo antigo não é mostrada, revelando diretamente o carro com fundo transparente pronto para salvar, com interface limpa e profissional (sem toggles, botões ou badges de IA). 56 de 56 testes automatizados aprovados (100%).
+> 
+> ✨ **Ciclo 72:** Implantação da **Remoção Automática de Fundo de Veículos (DnaAiStudio)** baseada no repositório open-source `@imgly/background-removal` (4.5k+ stars no GitHub), executando via WebAssembly/WebGPU direto no navegador. 56 de 56 testes automatizados aprovados (100%).
 > 
 > ✨ **Ciclo 71:** Cadastro simplificado com código da oficina em 2 etapas, geração automática de código e Passaporte DNA AUTO Oficial ativo no cadastro da oficina, bloqueio temporário do OBD com homologação e card de veículo compacto. 56 de 56 testes automatizados aprovados (100%).
 > 

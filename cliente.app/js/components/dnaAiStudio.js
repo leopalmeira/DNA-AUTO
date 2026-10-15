@@ -42,8 +42,8 @@
                     _imglyModule = fallbackMod.default || fallbackMod.removeBackground || fallbackMod;
                     return _imglyModule;
                 } catch (fallbackErr) {
-                    console.error('[DnaAiStudio] Falha ao carregar motor de IA de remoção de fundo:', fallbackErr);
-                    throw new Error('Não foi possível carregar a IA de recorte de fotos. Verifique sua conexão com a internet.');
+                    console.error('[DnaAiStudio] Falha ao carregar módulo de remoção de fundo:', fallbackErr);
+                    throw new Error('Não foi possível carregar o módulo de recorte de fotos. Verifique sua conexão com a internet.');
                 }
             } finally {
                 _isLoadingModule = false;
@@ -58,13 +58,13 @@
          */
         async removeVehicleBackground(imageSource, onProgress) {
             if (typeof onProgress === 'function') {
-                onProgress(5, 'Inicializando motor de Inteligência Artificial...');
+                onProgress(5, 'Preparando foto do veículo...');
             }
 
             const removeBgFn = await this.loadModule();
 
             if (typeof onProgress === 'function') {
-                onProgress(20, 'Carregando rede neural de segmentação automotiva...');
+                onProgress(20, 'Processando imagem...');
             }
 
             let lastPct = 20;
@@ -72,16 +72,16 @@
             const config = {
                 progress: (key, current, total) => {
                     let pct = 30;
-                    let stage = 'Processando silhueta do veículo...';
+                    let stage = 'Processando foto do veículo...';
 
                     if (typeof current === 'number' && typeof total === 'number' && total > 0) {
                         const raw = Math.round((current / total) * 100);
                         if (String(key).includes('fetch') || String(key).includes('download')) {
                             pct = Math.min(75, 20 + Math.round(raw * 0.55));
-                            stage = `Baixando modelo de visão computacional (${pct}%)...`;
+                            stage = `Processando foto (${pct}%)...`;
                         } else {
                             pct = Math.min(95, 75 + Math.round(raw * 0.20));
-                            stage = `Isolando veículo e removendo fundo (${pct}%)...`;
+                            stage = `Removendo fundo da foto (${pct}%)...`;
                         }
                     } else {
                         lastPct = Math.min(92, lastPct + 5);
@@ -97,7 +97,7 @@
             try {
                 const transparentBlob = await removeBgFn(imageSource, config);
                 if (typeof onProgress === 'function') {
-                    onProgress(100, '✨ Fundo removido com sucesso!');
+                    onProgress(100, 'Foto pronta!');
                 }
                 return transparentBlob;
             } catch (err) {

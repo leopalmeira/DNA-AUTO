@@ -5856,59 +5856,35 @@ const WorkshopView = {
                     </div>
                 </div>
 
-                <!-- SEÇÃO 4: FOTO DO VEÍCULO (IA DNA STUDIO AUTO RECORTE) -->
+                <!-- SEÇÃO 4: FOTO DO VEÍCULO -->
                 <div style="font-size:11px; font-weight:800; color:#00D4FF; text-transform:uppercase; letter-spacing:0.5px; display:flex; align-items:center; gap:6px; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
-                    <span>📷 4. FOTO DO VEÍCULO (IA DNA STUDIO AUTO RECORTE)</span>
-                </div>
-
-                <div class="dna-ai-toggle-card">
-                    <div class="dna-ai-toggle-left">
-                        <span class="dna-ai-sparkle-icon">✨</span>
-                        <div>
-                            <div class="dna-ai-toggle-title">
-                                <span>IA DNA Studio</span>
-                                <span class="dna-ai-pill">Auto Recorte</span>
-                            </div>
-                            <div class="dna-ai-toggle-sub">Apaga o fundo da oficina/pátio deixando apenas o veículo</div>
-                        </div>
-                    </div>
-                    <label class="dna-switch" title="Ativar ou desativar remoção de fundo por IA">
-                        <input type="checkbox" id="ws-ai-bg-toggle" ${this.aiWorkshopBgRemovalEnabled !== false ? 'checked' : ''} onchange="WorkshopView.toggleWorkshopAiBg(this.checked)">
-                        <span class="dna-slider"></span>
-                    </label>
+                    <span>📷 4. FOTO DO VEÍCULO</span>
                 </div>
 
                 <!-- Input e Zona de Foto da Oficina -->
                 <input type="file" id="ws-new-photo-file" accept="image/*" style="display:none;" onchange="WorkshopView.handleWorkshopPhotoSelect(this)" />
                 <div class="dna-photo-upload-zone" style="padding:12px; border-radius:10px;" onclick="document.getElementById('ws-new-photo-file').click()">
                     <div style="font-size:12px; font-weight:800; color:#FFFFFF;">📸 Tirar Foto ou Anexar Imagem do Veículo</div>
-                    <div style="font-size:10.5px; color:#94A3B8; margin-top:2px;">A IA isola o carro e remove o fundo da oficina automaticamente para o cliente</div>
+                    <div style="font-size:10.5px; color:#94A3B8; margin-top:2px;">O fundo da foto é removido automaticamente para o perfil do carro</div>
                 </div>
 
-                <!-- Prévia com Overlay da IA -->
+                <!-- Prévia com Overlay de Processamento -->
                 <div id="ws-photo-preview-box" class="dna-photo-preview-box" style="display:none; height:140px; margin-top:6px;">
-                    <span id="ws-photo-badge" class="dna-photo-status-badge">Foto do Veículo</span>
-                    <img id="ws-photo-preview-img" class="dna-photo-preview-img" src="" alt="Prévia Veículo" />
+                    <span id="ws-photo-badge" class="dna-photo-status-badge" style="display:none;">Foto do Veículo</span>
+                    <img id="ws-photo-preview-img" class="dna-photo-preview-img" src="" alt="Prévia Veículo" style="display:none;" />
 
-                    <!-- Overlay da IA -->
+                    <!-- Overlay de Processamento -->
                     <div id="ws-photo-processing-box" class="dna-ai-processing-overlay" style="display:none;">
-                        <div class="dna-ai-scan-line"></div>
                         <div class="dna-ai-pulse-badge">
                             <span class="dna-ai-spinning-ring"></span>
                             <span style="font-size:18px;">🚗</span>
                         </div>
-                        <div id="ws-photo-status-text" class="dna-ai-status-text">IA Removendo Fundo do Veículo...</div>
+                        <div id="ws-photo-status-text" class="dna-ai-status-text">Processando foto do veículo...</div>
                         <div class="dna-ai-progress-bar-wrap">
                             <div id="ws-photo-progress-fill" class="dna-ai-progress-fill" style="width:0%;"></div>
                         </div>
                         <div id="ws-photo-progress-pct" class="dna-ai-progress-pct">0%</div>
                     </div>
-                </div>
-
-                <div style="display:flex; justify-content:center; margin-top:4px;">
-                    <button id="ws-photo-compare-btn" type="button" class="dna-ai-compare-btn" style="display:none;" onclick="WorkshopView.toggleWorkshopPhotoCompare()">
-                        <span>👁️</span> <span>Ver Foto com Fundo</span>
-                    </button>
                 </div>
 
                 <div style="padding:10px 12px; background:rgba(0,212,255,0.06); border-radius:6px; border:1px solid rgba(0,212,255,0.2); font-size:11px; color:#cbd5e1;">
@@ -6048,63 +6024,38 @@ const WorkshopView = {
         }
     },
 
-    // ── GESTÃO DE FOTOS COM IA DNA STUDIO NA OFICINA ──
-    aiWorkshopBgRemovalEnabled: true,
+    // ── GESTÃO DE FOTOS DO VEÍCULO NA OFICINA ──
     _selectedWorkshopPhotoFile: null,
     _rawWorkshopPhotoFile: null,
     _transparentWorkshopPreviewUrl: null,
-    _originalWorkshopPreviewUrl: null,
-    _isShowingWorkshopOriginal: false,
-    _isProcessingWorkshopAi: false,
-
-    toggleWorkshopAiBg(checked) {
-        this.aiWorkshopBgRemovalEnabled = !!checked;
-        if (this._rawWorkshopPhotoFile && !this._isProcessingWorkshopAi) {
-            this.processWorkshopPhotoWithAi(this._rawWorkshopPhotoFile);
-        }
-    },
+    _isProcessingWorkshopPhoto: false,
 
     async handleWorkshopPhotoSelect(input) {
         if (!input.files || !input.files[0]) return;
         const file = input.files[0];
         this._rawWorkshopPhotoFile = file;
-        this._isShowingWorkshopOriginal = false;
-        await this.processWorkshopPhotoWithAi(file);
+        await this.processWorkshopVehiclePhoto(file);
     },
 
-    async processWorkshopPhotoWithAi(file) {
+    async processWorkshopVehiclePhoto(file) {
         const previewImg = document.getElementById('ws-photo-preview-img');
         const previewBox = document.getElementById('ws-photo-preview-box');
         const badge = document.getElementById('ws-photo-badge');
-        const compareBtn = document.getElementById('ws-photo-compare-btn');
         const processingBox = document.getElementById('ws-photo-processing-box');
         const statusText = document.getElementById('ws-photo-status-text');
         const progressFill = document.getElementById('ws-photo-progress-fill');
         const progressPct = document.getElementById('ws-photo-progress-pct');
 
-        const rawUrl = URL.createObjectURL(file);
-        this._originalWorkshopPreviewUrl = rawUrl;
-
         if (previewBox) previewBox.style.display = 'flex';
-
-        if (!this.aiWorkshopBgRemovalEnabled) {
-            this._selectedWorkshopPhotoFile = file;
-            if (previewImg) previewImg.src = rawUrl;
-            if (previewBox) previewBox.classList.remove('is-transparent');
-            if (badge) {
-                badge.textContent = 'Foto Selecionada (Fundo Original)';
-                badge.style.color = '#38bdf8';
-                badge.style.borderColor = '#38bdf8';
-            }
-            if (compareBtn) compareBtn.style.display = 'none';
-            return;
-        }
-
-        this._isProcessingWorkshopAi = true;
+        // A foto bruta com fundo não é exibida; entra direto em processamento
+        if (previewImg) previewImg.style.display = 'none';
+        if (badge) badge.style.display = 'none';
         if (processingBox) processingBox.style.display = 'flex';
-        if (statusText) statusText.textContent = '🤖 IA DNA Studio analisando veículo...';
+        if (statusText) statusText.textContent = 'Processando foto do veículo...';
         if (progressFill) progressFill.style.width = '10%';
         if (progressPct) progressPct.textContent = '10%';
+
+        this._isProcessingWorkshopPhoto = true;
 
         try {
             if (!window.DnaAiStudio) {
@@ -6121,63 +6072,37 @@ const WorkshopView = {
             this._selectedWorkshopPhotoFile = transparentFile;
             this._transparentWorkshopPreviewUrl = URL.createObjectURL(transparentBlob);
 
-            if (previewImg) previewImg.src = this._transparentWorkshopPreviewUrl;
+            // Exibe a foto recortada pronta para ser salva com o cadastro
+            if (previewImg) {
+                previewImg.src = this._transparentWorkshopPreviewUrl;
+                previewImg.style.display = 'block';
+            }
             if (previewBox) previewBox.classList.add('is-transparent');
 
             if (badge) {
-                badge.innerHTML = '✨ Veículo Isolado por IA (Fundo Removido)';
+                badge.style.display = 'inline-block';
+                badge.textContent = 'Foto Pronta';
                 badge.style.color = '#10b981';
                 badge.style.borderColor = '#10b981';
             }
-
-            if (compareBtn) {
-                compareBtn.style.display = 'inline-flex';
-                compareBtn.innerHTML = '<span>👁️</span> <span>Ver Foto com Fundo</span>';
-            }
         } catch (err) {
-            console.warn('[WorkshopView] Fallback para foto original:', err);
+            console.warn('[WorkshopView] Fallback na foto do veículo:', err);
             this._selectedWorkshopPhotoFile = file;
-            if (previewImg) previewImg.src = rawUrl;
+            const rawUrl = URL.createObjectURL(file);
+            if (previewImg) {
+                previewImg.src = rawUrl;
+                previewImg.style.display = 'block';
+            }
             if (previewBox) previewBox.classList.remove('is-transparent');
             if (badge) {
-                badge.textContent = 'Foto Selecionada (Original)';
+                badge.style.display = 'inline-block';
+                badge.textContent = 'Foto Selecionada';
                 badge.style.color = '#38bdf8';
                 badge.style.borderColor = '#38bdf8';
             }
-            if (compareBtn) compareBtn.style.display = 'none';
         } finally {
-            this._isProcessingWorkshopAi = false;
+            this._isProcessingWorkshopPhoto = false;
             if (processingBox) processingBox.style.display = 'none';
-        }
-    },
-
-    toggleWorkshopPhotoCompare() {
-        if (!this._transparentWorkshopPreviewUrl || !this._originalWorkshopPreviewUrl) return;
-        const previewImg = document.getElementById('ws-photo-preview-img');
-        const previewBox = document.getElementById('ws-photo-preview-box');
-        const compareBtn = document.getElementById('ws-photo-compare-btn');
-        const badge = document.getElementById('ws-photo-badge');
-
-        this._isShowingWorkshopOriginal = !this._isShowingWorkshopOriginal;
-
-        if (this._isShowingWorkshopOriginal) {
-            if (previewImg) previewImg.src = this._originalWorkshopPreviewUrl;
-            if (previewBox) previewBox.classList.remove('is-transparent');
-            if (compareBtn) compareBtn.innerHTML = '<span>✨</span> <span>Ver Carro Isolado por IA</span>';
-            if (badge) {
-                badge.innerHTML = '📷 Foto Original';
-                badge.style.color = '#94a3b8';
-                badge.style.borderColor = '#94a3b8';
-            }
-        } else {
-            if (previewImg) previewImg.src = this._transparentWorkshopPreviewUrl;
-            if (previewBox) previewBox.classList.add('is-transparent');
-            if (compareBtn) compareBtn.innerHTML = '<span>👁️</span> <span>Ver Foto com Fundo</span>';
-            if (badge) {
-                badge.innerHTML = '✨ Veículo Isolado por IA (Fundo Removido)';
-                badge.style.color = '#10b981';
-                badge.style.borderColor = '#10b981';
-            }
         }
     },
 

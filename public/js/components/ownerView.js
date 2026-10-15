@@ -4105,21 +4105,11 @@ const OwnerView = {
         `;
     },
 
-    // ── GESTÃO E TROCA DA FOTO DO CARRO PELO PROPRIETÁRIO COM IA ──
-    aiBgRemovalEnabled: true,
+    // ── GESTÃO E TROCA DA FOTO DO CARRO PELO PROPRIETÁRIO ──
     _selectedPhotoFile: null,
     _rawSelectedFile: null,
     _transparentPreviewUrl: null,
-    _originalPreviewUrl: null,
-    _isShowingOriginal: false,
-    _isProcessingAi: false,
-
-    toggleAiBgRemoval(checked) {
-        this.aiBgRemovalEnabled = !!checked;
-        if (this._rawSelectedFile && !this._isProcessingAi) {
-            this.processPhotoWithAi(this._rawSelectedFile);
-        }
-    },
+    _isProcessingPhoto: false,
 
     openChangePhotoModal() {
         this.isPhotoModalOpen = true;
@@ -4127,9 +4117,7 @@ const OwnerView = {
         this._selectedPhotoFile = null;
         this._rawSelectedFile = null;
         this._transparentPreviewUrl = null;
-        this._originalPreviewUrl = null;
-        this._isShowingOriginal = false;
-        this._isProcessingAi = false;
+        this._isProcessingPhoto = false;
         this.render();
     },
 
@@ -4139,9 +4127,7 @@ const OwnerView = {
         this._selectedPhotoFile = null;
         this._rawSelectedFile = null;
         this._transparentPreviewUrl = null;
-        this._originalPreviewUrl = null;
-        this._isShowingOriginal = false;
-        this._isProcessingAi = false;
+        this._isProcessingPhoto = false;
         this.render();
     },
 
@@ -4149,49 +4135,32 @@ const OwnerView = {
         if (!input.files || !input.files[0]) return;
         const file = input.files[0];
         this._rawSelectedFile = file;
-        this._isShowingOriginal = false;
 
-        await this.processPhotoWithAi(file);
+        await this.processVehiclePhoto(file);
     },
 
-    async processPhotoWithAi(file) {
+    async processVehiclePhoto(file) {
         const previewImg = document.getElementById('dna-modal-photo-preview');
         const previewBox = document.getElementById('dna-modal-preview-box');
         const badge = document.getElementById('dna-modal-photo-badge');
-        const compareBtn = document.getElementById('dna-ai-compare-btn');
         const processingBox = document.getElementById('dna-ai-processing-box');
         const statusText = document.getElementById('dna-ai-status-text');
         const progressFill = document.getElementById('dna-ai-progress-fill');
         const progressPct = document.getElementById('dna-ai-progress-pct');
 
-        // Prévia inicial da imagem original
-        const rawUrl = URL.createObjectURL(file);
-        this._originalPreviewUrl = rawUrl;
-
-        if (!this.aiBgRemovalEnabled) {
-            this._selectedPhotoFile = file;
-            this.tempPhotoPreview = rawUrl;
-            if (previewImg) previewImg.src = rawUrl;
-            if (previewBox) previewBox.classList.remove('is-transparent');
-            if (badge) {
-                badge.textContent = 'Foto Selecionada (Fundo Original)';
-                badge.style.color = '#38BDF8';
-                badge.style.borderColor = '#38BDF8';
-            }
-            if (compareBtn) compareBtn.style.display = 'none';
-            return;
-        }
-
-        // Processamento Inteligente com IA
-        this._isProcessingAi = true;
+        // A foto bruta não é mostrada; entra direto o estado de processamento
+        if (previewImg) previewImg.style.display = 'none';
+        if (badge) badge.style.display = 'none';
         if (processingBox) processingBox.style.display = 'flex';
-        if (statusText) statusText.textContent = '🤖 IA DNA Studio analisando veículo...';
+        if (statusText) statusText.textContent = 'Processando foto do veículo...';
         if (progressFill) progressFill.style.width = '10%';
         if (progressPct) progressPct.textContent = '10%';
 
+        this._isProcessingPhoto = true;
+
         try {
             if (!window.DnaAiStudio) {
-                throw new Error('Componente DnaAiStudio não carregado.');
+                throw new Error('Módulo de processamento de fotos não carregado.');
             }
 
             const transparentBlob = await window.DnaAiStudio.removeVehicleBackground(file, (pct, stage) => {
@@ -4205,65 +4174,38 @@ const OwnerView = {
             this._transparentPreviewUrl = URL.createObjectURL(transparentBlob);
             this.tempPhotoPreview = this._transparentPreviewUrl;
 
-            if (previewImg) previewImg.src = this._transparentPreviewUrl;
+            // Foto recortada é mostrada para ser salva
+            if (previewImg) {
+                previewImg.src = this._transparentPreviewUrl;
+                previewImg.style.display = 'block';
+            }
             if (previewBox) previewBox.classList.add('is-transparent');
 
             if (badge) {
-                badge.innerHTML = '✨ Veículo Isolado por IA (Fundo Removido)';
+                badge.style.display = 'inline-block';
+                badge.textContent = 'Foto Pronta para Salvar';
                 badge.style.color = '#00E676';
                 badge.style.borderColor = '#00E676';
             }
-
-            if (compareBtn) {
-                compareBtn.style.display = 'inline-flex';
-                compareBtn.innerHTML = '<span>👁️</span> <span>Ver Foto com Fundo</span>';
-            }
         } catch (err) {
-            console.warn('[OwnerView] Fallback para foto original devido a erro na IA:', err);
+            console.warn('[OwnerView] Fallback na foto do veículo:', err);
             this._selectedPhotoFile = file;
+            const rawUrl = URL.createObjectURL(file);
             this.tempPhotoPreview = rawUrl;
-            if (previewImg) previewImg.src = rawUrl;
+            if (previewImg) {
+                previewImg.src = rawUrl;
+                previewImg.style.display = 'block';
+            }
             if (previewBox) previewBox.classList.remove('is-transparent');
             if (badge) {
-                badge.textContent = 'Foto Selecionada (Original)';
+                badge.style.display = 'inline-block';
+                badge.textContent = 'Foto Selecionada';
                 badge.style.color = '#38BDF8';
                 badge.style.borderColor = '#38BDF8';
             }
-            if (compareBtn) compareBtn.style.display = 'none';
-            this.showOwnerToast('IA em modo offline ou modelo em download. Foto original mantida.', 'info');
         } finally {
-            this._isProcessingAi = false;
+            this._isProcessingPhoto = false;
             if (processingBox) processingBox.style.display = 'none';
-        }
-    },
-
-    togglePhotoCompare() {
-        if (!this._transparentPreviewUrl || !this._originalPreviewUrl) return;
-        const previewImg = document.getElementById('dna-modal-photo-preview');
-        const previewBox = document.getElementById('dna-modal-preview-box');
-        const compareBtn = document.getElementById('dna-ai-compare-btn');
-        const badge = document.getElementById('dna-modal-photo-badge');
-
-        this._isShowingOriginal = !this._isShowingOriginal;
-
-        if (this._isShowingOriginal) {
-            if (previewImg) previewImg.src = this._originalPreviewUrl;
-            if (previewBox) previewBox.classList.remove('is-transparent');
-            if (compareBtn) compareBtn.innerHTML = '<span>✨</span> <span>Ver Carro Isolado por IA</span>';
-            if (badge) {
-                badge.innerHTML = '📷 Visualizando Foto Original';
-                badge.style.color = '#94A3B8';
-                badge.style.borderColor = '#94A3B8';
-            }
-        } else {
-            if (previewImg) previewImg.src = this._transparentPreviewUrl;
-            if (previewBox) previewBox.classList.add('is-transparent');
-            if (compareBtn) compareBtn.innerHTML = '<span>👁️</span> <span>Ver Foto com Fundo</span>';
-            if (badge) {
-                badge.innerHTML = '✨ Veículo Isolado por IA (Fundo Removido)';
-                badge.style.color = '#00E676';
-                badge.style.borderColor = '#00E676';
-            }
         }
     },
 
@@ -4416,39 +4358,20 @@ const OwnerView = {
                         </button>
                     </div>
 
-                    <!-- Card Ativador da IA DNA Studio -->
-                    <div class="dna-ai-toggle-card">
-                        <div class="dna-ai-toggle-left">
-                            <span class="dna-ai-sparkle-icon">✨</span>
-                            <div>
-                                <div class="dna-ai-toggle-title">
-                                    <span>IA DNA Studio</span>
-                                    <span class="dna-ai-pill">Auto Recorte</span>
-                                </div>
-                                <div class="dna-ai-toggle-sub">Apaga o fundo da foto mantendo apenas o veículo</div>
-                            </div>
-                        </div>
-                        <label class="dna-switch" title="Ativar ou desativar remoção de fundo por IA">
-                            <input type="checkbox" id="dna-ai-bg-toggle" ${this.aiBgRemovalEnabled !== false ? 'checked' : ''} onchange="OwnerView.toggleAiBgRemoval(this.checked)">
-                            <span class="dna-slider"></span>
-                        </label>
-                    </div>
-
-                    <!-- Prévia da Foto com Overlay de Processamento por IA -->
+                    <!-- Prévia da Foto com Overlay de Processamento -->
                     <div id="dna-modal-preview-box" class="dna-photo-preview-box ${isTransparent ? 'is-transparent' : ''}">
                         <span id="dna-modal-photo-badge" class="dna-photo-status-badge">
-                            ${isTransparent ? '✨ Veículo Isolado por IA' : 'Foto Atual do Veículo'}
+                            ${isTransparent ? 'Foto Pronta' : 'Foto Atual do Veículo'}
                         </span>
                         <img id="dna-modal-photo-preview" class="dna-photo-preview-img" src="${currentImg}" alt="${v.full_title}" onerror="this.onerror=null; this.src='/img/car-silhouette.svg';" />
 
-                        <!-- Overlay Tecnológico da IA -->
+                        <!-- Overlay de Processamento -->
                         <div id="dna-ai-processing-box" class="dna-ai-processing-overlay" style="display:none;">
-                            <div class="dna-ai-scan-line"></div>
                             <div class="dna-ai-pulse-badge">
                                 <span class="dna-ai-spinning-ring"></span>
                                 <span style="font-size:18px;">🚗</span>
                             </div>
-                            <div id="dna-ai-status-text" class="dna-ai-status-text">IA Removendo Fundo do Veículo...</div>
+                            <div id="dna-ai-status-text" class="dna-ai-status-text">Processando foto do veículo...</div>
                             <div class="dna-ai-progress-bar-wrap">
                                 <div id="dna-ai-progress-fill" class="dna-ai-progress-fill" style="width:0%;"></div>
                             </div>
@@ -4456,19 +4379,12 @@ const OwnerView = {
                         </div>
                     </div>
 
-                    <!-- Botão Comparar Antes e Depois (Visível quando processado por IA) -->
-                    <div style="display:flex; justify-content:center;">
-                        <button id="dna-ai-compare-btn" type="button" class="dna-ai-compare-btn" style="${isTransparent ? 'display:inline-flex;' : 'display:none;'}" onclick="OwnerView.togglePhotoCompare()">
-                            <span>👁️</span> <span>Ver Foto com Fundo</span>
-                        </button>
-                    </div>
-
                     <!-- Opção 1: Upload de Foto Real do Carro do Dono -->
                     <input type="file" id="dna-photo-file-input" accept="image/*" style="display:none;" onchange="OwnerView.handlePhotoFileSelect(this)" />
                     <div class="dna-photo-upload-zone" onclick="document.getElementById('dna-photo-file-input').click()">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2" style="margin-bottom:4px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                         <div style="font-size:12px; font-weight:800; color:#FFFFFF;">Tirar Foto ou Escolher da Galeria</div>
-                        <div style="font-size:10.5px; color:#94A3B8; margin-top:2px;">A IA isola o carro e remove o fundo da garagem/rua automaticamente</div>
+                        <div style="font-size:10.5px; color:#94A3B8; margin-top:2px;">O fundo da foto é removido automaticamente para o perfil do carro</div>
                     </div>
 
                     <!-- Opção 2: URL Externa -->
