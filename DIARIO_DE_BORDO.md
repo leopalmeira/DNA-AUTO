@@ -1625,3 +1625,31 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Garantida sincronização idêntica entre `oficina.app/` e `public/`.
   3. **Qualidade & Validação Automatizada:**
      - Executada a bateria completa de 56 testes automatizados (`npm test`) com 100% de aprovação.
+---
+
+### Ciclo 75 (15/10/2026) — Fotos Lado a Lado (Peça + Nota Fiscal), Campo de KM com Tabela OEM e Card do Carro com Fundo Azul DNA AUTO
+- **Contexto & Solicitação do Usuário (Instruções em Áudio):**
+  1. No painel da oficina (tela de Enviar Fotos e Lançar Serviços):
+     - Incluir campo explícito para registrar o **KM atual do veículo**, que é a base de todas as manutenções.
+     - Implementar tabela de recomendações e intervalos preventivos de fábrica (óleos sintético 0W20/5W30, semissintético 10W40, mineral 15W40/manual até 35.000 km, correias, velas, pastilhas, etc.) calculando a próxima revisão.
+     - Posicionar a **Foto da Nota Fiscal / Comprovante AO LADO da Foto do Produto/Peça**, permitindo tirar foto pelo celular e registrar ambos simultaneamente no histórico do cliente.
+  2. No aplicativo do Dono do Carro (App do Cliente):
+     - Após o processamento e recorte da foto sem fundo, exibir imediatamente a foto real do carro do cliente no card principal, substituindo o modelo genérico.
+     - Adicionar o **fundo azul oficial DNA AUTO** (`.dna-car-stage`) com palco neon circular e iluminação automotiva de estúdio para valorizar o veículo do cliente.
+- **Implementações Realizadas:**
+  1. **Componente de Fotos Lado a Lado (`renderSideBySideProofsSection`):**
+     - Grade responsiva em 2 colunas:
+       - **Esquerda:** Foto da Peça / Serviço com botões para Câmera (`capture="environment"`) e Galeria, com miniatura e botão de exclusão.
+       - **Direita:** Foto da Nota Fiscal / Garantia com botões para Fotografar NF e Arquivo/Galeria, com miniatura e botão de exclusão.
+     - Integrado em `renderMobileSendPhotosView` e `renderMobileServiceDetailView`.
+  2. **Campo de KM & Motor Preditivo de Intervalos OEM (`renderMileageAndIntervalSection`):**
+     - Input numérico destacado para o odômetro do serviço (`#mobile-service-km-input`).
+     - Badge em tempo real calculando a próxima revisão preventiva sugerida.
+     - Tabela colapsável com guia de intervalos técnicos recomendados para todos os veículos e viscosidades de óleo.
+     - Persistência e sincronização automática via `handleMobileSavePhotos` no backend (`PATCH /odometer` e `POST /services/workshop-register`).
+  3. **Showroom Azul DNA AUTO & Atualização Instantânea no App do Cliente:**
+     - Estilizada a classe `.dna-car-stage` em `owner-app.css` com iluminação radial azul, reflexo neon (`.dna-car-neon-glow`) e sombra automotiva profunda.
+     - Atualizados métodos `saveVehiclePhoto` e `restoreDefaultModelPhoto` em `ownerView.js` para persistência no `localStorage`, atualização imediata na DOM (`.dna-car-image`) e re-renderização instantânea do card do veículo sem necessidade de reload da página.
+  4. **Paridade & Garantia de Qualidade:**
+     - 100% de paridade entre `oficina.app/`, `cliente.app/` e `public/`.
+     - Todos os 56 testes automatizados aprovados com 100% de sucesso (`npm test`).

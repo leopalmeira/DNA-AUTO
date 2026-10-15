@@ -4255,7 +4255,30 @@ const OwnerView = {
             console.error('Erro ao salvar foto:', e);
         }
 
+        // Persiste no localStorage para sobreviver a refresh
+        try {
+            const raw = localStorage.getItem('dna_logged_user');
+            if (raw) {
+                const u = JSON.parse(raw);
+                if (u.vehicle) u.vehicle.photo_url = this.vehicleData.photo_url;
+                localStorage.setItem('dna_logged_user', JSON.stringify(u));
+            }
+            if (plate) {
+                localStorage.setItem(`dna_vehicle_photo_${plate}`, this.vehicleData.photo_url);
+            }
+        } catch (_) {}
+
+        // Atualização instantânea na DOM de todos os cards de veículo visíveis
+        document.querySelectorAll('.dna-car-image').forEach(img => {
+            img.src = this.vehicleData.photo_url;
+        });
+
         this.closeChangePhotoModal();
+
+        // Redesenha a tela para garantir que o card com o palco azul exiba a foto atualizada
+        if (typeof this.renderMainScreen === 'function') {
+            this.renderMainScreen();
+        }
 
         const toast = document.createElement('div');
         toast.style.cssText = `
@@ -4278,9 +4301,9 @@ const OwnerView = {
         `;
         toast.innerHTML = `
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-            <span>Foto do veículo atualizada com sucesso!</span>
+            <span>Foto do veículo atualizada com sucesso no painel!</span>
         `;
-        const phone = document.querySelector('.dna-phone-frame');
+        const phone = document.querySelector('.dna-phone-frame') || document.body;
         if (phone) {
             phone.appendChild(toast);
             setTimeout(() => toast.remove(), 2600);
@@ -4303,13 +4326,33 @@ const OwnerView = {
                     if (match) match.photo_url = data.photo_url;
                 }
             } else {
-                this.vehicleData.photo_url = '/img/car-silhouette.svg';
+                this.vehicleData.photo_url = '/img/splash-car-hero.png';
             }
         } catch (e) {
-            this.vehicleData.photo_url = '/img/car-silhouette.svg';
+            this.vehicleData.photo_url = '/img/splash-car-hero.png';
         }
 
+        try {
+            const raw = localStorage.getItem('dna_logged_user');
+            if (raw) {
+                const u = JSON.parse(raw);
+                if (u.vehicle) u.vehicle.photo_url = this.vehicleData.photo_url;
+                localStorage.setItem('dna_logged_user', JSON.stringify(u));
+            }
+            if (plate) {
+                localStorage.removeItem(`dna_vehicle_photo_${plate}`);
+            }
+        } catch (_) {}
+
+        document.querySelectorAll('.dna-car-image').forEach(img => {
+            img.src = this.vehicleData.photo_url;
+        });
+
         this.closeChangePhotoModal();
+
+        if (typeof this.renderMainScreen === 'function') {
+            this.renderMainScreen();
+        }
 
         const toast = document.createElement('div');
         toast.style.cssText = `

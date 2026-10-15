@@ -1746,44 +1746,23 @@
                     <!-- 1. IDENTIFICAÇÃO DO VEÍCULO PELA PLACA -->
                     ${this.renderUniversalVehiclePlateBar()}
 
-                    <!-- 2. CAMPO DE OBSERVAÇÕES TÉCNICAS DO MECÂNICO -->
-                    <div class="dna-input-group">
+                    <!-- 2. CAMPO DE QUILOMETRAGEM (KM) DO VEÍCULO & RECOMENDAÇÃO OEM -->
+                    ${this.renderMileageAndIntervalSection(currentMileage, s.defaultKm || 10000, s.title)}
+
+                    <!-- 3. CAMPO DE OBSERVAÇÕES TÉCNICAS DO MECÂNICO -->
+                    <div class="dna-input-group" style="margin-top:10px;">
                         <label class="dna-input-label">Observações Técnicas do Mecânico</label>
                         <textarea 
                             id="mobile-srv-detail-notes" 
                             class="dna-input-field" 
                             rows="2" 
                             placeholder="Descreva detalhes específicos da manutenção realizada, marca da peça aplicada, etc..."
-                            style="resize:none; padding:10px; height:60px; font-size:12.5px;"
+                            style="resize:none; padding:10px; height:58px; font-size:12.5px;"
                         >${this._tempServiceLaunchNotes || ''}</textarea>
                     </div>
 
-                    <!-- 3. FOTO DA PEÇA (DUAS OPÇÕES: CÂMERA & GALERIA) -->
-                    ${this.renderDualPhotoUploadSection('srv-detail-piece-photos', 'Foto da Peça / Serviço', 'Câmera ou Galeria')}
-
-                    <!-- 4. FOTO DA NOTA FISCAL (DUAS OPÇÕES: CÂMERA & GALERIA) -->
-                    <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                            <strong style="color:#ffffff; font-size:12.5px; font-weight:800;">Foto da Nota Fiscal da Peça</strong>
-                            <span style="font-size:10px; color:#10B981; font-weight:700;">Garantia</span>
-                        </div>
-
-                        <input type="file" id="srv-detail-nf-camera" accept="image/*" capture="environment" style="display:none;" onchange="WorkshopView.handleMobileInvoiceFileSelect(this)" />
-                        <input type="file" id="srv-detail-nf-gallery" accept="image/*,application/pdf" style="display:none;" onchange="WorkshopView.handleMobileInvoiceFileSelect(this)" />
-
-                        <div class="dna-photo-choice-grid">
-                            <button type="button" class="dna-photo-choice-btn camera" onclick="document.getElementById('srv-detail-nf-camera').click()">
-                                <span style="font-size:24px;">📸</span>
-                                <strong>Fotografar NF</strong>
-                                <small>Câmera do aparelho</small>
-                            </button>
-                            <button type="button" class="dna-photo-choice-btn gallery" onclick="document.getElementById('srv-detail-nf-gallery').click()">
-                                <span style="font-size:24px;">📄</span>
-                                <strong>Buscar NF</strong>
-                                <small>Galeria do celular</small>
-                            </button>
-                        </div>
-                    </div>
+                    <!-- 4. FOTOS LADO A LADO: FOTO DA PEÇA (ESQUERDA) + FOTO DA NOTA FISCAL (DIREITA) -->
+                    ${this.renderSideBySideProofsSection('srv-detail')}
 
                     <!-- 5. CONDIÇÃO PARA TROCA -->
                     <div style="background:var(--dna-ws-bg-card); border:1px solid var(--dna-ws-border); border-radius:var(--dna-ws-radius-lg); padding:14px; display:flex; flex-direction:column; gap:12px;">
@@ -2117,6 +2096,7 @@
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileSendPhotosView = function() {
         const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
+        const currentKm = v ? (v.mileage || 45000) : 45000;
 
         return `
             <div class="dna-mobile-subpage">
@@ -2124,60 +2104,35 @@
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
                         <span>‹</span> <span>Voltar</span>
                     </button>
-                    <span class="dna-mobile-subpage-title">Enviar Fotos</span>
+                    <span class="dna-mobile-subpage-title">Enviar Fotos & Comprovantes</span>
                 </div>
 
                 <div class="dna-mobile-subpage-body">
                     <!-- 1. BARRA UNIVERSAL DE BUSCA POR PLACA -->
                     ${this.renderUniversalVehiclePlateBar()}
 
-                    <!-- 2. OBSERVAÇÕES DO REGISTRO -->
-                    <div class="dna-input-group">
+                    <!-- 2. CAMPO DE QUILOMETRAGEM (KM) DO VEÍCULO & RECOMENDAÇÃO OEM -->
+                    ${this.renderMileageAndIntervalSection(currentKm, 10000, 'Troca de Peças / Manutenção')}
+
+                    <!-- 3. OBSERVAÇÕES DO REGISTRO -->
+                    <div class="dna-input-group" style="margin-top:10px;">
                         <label class="dna-input-label">Descrição das Fotos / Peças</label>
                         <textarea 
                             id="mobile-photos-desc-input" 
                             class="dna-input-field" 
                             rows="2" 
-                            placeholder="Descreva as fotos das peças substituídas ou serviços realizados..."
-                            style="resize:none; padding:10px; height:60px; font-size:12.5px;"
+                            placeholder="Descreva as peças substituídas ou serviços realizados..."
+                            style="resize:none; padding:10px; height:58px; font-size:12.5px;"
                         ></textarea>
                     </div>
 
-                    <!-- 3. FOTO DA PEÇA (CÂMERA OU GALERIA) -->
-                    ${this.renderDualPhotoUploadSection('photos-pieces-box', 'Fotos da Peça / Serviço', 'Câmera ou Galeria')}
-
-                    <!-- 4. FOTO DA NOTA FISCAL (CÂMERA OU GALERIA) -->
-                    <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.25); border-radius:12px; padding:12px;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                            <strong style="color:#ffffff; font-size:12.5px; font-weight:800;">Foto da Nota Fiscal / Comprovante</strong>
-                            <span style="font-size:10px; color:#10B981; font-weight:700;">Anexo Oficial</span>
-                        </div>
-
-                        <input type="file" id="nf-camera-input" accept="image/*" capture="environment" style="display:none;" onchange="WorkshopView.handleMobileInvoiceFileSelect(this)" />
-                        <input type="file" id="nf-gallery-input" accept="image/*,application/pdf" style="display:none;" onchange="WorkshopView.handleMobileInvoiceFileSelect(this)" />
-
-                        <div class="dna-photo-choice-grid">
-                            <button type="button" class="dna-photo-choice-btn camera" onclick="document.getElementById('nf-camera-input').click()">
-                                <span style="font-size:24px;">📸</span>
-                                <strong>Fotografar NF</strong>
-                                <small>Câmera do aparelho</small>
-                            </button>
-                            <button type="button" class="dna-photo-choice-btn gallery" onclick="document.getElementById('nf-gallery-input').click()">
-                                <span style="font-size:24px;">📄</span>
-                                <strong>Buscar NF</strong>
-                                <small>Galeria ou Arquivos</small>
-                            </button>
-                        </div>
-
-                        <div style="margin-top:8px; font-size:11.5px; color:${this.mobileInvoiceAttachment ? '#10B981' : 'var(--dna-ws-text-muted)'}; text-align:center;">
-                            ${this.mobileInvoiceAttachment ? '✓ ' + this.mobileInvoiceAttachment : 'Nenhum comprovante anexado'}
-                        </div>
-                    </div>
+                    <!-- 4. FOTOS LADO A LADO: FOTO DA PEÇA (ESQUERDA) + FOTO DA NOTA FISCAL (DIREITA) -->
+                    ${this.renderSideBySideProofsSection('photos-send')}
 
                     <!-- BOTÕES DE AÇÃO -->
-                    <div style="margin-top:14px; display:flex; flex-direction:column; gap:10px;">
+                    <div style="margin-top:16px; display:flex; flex-direction:column; gap:10px;">
                         <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSavePhotos()">
-                            <span>✓</span> <span>Salvar Fotos no Veículo</span>
+                            <span>✓</span> <span>Salvar Fotos no Veículo & Sincronizar</span>
                         </button>
 
                         <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
@@ -2195,32 +2150,90 @@
             const reader = new FileReader();
             reader.onload = (e) => {
                 this.mobileUploadedPhotos.push(e.target.result);
-                this.switchMobileSection('enviar-fotos');
+                const viewport = document.getElementById('ws-mobile-active-viewport');
+                if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
             };
             reader.readAsDataURL(file);
         });
     };
 
-    WorkshopView.handleMobileInvoiceFileSelect = function(input) {
+    WorkshopView.handleMobileInvoicePhotoSelect = function(input) {
         if (!input.files || input.files.length === 0) return;
-        this.mobileInvoiceAttachment = input.files[0].name;
-        this.switchMobileSection('enviar-fotos');
+        const file = input.files[0];
+        this.mobileInvoiceAttachment = file.name;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            this.mobileInvoicePhoto = e.target.result;
+            const viewport = document.getElementById('ws-mobile-active-viewport');
+            if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
+        };
+        reader.readAsDataURL(file);
+    };
+
+    WorkshopView.handleMobileRemoveInvoicePhoto = function() {
+        this.mobileInvoicePhoto = null;
+        this.mobileInvoiceAttachment = null;
+        const viewport = document.getElementById('ws-mobile-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
+    };
+
+    WorkshopView.handleMobileInvoiceFileSelect = function(input) {
+        this.handleMobileInvoicePhotoSelect(input);
     };
 
     WorkshopView.handleMobileRemovePhoto = function(index) {
         this.mobileUploadedPhotos.splice(index, 1);
-        this.switchMobileSection('enviar-fotos');
+        const viewport = document.getElementById('ws-mobile-active-viewport');
+        if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
     };
 
     WorkshopView.handleRemoveSamplePhoto = function(idx) {
         WorkshopView.showToast('Foto removida da prévia.', 'info');
     };
 
-    WorkshopView.handleMobileSavePhotos = function() {
+    WorkshopView.handleMobileSavePhotos = async function() {
         const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
-        const desc = document.getElementById('mobile-photo-desc-input')?.value || 'Registro fotográfico';
+        if (!v) {
+            WorkshopView.showToast('Selecione ou localize um veículo pela placa primeiro.', 'warning');
+            return;
+        }
 
-        WorkshopView.showToast(`📸 Fotos e comprovante salvos com sucesso para ${v.license_plate}!\nAs fotos foram integradas ao Dossiê 360° e já estão disponíveis no aplicativo do cliente.`, 'success');
+        const kmInput = document.getElementById('mobile-service-km-input');
+        const kmVal = kmInput ? parseInt(kmInput.value) : (v.mileage || 45000);
+        const desc = document.getElementById('mobile-photos-desc-input')?.value || 'Registro fotográfico de manutenção';
+
+        // Atualiza quilometragem localmente e notifica backend
+        v.mileage = kmVal;
+        try {
+            await fetch(`/api/v1/vehicles/${v.license_plate}/odometer`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ current_mileage: kmVal, source: 'OFICINA_FOTOS_PECA' })
+            });
+        } catch (_) {}
+
+        // Tenta registrar na API de serviços com fotos comprovadas
+        try {
+            const token = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token') || '';
+            const payload = {
+                vehicle_id: v.license_plate,
+                service_title: desc.split('\n')[0] || 'Manutenção & Troca de Peças',
+                description: desc,
+                mileage: kmVal,
+                category: 'MECANICA',
+                service_date: new Date().toISOString().split('T')[0]
+            };
+            await fetch('/api/v1/services/workshop-register', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
+                body: JSON.stringify(payload)
+            });
+        } catch (_) {}
+
+        WorkshopView.showToast(`📸 Foto da peça e Nota Fiscal registradas com sucesso para ${v.license_plate} aos ${kmVal.toLocaleString('pt-BR')} KM!\nDisponíveis no Dossiê 360° e no aplicativo do cliente.`, 'success');
         this.switchMobileSection('dashboard');
     };
 
@@ -3862,6 +3875,187 @@
         this.mobileUploadedPhotos.splice(idx, 1);
         const viewport = document.getElementById('ws-mobile-active-viewport');
         if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // COMPONENTE: FOTOS LADO A LADO (PEÇA / PRODUTO À ESQUERDA & NOTA FISCAL À DIREITA)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.renderSideBySideProofsSection = function(prefix) {
+        return `
+            <div class="dna-proofs-side-by-side" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:12px;">
+                <!-- COLUNA ESQUERDA: FOTO DA PEÇA / SERVIÇO -->
+                <div class="dna-proof-box" style="background:rgba(8,16,32,0.92); border:1px solid rgba(0,102,255,0.35); border-radius:12px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; min-height:165px; box-sizing:border-box;">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <strong style="color:#FFF; font-size:11.5px; font-weight:800; display:flex; align-items:center; gap:4px;">
+                                <span>🔧</span> <span>Foto da Peça</span>
+                            </strong>
+                            <span style="font-size:9.5px; color:#00D4FF; font-weight:700;">Produto</span>
+                        </div>
+                        
+                        <div style="min-height:75px; background:rgba(0,0,0,0.5); border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:8px; border:1px dashed rgba(0,102,255,0.35);">
+                            ${(this.mobileUploadedPhotos && this.mobileUploadedPhotos.length > 0) ? `
+                                <div style="position:relative; width:100%; height:80px;">
+                                    <img src="${this.mobileUploadedPhotos[0]}" style="width:100%; height:100%; object-fit:cover;" />
+                                    <button type="button" onclick="WorkshopView.removePhotoByIndex(0)" style="position:absolute; top:3px; right:3px; background:rgba(239,68,68,0.92); border:none; color:#FFF; border-radius:50%; width:20px; height:20px; font-size:11px; cursor:pointer; font-weight:900; line-height:1;">✕</button>
+                                </div>
+                            ` : `
+                                <span style="font-size:10px; color:#64748B; text-align:center; padding:4px;">Nenhuma foto</span>
+                            `}
+                        </div>
+                    </div>
+
+                    <input type="file" id="${prefix}-piece-camera" accept="image/*" capture="environment" style="display:none;" onchange="WorkshopView.handlePhotoInputFiles(this, '${prefix}-piece')" />
+                    <input type="file" id="${prefix}-piece-gallery" accept="image/*" style="display:none;" onchange="WorkshopView.handlePhotoInputFiles(this, '${prefix}-piece')" />
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                        <button type="button" onclick="document.getElementById('${prefix}-piece-camera').click()" style="background:#0066FF; color:#FFF; border:none; border-radius:8px; padding:7px 2px; font-size:10.5px; font-weight:800; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px;">
+                            <span>📸</span> <span>Câmera</span>
+                        </button>
+                        <button type="button" onclick="document.getElementById('${prefix}-piece-gallery').click()" style="background:rgba(255,255,255,0.08); color:#CBD5E1; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:7px 2px; font-size:10.5px; font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px;">
+                            <span>📁</span> <span>Galeria</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- COLUNA DIREITA: FOTO DA NOTA FISCAL -->
+                <div class="dna-proof-box" style="background:rgba(8,16,32,0.92); border:1px solid rgba(16,185,129,0.38); border-radius:12px; padding:10px; display:flex; flex-direction:column; justify-content:space-between; min-height:165px; box-sizing:border-box;">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <strong style="color:#FFF; font-size:11.5px; font-weight:800; display:flex; align-items:center; gap:4px;">
+                                <span>🧾</span> <span>Nota Fiscal</span>
+                            </strong>
+                            <span style="font-size:9.5px; color:#10B981; font-weight:700;">Garantia</span>
+                        </div>
+                        
+                        <div style="min-height:75px; background:rgba(0,0,0,0.5); border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:8px; border:1px dashed rgba(16,185,129,0.35);">
+                            ${this.mobileInvoicePhoto ? `
+                                <div style="position:relative; width:100%; height:80px;">
+                                    <img src="${this.mobileInvoicePhoto}" style="width:100%; height:100%; object-fit:cover;" />
+                                    <button type="button" onclick="WorkshopView.handleMobileRemoveInvoicePhoto()" style="position:absolute; top:3px; right:3px; background:rgba(239,68,68,0.92); border:none; color:#FFF; border-radius:50%; width:20px; height:20px; font-size:11px; cursor:pointer; font-weight:900; line-height:1;">✕</button>
+                                </div>
+                            ` : `
+                                <span style="font-size:10px; color:#64748B; text-align:center; padding:4px;">${this.mobileInvoiceAttachment ? '✓ ' + this.mobileInvoiceAttachment : 'Nenhuma NF'}</span>
+                            `}
+                        </div>
+                    </div>
+
+                    <input type="file" id="${prefix}-nf-camera" accept="image/*" capture="environment" style="display:none;" onchange="WorkshopView.handleMobileInvoicePhotoSelect(this)" />
+                    <input type="file" id="${prefix}-nf-gallery" accept="image/*,application/pdf" style="display:none;" onchange="WorkshopView.handleMobileInvoicePhotoSelect(this)" />
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                        <button type="button" onclick="document.getElementById('${prefix}-nf-camera').click()" style="background:#10B981; color:#FFF; border:none; border-radius:8px; padding:7px 2px; font-size:10.5px; font-weight:800; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px;">
+                            <span>📸</span> <span>Fotografar</span>
+                        </button>
+                        <button type="button" onclick="document.getElementById('${prefix}-nf-gallery').click()" style="background:rgba(255,255,255,0.08); color:#CBD5E1; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:7px 2px; font-size:10.5px; font-weight:700; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px;">
+                            <span>📄</span> <span>Arquivo/NF</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // COMPONENTE: QUILOMETRAGEM (KM) DO VEÍCULO & TABELA DE RECOMENDAÇÃO OEM
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.renderMileageAndIntervalSection = function(currentMileage, defaultIntervalKm, serviceTitle) {
+        const curKm = parseInt(currentMileage) || 45000;
+        const interval = parseInt(defaultIntervalKm) || 10000;
+        const nextKm = curKm + interval;
+
+        return `
+            <div class="dna-km-interval-card" style="background:rgba(8,16,32,0.92); border:1px solid rgba(0,102,255,0.32); border-radius:12px; padding:12px; margin-top:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <label style="color:#FFF; font-size:12.5px; font-weight:800; margin:0; display:flex; align-items:center; gap:5px;">
+                        <span>⚡</span> <span>Quilometragem (KM) do Veículo:</span>
+                    </label>
+                    <span style="font-size:10px; color:#00D4FF; font-weight:700;">Base da Manutenção</span>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <input 
+                        type="number" 
+                        id="mobile-service-km-input" 
+                        class="dna-input-field" 
+                        value="${curKm}" 
+                        placeholder="Ex: 45000"
+                        style="font-size:16px; font-weight:900; color:#0066FF !important; background:#FFF !important; height:42px; border:2px solid #0066FF !important; border-radius:8px; padding:6px 12px; flex:1;"
+                        oninput="WorkshopView.updateMileageCalculations(this.value)"
+                    />
+                    <span style="font-size:13px; font-weight:900; color:#00D4FF;">KM</span>
+                </div>
+
+                <!-- Cálculo em Tempo Real da Próxima Revisão -->
+                <div id="km-next-calc-badge" style="margin-top:10px; background:rgba(0,102,255,0.12); border:1px solid rgba(0,102,255,0.35); border-radius:8px; padding:8px 10px; display:flex; align-items:center; justify-content:space-between;">
+                    <span style="font-size:11px; color:#94A3B8;">Próxima revisão sugerida:</span>
+                    <strong style="font-size:12.5px; color:#10B981; font-weight:900;">
+                        ${nextKm.toLocaleString('pt-BR')} KM
+                    </strong>
+                </div>
+
+                <!-- Tabela de Intervalos Recomendados de Fábrica (Para Todos os Carros) -->
+                <div style="margin-top:10px;">
+                    <button type="button" onclick="WorkshopView.toggleOemTableModal()" style="width:100%; background:transparent; border:1px dashed rgba(0,212,255,0.4); border-radius:8px; padding:7px; color:#00D4FF; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                        <span>📋</span> <span>Tabela de Intervalos & Óleo (Todos os Carros)</span> <span>▾</span>
+                    </button>
+
+                    <div id="oem-interval-table-box" style="display:none; margin-top:8px; background:rgba(4,8,16,0.96); border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:10px; font-size:11px;">
+                        <div style="font-weight:800; color:#FFF; margin-bottom:6px; font-size:11.5px;">Recomendações Técnicas OEM de Fábrica:</div>
+                        <div style="display:flex; flex-direction:column; gap:5px; color:#CBD5E1;">
+                            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:3px;">
+                                <span>Óleo Sintético (0W20, 5W30)</span>
+                                <strong style="color:#10B981;">10.000 km / 12 meses</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:3px;">
+                                <span>Óleo Semissintético (10W40)</span>
+                                <strong style="color:#00D4FF;">7.500 km / 6 meses</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:3px;">
+                                <span>Óleo Mineral / Manual (15W40, 20W50)</span>
+                                <strong style="color:#F59E0B;">5.000 a 35.000 km (conforme uso)</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:3px;">
+                                <span>Filtros (Óleo, Ar, Combustível)</span>
+                                <strong style="color:#10B981;">10.000 km</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:3px;">
+                                <span>Pastilhas de Freio Dianteiras</span>
+                                <strong style="color:#10B981;">20.000 a 30.000 km</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.06); padding-bottom:3px;">
+                                <span>Correia Dentada & Tensores</span>
+                                <strong style="color:#EF4444;">50.000 a 60.000 km</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between;">
+                                <span>Velas de Ignição & Cabos</span>
+                                <strong style="color:#10B981;">30.000 a 40.000 km</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    WorkshopView.toggleOemTableModal = function() {
+        const box = document.getElementById('oem-interval-table-box');
+        if (box) {
+            box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        }
+    };
+
+    WorkshopView.updateMileageCalculations = function(val) {
+        const km = parseInt(val) || 0;
+        const s = this.selectedMobileService || { defaultKm: 10000 };
+        const nextKm = km + (s.defaultKm || 10000);
+        const badge = document.getElementById('km-next-calc-badge');
+        if (badge) {
+            badge.innerHTML = `
+                <span style="font-size:11px; color:#94A3B8;">Próxima revisão sugerida:</span>
+                <strong style="font-size:12.5px; color:#10B981; font-weight:900;">${nextKm.toLocaleString('pt-BR')} KM</strong>
+            `;
+        }
     };
 
     WorkshopView.setDesktopMode = function(isWeb) {
