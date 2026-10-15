@@ -1609,4 +1609,19 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   3. **Paridade & Testes Automatizados:**
      - Atualizados em paridade: `cliente.app/js/components/ownerView.js`, `oficina.app/js/components/workshopView.js` e equivalentes em `public/js/components/`.
      - 56 de 56 testes automatizados aprovados com 100% de sucesso (`npm test`).
+---
 
+### Ciclo 74 (15/10/2026) — Restauração Integral do Painel da Oficina ao Commit Consagrado (6212061)
+- **Contexto & Solicitação do Usuário:**
+  - O usuário relatou inconsistências no painel da oficina (`/oficina`), solicitando o retorno imediato ao commit estável e funcional anterior.
+- **Causa Raiz Identificada:**
+  - Um commit experimental anterior havia introduzido arquivos estáticos incompletos que sobrescreveram o componente corporativo completo de 7.300+ linhas (`workshopMobileView.js`) e forçaram um viewport reduzido de 430px.
+- **Ações Realizadas:**
+  1. **Restauração dos Arquivos da Oficina ao Commit `6212061`:**
+     - `oficina.app/` e `public/oficina.html` restaurados para a versão estável e consagrada.
+     - `workshopView.js` e `workshopMobileView.js` restaurados na íntegra com todos os fluxos de integração com a API, alternância Web Desktop/Mobile, Ficha Digital, Tabela FIPE, agendamentos, ordens de serviço e WhatsApp Baileys.
+     - `workshop-mobile.css` e `components.css` restaurados para o padrão Dark Obsidian oficial.
+  2. **Paridade 100% entre Diretórios:**
+     - Garantida sincronização idêntica entre `oficina.app/` e `public/`.
+  3. **Qualidade & Validação Automatizada:**
+     - Executada a bateria completa de 56 testes automatizados (`npm test`) com 100% de aprovação.
