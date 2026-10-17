@@ -1577,3 +1577,37 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   4. **Paridade & Garantia de Qualidade:**
      - 100% de paridade entre `oficina.app/`, `cliente.app/` e `public/`.
      - Todos os 56 testes automatizados aprovados com 100% de sucesso (`npm test`).
+
+---
+
+### Ciclo 76 (17/10/2026) — Landing Page de Captação de Parceiros: Anti-Slop Design System, Copywriting Comercial Persuasivo e Agentes AG Kit 2.0
+- **Contexto & Solicitação do Usuário:**
+  - Aplicação integral do ecossistema de especialistas do repositório (`@frontend-specialist`, `@frontend-design`, `@product-manager`, `@seo-specialist`, `@security-auditor` e `@qa-automation-engineer`) na landing page comercial de credenciamento de oficinas (`dna-auto-captacao-parceiros`), com preservação estética do template automotivo Autofix e eliminação de poluição visual.
+- **Implementações Realizadas:**
+  1. **Anti-Slop Layout & Design System (`@frontend-specialist` + `@frontend-design`):**
+     - Disciplina rigorosa na dobra inicial: remoção de acúmulo de badges e caixas de texto excessivas no Hero. Estrutura limpa de 4 elementos: 1) Pill de expansão, 2) Título de alto impacto em Chakra Petch, 3) Subtítulo objetivo com menos de 25 palavras, 4) Ações duplas (CTA primário em laranja automotivo e link secundário fantasma).
+     - **Ticker de Métricas e Escassez (`.metrics-strip`)**: Posicionado estrategicamente logo abaixo do Hero com 3 destaques imediatos:
+       * ⏱️ *Lançamento em 45 dias* no Rio de Janeiro.
+       * 🔒 *Rede restrita a 70–80 oficinas credenciadas*.
+       * 🏷️ *Adesão pioneira de R$ 299,00* (janela de 30 dias; reajuste para R$ 899,00).
+     - Tipografia automotiva refinada com *Chakra Petch* e *Mulish*, contrastes acessíveis e paleta sem clichês de IA (Dark Carbon `#111215`, Onyx `#181a1f`, Laranja Engenharia `#ff4605` e Acento Emerald `#10b981`).
+  2. **Copywriting Persuasivo & Proposta de Valor B2B (`@product-manager`):**
+     - Eliminação de menções desconectadas (como telemetria OBD-II complexa na captação inicial), focando no que gera lucro imediato para o dono de oficina:
+       * *Previsão Ativa de Revisões:* Lembretes calculados de troca de óleo, correia dentada, freios e fluidos que trazem o motorista de volta ao box.
+       * *Comissão Vitalícia por Veículo:* O motorista paga taxa única de R$ 59,90 e a oficina recebe repasse em cada carro cadastrado.
+       * *Indicação Preferencial no App:* O carro cadastrado na sua oficina tem seu estabelecimento recomendado em 1º lugar no aplicativo.
+       * *Transparência com Fotos e NFs:* Valorização técnica e eliminação da desconfiança do cliente.
+       * *Exclusividade Regional RJ:* Barreira de entrada contra concorrência predatória.
+  3. **Modal de Credenciamento & Contrato Digital (`@security-auditor`):**
+     - Grade responsiva em 2 colunas para preenchimento ágil.
+     - Caixa de resumo contratual com as 6 cláusulas essenciais do credenciamento.
+     - Campo de assinatura eletrônica do responsável legal com registro de data/hora no payload.
+     - Validação estrita de CNPJ com cálculo de dígitos verificadores e máscara dinâmica de WhatsApp com DDD.
+     - Conformidade LGPD com termo de consentimento explícito e fallback seguro para ambas as rotas de privacidade (`/politica-privacidade.html` e `/politicas-privacidade.html`).
+  4. **Otimização de SEO e Dados Estruturados (`@seo-specialist`):**
+     - Schema.org JSON-LD para `AutomotiveBusiness` com localização no Rio de Janeiro, ação de reserva e faixa de preço.
+     - Meta tags completas de OpenGraph, Twitter Card e link canônico oficial.
+  5. **Qualidade & Garantia Automatizada (`@qa-automation-engineer`):**
+     - Bateria completa de 26 testes automatizados executada com 100% de sucesso (`npm test`).
+     - Deploy sincronizado nos branches `main` e `gh-pages` com link público ativo.
+
