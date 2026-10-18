@@ -1662,6 +1662,38 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - 1ª dobra enxuta igual ao original: subtítulo curto, título de 2 linhas (`SUA OFICINA CONECTADA AO FUTURO`), 1 frase e 1 botão.
 - **Qualidade:** 26/26 testes aprovados; deploy em `main` e `gh-pages`.
 
+---
+
+### Ciclo 80 (18/10/2026) — Copywriting Comercial Persuasivo e Legibilidade Máxima (WCAG AAA)
+- **Contexto & Solicitação do Usuário:**
+  - O usuário relatou que os textos e títulos precisavam ser muito mais claros, convincentes e legíveis, enviando uma captura de tela da seção de Vantagens (`#vantagens`).
+- **Diagnóstico:**
+  - Títulos de seções (`.section-title`, `.h2`, `.h3`) herdavam `color: var(--eerie-black)` do template original (cinza-escuro/quase preto), tornando-os praticamente invisíveis sobre o fundo escuro (`#090e1a` / `#0f172a`).
+  - Textos de benefícios possuíam fonte pequena (`1.3rem`), cor apagada e redação burocrática, com baixa taxa de conversão para o dono de oficina.
+- **Implementações Técnicas & de Conteúdo:**
+  1. **Contraste Absoluto (WCAG AAA):**
+     - Forçado globalmente `color: var(--white) !important;` em todos os títulos de seções escuras (`.section-title`, `.h2`, `.h3`, `.advantage-title`).
+     - Títulos dos cards elevados para `2.1rem` em branco puro com espaçamento generoso.
+     - Destaques em negrito dos benefícios elevados para `1.55rem` em branco cristalino.
+     - Parágrafos explicativos ajustados para `1.45rem` em tom ardósia claro (`#cbd5e1`) com `line-height: 1.55`, garantindo leitura perfeita sob o sol ou no celular.
+     - Ícones ampliados para `36px` com badges de contraste alto em Laranja e Azul.
+  2. **Copywriting Comercial Irresistível:**
+     - **Título da Seção:** *"Por Que Sua Oficina e Seus Clientes Vencem Juntos"*.
+     - **Card Oficina:** *"Mais Carros no Box, Faturamento Recorrente e Blindagem Regional"* abordando:
+       * *Retorno Automático de Clientes:* motorista chamado na hora exata pelo KM do carro para o box da oficina.
+       * *Lucro Imediato no Cadastro:* repasse financeiro na taxa de R$ 59,90.
+       * *Fidelização Blindada:* oficina como recomendação nº 1 vitalícia no app.
+       * *Exclusividade Regional:* rede enxuta de 50 oficinas concentrando toda a demanda do RJ.
+     - **Card Motorista:** *"Valorização na Revenda, Transparência Total e Zero Surpresas"* abordando:
+       * *Valorização de até +15% na Tabela FIPE:* procedência atestada com fotos e notas.
+       * *Passaporte Digital no Celular:* todas as notas e garantias salvas sem papel no porta-luvas.
+       * *Controle Semestral de Custos & Economia:* prevenção de danos graves no motor.
+       * *Confiança Total no Serviço:* fotos reais de peças e serviços que eliminam desconfianças.
+  3. **Qualidade & Deploy:**
+     - 26/26 testes automatizados aprovados (`npm test`).
+     - Código sincronizado nos branches `main` e `gh-pages` no GitHub.
+
+
 
 
 
