@@ -1604,5 +1604,28 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - 26 de 26 testes automatizados aprovados com 100% de sucesso (`npm test`).
   - Deploy sincronizado nos branches `main` e `gh-pages` com link público ativo (HTTP 200 OK).
 
+---
+
+### Ciclo 77 (17/10/2026) — Progressive Disclosure: Cards em Dropdown / Accordion Interativo com Setinha Animada e Interface Mobile Clean
+- **Contexto & Solicitação do Usuário (Instruções em Áudio):**
+  - O usuário orientou que a página estava muito densa de texto estático aberto, poluindo a visualização no smartphone.
+  - Solicitou transformar os cards de serviço (comprovação com fotos e notas fiscais, previsão por KM, controle semestral de custos, monetização com repasse da taxa de R$ 59,90, etc.) em **Dropdowns / Accordions interativos**.
+  - No estado inicial, os cards ficam compactos, exibindo apenas o ícone, o título e uma **setinha animada** (`expand_more`).
+  - Ao clicar no card, a setinha gira com transição suave e o conteúdo explicativo interno se expande de forma fluida.
+  - O primeiro card inicia aberto como demonstração visual, e os demais permanecem fechados, deixando a página enxuta, limpa e agradável de navegar.
+- **Implementações Técnicas Realizadas:**
+  1. **Estrutura de Progressive Disclosure (`.service-card-accordion`):**
+     - Cabeçalho compacto `.accordion-header` contendo ícone temático (`.accordion-icon`), título (`h3`), subtítulo orientativo (`p`) e indicador giratório (`.accordion-arrow`).
+     - Corpo colapsável `.accordion-body` com transição cúbica suave (`cubic-bezier(0.4, 0, 0.2, 1)`) em `max-height`, `opacity` e `margin-top`.
+  2. **Interatividade & Acessibilidade (`public/assets/js/script.js`):**
+     - Função `initServiceAccordions()` que gerencia o clique nos cards, alterna a classe `.active` e atualiza o atributo `aria-expanded`.
+     - Suporte total a navegação por teclado (`Enter` e `Espaço`).
+  3. **Visual Clean e Sem Poluição:**
+     - Altura vertical da seção no mobile reduzida em mais de 60%, eliminando a densidade excessiva e permitindo leitura rápida e objetiva pelo profissional da oficina.
+  4. **Qualidade & Deploy:**
+     - 26 de 26 testes automatizados aprovados com 100% de sucesso (`npm test`).
+     - Código sincronizado nos branches `main` e `gh-pages` do repositório `dna-auto-captacao-parceiros`.
+
+
 
 
