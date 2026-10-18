@@ -1626,6 +1626,32 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - 26 de 26 testes automatizados aprovados com 100% de sucesso (`npm test`).
      - Código sincronizado nos branches `main` e `gh-pages` do repositório `dna-auto-captacao-parceiros`.
 
+---
+
+### Ciclo 78 (17/10/2026) — Desacoplamento de Layout Desktop & Mobile: Fim da Sobreposição do Carro sobre o Header, Navbar Frosted Glass e Hero Clean Anti-Slop
+- **Contexto & Solicitação do Usuário (Instruções em Áudio & Capturas de Tela):**
+  - O usuário enviou capturas de tela demonstrando que, principalmente na versão desktop, a primeira dobra estava poluída, confusa e desordenada:
+    * O carro esportivo vermelho estava enorme e posicionado por cima do menu de navegação e do texto do Hero, tornando os links e o título ilegíveis.
+    * A navbar estava sobrecarregada com muitos links competindo por espaço horizontal.
+    * No mobile, o topo estava denso com textos longos e elementos competindo no primeiro viewport.
+  - O usuário solicitou aplicar os agentes de frontend, design e layout do Antigravity Kit 2.0 para reorganizar o CSS e o design sem alterar a estrutura básica, tornando o visual clean, refinado e com informações claras e precisas.
+- **Implementações Técnicas Realizadas:**
+  1. **Consolidação e Limpeza do CSS (`public/assets/css/style.css`):**
+     - Removidas mais de 740 linhas de declarações legadas e conflitantes que forçavam `position: absolute; bottom: 0; right: 0; width: 75%` na imagem do carro.
+     - **Isolamento de Colunas no Desktop (>= 992px):** O Hero agora opera em grid estrito de duas colunas (`1.15fr 0.85fr`). O texto fica 100% na coluna esquerda e o carro esportivo fica 100% na coluna direita (`position: relative !important; max-width: 580px`), com **zero sobreposição** sobre títulos, parágrafos ou menu.
+  2. **Header Moderno com Frosted Glass:**
+     - `position: sticky; top: 0; z-index: 1000;` com fundo escuro semi-translúcido (`rgba(10, 15, 30, 0.96)`), `backdrop-filter: blur(16px)` e borda sutil.
+     - Navegação desktop otimizada para 5 links essenciais de alto valor (`Início`, `Como Funciona`, `Vantagens`, `50 Vagas RJ`, `Painel Admin`) + botão CTA de destaque.
+     - Drawer móvel limpo e com animação suave para smartphones.
+  3. **Hero Clean, Elegante & Anti-Slop:**
+     - Subtítulo em badge pill estilizado com ponto luminoso pulsante: `Expansão Rio de Janeiro • 50 Vagas Pioneiras`.
+     - Tipografia hierarquizada e contraste AAA para leitura imediata tanto no computador quanto no celular.
+     - Carro esportivo com sombra e animação suave `moveAnim`, 100% visível na primeira dobra do mobile logo após o botão CTA.
+  4. **Qualidade & Deploy:**
+     - 26 de 26 testes automatizados aprovados (`npm test`).
+     - Sincronização e deploy realizados nos branches `main` e `gh-pages` no GitHub.
+
+
 
 
 
