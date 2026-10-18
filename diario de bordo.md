@@ -1651,6 +1651,18 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - 26 de 26 testes automatizados aprovados (`npm test`).
      - Sincronização e deploy realizados nos branches `main` e `gh-pages` no GitHub.
 
+---
+
+### Ciclo 79 (18/10/2026) — Rollback do Ciclo 78 e Restauração Fiel do Hero Original do Autofix
+- **Problema relatado:** o Ciclo 78 quebrou o layout — o carro sumiu e a 1ª dobra ficou carregada de texto.
+- **Causa raiz:** um replace por regex no script do Ciclo 78 apagou um trecho grande do CSS (inclusive o bloco novo do Hero). Antes disso, um override customizado (`.hero-banner img { width: 100% }`) já anulava as larguras originais por breakpoint (55% / 70% / 75%) e fazia o carro cobrir o header no desktop.
+- **Correção:**
+  - `style.css` e `index.html` restaurados do commit estável `a0c8d06`.
+  - Override customizado do Hero removido: o Hero volta a usar 100% das regras originais do Autofix (header transparente, carro `absolute` na base com `aspect-ratio` reservando espaço).
+  - 1ª dobra enxuta igual ao original: subtítulo curto, título de 2 linhas (`SUA OFICINA CONECTADA AO FUTURO`), 1 frase e 1 botão.
+- **Qualidade:** 26/26 testes aprovados; deploy em `main` e `gh-pages`.
+
+
 
 
 
