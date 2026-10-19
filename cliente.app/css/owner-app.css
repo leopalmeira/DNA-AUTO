@@ -6387,98 +6387,403 @@ body.is-owner-app .dna-phone-frame {
     color: #FFFFFF;
 }
 
-/* Telas 1, 2, 3: Splash, Login e Cadastro */
-.dna-print-splash-container {
+
+/* ==============================================================================
+   ESTILOS OFICIAIS DAS 10 TELAS DO PRINT DO APP DO CLIENTE (DNA AUTO)
+   Fidelidade visual absoluta às 10 telas do modelo de referência
+   ============================================================================== */
+
+/* Viewport Global & Container Mobile */
+body.is-owner-app {
+    background: #030712 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', Roboto, sans-serif !important;
+}
+
+body.is-owner-app #app-container {
+    width: 100% !important;
+    max-width: 430px !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    overflow: hidden !important;
+    background: #030712 !important;
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.85) !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+@media (max-width: 480px) {
+    body.is-owner-app #app-container {
+        max-width: 100vw !important;
+        box-shadow: none !important;
+    }
+}
+
+.dna-auth-fullscreen {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    z-index: 100 !important;
+    background: #030712 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TELA 1: SPLASH SCREEN (EXATAMENTE COMO NO PRINT 1)
+   ───────────────────────────────────────────────────────────────────────────── */
+.dna-splash-screen {
     position: relative;
     width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    background: #000B1A;
+    height: 100%;
+    min-height: 100%;
+    max-height: 100%;
+    background: #030712;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
-    overflow: hidden;
-    padding: 0 20px 24px 20px;
     box-sizing: border-box;
 }
 
-.dna-print-splash-hero {
+.dna-splash-bg {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     object-position: center top;
     z-index: 1;
+    pointer-events: none;
+    user-select: none;
 }
 
-.dna-print-splash-content {
+.dna-splash-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(3,7,18,0.4) 0%, rgba(3,7,18,0.15) 30%, rgba(3,7,18,0.7) 65%, #030712 92%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.dna-splash-content {
     position: relative;
-    z-index: 10;
+    z-index: 5;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    justify-content: space-between;
+    padding: 38px 22px 24px 22px;
+    box-sizing: border-box;
 }
 
-.dna-print-splash-bullets {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+.dna-splash-brand {
+    text-align: left;
+    margin-top: 4px;
+}
+
+.dna-splash-d-icon {
     margin-bottom: 8px;
+    filter: drop-shadow(0 0 12px rgba(0, 212, 255, 0.45));
 }
 
-.dna-print-bullet-item {
+.dna-splash-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin: 0;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+}
+
+.dna-splash-title span {
+    color: #00D4FF;
+}
+
+.dna-splash-sub {
+    font-size: 13.5px;
+    color: #94A3B8;
+    margin: 5px 0 0 0;
+    font-weight: 500;
+}
+
+.dna-splash-bullets {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.dna-splash-bullet {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
-.dna-print-bullet-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: rgba(0, 102, 255, 0.25);
-    border: 1px solid rgba(0, 212, 255, 0.4);
+.dna-splash-bullet-ico {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(8, 20, 42, 0.65);
+    border: 1px solid rgba(0, 212, 255, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #00D4FF;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(0, 212, 255, 0.1);
     flex-shrink: 0;
 }
 
-.dna-print-bullet-text {
-    font-size: 12.5px;
-    font-weight: 600;
-    color: #FFFFFF;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+.dna-splash-bullet-txt {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
 }
 
-.dna-print-splash-dots {
+.dna-splash-bullet-txt strong {
+    font-size: 13px;
+    color: #FFFFFF;
+    font-weight: 700;
+}
+
+.dna-splash-bullet-txt span {
+    font-size: 12px;
+    color: #94A3B8;
+    font-weight: 500;
+}
+
+.dna-splash-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.dna-splash-dots {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
 }
 
-.dna-print-dot {
+.dna-splash-dot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.28);
+    transition: all 0.2s;
 }
 
-.dna-print-dot.active {
+.dna-splash-dot.active {
     width: 22px;
-    border-radius: 9999px;
+    height: 5px;
+    border-radius: 999px;
     background: #00D4FF;
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.6);
 }
 
-.dna-print-btn-solid-blue {
+.dna-splash-btn-enter {
     width: 100%;
     height: 48px;
     border-radius: 9999px;
-    background: #0066FF;
+    background: linear-gradient(135deg, #0066FF 0%, #0052CC 100%);
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 18px rgba(0, 102, 255, 0.45);
+    transition: transform 0.15s, opacity 0.15s;
+}
+
+.dna-splash-btn-enter:active {
+    transform: scale(0.98);
+}
+
+.dna-splash-btn-signup {
+    width: 100%;
+    height: 48px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+}
+
+.dna-splash-btn-signup:active {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TELA 2: LOGIN (EXATAMENTE COMO NO PRINT 2)
+   ───────────────────────────────────────────────────────────────────────────── */
+.dna-login-view {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    max-height: 100%;
+    background: #030712;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+}
+
+.dna-login-top-hero {
+    position: relative;
+    flex: 1;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.dna-login-bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.dna-login-hero-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(3,7,18,0.4) 0%, rgba(3,7,18,0.2) 50%, rgba(3,7,18,0.85) 100%);
+    z-index: 2;
+}
+
+.dna-login-back-btn {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.15s;
+}
+
+.dna-login-hero-brand {
+    position: relative;
+    z-index: 5;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.dna-login-sheet {
+    background: #FFFFFF;
+    border-radius: 26px 26px 0 0;
+    padding: 22px 20px 20px 20px;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.35);
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+}
+
+.dna-input-pill {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 10px;
+    margin-bottom: 12px;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.dna-input-pill:focus-within {
+    border-color: #0066FF;
+    background: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+}
+
+.dna-input-pill input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: #0F172A;
+    outline: none;
+    font-family: inherit;
+}
+
+.dna-input-pill input::placeholder {
+    color: #94A3B8;
+}
+
+.dna-login-options-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+    margin-bottom: 14px;
+    padding: 0 2px;
+}
+
+.dna-remember-chk {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #334155;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.dna-forgot-link {
+    color: #0066FF;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.dna-login-submit-btn {
+    width: 100%;
+    height: 46px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #0066FF 0%, #0052CC 100%);
     color: #FFFFFF;
     font-size: 15px;
     font-weight: 700;
@@ -6489,126 +6794,52 @@ body.is-owner-app .dna-phone-frame {
     justify-content: center;
     gap: 8px;
     box-shadow: 0 4px 16px rgba(0, 102, 255, 0.4);
-    transition: background 0.15s, transform 0.15s;
+    transition: transform 0.15s;
 }
 
-.dna-print-btn-solid-blue:active {
+.dna-login-submit-btn:active {
     transform: scale(0.98);
 }
 
-.dna-print-btn-outline {
-    width: 100%;
-    height: 48px;
-    border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.08);
-    color: #FFFFFF;
-    font-size: 15px;
-    font-weight: 700;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s;
+.dna-create-account-link {
+    text-align: center;
+    font-size: 13px;
+    color: #64748B;
+    margin-top: 12px;
 }
 
-.dna-print-btn-outline:active {
-    background: rgba(255, 255, 255, 0.15);
-}
-
-/* Screen 2: Login Sheet */
-.dna-print-login-sheet {
-    background: #FFFFFF;
-    border-radius: 28px 28px 0 0;
-    padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0)) 20px;
-    width: 100%;
-    box-sizing: border-box;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
-    position: relative;
-    z-index: 10;
-}
-
-.dna-print-input-box {
-    background: #F8FAFC;
-    border: 1px solid #E2E8F0;
-    border-radius: 12px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    padding: 0 14px;
-    gap: 10px;
-    margin-bottom: 12px;
-    transition: border-color 0.15s;
-}
-
-.dna-print-input-box:focus-within {
-    border-color: #0066FF;
-    background: #FFFFFF;
-}
-
-.dna-print-input-box input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    font-size: 14px;
-    color: #0F172A;
-    outline: none;
-}
-
-.dna-print-input-icon {
-    color: #94A3B8;
-    flex-shrink: 0;
-}
-
-.dna-print-login-options {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 12.5px;
-    margin-bottom: 16px;
-    padding: 0 4px;
-}
-
-.dna-print-checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #475569;
-    cursor: pointer;
-    font-weight: 500;
-}
-
-.dna-print-forgot-link {
+.dna-create-account-link a {
     color: #0066FF;
-    font-weight: 600;
+    font-weight: 700;
     text-decoration: none;
+    margin-left: 4px;
 }
 
-.dna-print-or-divider {
+.dna-social-divider {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 16px 0;
+    margin: 12px 0 10px 0;
     color: #94A3B8;
     font-size: 11.5px;
     font-weight: 500;
 }
 
-.dna-print-or-divider::before,
-.dna-print-or-divider::after {
+.dna-social-divider::before,
+.dna-social-divider::after {
     content: "";
     flex: 1;
     height: 1px;
     background: #E2E8F0;
 }
 
-.dna-print-social-row {
+.dna-social-buttons {
     display: flex;
     justify-content: center;
     gap: 14px;
 }
 
-.dna-print-social-btn {
+.dna-social-btn {
     width: 48px;
     height: 48px;
     border-radius: 12px;
@@ -6619,30 +6850,275 @@ body.is-owner-app .dna-phone-frame {
     justify-content: center;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    transition: background 0.15s;
 }
 
-/* Screen 3: Cadastro Form */
-.dna-print-reg-top {
+.dna-social-btn:hover {
+    background: #F8FAFC;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TELA 3: CADASTRO (EXATAMENTE COMO NO PRINT 3)
+   ───────────────────────────────────────────────────────────────────────────── */
+.dna-register-view {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    max-height: 100%;
+    background: #FFFFFF;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 20px 24px 20px;
+    box-sizing: border-box;
+    color: #0F172A;
+}
+
+.dna-register-top-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
-.dna-print-reg-car-thumb {
-    width: 90px;
-    height: 56px;
+.dna-register-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.dna-register-back-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0F172A;
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+
+.dna-register-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0;
+    line-height: 1.15;
+}
+
+.dna-register-sub {
+    font-size: 12.5px;
+    color: #64748B;
+    margin: 0;
+    line-height: 1.35;
+}
+
+.dna-register-car-thumb {
+    width: 100px;
+    height: 62px;
     border-radius: 12px;
     object-fit: cover;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
     flex-shrink: 0;
+    margin-top: 4px;
 }
 
-.dna-print-reg-label {
+.dna-field-label {
     display: block;
     font-size: 12px;
     font-weight: 700;
     color: #334155;
-    margin-bottom: 4px;
+    margin-bottom: 5px;
+}
+
+.dna-plate-box {
+    background: #F8FAFC;
+    border: 1.5px solid #0066FF;
+    border-radius: 10px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.dna-plate-box input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #0F172A;
+    outline: none;
+    text-transform: uppercase;
+}
+
+.dna-pass-strength-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: -6px 0 12px 0;
+}
+
+.dna-pass-bar {
+    flex: 1;
+    height: 4px;
+    background: #10B981;
+    border-radius: 2px;
+}
+
+.dna-pass-label {
+    font-size: 11px;
+    color: #10B981;
+    font-weight: 700;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TELAS 4 A 10: DASHBOARD, CARDS E BOTTOM NAVIGATION
+   ───────────────────────────────────────────────────────────────────────────── */
+body.is-owner-app .dna-app-viewport {
+    width: 100% !important;
+    max-width: 430px !important;
+    height: 100% !important;
+    max-height: 100dvh !important;
+    margin: 0 auto !important;
+    position: relative !important;
+    overflow: hidden !important;
+    background: #F4F6FA !important;
+    color: #0F172A !important;
+}
+
+body.is-owner-app .dna-phone-frame {
+    width: 100% !important;
+    max-width: 430px !important;
+    height: 100% !important;
+    max-height: 100dvh !important;
+    margin: 0 auto !important;
+    background: #F4F6FA !important;
+    color: #0F172A !important;
+}
+
+.dna-print-header {
+    height: 52px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.dna-print-car-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+    border: 1px solid #EDF2F7;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+
+.dna-print-car-card:hover {
+    transform: translateY(-2px);
+}
+
+.dna-print-car-thumb {
+    width: 90px;
+    height: 58px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.dna-print-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.dna-print-quick-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 98px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    border: 1px solid #EDF2F7;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.dna-print-quick-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+}
+
+.dna-print-bottom-nav {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    height: 56px;
+    background: #FFFFFF;
+    border-top: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 90;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.dna-print-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    color: #64748B;
+    font-size: 10.5px;
+    font-weight: 600;
+}
+
+.dna-print-nav-item.active {
+    color: #0066FF;
+}
+
+.dna-print-btn-primary {
+    width: 100%;
+    height: 48px;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #0066FF 0%, #0052CC 100%);
+    color: #FFFFFF;
+    font-size: 14.5px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(0, 102, 255, 0.35);
+    transition: transform 0.15s;
+}
+
+.dna-print-btn-primary:active {
+    transform: scale(0.98);
 }

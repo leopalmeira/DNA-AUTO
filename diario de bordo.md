@@ -1747,3 +1747,28 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Todos os 56 testes automatizados aprovados com 100% de sucesso (`npm test`).
      - Commit e push realizados na branch `master` do GitHub para atualizacao automatica no Render.
 
+---
+
+### Ciclo 83 (19/10/2026) - Alinhamento Rigoroso da Arquitetura Frontend das Telas 1, 2 e 3 com Modelo Oficial
+- **Contexto & Diagnostico Visual:**
+  - O usuario enviou print da tela em producao mostrando que a tela de Splash estava desproporcional: a imagem do carro ocupava a tela toda, o logotipo ficava cortado no topo e os 3 bullets explicativos, os dots indicadores e os botoes ("Entrar" e "Cadastrar") ficavam empurrados para fora da tela.
+  - **Causa Raiz de Arquitetura Frontend:**
+    1. Desconexao entre os nomes das classes CSS em `ownerView.js` e `owner-app.css`, gerando elementos desprovidos de estilo responsivo.
+    2. Imagem antiga em proporcao incorreta que forçava scroll e transbordava o viewport do celular.
+    3. Falta de delimitador mobile (`max-width: 430px; margin: 0 auto`) no container para navegadores desktop.
+- **Implementacoes Realizadas:**
+  1. **Assets & Fundo 9:16 Oficial da Tela de Splash:**
+     - Gerada e integrada a imagem oficial `splash-bg-official.jpg` com seda esportivo azul a direita, farois LED acesos e espaco negativo escuro a esquerda e na base.
+  2. **Reestruturacao Completa da Splash (Tela 1):**
+     - Emblema estilizado "D" em gradiente ciano neon + titulo "DNA AUTO" + "Seu veiculo sempre protegido." perfeitamente posicionados no topo.
+     - 3 bullets compactos em vidro escuro com icones ciano e texto em 2 linhas (Historico completo, Manutencoes em dia, Fotos e notas sempre salvas).
+     - Dots de navegacao (pilula ciano ativa + 2 circulos) e botoes arredondados ("Entrar ->" em azul vibrante e "Cadastrar" translucido) 100% visiveis sem rolagem.
+  3. **Reestruturacao Completa de Login (Tela 2) e Cadastro (Tela 3):**
+     - Login com bottom sheet branco (`border-radius: 26px 26px 0 0`), inputs cinza-claros com icones, checkbox "Lembrar de mim", "Esqueceu a senha?", botao "Entrar", divisor social e botoes Google/Apple.
+     - Cadastro com foto em perspectiva do Corolla sedã à direita, campo de placa Mercosul com bandeira do Brasil, inputs padronizados e barra de força de senha.
+  4. **Enquadramento Mobile Responsivo:**
+     - `#app-container` ajustado para `max-width: 430px; height: 100dvh; margin: 0 auto` com sombra automotiva no desktop e `100vw` em dispositivos moveis.
+  5. **Paridade & Testes:**
+     - 100% de paridade entre `public/` e `cliente.app/`.
+     - 56 de 56 testes automatizados aprovados (`npm test`).
+

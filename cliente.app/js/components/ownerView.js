@@ -4904,75 +4904,99 @@ const OwnerView = {
     // ── 01. TELA: SPLASH DE BOAS-VINDAS — EXATAMENTE COMO NO PRINT OFICIAL (TELA 1) ──
     renderSplashAuth() {
         return `
-            <div class="dna-print-splash-layout">
-                <!-- Imagem do Carro com Faróis Acesos no Fundo -->
-                <div class="dna-print-splash-hero-wrap">
-                    <img
-                        src="/img/dna-auth-splash.png"
-                        alt="DNA AUTO"
-                        class="dna-print-splash-bg-img"
-                        onerror="this.onerror=null; this.src='/img/splash-car-hero.png';"
-                    />
-                    <div class="dna-print-splash-gradient"></div>
-                </div>
+            <div class="dna-splash-screen">
+                <!-- Imagem de Fundo com Faróis Azuis Acesos -->
+                <img
+                    src="/img/splash-bg-official.jpg"
+                    alt="DNA AUTO"
+                    class="dna-splash-bg"
+                    onerror="this.onerror=null; this.src='/img/splash-car-hero.png';"
+                />
+                <div class="dna-splash-scrim"></div>
 
-                <div class="dna-print-splash-body">
+                <div class="dna-splash-content">
                     <!-- Topo: Marca e Subtítulo -->
-                    <div class="dna-print-splash-brand">
-                        <div class="dna-print-splash-logo-row">
-                            <span class="dna-print-splash-title">DNA <b style="color:#00D4FF;">AUTO</b></span>
+                    <div class="dna-splash-brand">
+                        <div class="dna-splash-d-icon">
+                            <svg width="48" height="48" viewBox="0 0 100 100" fill="none">
+                                <path d="M22 18 H52 C72 18 84 30 84 50 C84 70 72 82 52 82 H22 V18 Z" fill="url(#dGradSplash)" />
+                                <path d="M38 34 H50 C60 34 66 40 66 50 C66 60 60 66 50 66 H38 V34 Z" fill="#030712" />
+                                <rect x="14" y="38" width="16" height="5" rx="2.5" fill="#00D4FF" />
+                                <rect x="10" y="48" width="22" height="5" rx="2.5" fill="#00D4FF" />
+                                <rect x="14" y="58" width="16" height="5" rx="2.5" fill="#00D4FF" />
+                                <defs>
+                                    <linearGradient id="dGradSplash" x1="20" y1="20" x2="85" y2="80" gradientUnits="userSpaceOnUse">
+                                        <stop stop-color="#00D4FF"/>
+                                        <stop offset="1" stop-color="#0066FF"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
                         </div>
-                        <span class="dna-print-splash-sub">O HISTÓRICO DEFINITIVO DO SEU VEÍCULO</span>
+                        <h1 class="dna-splash-title">DNA <span>AUTO</span></h1>
+                        <p class="dna-splash-sub">Seu veículo sempre protegido.</p>
                     </div>
 
-                    <!-- 3 Bullets Explicativos com Ícones -->
-                    <div class="dna-print-bullets-list">
-                        <div class="dna-print-bullet-item">
-                            <div class="dna-print-bullet-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    <!-- Meio: 3 Bullets com Ícones em Vidro Escuro -->
+                    <div class="dna-splash-bullets">
+                        <div class="dna-splash-bullet">
+                            <div class="dna-splash-bullet-ico">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2.3">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                    <polyline points="9 12 11 14 15 10"/>
+                                </svg>
                             </div>
-                            <div class="dna-print-bullet-text">
-                                <strong>Histórico Completo</strong>
-                                <p>Acesse manutenções, peças e revisões em um só lugar</p>
-                            </div>
-                        </div>
-
-                        <div class="dna-print-bullet-item">
-                            <div class="dna-print-bullet-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2.3"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-                            </div>
-                            <div class="dna-print-bullet-text">
-                                <strong>Alertas Inteligentes</strong>
-                                <p>Notificações preventivas para você nunca perder o prazo</p>
+                            <div class="dna-splash-bullet-txt">
+                                <strong>Histórico</strong>
+                                <span>completo</span>
                             </div>
                         </div>
 
-                        <div class="dna-print-bullet-item">
-                            <div class="dna-print-bullet-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2.3"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        <div class="dna-splash-bullet">
+                            <div class="dna-splash-bullet-ico">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2.3">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                    <polyline points="9 16 11 18 15 14"/>
+                                </svg>
                             </div>
-                            <div class="dna-print-bullet-text">
-                                <strong>Valorize seu Carro</strong>
-                                <p>Comprovante digital que aumenta o valor de revenda</p>
+                            <div class="dna-splash-bullet-txt">
+                                <strong>Manutenções</strong>
+                                <span>em dia</span>
+                            </div>
+                        </div>
+
+                        <div class="dna-splash-bullet">
+                            <div class="dna-splash-bullet-ico">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2.3">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                </svg>
+                            </div>
+                            <div class="dna-splash-bullet-txt">
+                                <strong>Fotos e notas</strong>
+                                <span>sempre salvas</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Dots Indicadores de Slide -->
-                    <div class="dna-print-dots-row">
-                        <span class="dna-print-dot active"></span>
-                        <span class="dna-print-dot"></span>
-                        <span class="dna-print-dot"></span>
-                    </div>
+                    <!-- Base: Dots e Botões de Ação -->
+                    <div class="dna-splash-bottom">
+                        <div class="dna-splash-dots">
+                            <span class="dna-splash-dot active"></span>
+                            <span class="dna-splash-dot"></span>
+                            <span class="dna-splash-dot"></span>
+                        </div>
 
-                    <!-- Botões de Ação: Entrar e Cadastrar -->
-                    <div class="dna-print-splash-buttons">
-                        <button class="dna-print-btn-entrar" id="btnEntrar" onclick="OwnerView.goToAuthScreen('login')">
+                        <button class="dna-splash-btn-enter" id="btnEntrar" onclick="OwnerView.goToAuthScreen('login')">
                             <span>Entrar</span>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                         </button>
 
-                        <button class="dna-print-btn-cadastrar" id="btnCadastrar" onclick="OwnerView.goToAuthScreen('register')">
+                        <button class="dna-splash-btn-signup" id="btnCadastrar" onclick="OwnerView.goToAuthScreen('register')">
                             <span>Cadastrar</span>
                         </button>
                     </div>
@@ -4984,115 +5008,117 @@ const OwnerView = {
     // ── 02. TELA: LOGIN OFICIAL — EXATAMENTE COMO NO PRINT OFICIAL (TELA 2) ──
     renderLoginAuth() {
         return `
-            <div class="dna-print-login-layout">
-                <!-- Topo Escuro com Logo e Identidade -->
-                <div class="dna-print-login-top-bar">
-                    <button class="dna-print-btn-back-circle" type="button" onclick="OwnerView.goToAuthScreen('splash')" title="Voltar">
+            <div class="dna-login-view">
+                <!-- Topo com Carro, Faróis Acesos e Logo Central -->
+                <div class="dna-login-top-hero">
+                    <img src="/img/splash-bg-official.jpg" alt="DNA AUTO" class="dna-login-bg-img" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
+                    <div class="dna-login-hero-scrim"></div>
+
+                    <button class="dna-login-back-btn" type="button" onclick="OwnerView.goToAuthScreen('splash')" title="Voltar">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                     </button>
-                    <div class="dna-print-top-brand">
-                        <span style="font-weight:900; font-size:16px; color:#FFFFFF;">DNA <b style="color:#00D4FF;">AUTO</b></span>
-                    </div>
-                    <div style="width:36px;"></div>
-                </div>
 
-                <div class="dna-print-login-header-area">
-                    <h2 class="dna-print-login-title">Bem-vindo de volta</h2>
-                    <p class="dna-print-login-sub">Acesse sua conta para ver o histórico do seu veículo</p>
+                    <div class="dna-login-hero-brand">
+                        <svg width="44" height="44" viewBox="0 0 100 100" fill="none" style="filter:drop-shadow(0 0 10px rgba(0,212,255,0.45));">
+                            <path d="M22 18 H52 C72 18 84 30 84 50 C84 70 72 82 52 82 H22 V18 Z" fill="url(#dGradLogin)" />
+                            <path d="M38 34 H50 C60 34 66 40 66 50 C66 60 60 66 50 66 H38 V34 Z" fill="#030712" />
+                            <rect x="14" y="38" width="16" height="5" rx="2.5" fill="#00D4FF" />
+                            <rect x="10" y="48" width="22" height="5" rx="2.5" fill="#00D4FF" />
+                            <rect x="14" y="58" width="16" height="5" rx="2.5" fill="#00D4FF" />
+                            <defs>
+                                <linearGradient id="dGradLogin" x1="20" y1="20" x2="85" y2="80" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#00D4FF"/>
+                                    <stop offset="1" stop-color="#0066FF"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <h2 style="font-size:24px; font-weight:800; color:#FFFFFF; margin:4px 0 0 0; letter-spacing:0.5px;">DNA <span style="color:#00D4FF;">AUTO</span></h2>
+                        <p style="font-size:12.5px; color:#94A3B8; margin:2px 0 0 0;">Seu veículo sempre protegido.</p>
+                    </div>
                 </div>
 
                 <!-- Bottom Sheet Branco Elevado (Modelo Oficial) -->
-                <div class="dna-print-bottom-sheet">
-                    <div id="auth-error-box" class="dna-print-error-banner" style="display:none;"></div>
+                <div class="dna-login-sheet">
+                    <div id="auth-error-box" class="dna-print-error-banner" style="display:none; margin-bottom:12px; background:#FEE2E2; border:1px solid #EF4444; color:#B91C1C; padding:8px 12px; border-radius:8px; font-size:12px;"></div>
 
-                    <form id="form-login" onsubmit="OwnerView.handleLoginSubmit(event)" class="dna-print-form">
+                    <form id="form-login" onsubmit="OwnerView.handleLoginSubmit(event)" style="display:flex; flex-direction:column;">
                         <!-- Campo 1: E-mail ou CPF -->
-                        <div class="dna-print-input-group">
-                            <label class="dna-print-label" for="login-email-input">E-mail ou CPF</label>
-                            <div class="dna-print-input-wrap">
-                                <input
-                                    id="login-email-input"
-                                    class="dna-print-input"
-                                    type="text"
-                                    placeholder="seu@email.com ou 000.000.000-00"
-                                    required
-                                    autocomplete="username"
-                                />
-                            </div>
+                        <div class="dna-input-pill">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <input
+                                id="login-email-input"
+                                type="text"
+                                placeholder="E-mail ou CPF"
+                                required
+                                autocomplete="username"
+                            />
                         </div>
 
                         <!-- Campo 2: Senha -->
-                        <div class="dna-print-input-group">
-                            <label class="dna-print-label" for="login-password">Senha</label>
-                            <div class="dna-print-input-wrap">
-                                <input
-                                    id="login-password"
-                                    class="dna-print-input"
-                                    type="password"
-                                    placeholder="Sua senha"
-                                    required
-                                    autocomplete="current-password"
-                                />
-                                <button
-                                    type="button"
-                                    id="auth-eye-icon"
-                                    class="dna-print-eye-btn"
-                                    onclick="OwnerView.togglePasswordVisibility()"
-                                    title="Mostrar/ocultar senha"
-                                >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                                </button>
-                            </div>
+                        <div class="dna-input-pill">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <input
+                                id="login-password"
+                                type="password"
+                                placeholder="Senha"
+                                required
+                                autocomplete="current-password"
+                            />
+                            <button
+                                type="button"
+                                id="auth-eye-icon"
+                                onclick="OwnerView.togglePasswordVisibility()"
+                                style="background:none; border:none; cursor:pointer; color:#94A3B8; padding:0; display:flex;"
+                                title="Mostrar/ocultar senha"
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            </button>
                         </div>
 
-                        <!-- Linha de Opções: Lembrar de mim & Esqueceu a senha -->
-                        <div class="dna-print-options-row">
-                            <label class="dna-print-remember-label">
-                                <input type="checkbox" id="remember-me" checked class="dna-print-checkbox" />
+                        <!-- Opções: Lembrar de mim & Esqueceu a senha -->
+                        <div class="dna-login-options-row">
+                            <label class="dna-remember-chk">
+                                <input type="checkbox" id="remember-me" checked style="accent-color:#0066FF; width:15px; height:15px;" />
                                 <span>Lembrar de mim</span>
                             </label>
-                            <a class="dna-print-forgot-link" href="javascript:void(0)" onclick="alert('Instruções de recuperação foram enviadas para o seu e-mail cadastrado.')">
+                            <a class="dna-forgot-link" href="javascript:void(0)" onclick="alert('Instruções de recuperação foram enviadas para o seu e-mail cadastrado.')">
                                 Esqueceu a senha?
                             </a>
                         </div>
 
                         <!-- Botão Entrar -->
-                        <button id="btn-submit-login" class="dna-print-btn-submit" type="submit">
+                        <button id="btn-submit-login" class="dna-login-submit-btn" type="submit">
                             <span>Entrar</span>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                         </button>
 
-                        <!-- Divisor ou entre com -->
-                        <div class="dna-print-divider-row">
-                            <span class="dna-print-divider-line"></span>
-                            <span class="dna-print-divider-text">ou entre com</span>
-                            <span class="dna-print-divider-line"></span>
+                        <!-- Link Criar Cadastro -->
+                        <div class="dna-create-account-link">
+                            <span>Não tem uma conta?</span>
+                            <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('register')">Criar cadastro</a>
+                        </div>
+
+                        <!-- Divisor Ou continue com -->
+                        <div class="dna-social-divider">
+                            <span>Ou continue com</span>
                         </div>
 
                         <!-- Botões Sociais Google e Apple -->
-                        <div class="dna-print-social-row">
-                            <button type="button" class="dna-print-social-btn" onclick="alert('Conexão Google temporariamente em homologação.');">
-                                <svg width="18" height="18" viewBox="0 0 24 24">
+                        <div class="dna-social-buttons">
+                            <button type="button" class="dna-social-btn" onclick="alert('Conexão Google temporariamente em homologação.');" title="Google">
+                                <svg width="20" height="20" viewBox="0 0 24 24">
                                     <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.14z"/>
                                     <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/>
                                     <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
                                     <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
                                 </svg>
-                                <span>Google</span>
                             </button>
 
-                            <button type="button" class="dna-print-social-btn" onclick="alert('Conexão Apple temporariamente em homologação.');">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <button type="button" class="dna-social-btn" onclick="alert('Conexão Apple temporariamente em homologação.');" title="Apple">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="#000000">
                                     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.89c.66-.82 1.11-1.96.99-3.1-.96.04-2.12.64-2.8 1.44-.61.7-.1.14-1.78.27.05 1.04.57 2.14 1.81 2.83.67.5 1.34.72 1.78-.17"/>
                                 </svg>
-                                <span>Apple</span>
                             </button>
-                        </div>
-
-                        <!-- Rodapé: Não tem conta? Cadastre-se -->
-                        <div class="dna-print-footer-link-row">
-                            <span>Não tem uma conta?</span>
-                            <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('register')">Cadastre-se</a>
                         </div>
                     </form>
                 </div>
@@ -5100,138 +5126,90 @@ const OwnerView = {
         `;
     },
 
-    // 03. Criar Cadastro Oficial (com Campo de Placa Dinâmico e Barras de Verificação HUD)
     // ── 03. TELA: CRIAR CADASTRO — EXATAMENTE COMO NO PRINT OFICIAL (TELA 3) ──
     renderRegisterAuth() {
         return `
-            <div class="dna-print-register-layout">
-                <!-- Topo com Botão Voltar -->
-                <div class="dna-print-register-top-bar">
-                    <button class="dna-print-btn-back-clean" type="button" onclick="OwnerView.goToAuthScreen('splash')" title="Voltar">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F172A" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-                    </button>
-                    <div class="dna-print-top-brand-dark">
-                        <span>DNA <b style="color:#0066FF;">AUTO</b></span>
-                    </div>
-                    <div style="width:32px;"></div>
-                </div>
-
-                <!-- Cabeçalho com Título à Esquerda e Foto do Carro à Direita -->
-                <div class="dna-print-register-hero">
-                    <div class="dna-print-register-hero-text">
-                        <h1 class="dna-print-register-title">Crie sua conta</h1>
-                        <p class="dna-print-register-sub">Leva menos de 1 minuto</p>
-                    </div>
-                    <div class="dna-print-register-hero-media">
-                        <img src="/img/cadastro-car.jpg" alt="DNA AUTO Veículo" class="dna-print-register-car-img" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
-                    </div>
-                </div>
-
-                <!-- Formulário de Cadastro Clean Oficial -->
-                <div class="dna-print-register-card">
-                    <div id="auth-reg-error-box" class="dna-print-error-banner" style="display:none;"></div>
-
-                    <form id="form-register" onsubmit="OwnerView.handleClientRegisterSubmit(event)" class="dna-print-form">
-                        <!-- Card de Placa Mercosul com Bandeira do Brasil -->
-                        <div class="dna-print-plate-card">
-                            <div class="dna-print-plate-header-row">
-                                <span class="dna-print-plate-label">Placa do Veículo</span>
-                                <span class="dna-print-plate-auto-tag">
-                                    <span class="pulse-dot"></span>
-                                    <span>Consultar placa automaticamente</span>
-                                </span>
-                            </div>
-                            <div class="dna-print-plate-box">
-                                <div class="dna-print-plate-flag">
-                                    <span class="flag-br-pill">BR</span>
-                                    <span class="flag-country">BRASIL</span>
-                                </div>
-                                <input
-                                    id="placa"
-                                    type="text"
-                                    class="dna-print-plate-input"
-                                    placeholder="BRA2E19"
-                                    maxlength="7"
-                                    value="BRA2E19"
-                                    autocomplete="off"
-                                    oninput="OwnerView.handlePlateSearchInput(this)"
-                                    onblur="OwnerView.handlePlateSearchInput(this, true)"
-                                />
-                                <div id="auth-plate-search-indicator" class="plate-indicator-box"></div>
-                            </div>
-                        </div>
-
-                        <!-- Card Dinâmico de Detalhes da Placa se encontrada -->
-                        <div id="auth-plate-preview-card" style="display:none;"></div>
-
-                        <!-- Nome Completo -->
-                        <div class="dna-print-input-group">
-                            <label class="dna-print-label" for="nome">Nome Completo</label>
-                            <div class="dna-print-input-wrap">
-                                <input id="nome" class="dna-print-input" type="text" placeholder="Ex: João Silva" required autocomplete="name" />
-                            </div>
-                        </div>
-
-                        <!-- E-mail -->
-                        <div class="dna-print-input-group">
-                            <label class="dna-print-label" for="email">E-mail</label>
-                            <div class="dna-print-input-wrap">
-                                <input id="email" class="dna-print-input" type="email" placeholder="seu@email.com" required autocomplete="email" />
-                            </div>
-                        </div>
-
-                        <!-- WhatsApp / Telefone -->
-                        <div class="dna-print-input-group">
-                            <label class="dna-print-label" for="whatsapp">WhatsApp / Telefone</label>
-                            <div class="dna-print-input-wrap">
-                                <input id="whatsapp" class="dna-print-input" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" oninput="if(typeof maskPhone==='function') maskPhone(this)" />
-                            </div>
-                        </div>
-
-                        <!-- Senha -->
-                        <div class="dna-print-input-group">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                                <label class="dna-print-label" for="senha" style="margin-bottom:0;">Senha</label>
-                                <span class="dna-print-pass-strength">Força: <b>Forte</b></span>
-                            </div>
-                            <div class="dna-print-input-wrap">
-                                <input id="senha" class="dna-print-input" type="password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" />
-                                <button
-                                    type="button"
-                                    class="dna-print-eye-btn"
-                                    onclick="OwnerView.togglePasswordVisibility('senha')"
-                                    title="Mostrar/ocultar senha"
-                                >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                                </button>
-                            </div>
-                            <!-- Barra de Força da Senha Verde -->
-                            <div class="dna-print-pass-bar-track">
-                                <div class="dna-print-pass-bar-fill"></div>
-                            </div>
-                        </div>
-
-                        <!-- Checkbox Termos de Uso -->
-                        <label class="dna-print-terms-row">
-                            <input type="checkbox" id="terms-accept" checked required class="dna-print-checkbox" />
-                            <span>Li e aceito os <b>Termos de Uso</b> e <b>Política de Privacidade</b></span>
-                        </label>
-
-                        <!-- Botão Criar Minha Conta -->
-                        <button id="btn-submit-register" class="dna-print-btn-submit" type="submit">
-                            <span>Criar Minha Conta</span>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            <div class="dna-register-view">
+                <!-- Cabeçalho com Botão Voltar, Título à Esquerda e Foto do Carro à Direita -->
+                <div class="dna-register-top-header">
+                    <div class="dna-register-header-left">
+                        <button class="dna-register-back-circle" type="button" onclick="OwnerView.goToAuthScreen('splash')" title="Voltar">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0F172A" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                         </button>
-
-                        <!-- Link para Fazer Login -->
-                        <div class="dna-print-footer-link-row">
-                            <span>Já tem uma conta?</span>
-                            <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('login')">Entrar</a>
-                        </div>
-                    </form>
+                        <h1 class="dna-register-title">Criar sua conta</h1>
+                        <p class="dna-register-sub">Junte-se à rede de proteção e mantenha o histórico do seu veículo sempre com você.</p>
+                    </div>
+                    <img src="/img/cadastro-car.jpg" alt="Toyota Corolla" class="dna-register-car-thumb" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
                 </div>
 
-                <div style="height:16px;"></div>
+                <div id="auth-reg-error-box" class="dna-print-error-banner" style="display:none; margin-bottom:12px; background:#FEE2E2; border:1px solid #EF4444; color:#B91C1C; padding:8px 12px; border-radius:8px; font-size:12px;"></div>
+
+                <form id="form-register" onsubmit="OwnerView.handleClientRegisterSubmit(event)">
+                    <!-- Placa do Veículo -->
+                    <label class="dna-field-label" for="placa">Placa do Veículo</label>
+                    <div class="dna-plate-box">
+                        <span style="font-size:16px;">🇧🇷</span>
+                        <input
+                            id="placa"
+                            type="text"
+                            placeholder="BRA2E19"
+                            maxlength="7"
+                            value="BRA2E19"
+                            autocomplete="off"
+                            oninput="OwnerView.handlePlateSearchInput(this)"
+                            onblur="OwnerView.handlePlateSearchInput(this, true)"
+                        />
+                        <div id="auth-plate-search-indicator" style="display:none;"></div>
+                    </div>
+
+                    <!-- Nome Completo -->
+                    <label class="dna-field-label" for="nome">Nome Completo</label>
+                    <div class="dna-input-pill">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <input id="nome" type="text" placeholder="Seu nome completo" required autocomplete="name" />
+                    </div>
+
+                    <!-- E-mail -->
+                    <label class="dna-field-label" for="email">E-mail</label>
+                    <div class="dna-input-pill">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <input id="email" type="email" placeholder="seu@email.com" required autocomplete="email" />
+                    </div>
+
+                    <!-- WhatsApp (para alertas de revisão) -->
+                    <label class="dna-field-label" for="whatsapp">WhatsApp (para alertas de revisão)</label>
+                    <div class="dna-input-pill">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        <input id="whatsapp" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" oninput="if(typeof maskPhone==='function') maskPhone(this)" />
+                    </div>
+
+                    <!-- Senha -->
+                    <label class="dna-field-label" for="senha">Senha</label>
+                    <div class="dna-input-pill">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        <input id="senha" type="password" placeholder="Mínimo 8 caracteres" required autocomplete="new-password" />
+                        <button
+                            type="button"
+                            onclick="OwnerView.togglePasswordVisibility('senha')"
+                            style="background:none; border:none; cursor:pointer; color:#94A3B8; padding:0; display:flex;"
+                            title="Mostrar/ocultar senha"
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Botão Criar Minha Conta -->
+                    <button id="btn-submit-register" class="dna-login-submit-btn" type="submit" style="margin-top:14px;">
+                        <span>Criar Minha Conta</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                    </button>
+
+                    <!-- Link Fazer Login -->
+                    <div class="dna-create-account-link" style="margin-top:14px;">
+                        <span>Já possui uma conta?</span>
+                        <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('login')">Fazer login</a>
+                    </div>
+                </form>
             </div>
         `;
     },
