@@ -1791,3 +1791,21 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Verificação em tempo real da rota `/cliente` e `/cliente.app` no servidor local (HTTP 200).
   3. **Zero Automação de Navegador:**
      - Estrita adesão à instrução do usuário de não utilizar testes automatizados via navegador.
+
+### Ciclo 85 (19/10/2026) - Proporção Áurea dos Cards (+10%) e Aplicação da Logomarca Oficial Real no Dashboard
+- **Solicitação do Usuário:**
+  - Aumentar em 10% os cards da tela de Dashboard para ficarem em harmonia visual com a tela, corrigindo a proporção em aparelhos modernos sem ocupar a tela inteira nem encostar nas bordas laterais.
+  - Substituir a logomarca do cabeçalho da Dashboard pela logomarca oficial real e nítida fornecida pelo usuário na segunda imagem (`media_1792438749160.png`).
+- **Implementações Realizadas:**
+  1. **Ajuste de Proporção dos Cards (+10%):**
+     - Altura dos cards calibrada de `101px` para `113px` (`+11.8%`), com padding interno de `11px 10px 10px`.
+     - Margens laterais protegidas com `padding: 23px 24px 0` no Dashboard e `padding-inline: 6px` no grid `.cards`, mantendo margem segura de 30px das bordas da tela e garantindo que os cards nunca toquem nas laterais.
+     - Linhas de ícone (`24px`), título (`clamp(11.5px, 3.1vw, 12.5px)`), métrica (`clamp(10.5px, 2.8vw, 11.5px)`) e valores em dinheiro (`clamp(13.5px, 3.7vw, 16px)`) harmonizados.
+  2. **Aplicação da Logomarca Oficial Real:**
+     - A logomarca oficial transparente (1024x341) foi codificada e inserida em `<img class="official-dna-logo" ...>` no cabeçalho do Dashboard.
+     - Arquivos salvos em `public/img/icons/dna-logo-official.png` e `cliente.app/img/icons/dna-logo-official.png`.
+     - CSS do cabeçalho (`.dashhead`) calibrado com `min-height: 44px; justify-content: space-between` e logo com `width: 126px; max-width: 48%; height: auto; object-fit: contain`.
+  3. **Validação & Testes:**
+     - 56 de 56 testes automatizados aprovados com 100% de sucesso (`npm test`).
+     - Servidor local respondendo com status 200 na porta 3000.
+     - Zero automação de navegador utilizada.
