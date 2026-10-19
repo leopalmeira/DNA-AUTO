@@ -392,19 +392,39 @@
                 }
             } else {
                 // Tela 01: Splash / Login (Primeira visita)
-                OwnerView.authScreen = 'splash';
+                if (window.OwnerView) OwnerView.authScreen = 'splash';
             }
 
             // Sincronizar token de API
             const token = localStorage.getItem('dna_token');
-            if (token) {
+            if (token && window.API) {
                 API.setToken(token);
             }
 
-            // Renderizar App do Cliente
-            await OwnerView.render();
+            // Renderizar App do Cliente com segurança
+            try {
+                if (window.OwnerView && typeof OwnerView.render === 'function') {
+                    await OwnerView.render();
+                } else {
+                    console.error('OwnerView não está disponível.');
+                    const viewEl = document.getElementById('view-content');
+                    if (viewEl) {
+                        viewEl.innerHTML = `
+                            <div style="padding:40px 20px; text-align:center; color:#EF4444; font-family:sans-serif;">
+                                <h3 style="color:#FFFFFF; margin-bottom:10px;">DNA AUTO</h3>
+                                <p style="color:#94A3B8; font-size:14px; margin-bottom:16px;">Carregando componentes do aplicativo...</p>
+                                <button onclick="window.location.reload(true)" style="background:#00D4FF; color:#0A0F1E; border:none; padding:10px 20px; border-radius:10px; font-weight:700; cursor:pointer;">
+                                    Recarregar Aplicativo
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
+            } catch (err) {
+                console.error('Erro na renderização inicial do OwnerView:', err);
+            }
 
-            if (activationCode) {
+            if (activationCode && window.OwnerView && typeof OwnerView.openActivationModal === 'function') {
                 setTimeout(() => {
                     OwnerView.openActivationModal(activationCode);
                 }, 300);

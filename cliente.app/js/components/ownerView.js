@@ -1733,8 +1733,9 @@ const OwnerView = {
         const container = document.getElementById('view-content');
         if (!container) return;
 
-        // Sincroniza imediatamente o usuário e carro do cache local antes de desenhar
-        this.syncFromLocalStorage();
+        try {
+            // Sincroniza imediatamente o usuário e carro do cache local antes de desenhar
+            this.syncFromLocalStorage();
 
         // Garante a aplicação do isolamento no body
         document.body.classList.add('is-owner-app');
@@ -2027,6 +2028,21 @@ const OwnerView = {
         // Dispara automaticamente o download / prompt de instalação do PWA
         if (typeof PwaInstall !== 'undefined' && PwaInstall.triggerAutoPromptForClient) {
             PwaInstall.triggerAutoPromptForClient();
+        }
+        } catch (err) {
+            console.error('Erro ao renderizar Garagem Digital:', err);
+            container.innerHTML = `
+                <div style="padding:40px 20px; text-align:center; color:#EF4444; font-family:sans-serif;">
+                    <div style="width:48px; height:48px; border-radius:50%; background:rgba(239,68,68,0.15); display:inline-flex; align-items:center; justify-content:center; margin-bottom:14px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </div>
+                    <h3 style="color:#FFFFFF; margin-bottom:8px;">DNA AUTO</h3>
+                    <p style="color:#94A3B8; font-size:14px; margin-bottom:18px;">Erro temporário ao processar tela da Garagem Digital.</p>
+                    <button onclick="localStorage.clear(); window.location.reload();" style="background:#00D4FF; color:#0A0F1E; border:none; padding:12px 24px; border-radius:10px; font-weight:700; cursor:pointer;">
+                        Recarregar Aplicativo
+                    </button>
+                </div>
+            `;
         }
     },
 
@@ -2931,10 +2947,6 @@ const OwnerView = {
                 </button>
 
                 <div style="height:14px;"></div>
-            </div>
-        `;
-    },
-                </div>
             </div>
         `;
     },
