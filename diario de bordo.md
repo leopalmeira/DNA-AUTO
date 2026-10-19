@@ -1862,3 +1862,14 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - **Qualidade & Paridade:**
     - 100% de paridade estrita entre `cliente.app/index.html` e `public/cliente.html`.
     - Bateria de 56 testes automatizados em `test/api.test.js` aprovada com 100% de sucesso.
+
+
+### Ciclo 88 (19/10/2026) - Atualização do Background da Tela Splash com Logo Otimizado
+- **Solicitação do Usuário:**
+  - Aplicar a nova imagem de background de alta definição fornecida na tela inicial (Splash), substituindo a anterior, pois o logotipo DNA AUTO possui melhor posicionamento (mais elevado no terço superior).
+- **Implementação & Arquitetura:**
+  - Imagem oficial limpa atualizada em `public/img/splash-clean-bg.png` e `cliente.app/img/splash-clean-bg.png` (resolução nativa 576x1024, 1.005.793 bytes).
+  - Posição da tagline nativa `"Seu veículo sempre protegido."` reposicionada de `top: 36.6%` para `top: 26.2%`, ficando perfeitamente centralizada e legível logo abaixo da logomarca DNA AUTO elevada.
+  - Preservação estrita da ausência de rolagem (tela 100% fixa na viewport), botões "Entrar" e "Cadastrar" interativos e sem os 3 palitos.
+  - 100% de paridade mantida entre `cliente.app/index.html` e `public/cliente.html`.
+  - 56 de 56 testes automatizados em `test/api.test.js` aprovados com 100% de sucesso.

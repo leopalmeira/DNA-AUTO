@@ -9,7 +9,7 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 87):** **PWA Oficial com Instalação no Menu, Permissões de GPS e Splash 100% Fixa e Interativa**: Correção imediata dos botões "Entrar" e "Cadastrar", remoção dos 3 palitos (indicadores de paginação) e eliminação completa de qualquer rolagem ("escrow") na Splash (100% fixa). Integração do PWA oficial com suporte a Google Play Store, criação de ícone na tela inicial pelo menu, registro de Service Worker e solicitação automática de permissões de GPS e Notificações. 56 de 56 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 88):** **Background da Splash com Logo Otimizado & Alinhamento Perfeito**: Aplicação da nova arte oficial limpa de alta resolução (`splash-clean-bg.png`) com a logomarca DNA AUTO perfeitamente posicionada no terço superior e subtítulo "Seu veículo sempre protegido." reajustado com máxima nitidez e harmonia visual. Tela 100% fixa, PWA oficial no menu e botões interativos. 56 de 56 testes automatizados aprovados (100%).
 > 
 > ✨ **Ciclos Anteriores (84 e 85):** Implementação fiel do protótipo oficial de 4 telas do cliente, proporção áurea dos cards do Dashboard (+10%) e aplicação da logomarca oficial real de alta resolução. 56 de 56 testes automatizados aprovados (100%).
 > 
