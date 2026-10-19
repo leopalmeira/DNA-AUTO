@@ -1733,3 +1733,22 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - 100% de paridade entre `public/` e `cliente.app/`.
      - 56 de 56 testes automatizados aprovados (`npm test`).
 
+
+### Ciclo 84 (19/10/2026) - Implementação Direta do Protótipo Oficial de 4 Telas (Splash, Login, Cadastro e Dashboard) no App do Cliente
+- **Solicitação do Usuário:**
+  - O usuário forneceu o código completo do protótipo oficial contendo o design refinado com CSS embutido, proporções exatas, artes vetoriais/base64 de alta resolução e fluxo de navegação funcional para as 4 primeiras telas:
+    1. **Tela 1 — Splash (`#splash`):** Enquadramento 100% responsivo, arte visual oficial, botões transparentes absolutos posicionados exatamente sobre as áreas interativas ("Entrar" e "Cadastrar").
+    2. **Tela 2 — Login (`#login`):** Hero visual integrado, formulário com campos de E-mail/CPF, senha com botão de visualização, opção "Lembrar de mim", "Esqueceu a senha?", botão "Entrar" com ação direta para o Dashboard e opção social Google.
+    3. **Tela 3 — Cadastro (`#register`):** Hero ilustrativo, formulário completo com placa Mercosul (`BRA2E19`), nome completo, e-mail, WhatsApp com máscara e senha segura.
+    4. **Tela 4 — Dashboard (`#dashboard`):** Header com menu gaveta (`☰`), logo oficial em alta resolução e ícone de notificações (`♟`), saudação personalizada ("Olá, Leandro"), card do veículo ativo ("Toyota Corolla BRA2E19 · 2021"), grid de 6 cards de serviços, manutenções, alertas, gastos, Mini OBD e rede de oficinas, além da barra inferior de navegação (`.bottom`).
+  - O usuário informou via áudio que enquanto desenvolve as demais telas subsequentes (5 a 10), essa estrutura de 4 telas já deve ficar 100% implementada e ativa no app do cliente.
+- **Implementações Realizadas:**
+  1. **Atualização de `cliente.app/index.html` e `public/cliente.html`:**
+     - Aplicação fiel do código enviado pelo usuário.
+     - Preservação da tag de título `<title>DNA AUTO • App do Cliente • Protótipo</title>` e inclusão do script `ownerView.js` para garantia de compatibilidade com a suite de testes automatizados e futuras integrações modais.
+  2. **Validação Automatizada:**
+     - Execução da suite de testes de integração (`node test/api.test.js`).
+     - **56 de 56 testes automatizados aprovados (100% de sucesso)**.
+     - Verificação em tempo real da rota `/cliente` e `/cliente.app` no servidor local (HTTP 200).
+  3. **Zero Automação de Navegador:**
+     - Estrita adesão à instrução do usuário de não utilizar testes automatizados via navegador.
