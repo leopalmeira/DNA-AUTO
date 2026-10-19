@@ -1832,3 +1832,33 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - **Qualidade & Paridade:**
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
     - Bateria de testes de integração em `test/api.test.js` executada com 100% de sucesso (56/56 testes aprovados).
+
+
+### Ciclo 87 (19/10/2026) - Resolução de Cliques e Tela Fixa na Splash, Remoção de Palitos e Instalação PWA Oficial com GPS
+- **Solicitação do Usuário:**
+  1. Corrigir os botões "Entrar" e "Cadastrar" da tela Splash que não executavam a navegação ao serem pressionados.
+  2. Remover os 3 palitos (indicadores de paginação) acima do botão entrar.
+  3. Remover qualquer rolagem/scroll ("escrow") na tela Splash, tornando-a 100% fixa na viewport.
+  4. Implementar instalação oficial PWA com ícone na tela inicial a partir do menu (padrão Google Play Store) e solicitação de permissões para acessar GPS/Localização e Notificações ao entrar no app.
+- **Implementação & Arquitetura:**
+  - **Causa Raiz & Correção dos Cliques e do Scroll ("Escrow"):**
+    - A tela recém-adicionada `#services` possuía um seletor ID que sobrepunha `.screen { display: none; }`, mantendo-se renderizada abaixo do app e gerando rolagem vertical (+100vh).
+    - A barra de navegação fixa `.services-bottom-nav` (`position: fixed; z-index: 20; bottom: 0;`) interceptava os toques e cliques na área inferior onde estavam os botões da Splash.
+    - Corrigido com isolamento estrito: `#services { display: none !important; }` e `.services-bottom-nav { display: none !important; }` quando inativos, tornando-se visíveis apenas sob `#services.active`.
+    - `#splash` configurado como tela 100% fixa: `height: 100dvh !important; max-height: 100dvh !important; overflow: hidden !important; padding: 0 !important;`.
+    - Os 3 palitos (dots) foram totalmente removidos do HTML e CSS.
+    - Os botões `btn-splash-entrar` e `btn-splash-cadastrar` receberam `z-index: 51`, `pointer-events: auto !important`, handlers nativos e event listeners para resposta instantânea ao toque.
+  - **PWA Oficial Google Play Ready & Permissões:**
+    - Metatags PWA adicionadas ao `<head>` (`rel="manifest"`, `theme-color: #020712`, `apple-mobile-web-app-capable`, ícones nativos).
+    - `manifest.json` atualizado com `start_url: "/cliente"` e escopo global.
+    - Service Worker (`/sw.js`) registrado no carregamento.
+    - Captura do evento `beforeinstallprompt` com prompt de instalação nativa via `installPWA()`.
+    - Menu lateral (`#menu`) enriquecido com opções de:
+      - 📲 **Instalar App Oficial**: Cria o ícone nativo na tela inicial do dispositivo.
+      - 📍 **Acessar GPS & Localização**: Dispara `navigator.geolocation.getCurrentPosition` com alta precisão e armazena coordenadas para telemetria e busca de oficinas.
+      - 🔔 **Alertas & Notificações**: Solicita permissão do navegador para notificações de revisão preventiva.
+      - ↪ **Sair da conta**: Retorna à tela inicial.
+    - Chamada automática de ativação de GPS no início da aplicação.
+  - **Qualidade & Paridade:**
+    - 100% de paridade estrita entre `cliente.app/index.html` e `public/cliente.html`.
+    - Bateria de 56 testes automatizados em `test/api.test.js` aprovada com 100% de sucesso.

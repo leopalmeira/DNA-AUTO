@@ -9,7 +9,7 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 86):** **Nitidez Ultra-HD na Tela Splash & Integração da Tela de Serviços & Peças**: Tela Splash 100% nítida em alta definição com background limpo oficial (`splash-clean-bg.png`) e tipografia vetorial nativa antialiased sobre a arte (sem borrões). Integração da tela completa de "Serviços & Peças" com navegação bidirecional a partir do card do Dashboard (`go('services')` e `go('dashboard')`), overlays interativos e modal informativo. 56 de 56 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 87):** **PWA Oficial com Instalação no Menu, Permissões de GPS e Splash 100% Fixa e Interativa**: Correção imediata dos botões "Entrar" e "Cadastrar", remoção dos 3 palitos (indicadores de paginação) e eliminação completa de qualquer rolagem ("escrow") na Splash (100% fixa). Integração do PWA oficial com suporte a Google Play Store, criação de ícone na tela inicial pelo menu, registro de Service Worker e solicitação automática de permissões de GPS e Notificações. 56 de 56 testes automatizados aprovados (100%).
 > 
 > ✨ **Ciclos Anteriores (84 e 85):** Implementação fiel do protótipo oficial de 4 telas do cliente, proporção áurea dos cards do Dashboard (+10%) e aplicação da logomarca oficial real de alta resolução. 56 de 56 testes automatizados aprovados (100%).
 > 
