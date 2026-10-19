@@ -9,9 +9,9 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 73):** **Processamento Silencioso de Fotos & Remoção de Menções a IA na Interface**: Após envio da foto, o fundo é processado e removido silenciosamente em segundo plano antes da exibição; a imagem com fundo antigo não é mostrada, revelando diretamente o carro com fundo transparente pronto para salvar, com interface limpa e profissional (sem toggles, botões ou badges de IA). 56 de 56 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 86):** **Nitidez Ultra-HD na Tela Splash & Integração da Tela de Serviços & Peças**: Tela Splash 100% nítida em alta definição com background limpo oficial (`splash-clean-bg.png`) e tipografia vetorial nativa antialiased sobre a arte (sem borrões). Integração da tela completa de "Serviços & Peças" com navegação bidirecional a partir do card do Dashboard (`go('services')` e `go('dashboard')`), overlays interativos e modal informativo. 56 de 56 testes automatizados aprovados (100%).
 > 
-> ✨ **Ciclo 72:** Implantação da **Remoção Automática de Fundo de Veículos (DnaAiStudio)** baseada no repositório open-source `@imgly/background-removal` (4.5k+ stars no GitHub), executando via WebAssembly/WebGPU direto no navegador. 56 de 56 testes automatizados aprovados (100%).
+> ✨ **Ciclos Anteriores (84 e 85):** Implementação fiel do protótipo oficial de 4 telas do cliente, proporção áurea dos cards do Dashboard (+10%) e aplicação da logomarca oficial real de alta resolução. 56 de 56 testes automatizados aprovados (100%).
 > 
 > ✨ **Ciclo 71:** Cadastro simplificado com código da oficina em 2 etapas, geração automática de código e Passaporte DNA AUTO Oficial ativo no cadastro da oficina, bloqueio temporário do OBD com homologação e card de veículo compacto. 56 de 56 testes automatizados aprovados (100%).
 > 

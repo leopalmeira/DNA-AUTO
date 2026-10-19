@@ -1809,3 +1809,26 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - 56 de 56 testes automatizados aprovados com 100% de sucesso (`npm test`).
      - Servidor local respondendo com status 200 na porta 3000.
      - Zero automação de navegador utilizada.
+
+
+### Ciclo 86 (19/10/2026) - Nitidez Ultra-HD da Tela Splash e Integração da Tela de Serviços & Peças
+- **Solicitação do Usuário:**
+  1. Conectar a tela de "Serviços & Peças" ao card correspondente na tela do Dashboard.
+  2. Resolver a falta de nitidez ("fontes embasadas") na tela Splash aplicando a imagem oficial limpa enviada como background (`splash-clean-bg.png`), posicionando os textos, badges, paginação e botões com renderização nativa de alta definição (vetorial/HTML5/CSS3) sobre a arte.
+- **Implementação & Arquitetura:**
+  - **Splash Ultra-HD:**
+    - Background limpo oficial (`splash-clean-bg.png`, 576x1024, aspect-ratio 9:16) aplicado sem textos embaçados pré-renderizados.
+    - Tipografia nativa nítida com `-webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility`:
+      - Subtítulo central: `"Seu veículo sempre protegido."` perfeitamente alinhado abaixo da logomarca DNA AUTO.
+      - 3 Badges de recursos alinhados aos ícones de vidro existentes: `"Histórico completo"`, `"Manutenções em dia"`, `"Fotos e notas sempre salvas"`.
+      - Barra de paginação com 3 indicadores estilo pill (ativo em ciano elétrico `#3fb4ff` e inativos em azul escuro `#264366`).
+      - Botão principal `"Entrar →"` com gradiente azul vibrante, texto branco e ícone de seta vetorial, navegando para `#login`.
+      - Botão secundário `"Cadastrar"` em vidro translúcido com borda ciano vibrante, navegando para `#register`.
+  - **Tela de Serviços & Peças (`#services`):**
+    - Card "Serviços & Peças" no Dashboard conectado com `tap(this); go('services')`.
+    - Nova tela `<section class="screen services" id="services">` implementada com a arte oficial (`servicos-pecas-art.png`, 258x393), overlays táteis para voltar, adicionar, abas (Todos, Serviços, Peças) e cards de serviços.
+    - Botão "Voltar" e barra de navegação inferior conectada retornando para o Dashboard (`go('dashboard')`).
+    - Modal de detalhes de serviços com diálogo acessível e interativo.
+  - **Qualidade & Paridade:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
+    - Bateria de testes de integração em `test/api.test.js` executada com 100% de sucesso (56/56 testes aprovados).
