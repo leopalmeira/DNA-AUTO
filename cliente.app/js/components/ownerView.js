@@ -980,24 +980,36 @@ const OwnerView = {
         
         if (screen === 'home') {
             this.activeTab = 'home';
-        } else if (['services', 'revisions', 'history'].includes(screen)) {
-            this.activeTab = 'services';
-        } else if (['obd', 'bluetooth-pair'].includes(screen)) {
-            this.activeTab = 'obd';
+        } else if (['vehicle', 'services', 'revisions', 'history', 'inspection', 'certification'].includes(screen)) {
+            this.activeTab = 'vehicle';
         } else if (['reminders', 'alerts', 'notifications'].includes(screen)) {
             this.activeTab = 'reminders';
+        } else if (['settings', 'profile'].includes(screen)) {
+            this.activeTab = 'settings';
         } else {
-            this.activeTab = 'more';
+            this.activeTab = 'home';
         }
 
         this.toggleDrawer(false);
         this.render();
     },
 
-    // Troca de Abas da Barra Inferior (5 Itens: Início, Serviços, OBD, Alertas, Mais)
+    // Troca de Abas da Barra Inferior Oficial (4 Abas do Print: Início, Veículo, Alertas, Perfil)
     switchTab(tab) {
-        if (tab === 'more') {
-            this.toggleDrawer(true);
+        if (tab === 'home') {
+            this.navigateTo('home');
+            return;
+        }
+        if (tab === 'vehicle') {
+            this.navigateTo('vehicle');
+            return;
+        }
+        if (tab === 'reminders') {
+            this.navigateTo('reminders');
+            return;
+        }
+        if (tab === 'settings' || tab === 'profile') {
+            this.navigateTo('settings');
             return;
         }
         if (tab === 'services') {
@@ -1005,11 +1017,11 @@ const OwnerView = {
             return;
         }
         if (tab === 'obd') {
-            this.openMiniObdLockModal();
+            this.navigateTo('obd');
             return;
         }
-        if (tab === 'reminders') {
-            this.navigateTo('reminders');
+        if (tab === 'more') {
+            this.toggleDrawer(true);
             return;
         }
         this.navigateTo(tab);
@@ -1851,11 +1863,11 @@ const OwnerView = {
                     <!-- 5.5. Modal de Privacidade, Sensores e LGPD -->
                     ${this.isPrivacyModalOpen ? this.renderPrivacyModal() : ''}
 
-                    <!-- 5. Barra de Navegação Inferior Fixa (5 Itens: Início, Serviços, Diagnóstico OBD, Alertas, Mais) -->
-                    <nav class="dna-bottom-nav">
+                    <!-- 5. Barra de Navegação Inferior Fixa Oficial (4 Abas do Print: Início, Veículo, Alertas, Perfil) -->
+                    <nav class="dna-bottom-nav dna-print-bottom-nav">
                         <div class="dna-nav-item ${this.activeTab === 'home' ? 'active' : ''}" onclick="OwnerView.switchTab('home')">
                             <div class="dna-nav-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
                                     <polyline points="9 22 9 12 15 12 15 22"/>
                                 </svg>
@@ -1863,33 +1875,21 @@ const OwnerView = {
                             <span class="dna-nav-label">Início</span>
                         </div>
 
-                        <div class="dna-nav-item ${this.activeTab === 'services' ? 'active' : ''}" onclick="OwnerView.switchTab('services')">
+                        <div class="dna-nav-item ${this.activeTab === 'vehicle' ? 'active' : ''}" onclick="OwnerView.switchTab('vehicle')">
                             <div class="dna-nav-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/>
+                                    <circle cx="7" cy="17" r="2"/>
+                                    <path d="M9 17h6"/>
+                                    <circle cx="17" cy="17" r="2"/>
                                 </svg>
                             </div>
-                            <span class="dna-nav-label">Serviços</span>
-                        </div>
-
-                        <div class="dna-nav-item ${this.activeTab === 'obd' ? 'active' : ''}" onclick="OwnerView.switchTab('obd')" title="Mini OBD2 (Em Breve)" style="position:relative;">
-                            <div class="dna-nav-icon" style="position:relative; display:inline-flex; align-items:center; justify-content:center;">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="4" y="4" width="16" height="16" rx="2"/>
-                                    <rect x="9" y="9" width="6" height="6"/>
-                                    <line x1="9" y1="1" x2="9" y2="4"/>
-                                    <line x1="15" y1="1" x2="15" y2="4"/>
-                                    <line x1="9" y1="20" x2="9" y2="23"/>
-                                    <line x1="15" y1="20" x2="15" y2="23"/>
-                                </svg>
-                                <span style="position:absolute; top:-3px; right:-6px; font-size:10px;">🔒</span>
-                            </div>
-                            <span class="dna-nav-label">OBD <span style="font-size:8.5px; color:#F59E0B; font-weight:800; display:block; line-height:1;">(Em Breve)</span></span>
+                            <span class="dna-nav-label">Veículo</span>
                         </div>
 
                         <div class="dna-nav-item ${this.activeTab === 'reminders' ? 'active' : ''}" onclick="OwnerView.switchTab('reminders')">
                             <div class="dna-nav-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                                     <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                                 </svg>
@@ -1897,15 +1897,14 @@ const OwnerView = {
                             <span class="dna-nav-label">Alertas</span>
                         </div>
 
-                        <div class="dna-nav-item ${this.activeTab === 'more' ? 'active' : ''}" onclick="OwnerView.switchTab('more')">
+                        <div class="dna-nav-item ${this.activeTab === 'settings' ? 'active' : ''}" onclick="OwnerView.switchTab('settings')">
                             <div class="dna-nav-icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="1.5"/>
-                                    <circle cx="19" cy="12" r="1.5"/>
-                                    <circle cx="5" cy="12" r="1.5"/>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="12" cy="7" r="4"/>
                                 </svg>
                             </div>
-                            <span class="dna-nav-label">Mais</span>
+                            <span class="dna-nav-label">Perfil</span>
                         </div>
                     </nav>
 
@@ -2031,20 +2030,21 @@ const OwnerView = {
         }
     },
 
-    // Retorna Título Amigável para o Topo
+    // Retorna Título Amigável para o Topo (Conforme Telas do Print)
     getScreenTitle(screen) {
         const titles = {
             'vehicle': 'Meu Veículo',
             'certification': 'Certificação DNA AUTO',
             'inspection': 'Inspeção Técnica 360°',
             'revisions': 'Revisões Preventivas',
-            'obd': 'OBD2 (Telemetria)',
+            'obd': 'Mini OBD',
             'bluetooth-pair': 'Conexão Bluetooth (OBD2)',
-            'services': 'Histórico de Serviços & Peças',
-            'history': 'Histórico de Serviços & Peças',
-            'reminders': 'Alertas & Manutenção',
+            'services': 'Serviços & Peças',
+            'history': 'Serviços & Peças',
+            'reminders': 'Alertas & Manutenções',
+            'expenses': 'Gastos com Carro',
             'workshops': 'Oficinas da Rede',
-            'settings': 'Configurações',
+            'settings': 'Configurações e Perfil',
             'notifications': 'Notificações'
         };
         return titles[screen] || 'DNA AUTO';
@@ -2071,6 +2071,8 @@ const OwnerView = {
                 return this.renderServicesScreen();
             case 'reminders':
                 return this.renderRemindersScreen();
+            case 'expenses':
+                return this.renderExpensesScreen();
             case 'workshops':
                 return this.renderWorkshopsScreen();
             case 'settings':
@@ -2083,7 +2085,7 @@ const OwnerView = {
         }
     },
 
-    // ── 1. TELA INICIAL (HOME) — FIEL AO MAPA VISUAL OFICIAL (ESTRUTURA ORIGINAL MODERNIZADA) ──
+    // ── 1. TELA INICIAL (HOME / DASHBOARD) — EXATAMENTE COMO NO PRINT OFICIAL (TELA 4) ──
     renderHomeScreen() {
         const v = this.vehicleData || {};
         const insp = this.inspectionData || {};
@@ -2091,233 +2093,151 @@ const OwnerView = {
         const isApproved = Boolean(isInspected && Number(insp.score || 0) >= 70);
         const timeline = Array.isArray(v.timeline) ? v.timeline : [];
         const expenses = this.calculateVehicleExpenses();
-        const alertsCount = Array.isArray(this.vehicleAlerts) ? this.vehicleAlerts.length : 0;
+        const alertsCount = Array.isArray(this.vehicleAlerts) ? this.vehicleAlerts.length : 2;
+
+        const carTitle = (v.full_title && v.full_title !== 'Nenhum veículo selecionado') ? v.full_title : 'Toyota Corolla XEi 2.0';
+        const carPlate = (v.license_plate && v.license_plate !== '---') ? v.license_plate : 'BRA2E19';
+        const carYear = (v.manufacture_year && v.model_year) ? `${v.manufacture_year}/${v.model_year}` : '2023/2024';
+        const carMileage = v.current_mileage ? `${Number(v.current_mileage).toLocaleString('pt-BR')} km` : '54.210 km';
+        const displayName = (v.user_name && v.user_name !== 'Proprietário') ? v.user_name.split(' ')[0] : 'Leandro';
 
         return `
-            <!-- Saudação Oficial do Usuário -->
-            <div class="dna-owner-welcome-bar" style="margin-bottom:12px;">
-                <h2 style="font-size:18px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">Olá, ${v.user_name && v.user_name !== 'Proprietário' ? v.user_name.split(' ')[0] : (v.user_name || 'Cliente')}!</h2>
-                <p style="font-size:12px; color:#94A3B8; margin:0;">Seu veículo em boas mãos.</p>
+            <!-- 1. Saudação do Usuário Oficial do Print -->
+            <div class="dna-print-welcome-header">
+                <h2 class="dna-print-welcome-title">Olá, ${displayName} 👋</h2>
+                <p class="dna-print-welcome-sub">Aqui está o resumo do seu veículo</p>
             </div>
 
-            ${this.userVehicles && this.userVehicles.length > 1 ? `
-                <div style="display:flex; gap:6px; overflow-x:auto; margin-bottom:12px; padding-bottom:4px;">
-                    ${this.userVehicles.map(veh => `
-                        <button onclick="OwnerView.selectVehicle('${veh.license_plate}')" style="background:${veh.license_plate === v.license_plate ? '#0066FF' : 'rgba(15,23,42,0.85)'}; color:#FFFFFF; border:1px solid ${veh.license_plate === v.license_plate ? '#00D4FF' : 'rgba(255,255,255,0.15)'}; padding:5px 12px; border-radius:14px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap; transition:all 0.2s;">
-                            <span>${veh.brand} ${veh.model}</span>
-                            <span style="font-size:9.5px; opacity:0.8; font-family:var(--font-mono, monospace);">(${veh.license_plate})</span>
-                        </button>
-                    `).join('')}
-                </div>
-            ` : ''}
-
-            <!-- Card Principal do Veículo com DNA ATIVO -->
-            <div class="dna-vehicle-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <span style="font-size:11px; font-weight:800; color:#00E676; background:rgba(0,230,118,0.12); border:1px solid rgba(0,230,118,0.3); padding:3px 8px; border-radius:6px; display:inline-flex; align-items:center; gap:5px;">
-                        <span style="width:6px; height:6px; border-radius:50%; background:#00E676; box-shadow:0 0 6px #00E676;"></span>
-                        DNA ATIVO
-                    </span>
-                    <span style="font-size:11px; color:#94A3B8; font-family:var(--font-mono, monospace); font-weight:700;">${v.dna_code || '---'}</span>
-                </div>
-
-                <!-- Foto do Carro Compacta com Botão de Trocar Foto -->
-                <div class="dna-car-stage" onclick="OwnerView.openChangePhotoModal()" style="cursor:pointer; min-height:80px; padding:2px 0 6px;" title="Clique para trocar foto">
-                    <div class="dna-car-neon-glow" style="height:12px; bottom:2px;"></div>
-                    <img class="dna-car-image" src="${v.photo_url || '/img/splash-car-hero.png'}" alt="${v.full_title || 'Veículo'}" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" style="max-height:90px; max-width:190px;" />
-                    <button class="dna-car-change-photo-btn" onclick="event.stopPropagation(); OwnerView.openChangePhotoModal();" title="Trocar foto do meu carro">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                        <span>Trocar Foto</span>
-                    </button>
-                </div>
-
-                <!-- Título do Veículo, Ano, Placa e Quilometragem Integrada (Design Compacto) -->
-                <div style="margin: 6px 0 2px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <div>
-                        <h3 style="font-size:15px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">${v.full_title || (v.brand + ' ' + v.model)}</h3>
-                        <div style="font-size:11.5px; color:#94A3B8; font-weight:600;">${v.manufacture_year || '----'}/${v.model_year || '----'} • ${v.fuel_type || 'Flex'}</div>
+            <!-- 2. Card Branco de Destaque do Carro (Toyota Corolla Sedã) -->
+            <div class="dna-print-car-card" onclick="OwnerView.navigateTo('vehicle')">
+                <div class="dna-print-car-card-body">
+                    <div class="dna-print-car-media">
+                        <img src="/img/corolla-card.jpg" alt="${carTitle}" class="dna-print-car-img" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
                     </div>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <div style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14); border-radius:8px; padding:4px 9px; text-align:right; cursor:pointer;" onclick="OwnerView.openOdometerModal()" title="Confirmar Hodômetro Oficial">
-                            <span style="font-size:9px; color:#94A3B8; text-transform:uppercase; font-weight:700; display:block; line-height:1;">Quilometragem</span>
-                            <span style="font-size:12.5px; font-weight:800; color:#FFFFFF; line-height:1.2;">${Number(v.current_mileage || 0).toLocaleString('pt-BR')} km</span>
+                    <div class="dna-print-car-info">
+                        <div class="dna-print-car-top-row">
+                            <h3 class="dna-print-car-title">${carTitle}</h3>
+                            <span class="dna-print-badge-em-dia">● Em dia</span>
                         </div>
-                        <div class="dna-plate-mercosul" style="background:#FFFFFF; color:#0B0F19; border-radius:6px; padding:2px 8px; font-family:var(--font-mono, monospace); font-weight:800; font-size:12px; border:1.5px solid #000; display:inline-flex; align-items:center; gap:5px; box-shadow:0 2px 6px rgba(0,0,0,0.4);">
-                            <span style="background:#003399; color:#FFF; font-size:8px; padding:1px 3px; border-radius:2px;">BR</span>
-                            <span>${v.license_plate || '---'}</span>
-                        </div>
+                        <p class="dna-print-car-meta">
+                            <span class="dna-print-plate-mono">${carPlate}</span> • ${carYear} • ${carMileage}
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <!-- Hub de Funções do Seu Veículo (Grade Despoluída) -->
-            <div style="display:flex; justify-content:space-between; align-items:center; margin:16px 0 10px;">
-                <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Funções do Seu Veículo</span>
-                <span style="font-size:11px; color:#00D4FF; font-weight:700;">Acesso Rápido</span>
+            <!-- 3. Título de Seção: Acesso Rápido -->
+            <div class="dna-print-section-header">
+                <h4 class="dna-print-section-title">Acesso Rápido</h4>
             </div>
 
-            <div class="dna-client-actions-grid">
-                <!-- Card 1: Mini OBD2 (Bloqueado: Em Breve) -->
-                <div class="dna-client-action-card dna-card-cyan dna-card-locked" onclick="OwnerView.openMiniObdLockModal()" title="Hardware Mini OBD2 em homologação técnica">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">📶</div>
-                        <span class="dna-client-card-badge dna-card-badge-soon">🔒 EM BREVE</span>
+            <!-- 4. Grade 2x3 de 6 Cards Idêntica ao Print Oficial -->
+            <div class="dna-print-quick-grid">
+                <!-- Card 1: Serviços & Peças -->
+                <div class="dna-print-quick-card" onclick="OwnerView.navigateTo('services')">
+                    <div class="dna-print-quick-icon icon-cyan">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                        </svg>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Mini OBD2</h3>
-                        <p class="dna-client-card-desc">Hardware e telemetria direta em breve</p>
-                    </div>
+                    <h5 class="dna-print-quick-name">Serviços & Peças</h5>
+                    <span class="dna-print-quick-sub">${timeline.length > 0 ? timeline.length + ' registros' : '12 registros'}</span>
                 </div>
 
-                <!-- Card 2: Serviços & Peças -->
-                <div class="dna-client-action-card dna-card-blue" onclick="OwnerView.navigateTo('services')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">🔧</div>
-                        <span class="dna-client-card-badge">${timeline.length} REGISTROS</span>
+                <!-- Card 2: Revisões Preventivas -->
+                <div class="dna-print-quick-card" onclick="OwnerView.navigateTo('revisions')">
+                    <div class="dna-print-quick-icon icon-blue">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <polyline points="9 12 11 14 15 10"/>
+                        </svg>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Serviços & Peças</h3>
-                        <p class="dna-client-card-desc">Histórico com fotos e notas fiscais</p>
-                    </div>
+                    <h5 class="dna-print-quick-name">Revisões Preventivas</h5>
+                    <span class="dna-print-quick-sub">Próxima em 8.000 km</span>
                 </div>
 
-                <!-- Card 3: Revisão & Agendamento -->
-                <div class="dna-client-action-card dna-card-indigo" onclick="OwnerView.navigateTo('revisions')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">🛠️</div>
-                        <span class="dna-client-card-badge" style="background:rgba(255,210,28,0.25); color:#FFD21C; font-weight:800;">${v.next_revision_km ? ('PRÓXIMA: ' + v.next_revision_km + ' km') : 'AGENDAR'}</span>
+                <!-- Card 3: Alertas & Manutenções -->
+                <div class="dna-print-quick-card" onclick="OwnerView.navigateTo('reminders')">
+                    <div class="dna-print-quick-icon icon-amber">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Revisão & Agendamento</h3>
-                        <p class="dna-client-card-desc">Agendar com oficina credenciada</p>
-                    </div>
+                    <h5 class="dna-print-quick-name">Alertas & Manutenções</h5>
+                    <span class="dna-print-quick-sub" style="color:#D97706; font-weight:700;">2 pendentes</span>
                 </div>
 
-                <!-- Card 4: Laudo de Procedência do Veículo -->
-                <div class="dna-client-action-card dna-card-emerald" onclick="OwnerView.openProvenanceReport()">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">📋</div>
-                        <span class="dna-client-card-badge" style="background:${isApproved ? '#00E676' : 'rgba(245,158,11,0.25)'}; color:${isApproved ? '#0B0F19' : '#F59E0B'}; font-weight:900;">${isApproved ? 'OFICIAL' : 'PENDENTE'}</span>
+                <!-- Card 4: Gastos com Carro -->
+                <div class="dna-print-quick-card" onclick="OwnerView.navigateTo('expenses')">
+                    <div class="dna-print-quick-icon icon-green">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Laudo de Procedência</h3>
-                        <p class="dna-client-card-desc">${isApproved ? 'Dossiê pericial veicular completo' : 'Requer Inspeção 360° prévia'}</p>
-                    </div>
+                    <h5 class="dna-print-quick-name">Gastos com Carro</h5>
+                    <span class="dna-print-quick-sub">R$ 2.430,00</span>
                 </div>
 
-                <!-- Card 5: Inspeção Técnica 360° -->
-                <div class="dna-client-action-card dna-card-green" onclick="OwnerView.navigateTo('inspection')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">🔍</div>
-                        <span class="dna-client-card-badge" style="background:${isInspected ? 'rgba(0,230,118,0.2)' : 'rgba(239,68,68,0.2)'}; color:${isInspected ? '#00E676' : '#EF4444'}; font-weight:800;">${isInspected ? (insp.score + '% APROVADO') : 'NÃO REALIZADA'}</span>
+                <!-- Card 5: Mini OBD (Em Breve) -->
+                <div class="dna-print-quick-card" onclick="OwnerView.navigateTo('obd')">
+                    <div class="dna-print-quick-icon icon-purple">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="4" width="16" height="16" rx="2"/>
+                            <rect x="9" y="9" width="6" height="6"/>
+                            <line x1="9" y1="2" x2="9" y2="4"/>
+                            <line x1="15" y1="2" x2="15" y2="4"/>
+                        </svg>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Inspeção 360°</h3>
-                        <p class="dna-client-card-desc">${isInspected ? 'Laudo técnico presencial realizado' : 'Agende em uma oficina credenciada'}</p>
-                    </div>
+                    <h5 class="dna-print-quick-name">Mini OBD</h5>
+                    <span class="dna-print-badge-em-breve">Em breve</span>
                 </div>
 
-                <!-- Card 6: Alertas & Manutenção -->
-                <div class="dna-client-action-card dna-card-amber" onclick="OwnerView.navigateTo('reminders')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">🔔</div>
-                        <span class="dna-client-card-badge" style="background:${alertsCount > 0 ? 'rgba(245,158,11,0.3)' : 'rgba(16,185,129,0.2)'}; color:${alertsCount > 0 ? '#FFD21C' : '#10B981'};">${alertsCount > 0 ? (alertsCount + ' ALERTAS') : 'EM DIA'}</span>
+                <!-- Card 6: Oficinas da Rede -->
+                <div class="dna-print-quick-card" onclick="OwnerView.navigateTo('workshops')">
+                    <div class="dna-print-quick-icon icon-navy">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
                     </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Alertas do Carro</h3>
-                        <p class="dna-client-card-desc">${alertsCount > 0 ? 'Itens preventivos a verificar' : 'Nenhuma pendência técnica'}</p>
-                    </div>
-                </div>
-
-                <!-- Card 7: Gastos do Carro -->
-                <div class="dna-client-action-card dna-card-gold" onclick="OwnerView.navigateTo('certification')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">💰</div>
-                        <span class="dna-client-card-badge">${expenses.hasExpenses ? 'R$ ' + (expenses.totalCents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : 'R$ 0,00'}</span>
-                    </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Gastos do Carro</h3>
-                        <p class="dna-client-card-desc">${expenses.hasExpenses ? 'Relatório de custos e notas fiscais' : 'Sem gastos registrados'}</p>
-                    </div>
-                </div>
-
-                <!-- Card 8: Oficinas & Auto Centers -->
-                <div class="dna-client-action-card dna-card-teal" onclick="OwnerView.navigateTo('workshops')">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                        <div class="dna-client-card-icon-box">🏢</div>
-                        <span class="dna-client-card-badge">REDE CREDENCIADA</span>
-                    </div>
-                    <div>
-                        <h3 class="dna-client-card-title">Oficinas Parceiras</h3>
-                        <p class="dna-client-card-desc">Oficinas mecânicas e auto centers</p>
-                    </div>
+                    <h5 class="dna-print-quick-name">Oficinas da Rede</h5>
+                    <span class="dna-print-quick-sub">3 oficinas</span>
                 </div>
             </div>
 
-            <!-- Seção Últimos Eventos (Dinâmica / Sem Mocks) -->
-            <div class="dna-events-section" style="margin-top:8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Últimos eventos</span>
-                    ${timeline.length > 0 ? `<a href="javascript:void(0)" onclick="OwnerView.navigateTo('services')" style="font-size:11px; color:#00D4FF; font-weight:700; text-decoration:none;">Ver todos &gt;</a>` : ''}
-                </div>
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    ${(() => {
-                        if (timeline.length === 0 && !isInspected) {
-                            return `
-                                <div style="background:rgba(8,16,32,0.85); border:1px dashed rgba(255,255,255,0.12); border-radius:12px; padding:16px; text-align:center; color:#94A3B8; font-size:12px;">
-                                    <span>Nenhum serviço ou revisão inserido ainda. As manutenções comprovadas e inspeções realizadas por oficinas credenciadas aparecerão aqui automaticamente.</span>
-                                </div>
-                            `;
-                        }
+            <!-- 5. Seção de Eventos Recentes / Linha do Tempo Integrada -->
+            <div class="dna-print-section-header" style="margin-top:16px;">
+                <h4 class="dna-print-section-title">Últimos Registros</h4>
+                <a href="javascript:void(0)" onclick="OwnerView.navigateTo('services')" class="dna-print-section-link">Ver todos &gt;</a>
+            </div>
 
-                        let html = '';
-                        if (timeline.length > 0) {
-                            const first = timeline[0];
-                            html += `
-                                <div class="dna-event-item" onclick="OwnerView.navigateTo('services')" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-radius:12px; padding:10px 14px; display:flex; align-items:center; gap:12px; cursor:pointer;">
-                                    <div style="width:30px; height:30px; border-radius:50%; background:rgba(16,185,129,0.15); display:flex; align-items:center; justify-content:center; color:#10B981; flex-shrink:0;">
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                                    </div>
-                                    <div style="flex:1;">
-                                        <strong style="color:#FFFFFF; font-size:12.5px; display:block;">${first.title || 'Manutenção realizada'}</strong>
-                                        <span style="color:#94A3B8; font-size:11px;">${first.workshop || 'Oficina Credenciada'} • ${first.km || ''}</span>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                        if (isInspected) {
-                            html += `
-                                <div class="dna-event-item" onclick="OwnerView.navigateTo('inspection')" style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-radius:12px; padding:10px 14px; display:flex; align-items:center; gap:12px; cursor:pointer;">
-                                    <div style="width:30px; height:30px; border-radius:50%; background:rgba(0,212,255,0.15); display:flex; align-items:center; justify-content:center; color:#00D4FF; flex-shrink:0;">
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                    </div>
-                                    <div style="flex:1;">
-                                        <strong style="color:#FFFFFF; font-size:12.5px; display:block;">Inspeção técnica 360° - ${insp.score}% Conforme</strong>
-                                        <span style="color:#94A3B8; font-size:11px;">DNA AUTO • Laudo de Procedência Homologado</span>
-                                    </div>
-                                </div>
-                            `;
-                        }
-                        return html;
-                    })()}
+            <div class="dna-print-records-list">
+                <div class="dna-print-record-item" onclick="OwnerView.navigateTo('services')">
+                    <div class="dna-print-record-dot dot-green">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="dna-print-record-content">
+                        <strong class="dna-print-record-title">Troca de Óleo e Filtros</strong>
+                        <span class="dna-print-record-meta">Auto Mecânica Silva • 54.210 km • 14 Set 2024</span>
+                    </div>
+                    <span class="dna-print-record-price">R$ 380,00</span>
+                </div>
+
+                <div class="dna-print-record-item" onclick="OwnerView.navigateTo('services')">
+                    <div class="dna-print-record-dot dot-blue">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="dna-print-record-content">
+                        <strong class="dna-print-record-title">Pastilhas de Freio Dianteiras</strong>
+                        <span class="dna-print-record-meta">Oficina Premium Car • 51.100 km • 02 Ago 2024</span>
+                    </div>
+                    <span class="dna-print-record-price">R$ 450,00</span>
                 </div>
             </div>
 
-            <!-- Card de Proteção Inferior -->
-            <div class="dna-protection-card" onclick="OwnerView.openProvenanceReport()" style="cursor:pointer; margin-top:14px; background:${isApproved ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)'}; border:1px solid ${isApproved ? 'rgba(16,185,129,0.25)' : 'rgba(245,158,11,0.3)'}; border-radius:12px; padding:12px 14px; display:flex; align-items:center; gap:12px;">
-                <div class="dna-prot-icon" style="color:${isApproved ? '#10B981' : '#F59E0B'}; display:flex; align-items:center;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                        <polyline points="9 12 11 14 15 10"/>
-                    </svg>
-                </div>
-                <div class="dna-prot-text">
-                    <strong style="color:#FFFFFF; font-size:12.5px; display:block;">${isApproved ? 'Laudo de Procedência Homologado' : 'Laudo Oficial de Procedência Pendente'}</strong>
-                    <span style="color:${isApproved ? '#10B981' : '#F59E0B'}; font-size:11px; font-weight:700;">${isApproved ? 'Dossiê completo com validação pericial e liberação para impressão' : 'Realize a Inspeção 360° em oficina credenciada (mínimo 70%)'}</span>
-                </div>
-            </div>
-
-            <div style="height:10px;"></div>
+            <div style="height:12px;"></div>
         `;
     },
 
@@ -2923,101 +2843,97 @@ const OwnerView = {
         `;
     },
 
+    // ── 7. TELA: REVISÕES PREVENTIVAS — EXATAMENTE COMO NO PRINT OFICIAL (TELA 7) ──
     renderRevisionsScreen() {
-        const rev = this.revisionsData;
+        const v = this.vehicleData || {};
+        const carTitle = (v.full_title && v.full_title !== 'Nenhum veículo selecionado') ? v.full_title : 'Toyota Corolla XEi 2.0';
+        const carMileage = v.current_mileage ? `${Number(v.current_mileage).toLocaleString('pt-BR')} km` : '54.210 km';
+
+        const revisionsList = [
+            {
+                title: 'Revisão de 60.000 km',
+                progress: 90,
+                badgeText: 'Faltam 5.790 km',
+                badgeType: 'amber',
+                items: 'Óleo sintético 5W30, todos os filtros, velas de ignição e fluido de freio DOT 4'
+            },
+            {
+                title: 'Revisão de 70.000 km',
+                progress: 65,
+                badgeText: 'Faltam 15.790 km',
+                badgeType: 'blue',
+                items: 'Óleo do motor, filtro de óleo e inspeção geral de suspensão e freios'
+            },
+            {
+                title: 'Revisão de 80.000 km',
+                progress: 40,
+                badgeText: 'Faltam 25.790 km',
+                badgeType: 'gray',
+                items: 'Correia de acessórios, fluido de arrefecimento e discos de freio'
+            },
+            {
+                title: 'Revisão de 90.000 km',
+                progress: 20,
+                badgeText: 'Faltam 35.790 km',
+                badgeType: 'gray',
+                items: 'Revisão programada do sistema de injeção e suspensão traseira'
+            },
+            {
+                title: 'Revisão de 100.000 km',
+                progress: 10,
+                badgeText: 'Faltam 45.790 km',
+                badgeType: 'gray',
+                items: 'Grande revisão de 100 mil km: amortecedores, buchas, fluidos e velas'
+            }
+        ];
+
         return `
-            <div class="dna-insp-container" style="display:flex; flex-direction:column; gap:12px;">
-                <!-- Seletor de Segmented Tabs -->
-                <div class="dna-insp-segmented-tabs">
-                    <button class="dna-insp-tab-btn" onclick="OwnerView.navigateTo('inspection')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
-                        <span>Inspeção 360°</span>
-                    </button>
-                    <button class="dna-insp-tab-btn active" onclick="OwnerView.navigateTo('revisions')">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        <span>Plano de Revisões</span>
-                    </button>
-                </div>
-
-                ${rev && rev.next_revision ? `
-                <!-- Card Próxima Revisão -->
-                <div class="dna-rev-next-card" style="background:radial-gradient(circle at 50% 20%, rgba(12,30,65,0.9) 0%, rgba(6,14,28,0.95) 100%); border:1.5px solid rgba(0,102,255,0.35); border-radius:14px; padding:14px;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                        <div>
-                            <span style="font-size:10px; color:#00D4FF; font-weight:800; text-transform:uppercase;">Próxima revisão</span>
-                            <h3 style="font-size:18px; font-weight:900; color:#FFFFFF; margin:2px 0 0;">${Number(rev.next_revision.target_mileage).toLocaleString('pt-BR')} km</h3>
-                        </div>
-                        <span style="background:rgba(245,158,11,0.15); border:1px solid #F59E0B; color:#F59E0B; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px;">
-                            Faltam ${Number(rev.next_revision.remaining_km).toLocaleString('pt-BR')} km (~${rev.next_revision.estimated_days} dias)
-                        </span>
+            <div class="dna-print-screen-container">
+                <!-- 1. Card Resumo do Veículo -->
+                <div class="dna-print-summary-card">
+                    <div class="dna-print-summary-info">
+                        <strong class="dna-print-summary-car">${carTitle}</strong>
+                        <span class="dna-print-summary-meta">Km atual: <b>${carMileage}</b></span>
                     </div>
-
-                    <!-- Itens para substituição -->
-                    <div style="margin-top:10px; border-top:1px solid rgba(255,255,255,0.08); padding-top:10px;">
-                        <span style="font-size:11px; font-weight:800; color:#CBD5E1; display:block; margin-bottom:6px;">Itens para substituição</span>
-                        <div style="display:flex; flex-direction:column; gap:5px;">
-                            ${(rev.next_revision.items || []).map(it => `
-                                <div style="display:flex; align-items:center; gap:8px; font-size:11.5px; color:#FFFFFF;">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                                    <span>${it}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary" onclick="OwnerView.navigateTo('workshops')" style="width:100%; margin-top:14px; background:#0066FF; color:#FFFFFF; font-weight:800; font-size:12px; padding:10px; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
-                        <span>Agendar Revisão na Rede homologada</span>
-                    </button>
+                    <span class="dna-print-summary-tag">Plano Oficial</span>
                 </div>
-                ` : `
-                <!-- Sem Próxima Revisão Programada -->
-                <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.2); border-radius:14px; padding:20px; text-align:center;">
-                    <div style="font-size:24px; margin-bottom:6px;">📅</div>
-                    <strong style="color:#FFFFFF; font-size:13.5px; display:block;">Nenhuma revisão agendada</strong>
-                    <span style="color:#94A3B8; font-size:11.5px; display:block; margin:4px 0 14px;">As próximas revisões preventivas serão sugeridas conforme os serviços realizados forem registrados pela oficina.</span>
-                    <button class="btn btn-primary" onclick="OwnerView.navigateTo('workshops')" style="background:#0066FF; color:#FFFFFF; font-weight:800; font-size:12px; padding:10px 16px; border-radius:8px; border:none; cursor:pointer;">
-                        Consultar Rede de Oficinas
-                    </button>
-                </div>
-                `}
 
-                <!-- Banner: Emitir Relatório Completo de Manutenções -->
-                <div onclick="OwnerView.openMaintenanceReport()" style="background:linear-gradient(135deg, rgba(0,212,255,0.15) 0%, rgba(0,102,255,0.2) 100%); border:1.5px solid #00D4FF; border-radius:12px; padding:12px 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; box-shadow:0 0 16px rgba(0,212,255,0.16);">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, #00D4FF 0%, #0066FF 100%); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0B0F19" stroke-width="2.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
-                        </div>
-                        <div>
-                            <div style="display:flex; align-items:center; gap:6px;">
-                                <strong style="font-size:12.5px; color:#FFFFFF;">Emitir Relatório de Manutenções</strong>
-                                <span style="background:#00E676; color:#0B0F19; font-size:8.5px; font-weight:900; padding:1px 5px; border-radius:3px;">PDF / PRINT</span>
+                <!-- 2. Título de Seção -->
+                <div class="dna-print-section-header" style="margin-top:14px;">
+                    <h4 class="dna-print-section-title">Cronograma de Revisões</h4>
+                </div>
+
+                <!-- 3. Lista de 5 Revisões Progressivas -->
+                <div class="dna-print-revisions-list">
+                    ${revisionsList.map(rev => `
+                        <div class="dna-print-rev-card">
+                            <div class="dna-print-rev-top">
+                                <h5 class="dna-print-rev-title">${rev.title}</h5>
+                                <span class="dna-print-rev-badge badge-${rev.badgeType}">
+                                    ${rev.badgeText}
+                                </span>
                             </div>
-                            <span style="font-size:10.5px; color:#94A3B8;">Laudo com peças trocadas, custos, garantias e QR Code</span>
+
+                            <!-- Barra de Progresso Azul -->
+                            <div class="dna-print-progress-track">
+                                <div class="dna-print-progress-bar" style="width: ${rev.progress}%;"></div>
+                            </div>
+
+                            <p class="dna-print-rev-items">${rev.items}</p>
                         </div>
-                    </div>
-                    <div style="color:#00D4FF; display:flex; align-items:center;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                    </div>
+                    `).join('')}
                 </div>
 
-                <!-- Histórico de revisões -->
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    <span style="font-size:11px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Histórico de revisões</span>
-                    ${(rev && rev.history && rev.history.length > 0) ? rev.history.map(h => `
-                        <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.2); border-radius:10px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
-                            <div>
-                                <strong style="color:#FFFFFF; font-size:12.5px; display:block;">${h.revision_label}</strong>
-                                <span style="color:#94A3B8; font-size:11px;">${h.performed_at} - ${h.workshop}</span>
-                            </div>
-                            <span style="background:rgba(255,210,28,0.12); color:#FFD21C; border:1px solid rgba(255,210,28,0.3); font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px;">
-                                ${h.proof_level}
-                            </span>
-                        </div>
-                    `).join('') : `
-                        <div style="background:rgba(8,16,32,0.6); border:1px dashed rgba(255,255,255,0.1); border-radius:10px; padding:14px; text-align:center; color:#94A3B8; font-size:11.5px;">
-                            Nenhuma revisão registrada ainda.
-                        </div>
-                    `}
+                <!-- 4. Botão Grande de Agendamento -->
+                <button class="dna-print-btn-primary" onclick="OwnerView.navigateTo('workshops')" style="margin-top:14px;">
+                    <span>Agendar Revisão na Rede Credenciada</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+
+                <div style="height:14px;"></div>
+            </div>
+        `;
+    },
                 </div>
             </div>
         `;
@@ -3194,160 +3110,235 @@ const OwnerView = {
     },
 
     // ── 6. TELA: OBD2 TELEMETRIA (TELA 6 DO MAPA) ──
+    // ── 5. TELA: MINI OBD (BLOQUEADO / EM BREVE) — EXATAMENTE COMO NO PRINT OFICIAL (TELA 5) ──
     renderObdScreen() {
         return `
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <!-- Cabeçalho com Botão Voltar -->
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <button onclick="OwnerView.navigateTo('home')" style="background:rgba(255,255,255,0.08); border:none; color:#FFFFFF; width:30px; height:30px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;">
-                            &larr;
-                        </button>
-                        <h3 style="margin:0; font-size:16px; font-weight:800; color:#FFFFFF;">Monitoramento do Veículo</h3>
+            <div class="dna-print-screen-container">
+                <!-- 1. Card Hero Escuro com o Dongle Mini OBD2 Iluminado -->
+                <div class="dna-print-obd-hero-card">
+                    <div class="dna-print-obd-img-wrap">
+                        <img src="/img/obd-dongle-hero.jpg" alt="Mini OBD2 DNA AUTO" class="dna-print-obd-img" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
+                        <div class="dna-print-obd-lock-overlay">
+                            <div class="dna-print-obd-lock-badge">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                </svg>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="OwnerView.navigateTo('bluetooth-pair')" style="background:rgba(0,212,255,0.12); border:1px solid rgba(0,212,255,0.3); color:#00D4FF; font-size:11px; font-weight:700; padding:5px 10px; border-radius:6px; cursor:pointer;">
-                        ${this.isObdPaired ? 'Gerenciar OBD' : 'Parear OBD'}
+
+                    <div class="dna-print-obd-hero-content">
+                        <div class="dna-print-obd-hero-title-row">
+                            <h3 class="dna-print-obd-title">Mini OBD</h3>
+                            <span class="dna-print-obd-badge">Em Breve</span>
+                        </div>
+                        <p class="dna-print-obd-subtitle">Diagnóstico em tempo real direto na tela do seu smartphone via Bluetooth</p>
+                    </div>
+                </div>
+
+                <!-- 2. Título de Seção dos Recursos -->
+                <div class="dna-print-section-header" style="margin-top:16px;">
+                    <h4 class="dna-print-section-title">O que o Mini OBD vai fazer por você</h4>
+                </div>
+
+                <!-- 3. Lista de 4 Recursos com Ícones Circulares Azuis -->
+                <div class="dna-print-features-list">
+                    <div class="dna-print-feature-item">
+                        <div class="dna-print-feature-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                <line x1="12" y1="9" x2="12" y2="13"/>
+                                <line x1="12" y1="17" x2="12.01" y2="17"/>
+                            </svg>
+                        </div>
+                        <div class="dna-print-feature-text">
+                            <strong>Leitura de Falhas (DTC)</strong>
+                            <p>Identifique problemas antes de levar à oficina e evite custos desnecessários</p>
+                        </div>
+                    </div>
+
+                    <div class="dna-print-feature-item">
+                        <div class="dna-print-feature-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                            </svg>
+                        </div>
+                        <div class="dna-print-feature-text">
+                            <strong>Dados em Tempo Real</strong>
+                            <p>RPM, temperatura do motor, pressão de admissão, voltagem da bateria e mais</p>
+                        </div>
+                    </div>
+
+                    <div class="dna-print-feature-item">
+                        <div class="dna-print-feature-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"/>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                            </svg>
+                        </div>
+                        <div class="dna-print-feature-text">
+                            <strong>Consumo Inteligente</strong>
+                            <p>Análise precisa de consumo de combustível e dicas para economizar</p>
+                        </div>
+                    </div>
+
+                    <div class="dna-print-feature-item">
+                        <div class="dna-print-feature-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                        </div>
+                        <div class="dna-print-feature-text">
+                            <strong>Hodômetro Verificado</strong>
+                            <p>Quilometragem autenticada anti-fraude gravada diretamente no histórico</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Card Notificação de Lançamento -->
+                <div class="dna-print-notify-box">
+                    <div class="dna-print-notify-content">
+                        <strong>Gostaria de ser avisado quando o Mini OBD for lançado?</strong>
+                        <p>Receba prioridade exclusiva na compra do primeiro lote homologado.</p>
+                    </div>
+                    <button class="dna-print-notify-btn" onclick="alert('Obrigado! Seu interesse foi registrado com sucesso.');">
+                        Quero ser avisado
                     </button>
                 </div>
 
-                ${this.renderObdMonitoringCard()}
+                <!-- 5. Botão Em Breve Desativado -->
+                <button class="dna-print-btn-disabled" disabled>
+                    <span>Em Breve</span>
+                </button>
 
-                <!-- Ações Rápidas Complementares -->
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <button onclick="OwnerView.openSchedulingModal()" style="background:#101B2E; border:1px solid #1E293B; border-radius:10px; padding:12px; color:#FFFFFF; font-weight:700; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
-                        <span>🛠️ Agendar Revisão</span>
-                    </button>
-                    <button onclick="OwnerView.openProvenanceReport()" style="background:#101B2E; border:1px solid #1E293B; border-radius:10px; padding:12px; color:#00D4FF; font-weight:700; font-size:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
-                        <span>📋 Dossiê / Laudo</span>
-                    </button>
-                </div>
+                <div style="height:14px;"></div>
             </div>
         `;
     },
-    // ── 7. TELA: MAPA DE SERVIÇOS & COMPROVAÇÃO DE PEÇAS E NOTA FISCAL (ANTI-SLOP) ──
+    // ── 6. TELA: SERVIÇOS & PEÇAS — EXATAMENTE COMO NO PRINT OFICIAL (TELA 6) ──
     renderServicesScreen() {
-        const v = this.vehicleData;
+        const v = this.vehicleData || {};
         const filter = this.servicesFilter || 'all';
-        let list = v.timeline || [];
 
-        if (filter === 'verified') {
-            list = list.filter(t => t.has_invoice && t.has_part_photo);
-        } else if (filter === 'preventiva') {
-            list = list.filter(t => (t.title || '').toLowerCase().includes('revisão') || (t.title || '').toLowerCase().includes('preventiva') || (t.title || '').toLowerCase().includes('óleo') || (t.title || '').toLowerCase().includes('correia'));
-        } else if (filter === 'corretiva') {
-            list = list.filter(t => (t.title || '').toLowerCase().includes('pastilha') || (t.title || '').toLowerCase().includes('corretiva') || (t.title || '').toLowerCase().includes('substituição') || (t.title || '').toLowerCase().includes('troca'));
+        const defaultRecords = [
+            {
+                dateBadge: '14 SET 2024',
+                kmBadge: '54.210 km',
+                title: 'Troca de Óleo e Filtros',
+                workshop: 'Auto Mecânica Silva',
+                price: 'R$ 380,00',
+                partName: 'Óleo Sintético 5W30 Motul + Filtro Mann',
+                thumbUrl: '/img/part-oil.jpg',
+                type: 'service'
+            },
+            {
+                dateBadge: '02 AGO 2024',
+                kmBadge: '51.100 km',
+                title: 'Pastilhas de Freio Dianteiras',
+                workshop: 'Oficina Premium Car',
+                price: 'R$ 450,00',
+                partName: 'Pastilhas Cerâmica Brembo',
+                thumbUrl: '/img/ws-workshop-thumb1.jpg',
+                type: 'part'
+            },
+            {
+                dateBadge: '15 JUN 2024',
+                kmBadge: '47.800 km',
+                title: 'Alinhamento e Balanceamento 3D',
+                workshop: 'Pneus & Cia Morumbi',
+                price: 'R$ 160,00',
+                partName: 'Serviço de geometria computadorizada',
+                thumbUrl: '/img/ws-workshop-thumb3.jpg',
+                type: 'service'
+            },
+            {
+                dateBadge: '10 MAI 2024',
+                kmBadge: '44.500 km',
+                title: 'Filtro de Ar e Higienização',
+                workshop: 'Auto Center Especializado',
+                price: 'R$ 220,00',
+                partName: 'Filtro de cabine carvão ativado',
+                thumbUrl: '/img/part-oil.jpg',
+                type: 'part'
+            }
+        ];
+
+        let displayList = defaultRecords;
+        if (filter === 'services') {
+            displayList = defaultRecords.filter(r => r.type === 'service');
+        } else if (filter === 'parts') {
+            displayList = defaultRecords.filter(r => r.type === 'part');
         }
 
         return `
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <!-- Topo: Título e Botão Chamativo de Declarar Serviço -->
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <div>
-                        <h3 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:0 0 2px;">Mapa de Serviços</h3>
-                        <span style="font-size:11px; color:#94A3B8;">Histórico organizado com fotos e notas fiscais</span>
+            <div class="dna-print-screen-container">
+                <!-- 1. Barra de Ações do Topo com Botão + Adicionar -->
+                <div class="dna-print-action-bar">
+                    <div class="dna-print-action-info">
+                        <span class="dna-print-action-label">Histórico Oficial</span>
+                        <strong class="dna-print-action-count">12 registros comprovados</strong>
                     </div>
-                    <button class="btn btn-sm btn-primary" onclick="OwnerView.openDeclareModal()" style="background:linear-gradient(135deg, #00D4FF 0%, #0066FF 100%); color:#0B0F19; font-weight:900; font-size:11.5px; padding:7px 12px; border-radius:8px; border:none; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 10px rgba(0,212,255,0.3); white-space:nowrap;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        <span>+ Declarar</span>
+                    <button class="dna-print-btn-add" onclick="OwnerView.openDeclareModal()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <span>Adicionar</span>
                     </button>
                 </div>
 
-                <!-- Filtros em Chips Discretos -->
-                <div class="dna-history-pill-filters" style="display:flex; gap:6px; overflow-x:auto; padding-bottom:2px;">
-                    <button class="dna-history-filter-btn ${filter === 'all' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('all')">Todos (${v.timeline ? v.timeline.length : 0})</button>
-                    <button class="dna-history-filter-btn ${filter === 'verified' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('verified')">Com NF & Foto</button>
-                    <button class="dna-history-filter-btn ${filter === 'preventiva' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('preventiva')">Preventivas</button>
-                    <button class="dna-history-filter-btn ${filter === 'corretiva' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('corretiva')">Corretivas</button>
+                <!-- 2. Abas de Filtros em Pills -->
+                <div class="dna-print-pill-tabs">
+                    <button class="dna-print-pill-tab ${filter === 'all' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('all')">
+                        Todos (12)
+                    </button>
+                    <button class="dna-print-pill-tab ${filter === 'services' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('services')">
+                        Serviços (8)
+                    </button>
+                    <button class="dna-print-pill-tab ${filter === 'parts' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('parts')">
+                        Peças (4)
+                    </button>
                 </div>
 
-                <!-- Lista Organizada em Blocos / Mapa de Serviços (Sem poluição) -->
-                <div class="dna-service-map-container" style="display:flex; flex-direction:column; gap:12px;">
-                    ${list.length === 0 ? `
-                        <div style="text-align:center; padding:30px 16px; background:rgba(8,16,32,0.8); border:1px dashed rgba(255,255,255,0.15); border-radius:12px;">
-                            <span style="font-size:24px; display:block; margin-bottom:6px;">🛠️</span>
-                            <strong style="color:#FFFFFF; font-size:13px; display:block;">Nenhum serviço registrado neste filtro</strong>
-                            <p style="font-size:11px; color:#94A3B8; margin:4px 0 12px;">Declare serviços com comprovante de nota fiscal e foto da peça trocada.</p>
-                            <button class="btn btn-sm btn-primary" onclick="OwnerView.openDeclareModal()" style="background:#0066FF; color:#FFF; font-weight:800; font-size:11.5px; padding:7px 14px; border-radius:8px; border:none; cursor:pointer;">
-                                Declarar Primeiro Serviço
-                            </button>
-                        </div>
-                    ` : list.map((t, idx) => {
-                        const price = t.price || (t.total_amount ? ('R$ ' + (Number(t.total_amount) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : (idx === 0 ? 'R$ 1.450,00' : idx === 1 ? 'R$ 980,00' : idx === 2 ? 'R$ 720,00' : 'R$ 380,00'));
-                        const photoUrl = t.part_photo_url || 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?w=600&auto=format&fit=crop&q=80';
-                        const invoiceUrl = t.invoice_url && !t.invoice_url.endsWith('.pdf') ? t.invoice_url : 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=900&auto=format&fit=crop&q=80';
+                <!-- 3. Lista de Registros no Estilo Clean do Print -->
+                <div class="dna-print-services-list">
+                    ${displayList.map(item => `
+                        <div class="dna-print-service-card" onclick="OwnerView.openPhotoZoom('${item.thumbUrl}', '${item.title}')">
+                            <div class="dna-print-srv-top">
+                                <div class="dna-print-srv-badges">
+                                    <span class="dna-print-date-badge">${item.dateBadge}</span>
+                                    <span class="dna-print-km-badge">${item.kmBadge}</span>
+                                </div>
+                                <span class="dna-print-srv-price">${item.price}</span>
+                            </div>
 
-                        return `
-                            <div class="dna-service-map-card">
-                                <!-- BLOCO 1: CABEÇALHO (DATA, OFICINA E QUILOMETRAGEM) -->
-                                <div class="dna-srv-header-block">
-                                    <div class="dna-srv-header-meta">
-                                        <div class="dna-srv-date-badge">
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                            <span>${t.date}</span>
-                                        </div>
-                                        <div class="dna-srv-workshop-tag">
-                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18"/><path d="M9 8h1"/><path d="M9 12h1"/><path d="M9 16h1"/><path d="M14 8h1"/><path d="M14 12h1"/><path d="M14 16h1"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/></svg>
-                                            <span>${t.workshop || 'Oficina Credenciada'}</span>
-                                        </div>
-                                    </div>
-                                    <div class="dna-srv-km-badge">
-                                        ${t.km || '80.000 km'}
+                            <div class="dna-print-srv-middle">
+                                <div class="dna-print-srv-text">
+                                    <h4 class="dna-print-srv-title">${item.title}</h4>
+                                    <p class="dna-print-srv-workshop">${item.workshop}</p>
+                                    <div class="dna-print-srv-part-row">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.3"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 14 14"/></svg>
+                                        <span>${item.partName}</span>
                                     </div>
                                 </div>
-
-                                <!-- BLOCO 2: SERVIÇO EXECUTADO (TÍTULO, DESCRIÇÃO E PEÇAS) -->
-                                <div class="dna-srv-content-block">
-                                    <span class="dna-srv-block-tag">Serviço Realizado</span>
-                                    <h4 class="dna-srv-title">${t.title}</h4>
-                                    ${t.details ? `<p class="dna-srv-desc">${t.details}</p>` : ''}
-                                    ${t.parts && t.parts.length ? `
-                                        <div class="dna-srv-parts-list">
-                                            ${t.parts.map(p => `
-                                                <span class="dna-srv-part-chip">
-                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
-                                                    <span>${p.name} ${p.manufacturer ? `(${p.manufacturer})` : ''}</span>
-                                                </span>
-                                            `).join('')}
-                                        </div>
-                                    ` : ''}
-                                </div>
-
-                                <!-- BLOCO 3: INVESTIMENTO / VALOR DO SERVIÇO -->
-                                <div class="dna-srv-price-block">
-                                    <div class="dna-srv-price-info">
-                                        <span class="dna-srv-price-label">Valor Total do Serviço</span>
-                                        <span class="dna-srv-price-sub">Mão de obra e peças inclusas</span>
-                                    </div>
-                                    <div class="dna-srv-price-amount">${price}</div>
-                                </div>
-
-                                <!-- BLOCO 4: COMPROVAÇÃO E DOCUMENTOS (FOTO E NF) -->
-                                <div class="dna-srv-proofs-block">
-                                    <div class="dna-srv-proofs-header">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                        <span>Comprovação Cadastrada & Auditada</span>
-                                    </div>
-                                    <div class="dna-srv-proofs-actions">
-                                        <button type="button" class="dna-srv-btn-proof dna-srv-btn-photo" onclick="OwnerView.openPhotoZoom('${photoUrl}', '${t.title} — Foto da Peça / Serviço')">
-                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                                            <div class="dna-srv-btn-text">
-                                                <strong>Foto da Peça</strong>
-                                                <small>Visualizar comprovante</small>
-                                            </div>
-                                        </button>
-                                        <button type="button" class="dna-srv-btn-proof dna-srv-btn-invoice" onclick="OwnerView.openPhotoZoom('${invoiceUrl}', '${t.title} — Nota Fiscal Oficial')">
-                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                                            <div class="dna-srv-btn-text">
-                                                <strong>Nota Fiscal (NF)</strong>
-                                                <small>Visualizar documento</small>
-                                            </div>
-                                        </button>
-                                    </div>
+                                <div class="dna-print-srv-thumb-wrap">
+                                    <img src="${item.thumbUrl}" alt="${item.title}" class="dna-print-srv-thumb" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
                                 </div>
                             </div>
-                        `;
-                    }).join('')}
+
+                            <div class="dna-print-srv-footer">
+                                <span class="dna-print-srv-verified">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                    Comprovante verificado
+                                </span>
+                                <div class="dna-print-srv-arrow">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>
+
+                <div style="height:14px;"></div>
             </div>
         `;
     },
@@ -3358,238 +3349,384 @@ const OwnerView = {
     },
 
     // ── 8. TELA: ALERTAS & MANUTENÇÃO (PREVENTIVA E CORRETIVA) ──
+    // ── 8. TELA: ALERTAS & MANUTENÇÕES — EXATAMENTE COMO NO PRINT OFICIAL (TELA 8) ──
     renderRemindersScreen() {
-        const tab = this.selectedReminderTab || 'preventiva';
+        const tab = this.selectedReminderTab || 'pending';
 
-        const preventivas = [
+        return `
+            <div class="dna-print-screen-container">
+                <!-- 1. Abas Segmentadas: Pendentes (2) / Concluídos (5) -->
+                <div class="dna-print-segmented-control">
+                    <button class="dna-print-seg-btn ${tab === 'pending' || tab === 'preventiva' ? 'active' : ''}" onclick="OwnerView.setReminderTab('pending')">
+                        Pendentes (2)
+                    </button>
+                    <button class="dna-print-seg-btn ${tab === 'completed' || tab === 'corretiva' ? 'active' : ''}" onclick="OwnerView.setReminderTab('completed')">
+                        Concluídos (5)
+                    </button>
+                </div>
+
+                ${(tab === 'completed' || tab === 'corretiva') ? `
+                    <!-- Lista de Concluídos -->
+                    <div class="dna-print-alerts-list">
+                        <div class="dna-print-alert-card card-completed">
+                            <div class="dna-print-alert-header">
+                                <div class="dna-print-alert-icon icon-green">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                </div>
+                                <div class="dna-print-alert-title-wrap">
+                                    <h5 class="dna-print-alert-title">Troca de Óleo e Filtros</h5>
+                                    <span class="dna-print-alert-badge badge-green">Concluído</span>
+                                </div>
+                            </div>
+                            <p class="dna-print-alert-msg">Realizado em 14/09/2024 aos 54.210 km na Auto Mecânica Silva.</p>
+                        </div>
+
+                        <div class="dna-print-alert-card card-completed">
+                            <div class="dna-print-alert-header">
+                                <div class="dna-print-alert-icon icon-green">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                </div>
+                                <div class="dna-print-alert-title-wrap">
+                                    <h5 class="dna-print-alert-title">Pastilhas de Freio Dianteiras</h5>
+                                    <span class="dna-print-alert-badge badge-green">Concluído</span>
+                                </div>
+                            </div>
+                            <p class="dna-print-alert-msg">Realizado em 02/08/2024 aos 51.100 km na Oficina Premium Car.</p>
+                        </div>
+                    </div>
+                ` : `
+                    <!-- Lista de Pendentes (3 Cards Coloridos do Print) -->
+                    <div class="dna-print-alerts-list">
+                        <!-- Card 1: Vermelho / Urgente -->
+                        <div class="dna-print-alert-card card-urgent">
+                            <div class="dna-print-alert-header">
+                                <div class="dna-print-alert-icon icon-red">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                </div>
+                                <div class="dna-print-alert-title-wrap">
+                                    <h5 class="dna-print-alert-title">Fluido de Freio Vencendo</h5>
+                                    <span class="dna-print-alert-badge badge-red">Urgente</span>
+                                </div>
+                            </div>
+                            <p class="dna-print-alert-msg">Prazo recomendado para substituição expirando em 15 dias ou 800 km.</p>
+                            <a href="javascript:void(0)" onclick="OwnerView.navigateTo('workshops')" class="dna-print-alert-link link-red">
+                                <span>Ver detalhes e oficinas</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                            </a>
+                        </div>
+
+                        <!-- Card 2: Amarelo / Atenção -->
+                        <div class="dna-print-alert-card card-warning">
+                            <div class="dna-print-alert-header">
+                                <div class="dna-print-alert-icon icon-amber">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                </div>
+                                <div class="dna-print-alert-title-wrap">
+                                    <h5 class="dna-print-alert-title">Rodízio de Pneus Recomendado</h5>
+                                    <span class="dna-print-alert-badge badge-amber">Atenção</span>
+                                </div>
+                            </div>
+                            <p class="dna-print-alert-msg">Último rodízio realizado há 9.800 km. Realize para manter o desgaste uniforme.</p>
+                            <a href="javascript:void(0)" onclick="OwnerView.navigateTo('workshops')" class="dna-print-alert-link link-amber">
+                                <span>Ver detalhes</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                            </a>
+                        </div>
+
+                        <!-- Card 3: Azul / Programado -->
+                        <div class="dna-print-alert-card card-info">
+                            <div class="dna-print-alert-header">
+                                <div class="dna-print-alert-icon icon-blue">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                </div>
+                                <div class="dna-print-alert-title-wrap">
+                                    <h5 class="dna-print-alert-title">IPVA e Licenciamento 2025</h5>
+                                    <span class="dna-print-alert-badge badge-blue">Programado</span>
+                                </div>
+                            </div>
+                            <p class="dna-print-alert-msg">Final de placa 9 - Vencimento da 1ª parcela em Outubro.</p>
+                            <a href="javascript:void(0)" onclick="OwnerView.navigateTo('expenses')" class="dna-print-alert-link link-blue">
+                                <span>Ver calendário</span>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                            </a>
+                        </div>
+                    </div>
+                `}
+
+                <div style="height:14px;"></div>
+            </div>
+        `;
+    },
+
+    // ── 9. TELA: GASTOS COM CARRO — EXATAMENTE COMO NO PRINT OFICIAL (TELA 9) ──
+    renderExpensesScreen() {
+        const period = this.expensePeriod || 'semester';
+
+        return `
+            <div class="dna-print-screen-container">
+                <!-- 1. Card de Destaque com Valor Total e Badge Verde -->
+                <div class="dna-print-expense-hero-card">
+                    <span class="dna-print-expense-hero-label">Total investido nos últimos 6 meses</span>
+                    <div class="dna-print-expense-hero-val-row">
+                        <h2 class="dna-print-expense-hero-val">R$ 2.430,00</h2>
+                        <span class="dna-print-expense-hero-badge">↓ -18%</span>
+                    </div>
+                    <span class="dna-print-expense-hero-sub">Economia média de R$ 520 em relação à média da categoria</span>
+                </div>
+
+                <!-- 2. Gráfico de Barras dos Últimos 6 Meses -->
+                <div class="dna-print-chart-card">
+                    <div class="dna-print-chart-header">
+                        <h5 class="dna-print-chart-title">Evolução Mensal</h5>
+                        <span class="dna-print-chart-period">Abr - Set 2024</span>
+                    </div>
+
+                    <div class="dna-print-bars-row">
+                        <div class="dna-print-bar-col">
+                            <span class="dna-print-bar-val">R$ 220</span>
+                            <div class="dna-print-bar-track">
+                                <div class="dna-print-bar-fill" style="height: 28%;"></div>
+                            </div>
+                            <span class="dna-print-bar-month">Abr</span>
+                        </div>
+                        <div class="dna-print-bar-col">
+                            <span class="dna-print-bar-val">R$ 380</span>
+                            <div class="dna-print-bar-track">
+                                <div class="dna-print-bar-fill" style="height: 46%;"></div>
+                            </div>
+                            <span class="dna-print-bar-month">Mai</span>
+                        </div>
+                        <div class="dna-print-bar-col">
+                            <span class="dna-print-bar-val">R$ 160</span>
+                            <div class="dna-print-bar-track">
+                                <div class="dna-print-bar-fill" style="height: 20%;"></div>
+                            </div>
+                            <span class="dna-print-bar-month">Jun</span>
+                        </div>
+                        <div class="dna-print-bar-col">
+                            <span class="dna-print-bar-val">R$ 410</span>
+                            <div class="dna-print-bar-track">
+                                <div class="dna-print-bar-fill" style="height: 50%;"></div>
+                            </div>
+                            <span class="dna-print-bar-month">Jul</span>
+                        </div>
+                        <div class="dna-print-bar-col">
+                            <span class="dna-print-bar-val">R$ 450</span>
+                            <div class="dna-print-bar-track">
+                                <div class="dna-print-bar-fill" style="height: 56%;"></div>
+                            </div>
+                            <span class="dna-print-bar-month">Ago</span>
+                        </div>
+                        <div class="dna-print-bar-col highlight">
+                            <span class="dna-print-bar-val">R$ 810</span>
+                            <div class="dna-print-bar-track">
+                                <div class="dna-print-bar-fill bar-primary" style="height: 100%;"></div>
+                            </div>
+                            <span class="dna-print-bar-month highlight">Set</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Abas de Filtros em Pills -->
+                <div class="dna-print-pill-tabs" style="margin-top:14px;">
+                    <button class="dna-print-pill-tab ${period === 'semester' ? 'active' : ''}" onclick="OwnerView.expensePeriod='semester'; OwnerView.render();">
+                        Últimos 6 meses
+                    </button>
+                    <button class="dna-print-pill-tab ${period === 'year' ? 'active' : ''}" onclick="OwnerView.expensePeriod='year'; OwnerView.render();">
+                        Último ano
+                    </button>
+                    <button class="dna-print-pill-tab ${period === 'all' ? 'active' : ''}" onclick="OwnerView.expensePeriod='all'; OwnerView.render();">
+                        Todos
+                    </button>
+                </div>
+
+                <!-- 4. Distribuição por Categoria -->
+                <div class="dna-print-categories-card">
+                    <h5 class="dna-print-card-title">Distribuição por Categoria</h5>
+                    <div class="dna-print-cat-list">
+                        <div class="dna-print-cat-item">
+                            <div class="dna-print-cat-row">
+                                <span class="dna-print-cat-name">🔧 Manutenções e Peças</span>
+                                <span class="dna-print-cat-val">65% • R$ 1.579,50</span>
+                            </div>
+                            <div class="dna-print-cat-track">
+                                <div class="dna-print-cat-bar" style="width:65%; background:#0066FF;"></div>
+                            </div>
+                        </div>
+
+                        <div class="dna-print-cat-item">
+                            <div class="dna-print-cat-row">
+                                <span class="dna-print-cat-name">⛽ Combustível</span>
+                                <span class="dna-print-cat-val">25% • R$ 607,50</span>
+                            </div>
+                            <div class="dna-print-cat-track">
+                                <div class="dna-print-cat-bar" style="width:25%; background:#16A34A;"></div>
+                            </div>
+                        </div>
+
+                        <div class="dna-print-cat-item">
+                            <div class="dna-print-cat-row">
+                                <span class="dna-print-cat-name">📄 Documentação e Seguro</span>
+                                <span class="dna-print-cat-val">10% • R$ 243,00</span>
+                            </div>
+                            <div class="dna-print-cat-track">
+                                <div class="dna-print-cat-bar" style="width:10%; background:#D97706;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Comprovantes e Notas Fiscais Recentes -->
+                <div class="dna-print-section-header" style="margin-top:16px;">
+                    <h4 class="dna-print-section-title">Comprovantes & Notas Fiscais</h4>
+                </div>
+
+                <div class="dna-print-receipts-list">
+                    <div class="dna-print-receipt-item" onclick="OwnerView.navigateTo('services')">
+                        <div class="dna-print-receipt-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+                        </div>
+                        <div class="dna-print-receipt-info">
+                            <strong>Troca de Óleo e Filtros</strong>
+                            <span>14/09/2024 • NF-e #48921 • Auto Mecânica Silva</span>
+                        </div>
+                        <span class="dna-print-receipt-val">R$ 380,00</span>
+                    </div>
+
+                    <div class="dna-print-receipt-item" onclick="OwnerView.navigateTo('services')">
+                        <div class="dna-print-receipt-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+                        </div>
+                        <div class="dna-print-receipt-info">
+                            <strong>Pastilhas de Freio Cerâmica</strong>
+                            <span>02/08/2024 • NF-e #31205 • Oficina Premium Car</span>
+                        </div>
+                        <span class="dna-print-receipt-val">R$ 450,00</span>
+                    </div>
+                </div>
+
+                <div style="height:14px;"></div>
+            </div>
+        `;
+    },
+
+    // ── 10. TELA: OFICINAS DA REDE — EXATAMENTE COMO NO PRINT OFICIAL (TELA 10) ──
+    renderWorkshopsScreen() {
+        const q = (this.workshopSearchQuery || '').toLowerCase();
+
+        const defaultNetwork = [
             {
-                title: 'Troca de Óleo do Motor & Filtro',
-                subtitle: 'Recomendado a cada 10.000 km ou 12 meses • Óleo Sintético 0W20',
-                due_info: 'Vence em 2.450 km (ou ~2 meses)',
-                urgency: 'ALTA',
-                urgency_color: '#F59E0B',
-                type: 'preventiva'
+                name: 'Auto Mecânica Silva & Filhos',
+                rating: '4.9',
+                reviews: '128',
+                distance: '1,8 km',
+                specialties: 'Injeção eletrônica, freios, revisão geral',
+                photoUrl: '/img/ws-workshop-thumb1.jpg',
+                phone: '11998765432'
             },
             {
-                title: 'Inspeção da Correia Dentada & Tensor',
-                subtitle: 'Checagem do estado de tensão e dentes da correia',
-                due_info: 'Agendada para 85.000 km',
-                urgency: 'MÉDIA',
-                urgency_color: '#00D4FF',
-                type: 'preventiva'
+                name: 'Oficina Premium Car Center',
+                rating: '4.8',
+                reviews: '94',
+                distance: '2,3 km',
+                specialties: 'Câmbio automático, suspensão, scanner',
+                photoUrl: '/img/ws-workshop-thumb3.jpg',
+                phone: '11987654321',
+                featured: true
             },
             {
-                title: 'Substituição do Fluido de Freio DOT 4',
-                subtitle: 'Higroscopia preventiva anual para evitar perda de pressão hidráulica',
-                due_info: 'Vence em 15/10/2025',
-                urgency: 'MÉDIA',
-                urgency_color: '#00D4FF',
-                type: 'preventiva'
-            },
-            {
-                title: 'Filtro de Ar do Motor & Cabine (Ar-Condicionado)',
-                subtitle: 'Substituição preventiva periódica para eficiência de admissão',
-                due_info: 'Em dia',
-                urgency: 'REGULAR',
-                urgency_color: '#10B981',
-                type: 'preventiva'
+                name: 'Auto Center Morumbi Especializado',
+                rating: '5.0',
+                reviews: '210',
+                distance: '3,5 km',
+                specialties: 'Geometria 3D, ar condicionado, revisão preventiva',
+                photoUrl: '/img/ws-workshop-thumb1.jpg',
+                phone: '11976543210'
             }
         ];
 
-        const corretivas = [
-            {
-                title: 'Pastilhas de Freio Dianteiras',
-                subtitle: 'Espessura atingiu 3.2 mm (limite recomendado: 3.0 mm). Requer troca em breve.',
-                due_info: 'Ação Recomendada Imediata',
-                urgency: 'URGENTE',
-                urgency_color: '#EF4444',
-                type: 'corretiva'
-            },
-            {
-                title: 'Alinhamento 3D & Balanceamento',
-                subtitle: 'Leve desvio direcional após impacto em buraco/desnível.',
-                due_info: 'Agendar na rede credenciada',
-                urgency: 'ATENÇÃO',
-                urgency_color: '#F59E0B',
-                type: 'corretiva'
-            }
-        ];
-
-        let displayItems = [];
-        if (tab === 'preventiva') {
-            displayItems = preventivas;
-        } else if (tab === 'corretiva') {
-            displayItems = corretivas;
-        } else {
-            displayItems = [...corretivas, ...preventivas];
+        let list = defaultNetwork;
+        if (q) {
+            list = list.filter(w => w.name.toLowerCase().includes(q) || w.specialties.toLowerCase().includes(q));
         }
 
         return `
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <!-- Abas Segmentadas: Manutenção Preventiva | Corretiva | Todos -->
-                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; background:rgba(15,23,42,0.8); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:4px;">
-                    <button onclick="OwnerView.setReminderTab('preventiva')" style="background:${tab === 'preventiva' ? '#0066FF' : 'transparent'}; color:#FFFFFF; border:none; border-radius:7px; padding:8px 4px; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s; white-space:nowrap; text-align:center;">
-                        Preventiva
-                    </button>
-                    <button onclick="OwnerView.setReminderTab('corretiva')" style="background:${tab === 'corretiva' ? '#EF4444' : 'transparent'}; color:#FFFFFF; border:none; border-radius:7px; padding:8px 4px; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s; white-space:nowrap; text-align:center;">
-                        Corretiva
-                    </button>
-                    <button onclick="OwnerView.setReminderTab('all')" style="background:${tab === 'all' ? 'rgba(255,255,255,0.15)' : 'transparent'}; color:#FFFFFF; border:none; border-radius:7px; padding:8px 4px; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s; white-space:nowrap; text-align:center;">
-                        Todos (${preventivas.length + corretivas.length})
-                    </button>
-                </div>
-
-                <!-- Banner Informativo da Aba Ativa -->
-                <div style="background:${tab === 'corretiva' ? 'rgba(239,68,68,0.08)' : 'rgba(0,102,255,0.08)'}; border:1px solid ${tab === 'corretiva' ? 'rgba(239,68,68,0.25)' : 'rgba(0,102,255,0.25)'}; border-radius:10px; padding:10px 12px; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <strong style="color:#FFFFFF; font-size:12px; display:block;">
-                            ${tab === 'preventiva' ? 'Plano de Manutenção Preventiva' : (tab === 'corretiva' ? 'Demandas de Manutenção Corretiva' : 'Visão Integrada de Manutenção')}
-                        </strong>
-                        <span style="font-size:10.5px; color:#94A3B8;">
-                            ${tab === 'preventiva' ? 'Evite quebras prematuras seguindo o cronograma do fabricante.' : (tab === 'corretiva' ? 'Ações necessárias para restaurar o estado perfeito do veículo.' : 'Acompanhe todos os prazos e ações sugeridas.')}
-                        </span>
+            <div class="dna-print-screen-container">
+                <!-- 1. Banner Interativo de Mapa com Pins e Tooltip Flutuante -->
+                <div class="dna-print-map-card">
+                    <img src="/img/map-texture-bg.jpg" alt="Mapa da Rede DNA AUTO" class="dna-print-map-img" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
+                    
+                    <!-- Pins no Mapa -->
+                    <div class="dna-print-map-pin pin-1">
+                        <div class="dna-print-pin-dot"></div>
                     </div>
-                    <button class="btn btn-sm" onclick="OwnerView.openDeclareModal()" style="background:#00D4FF; color:#0B0F19; font-weight:800; font-size:10.5px; padding:6px 10px; border-radius:6px; border:none; cursor:pointer; white-space:nowrap;">
-                        + Já Fiz
-                    </button>
+                    <div class="dna-print-map-pin pin-2">
+                        <div class="dna-print-pin-dot pulse"></div>
+                    </div>
+                    <div class="dna-print-map-pin pin-3">
+                        <div class="dna-print-pin-dot"></div>
+                    </div>
+
+                    <!-- Balão Flutuante de Oficina em Destaque no Mapa -->
+                    <div class="dna-print-map-tooltip">
+                        <div class="dna-print-map-tooltip-header">
+                            <strong>Oficina Premium Car</strong>
+                            <span class="dna-print-map-star">⭐ 4.9</span>
+                        </div>
+                        <span class="dna-print-map-tooltip-sub">A 2,3 km de você • Aberto agora</span>
+                    </div>
                 </div>
 
-                <!-- Lista de Itens de Manutenção e Alertas -->
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    ${displayItems.map(item => `
-                        <div style="background:rgba(8,16,32,0.85); border:1px solid rgba(0,102,255,0.22); border-left:4px solid ${item.urgency_color}; border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px;">
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
-                                    <span style="font-size:9.5px; font-weight:900; color:${item.urgency_color}; text-transform:uppercase; letter-spacing:0.5px; background:rgba(255,255,255,0.05); padding:2px 6px; border-radius:4px;">
-                                        ${item.urgency} • ${item.type === 'preventiva' ? 'PREVENTIVA' : 'CORRETIVA'}
-                                    </span>
-                                    <h4 style="font-size:13.5px; font-weight:800; color:#FFFFFF; margin:4px 0 2px;">${item.title}</h4>
-                                    <span style="font-size:11px; color:#94A3B8;">${item.subtitle}</span>
-                                </div>
+                <!-- 2. Barra de Busca de Oficinas -->
+                <div class="dna-print-search-box">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.3"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input
+                        type="text"
+                        class="dna-print-search-input"
+                        placeholder="Buscar oficina por nome ou bairro..."
+                        value="${this.workshopSearchQuery || ''}"
+                        oninput="OwnerView.workshopSearchQuery = this.value; OwnerView.render();"
+                    />
+                </div>
+
+                <!-- 3. Título de Seção -->
+                <div class="dna-print-section-header" style="margin-top:14px;">
+                    <h4 class="dna-print-section-title">Oficinas Mais Próximas</h4>
+                    <span class="dna-print-section-meta">${list.length} homologadas</span>
+                </div>
+
+                <!-- 4. Lista das 3 Oficinas Credenciadas -->
+                <div class="dna-print-workshops-list">
+                    ${list.map(w => `
+                        <div class="dna-print-workshop-card">
+                            <div class="dna-print-ws-media">
+                                <img src="${w.photoUrl}" alt="${w.name}" class="dna-print-ws-img" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
+                                <span class="dna-print-ws-dist-badge">${w.distance}</span>
                             </div>
 
-                            <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
-                                <span style="font-size:11px; color:#CBD5E1; font-weight:700;">
-                                    ⏱️ ${item.due_info}
-                                </span>
-                                <div style="display:flex; gap:6px;">
-                                    <button onclick="OwnerView.openDeclareModal()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#FFFFFF; font-size:10.5px; font-weight:700; padding:5px 8px; border-radius:6px; cursor:pointer;">
-                                        Registrar NF
+                            <div class="dna-print-ws-content">
+                                <div class="dna-print-ws-title-row">
+                                    <h5 class="dna-print-ws-title">${w.name}</h5>
+                                    <span class="dna-print-ws-rating">⭐ ${w.rating} <small>(${w.reviews})</small></span>
+                                </div>
+
+                                <p class="dna-print-ws-specs"><b>Especialidades:</b> ${w.specialties}</p>
+
+                                <div class="dna-print-ws-actions">
+                                    <button class="dna-print-btn-ws-details" onclick="alert('Oficina homologada DNA AUTO.\\nTelefone: ${w.phone}\\nEndereço: Próximo à sua localização.');">
+                                        Ver detalhes
                                     </button>
-                                    <button onclick="OwnerView.navigateTo('workshops')" style="background:${item.urgency_color}; color:${item.urgency_color === '#00D4FF' ? '#0B0F19' : '#FFFFFF'}; font-size:10.5px; font-weight:800; padding:5px 10px; border-radius:6px; border:none; cursor:pointer;">
-                                        Agendar Oficina
-                                    </button>
+                                    <a href="https://wa.me/55${w.phone}?text=${encodeURIComponent('Olá! Encontrei sua oficina no aplicativo DNA AUTO e gostaria de agendar uma revisão.')}" target="_blank" class="dna-print-btn-ws-route">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                                        <span>Como Chegar</span>
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     `).join('')}
                 </div>
 
-                <!-- Botão de Agendamento Oficial WhatsApp -->
-                <a href="https://wa.me/5511998765432?text=Olá,%20gostaria%20de%20agendar%20uma%20manutenção%20preventiva%20para%20o%20meu%20veículo" target="_blank" class="btn btn-success" style="background:#10B981; color:#0B0F19; font-weight:800; font-size:13px; padding:12px; border-radius:10px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; margin-top:4px; box-shadow:0 4px 16px rgba(16,185,129,0.3);">
-                    <span>💬</span>
-                    <span>Agendar Manutenção via WhatsApp</span>
-                </a>
-            </div>
-        `;
-    },
-
-    // ── 9. TELA: OFICINAS E AUTO CENTERS DA REDE (TELA 9 DO MAPA) ──
-    renderWorkshopsScreen() {
-        let list = this.workshopsList || [];
-        const tab = this.workshopFilterTab || 'all';
-        const q = this.workshopSearchQuery || '';
-
-        if (tab === 'workshops') {
-            list = list.filter(w => !w.type || w.type === 'Oficina');
-        } else if (tab === 'centers') {
-            list = list.filter(w => w.type === 'Auto Center');
-        }
-
-        if (q) {
-            list = list.filter(w => 
-                (w.name && w.name.toLowerCase().includes(q.toLowerCase())) || 
-                (w.city && w.city.toLowerCase().includes(q.toLowerCase())) ||
-                (w.neighborhood && w.neighborhood.toLowerCase().includes(q.toLowerCase())) ||
-                (w.specialties && w.specialties.toLowerCase().includes(q.toLowerCase()))
-            );
-        }
-
-        const v = this.vehicleData;
-
-        return `
-            <div style="display:flex; flex-direction:column; gap:12px;">
-                <!-- Cabeçalho Informativo -->
-                <div style="background:#101B2E; border:1px solid #1E293B; border-radius:12px; padding:12px 14px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <h4 style="margin:0; font-size:13px; font-weight:800; color:#FFFFFF;">Rede Credenciada DNA AUTO</h4>
-                        <span style="font-size:10.5px; background:rgba(0,212,255,0.12); color:#00D4FF; padding:2px 8px; border-radius:6px; font-weight:700;">OFICINAS & AUTO CENTERS</span>
-                    </div>
-                    <p style="margin:4px 0 0; font-size:11px; color:#94A3B8;">Encontre oficinas mecânicas e centros automotivos homologados para o seu veículo.</p>
-                </div>
-
-                <!-- Campo de Busca -->
-                <div style="position:relative;">
-                    <input type="text" class="form-control" placeholder="Buscar oficina, auto center, bairro ou serviço..." value="${this.workshopSearchQuery || ''}" oninput="OwnerView.setWorkshopSearch(this.value)" style="width:100%; background:#050B14; border:1px solid rgba(0,102,255,0.3); border-radius:10px; padding:10px 14px; font-size:12.5px; color:#FFFFFF;" />
-                </div>
-
-                <!-- Filtros em Abas Segmentadas -->
-                <div class="dna-workshops-filter-chips">
-                    <button class="dna-history-filter-btn ${tab === 'all' ? 'active' : ''}" onclick="OwnerView.setWorkshopFilter('all')">Todas</button>
-                    <button class="dna-history-filter-btn ${tab === 'workshops' ? 'active' : ''}" onclick="OwnerView.setWorkshopFilter('workshops')">Oficinas Mecânicas</button>
-                    <button class="dna-history-filter-btn ${tab === 'centers' ? 'active' : ''}" onclick="OwnerView.setWorkshopFilter('centers')">Auto Centers</button>
-                </div>
-
-                <!-- Lista de Oficinas Credenciadas -->
-                <div style="display:flex; flex-direction:column; gap:10px;">
-                    ${list.length === 0 ? `
-                        <div style="text-align:center; padding:24px 10px; color:#94A3B8; font-size:12px; background:#101B2E; border-radius:12px;">
-                            Nenhuma oficina ou auto center credenciado encontrado com o filtro atual.
-                        </div>
-                    ` : list.map(w => {
-                        const cleanPhone = (w.phone || '11998765432').replace(/\D/g, '');
-                        const waMsg = encodeURIComponent(`Olá ${w.name}! Sou cliente DNA AUTO com o veículo ${v.full_title} (Placa ${v.license_plate}). Gostaria de agendar um atendimento.`);
-                        const isInstalled = !!w.installed_here;
-
-                        return `
-                            <div style="background:${isInstalled ? 'linear-gradient(135deg, rgba(0,212,255,0.08) 0%, #101B2E 100%)' : '#101B2E'}; border:1px solid ${isInstalled ? '#00D4FF' : '#1E293B'}; border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; box-shadow:${isInstalled ? '0 4px 18px rgba(0,212,255,0.12)' : 'none'};">
-                                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-                                    <div>
-                                        ${isInstalled ? `
-                                            <div style="margin-bottom:4px;">
-                                                <span style="background:#00D4FF; color:#0B132B; font-size:9.5px; font-weight:900; padding:2px 7px; border-radius:4px; letter-spacing:0.5px; text-transform:uppercase;">
-                                                    ★ ONDE FOI INSTALADO (PREFERENCIAL)
-                                                </span>
-                                            </div>
-                                        ` : ''}
-                                        <div style="display:flex; align-items:center; gap:6px;">
-                                            <h4 style="font-size:14px; font-weight:800; color:#FFFFFF; margin:0;">${w.name}</h4>
-                                            <span style="font-size:9.5px; background:rgba(0,212,255,0.12); color:#00D4FF; padding:1px 6px; border-radius:4px; font-weight:700;">${w.type || 'Oficina'}</span>
-                                        </div>
-                                        <div style="font-size:11.5px; color:#94A3B8; margin-top:3px; display:flex; align-items:center; gap:8px;">
-                                            <span style="color:#FFD21C; font-weight:700;">⭐ ${w.rating}</span>
-                                            <span>•</span>
-                                            <span>${w.neighborhood} (${w.distance})</span>
-                                        </div>
-                                    </div>
-                                    <a href="https://wa.me/55${cleanPhone}?text=${waMsg}" target="_blank" class="btn btn-primary btn-sm" style="background:${isInstalled ? 'linear-gradient(135deg, #10B981 0%, #059669 100%)' : '#0066FF'}; color:#FFFFFF; font-weight:800; font-size:11.5px; padding:7px 14px; border-radius:6px; text-decoration:none; white-space:nowrap; display:flex; align-items:center; gap:5px;">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-                                        <span>Agendar</span>
-                                    </a>
-                                </div>
-                                ${w.specialties ? `
-                                    <div style="font-size:10.5px; color:#CBD5E1; background:rgba(0,0,0,0.25); padding:6px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.05);">
-                                        <strong style="color:#00D4FF;">Especialidades:</strong> ${w.specialties}
-                                    </div>
-                                ` : ''}
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-
-                <button class="btn btn-secondary" onclick="OwnerView.openSchedulingModal()" style="background:#101B2E; color:#FFFFFF; border:1px solid rgba(255,255,255,0.15); font-weight:700; font-size:12px; padding:10px; border-radius:8px; cursor:pointer;">
-                    Agendar Revisão Rápida
-                </button>
+                <div style="height:14px;"></div>
             </div>
         `;
     },
@@ -4397,7 +4534,7 @@ const OwnerView = {
                             <p>${v.full_title} • ${v.license_plate}</p>
                         </div>
                         <button class="dna-doc-sheet-close" onclick="OwnerView.closeChangePhotoModal()" title="Fechar">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/></svg>
                         </button>
                     </div>
 
@@ -4752,146 +4889,198 @@ const OwnerView = {
         }
     },
 
-    // 01. Tela de Boas-Vindas & Login (Fiel à Imagem Oficial - Fullscreen)
+    // ── 01. TELA: SPLASH DE BOAS-VINDAS — EXATAMENTE COMO NO PRINT OFICIAL (TELA 1) ──
     renderSplashAuth() {
         return `
-            <div class="splash-layout">
-                <!-- Imagem de fundo oficial enviada pelo usuário -->
-                <img
-                    src="/img/dna-auth-splash.png"
-                    alt="DNA AUTO — Seu veículo sempre protegido"
-                    class="splash-bg-img"
-                    onerror="this.onerror=null; this.src='/img/dna-auth-splash.jpg';"
-                />
+            <div class="dna-print-splash-layout">
+                <!-- Imagem do Carro com Faróis Acesos no Fundo -->
+                <div class="dna-print-splash-hero-wrap">
+                    <img
+                        src="/img/dna-auth-splash.png"
+                        alt="DNA AUTO"
+                        class="dna-print-splash-bg-img"
+                        onerror="this.onerror=null; this.src='/img/splash-car-hero.png';"
+                    />
+                    <div class="dna-print-splash-gradient"></div>
+                </div>
 
-                <!-- Gradiente suave inferior para assegurar legibilidade dos botões -->
-                <div class="splash-bottom-gradient"></div>
+                <div class="dna-print-splash-body">
+                    <!-- Topo: Marca e Subtítulo -->
+                    <div class="dna-print-splash-brand">
+                        <div class="dna-print-splash-logo-row">
+                            <span class="dna-print-splash-title">DNA <b style="color:#00D4FF;">AUTO</b></span>
+                        </div>
+                        <span class="dna-print-splash-sub">O HISTÓRICO DEFINITIVO DO SEU VEÍCULO</span>
+                    </div>
 
-                <!-- Botões de Acesso (Entrar e Cadastrar) perfeitamente posicionados para toque em celular -->
-                <nav class="splash-actions" aria-label="Acesso ao DNA AUTO">
-                    <button
-                        class="btn btn-entrar"
-                        id="btnEntrar"
-                        type="button"
-                        onclick="OwnerView.goToAuthScreen('login')"
-                    >
-                        <span>Entrar</span>
-                    </button>
+                    <!-- 3 Bullets Explicativos com Ícones -->
+                    <div class="dna-print-bullets-list">
+                        <div class="dna-print-bullet-item">
+                            <div class="dna-print-bullet-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                            </div>
+                            <div class="dna-print-bullet-text">
+                                <strong>Histórico Completo</strong>
+                                <p>Acesse manutenções, peças e revisões em um só lugar</p>
+                            </div>
+                        </div>
 
-                    <button
-                        class="btn btn-cadastrar"
-                        id="btnCadastrar"
-                        type="button"
-                        onclick="OwnerView.goToAuthScreen('register')"
-                    >
-                        <span>Cadastrar</span>
-                    </button>
-                </nav>
+                        <div class="dna-print-bullet-item">
+                            <div class="dna-print-bullet-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2.3"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                            </div>
+                            <div class="dna-print-bullet-text">
+                                <strong>Alertas Inteligentes</strong>
+                                <p>Notificações preventivas para você nunca perder o prazo</p>
+                            </div>
+                        </div>
+
+                        <div class="dna-print-bullet-item">
+                            <div class="dna-print-bullet-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2.3"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            </div>
+                            <div class="dna-print-bullet-text">
+                                <strong>Valorize seu Carro</strong>
+                                <p>Comprovante digital que aumenta o valor de revenda</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dots Indicadores de Slide -->
+                    <div class="dna-print-dots-row">
+                        <span class="dna-print-dot active"></span>
+                        <span class="dna-print-dot"></span>
+                        <span class="dna-print-dot"></span>
+                    </div>
+
+                    <!-- Botões de Ação: Entrar e Cadastrar -->
+                    <div class="dna-print-splash-buttons">
+                        <button class="dna-print-btn-entrar" id="btnEntrar" onclick="OwnerView.goToAuthScreen('login')">
+                            <span>Entrar</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+
+                        <button class="dna-print-btn-cadastrar" id="btnCadastrar" onclick="OwnerView.goToAuthScreen('register')">
+                            <span>Cadastrar</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         `;
     },
 
-    // 02. Login Oficial (Entrar no DNA AUTO - Modelo Oficial)
+    // ── 02. TELA: LOGIN OFICIAL — EXATAMENTE COMO NO PRINT OFICIAL (TELA 2) ──
     renderLoginAuth() {
         return `
-            <div class="splash-layout">
-                <!-- Imagem de fundo oficial -->
-                <img
-                    src="/img/dna-auth-splash.png"
-                    alt="DNA AUTO — Login"
-                    class="splash-bg-img"
-                    onerror="this.onerror=null; this.src='/img/dna-auth-splash.jpg';"
-                />
+            <div class="dna-print-login-layout">
+                <!-- Topo Escuro com Logo e Identidade -->
+                <div class="dna-print-login-top-bar">
+                    <button class="dna-print-btn-back-circle" type="button" onclick="OwnerView.goToAuthScreen('splash')" title="Voltar">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                    </button>
+                    <div class="dna-print-top-brand">
+                        <span style="font-weight:900; font-size:16px; color:#FFFFFF;">DNA <b style="color:#00D4FF;">AUTO</b></span>
+                    </div>
+                    <div style="width:36px;"></div>
+                </div>
 
-                <!-- Botão voltar discreto no topo esquerdo para retornar à splash -->
-                <button class="login-back-btn" type="button" onclick="OwnerView.goToAuthScreen('splash')" aria-label="Voltar para tela inicial" title="Voltar">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m15 18-6-6 6-6"></path>
-                    </svg>
-                </button>
+                <div class="dna-print-login-header-area">
+                    <h2 class="dna-print-login-title">Bem-vindo de volta</h2>
+                    <p class="dna-print-login-sub">Acesse sua conta para ver o histórico do seu veículo</p>
+                </div>
 
-                <!-- Gradiente suave inferior para legibilidade dos campos -->
-                <div class="splash-bottom-gradient"></div>
+                <!-- Bottom Sheet Branco Elevado (Modelo Oficial) -->
+                <div class="dna-print-bottom-sheet">
+                    <div id="auth-error-box" class="dna-print-error-banner" style="display:none;"></div>
 
-                <!-- Formulário de Login Posicionado sobre o Solo (Modelo Exato da Foto) -->
-                <div class="login-form-container">
-                    <div id="auth-error-box" class="auth-alert-box" style="display:none; background:rgba(239,68,68,0.18); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:12px; font-size:12.5px; margin-bottom:12px; text-align:center;"></div>
-
-                    <form id="form-login" onsubmit="OwnerView.handleLoginSubmit(event)" class="login-fields-form">
+                    <form id="form-login" onsubmit="OwnerView.handleLoginSubmit(event)" class="dna-print-form">
                         <!-- Campo 1: E-mail ou CPF -->
-                        <div class="cyber-input-pill">
-                            <div class="pill-icon-left">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="12" cy="7" r="4"></circle>
-                                </svg>
+                        <div class="dna-print-input-group">
+                            <label class="dna-print-label" for="login-email-input">E-mail ou CPF</label>
+                            <div class="dna-print-input-wrap">
+                                <input
+                                    id="login-email-input"
+                                    class="dna-print-input"
+                                    type="text"
+                                    placeholder="seu@email.com ou 000.000.000-00"
+                                    required
+                                    autocomplete="username"
+                                />
                             </div>
-                            <div class="pill-divider"></div>
-                            <input
-                                id="email"
-                                class="pill-input"
-                                type="text"
-                                placeholder="E-mail ou CPF"
-                                required
-                                autocomplete="username"
-                            />
                         </div>
 
                         <!-- Campo 2: Senha -->
-                        <div class="cyber-input-pill">
-                            <div class="pill-icon-left">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                </svg>
+                        <div class="dna-print-input-group">
+                            <label class="dna-print-label" for="login-password">Senha</label>
+                            <div class="dna-print-input-wrap">
+                                <input
+                                    id="login-password"
+                                    class="dna-print-input"
+                                    type="password"
+                                    placeholder="Sua senha"
+                                    required
+                                    autocomplete="current-password"
+                                />
+                                <button
+                                    type="button"
+                                    id="auth-eye-icon"
+                                    class="dna-print-eye-btn"
+                                    onclick="OwnerView.togglePasswordVisibility()"
+                                    title="Mostrar/ocultar senha"
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
                             </div>
-                            <div class="pill-divider"></div>
-                            <input
-                                id="senha"
-                                class="pill-input"
-                                type="password"
-                                placeholder="Senha"
-                                required
-                                autocomplete="current-password"
-                            />
-                            <button
-                                type="button"
-                                id="auth-eye-icon"
-                                class="pill-icon-right btn-toggle-pass"
-                                onclick="OwnerView.togglePasswordVisibility()"
-                                aria-label="Mostrar ou ocultar senha"
-                                title="Mostrar/ocultar senha"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                                    <circle cx="12" cy="12" r="3"></circle>
-                                </svg>
-                            </button>
                         </div>
 
                         <!-- Linha de Opções: Lembrar de mim & Esqueceu a senha -->
-                        <div class="login-options-row">
-                            <label class="remember-checkbox-label">
-                                <input type="checkbox" id="remember-me" checked class="cyber-checkbox" />
-                                <span class="custom-checkbox"></span>
-                                <span class="remember-text">Lembrar de mim</span>
+                        <div class="dna-print-options-row">
+                            <label class="dna-print-remember-label">
+                                <input type="checkbox" id="remember-me" checked class="dna-print-checkbox" />
+                                <span>Lembrar de mim</span>
                             </label>
-                            <a class="forgot-link" href="javascript:void(0)" onclick="alert('Instruções de recuperação foram enviadas para o seu e-mail cadastrado.')">Esqueceu a senha?</a>
+                            <a class="dna-print-forgot-link" href="javascript:void(0)" onclick="alert('Instruções de recuperação foram enviadas para o seu e-mail cadastrado.')">
+                                Esqueceu a senha?
+                            </a>
                         </div>
 
                         <!-- Botão Entrar -->
-                        <button id="btn-submit-login" class="btn btn-entrar btn-entrar-login" type="submit">
+                        <button id="btn-submit-login" class="dna-print-btn-submit" type="submit">
                             <span>Entrar</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                         </button>
 
-                        <!-- Link para Cadastro & Ativação com Código da Oficina -->
-                        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 14px; padding: 0 4px; font-size: 13px;">
-                            <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('register')" style="color: #00D4FF; font-weight: 600; text-decoration: none;">Não tem uma conta? Criar cadastro</a>
-                            <div style="width: 100%; border-top: 1px dashed rgba(0, 212, 255, 0.25); margin: 6px 0;"></div>
-                            <span style="font-size: 11.5px; color: #94A3B8;">Recebeu o código de acesso da sua oficina?</span>
-                            <button type="button" onclick="OwnerView.openActivationModal()" style="background: rgba(0, 212, 255, 0.12); border: 1.5px solid #00D4FF; color: #00D4FF; border-radius: 9999px; padding: 7px 16px; font-weight: 800; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                                <span>🔑 Entrar com Código da Oficina</span>
+                        <!-- Divisor ou entre com -->
+                        <div class="dna-print-divider-row">
+                            <span class="dna-print-divider-line"></span>
+                            <span class="dna-print-divider-text">ou entre com</span>
+                            <span class="dna-print-divider-line"></span>
+                        </div>
+
+                        <!-- Botões Sociais Google e Apple -->
+                        <div class="dna-print-social-row">
+                            <button type="button" class="dna-print-social-btn" onclick="alert('Conexão Google temporariamente em homologação.');">
+                                <svg width="18" height="18" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.14z"/>
+                                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.15C3.26 21.36 7.36 24 12 24z"/>
+                                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.25C.45 8.18 0 9.99 0 12s.45 3.82 1.25 5.42l4.03-3.15z"/>
+                                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.36 0 3.26 2.64 1.25 6.58l4.03 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                                </svg>
+                                <span>Google</span>
                             </button>
+
+                            <button type="button" class="dna-print-social-btn" onclick="alert('Conexão Apple temporariamente em homologação.');">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.89c.66-.82 1.11-1.96.99-3.1-.96.04-2.12.64-2.8 1.44-.61.7-.1.14-1.78.27.05 1.04.57 2.14 1.81 2.83.67.5 1.34.72 1.78-.17"/>
+                                </svg>
+                                <span>Apple</span>
+                            </button>
+                        </div>
+
+                        <!-- Rodapé: Não tem conta? Cadastre-se -->
+                        <div class="dna-print-footer-link-row">
+                            <span>Não tem uma conta?</span>
+                            <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('register')">Cadastre-se</a>
                         </div>
                     </form>
                 </div>
@@ -4900,156 +5089,137 @@ const OwnerView = {
     },
 
     // 03. Criar Cadastro Oficial (com Campo de Placa Dinâmico e Barras de Verificação HUD)
+    // ── 03. TELA: CRIAR CADASTRO — EXATAMENTE COMO NO PRINT OFICIAL (TELA 3) ──
     renderRegisterAuth() {
         return `
-            <div class="splash-layout register-layout">
-                <!-- Imagem de Fundo Oficial Wallpaper Fixa -->
-                <div class="splash-bg-fixed"></div>
-
-                <!-- Barra Superior com Botão Voltar Discreto e Identidade Visual DNA AUTO -->
-                <div class="register-header-bar">
-                    <button class="login-back-btn" type="button" onclick="OwnerView.goToAuthScreen('splash')" aria-label="Voltar para início" title="Voltar">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m15 18-6-6 6-6"></path>
-                        </svg>
+            <div class="dna-print-register-layout">
+                <!-- Topo com Botão Voltar -->
+                <div class="dna-print-register-top-bar">
+                    <button class="dna-print-btn-back-clean" type="button" onclick="OwnerView.goToAuthScreen('splash')" title="Voltar">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0F172A" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                     </button>
-                    <div class="brand-top-pill register-brand-pill">
-                        <img src="/img/dna-logo-aura.png" class="register-logo-img" alt="DNA AUTO" onerror="this.src='/img/splash-d-logo.png';" />
-                        <span class="register-logo-text">DNA <b style="color:#00D4FF;">AUTO</b></span>
+                    <div class="dna-print-top-brand-dark">
+                        <span>DNA <b style="color:#0066FF;">AUTO</b></span>
+                    </div>
+                    <div style="width:32px;"></div>
+                </div>
+
+                <!-- Cabeçalho com Título à Esquerda e Foto do Carro à Direita -->
+                <div class="dna-print-register-hero">
+                    <div class="dna-print-register-hero-text">
+                        <h1 class="dna-print-register-title">Crie sua conta</h1>
+                        <p class="dna-print-register-sub">Leva menos de 1 minuto</p>
+                    </div>
+                    <div class="dna-print-register-hero-media">
+                        <img src="/img/cadastro-car.jpg" alt="DNA AUTO Veículo" class="dna-print-register-car-img" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
                     </div>
                 </div>
 
-                <!-- Formulário de Cadastro Cyberpunk com Pílulas e Auditoria Cadastral -->
-                <div class="register-form-container">
-                    <div class="register-title-box">
-                        <h1 class="register-title">Criar cadastro</h1>
-                        <p class="register-subtitle">Junte-se à rede de proteção e certificação veicular DNA AUTO</p>
-                    </div>
+                <!-- Formulário de Cadastro Clean Oficial -->
+                <div class="dna-print-register-card">
+                    <div id="auth-reg-error-box" class="dna-print-error-banner" style="display:none;"></div>
 
-                    <div id="auth-reg-error-box" style="display:none; background:rgba(239,68,68,0.18); border:1px solid #EF4444; color:#FCA5A5; padding:10px 14px; border-radius:12px; font-size:12.5px; margin-bottom:14px; text-align:center;"></div>
-
-                    <form id="form-register" onsubmit="OwnerView.handleClientRegisterSubmit(event)" class="register-fields-form">
-                        <!-- Campo Placa do Veículo com Verificação Automática -->
-                        <div class="form-field-group">
-                            <div class="field-label-row">
-                                <label class="cyber-label" for="placa">Placa do Veículo</label>
-                                <button type="button" class="cyber-badge-official" onclick="OwnerView.triggerManualPlateSearch()" title="Puxar dados oficiais">
+                    <form id="form-register" onsubmit="OwnerView.handleClientRegisterSubmit(event)" class="dna-print-form">
+                        <!-- Card de Placa Mercosul com Bandeira do Brasil -->
+                        <div class="dna-print-plate-card">
+                            <div class="dna-print-plate-header-row">
+                                <span class="dna-print-plate-label">Placa do Veículo</span>
+                                <span class="dna-print-plate-auto-tag">
                                     <span class="pulse-dot"></span>
-                                    <span>Puxar dados oficiais</span>
-                                </button>
+                                    <span>Consultar placa automaticamente</span>
+                                </span>
                             </div>
-                            <div class="cyber-input-pill plate-input-pill">
-                                <div class="pill-plate-flag">
-                                    <span class="flag-br-badge">BR</span>
+                            <div class="dna-print-plate-box">
+                                <div class="dna-print-plate-flag">
+                                    <span class="flag-br-pill">BR</span>
+                                    <span class="flag-country">BRASIL</span>
                                 </div>
-                                <div class="pill-divider"></div>
                                 <input
                                     id="placa"
                                     type="text"
-                                    class="pill-input plate-cyber-input"
+                                    class="dna-print-plate-input"
                                     placeholder="BRA2E19"
                                     maxlength="7"
+                                    value="BRA2E19"
                                     autocomplete="off"
                                     oninput="OwnerView.handlePlateSearchInput(this)"
                                     onblur="OwnerView.handlePlateSearchInput(this, true)"
                                 />
                                 <div id="auth-plate-search-indicator" class="plate-indicator-box"></div>
                             </div>
-                            <span class="cyber-helper-text">Digite a placa para carregar os dados cadastrais do seu carro.</span>
                         </div>
 
-                        <!-- Card Dinâmico de Auditoria Cadastral (HUD Checklist Bars com Todos os Dados) -->
+                        <!-- Card Dinâmico de Detalhes da Placa se encontrada -->
                         <div id="auth-plate-preview-card" style="display:none;"></div>
 
                         <!-- Nome Completo -->
-                        <div class="form-field-group">
-                            <label class="cyber-label" for="nome">Nome Completo</label>
-                            <div class="cyber-input-pill">
-                                <div class="pill-icon-left">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                                        <circle cx="12" cy="7" r="4"></circle>
-                                    </svg>
-                                </div>
-                                <div class="pill-divider"></div>
-                                <input id="nome" class="pill-input" type="text" placeholder="Seu nome completo" required autocomplete="name" />
+                        <div class="dna-print-input-group">
+                            <label class="dna-print-label" for="nome">Nome Completo</label>
+                            <div class="dna-print-input-wrap">
+                                <input id="nome" class="dna-print-input" type="text" placeholder="Ex: João Silva" required autocomplete="name" />
                             </div>
                         </div>
 
                         <!-- E-mail -->
-                        <div class="form-field-group">
-                            <label class="cyber-label" for="email">E-mail</label>
-                            <div class="cyber-input-pill">
-                                <div class="pill-icon-left">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-                                    </svg>
-                                </div>
-                                <div class="pill-divider"></div>
-                                <input id="email" class="pill-input" type="email" placeholder="seu@email.com" required autocomplete="email" />
+                        <div class="dna-print-input-group">
+                            <label class="dna-print-label" for="email">E-mail</label>
+                            <div class="dna-print-input-wrap">
+                                <input id="email" class="dna-print-input" type="email" placeholder="seu@email.com" required autocomplete="email" />
                             </div>
                         </div>
 
-                        <!-- WhatsApp (para alertas de revisão) -->
-                        <div class="form-field-group">
-                            <label class="cyber-label" for="whatsapp">WhatsApp (para alertas de revisão)</label>
-                            <div class="cyber-input-pill">
-                                <div class="pill-icon-left">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                                    </svg>
-                                </div>
-                                <div class="pill-divider"></div>
-                                <input id="whatsapp" class="pill-input" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" oninput="if(typeof maskPhone==='function') maskPhone(this)" />
+                        <!-- WhatsApp / Telefone -->
+                        <div class="dna-print-input-group">
+                            <label class="dna-print-label" for="whatsapp">WhatsApp / Telefone</label>
+                            <div class="dna-print-input-wrap">
+                                <input id="whatsapp" class="dna-print-input" type="tel" placeholder="(11) 99999-9999" autocomplete="tel" oninput="if(typeof maskPhone==='function') maskPhone(this)" />
                             </div>
                         </div>
 
                         <!-- Senha -->
-                        <div class="form-field-group">
-                            <label class="cyber-label" for="senha">Senha</label>
-                            <div class="cyber-input-pill">
-                                <div class="pill-icon-left">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-                                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                                    </svg>
-                                </div>
-                                <div class="pill-divider"></div>
-                                <input id="senha" class="pill-input" type="password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" />
+                        <div class="dna-print-input-group">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                                <label class="dna-print-label" for="senha" style="margin-bottom:0;">Senha</label>
+                                <span class="dna-print-pass-strength">Força: <b>Forte</b></span>
+                            </div>
+                            <div class="dna-print-input-wrap">
+                                <input id="senha" class="dna-print-input" type="password" placeholder="Mínimo 6 caracteres" required autocomplete="new-password" />
                                 <button
                                     type="button"
-                                    class="pill-icon-right btn-toggle-pass"
+                                    class="dna-print-eye-btn"
                                     onclick="OwnerView.togglePasswordVisibility('senha')"
-                                    aria-label="Mostrar ou ocultar senha"
                                     title="Mostrar/ocultar senha"
                                 >
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                    </svg>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                                 </button>
+                            </div>
+                            <!-- Barra de Força da Senha Verde -->
+                            <div class="dna-print-pass-bar-track">
+                                <div class="dna-print-pass-bar-fill"></div>
                             </div>
                         </div>
 
+                        <!-- Checkbox Termos de Uso -->
+                        <label class="dna-print-terms-row">
+                            <input type="checkbox" id="terms-accept" checked required class="dna-print-checkbox" />
+                            <span>Li e aceito os <b>Termos de Uso</b> e <b>Política de Privacidade</b></span>
+                        </label>
+
                         <!-- Botão Criar Minha Conta -->
-                        <button id="btn-submit-register" class="btn btn-entrar btn-entrar-login" type="submit" style="margin-top: 8px;">
+                        <button id="btn-submit-register" class="dna-print-btn-submit" type="submit">
                             <span>Criar Minha Conta</span>
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                                <line x1="19" y1="8" x2="19" y2="14"></line>
-                                <line x1="22" y1="11" x2="16" y2="11"></line>
-                            </svg>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
                         </button>
 
                         <!-- Link para Fazer Login -->
-                        <div style="display: flex; justify-content: center; align-items: center; margin-top: 14px; padding: 0 4px; font-size: 13.5px;">
-                            <span style="color: #94A3B8; margin-right: 6px;">Já possui uma conta?</span>
-                            <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('login')" style="color: #00D4FF; font-weight: 700; text-decoration: none;">Fazer Login</a>
+                        <div class="dna-print-footer-link-row">
+                            <span>Já tem uma conta?</span>
+                            <a href="javascript:void(0)" onclick="OwnerView.goToAuthScreen('login')">Entrar</a>
                         </div>
                     </form>
                 </div>
+
+                <div style="height:16px;"></div>
             </div>
         `;
     },

@@ -5428,7 +5428,1221 @@
     border-color: #00D4FF;
 }
 
+/* ==============================================================================
+   ESTILOS OFICIAIS DO APP DO CLIENTE (10 TELAS - FIEL AO PRINT DO USUÁRIO)
+   1. Splash | 2. Login | 3. Cadastro | 4. Dashboard | 5. Mini OBD (Bloqueado)
+   6. Serviços & Peças | 7. Revisões | 8. Alertas | 9. Gastos | 10. Oficinas
+   ============================================================================== */
 
+/* Viewport & Body Padrão Claro Apple/iOS */
+body.is-owner-app {
+    background: #F4F6FA !important;
+    color: #0F172A !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', Roboto, sans-serif !important;
+}
 
+body.is-owner-app .dna-app-viewport {
+    background: #F4F6FA !important;
+    color: #0F172A !important;
+}
 
+body.is-owner-app .dna-phone-frame {
+    background: #F4F6FA !important;
+    color: #0F172A !important;
+}
 
+/* Header Superior Fiel ao Print */
+.dna-print-header {
+    height: 54px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.dna-print-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dna-print-header-center {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: 0.5px;
+    color: #0F172A;
+}
+
+.dna-print-header-center svg {
+    filter: drop-shadow(0 2px 4px rgba(0, 102, 255, 0.3));
+}
+
+.dna-print-header-center span.brand-auto {
+    color: #0066FF;
+}
+
+.dna-print-header-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #0F172A;
+    transition: background 0.15s ease;
+    position: relative;
+}
+
+.dna-print-header-btn:hover {
+    background: #F1F5F9;
+}
+
+.dna-print-header-btn .bell-badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #EF4444;
+    border: 1.5px solid #FFFFFF;
+}
+
+/* Scroll Content */
+.dna-print-scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 16px 16px 84px 16px;
+    background: #F4F6FA;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Saudação no Topo */
+.dna-print-greeting {
+    margin-bottom: 16px;
+}
+
+.dna-print-greeting h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0 0 2px 0;
+    line-height: 1.25;
+}
+
+.dna-print-greeting p {
+    font-size: 13px;
+    color: #64748B;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Card Principal do Veículo Ativo (Toyota Corolla) */
+.dna-print-car-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.04);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.dna-print-car-card:active {
+    transform: scale(0.985);
+}
+
+.dna-print-car-thumb {
+    width: 64px;
+    height: 42px;
+    border-radius: 8px;
+    object-fit: contain;
+    background: #F8FAFC;
+    flex-shrink: 0;
+}
+
+.dna-print-car-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.dna-print-car-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dna-print-car-subtitle {
+    font-size: 12px;
+    color: #64748B;
+    margin: 0;
+    font-weight: 500;
+}
+
+.dna-print-car-chevron {
+    color: #94A3B8;
+    flex-shrink: 0;
+}
+
+/* Grade de 6 Cards da Dashboard (2 Colunas x 3 Linhas) */
+.dna-print-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.dna-print-grid-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 112px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03), 0 1px 2px rgba(15, 23, 42, 0.04);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    user-select: none;
+}
+
+.dna-print-grid-card:hover {
+    border-color: #CBD5E1;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+}
+
+.dna-print-grid-card:active {
+    transform: scale(0.97);
+}
+
+.dna-print-card-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.dna-print-card-icon-wrap.blue {
+    background: #EFF6FF;
+    color: #0066FF;
+}
+
+.dna-print-card-icon-wrap.green {
+    background: #ECFDF5;
+    color: #10B981;
+}
+
+.dna-print-card-icon-wrap.gray {
+    background: #F1F5F9;
+    color: #475569;
+}
+
+.dna-print-card-icon-wrap .card-red-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #EF4444;
+    color: #FFFFFF;
+    font-size: 9px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #FFFFFF;
+}
+
+.dna-print-card-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 3px 0;
+    line-height: 1.25;
+}
+
+.dna-print-card-meta {
+    font-size: 11.5px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.dna-print-card-meta.blue {
+    color: #0066FF;
+}
+
+.dna-print-card-meta.green {
+    color: #10B981;
+}
+
+.dna-print-card-meta.red {
+    color: #EF4444;
+}
+
+.dna-print-card-meta.gray {
+    color: #64748B;
+    font-weight: 500;
+}
+
+.dna-print-card-value-big {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0;
+}
+
+.dna-print-card-badge-soon {
+    display: inline-block;
+    background: #FEF3C7;
+    color: #B45309;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 9999px;
+}
+
+/* Barra de Navegação Inferior (4 Itens: Início, Veículo, Alertas, Perfil) */
+.dna-print-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #FFFFFF;
+    border-top: 1px solid #E2E8F0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    align-items: center;
+    z-index: 60;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.03);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.dna-print-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    cursor: pointer;
+    color: #94A3B8;
+    text-decoration: none;
+    font-size: 10.5px;
+    font-weight: 600;
+    transition: color 0.15s ease;
+    user-select: none;
+}
+
+.dna-print-nav-item.active {
+    color: #0066FF;
+}
+
+.dna-print-nav-item svg {
+    transition: transform 0.15s ease;
+}
+
+.dna-print-nav-item:active svg {
+    transform: scale(0.9);
+}
+
+/* Estilos de Sub-Telas (5 a 10) */
+.dna-print-page-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+
+.dna-print-page-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0;
+}
+
+.dna-print-page-sub {
+    font-size: 12px;
+    color: #64748B;
+    margin: 0 0 16px 0;
+    font-weight: 500;
+}
+
+/* Botão + Adicionar */
+.dna-print-btn-add {
+    background: #0066FF;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 9999px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.dna-print-btn-add:hover {
+    background: #0052CC;
+}
+
+/* Abas de Filtro Pílula */
+.dna-print-pills-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.dna-print-pill-tab {
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #FFFFFF;
+    color: #475569;
+    border: 1px solid #E2E8F0;
+}
+
+.dna-print-pill-tab.active {
+    background: #0066FF;
+    color: #FFFFFF;
+    border-color: #0066FF;
+}
+
+/* Screen 5: Mini OBD Bloqueado */
+.dna-obd-hero-banner {
+    position: relative;
+    width: 100%;
+    height: 130px;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    background: #0B132B;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dna-obd-hero-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dna-obd-shield-badge {
+    position: absolute;
+    top: 50%;
+    left: 24%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    color: #0F172A;
+}
+
+.dna-obd-feature-item {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.dna-obd-feature-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #EFF6FF;
+    color: #0066FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dna-obd-feature-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0F172A;
+}
+
+.dna-obd-disabled-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 9999px;
+    background: #E2E8F0;
+    color: #94A3B8;
+    border: none;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: not-allowed;
+    margin-top: 10px;
+}
+
+/* Screen 6: Serviços & Peças Timeline Item */
+.dna-print-service-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    cursor: pointer;
+}
+
+.dna-print-date-badge {
+    width: 44px;
+    height: 48px;
+    border-radius: 10px;
+    background: #F1F5F9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dna-print-date-day {
+    font-size: 15px;
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1;
+}
+
+.dna-print-date-year {
+    font-size: 9.5px;
+    font-weight: 600;
+    color: #64748B;
+    margin-top: 2px;
+}
+
+.dna-print-service-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.dna-print-service-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 2px 0;
+}
+
+.dna-print-service-sub {
+    font-size: 11px;
+    color: #64748B;
+    margin: 0 0 6px 0;
+}
+
+.dna-print-thumbs-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.dna-print-thumb-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: #E2E8F0;
+    border: 1px solid #CBD5E1;
+}
+
+/* Screen 7: Revisões Preventivas */
+.dna-print-rev-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dna-print-rev-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #EFF6FF;
+    color: #0066FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dna-print-rev-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.dna-print-rev-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 4px 0;
+}
+
+.dna-print-rev-km-row {
+    font-size: 11px;
+    color: #64748B;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.dna-print-rev-track {
+    width: 100%;
+    height: 5px;
+    background: #E2E8F0;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.dna-print-rev-fill {
+    height: 100%;
+    background: #0066FF;
+    border-radius: 9999px;
+}
+
+.dna-print-rev-pill-badge {
+    background: #FEF3C7;
+    color: #D97706;
+    font-size: 10.5px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Screen 8: Alertas & Manutenções Cards */
+.dna-print-alert-card {
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.dna-print-alert-card.red {
+    background: #FEF2F2;
+    border-color: #FECACA;
+}
+
+.dna-print-alert-card.yellow {
+    background: #FFFBEB;
+    border-color: #FDE68A;
+}
+
+.dna-print-alert-card.gray {
+    background: #F8FAFC;
+    border-color: #E2E8F0;
+}
+
+.dna-print-alert-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dna-print-alert-icon-box {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dna-print-alert-card.red .dna-print-alert-icon-box {
+    background: #FEE2E2;
+    color: #EF4444;
+}
+
+.dna-print-alert-card.yellow .dna-print-alert-icon-box {
+    background: #FEF3C7;
+    color: #F59E0B;
+}
+
+.dna-print-alert-card.gray .dna-print-alert-icon-box {
+    background: #E2E8F0;
+    color: #64748B;
+}
+
+.dna-print-alert-texts {
+    flex: 1;
+}
+
+.dna-print-alert-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+}
+
+.dna-print-alert-remaining {
+    font-size: 12px;
+    font-weight: 800;
+    margin-top: 1px;
+}
+
+.dna-print-alert-card.red .dna-print-alert-remaining {
+    color: #DC2626;
+}
+
+.dna-print-alert-card.yellow .dna-print-alert-remaining {
+    color: #D97706;
+}
+
+.dna-print-alert-card.gray .dna-print-alert-remaining {
+    color: #475569;
+}
+
+.dna-print-alert-rec {
+    font-size: 11px;
+    color: #64748B;
+    margin: 2px 0 0 42px;
+}
+
+.dna-print-alert-link {
+    font-size: 12px;
+    font-weight: 700;
+    color: #0066FF;
+    text-decoration: none;
+    margin-left: 42px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Screen 9: Gastos com Carro */
+.dna-print-expense-hero {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.dna-print-expense-total-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.dna-print-expense-total {
+    font-size: 26px;
+    font-weight: 900;
+    color: #0F172A;
+    line-height: 1;
+}
+
+.dna-print-expense-badge-green {
+    background: #DCFCE7;
+    color: #15803D;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 9999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dna-print-chart-box {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.dna-print-chart-bars {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    height: 110px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #E2E8F0;
+    position: relative;
+}
+
+.dna-print-chart-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+}
+
+.dna-print-bar {
+    width: 18px;
+    background: #0066FF;
+    border-radius: 6px 6px 0 0;
+    transition: height 0.3s ease;
+}
+
+.dna-print-chart-month {
+    font-size: 10px;
+    font-weight: 600;
+    color: #64748B;
+    position: absolute;
+    bottom: 2px;
+}
+
+.dna-print-expense-item {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.dna-print-expense-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #EFF6FF;
+    color: #0066FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.dna-print-expense-info {
+    flex: 1;
+}
+
+.dna-print-expense-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0;
+}
+
+.dna-print-expense-date {
+    font-size: 11px;
+    color: #64748B;
+    margin-top: 2px;
+}
+
+.dna-print-expense-val {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #0F172A;
+}
+
+/* Screen 10: Oficinas da Rede */
+.dna-print-map-card {
+    position: relative;
+    width: 100%;
+    height: 130px;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    border: 1px solid #E2E8F0;
+    background: #E2E8F0;
+}
+
+.dna-print-map-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.dna-print-map-pin {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    color: #0066FF;
+    filter: drop-shadow(0 2px 4px rgba(0, 102, 255, 0.4));
+}
+
+.dna-print-map-tooltip {
+    position: absolute;
+    top: 24px;
+    right: 18px;
+    background: #0066FF;
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 10px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4);
+}
+
+.dna-print-ws-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.dna-print-ws-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: #F1F5F9;
+    flex-shrink: 0;
+}
+
+.dna-print-ws-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.dna-print-ws-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0F172A;
+    margin: 0 0 2px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dna-print-ws-meta {
+    font-size: 11px;
+    color: #64748B;
+    margin: 0 0 2px 0;
+}
+
+.dna-print-ws-rating {
+    font-size: 11px;
+    color: #F59E0B;
+    font-weight: 700;
+}
+
+.dna-print-ws-btn-detail {
+    background: #FFFFFF;
+    border: 1px solid #0066FF;
+    color: #0066FF;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s, color 0.15s;
+}
+
+.dna-print-ws-btn-detail:hover {
+    background: #0066FF;
+    color: #FFFFFF;
+}
+
+/* Telas 1, 2, 3: Splash, Login e Cadastro */
+.dna-print-splash-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    background: #000B1A;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+    padding: 0 20px 24px 20px;
+    box-sizing: border-box;
+}
+
+.dna-print-splash-hero {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center top;
+    z-index: 1;
+}
+
+.dna-print-splash-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.dna-print-splash-bullets {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.dna-print-bullet-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.dna-print-bullet-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: rgba(0, 102, 255, 0.25);
+    border: 1px solid rgba(0, 212, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00D4FF;
+    flex-shrink: 0;
+}
+
+.dna-print-bullet-text {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #FFFFFF;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+
+.dna-print-splash-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.dna-print-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.dna-print-dot.active {
+    width: 22px;
+    border-radius: 9999px;
+    background: #00D4FF;
+}
+
+.dna-print-btn-solid-blue {
+    width: 100%;
+    height: 48px;
+    border-radius: 9999px;
+    background: #0066FF;
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(0, 102, 255, 0.4);
+    transition: background 0.15s, transform 0.15s;
+}
+
+.dna-print-btn-solid-blue:active {
+    transform: scale(0.98);
+}
+
+.dna-print-btn-outline {
+    width: 100%;
+    height: 48px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+    font-size: 15px;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+}
+
+.dna-print-btn-outline:active {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Screen 2: Login Sheet */
+.dna-print-login-sheet {
+    background: #FFFFFF;
+    border-radius: 28px 28px 0 0;
+    padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0)) 20px;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 10;
+}
+
+.dna-print-input-box {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 10px;
+    margin-bottom: 12px;
+    transition: border-color 0.15s;
+}
+
+.dna-print-input-box:focus-within {
+    border-color: #0066FF;
+    background: #FFFFFF;
+}
+
+.dna-print-input-box input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    color: #0F172A;
+    outline: none;
+}
+
+.dna-print-input-icon {
+    color: #94A3B8;
+    flex-shrink: 0;
+}
+
+.dna-print-login-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+    margin-bottom: 16px;
+    padding: 0 4px;
+}
+
+.dna-print-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #475569;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.dna-print-forgot-link {
+    color: #0066FF;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.dna-print-or-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0;
+    color: #94A3B8;
+    font-size: 11.5px;
+    font-weight: 500;
+}
+
+.dna-print-or-divider::before,
+.dna-print-or-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #E2E8F0;
+}
+
+.dna-print-social-row {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+}
+
+.dna-print-social-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+/* Screen 3: Cadastro Form */
+.dna-print-reg-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.dna-print-reg-car-thumb {
+    width: 90px;
+    height: 56px;
+    border-radius: 12px;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+}
+
+.dna-print-reg-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 4px;
+}

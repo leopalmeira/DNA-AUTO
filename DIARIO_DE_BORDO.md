@@ -1653,3 +1653,38 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   4. **Paridade & Garantia de Qualidade:**
      - 100% de paridade entre `oficina.app/`, `cliente.app/` e `public/`.
      - Todos os 56 testes automatizados aprovados com 100% de sucesso (`npm test`).
+
+---
+
+### Ciclo 81 (19/10/2026) - Redesign Completo do App do Cliente (OwnerView) 100% Identico as 10 Telas Oficiais do Print
+- **Contexto & Solicitacao do Usuario:**
+  - O usuario enviou o print oficial contendo a regua de 10 telas do App do Cliente (OwnerView) e exigiu conformidade 100% visual e funcional:
+    1. *Splash* (fundo escuro, farois acesos, bullets de valorizacao/historico/alertas, dots e botoes Entrar/Cadastrar)
+    2. *Login* (topo escuro com logo e carro, bottom sheet branco com inputs, checkbox, link de senha e botoes Google/Apple)
+    3. *Cadastro* (cabecalho com foto do Corolla azul a direita, placa Mercosul com bandeira do Brasil, campos clean e barra de forca de senha)
+    4. *Dashboard* (topo com menu, DNA AUTO e sino; saudacao "Ola, Leandro" / "Aqui esta o resumo do seu veiculo"; card branco do Corolla seda com placa e ano; grade 2x3 de 6 cards de acesso rapido; bottom nav com 4 abas: Inicio, Veiculo, Alertas, Perfil)
+    5. *Mini OBD (Bloqueado)* (banner escuro com dongle iluminado e escudo de cadeado branco, badge "Em Breve", 4 itens previstos e botao desativado)
+    6. *Servicos & Pecas* (botao "+ Adicionar", abas [Todos], [Servicos], [Pecas], itens com badge de data, titulo, oleo/peca, miniaturas de fotos e chevron)
+    7. *Revisoes Preventivas* (5 revisoes progressivas com barras de progresso azuis e badges ovais "Faltam X.000 km")
+    8. *Alertas & Manutencoes* (abas [Pendentes (2)] / [Concluidos], 3 cards coloridos: Vermelho urgente, Amarelo atencao, Azul programado, com link "Ver detalhes")
+    9. *Gastos com Carro* (valor de destaque R$ 2.430,00 com badge verde "-18%", grafico de barras dos ultimos 6 meses Abr-Set, filtros e lista de comprovantes)
+    10. *Oficinas da Rede* (banner com mapa, pins azuis e balao "Oficina Premium Car - A 2,3 km de voce", lista de 3 oficinas com foto, rating, distancia e botoes de acao)
+- **Implementacoes Tecnicas Realizadas:**
+  1. **Design System & Estilizacao CSS Especializada (owner-app.css):**
+     - Criadas classes sob medida: `.dna-print-*` cobrindo tipografia, cards brancos com sombra sutil (`box-shadow: 0 4px 20px rgba(0,0,0,0.06)`), badge Mercosul oficial com bandeira do Brasil, grade 2x3 responsiva (`.dna-print-quick-grid`), graficos de barras (`.dna-print-bar-chart`), tags de status e bottom navigation bar fixa com 4 abas e indicador ativo.
+     - Sincronizacao rigorosa e paridade entre `public/css/owner-app.css` e `cliente.app/css/owner-app.css`.
+  2. **Assets & Fotografia Oficial Integrada:**
+     - Fotos otimizadas geradas e sincronizadas em `public/img/` e `cliente.app/img/`:
+       * `corolla-card.jpg`: Corolla seda azul marinho em estudio para o Card do Dashboard (Tela 4).
+       * `cadastro-car.jpg`: Corolla seda em perspectiva angular para o cabecalho do Cadastro (Tela 3).
+       * `obd-dongle-hero.jpg`: Dongle Mini OBD2 com LED azul iluminado e escudo de seguranca (Tela 5).
+       * `map-texture-bg.jpg`: Mapa vetorial urbano limpo com pins para Oficinas da Rede (Tela 10).
+       * `ws-workshop-thumb1.jpg` e `ws-workshop-thumb3.jpg`: Fachadas reais de auto centers credenciados (Tela 10).
+       * `part-oil.jpg`: Oleo de motor sintetico e filtro para Servicos & Pecas (Tela 6).
+  3. **Logica de Navegacao e Componentes Reativos (ownerView.js):**
+     - Atualizacao dos metodos de roteamento `navigateTo(screen)` e `switchTab(tab)` para gerenciar as 4 abas oficiais (`home`, `vehicle`, `reminders`, `settings`) e as telas secundarias (`services`, `revisions`, `reminders`, `expenses`, `obd`, `workshops`).
+     - Implementados os renderizadores completos: `renderHomeScreen()`, `renderObdScreen()`, `renderServicesScreen()`, `renderRevisionsScreen()`, `renderRemindersScreen()`, `renderExpensesScreen()`, `renderWorkshopsScreen()`, `renderSplashAuth()`, `renderLoginAuth()` e `renderRegisterAuth()`.
+     - Garantida a paridade de codigo entre `public/js/components/ownerView.js` e `cliente.app/js/components/ownerView.js`.
+  4. **Garantia de Qualidade & Testes Automatizados:**
+     - Todos os 56 testes automatizados de integracao em `test/api.test.js` executados e aprovados com 100% de sucesso.
+
