@@ -531,3 +531,9 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
 - **Telemetria Autêntica:** Se não houver telemetria real sendo transmitida, o app exibe estado desconectado ou aguardando leitura da ECU (`--`), eliminando rotações (RPM) e temperaturas fictícias.
 - **Frontends Despoluídos:** Removidos usuários e formulários pré-preenchidos em `cliente.app/`, `oficina.app/` e `public/`.
 - **48/48 Testes Automatizados Aprovados com 100% de Sucesso.**
+
+### Ciclo 92 — Busca Automática de Veículo por Placa com Tabela FIPE Oficial e Conclusão Cadastral
+- **Busca por Placa em Tempo Real:** Ao digitar os 7 caracteres da placa no formulário de cadastro, o sistema consulta a API oficial de placas (`/api/v1/integrations/plate-lookup/:plate`) trazendo dados técnicos completos da base nacional.
+- **Card Dinâmico & Destaque Tabela FIPE:** Renderiza instantaneamente marca, modelo, versão, ano fabricação/modelo, cor, combustível, cilindrada, origem, chassi e valor oficial de mercado da Tabela FIPE (com código FIPE e mês de referência).
+- **Cadastro Fluido & Máscaras:** Aplicação de máscara em tempo real para WhatsApp `(XX) XXXXX-XXXX`, toggle de senha e submissão direta com geração de sessão e redirecionamento ao Dashboard.
+- **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**

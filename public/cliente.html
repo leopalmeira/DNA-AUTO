@@ -1757,99 +1757,159 @@
   stroke-width: 2;
 }
 
-/* Card Dinâmico de Confirmação do Carro pela Placa */
+/* Card Dinâmico de Confirmação do Carro pela Placa com FIPE Oficial */
 #register .car-preview-box {
   display: none;
   background: #ffffff;
-  border: 1.5px solid #28a745;
-  border-radius: 12px;
-  padding: 10px 12px;
-  box-shadow: 0 4px 14px rgba(40, 167, 69, 0.12);
-  margin-top: -2px;
-  animation: fadeInDown .2s ease;
+  border: 1.5px solid #10b981;
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.14);
+  margin-top: 4px;
+  margin-bottom: 4px;
+  animation: fadeInDown .25s ease;
+  box-sizing: border-box;
 }
 #register .car-preview-box.loading {
   display: flex !important;
-  border-color: #007bff;
-  color: #0056b3;
+  border-color: #0284c7 !important;
+  background: #f0f9ff !important;
+  color: #0369a1 !important;
   align-items: center;
-  gap: 8px;
-  font-size: 11.5px;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px;
+  font-size: 12.5px;
   font-weight: 600;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.12);
 }
 #register .car-preview-box.active {
   display: block !important;
+}
+#register .car-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
 }
 #register .car-badge-ok {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: #e8f7ec;
-  color: #1e7e34;
-  font-size: 10.5px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 11px;
   font-weight: 800;
-  padding: 3px 8px;
+  padding: 4px 8px;
   border-radius: 6px;
-  margin-bottom: 5px;
+  border: 1px solid #a7f3d0;
+}
+#register .car-plate-tag {
+  font-family: 'Inter', monospace, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  color: #0f172a;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 2px 7px;
+  border-radius: 5px;
+  letter-spacing: 0.5px;
 }
 #register .car-preview-title {
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 14px;
+  font-weight: 900;
   color: #0b2655;
-  line-height: 1.2;
+  line-height: 1.25;
+  margin-bottom: 3px;
 }
-#register .car-preview-sub {
-  font-size: 11.5px;
-  color: #43648f;
-  margin-top: 2px;
-  display: block;
+#register .car-preview-version {
+  font-size: 12px;
+  color: #3b577d;
+  line-height: 1.3;
+  margin-bottom: 8px;
 }
 
-#register .reg-submit-btn {
-  height: 42px;
-  width: 100%;
-  border: 0;
-  border-radius: 25px;
-  background: linear-gradient(105deg, #04a5ff, #0654ff);
-  color: white;
-  font-size: 14px;
-  font-weight: 700;
-  box-shadow: 0 6px 14px rgba(8, 115, 237, 0.27);
-  cursor: pointer;
+/* Bloco em Destaque da Tabela FIPE Oficial */
+#register .fipe-highlight-box {
+  background: linear-gradient(110deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 9px 12px;
+  margin: 7px 0 9px;
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+#register .fipe-title-line {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 4px;
-  transition: transform 0.15s ease;
+  justify-content: space-between;
+  gap: 6px;
 }
-#register .reg-submit-btn:active {
-  transform: scale(0.985);
-}
-#register .reg-login-link {
-  margin: 0;
-  text-align: center;
-  font-size: 12px;
-  color: #345681;
-}
-#register .reg-login-link button {
-  border: 0;
-  background: none;
-  color: #0063f5;
-  font-weight: 700;
-  font-size: 12px;
-  cursor: pointer;
-  padding: 4px;
-}
-#register .reg-message {
+#register .fipe-label-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 11.5px;
-  text-align: center;
-  min-height: 14px;
-  color: #b21b39;
+  font-weight: 700;
+  color: #e0f2fe;
 }
+#register .fipe-val {
+  font-size: 16px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+#register .fipe-sub {
+  font-size: 10.5px;
+  color: #bae6fd;
+  line-height: 1.2;
+}
+
+/* Grade de Especificações Técnicas do Carro */
+#register .car-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+#register .spec-item {
+  font-size: 11px;
+  line-height: 1.3;
+  color: #475569;
+  display: flex;
+  gap: 4px;
+}
+#register .spec-item .spec-k {
+  color: #64748b;
+  font-weight: 600;
+}
+#register .spec-item .spec-v {
+  color: #0f172a;
+  font-weight: 700;
+}
+#register .car-verified-footer {
+  font-size: 10.5px;
+  color: #059669;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 @keyframes fadeInDown {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 
@@ -2194,20 +2254,48 @@
   </div>
   <form id="reg-form" class="register-form-native" novalidate="novalidate" onsubmit="return handleRegisterSubmit(event)">
     <div class="reg-field">
-      <label for="reg-placa">Placa do Veículo</label>
+      <label for="reg-placa">Placa do Veículo <span class="note">(busca automática na API Placas)</span></label>
       <div class="reg-input-wrap">
         <span class="reg-ico">
           <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M7 8h10M8 13h2m4 0h2M8 17h8"/></svg>
         </span>
-        <input id="reg-placa" name="placa" value="BRA2E19" maxlength="7" required aria-label="Placa do veículo" oninput="handlePlacaInput(this)">
+        <input id="reg-placa" name="placa" value="BRA2E19" maxlength="7" required aria-label="Placa do veículo" oninput="handlePlacaSearch(this)" onblur="handlePlacaSearch(this)">
         <span class="reg-flag">🇧🇷</span>
       </div>
     </div>
-    <!-- Card dinâmico puxado da API com os dados do carro -->
-    <div id="car-preview" class="car-preview-box active">
-      <div class="car-badge-ok">✓ Veículo Localizado na Base Oficial</div>
-      <div class="car-preview-title" id="prev-model">TOYOTA COROLLA XEi 2.0 FLEX 16V AUT.</div>
-      <span class="car-preview-sub" id="prev-details">Ano 2021/2021 • Flex • Cor Prata • Placa BRA2E19</span>
+    <!-- Card dinâmico da API Placas com todos os dados do veículo e cotação oficial FIPE -->
+    <div id="car-preview" class="car-preview-box" style="display:none;">
+      <div class="car-preview-header">
+        <span class="car-badge-ok">✓ Veículo Localizado na API Placas</span>
+        <span class="car-plate-tag" id="prev-plate">🇧🇷 ---</span>
+      </div>
+      <div class="car-preview-title" id="prev-title">---</div>
+      <div class="car-preview-version" id="prev-version">---</div>
+      
+      <!-- Bloco de Destaque FIPE Oficial -->
+      <div class="fipe-highlight-box">
+        <div class="fipe-title-line">
+          <div class="fipe-label-wrap">
+            <span>📊</span>
+            <strong>Cotação Oficial Tabela FIPE:</strong>
+          </div>
+          <span class="fipe-val" id="prev-fipe-val">R$ ---</span>
+        </div>
+        <div class="fipe-sub" id="prev-fipe-sub">Cód. FIPE: --- • Mês Ref: ---</div>
+      </div>
+
+      <!-- Ficha Técnica Completa -->
+      <div class="car-specs-grid">
+        <div class="spec-item"><span class="spec-k">Ano:</span> <strong class="spec-v" id="prev-ano">---</strong></div>
+        <div class="spec-item"><span class="spec-k">Cor:</span> <strong class="spec-v" id="prev-cor">---</strong></div>
+        <div class="spec-item"><span class="spec-k">Combustível:</span> <strong class="spec-v" id="prev-comb">---</strong></div>
+        <div class="spec-item"><span class="spec-k">Motor/Cil.:</span> <strong class="spec-v" id="prev-motor">---</strong></div>
+        <div class="spec-item"><span class="spec-k">Origem:</span> <strong class="spec-v" id="prev-origem">---</strong></div>
+        <div class="spec-item"><span class="spec-k">Chassi:</span> <strong class="spec-v" id="prev-chassi">---</strong></div>
+      </div>
+      <div class="car-verified-footer">
+        <span>🛡️ Dados oficiais confirmados para emissão do Passaporte DNA AUTO</span>
+      </div>
     </div>
 
     <div class="reg-field">
@@ -2771,7 +2859,24 @@ if (document.readyState === 'loading') {
   initSplashButtons();
 }
 
-function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));document.getElementById('menu').classList.remove('open');window.scrollTo(0,0)}function toggle(id){let e=document.getElementById(id);e.type=e.type==='password'?'text':'password'}function tap(el){el.style.transform='scale(.97)';setTimeout(()=>el.style.transform='',160)}let t;function toast(message){let e=document.getElementById('toast');e.textContent=message;e.style.display='block';clearTimeout(t);t=setTimeout(()=>e.style.display='none',2400)}
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+  const m = document.getElementById('menu');
+  if (m) m.classList.remove('open');
+  window.scrollTo(0,0);
+  if (id === 'register') {
+    setTimeout(() => {
+      const plateInput = document.getElementById('reg-placa');
+      if (plateInput && plateInput.value && plateInput.value.trim().length === 7 && !window.currentRegisteredVehicle) {
+        handlePlacaSearch(plateInput);
+      }
+    }, 60);
+  }
+}
+function toggle(id){let e=document.getElementById(id);e.type=e.type==='password'?'text':'password'}
+function tap(el){el.style.transform='scale(.97)';setTimeout(()=>el.style.transform='',160)}
+let t;
+function toast(message){let e=document.getElementById('toast');if(e){e.textContent=message;e.style.display='block';clearTimeout(t);t=setTimeout(()=>e.style.display='none',2400);}}
 function abrirDashboard(event){
  if(event){event.preventDefault();event.stopPropagation();}
  go('dashboard');
@@ -2780,6 +2885,284 @@ function abrirDashboard(event){
 // Ação direta, independente da validação nativa do navegador.
 document.getElementById('btn-entrar').addEventListener('click',abrirDashboard);
 document.getElementById('login-form').addEventListener('submit',abrirDashboard);
+
+// --- FUNÇÕES DA TELA DE CADASTRO COM CONSULTA DA API PLACAS & TABELA FIPE ---
+let plateSearchTimeout = null;
+let lastSearchedPlaca = '';
+window.currentRegisteredVehicle = null;
+
+function handleWhatsInput(input) {
+  if (!input) return;
+  let v = input.value.replace(/\D/g, '');
+  if (v.length > 11) v = v.substring(0, 11);
+  if (v.length > 10) {
+    input.value = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+  } else if (v.length > 6) {
+    input.value = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+  } else if (v.length > 2) {
+    input.value = v.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+  } else {
+    input.value = v;
+  }
+}
+
+function togglePasswordVisibility(id) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.type = el.type === 'password' ? 'text' : 'password';
+  }
+}
+
+function handlePlacaSearch(input) {
+  if (!input) input = document.getElementById('reg-placa');
+  if (!input) return;
+
+  let val = (input.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (val.length > 7) val = val.substring(0, 7);
+  input.value = val;
+
+  const previewBox = document.getElementById('car-preview');
+  if (!previewBox) return;
+
+  if (val.length === 0) {
+    previewBox.style.display = 'none';
+    previewBox.className = 'car-preview-box';
+    lastSearchedPlaca = '';
+    window.currentRegisteredVehicle = null;
+    return;
+  }
+
+  if (val.length < 7) {
+    return;
+  }
+
+  if (val.length === 7) {
+    clearTimeout(plateSearchTimeout);
+    plateSearchTimeout = setTimeout(() => {
+      executarBuscaPlacaOficial(val);
+    }, 250);
+  }
+}
+
+async function executarBuscaPlacaOficial(placa) {
+  const cleanPlate = (placa || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (cleanPlate.length !== 7) return;
+
+  lastSearchedPlaca = cleanPlate;
+  const previewBox = document.getElementById('car-preview');
+  if (!previewBox) return;
+
+  previewBox.className = 'car-preview-box loading';
+  previewBox.style.display = 'flex';
+  previewBox.innerHTML = `
+    <div style="width:18px; height:18px; border:2.5px solid rgba(2,132,199,0.25); border-top-color:#0284c7; border-radius:50%; animation:spin 0.65s linear infinite; flex-shrink:0;"></div>
+    <span style="font-size:12.5px; font-weight:700; color:#0369a1;">Consultando dados oficiais na API Placas (Base Nacional / FIPE)...</span>
+  `;
+
+  try {
+    const res = await fetch('/api/v1/integrations/plate-lookup/' + encodeURIComponent(cleanPlate));
+    const data = await res.json();
+
+    if (!res.ok || !data.found || !data.vehicle) {
+      previewBox.className = 'car-preview-box active';
+      previewBox.style.display = 'block';
+      previewBox.style.borderColor = '#f59e0b';
+      previewBox.style.boxShadow = '0 4px 14px rgba(245,158,11,0.15)';
+      previewBox.innerHTML = `
+        <div class="car-preview-header">
+          <span style="display:inline-flex; align-items:center; gap:5px; background:#fffbeb; color:#b45309; font-size:11px; font-weight:800; padding:4px 8px; border-radius:6px; border:1px solid #fde68a;">
+            ⚠️ Placa Não Encontrada na Base Oficial
+          </span>
+          <span class="car-plate-tag">🇧🇷 ${cleanPlate}</span>
+        </div>
+        <div style="font-size:12px; color:#64748b; line-height:1.4; margin:6px 0;">
+          A placa <strong>${cleanPlate}</strong> não foi localizada nos registros da API Placas. Você pode continuar o cadastro preenchendo seus dados abaixo normalmente.
+        </div>
+      `;
+      window.currentRegisteredVehicle = null;
+      return;
+    }
+
+    const v = data.vehicle;
+    window.currentRegisteredVehicle = v;
+
+    const brand = v.brand || (v.specs && v.specs.marca) || 'Veículo';
+    const model = v.model || (v.specs && v.specs.modelo) || '';
+    const version = v.version || v.version_label || (v.specs && v.specs.versao) || (brand + ' ' + model);
+    const yearFab = v.manufacture_year || (v.specs && v.specs.ano_fabricacao) || '---';
+    const yearMod = v.model_year || (v.specs && v.specs.ano_modelo) || '---';
+    const color = (v.color && v.color !== 'Não informada') ? v.color : ((v.specs && v.specs.cor) || 'Não informada');
+    const fuel = v.fuel_type || (v.specs && v.specs.combustivel) || 'Não informado';
+    const displacement = v.engine_displacement || (v.specs && v.specs.cilindradas_formatada) || '---';
+    const chassi = v.chassis_vin_masked || v.chassis_vin || (v.specs && v.specs.chassi) || 'Auditado';
+    const city = (v.origin && v.origin.city) || (v.specs && v.specs.municipio) || v.city || 'Origem nacional';
+    const state = (v.origin && v.origin.state) || (v.specs && v.specs.uf) || v.state || 'BR';
+
+    let fipeFormatted = 'Não informada pela Tabela FIPE';
+    let fipeCode = '---';
+    let refMonth = 'Mês vigente';
+
+    if (v.fipe) {
+      if (v.fipe.market_value_formatted) fipeFormatted = v.fipe.market_value_formatted;
+      else if (v.fipe_price_cents) fipeFormatted = (v.fipe_price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      if (v.fipe.fipe_code) fipeCode = v.fipe.fipe_code;
+      if (v.fipe.reference_month) refMonth = v.fipe.reference_month;
+    } else if (v.fipe_price_cents) {
+      fipeFormatted = (v.fipe_price_cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    const formattedPlate = cleanPlate.length === 7 ? (cleanPlate.substring(0,3) + '-' + cleanPlate.substring(3)) : cleanPlate;
+
+    previewBox.className = 'car-preview-box active';
+    previewBox.style.display = 'block';
+    previewBox.style.borderColor = '#10b981';
+    previewBox.style.boxShadow = '0 6px 18px rgba(16, 185, 129, 0.16)';
+    previewBox.innerHTML = `
+      <div class="car-preview-header">
+        <span class="car-badge-ok">✓ Veículo Localizado na API Placas</span>
+        <span class="car-plate-tag" id="prev-plate">🇧🇷 ${formattedPlate}</span>
+      </div>
+      <div class="car-preview-title" id="prev-title">${brand} ${model}</div>
+      <div class="car-preview-version" id="prev-version">Versão: ${version}</div>
+      
+      <!-- Bloco de Destaque FIPE Oficial -->
+      <div class="fipe-highlight-box">
+        <div class="fipe-title-line">
+          <div class="fipe-label-wrap">
+            <span>📊</span>
+            <strong>Cotação Oficial Tabela FIPE:</strong>
+          </div>
+          <span class="fipe-val" id="prev-fipe-val">${fipeFormatted}</span>
+        </div>
+        <div class="fipe-sub" id="prev-fipe-sub">Cód. FIPE: ${fipeCode} • Mês Ref: ${refMonth}</div>
+      </div>
+
+      <!-- Ficha Técnica Completa -->
+      <div class="car-specs-grid">
+        <div class="spec-item"><span class="spec-k">Ano:</span> <strong class="spec-v" id="prev-ano">${yearFab} / ${yearMod}</strong></div>
+        <div class="spec-item"><span class="spec-k">Cor:</span> <strong class="spec-v" id="prev-cor">${color}</strong></div>
+        <div class="spec-item"><span class="spec-k">Combustível:</span> <strong class="spec-v" id="prev-comb">${fuel}</strong></div>
+        <div class="spec-item"><span class="spec-k">Motor/Cil.:</span> <strong class="spec-v" id="prev-motor">${displacement}</strong></div>
+        <div class="spec-item"><span class="spec-k">Origem:</span> <strong class="spec-v" id="prev-origem">${city} / ${state}</strong></div>
+        <div class="spec-item"><span class="spec-k">Chassi:</span> <strong class="spec-v" id="prev-chassi">${chassi}</strong></div>
+      </div>
+      <div class="car-verified-footer">
+        <span>🛡️ Dados oficiais confirmados para emissão do Passaporte DNA AUTO</span>
+      </div>
+    `;
+  } catch (err) {
+    previewBox.className = 'car-preview-box active';
+    previewBox.style.display = 'block';
+    previewBox.style.borderColor = '#f59e0b';
+    previewBox.innerHTML = `
+      <div class="car-preview-header">
+        <span style="display:inline-flex; align-items:center; gap:5px; background:#fffbeb; color:#b45309; font-size:11px; font-weight:800; padding:4px 8px; border-radius:6px; border:1px solid #fde68a;">
+          ⚠️ Erro na Consulta
+        </span>
+        <span class="car-plate-tag">🇧🇷 ${cleanPlate}</span>
+      </div>
+      <div style="font-size:12px; color:#64748b; line-height:1.4; margin:6px 0;">
+        Não foi possível consultar a API Placas no momento. Você pode prosseguir com o cadastro preenchendo seus dados abaixo.
+      </div>
+    `;
+  }
+}
+
+async function handleRegisterSubmit(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const form = document.getElementById('reg-form');
+  const msgBox = document.getElementById('reg-message');
+  const submitBtn = form ? form.querySelector('.reg-submit-btn') : null;
+
+  const name = (document.getElementById('reg-nome')?.value || '').trim();
+  const email = (document.getElementById('reg-email')?.value || '').trim();
+  const phone = (document.getElementById('reg-whats')?.value || '').trim();
+  const password = (document.getElementById('reg-senha')?.value || '').trim();
+  const plate = (document.getElementById('reg-placa')?.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+  if (!name || !email || !password) {
+    if (msgBox) {
+      msgBox.textContent = 'Preencha todos os campos obrigatórios (Nome, E-mail e Senha).';
+      msgBox.style.color = '#ef4444';
+      msgBox.style.display = 'block';
+    }
+    return false;
+  }
+
+  if (password.length < 6) {
+    if (msgBox) {
+      msgBox.textContent = 'A senha deve conter no mínimo 6 caracteres.';
+      msgBox.style.color = '#ef4444';
+      msgBox.style.display = 'block';
+    }
+    return false;
+  }
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span>Criando conta e vinculando veículo...</span>';
+  }
+  if (msgBox) msgBox.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/v1/auth/register-client', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, phone, plate })
+    });
+    const data = await res.json();
+
+    if (res.ok && data.token) {
+      localStorage.setItem('dna_token', data.token);
+      localStorage.setItem('dna_auto_token', data.token);
+      if (plate) {
+        localStorage.setItem('dna_registered_plate', plate);
+      }
+      if (data.user) {
+        localStorage.setItem('dna_logged_user', JSON.stringify(data.user));
+        if (data.user.name) {
+          localStorage.setItem('dna_user_name', data.user.name);
+        }
+        if (data.user.vehicle && data.user.vehicle.license_plate) {
+          localStorage.setItem('dna_registered_plate', data.user.vehicle.license_plate);
+        }
+      }
+      localStorage.setItem('dna_owner_session', 'active');
+      localStorage.setItem('dna_owner_auth_screen', 'app');
+      localStorage.setItem('dna_owner_current_screen', 'home');
+
+      toast('Conta criada com sucesso! Entrando no DNA AUTO...');
+      setTimeout(() => {
+        go('dashboard');
+      }, 500);
+      return false;
+    } else {
+      if (msgBox) {
+        msgBox.textContent = data.error || 'Erro ao criar conta. Tente novamente.';
+        msgBox.style.color = '#ef4444';
+        msgBox.style.display = 'block';
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Criar Minha Conta</span><span aria-hidden="true">➜</span>';
+      }
+    }
+  } catch (err) {
+    if (msgBox) {
+      msgBox.textContent = 'Falha ao conectar com o servidor. Tente novamente.';
+      msgBox.style.color = '#ef4444';
+      msgBox.style.display = 'block';
+    }
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>Criar Minha Conta</span><span aria-hidden="true">➜</span>';
+    }
+  }
+  return false;
+}
 </script><script src="/js/components/ownerView.js"></script>
 <script>
 // --- SCRIPTS DO GRÁFICO INTERATIVO DE GASTOS COM O CARRO ---

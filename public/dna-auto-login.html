@@ -1890,6 +1890,7 @@
                   autocomplete="off"
                   oninput="handlePlateInput(this)"
                   onblur="triggerPlateSearch(this.value)"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();triggerPlateSearch(this.value);}"
                 />
                 <div id="plate-search-indicator" class="plate-indicator-box"></div>
               </div>
@@ -2043,6 +2044,10 @@
 
     function cadastrar() {
       showScreen('register');
+      const plateInput = document.getElementById('reg-placa');
+      if (plateInput && plateInput.value && plateInput.value.trim().length === 7) {
+        triggerPlateSearch(plateInput.value);
+      }
     }
 
     function voltar() {
@@ -2089,14 +2094,15 @@
         if (card) card.style.display = 'none';
         if (indicator) indicator.innerHTML = '';
         currentFoundVehicle = null;
+        lastCheckedPlate = '';
         return;
       }
 
-      if (v.length === 7 && v !== lastCheckedPlate) {
+      if (v.length === 7) {
         clearTimeout(plateDebounce);
         plateDebounce = setTimeout(() => {
           triggerPlateSearch(v);
-        }, 350);
+        }, 250);
       }
     }
 

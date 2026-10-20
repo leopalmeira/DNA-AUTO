@@ -1918,3 +1918,27 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - **Qualidade & Paridade:**
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (518.109 bytes em ambos).
     - Bateria completa de 56 testes automatizados em `test/api.test.js` executada com 100% de sucesso.
+
+### Ciclo 92 (20/10/2026) - Busca Automática de Veículo por Placa com Tabela FIPE Oficial e Conclusão Cadastral
+- **Solicitação do Usuário:**
+  - Na página de cadastro, ao inserir a placa do carro, disparar a busca em tempo real via API Placas (`/api/v1/integrations/plate-lookup/:plate`), renderizando todos os dados do veículo dentro do card dinâmico logo abaixo do campo (incluindo avaliação oficial da Tabela FIPE) e permitindo que o cliente siga preenchendo os dados pessoais para concluir o cadastro.
+- **Implementação & Arquitetura:**
+  - **Busca em Tempo Real & Debounce (`handlePlacaSearch` / `executarBuscaPlacaOficial`):**
+    - Implementadas as funções globais no frontend em `cliente.app/index.html` e `public/cliente.html`.
+    - Sanitização e validação de 7 caracteres alfanuméricos com debounce de 350ms e suporte a envio imediato com a tecla Enter.
+    - Consulta ao endpoint de integração `/api/v1/integrations/plate-lookup/:plate` (WDAPI2 / Senatran / Tabela FIPE).
+  - **Card Dinâmico de Preview do Veículo & Destaque FIPE:**
+    - Correção de marcações duplicadas e órfãs no card `#car-preview`.
+    - Animação de loading com spinner dedicado (`@keyframes spin`).
+    - Renderização completa dos dados: Marca/Modelo, Versão, Ano Fabricação/Modelo, Cor, Combustível, Motor/Cilindrada, Origem e Chassi mascarado.
+    - Bloco de destaque `.fipe-highlight-box` exibindo o valor de mercado oficial da Tabela FIPE formatado em moeda brasileira (R$), código FIPE e mês de referência.
+    - Fallback elegante para veículos com FIPE indisponível ou erros de consulta.
+  - **Fluxo Cadastral Contínuo & Máscaras:**
+    - Implementada máscara telefônica automática `(XX) XXXXX-XXXX` (`handleWhatsInput`).
+    - Alternador de visibilidade de senha (`togglePasswordVisibility`).
+    - Submissão resiliente via `handleRegisterSubmit` para `/api/v1/auth/register-client`, gravando tokens de autenticação (`dna_token`, `dna_auto_token`), veículo associado e redirecionamento instantâneo ao Dashboard.
+  - **Sincronização em Telas de Login/Registro:**
+    - Ajustado `dna-auto-login.html` (em `public/` e `cliente.app/`) para suportar busca imediata no Enter e reset de cache de placa ao navegar para o registro.
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
+    - Bateria completa de testes automatizados (`npm test`) executada com 100% de sucesso (56/56 testes aprovados).
