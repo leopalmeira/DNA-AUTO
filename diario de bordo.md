@@ -1873,3 +1873,35 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - Preservação estrita da ausência de rolagem (tela 100% fixa na viewport), botões "Entrar" e "Cadastrar" interativos e sem os 3 palitos.
   - 100% de paridade mantida entre `cliente.app/index.html` e `public/cliente.html`.
   - 56 de 56 testes automatizados em `test/api.test.js` aprovados com 100% de sucesso.
+
+### Ciclo 89 (20/10/2026) - Correção da Tela de Login (Centralização Superior, Eliminação da Linha Branca Lateral e Tipografia Ultra-HD) e Implementação da Tela de Revisões Preventivas no Dashboard
+- **Solicitação do Usuário:**
+  1. Corrigir a tela de login (`#login`) que não estava centralizada na parte superior, possuía uma linha branca na lateral direita e textos com fontes embaçadas/não claras.
+  2. Aplicar o novo layout e código fornecido ao card de previsões/revisões preventivas do dashboard.
+- **Implementação & Arquitetura:**
+  - **Diagnóstico da Causa Raiz:**
+    - *Linha Branca Lateral:* A regra legada `#login .art-login` definia `width: calc(100% + 30px); margin: 0 -15px;`. A regra subsequente `#login .auth-hero.art-login` sobrescrevia com `margin: 0 -25px !important;` sem redefinir a largura, deixando um espaço vazio residual de 20px na lateral direita do container pai.
+    - *Descentralização Superior:* A arte legada embutia o logotipo e o botão de voltar dentro de uma imagem JPEG bitmap de 254px esticada, descentralizando o topo e impedindo o alinhamento com a barra de status.
+    - *Fontes Embaçadas:* As famílias tipográficas Google Fonts (`Inter` e `Outfit`) não estavam linkadas no `<head>`, e os textos do hero estavam comprimidos dentro do arquivo JPEG.
+  - **Tela de Login Ultra-HD:**
+    - Gerada e aplicada nova imagem de background em alta definição (`login-hero-clean.jpg`, 860x480px, 53.563 bytes) com showroom iluminado e carro azul com faróis acesos, sem textos embutidos e sem bordas brancas laterais.
+    - Hero configurado com full-bleed (`width: 100% !important; margin: 0 !important; padding: 0 !important;`), eliminando definitivamente a linha branca.
+    - Logotipo oficial em alta definição (`dna-logo-official.png`, 1024x341px) e slogan nativo (`"Seu veículo sempre protegido."`) centralizados matematicamente via flexbox (`margin: 0 auto;`).
+    - Botão voltar com efeito glassmorphism circular e ícone SVG nítido posicionado no canto superior esquerdo com respeito a `safe-area-inset-top`.
+    - Formulário com transição suave, cantos arredondados (`24px 24px 0 0`), Google Fonts (`Inter` e `Outfit`) carregadas com `preconnect`, antialiasing (`-webkit-font-smoothing: antialiased`) e ícones de formulário em SVG nítido (usuário, cadeado, olho para senha e Google G colorido oficial).
+  - **Tela de Revisões Preventivas (`#preventivas`):**
+    - Card "Revisões Preventivas" no Dashboard conectado via `onclick="tap(this); go('preventivas')"`.
+    - Implementada a nova `<section class="screen" id="preventivas">` com:
+      - Cabeçalho com botão voltar (`go('dashboard')`) e logotipo oficial DNA AUTO.
+      - Seção introdutória com título e subtítulo com tipografia nítida.
+      - Cartões de manutenções preventivas interativos com ícones SVG vetoriais, barras de progresso, tags de alerta e distâncias:
+        - *Troca de óleo e filtro* (57% concluído, Faltam 3.000 km, 12.000 / 15.000 km).
+        - *Correia dentada* (67% concluído, Faltam 40.000 km, 60.000 / 100.000 km).
+        - *Pastilha de freio* (60% concluído, Faltam 20.000 km, 20.000 / 40.000 km).
+        - *Filtro de ar do motor* (35% concluído, Faltam 18.000 km, 12.000 / 30.000 km).
+        - *Fluido de freio* (56% concluído, Faltam 20.000 km, 20.000 / 40.000 km).
+      - Barra de navegação inferior conectada com retorno ao Dashboard.
+      - Isolamento estrito de seletores CSS sob o escopo `#preventivas` para garantir zero impacto ou colisão visual com os cartões e barra inferior do Dashboard.
+  - **Qualidade & Paridade:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (480.000 bytes em ambos).
+    - Bateria completa de testes automatizados em `test/api.test.js` executada com 100% de sucesso (56/56 testes aprovados).
