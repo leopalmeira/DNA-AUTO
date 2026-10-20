@@ -2018,3 +2018,24 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - **Qualidade, Paridade & Testes:**
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (551.461 bytes em ambos).
     - 56/56 testes automatizados aprovados com 100% de sucesso (`npm test`).
+
+### Ciclo 94 (20/10/2026)
+- **Refatoração do Card de Veículo (Ficha Técnica sem Overflow do Chassi) e Novo Carro Hero no Cadastro:**
+  - **Solicitações do Usuário:**
+    1. Consertar o CSS do card do carro quando aparece na tela de cadastro (`#register`), pois os dados estavam desarrumados e o Chassi estava saindo/cortando na borda direita da tela (`Chassi: 9BFXTH...`).
+    2. Substituir a imagem do carro no topo da tela de cadastro pela nova imagem do esportivo azul DNA AUTO enviada pelo usuário, garantindo que ela não encoste nem sobreponha o texto ("Criar sua conta...").
+  - **Causa Raiz do Overflow do Chassi:**
+    - O grid `.car-specs-grid` dividia o espaço em 2 colunas de ~140px. O código do chassi (`9BFXTH5M*******349`), contendo 20 caracteres contínuos sem espaços, excedia a largura da coluna da direita, sangrando para fora da borda do card em telas mobile (360px - 412px).
+  - **Soluções & Implementação:**
+    - **Ficha Técnica Organizada & Chassi Seguro:**
+      - Os 4 itens técnicos principais (Ano Fab./Mod., Cor, Combustível e Motor/Cil.) foram dispostos em um grid balanceado 2x2 com mini-cards (`background: #ffffff`, borda sutil, label em cinza slate e valor em azul marinho negrito alinhado à direita).
+      - O campo de **Origem** (`Igarassu / PE`) foi promovido a largura total (`grid-column: 1 / -1`) com ícone de pin `📍`.
+      - O campo de **Chassi Auditado** foi promovido a largura total (`grid-column: 1 / -1`) e formatado como um badge oficial de segurança com fundo azul suave (`#f0f9ff`), borda (`#bae6fd`), ícone de cadeado `🔒`, tipografia monoespaçada (`SF Mono`, Menlo, Consolas) e `word-break: break-all;`, eliminando 100% de qualquer possibilidade de overflow em qualquer tela.
+    - **Novo Carro Hero Esportivo DNA AUTO no Topo do Cadastro:**
+      - A imagem enviada pelo usuário foi processada e otimizada (`cadastro-car-hero.png`), recortando com precisão o fundo branco externo através de flood-fill BFS e preservando a sombra de contato natural sob os pneus.
+      - A imagem foi salva em `cliente.app/img/cadastro-car-hero.png` e `public/img/cadastro-car-hero.png`.
+      - O layout de `.register-hero-native` foi reformulado com flexbox moderno: `.hero-copy` possui `max-width: 54%`, mantendo um espaçamento seguro (`gap: 12px; padding: 6px 14px 10px;`), enquanto `.car-wrap` posiciona o carro à direita (`max-width: 43%; aspect-ratio: 720/335; object-fit: contain;`).
+      - A imagem não encosta, não colide e tem espaçamento limpo e elegante em relação ao texto em qualquer largura de dispositivo.
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (553.756 bytes em ambos).
+    - Todos os 56 testes automatizados aprovados com 100% de sucesso (`npm test`).

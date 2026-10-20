@@ -544,3 +544,8 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
 - **Preenchimento Total do Topo (Edge-to-Edge):** Correção da barra de status/relógio (`theme-color: #edf5ff`), eliminando a barra escura e fazendo o app fluir continuamente até a borda física superior.
 - **Transição PWA Direta:** Manifest atualizado com fundo integrado (`#edf5ff`) e inicialização imediata no Dashboard, eliminando telas intermediárias amadoras.
 - **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
+
+### Ciclo 94 — Refatoração do Card do Veículo sem Overflow do Chassi e Novo Hero Car Esportivo no Cadastro
+- **Ficha Técnica Organizada & Chassi Seguro:** Reestruturação do grid `.car-specs-grid` com mini-cards elegantes 2x2 para Ano, Cor, Combustível e Motor. Origem e Chassi Auditado promovidos a linhas de largura total (`grid-column: 1 / -1`), com badge de segurança em fonte monoespaçada, eliminando qualquer transbordamento na borda da tela.
+- **Novo Hero Car Esportivo Azul:** Processamento da nova imagem do esportivo azul DNA AUTO com remoção de fundo e sombra de contato (`cadastro-car-hero.png`), integrada com flexbox seguro que preserva espaçamento amplo sem encostar no texto "Criar sua conta".
+- **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
