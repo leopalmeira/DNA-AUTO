@@ -1852,6 +1852,256 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+
+/* --- TELA GASTOS COM O CARRO NATIVA (#gastos) --- */
+#gastos {
+  display: none;
+  height: 100dvh;
+  min-height: 520px;
+  width: 100%;
+  max-width: 430px;
+  margin: auto;
+  flex-direction: column;
+  background: linear-gradient(130deg, #f0f6fe 0%, #e6eef9 55%, #dce8f7 100%) !important;
+  overflow: hidden;
+  box-sizing: border-box;
+  color: #071741;
+}
+#gastos.active {
+  display: flex !important;
+}
+#gastos .gastos-content {
+  padding: 2px 13px 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-height: 0;
+  overflow-y: auto;
+}
+#gastos h1 {
+  font-size: 21px;
+  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.65px;
+  margin: 0 0 4px;
+  color: #071741;
+}
+#gastos .gastos-intro {
+  font-size: 12px;
+  line-height: 1.32;
+  color: #365784;
+  margin: 0;
+  max-width: 315px;
+}
+#gastos .gastos-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 9px;
+}
+#gastos .gastos-total {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.75px;
+  line-height: 1.15;
+  white-space: nowrap;
+  color: #071741;
+}
+#gastos .gastos-trend {
+  max-width: 130px;
+  color: #008443;
+  padding-top: 2px;
+}
+#gastos .gastos-trend strong {
+  font-size: 14px;
+  display: block;
+}
+#gastos .gastos-trend span {
+  font-size: 10px;
+  line-height: 1.2;
+  display: block;
+}
+#gastos .chart-box {
+  border-radius: 13px;
+  padding: 6px 6px 3px;
+  background: rgba(244, 248, 255, 0.44);
+}
+#gastos .chart {
+  display: block;
+  width: 100%;
+  height: 126px;
+  overflow: visible;
+}
+#gastos .gridline {
+  stroke: #cad9eb;
+  stroke-width: 0.75;
+}
+#gastos .axis {
+  font-size: 10px;
+  fill: #315487;
+  font-family: Arial, Helvetica, sans-serif;
+}
+#gastos .bar {
+  fill: url(#bars-gradient);
+  cursor: pointer;
+  transition: filter .15s, opacity .15s;
+}
+#gastos .bar.selected {
+  fill: #0755e8;
+  filter: drop-shadow(0 2px 3px rgba(30, 104, 220, 0.33));
+}
+#gastos .hit {
+  fill: transparent;
+  cursor: pointer;
+}
+#gastos .selected-month {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: #f5f9ff;
+  border: 1px solid #d6e5f7;
+  box-shadow: 0 3px 9px rgba(95, 131, 167, 0.11);
+  min-height: 56px;
+}
+#gastos .selected-month strong {
+  font-size: 12px;
+  color: #071741;
+}
+#gastos .selected-month small {
+  display: block;
+  font-size: 10px;
+  color: #44648e;
+  margin-top: 3px;
+}
+#gastos .selected-month .value {
+  font-size: 17px;
+  font-weight: 800;
+  color: #005ee9;
+  white-space: nowrap;
+}
+#gastos .gastos-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+#gastos .gastos-filter {
+  height: 33px;
+  border: 1px solid #d6e3f2;
+  border-radius: 20px;
+  background: #e8f0fa;
+  color: #0c2855;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+#gastos .gastos-filter.active {
+  background: linear-gradient(110deg, #04a2ff, #0759ff);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 3px 8px rgba(17, 107, 230, 0.18);
+}
+#gastos .gastos-records {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+#gastos .record {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 51px;
+  padding: 6px 9px;
+  border: 1px solid #fff;
+  border-radius: 13px;
+  background: linear-gradient(120deg, #f6faff, #e8f0fb);
+  box-shadow: 0 3px 9px rgba(108, 144, 181, 0.13);
+  text-align: left;
+  color: #071741;
+  width: 100%;
+  cursor: pointer;
+  transition: transform .12s;
+}
+#gastos .record:active {
+  transform: scale(.985);
+}
+#gastos .record .ico {
+  flex: none;
+  width: 35px;
+  height: 35px;
+  border: 1px solid #d7e5f5;
+  border-radius: 9px;
+  background: #f9fbff;
+  display: grid;
+  place-items: center;
+  color: #0864ff;
+}
+#gastos .record .ico svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#gastos .record .detail {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+}
+#gastos .record .detail strong {
+  font-size: 11.5px;
+  line-height: 1.1;
+  font-weight: 800;
+}
+#gastos .record .detail small {
+  font-size: 10.5px;
+  color: #345785;
+}
+#gastos .record .price {
+  font-size: 11px;
+  white-space: nowrap;
+  font-weight: 800;
+}
+#gastos .record .arrow {
+  font-size: 22px;
+  color: #416594;
+  font-weight: 300;
+}
+#gastos .gastos-bottom-nav {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 8px 3px max(8px, env(safe-area-inset-bottom));
+  border-top: 1px solid #c9d9ee;
+  background: rgba(232, 240, 250, 0.91);
+}
+#gastos .gastos-bottom-nav button {
+  border: 0;
+  background: none;
+  color: #5b7ca6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  cursor: pointer;
+}
+#gastos .gastos-bottom-nav svg {
+  width: 19px;
+  height: 19px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 </style></head><body><main class="app"><section class="screen splash active" id="splash">
   <div class="splash-wrapper">
     <img class="splash-bg" src="/img/splash-clean-bg.png" alt="DNA Auto Splash">
@@ -2040,7 +2290,7 @@
       <strong>Sair da conta</strong>
     </div>
   </button>
-</div><h1>Olá, Leandro</h1><p class="subtitle">Aqui está o resumo do seu veículo.</p><button class="vehicle" onclick="tap(this)"><img alt="Toyota Corolla" src="data:image/jpeg;base64,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"/><span><strong>Toyota Corolla</strong><small>BRA2E19 · 2021</small></span><span class="arr">›</span></button><div class="cards"><button class="card" onclick="tap(this); go('services')"><span class="iconline">✣</span><span class="title">Serviços &amp; Peças</span><span class="metric">12 registros</span></button><button class="card" onclick="tap(this); go('preventivas')"><span class="iconline">◴</span><span class="title">Revisões Preventivas</span><span class="metric green">Próxima em 8.000 km</span></button><button class="card" onclick="tap(this); go('alertas')"><span class="iconline">♧ <span class="badge">2</span></span><span class="title">Alertas &amp; Manutenções</span><span class="metric red">2 pendentes</span></button><button class="card" onclick="tap(this)"><span class="iconline">▣</span><span class="title">Gastos com Carro</span><span class="metric money green">R$ 2.430,00</span><span class="small">Últimos 6 meses</span></button><button class="card lock" onclick="tap(this)"><span class="iconline" style="color:#34557d">♙</span><span class="title">Mini OBD</span><span class="metric orange">Em breve</span></button><button class="card" onclick="tap(this)"><span class="iconline">▣</span><span class="title">Oficinas da Rede</span><span class="metric" style="color:#31547d">3 oficinas</span></button></div><nav class="bottom"><button class="sel" onclick="tap(this)"><b>⌂</b>Início</button><button onclick="tap(this)"><b>▤</b>Veículo</button><button onclick="tap(this)"><b>♟</b>Alertas</button><button onclick="tap(this)"><b>♙</b>Perfil</button></nav></section>
+</div><h1>Olá, Leandro</h1><p class="subtitle">Aqui está o resumo do seu veículo.</p><button class="vehicle" onclick="tap(this)"><img alt="Toyota Corolla" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAAxAE8DASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9OyRSD5qYz461NG8cQBlYRKeAXIH8663oc+4gUivMPiL+0h4L+G1/d6bd3cuqatZor3llpiCU2an7v2iQkJCTkEK7BiDkKa+fvjB+1X488Z29xoXg/wABeO/BmlpdS299r8+jym9uYlO1VsxGj+WHOcyn5lXlQGO5fnT4sXeq+FPhlc6R4S8C+Jtb1u7VkikTw9dx2tkZAPMmHmJlpOW+dtzsx3M3GK9fCYBVIuriJWiui3Z4uMzCVKSo4aHNJ9fsr5n1N4j/AOClnwt0S4ijSy1m8Bz5hWONNnHYFvmrlbn/AIKzfCqKTy4tC8RStnHMcY/kxr8r9f8AAPjhhY/8Ub4nSfyM3Rn0m4GJdxyBlOgXbXPyeBvGiyoIPDGuiYnaP+JdMCSe2dtVOOHi/dpN/N/pYdN4mfx1UvRL/gn7D2X/AAU78DX+hPq9v4Y1cWa3P2NTcSxxPNMFDMkSclyqkFjgBcjJ5FX/AAh/wU1+FPiW5SPU7bXPDMLP5ZvL20Etuh/22jJZevUrivzMsbfQ4XtdJ1DxlpmiW3hxE0tbaS2ubue7u2xJeSpHCh+XzWKbmIz5YAzivQfAvwZ1bXr7VE8O6XqHiXw1O6ywawuny2Vu5YDehFwEYFfXkehreOFw1R8trPyb/wA2YyxWJpR5nqvNf8BH7L6Nrmn+JNKtNT0u9t9R067jEtvd2sgkilQ9GVhwRV9Wr4O/YytvHfwHN/pGu/Z7vwvPl4dHguftFyJd4xNHtBSM7SFdS2HIU8EEt9yaDrWmeJ7Sa50q9ivI4Z3tpvLcMYZk4eN8dGU9RXkV6LoStLZ7HsUKqrxbj03PnP8AbG/ahb4IWY0hDdeHzfIkcPiN7R5YXlOS8ELor7ZVQBiWU4DjHIOPka4/bHvDod3qWk+KtItbS0KLcX81pey3Cs/3d000Lnc31/KvI/2t/Gh+JfxR+K+iavex6Nd+G/FF01pNPcSeRdDeYUjaP7ok2gYcDOBzxzXls/wB+JNpodxbCCJ9MQG5lgF+yxNsXdv2kbWIAJzzXtUY1qVJLD01JWu3a7+ep41Z0KlRuvUcXeyV7Lptp5ntV9+2P4i8QXsFrB4+l1C5uJFijggupoy7EgADcsajk9yBWq3xE8TiOV9a8e6Ro08c5t3srnXJry9DjbuBgtfNIxu6kgcGvli1+F8tmNJv/EtxbJpt9Ct5b2VhP59xeRcEcKD5anuxGRzxmuj1/wCOl9ps73Mcl/GkpwsNifssajAwMhRxgAdzxVRxddJyqWgl5foTLCUdFTTk/U+vE0bVJPBMfiK++IeqQ2lzpMupWDLYNbx30itsjt0E1z5xLv8AxeSAF5zXNS/Gjwb8Pr19A8U32s3WqBAt7f2EQuYtKEgVVeYs4LMpIYquSBgHnivlLTPifeayw1ePfbSwS/vN8hlcFF8xMsRyp2E49qoizvtT8Ly6xLfNL9snZbyMg5maZC/mM+MMQcfKfYiqljqkafuS5m9b26BHBU3P342S6ebPsjw9qnwr+D2qalNZaj4l8S61dsv23UrXyLCK4ZeQyBQ2Ack5HXNP1v8AaI8PajruiX9v4VupV0uRn8jUtcubiG7yuAJ4shXC9QMcH1r598Jacmq+F9DvdV8QaPoVrPZxYkv7rfM2FC5W3iDSt04+UfWujtr34eaRexpJLr/iZgefNMOj28h46K3mzsPwU1m6uiSK9jq29z3PW/2u7K1trfV0+H+gy6zYTxf2LBaW7RGS/c7IQ7rg+Uo3Oy5+bYBx1r7B/YS+NA+NPwev/Ecul2mlX82rzC/hs49kZuQqCRgCATnAOTk4OCeK/JXxfrGi654ntLKxS3trNDJfS22m3E1x9kKRlI1MjqXL5LMcdMj3r9Tv+Cdnwyk+H/7MmkX0jv5nii6l8QfZ2GBbpLtSNAcDOUjV8nu5ry8TPn917HqYaPs9e58Zf8FH/gDpHhzWdQ8WnxnpGr3t1qT3U/hiG2hs9TJmOWkaWMMZQvA+dAdvf1+PvA8/9t6imhf8JPe+DrF4nzPqWrS/ZQAv3CqR5y3QDGOa/oB8Z/B3wh8QQX1zQrS9mIx5zxAP/wB9da8j8QfsKfCzVgx/sZoSf+ebmlGcXJSvZ+n+QShKzVtPU/GDVvh9pfhSdb6y8b2OoeQfkl0y4aKYdOUDgHue4qfxR8S9O1zS4LRxfFpLURXxEMQSeX5QZFDE7MhR0xzk96/VrUv+CaPwv1FziO7hB7K1VrT/AIJb/CNWDzG+mGcEB1H9K0clG6g0r+pmouVnNXa9D8eYdZ0PTNNv7e0tdRMlzGV3zSxkA7GUcAf7ZrqPCUUN34ct5Vuh9gQpPcQtJGZ5LqJHjjghiGXYuHQ5xgDOelfsPp//AATi+BWnxDzfCH9qMP8An7uXIP4KRXqfgb9mT4XfDm3WXw74B0DR7wJ/x8W1inm/TzCC361yt2a10XkdFrp6a+p+KXgj4QfGTxHZWlrpHhrUrOARJEDBaLbbgAMF3wGY+pJr6h+Cv7Hn7Q+i+VNYeJ7bweGILSMkM0o6df3ZY/i1fqNH4UsYwDHAkfsq1et9KjtxgLx9K1VVRWl/vIdNyd3b7j8277/gnPNq3xHv/EfivxtrWsa/czfaLm902OOx8yVgNzDYpxnvjHf1r9C/hppFv4d8C6LpVrarZW9hapZx26E7UWMBRgH1Az+JrcOmwGQuYlLHuRU6oI1CqMD0FZznGStFWNIxkndu49furUcvU0UVii+hAOtR2/R/+ujfzooq0Inj61KelFFTLcpDT1o7UUUAJSN0oopgz//Z"/><span><strong>Toyota Corolla</strong><small>BRA2E19 · 2021</small></span><span class="arr">›</span></button><div class="cards"><button class="card" onclick="tap(this); go('services')"><span class="iconline">✣</span><span class="title">Serviços &amp; Peças</span><span class="metric">12 registros</span></button><button class="card" onclick="tap(this); go('preventivas')"><span class="iconline">◴</span><span class="title">Revisões Preventivas</span><span class="metric green">Próxima em 8.000 km</span></button><button class="card" onclick="tap(this); go('alertas')"><span class="iconline">♧ <span class="badge">2</span></span><span class="title">Alertas &amp; Manutenções</span><span class="metric red">2 pendentes</span></button><button class="card" onclick="tap(this); go('gastos')"><span class="iconline">▣</span><span class="title">Gastos com Carro</span><span class="metric money green">R$ 2.430,00</span><span class="small">Últimos 6 meses</span></button><button class="card lock" onclick="tap(this)"><span class="iconline" style="color:#34557d">♙</span><span class="title">Mini OBD</span><span class="metric orange">Em breve</span></button><button class="card" onclick="tap(this)"><span class="iconline">▣</span><span class="title">Oficinas da Rede</span><span class="metric" style="color:#31547d">3 oficinas</span></button></div><nav class="bottom"><button class="sel" onclick="tap(this)"><b>⌂</b>Início</button><button onclick="tap(this)"><b>▤</b>Veículo</button><button onclick="tap(this)"><b>♟</b>Alertas</button><button onclick="tap(this)"><b>♙</b>Perfil</button></nav></section>
 <section class="screen services" id="services">
   <header class="app-header">
     <button class="back" id="back-services" aria-label="Voltar" onclick="go('dashboard')" type="button">
@@ -2212,6 +2462,28 @@
           </span>
         </button>
       </section>
+    </main>
+    <nav class="bottom" aria-label="Navegação inferior">
+      <button class="nav active" type="button" data-nav="Início" onclick="go('dashboard')">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 10 9h-3v10h-6v-7h-3v7H5V11H2z"/></svg>
+        Início
+      </button>
+      <button class="nav" type="button" data-nav="Veículo" onclick="go('services')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 16-1 3v2h3v-2h10v2h3v-2l-1-3-2-8H7zM4 13h16M7 16h2m6 0h2"/></svg>
+        Veículo
+      </button>
+      <button class="nav" type="button" data-nav="Alertas" onclick="go('alertas')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9M10 21h4"/></svg>
+        Alertas
+      </button>
+      <button class="nav" type="button" data-nav="Perfil" onclick="toast('Perfil do Cliente')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></svg>
+        Perfil
+      </button>
+    </nav>
+  </div>
+</section>
+
 
 <section class="screen" id="alertas">
   <header class="app-header">
@@ -2289,28 +2561,91 @@
     </button>
   </nav>
 </section>
-    </main>
-    <nav class="bottom" aria-label="Navegação inferior">
-      <button class="nav active" type="button" data-nav="Início" onclick="go('dashboard')">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 10 9h-3v10h-6v-7h-3v7H5V11H2z"/></svg>
-        Início
-      </button>
-      <button class="nav" type="button" data-nav="Veículo" onclick="toast('Visualização do veículo ativa')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 16-1 3v2h3v-2h10v2h3v-2l-1-3-2-8H7zM4 13h16M7 16h2m6 0h2"/></svg>
-        Veículo
-      </button>
-      <button class="nav" type="button" data-nav="Alertas" onclick="toast('Alertas preventivos sincronizados')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 9h18c0-1-3-2-3-9M10 21h4"/></svg>
-        Alertas
-      </button>
-      <button class="nav" type="button" data-nav="Perfil" onclick="toast('Perfil do proprietário')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/></svg>
-        Perfil
-      </button>
-    </nav>
-  </div>
-</section>
 
+
+<section class="screen" id="gastos">
+  <header class="app-header">
+    <button class="back" id="back-gastos" aria-label="Voltar" onclick="go('dashboard')" type="button">
+      <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <img class="logo" src="img/icons/dna-logo-official.png" alt="DNA AUTO">
+  </header>
+  <main class="gastos-content">
+    <section>
+      <h1>Gastos com Carro</h1>
+      <p class="gastos-intro">Total de gastos comprovados pelas notas de serviços nos últimos 6 meses.</p>
+    </section>
+    <section class="gastos-summary">
+      <strong class="gastos-total" id="gastos-total">R$ 2.430,00</strong>
+      <div class="gastos-trend">
+        <strong>-18% ↓</strong>
+        <span>em relação aos 6 meses anteriores</span>
+      </div>
+    </section>
+    <section class="chart-box" aria-label="Gráfico interativo de despesas">
+      <svg class="chart" id="gastos-chart" viewBox="0 0 310 126" role="group" aria-label="Selecione uma barra para consultar o gasto mensal">
+        <defs>
+          <linearGradient id="bars-gradient" x1="0" y1="0" x2="0" y2="1">
+            <stop stop-color="#4a9dff"/>
+            <stop offset="1" stop-color="#0874fa"/>
+          </linearGradient>
+        </defs>
+        <g id="chartContent"></g>
+      </svg>
+    </section>
+    <div class="selected-month" aria-live="polite">
+      <div>
+        <strong id="gastos-month">Maio de 2024</strong>
+        <small id="gastos-services-count">3 serviços registrados</small>
+      </div>
+      <strong class="value" id="gastos-monthly">R$ 650,00</strong>
+    </div>
+    <div class="gastos-filters">
+      <button class="gastos-filter active" data-filter="six" type="button" onclick="filterGastos('six', this)">Últimos 6 meses</button>
+      <button class="gastos-filter" data-filter="all" type="button" onclick="filterGastos('all', this)">Todos</button>
+    </div>
+    <section class="gastos-records" id="gastos-records" aria-label="Registros de despesas">
+      <button type="button" class="record" onclick="toast('Troca de óleo · R$ 320,00 · 12 Set 2024')">
+        <span class="ico">
+          <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5V3h6v2M9 10h6M9 14h6M9 18h4"/></svg>
+        </span>
+        <span class="detail"><strong>Troca de óleo</strong><small>12 Set 2024</small></span>
+        <strong class="price">R$ 320,00</strong>
+        <span class="arrow" aria-hidden="true">›</span>
+      </button>
+      <button type="button" class="record" onclick="toast('Pastilha de freio · R$ 680,00 · 14 Mar 2024')">
+        <span class="ico">
+          <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5V3h6v2M9 10h6M9 14h6M9 18h4"/></svg>
+        </span>
+        <span class="detail"><strong>Pastilha de freio</strong><small>14 Mar 2024</small></span>
+        <strong class="price">R$ 680,00</strong>
+        <span class="arrow" aria-hidden="true">›</span>
+      </button>
+      <button type="button" class="record" onclick="toast('Filtro de cabine · R$ 150,00 · 22 Nov 2023')">
+        <span class="ico">
+          <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 5V3h6v2M9 10h6M9 14h6M9 18h4"/></svg>
+        </span>
+        <span class="detail"><strong>Filtro de cabine</strong><small>22 Nov 2023</small></span>
+        <strong class="price">R$ 150,00</strong>
+        <span class="arrow" aria-hidden="true">›</span>
+      </button>
+    </section>
+  </main>
+  <nav class="gastos-bottom-nav">
+    <button type="button" data-nav="Início" onclick="go('dashboard')">
+      <svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10h-6v-7H9v7H3z"/></svg>Início
+    </button>
+    <button type="button" data-nav="Veículo" onclick="go('services')">
+      <svg viewBox="0 0 24 24"><path d="M5 10 7 5h10l2 5M4 10h16v8H4zM7 18v2m10-2v2M7 13h2m6 0h2"/></svg>Veículo
+    </button>
+    <button type="button" data-nav="Alertas" onclick="go('alertas')">
+      <svg viewBox="0 0 24 24"><path d="M6 17h12l-2-3V9a4 4 0 0 0-8 0v5zM10 20h4"/></svg>Alertas
+    </button>
+    <button type="button" data-nav="Perfil" onclick="toast('Perfil do Cliente')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>Perfil
+    </button>
+  </nav>
+</section>
 
 <div id="services-modal" class="modal" role="dialog" aria-modal="true">
   <div class="dialog">
@@ -2446,4 +2781,120 @@ function abrirDashboard(event){
 document.getElementById('btn-entrar').addEventListener('click',abrirDashboard);
 document.getElementById('login-form').addEventListener('submit',abrirDashboard);
 </script><script src="/js/components/ownerView.js"></script>
+<script>
+// --- SCRIPTS DO GRÁFICO INTERATIVO DE GASTOS COM O CARRO ---
+const gastosMonths = [
+  { label: 'Abr', name: 'Abril de 2024', value: 450, services: 2 },
+  { label: 'Mai', name: 'Maio de 2024', value: 650, services: 3 },
+  { label: 'Jun', name: 'Junho de 2024', value: 390, services: 2 },
+  { label: 'Jul', name: 'Julho de 2024', value: 170, services: 1 },
+  { label: 'Ago', name: 'Agosto de 2024', value: 290, services: 2 },
+  { label: 'Set', name: 'Setembro de 2024', value: 480, services: 2 }
+];
+let chosenGastosMonth = 1;
+
+function selectGastosMonth(i) {
+  chosenGastosMonth = i;
+  const d = gastosMonths[i];
+  const mElem = document.getElementById('gastos-month');
+  const vElem = document.getElementById('gastos-monthly');
+  const sElem = document.getElementById('gastos-services-count');
+  if (mElem) mElem.textContent = d.name;
+  if (vElem) vElem.textContent = 'R$ ' + d.value.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  if (sElem) sElem.textContent = d.services + ' serviços registrados';
+
+  const group = document.getElementById('chartContent');
+  if (group) {
+    group.querySelectorAll('.bar').forEach((e, j) => {
+      e.classList.toggle('selected', j === i);
+    });
+  }
+}
+
+function renderGastosChart() {
+  const group = document.getElementById('chartContent');
+  if (!group) return;
+  group.innerHTML = '';
+  const NS = 'http://www.w3.org/2000/svg';
+  const left = 50, top = 6, height = 88, max = 800;
+
+  for (const val of [0, 200, 400, 600, 800]) {
+    const y = top + height - (val / max) * height;
+    const line = document.createElementNS(NS, 'line');
+    line.setAttribute('x1', left);
+    line.setAttribute('y1', y);
+    line.setAttribute('x2', '306');
+    line.setAttribute('y2', y);
+    line.setAttribute('class', 'gridline');
+    group.appendChild(line);
+
+    const txt = document.createElementNS(NS, 'text');
+    txt.setAttribute('x', '0');
+    txt.setAttribute('y', y + 3);
+    txt.setAttribute('class', 'axis');
+    txt.textContent = 'R$ ' + val;
+    group.appendChild(txt);
+  }
+
+  gastosMonths.forEach((m, i) => {
+    const x = 61 + i * 41;
+    const h = (m.value / max) * height;
+    const bar = document.createElementNS(NS, 'rect');
+    bar.setAttribute('x', x);
+    bar.setAttribute('y', top + height - h);
+    bar.setAttribute('width', '25');
+    bar.setAttribute('height', h);
+    bar.setAttribute('rx', '3');
+    bar.setAttribute('class', 'bar');
+    bar.addEventListener('click', () => selectGastosMonth(i));
+    group.appendChild(bar);
+
+    const hit = document.createElementNS(NS, 'rect');
+    hit.setAttribute('x', x - 6);
+    hit.setAttribute('y', top);
+    hit.setAttribute('width', '37');
+    hit.setAttribute('height', height + 7);
+    hit.setAttribute('class', 'hit');
+    hit.addEventListener('click', () => selectGastosMonth(i));
+    group.appendChild(hit);
+
+    const lbl = document.createElementNS(NS, 'text');
+    lbl.setAttribute('x', x + 12.5);
+    lbl.setAttribute('y', '114');
+    lbl.setAttribute('text-anchor', 'middle');
+    lbl.setAttribute('class', 'axis');
+    lbl.setAttribute('pointer-events', 'none');
+    lbl.textContent = m.label;
+    group.appendChild(lbl);
+  });
+
+  selectGastosMonth(chosenGastosMonth);
+}
+
+function filterGastos(type, btn) {
+  document.querySelectorAll('#gastos .gastos-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (type === 'all') {
+    toast('Exibindo todos os registros de gastos');
+  } else {
+    toast('Exibindo gastos dos últimos 6 meses');
+  }
+}
+
+// Inicializar gráfico de gastos quando entrar na tela
+const originalGo = window.go;
+window.go = function(id) {
+  if (typeof originalGo === 'function') {
+    originalGo(id);
+  } else {
+    document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+    const menu = document.getElementById('menu');
+    if (menu) menu.classList.remove('open');
+    window.scrollTo(0,0);
+  }
+  if (id === 'gastos') {
+    renderGastosChart();
+  }
+};
+</script>
 </body></html>

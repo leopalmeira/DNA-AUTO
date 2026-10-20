@@ -1898,3 +1898,23 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - **Qualidade & Paridade:**
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (504.902 bytes em ambos).
     - Bateria completa de testes automatizados em `test/api.test.js` executada com 100% de sucesso (56/56 testes aprovados).
+
+### Ciclo 91 (20/10/2026) - Resolução do Card de Alertas & Manutenções (Correção de Aninhamento) e Integração da Tela Nativa de Gastos com Carro
+- **Solicitação do Usuário:**
+  1. Corrigir o card "Alertas & Manutenções" que não exibia conteúdo ao ser clicado.
+  2. Aplicar a nova tela nativa com gráfico interativo e histórico ao card "Gastos com Carro" do Dashboard.
+- **Implementação & Arquitetura:**
+  - **Diagnóstico & Correção da Causa Raiz de Alertas:**
+    - A `<section class="screen" id="alertas">` estava indevidamente aninhada dentro da tela `#preventivas`. Quando a função `go('alertas')` era acionada, ela ativava `#alertas`, mas como o elemento pai `#preventivas` permanecia inativo (`display: none !important`), a tela filha ficava invisível.
+    - Desacoplada e reposicionada como uma tela autônoma e independente no nível raiz do documento, garantindo exibição instantânea ao clicar no card correspondente no Dashboard.
+  - **Tela "Gastos com Carro" Nativa (`#gastos`):**
+    - Card no Dashboard conectado via `onclick="tap(this); go('gastos')"`.
+    - Implementada a nova `<section class="screen" id="gastos">` com:
+      - Header fixo e padronizado (`.app-header`) com botão voltar conectado ao Dashboard e logotipo transparente oficial DNA AUTO exatamente na mesma posição e altura das outras telas.
+      - Sumário com total comprovado de R$ 2.430,00 e indicador de tendência (-18% em relação ao período anterior).
+      - Gráfico interativo vetorial SVG de barras mensais com eixos de valores (R$ 0 a R$ 800), seleção interativa de meses e atualização dinâmica do painel do mês.
+      - Filtros de período (Últimos 6 meses e Todos) e listagem de despesas com ícones de nota fiscal e valores formatados em moeda brasileira.
+      - Barra de navegação inferior conectada retornando ao Dashboard no botão Início.
+  - **Qualidade & Paridade:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (518.109 bytes em ambos).
+    - Bateria completa de 56 testes automatizados em `test/api.test.js` executada com 100% de sucesso.
