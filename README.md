@@ -537,3 +537,10 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
 - **Card Dinâmico & Destaque Tabela FIPE:** Renderiza instantaneamente marca, modelo, versão, ano fabricação/modelo, cor, combustível, cilindrada, origem, chassi e valor oficial de mercado da Tabela FIPE (com código FIPE e mês de referência).
 - **Cadastro Fluido & Máscaras:** Aplicação de máscara em tempo real para WhatsApp `(XX) XXXXX-XXXX`, toggle de senha e submissão direta com geração de sessão e redirecionamento ao Dashboard.
 - **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
+
+### Ciclo 93 — Oficinas da Rede com OpenStreetMap, Fotos de Oficina e Correção Edge-to-Edge do Topo
+- **Oficinas da Rede com OpenStreetMap:** Integração do mapa Leaflet com tiles OpenStreetMap, marcadores azuis SVG customizados, balão popup estilizado e sincronização de clique com a lista.
+- **Fotos de Fachada/Interior de Oficinas:** Substituição do ícone de carro por fotos reais e otimizadas de oficinas (`img/oficina-premium.jpg`, `img/autocenter-silva.jpg`, `img/mecanica-souza.jpg`), com modal de detalhes e link direto para WhatsApp.
+- **Preenchimento Total do Topo (Edge-to-Edge):** Correção da barra de status/relógio (`theme-color: #edf5ff`), eliminando a barra escura e fazendo o app fluir continuamente até a borda física superior.
+- **Transição PWA Direta:** Manifest atualizado com fundo integrado (`#edf5ff`) e inicialização imediata no Dashboard, eliminando telas intermediárias amadoras.
+- **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**

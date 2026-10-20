@@ -1,12 +1,12 @@
 {
-  "name": "DNA AUTO - App Oficial do Cliente",
+  "name": "DNA AUTO",
   "short_name": "DNA AUTO",
   "start_url": "/cliente",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#020712",
-  "theme_color": "#020712",
+  "background_color": "#edf5ff",
+  "theme_color": "#edf5ff",
   "description": "Passaporte Digital, histórico de revisões, telemetria Mini OBD2 e serviços do seu carro.",
   "icons": [
     {

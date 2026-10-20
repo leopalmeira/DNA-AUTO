@@ -1942,3 +1942,34 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - **Qualidade, Paridade & Testes:**
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
     - Bateria completa de testes automatizados (`npm test`) executada com 100% de sucesso (56/56 testes aprovados).
+
+### Ciclo 93 (20/10/2026) - Oficinas da Rede com OpenStreetMap, Fotos Reais de Oficinas e Correção Edge-to-Edge do Topo/Status Bar
+- **Solicitações do Usuário:**
+  1. Conectar o card "Oficinas da Rede" do Dashboard à tela de oficinas com mapa OpenStreetMap integrado (Leaflet), pins azuis e balão popup, substituindo o ícone de carro por fotos reais de oficinas no card.
+  2. Corrigir a barra de status/relógio no topo ("09:07"), eliminando a faixa preta e fazendo o app preencher toda a tela como um aplicativo nativo oficial.
+  3. Corrigir a transição ao clicar no ícone do app na área de trabalho/PWA (que exibia tela preta com logo pequeno e texto amador), entrando diretamente no app.
+- **Implementação & Arquitetura:**
+  - **Tela "Oficinas da Rede" Nativa (#oficinas) com OpenStreetMap & Leaflet:**
+    - Card no Dashboard conectado via `onclick="tap(this); go('oficinas')"`.
+    - Integrado Leaflet 1.9.4 com tiles oficiais do OpenStreetMap (`https://tile.openstreetmap.org/{z}/{x}/{y}.png`).
+    - Container `.map-shell` (168px) com bordas arredondadas e legenda de localização.
+    - Marcadores azuis vetoriais SVG customizados com balão popup dark moderno (`#0d2850`), exibindo nome, distância e avaliação.
+    - Sincronização bidirecional: clicar no pin foca a oficina na lista; clicar na oficina foca no mapa com animação suave (`map.flyTo`).
+    - Invalidatesize automático ao navegar com `go('oficinas')`.
+  - **Fotos Reais de Oficinas (Substituição do Ícone de Carro):**
+    - Geradas e otimizadas miniaturas de alta qualidade de oficinas mecânicas e auto centers:
+      - `Oficina Premium` -> `img/oficina-premium.jpg`
+      - `Auto Center Silva` -> `img/autocenter-silva.jpg`
+      - `Mecânica Souza` -> `img/mecanica-souza.jpg`
+    - Renderização com cantos arredondados, `object-fit: cover` e fallback gracioso.
+    - Modal interativo (`#oficinas-overlay`) com detalhes completos, badge oficial, especialidades, endereço e botão de WhatsApp direto.
+  - **Correção da Barra de Status / Relógio no Topo (Full Bleed Edge-to-Edge):**
+    - Substituído `<meta name="theme-color" content="#020712"/>` (preto) por `<meta name="theme-color" content="#edf5ff"/>` (azul claro suave nativo do app).
+    - Configurado `<meta name="apple-mobile-web-app-status-bar-style" content="default"/>`.
+    - Ajustado CSS com `padding-top: max(env(safe-area-inset-top, 0px), 8px)` em `.dashhead`, `.app-header` e em todas as telas, unificando o fundo do app sob o relógio e notch do aparelho.
+  - **Correção da Transição de Inicialização do PWA:**
+    - Atualizados `public/manifest.json` e `cliente.app/manifest.json` com `"background_color": "#edf5ff"`, `"theme_color": "#edf5ff"` e nome limpo `"name": "DNA AUTO"`.
+    - Eliminado flash preto e tela intermediária amadora: inicialização ativa por padrão direto no Dashboard (`#dashboard`).
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (551.461 bytes em ambos).
+    - 56/56 testes automatizados aprovados com 100% de sucesso (`npm test`).
