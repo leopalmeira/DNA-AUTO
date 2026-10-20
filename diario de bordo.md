@@ -1905,3 +1905,35 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - **Qualidade & Paridade:**
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (480.000 bytes em ambos).
     - Bateria completa de testes automatizados em `test/api.test.js` executada com 100% de sucesso (56/56 testes aprovados).
+
+### Ciclo 90 (20/10/2026) - Aplicação das Telas Nativas de Serviços & Peças, Alertas & Manutenções, Cadastro Inteligente com Busca Automática de Placa e Unificação do Logotipo Fixo no Topo
+- **Solicitação do Usuário:**
+  1. Aplicar o novo código nativo ao card "Serviços & Peças" (`#services`).
+  2. Aplicar o segundo código nativo ao card "Alertas & Manutenções" (`#alertas`).
+  3. Aplicar o terceiro código ao botão de cadastrar (`#register`), com funcionalidade ativa: ao digitar a placa (7 caracteres), buscar e exibir os dados do veículo abaixo em tempo real, permitindo ao usuário completar com Nome, E-mail, WhatsApp e Senha.
+  4. Garantir que o logotipo transparente oficial (`dna-logo-official.png`) fique milimetricamente fixo e padronizado no topo em todas as telas (`.app-header`), sem saltos ou variações de posição durante a navegação entre os cards.
+- **Implementação & Arquitetura:**
+  - **Header do Topo Fixo e Padronizado (`.app-header`):**
+    - Criada a classe `.app-header` aplicada a todas as telas de detalhes (`#services`, `#alertas`, `#preventivas` e `#register`).
+    - Altura fixa de 52px, botão voltar circular flutuante padronizado (`left: 12px; top: 9px; width: 34px; height: 34px`) e logotipo transparente oficial DNA AUTO (`dna-logo-official.png`, 1024x341px) com `width: 130px; height: 34px; object-fit: contain; margin: 0 auto` rigorosamente no mesmo lugar exato em todas as telas, eliminando qualquer salto visual na troca de abas.
+  - **Tela "Serviços & Peças" (`#services`):**
+    - Substituição do antigo mockup estático por interface nativa fluida com cartões detalhados:
+      - *Troca de óleo do motor* (Óleo 5W30 Sintético Oficial - 12/2024 - 3 fotos reais).
+      - *Pastilha de freio* (Dianteira Cerâmica Bosch - 14/2024 - 3 fotos reais).
+      - *Filtro de ar* (Filtro de cabine e motor - 22/2023 - 3 fotos reais).
+    - Filtros por categoria funcionais em tempo real (`Todos`, `Serviços`, `Peças`), botão de adicionar serviço e barra de navegação inferior conectada.
+  - **Tela "Alertas & Manutenções" (`#alertas`):**
+    - Conexão do card no Dashboard via `onclick="tap(this); go('alertas')"`.
+    - Tela nativa com abas `Pendentes (2)` e `Concluídos`, cartões com níveis visuais de urgência:
+      - *Troca de óleo* (Vermelho - Faltam 3.000 km, Recomendado em 15.000 km).
+      - *Pastilha de freio* (Amarelo - Faltam 5.000 km, Recomendado em 40.000 km).
+      - *Correia dentada* (Neutro - Faltam 40.000 km, Recomendado em 100.000 km).
+    - Botões interativos "Ver detalhes" e barra de navegação com aba Alertas ativa.
+  - **Tela "Cadastro" com Busca de Placa em Tempo Real (`#register`):**
+    - Formulário nativo com hero do carro azul e showroom, máscara Mercosul para o campo de placa.
+    - Integração de busca dinâmica via API (`/api/v1/vehicles/search?q=PLACA`): ao completar os 7 caracteres da placa, exibe card de confirmação com Modelo, Ano, Combustível e Cor do veículo.
+    - Campos completos para Nome Completo, E-mail, WhatsApp (com máscara automática `(XX) XXXXX-XXXX`) e Senha (com toggle de visibilidade).
+    - Submissão conectada ao backend com criação de conta, ativação do veículo e redirecionamento ao Dashboard.
+  - **Qualidade & Paridade:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (504.902 bytes em ambos).
+    - Bateria completa de testes automatizados em `test/api.test.js` executada com 100% de sucesso (56/56 testes aprovados).
