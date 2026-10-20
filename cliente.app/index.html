@@ -2167,12 +2167,19 @@
 
 /* --- TELA OFICINAS DA REDE NATIVA COM OPENSTREETMAP (#oficinas) --- */
 #oficinas {
-  background: linear-gradient(145deg, #edf5ff, #e4edf8 62%, #dce8f7);
+  display: none !important;
+  position: relative;
+  width: 100%;
   min-height: 100dvh;
-  padding-bottom: 74px;
+  background: linear-gradient(145deg, #edf5ff, #e4edf8 62%, #dce8f7);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 78px;
+  box-sizing: border-box;
+  scrollbar-width: none;
 }
 #oficinas.active {
-  display: flex;
+  display: flex !important;
   flex-direction: column;
 }
 #oficinas .app-header {
@@ -2566,224 +2573,7 @@ html, body {
   box-sizing: border-box !important;
 }
 
-</style><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="">
-// --- OFICINAS DA REDE COM OPENSTREETMAP & FOTOS DE OFICINA ---
-const oficinasDaRede = [
-  {
-    id: 1,
-    nome: 'Oficina Premium',
-    bairro: 'Centro',
-    distancia: '2,3 km',
-    nota: '5.0',
-    lat: -22.9064,
-    lng: -43.1805,
-    tipo: 'Mecânica geral e Injeção Eletrônica',
-    endereco: 'Av. Presidente Vargas, 1200 - Centro',
-    telefone: '(21) 98765-4321',
-    imagem: 'img/oficina-premium.jpg'
-  },
-  {
-    id: 2,
-    nome: 'Auto Center Silva',
-    bairro: 'Vila Nova',
-    distancia: '4,1 km',
-    nota: '4.8',
-    lat: -22.9124,
-    lng: -43.1888,
-    tipo: 'Suspensão, Freios e Pneus',
-    endereco: 'Rua das Oficinas, 450 - Vila Nova',
-    telefone: '(21) 97654-3210',
-    imagem: 'img/autocenter-silva.jpg'
-  },
-  {
-    id: 3,
-    nome: 'Mecânica Souza',
-    bairro: 'Jardim',
-    distancia: '6,5 km',
-    nota: '4.6',
-    lat: -22.9004,
-    lng: -43.1921,
-    tipo: 'Manutenção preventiva & Diagnóstico OBD2',
-    endereco: 'Estrada dos Bandeirantes, 890 - Jardim',
-    telefone: '(21) 96543-2109',
-    imagem: 'img/mecanica-souza.jpg'
-  }
-];
-
-let oficinasMap = null;
-let selectedOficinaId = 1;
-const oficinasMarkers = {};
-
-function pinMarkup(active) {
-  return '<div class="pin ' + (active ? 'selected' : '') + '"><svg viewBox="0 0 30 38" xmlns="http://www.w3.org/2000/svg"><path d="M15 1C7 1 2 7 2 15c0 10 13 22 13 22s13-12 13-22C28 7 23 1 15 1Z" fill="' + (active ? '#004ccf' : '#0875ff') + '" stroke="white" stroke-width="1.5"/><circle cx="15" cy="15" r="5" fill="white"/></svg></div>';
-}
-
-function markerIcon(active) {
-  if (!window.L) return null;
-  return L.divIcon({
-    className: '',
-    html: pinMarkup(active),
-    iconSize: [30, 38],
-    iconAnchor: [15, 37],
-    popupAnchor: [0, -32]
-  });
-}
-
-function selectOficina(id, focus = true) {
-  selectedOficinaId = id;
-  document.querySelectorAll('#oficinas .shop').forEach(el => {
-    el.classList.toggle('selected', Number(el.dataset.id) === id);
-  });
-  if (oficinasMap && window.L) {
-    Object.entries(oficinasMarkers).forEach(([key, m]) => {
-      m.setIcon(markerIcon(Number(key) === id));
-    });
-    const o = oficinasDaRede.find(x => x.id === id);
-    if (o && focus) {
-      oficinasMap.flyTo([o.lat, o.lng], 15, { duration: 0.45 });
-      if (oficinasMarkers[id]) {
-        oficinasMarkers[id].openPopup();
-      }
-    }
-  }
-}
-
-function openOficinaDetails(id) {
-  const o = oficinasDaRede.find(x => x.id === id);
-  if (!o) return;
-  selectOficina(id, false);
-  const title = document.getElementById('oficinas-modal-title');
-  const body = document.getElementById('oficinas-modal-body');
-  if (title) title.textContent = o.nome;
-  if (body) {
-    body.innerHTML = '<p><b>Especialidade:</b> ' + o.tipo + '<br>' +
-      '<b>Endereço:</b> ' + o.endereco + '<br>' +
-      '<b>Região:</b> ' + o.bairro + ' · A ' + o.distancia + ' de você<br>' +
-      '<b>Avaliação:</b> ★ ' + o.nota + ' (Clientes Auditados DNA AUTO)<br>' +
-      '<b>Contato:</b> ' + o.telefone + '</p>';
-  }
-  const btnContact = document.getElementById('oficinas-contact-ws');
-  if (btnContact) {
-    btnContact.onclick = () => {
-      const cleanPhone = (o.telefone || '').replace(/\D/g, '');
-      const msg = encodeURIComponent('Olá! Encontrei a oficina ' + o.nome + ' credenciada no app DNA AUTO e gostaria de agendar um atendimento.');
-      window.open('https://wa.me/55' + (cleanPhone || '21997207716') + '?text=' + msg, '_blank');
-    };
-  }
-  const overlay = document.getElementById('oficinas-overlay');
-  if (overlay) overlay.classList.add('open');
-}
-
-function renderOficinasList() {
-  const list = document.getElementById('oficinas-list');
-  if (!list) return;
-  list.innerHTML = '';
-  oficinasDaRede.forEach(o => {
-    const el = document.createElement('div');
-    el.className = 'shop' + (o.id === selectedOficinaId ? ' selected' : '');
-    el.dataset.id = o.id;
-    el.innerHTML = '<div class="shop-thumb">' +
-      '<img src="' + o.imagem + '" alt="' + o.nome + '" onerror="this.onerror=null; this.src=\'img/ws-workshop-thumb1.jpg\';">' +
-      '</div>' +
-      '<div class="shop-info">' +
-      '<strong class="shop-name">' + o.nome + '</strong>' +
-      '<span class="shop-distance">' + o.distancia + ' • ' + o.bairro + '</span>' +
-      '<span class="shop-rating">★ ' + o.nota + '</span>' +
-      '</div>' +
-      '<button type="button" class="shop-details-btn">Ver detalhes</button>';
-
-    el.querySelector('.shop-details-btn').onclick = (e) => {
-      e.stopPropagation();
-      openOficinaDetails(o.id);
-    };
-
-    el.addEventListener('click', (e) => {
-      if (!e.target.closest('button')) {
-        selectOficina(o.id, true);
-      }
-    });
-
-    list.appendChild(el);
-  });
-}
-
-function initOficinasMap() {
-  renderOficinasList();
-
-  const closeBtn = document.getElementById('oficinas-modal-close');
-  if (closeBtn) closeBtn.onclick = () => document.getElementById('oficinas-overlay').classList.remove('open');
-  const overlay = document.getElementById('oficinas-overlay');
-  if (overlay) overlay.onclick = (e) => { if (e.target.id === 'oficinas-overlay') e.target.classList.remove('open'); };
-  const seeMapBtn = document.getElementById('oficinas-see-map');
-  if (seeMapBtn) {
-    seeMapBtn.onclick = () => {
-      document.getElementById('oficinas-overlay').classList.remove('open');
-      selectOficina(selectedOficinaId, true);
-    };
-  }
-
-  const mapContainer = document.getElementById('oficinas-map');
-  if (!mapContainer) return;
-
-  if (oficinasMap) {
-    setTimeout(() => {
-      oficinasMap.invalidateSize();
-      const current = oficinasDaRede.find(x => x.id === selectedOficinaId);
-      if (current) oficinasMap.setView([current.lat, current.lng], 14);
-    }, 150);
-    return;
-  }
-
-  if (window.L) {
-    try {
-      oficinasMap = L.map('oficinas-map', {
-        zoomControl: true,
-        scrollWheelZoom: false
-      }).setView([-22.9075, -43.1860], 14);
-
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
-      }).addTo(oficinasMap);
-
-      oficinasDaRede.forEach(o => {
-        const m = L.marker([o.lat, o.lng], {
-          icon: markerIcon(o.id === selectedOficinaId)
-        }).addTo(oficinasMap);
-
-        const popContent = document.createElement('div');
-        popContent.innerHTML = '<strong>' + o.nome + '</strong>' + o.distancia + ' · ' + o.bairro + ' · ★ ' + o.nota;
-        m.bindPopup(popContent);
-
-        m.on('click', () => {
-          selectOficina(o.id, false);
-        });
-
-        oficinasMarkers[o.id] = m;
-      });
-
-      setTimeout(() => {
-        if (oficinasMap) oficinasMap.invalidateSize();
-      }, 200);
-    } catch (e) {
-      console.warn('Erro ao inicializar mapa Leaflet:', e);
-    }
-  } else {
-    mapContainer.innerHTML = '<p style="padding:30px;font-size:12px;color:#2a4e80;text-align:center">Carregando mapa OpenStreetMap...</p>';
-  }
-}
-
-
-/* Auto-boot direto no Dashboard */
-document.addEventListener('DOMContentLoaded', () => {
-  // Se o usuário carregar /cliente, abre direto no Dashboard oficial
-  const curScreen = window.location.hash.replace('#', '') || 'dashboard';
-  setTimeout(() => {
-    go(curScreen);
-  }, 40);
-});
-
-</script>
+</style><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 </head><body><main class="app"><section class="screen splash" id="splash">
   <div class="splash-wrapper">
     <img class="splash-bg" src="/img/splash-clean-bg.png" alt="DNA Auto Splash">
@@ -3287,52 +3077,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </section>
 
 
-<section class="screen" id="oficinas">
-  <header class="app-header">
-    <button class="back" id="back-oficinas" aria-label="Voltar" onclick="go('dashboard')" type="button">
-      <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-    </button>
-    <img class="logo" src="img/icons/dna-logo-official.png" alt="DNA AUTO">
-  </header>
-  <main class="oficinas-content">
-    <div class="oficinas-heading">
-      <h1>Oficinas da Rede</h1>
-      <p class="subtitle">Oficinas credenciadas perto de você.</p>
-    </div>
-    <div class="map-shell">
-      <div id="oficinas-map" class="map" aria-label="Mapa interativo OpenStreetMap com oficinas credenciadas"></div>
-      <span class="map-note">Localizações no mapa · OpenStreetMap</span>
-    </div>
-    <div id="oficinas-list" class="shops-list"></div>
-    <p class="footnote">Oficinas credenciadas e auditadas pela rede DNA AUTO com telemetria e garantia de serviços.</p>
-  </main>
-  <div class="oficinas-overlay" id="oficinas-overlay" role="dialog" aria-modal="true" aria-labelledby="oficinas-modal-title">
-    <div class="oficinas-modal">
-      <button class="close" id="oficinas-modal-close" aria-label="Fechar" type="button">✕</button>
-      <div class="modal-badge">CREDENCIADA OFICIAL DNA AUTO</div>
-      <h2 id="oficinas-modal-title">Oficina</h2>
-      <div id="oficinas-modal-body"></div>
-      <div class="oficinas-modal-actions">
-        <button type="button" class="btn-see-map" id="oficinas-see-map">Ver no mapa</button>
-        <button type="button" class="btn-contact-ws" id="oficinas-contact-ws">Contatar Oficina</button>
-      </div>
-    </div>
-  </div>
-  <nav class="oficinas-bottom-nav">
-    <button type="button" class="sel" onclick="go('dashboard')">
-      <svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10h-6v-7H9v7H3z"/></svg>Início
-    </button>
-    <button type="button" onclick="go('services')">
-      <svg viewBox="0 0 24 24"><path d="M5 10 7 5h10l2 5M4 10h16v8H4zM7 18v2m10-2v2M7 13h2m6 0h2"/></svg>Veículo
-    </button>
-    <button type="button" onclick="go('alertas')">
-      <svg viewBox="0 0 24 24"><path d="M6 17h12l-2-3V9a4 4 0 0 0-8 0v5zM10 20h4"/></svg>Alertas
-    </button>
-    <button type="button" onclick="toast('Perfil do condutor ativo.')">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>Perfil
-    </button>
-  </nav>
-</section>
+
 
     <section class="gastos-summary">
       <strong class="gastos-total" id="gastos-total">R$ 2.430,00</strong>
@@ -3402,6 +3147,53 @@ document.addEventListener('DOMContentLoaded', () => {
     </button>
     <button type="button" data-nav="Perfil" onclick="toast('Perfil do Cliente')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg>Perfil
+    </button>
+  </nav>
+</section>
+
+<section class="screen" id="oficinas">
+  <header class="app-header">
+    <button class="back" id="back-oficinas" aria-label="Voltar" onclick="go('dashboard')" type="button">
+      <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+    </button>
+    <img class="logo" src="img/icons/dna-logo-official.png" alt="DNA AUTO">
+  </header>
+  <main class="oficinas-content">
+    <div class="oficinas-heading">
+      <h1>Oficinas da Rede</h1>
+      <p class="subtitle">Oficinas credenciadas perto de você.</p>
+    </div>
+    <div class="map-shell">
+      <div id="oficinas-map" class="map" aria-label="Mapa interativo OpenStreetMap com oficinas credenciadas"></div>
+      <span class="map-note">Localizações no mapa · OpenStreetMap</span>
+    </div>
+    <div id="oficinas-list" class="shops-list"></div>
+    <p class="footnote">Oficinas credenciadas e auditadas pela rede DNA AUTO com telemetria e garantia de serviços.</p>
+  </main>
+  <div class="oficinas-overlay" id="oficinas-overlay" role="dialog" aria-modal="true" aria-labelledby="oficinas-modal-title">
+    <div class="oficinas-modal">
+      <button class="close" id="oficinas-modal-close" aria-label="Fechar" type="button">✕</button>
+      <div class="modal-badge">CREDENCIADA OFICIAL DNA AUTO</div>
+      <h2 id="oficinas-modal-title">Oficina</h2>
+      <div id="oficinas-modal-body"></div>
+      <div class="oficinas-modal-actions">
+        <button type="button" class="btn-see-map" id="oficinas-see-map">Ver no mapa</button>
+        <button type="button" class="btn-contact-ws" id="oficinas-contact-ws">Contatar Oficina</button>
+      </div>
+    </div>
+  </div>
+  <nav class="oficinas-bottom-nav">
+    <button type="button" class="sel" onclick="go('dashboard')">
+      <svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10h-6v-7H9v7H3z"/></svg>Início
+    </button>
+    <button type="button" onclick="go('services')">
+      <svg viewBox="0 0 24 24"><path d="M5 10 7 5h10l2 5M4 10h16v8H4zM7 18v2m10-2v2M7 13h2m6 0h2"/></svg>Veículo
+    </button>
+    <button type="button" onclick="go('alertas')">
+      <svg viewBox="0 0 24 24"><path d="M6 17h12l-2-3V9a4 4 0 0 0-8 0v5zM10 20h4"/></svg>Alertas
+    </button>
+    <button type="button" onclick="toast('Perfil do condutor ativo.')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>Perfil
     </button>
   </nav>
 </section>
@@ -3953,5 +3745,222 @@ window.go = function(id) {
     initOficinasMap();
   }
 };
+
+
+// --- OFICINAS DA REDE COM OPENSTREETMAP & FOTOS DE OFICINA ---
+const oficinasDaRede = [
+  {
+    id: 1,
+    nome: 'Oficina Premium',
+    bairro: 'Centro',
+    distancia: '2,3 km',
+    nota: '5.0',
+    lat: -22.9064,
+    lng: -43.1805,
+    tipo: 'Mecânica geral e Injeção Eletrônica',
+    endereco: 'Av. Presidente Vargas, 1200 - Centro',
+    telefone: '(21) 98765-4321',
+    imagem: 'img/oficina-premium.jpg'
+  },
+  {
+    id: 2,
+    nome: 'Auto Center Silva',
+    bairro: 'Vila Nova',
+    distancia: '4,1 km',
+    nota: '4.8',
+    lat: -22.9124,
+    lng: -43.1888,
+    tipo: 'Suspensão, Freios e Pneus',
+    endereco: 'Rua das Oficinas, 450 - Vila Nova',
+    telefone: '(21) 97654-3210',
+    imagem: 'img/autocenter-silva.jpg'
+  },
+  {
+    id: 3,
+    nome: 'Mecânica Souza',
+    bairro: 'Jardim',
+    distancia: '6,5 km',
+    nota: '4.6',
+    lat: -22.9004,
+    lng: -43.1921,
+    tipo: 'Manutenção preventiva & Diagnóstico OBD2',
+    endereco: 'Estrada dos Bandeirantes, 890 - Jardim',
+    telefone: '(21) 96543-2109',
+    imagem: 'img/mecanica-souza.jpg'
+  }
+];
+
+let oficinasMap = null;
+let selectedOficinaId = 1;
+const oficinasMarkers = {};
+
+function pinMarkup(active) {
+  return '<div class="pin ' + (active ? 'selected' : '') + '"><svg viewBox="0 0 30 38" xmlns="http://www.w3.org/2000/svg"><path d="M15 1C7 1 2 7 2 15c0 10 13 22 13 22s13-12 13-22C28 7 23 1 15 1Z" fill="' + (active ? '#004ccf' : '#0875ff') + '" stroke="white" stroke-width="1.5"/><circle cx="15" cy="15" r="5" fill="white"/></svg></div>';
+}
+
+function markerIcon(active) {
+  if (!window.L) return null;
+  return L.divIcon({
+    className: '',
+    html: pinMarkup(active),
+    iconSize: [30, 38],
+    iconAnchor: [15, 37],
+    popupAnchor: [0, -32]
+  });
+}
+
+function selectOficina(id, focus = true) {
+  selectedOficinaId = id;
+  document.querySelectorAll('#oficinas .shop').forEach(el => {
+    el.classList.toggle('selected', Number(el.dataset.id) === id);
+  });
+  if (oficinasMap && window.L) {
+    Object.entries(oficinasMarkers).forEach(([key, m]) => {
+      m.setIcon(markerIcon(Number(key) === id));
+    });
+    const o = oficinasDaRede.find(x => x.id === id);
+    if (o && focus) {
+      oficinasMap.flyTo([o.lat, o.lng], 15, { duration: 0.45 });
+      if (oficinasMarkers[id]) {
+        oficinasMarkers[id].openPopup();
+      }
+    }
+  }
+}
+
+function openOficinaDetails(id) {
+  const o = oficinasDaRede.find(x => x.id === id);
+  if (!o) return;
+  selectOficina(id, false);
+  const title = document.getElementById('oficinas-modal-title');
+  const body = document.getElementById('oficinas-modal-body');
+  if (title) title.textContent = o.nome;
+  if (body) {
+    body.innerHTML = '<p><b>Especialidade:</b> ' + o.tipo + '<br>' +
+      '<b>Endereço:</b> ' + o.endereco + '<br>' +
+      '<b>Região:</b> ' + o.bairro + ' · A ' + o.distancia + ' de você<br>' +
+      '<b>Avaliação:</b> ★ ' + o.nota + ' (Clientes Auditados DNA AUTO)<br>' +
+      '<b>Contato:</b> ' + o.telefone + '</p>';
+  }
+  const btnContact = document.getElementById('oficinas-contact-ws');
+  if (btnContact) {
+    btnContact.onclick = () => {
+      const cleanPhone = (o.telefone || '').replace(/\D/g, '');
+      const msg = encodeURIComponent('Olá! Encontrei a oficina ' + o.nome + ' credenciada no app DNA AUTO e gostaria de agendar um atendimento.');
+      window.open('https://wa.me/55' + (cleanPhone || '21997207716') + '?text=' + msg, '_blank');
+    };
+  }
+  const overlay = document.getElementById('oficinas-overlay');
+  if (overlay) overlay.classList.add('open');
+}
+
+function renderOficinasList() {
+  const list = document.getElementById('oficinas-list');
+  if (!list) return;
+  list.innerHTML = '';
+  oficinasDaRede.forEach(o => {
+    const el = document.createElement('div');
+    el.className = 'shop' + (o.id === selectedOficinaId ? ' selected' : '');
+    el.dataset.id = o.id;
+    el.innerHTML = '<div class="shop-thumb">' +
+      '<img src="' + o.imagem + '" alt="' + o.nome + '" onerror="this.onerror=null; this.src=\'img/ws-workshop-thumb1.jpg\';">' +
+      '</div>' +
+      '<div class="shop-info">' +
+      '<strong class="shop-name">' + o.nome + '</strong>' +
+      '<span class="shop-distance">' + o.distancia + ' • ' + o.bairro + '</span>' +
+      '<span class="shop-rating">★ ' + o.nota + '</span>' +
+      '</div>' +
+      '<button type="button" class="shop-details-btn">Ver detalhes</button>';
+
+    el.querySelector('.shop-details-btn').onclick = (e) => {
+      e.stopPropagation();
+      openOficinaDetails(o.id);
+    };
+
+    el.addEventListener('click', (e) => {
+      if (!e.target.closest('button')) {
+        selectOficina(o.id, true);
+      }
+    });
+
+    list.appendChild(el);
+  });
+}
+
+function initOficinasMap() {
+  renderOficinasList();
+
+  const closeBtn = document.getElementById('oficinas-modal-close');
+  if (closeBtn) closeBtn.onclick = () => document.getElementById('oficinas-overlay').classList.remove('open');
+  const overlay = document.getElementById('oficinas-overlay');
+  if (overlay) overlay.onclick = (e) => { if (e.target.id === 'oficinas-overlay') e.target.classList.remove('open'); };
+  const seeMapBtn = document.getElementById('oficinas-see-map');
+  if (seeMapBtn) {
+    seeMapBtn.onclick = () => {
+      document.getElementById('oficinas-overlay').classList.remove('open');
+      selectOficina(selectedOficinaId, true);
+    };
+  }
+
+  const mapContainer = document.getElementById('oficinas-map');
+  if (!mapContainer) return;
+
+  if (oficinasMap) {
+    setTimeout(() => {
+      oficinasMap.invalidateSize();
+      const current = oficinasDaRede.find(x => x.id === selectedOficinaId);
+      if (current) oficinasMap.setView([current.lat, current.lng], 14);
+    }, 150);
+    return;
+  }
+
+  if (window.L) {
+    try {
+      oficinasMap = L.map('oficinas-map', {
+        zoomControl: true,
+        scrollWheelZoom: false
+      }).setView([-22.9075, -43.1860], 14);
+
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+      }).addTo(oficinasMap);
+
+      oficinasDaRede.forEach(o => {
+        const m = L.marker([o.lat, o.lng], {
+          icon: markerIcon(o.id === selectedOficinaId)
+        }).addTo(oficinasMap);
+
+        const popContent = document.createElement('div');
+        popContent.innerHTML = '<strong>' + o.nome + '</strong>' + o.distancia + ' · ' + o.bairro + ' · ★ ' + o.nota;
+        m.bindPopup(popContent);
+
+        m.on('click', () => {
+          selectOficina(o.id, false);
+        });
+
+        oficinasMarkers[o.id] = m;
+      });
+
+      setTimeout(() => {
+        if (oficinasMap) oficinasMap.invalidateSize();
+      }, 200);
+    } catch (e) {
+      console.warn('Erro ao inicializar mapa Leaflet:', e);
+    }
+  } else {
+    mapContainer.innerHTML = '<p style="padding:30px;font-size:12px;color:#2a4e80;text-align:center">Carregando mapa OpenStreetMap...</p>';
+  }
+}
+
+
+/* Auto-boot direto no Dashboard */
+document.addEventListener('DOMContentLoaded', () => {
+  // Se o usuário carregar /cliente, abre direto no Dashboard oficial
+  const curScreen = window.location.hash.replace('#', '') || 'dashboard';
+  setTimeout(() => {
+    go(curScreen);
+  }, 40);
+});
 </script>
 </body></html>

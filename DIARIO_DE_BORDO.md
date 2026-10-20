@@ -1943,7 +1943,13 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
     - Bateria completa de testes automatizados (`npm test`) executada com 100% de sucesso (56/56 testes aprovados).
 
-### Ciclo 93 (20/10/2026) - Oficinas da Rede com OpenStreetMap, Fotos Reais de Oficinas e Correção Edge-to-Edge do Topo/Status Bar
+### Ciclo 93 (20/10/2026)
+- **Correção Crítica do Card "Oficinas da Rede" (Resolução de Aninhamento & Execução JS):**
+  - **Causa Raiz 1 (Aninhamento HTML):** A `<section class="screen" id="oficinas">` havia sido inserida no meio de `<main class="gastos-content">` da tela `#gastos`. Como o elemento pai `#gastos` permanecia inativo (`display: none !important`), a tela filha `#oficinas` ficava oculta/invisível mesmo após receber a classe `.active`.
+  - **Solução 1:** A tela `#oficinas` foi desacoplada de `#gastos` e posicionada como tela autônoma e independente de nível raiz sob `<main class="app">`, logo após o fechamento real de `#gastos`.
+  - **Causa Raiz 2 (Execução JS):** O código JavaScript das oficinas havia sido alocado dentro da tag `<script src="https://unpkg.com/leaflet...">` no `<head>`, fazendo com que os navegadores descartassem o script interno por conter o atributo `src`.
+  - **Solução 2:** A tag do Leaflet no `<head>` foi devidamente fechada e todo o código JavaScript (`oficinasDaRede`, `initOficinasMap`, `renderOficinasList`, `selectOficina`, etc.) foi realocado para o script principal ao final do documento, sendo executado perfeitamente com renderização instantânea do mapa e da lista de oficinas.
+ - Oficinas da Rede com OpenStreetMap, Fotos Reais de Oficinas e Correção Edge-to-Edge do Topo/Status Bar
 - **Solicitações do Usuário:**
   1. Conectar o card "Oficinas da Rede" do Dashboard à tela de oficinas com mapa OpenStreetMap integrado (Leaflet), pins azuis e balão popup, substituindo o ícone de carro por fotos reais de oficinas no card.
   2. Corrigir a barra de status/relógio no topo ("09:07"), eliminando a faixa preta e fazendo o app preencher toda a tela como um aplicativo nativo oficial.
