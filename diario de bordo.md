@@ -2039,3 +2039,19 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - **Qualidade, Paridade & Testes:**
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (553.756 bytes em ambos).
     - Todos os 56 testes automatizados aprovados com 100% de sucesso (`npm test`).
+
+### Ciclo 95 (22/10/2026)
+- **Refatoração Completa do App do Cliente Mobile: Autenticação Real no Banco, Telas Conforme Prints Oficiais, Full Screen Edge-to-Edge, Mapa Fluido de Parceiros e Ficha Técnica com Tabela FIPE:**
+  - **Solicitações do Usuário:**
+    1. **Tela de Login e Botões Inferiores (Prints 1 e 3):** Corrigir a tela de login (`#login`) para que o cabeçalho utilize a foto oficial do showroom com o logotipo DNA AUTO ("Seu veículo sempre protegido") e o esportivo azul com faróis acesos (Print 3), com o botão voltar circular no topo esquerdo e transição arredondada para o card branco. Na parte inferior, implementar o botão pílula azul vibrante (`Entrar ➔`) e o link centralizado `Não possui uma conta? Cadastrar`, exatamente no padrão visual limpo do Print 1.
+    2. **Background Full Screen na Tela Principal/Splash (Print 2):** Ajustar o background da splash screen para estender-se até a borda superior extrema (`top: 0`), passando por trás da barra de status (horário `00:14`, wifi, sinal de dados móveis e bateria), sem qualquer corte ou espaçamento em branco.
+    3. **Autenticação Real Obrigatória Vinculada ao Banco de Dados (Fim do Acesso Direto):** Bloquear totalmente o acesso direto à Dashboard. O app agora exige login obrigatório via `POST /api/v1/auth/login`. Apenas usuários cadastrados e com e-mail e senha correspondentes no banco de dados SQLite conseguem acessar a dashboard; caso contrário, exibe mensagem clara de erro e impede o acesso.
+    4. **Todos os Botões de Baixo e Navegação 100% Funcionais:** Corrigir a barra de navegação inferior do dashboard (`Início`, `Veículo`, `Alertas`, `Perfil`) e de todas as telas secundárias (`services`, `preventivas`, `alertas`, `gastos`, `oficinas`) para navegarem corretamente para suas respectivas telas (`go('services')`, `go('alertas')`, `openProfileModal()`, etc.), além de todos os botões de voltar e cards da dashboard.
+    5. **Mapa de Oficinas da Rede Fluido, Gratuito e com Parceiros:** Substituir o mapa anterior por uma solução Leaflet ultra-fluida com tiles CartoDB Voyager de alta velocidade, múltiplos marcadores interativos com pin oficial DNA AUTO nos parceiros credenciados, zoom e popups interativos com botão de contato direto via WhatsApp.
+    6. **Card de Serviços & Peças com Filtros e Datas no Formato DD/MM/AAAA:** Implementar a filtragem por "Todos", "Serviços" e "Peças" e formatar as datas de todos os registros no padrão brasileiro oficial `DD/MM/AAAA` (ex.: `15/10/2024`, `12/08/2024`), além de modal detalhado com oficina, mecânico e garantia.
+    7. **Card do Carro na Tela Inicial Clicável com Dados da API Placas e Tabela FIPE:** Tornar o card do carro no topo da dashboard clicável para abrir um modal completo com a cotação oficial da Tabela FIPE (código FIPE, valor e mês de referência) e todas as especificações técnicas da API Placas (marca, modelo, ano, cor, motor, combustível, chassi, procedência, odômetro e score DNA).
+    8. **Modal de Perfil com Logout / Sair da Conta:** Adicionado modal de perfil com dados do condutor e botão de logout que limpa a sessão e redireciona de volta para a tela de boas-vindas/login.
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
+    - Bateria completa de testes automatizados (`npm test`) executada com 100% de sucesso (56/56 testes aprovados).
+

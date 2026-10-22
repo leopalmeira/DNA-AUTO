@@ -549,3 +549,15 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
 - **Ficha Técnica Organizada & Chassi Seguro:** Reestruturação do grid `.car-specs-grid` com mini-cards elegantes 2x2 para Ano, Cor, Combustível e Motor. Origem e Chassi Auditado promovidos a linhas de largura total (`grid-column: 1 / -1`), com badge de segurança em fonte monoespaçada, eliminando qualquer transbordamento na borda da tela.
 - **Novo Hero Car Esportivo Azul:** Processamento da nova imagem do esportivo azul DNA AUTO com remoção de fundo e sombra de contato (`cadastro-car-hero.png`), integrada com flexbox seguro que preserva espaçamento amplo sem encostar no texto "Criar sua conta".
 - **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
+
+### Ciclo 95 — Autenticação Real no Banco, Telas Conforme Prints Oficiais, Full Screen Edge-to-Edge, Mapa Fluido de Parceiros e Ficha Técnica com Tabela FIPE
+- **Tela de Login com Header Oficial e Botões do Modelo:** Header da tela de login reformulado com a foto oficial do showroom, logotipo DNA AUTO ("Seu veículo sempre protegido") e o esportivo azul com faróis acesos (Print 3), com botão de voltar circular no topo esquerdo e transição arredondada para o card branco. Na base, implementado o botão azul pílula vibrante (`Entrar ➔`) e o link centralizado `Não possui uma conta? Cadastrar`, no padrão visual limpo do Print 1.
+- **Splash Full Screen Edge-to-Edge:** Fundo da tela principal estendido de ponta a ponta (`top: 0`), fluindo continuamente por trás da barra de status (horário `00:14`, wifi, sinal de rede e bateria) sem cortes brancos ou faixas indevidas (Print 2).
+- **Autenticação Real Obrigatória no Banco SQLite:** Bloqueio obrigatório do acesso direto à Dashboard. Acesso permitido unicamente mediante validação de e-mail e senha no banco de dados (`POST /api/v1/auth/login`). Tentativas com credenciais não cadastradas são rejeitadas com alerta em vermelho.
+- **Todos os Botões de Baixo e Navegação 100% Funcionais:** Conectadas todas as barras de navegação inferior (`Início`, `Veículo`, `Alertas`, `Perfil`) em todas as telas, além dos botões de voltar e cards da dashboard.
+- **Mapa de Oficinas da Rede Gratuito e Ultra Fluido:** Substituição por mapa Leaflet integrado a tiles CartoDB Voyager de alta performance com marcadores interativos com pin oficial DNA AUTO nos parceiros credenciados, zoom e popups interativos com botão de WhatsApp.
+- **Card de Serviços & Peças com Filtros e Datas DD/MM/AAAA:** Implementada filtragem por "Todos", "Serviços" e "Peças" com datas padronizadas no formato oficial `DD/MM/AAAA` e modal detalhado de ordens de serviço.
+- **Card do Carro no Dashboard Clicável com Tabela FIPE e API Placas:** Clique no card do carro abre modal completo com a cotação oficial da Tabela FIPE (código FIPE, valor e mês de referência) e todas as especificações técnicas da API Placas.
+- **Modal de Perfil com Logout:** Adicionado modal de perfil com dados do condutor e botão de logout que limpa a sessão e redireciona de volta para a tela de boas-vindas/login.
+- **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
+
