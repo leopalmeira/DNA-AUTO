@@ -2016,3 +2016,19 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
     - Bateria completa de testes automatizados (`npm test`) executada com 100% de sucesso (56/56 testes aprovados).
 
+### Ciclo 96 (22/10/2026)
+- **Refinamento de Navegação Universal do Rodapé, Isolamento de Revisões Preventivas, Fotos Reais e Valores nos Serviços e Cadastro Profissional:**
+  - **Solicitações do Usuário:**
+    1. **Navegação do Rodapé Universal:** Todos os botões na barra de navegação inferior (Início, Veículo, Alertas, Perfil) devem levar estritamente às respectivas funções do app em todas as telas (dashboard, services, preventivas, alertas, gastos, oficinas).
+    2. **Isolamento do Card Revisões Preventivas:** O card Revisões Preventivas na Home deve abrir exclusivamente a tela de Revisões Preventivas (#preventivas), eliminando a abertura indevida do Perfil do Cliente.
+    3. **Background da Splash Screen:** Garantir que o wallpaper cubra 100% da tela até o topo absoluto, passando por trás da barra de status, relógio e notch sem nenhuma faixa branca ou clara.
+    4. **Hero do Login sem Botão Duplicado:** Removido o botão de voltar desenhado na imagem login-hero-official.png através de inpainting, mantendo apenas o botão HTML estilizado com blur e sombra.
+    5. **Cadastro com Placa Limpa e Botões Profissionais:** O campo de placa não vem previamente preenchido; possui placeholder interativo que desaparece ao focar/clicar. Os botões Criar minha conta e Fazer login foram completamente redesenhados com acabamento premium, gradiente vibrante #0084FF -> #0052E6 e sombras modernas.
+    6. **Modal Detalhado de Serviços e Peças:** Ao clicar em qualquer card de serviço ou peça (em Todos, Serviços ou Peças), abre modal detalhado exibindo foto real em estúdio da peça/serviço, valor da nota fiscal/ordem de serviço, nome da oficina credenciada onde foi realizado, dia da semana por extenso, data e ano completos (ex: Terça-feira, 15 de Outubro de 2024), odômetro registrado e garantia comprovada.
+  - **Causa Raiz & Resolução da Colisão entre Revisões Preventivas e Perfil:**
+    - Os 3 modais globais (#car-details-modal, #service-detail-modal, #profile-modal) haviam sido inseridos dentro da tag main da section #preventivas. Ao ativar #preventivas, a DOM do modal de perfil sobrepunha a visualização.
+    - Solução: A tela #preventivas foi devidamente isolada e fechada com seus 5 cards operacionais de revisões e sua barra de navegação inferior. Os 3 modais foram promovidos ao nível raiz da aplicação sob main.app, com classe .dna-modal-overlay controlada estritamente via .open (display: flex !important; z-index: 9999).
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre cliente.app/index.html e public/cliente.html (606.362 bytes em ambos).
+    - Bateria completa de testes automatizados (npm test) aprovada com 100% de sucesso (56/56 testes).
+
