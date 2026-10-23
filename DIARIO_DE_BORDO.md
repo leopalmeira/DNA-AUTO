@@ -2053,4 +2053,26 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
     - Todos os 56 testes automatizados de integração aprovados com 100% de sucesso (`npm test`).
 
+### Ciclo 98 (23/10/2026)
+- **Despoluição do Card do Veículo na Dashboard (Dados Completos no Modal) e Centralização Absoluta do Rodapé (Bottom Nav):**
+  - **Solicitações do Usuário:**
+    1. **Card do Veículo sem Amontoamento de Texto:** As informações detalhadas do carro (FIPE, Odômetro, Combustível, Cor, etc.) não devem ficar espremidas dentro do card compacto da Dashboard para evitar poluição visual. O card da Dashboard volta a ter apresentação limpa e elegante (foto nítida do carro, nome do modelo, placa Mercosul com ano e seta indicativa). Todas as especificações técnicas aprofundadas são exibidas exclusivamente no modal de Ficha Técnica (`openCarDetailsModal()`) ao tocar no card.
+    2. **Rodapé Centralizado:** Corrigir a barra de navegação inferior (rodapé) que estava deslocada para a esquerda, deixando a metade direita vazia.
+  - **Implementações Técnicas Realizadas:**
+    1. **Card do Carro Clean & Dinâmico (`#dash-car-card`):**
+       - Removida a sobrecarga de chips de specs (`.spec-chip`) e a tag azul que cobria o pneu da miniatura.
+       - Estrutura simplificada e elegante: `.vehicle-thumb-box` (48x48px com cantos arredondados e imagem limpa), `.vehicle-info-col` com título (`#dash-car-title` - `Toyota Corolla`) e subtítulo (`#dash-car-sub` - `BRA2E19 · 2021`), e chevron à direita (`.vehicle-arr-icon` `›`).
+       - Ao clicar no card, aciona `openCarDetailsModal()`, que carrega todos os dados do veículo autenticado puxados da API/cadastro (Marca, Modelo, Versão, Placa, Ano Fab./Mod., Cor, Combustível, Odômetro Oficial, Cotação Oficial da Tabela FIPE, Chassi Homologado e Selo de Autenticidade DNA AUTO).
+    2. **Correção de Geometria e Centralização do Rodapé:**
+       - Identificada regra legada que continha `margin: 8px -24px 0` e botões com `min-width: 52px` sem expansão proporcional.
+       - Aplicadas regras universais estritas para `nav.bottom`, `.services-bottom-nav`, `.alertas-bottom-nav`, `.gastos-bottom-nav` e `.oficinas-bottom-nav`:
+         * `position: fixed !important; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 430px; margin: 0 !important;`
+         * `display: flex !important; flex-direction: row !important; justify-content: space-around !important; align-items: center !important;`
+         * Botões filhos com `flex: 1 1 25% !important; width: 25% !important; max-width: 25% !important; min-width: 0 !important; margin: 0 !important;`
+         * Distribuição simétrica e perfeita dos 4 botões (`Início`, `Veículo`, `Alertas`, `Perfil`), eliminando qualquer deslocamento ou espaço em branco residual.
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
+    - Todos os 56 testes automatizados aprovados com 100% de sucesso (`npm test`).
+
+
 

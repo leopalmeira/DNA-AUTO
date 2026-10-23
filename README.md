@@ -580,4 +580,11 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
 - **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
 - **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
 
+### Ciclo 98 — Despoluição do Card do Veículo na Dashboard e Centralização do Rodapé
+- **Card do Veículo Clean:** Removido o excesso de chips e tags no card do carro da Dashboard. O card exibe apenas a miniatura elegante, nome do carro (`Toyota Corolla`), placa Mercosul com ano (`BRA2E19 · 2021`) e seta indicativa. Todas as informações técnicas aprofundadas (Tabela FIPE, Cor, Combustível, Câmbio, Odômetro, Potência, Chassi) continuam 100% completas e são abertas exclusivamente no modal de Ficha Técnica ao clicar no card, eliminando a poluição visual.
+- **Centralização do Rodapé (Bottom Navigation):** Corrigido o deslocamento dos 4 botões de navegação (`Início`, `Veículo`, `Alertas`, `Perfil`). A barra agora adota alinhamento simétrico flexível com colunas de 25% estritas (`flex: 1 1 25%`), centralizada milimetricamente na tela e sem espaços vazios à direita.
+- **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
+- **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
+
+
 
