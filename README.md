@@ -9,9 +9,9 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 88):** **Background da Splash com Logo Otimizado & Alinhamento Perfeito**: Aplicação da nova arte oficial limpa de alta resolução (`splash-clean-bg.png`) com a logomarca DNA AUTO perfeitamente posicionada no terço superior e subtítulo "Seu veículo sempre protegido." reajustado com máxima nitidez e harmonia visual. Tela 100% fixa, PWA oficial no menu e botões interativos. 56 de 56 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 99):** **Novo Menu Lateral Oficial (Drawer / Sidebar Menu) no App do Cliente**: Substituição completa do antigo menu suspenso pelo novo menu lateral em gaveta fluida Dark Navy (`#06172c` -> `#08254b`) com logo de alta resolução, card de perfil conectado ao condutor autenticado (`#profileName`), 10 rotas ativas mapeadas para os fluxos reais do DNA AUTO (Dashboard, Meu Veículo, Serviços, Revisões, Oficinas, Agendamento, Notas Fiscais, Alertas com contador dinâmico, Configurações e Suporte) e botão de Logout real integrado. 56 de 56 testes automatizados aprovados (100%).
 > 
-> ✨ **Ciclos Anteriores (84 e 85):** Implementação fiel do protótipo oficial de 4 telas do cliente, proporção áurea dos cards do Dashboard (+10%) e aplicação da logomarca oficial real de alta resolução. 56 de 56 testes automatizados aprovados (100%).
+> ✨ **Ciclos Anteriores (97 e 98):** Centralização absoluta da Dashboard e do rodapé simétrico em 4 colunas (25%), despoluição do card do veículo com dados completos carregados no modal FIPE, oficinas da rede com Leaflet/OpenStreetMap sem chaves pagas e tela de alertas monitorados com botão concluir funcional.
 > 
 > ✨ **Ciclo 71:** Cadastro simplificado com código da oficina em 2 etapas, geração automática de código e Passaporte DNA AUTO Oficial ativo no cadastro da oficina, bloqueio temporário do OBD com homologação e card de veículo compacto. 56 de 56 testes automatizados aprovados (100%).
 > 

@@ -2074,5 +2074,35 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
     - Todos os 56 testes automatizados aprovados com 100% de sucesso (`npm test`).
 
-
-
+### Ciclo 99 (23/10/2026)
+- **Implementação do Novo Menu Lateral Oficial (Drawer / Sidebar Menu) no App do Cliente DNA AUTO:**
+  - **Solicitação do Usuário:**
+    - "aplique esse codigo ao menu do app" — aplicando o código HTML5, CSS3 moderno e JS interativo de menu lateral fornecido pelo usuário.
+  - **Implementações Técnicas Realizadas:**
+    1. **Design System & Estilização do Menu Lateral (`.sidebar` & `.overlay`):**
+       - Gradiente sofisticado Dark Navy (`#06172c` -> `#08254b`), tipografia nítida (`--text: #eef6ff`, `--muted: #a6b9d0`), sombras suaves e transição CSS ultra-fluida com aceleração por hardware (`transform: translateX(-105%)` -> `translateX(0)`).
+       - Suporte nativo a telas desktop/tablet (`@media(min-width: 700px)`) centralizando a sidebar na coluna do app mobile (`max-width: 420px`), e acessibilidade para `prefers-reduced-motion: reduce`.
+    2. **Cabeçalho da Sidebar & Identidade Visual:**
+       - Logo oficial em alta resolução `DNA AUTO` (`img/icons/dna-logo-official.png` com fallback em Base64 de alta nitidez).
+       - Botão circular de fechar com feedback háptico visual e suporte total à tecla `Escape` e foco acessível via teclado.
+    3. **Card de Perfil Conectado ao Usuário Autenticado:**
+       - Card interativo com avatar em círculo azul vibrante `#0872e9`, inicial do condutor (`#menu-avatar-letter`), nome do usuário (`#profileName`) sincronizado automaticamente com os dados da sessão/banco (`carregarDadosUsuarioLogado()`), legenda "Minha conta" e chevron de navegação para o perfil completo (`openProfileModal()`).
+    4. **Navegação Completa com 10 Itens Integrados às Rotas Reais do DNA AUTO:**
+       - `Início` -> Navega para `#dashboard` via `go('dashboard')`.
+       - `Meu Veículo` -> Abre a Ficha Técnica completa do veículo autenticado via `openCarDetailsModal()`.
+       - `Histórico de Serviços` -> Navega para a tela de Serviços & Peças via `go('services')`.
+       - `Próximas Revisões` -> Navega para o Plano de Revisões Preventivas via `go('preventivas')`.
+       - `Rede de Oficinas` -> Navega para o Mapa Interativo de Oficinas via `go('oficinas')`.
+       - `Agendar Serviço` -> Abre a Rede de Oficinas com foco em agendamento via `go('oficinas')`.
+       - `Fotos e Notas` -> Navega para a tela de Notas Fiscais e Comprovantes via `go('gastos')`.
+       - `Alertas e Notificações` -> Navega para `#alertas` com badge dinâmico sincronizado (`#alertCount`) refletindo os alertas pendentes.
+       - `Configurações` -> Abre o modal de configurações e dados cadastrais via `openProfileModal()`.
+       - `Ajuda e Suporte` -> Abre canal direto de suporte e atendimento oficial.
+    5. **Botão de Logout Real na Base da Sidebar:**
+       - Botão `Sair da conta` com ícone vetorial de saída em tom vermelho suave `#ff6976`, conectado diretamente à função `fazerLogoutDoApp()`, garantindo limpeza total de tokens e sessão e retorno seguro para a tela inicial.
+    6. **Substituição do Menu Pop-up Antigo e Integração do Botão Hamburger:**
+       - Removido o menu flutuante antigo (`#menu`).
+       - O botão hamburger no cabeçalho da Dashboard agora aciona `setMenu(true)` de forma fluida.
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
+    - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
