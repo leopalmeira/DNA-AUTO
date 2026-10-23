@@ -2032,3 +2032,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
     - 100% de paridade estrita mantida entre cliente.app/index.html e public/cliente.html (606.362 bytes em ambos).
     - Bateria completa de testes automatizados (npm test) aprovada com 100% de sucesso (56/56 testes).
 
+### Ciclo 97 (23/10/2026)
+- **Correção da Centralização da Dashboard, Card do Carro com Dados da API/FIPE, Nome da Oficina em Serviços, Alertas Monitorados com Botão Concluir Funcional e Refatoração Profissional de Oficinas da Rede (OpenStreetMap + Leaflet sem API Key):**
+  - **Solicitações do Usuário:**
+    1. **Dashboard Centralizada:** Corrigir descentralização da tela inicial da Dashboard (`#dashboard`), alinhando o container, cabeçalho, saudação, card do veículo e a grade de cards 2x3 de maneira simétrica e balanceada.
+    2. **Card do Veículo Dinâmico com Dados da API:** O card do veículo na Dashboard agora exibe todos os dados do veículo cadastrado/puxados da API (Marca, Modelo, Versão completa, Placa padrão Mercosul com bandeira 🇧🇷, Ano Fab./Mod., Cor, Combustível, Odômetro formatado em km, Valor da Tabela FIPE e Selo DNA Ativo), além de abrir o modal detalhado (`openCarDetailsModal()`) ao ser clicado.
+    3. **Nome da Oficina em Serviços & Peças (Segundo Print):** Todos os cards da tela de Serviços & Peças (`#services`) exibem de forma visível e elegante a identificação do estabelecimento onde o serviço/peça foi executado (ex: *Veloce Auto Center · Oficina Homologada*, *Auto Center Silva*, *Oficina Premium*, *Auto Elétrica Central*).
+    4. **Alertas & Manutenções Monitorados com Botão Concluir (Terceira Tela):** A tela `#alertas` agora monitora todos os itens essenciais solicitados: Troca de óleo do motor, Pastilhas de freio dianteiras, Troca de correia dentada & tensor, Troca de óleo de câmbio automático, Fluido de freio DOT 4 e Velas de ignição. Cada card possui botão **Concluir** interativo que atualiza o status para finalizado, transfere o item para a aba "Concluídos", altera o botão para "Reabrir Alerta", decrementa o badge de pendências da Dashboard e persiste o estado no `localStorage` (`dna_concluded_alerts`).
+    5. **Oficinas da Rede com OpenStreetMap & Leaflet (Sem API Key):**
+       - Remoção total de qualquer dependência ou aviso "API KEY REQUIRED".
+       - Implementação de mapa interativo de alta performance utilizando Leaflet.js 1.9.4 e tiles públicos OpenStreetMap (`https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`).
+       - Marcadores azuis em SVG customizados com ícone da oficina e popups informativos contendo nome, endereço, distância e botões de contato rápido.
+       - Sincronização bidirecional entre cliques no mapa e seleção dos cards na lista de oficinas, com centralização suave (`setView` / `flyTo`).
+       - Painel modal / bottom-sheet detalhado ao tocar em "Ver detalhes", contendo as 3 ações solicitadas:
+         * **Como chegar:** Rota direta no Google Maps com as coordenadas reais (`lat, lng`) da oficina parceira.
+         * **Ligar:** Disparo nativo de chamada telefônica via protocolo `tel:`.
+         * **Agendar serviço:** Canal de agendamento via WhatsApp oficial homologado pela rede DNA AUTO.
+       - Layout vertical responsivo aproveitando a altura disponível, sem espaços vazios excessivos, sem esticar cards artificialmente e sem sobrepor a barra inferior de navegação.
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
+    - Todos os 56 testes automatizados de integração aprovados com 100% de sucesso (`npm test`).
+
+

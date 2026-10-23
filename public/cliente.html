@@ -3387,6 +3387,772 @@ nav.bottom button svg, .services-bottom-nav svg, .alertas-bottom-nav svg, .gasto
   z-index: 10 !important;
 }
 
+
+/* ══════════════════════════════════════════════════════════════════════
+   CORREÇÃO PROFISSIONAL: DASHBOARD CENTRALIZADA & CARD DO CARRO RICO
+   ══════════════════════════════════════════════════════════════════════ */
+#dashboard.screen, .screen.dashboard {
+  display: none;
+  min-height: 100dvh;
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+  padding: 12px 18px 88px !important;
+  background: linear-gradient(180deg, #edf5ff 0%, #dbe8f7 100%) !important;
+}
+#dashboard.screen.active, .screen.dashboard.active {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+}
+
+#dashboard .dashhead {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 0 12px 0 !important;
+  min-height: 48px !important;
+  box-sizing: border-box !important;
+}
+#dashboard .dashhead .circle {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+  border: 1px solid #d4e3f3 !important;
+  background: #f8fbff !important;
+  display: grid !important;
+  place-items: center !important;
+  color: #0b2655 !important;
+  font-size: 19px !important;
+  box-shadow: 0 2px 8px rgba(16, 45, 85, 0.08) !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+#dashboard .dashhead .official-dna-logo {
+  height: 34px !important;
+  max-height: 34px !important;
+  width: auto !important;
+  max-width: 140px !important;
+  object-fit: contain !important;
+  margin: 0 auto !important;
+}
+
+#dashboard h1 {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.6px !important;
+  color: #07183F !important;
+  margin: 0 0 3px 0 !important;
+  text-align: left !important;
+  width: 100% !important;
+  line-height: 1.2 !important;
+}
+#dashboard .subtitle {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 13px !important;
+  color: #3b5a82 !important;
+  margin: 0 0 14px 0 !important;
+  text-align: left !important;
+  width: 100% !important;
+  line-height: 1.3 !important;
+}
+
+/* Card do Veículo Rico na Dashboard */
+#dashboard .vehicle {
+  width: 100% !important;
+  min-height: 94px !important;
+  height: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-align: left !important;
+  border: 1px solid #ffffff !important;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f0f6ff 100%) !important;
+  padding: 10px 14px !important;
+  box-shadow: 0 4px 16px rgba(10, 40, 85, 0.08) !important;
+  margin: 0 0 14px 0 !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+#dashboard .vehicle:active {
+  transform: scale(0.985) !important;
+}
+.vehicle-thumb-box {
+  width: 72px !important;
+  height: 72px !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  background: linear-gradient(145deg, #e3eefb, #cde0f5) !important;
+  border: 1px solid #d0e1f3 !important;
+  position: relative !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.vehicle-thumb-box img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+.vehicle-dna-tag {
+  position: absolute !important;
+  bottom: 3px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: #0066FF !important;
+  color: #ffffff !important;
+  font-size: 8px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.4px !important;
+  padding: 1.5px 5px !important;
+  border-radius: 4px !important;
+  white-space: nowrap !important;
+  box-shadow: 0 2px 4px rgba(0, 102, 255, 0.4) !important;
+}
+.vehicle-info-col {
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+.vehicle-header-line {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 6px !important;
+}
+.vehicle-title-text {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #07183F !important;
+  letter-spacing: -0.3px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.vehicle-header-line .arr {
+  font-size: 18px !important;
+  color: #0066FF !important;
+  font-weight: 700 !important;
+  flex-shrink: 0 !important;
+}
+.vehicle-plate-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+.vehicle-mercosul-plate {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background: #ffffff !important;
+  border: 1px solid #0056cc !important;
+  border-radius: 5px !important;
+  padding: 1px 6px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  color: #07183F !important;
+  letter-spacing: 0.5px !important;
+}
+.vehicle-year-chip {
+  font-size: 11px !important;
+  color: #4b6b94 !important;
+  font-weight: 600 !important;
+}
+.vehicle-specs-grid {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  flex-wrap: wrap !important;
+  margin-top: 2px !important;
+}
+.spec-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #2a4c77 !important;
+  background: #eaf2fc !important;
+  border: 1px solid #d5e4f4 !important;
+  border-radius: 5px !important;
+  padding: 2px 6px !important;
+}
+.spec-chip.highlight-odo {
+  color: #0066FF !important;
+  background: #eef6ff !important;
+  border-color: #bad9ff !important;
+}
+.spec-chip.highlight-fipe {
+  color: #059669 !important;
+  background: #ecfdf5 !important;
+  border-color: #a7f3d0 !important;
+}
+
+/* Grid de Cards da Dashboard 100% Centralizado e Alinhado */
+#dashboard .cards {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+#dashboard .card {
+  min-height: 114px !important;
+  height: auto !important;
+  aspect-ratio: auto !important;
+  padding: 12px 11px 11px !important;
+  border-radius: 15px !important;
+  border: 1px solid #ffffff !important;
+  background: linear-gradient(145deg, #ffffff, #f2f7fd) !important;
+  box-shadow: 0 4px 14px rgba(14, 45, 90, 0.08) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  text-align: left !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  cursor: pointer !important;
+  transition: transform 0.12s ease, box-shadow 0.12s ease !important;
+  box-sizing: border-box !important;
+}
+#dashboard .card:active {
+  transform: scale(0.98) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   CORREÇÃO: SEGUNDO PRINT (SERVIÇOS & PEÇAS) — NOME DA OFICINA
+   ══════════════════════════════════════════════════════════════════════ */
+.service-workshop {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 11.5px !important;
+  font-weight: 750 !important;
+  color: #0056cc !important;
+  background: #eaf3fe !important;
+  border: 1px solid #cce2fd !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  margin-top: 4px !important;
+  width: fit-content !important;
+  letter-spacing: -0.2px !important;
+}
+.service-workshop svg {
+  width: 13px !important;
+  height: 13px !important;
+  flex-shrink: 0 !important;
+  stroke: #0066FF !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   CORREÇÃO: TERCEIRA TELA (ALERTAS) — TODOS OS SERVIÇOS & BOTÃO CONCLUIR
+   ══════════════════════════════════════════════════════════════════════ */
+#alertas.screen {
+  display: none;
+  min-height: 100dvh;
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+  background: linear-gradient(180deg, #edf5ff 0%, #dce8f7 100%) !important;
+  padding-bottom: 85px !important;
+}
+#alertas.screen.active {
+  display: flex !important;
+  flex-direction: column !important;
+}
+.alertas-scroll {
+  flex: 1 !important;
+  padding: 12px 18px 24px !important;
+  box-sizing: border-box !important;
+}
+.alertas-intro h1 {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.6px !important;
+  color: #07183F !important;
+  margin: 0 0 3px 0 !important;
+}
+.alertas-intro p {
+  font-size: 13px !important;
+  color: #3b5a82 !important;
+  margin: 0 0 14px 0 !important;
+}
+.alertas-tabs {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 8px !important;
+  background: #e2edfa !important;
+  padding: 4px !important;
+  border-radius: 12px !important;
+  margin-bottom: 14px !important;
+}
+.alertas-tab {
+  border: none !important;
+  background: transparent !important;
+  color: #43648f !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  padding: 8px 12px !important;
+  border-radius: 9px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+.alertas-tab.active {
+  background: #0066FF !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 8px rgba(0, 102, 255, 0.3) !important;
+}
+
+.alert-item {
+  display: flex !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  padding: 14px !important;
+  border-radius: 16px !important;
+  margin-bottom: 11px !important;
+  background: #ffffff !important;
+  border: 1px solid #ffffff !important;
+  box-shadow: 0 4px 16px rgba(10, 40, 85, 0.08) !important;
+  position: relative !important;
+  transition: transform 0.12s ease !important;
+}
+.alert-item.red {
+  background: linear-gradient(135deg, #fff5f5, #fed7d7) !important;
+  border-color: #feb2b2 !important;
+}
+.alert-item.yellow {
+  background: linear-gradient(135deg, #fffdf0, #feebc8) !important;
+  border-color: #fbd38d !important;
+}
+.alert-item.blue {
+  background: linear-gradient(135deg, #f0f7ff, #e1effe) !important;
+  border-color: #bee3f8 !important;
+}
+.alert-item.neutral, .alert-item.done-item {
+  background: linear-gradient(135deg, #f8fafc, #edf2f7) !important;
+  border-color: #e2e8f0 !important;
+}
+.alert-icon {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 10px !important;
+  display: grid !important;
+  place-items: center !important;
+  flex-shrink: 0 !important;
+}
+.alert-item.red .alert-icon { background: #fee2e2; color: #dc2626; }
+.alert-item.yellow .alert-icon { background: #fef3c7; color: #d97706; }
+.alert-item.blue .alert-icon { background: #dbeafe; color: #2563eb; }
+.alert-item.neutral .alert-icon, .alert-item.done-item .alert-icon { background: #dcfce7; color: #16a34a; }
+.alert-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; }
+
+.alert-copy {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+.alert-copy h2 {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  color: #07183F !important;
+  margin: 0 0 4px 0 !important;
+  letter-spacing: -0.3px !important;
+}
+.alert-distance {
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: #c53030 !important;
+  margin: 0 0 2px 0 !important;
+}
+.alert-item.yellow .alert-distance { color: #b7791f !important; }
+.alert-item.blue .alert-distance { color: #1d4ed8 !important; }
+.alert-item.done-item .alert-distance { color: #15803d !important; }
+
+.alert-recommended {
+  font-size: 11.5px !important;
+  color: #557297 !important;
+  margin: 0 0 8px 0 !important;
+}
+.alert-actions-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+  margin-top: 6px !important;
+}
+.alert-detail-btn {
+  border: 1px solid #0066FF !important;
+  background: transparent !important;
+  color: #0066FF !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 5px 10px !important;
+  border-radius: 7px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  transition: all 0.15s ease !important;
+}
+.alert-detail-btn:hover { background: #edf5ff !important; }
+
+.alert-conclude-btn {
+  border: none !important;
+  background: linear-gradient(110deg, #10b981, #059669) !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  padding: 6px 12px !important;
+  border-radius: 7px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35) !important;
+  transition: transform 0.12s ease !important;
+}
+.alert-conclude-btn:active { transform: scale(0.95) !important; }
+
+.alert-reopen-btn {
+  border: 1px solid #cbd5e1 !important;
+  background: #ffffff !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 5px 10px !important;
+  border-radius: 7px !important;
+  cursor: pointer !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   REFORMULAÇÃO COMPLETA: OFICINAS DA REDE (LEAFLET + OSM + NO API KEY)
+   ══════════════════════════════════════════════════════════════════════ */
+#oficinas.screen {
+  display: none;
+  min-height: 100dvh;
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto !important;
+  box-sizing: border-box !important;
+  background: linear-gradient(180deg, #edf5ff 0%, #dce8f7 100%) !important;
+}
+#oficinas.screen.active {
+  display: flex !important;
+  flex-direction: column !important;
+}
+.oficinas-content {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 10px 18px 88px !important;
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+}
+.oficinas-heading h1 {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.6px !important;
+  color: #07183F !important;
+  margin: 0 0 3px 0 !important;
+}
+.oficinas-heading .subtitle {
+  font-size: 13px !important;
+  color: #3b5a82 !important;
+  margin: 0 0 12px 0 !important;
+}
+
+/* Container do Mapa Leaflet OpenStreetMap */
+.map-shell {
+  position: relative !important;
+  width: 100% !important;
+  height: clamp(190px, 32vh, 260px) !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  border: 1px solid #c7d8ea !important;
+  background: #e2edf8 !important;
+  box-shadow: 0 4px 16px rgba(10, 40, 90, 0.1) !important;
+  margin-bottom: 12px !important;
+  flex-shrink: 0 !important;
+}
+.map-shell .map {
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 1 !important;
+}
+.map-shell .map-note {
+  position: absolute !important;
+  bottom: 6px !important;
+  left: 8px !important;
+  z-index: 600 !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #0056cc !important;
+  font-size: 9.5px !important;
+  font-weight: 750 !important;
+  padding: 3px 8px !important;
+  border-radius: 6px !important;
+  pointer-events: none !important;
+  border: 1px solid #d4e3f3 !important;
+}
+
+/* Custom Marker Pin Leaflet */
+.custom-partner-marker {
+  background: transparent !important;
+  border: none !important;
+}
+.pin {
+  width: 32px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 3px 6px rgba(0, 50, 150, 0.4));
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pin.selected {
+  transform: scale(1.22);
+  filter: drop-shadow(0 4px 10px rgba(0, 80, 255, 0.6));
+}
+
+/* Leaflet Popups */
+#oficinas .leaflet-popup-content-wrapper {
+  background: #07183F !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(7, 24, 63, 0.4) !important;
+  padding: 4px !important;
+}
+#oficinas .leaflet-popup-tip {
+  background: #07183F !important;
+}
+
+/* Lista de Oficinas com Cards Profissionais */
+.shops-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+.shop {
+  min-height: 84px !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #ffffff !important;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, #ffffff 0%, #f4f8fe 100%) !important;
+  box-shadow: 0 4px 14px rgba(11, 40, 80, 0.08) !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s !important;
+}
+.shop:active { transform: scale(0.985) !important; }
+.shop.selected {
+  border-color: #0066FF !important;
+  background: linear-gradient(135deg, #f0f7ff 0%, #e5f0fe 100%) !important;
+  box-shadow: 0 0 0 2px #0066FF, 0 6px 18px rgba(0, 102, 255, 0.18) !important;
+}
+.shop-thumb {
+  width: 60px !important;
+  height: 60px !important;
+  flex-shrink: 0 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  background: #e2edf8 !important;
+  border: 1px solid #d4e3f3 !important;
+}
+.shop-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+.shop-info {
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+.shop-name {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 14.5px !important;
+  font-weight: 800 !important;
+  color: #07183F !important;
+  letter-spacing: -0.3px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.shop-distance-line {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 11.5px !important;
+  color: #3b5a82 !important;
+}
+.shop-distance-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  background: #eaf3fe !important;
+  color: #0056cc !important;
+  font-weight: 750 !important;
+  font-size: 10.5px !important;
+  padding: 1.5px 6px !important;
+  border-radius: 5px !important;
+}
+.shop-rating-badge {
+  font-size: 11px !important;
+  color: #b45309 !important;
+  background: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+  padding: 1px 5px !important;
+  border-radius: 5px !important;
+  font-weight: 750 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  width: fit-content !important;
+}
+.shop-details-btn {
+  border: 1px solid #0066FF !important;
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  color: #0066FF !important;
+  padding: 8px 12px !important;
+  font-size: 11.5px !important;
+  font-weight: 750 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+.shop-details-btn:hover {
+  background: #0066FF !important;
+  color: #ffffff !important;
+}
+
+/* Modal Bottom-Sheet de Detalhes da Oficina */
+.oficinas-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(7, 24, 63, 0.6) !important;
+  backdrop-filter: blur(5px) !important;
+  display: none !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  z-index: 1000 !important;
+}
+.oficinas-overlay.open { display: flex !important; }
+
+.oficinas-modal {
+  background: #ffffff !important;
+  border-radius: 24px 24px 0 0 !important;
+  padding: 22px 20px 32px !important;
+  width: 100% !important;
+  max-width: 440px !important;
+  box-shadow: 0 -10px 40px rgba(7, 24, 63, 0.35) !important;
+  position: relative !important;
+  animation: slideUpOficinaModal 0.22s ease-out !important;
+}
+@keyframes slideUpOficinaModal {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.oficinas-modal .close {
+  position: absolute !important;
+  top: 16px !important;
+  right: 16px !important;
+  background: #f1f5f9 !important;
+  color: #334155 !important;
+  border: none !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  cursor: pointer !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  display: grid !important;
+  place-items: center !important;
+}
+.oficinas-modal .modal-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.5px !important;
+  color: #0056cc !important;
+  background: #eaf3fe !important;
+  padding: 4px 9px !important;
+  border-radius: 6px !important;
+  margin-bottom: 8px !important;
+}
+.oficinas-modal h2 {
+  margin: 0 0 6px !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  color: #07183F !important;
+}
+.oficinas-modal-actions {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr 1fr !important;
+  gap: 8px !important;
+  margin-top: 16px !important;
+}
+.oficinas-modal-actions button, .oficinas-modal-actions a {
+  border-radius: 12px !important;
+  padding: 10px 8px !important;
+  font-size: 11px !important;
+  font-weight: 750 !important;
+  cursor: pointer !important;
+  text-decoration: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  text-align: center !important;
+  transition: all 0.15s ease !important;
+}
+.btn-rota-mapa {
+  background: #0066FF !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 3px 10px rgba(0, 102, 255, 0.3) !important;
+}
+.btn-ligar-oficina {
+  background: #059669 !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 3px 10px rgba(5, 150, 105, 0.3) !important;
+}
+.btn-agendar-oficina {
+  background: #07183F !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 3px 10px rgba(7, 24, 63, 0.3) !important;
+}
 </style><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 </head><body><main class="app"><section class="screen splash active" id="splash">
   <div class="splash-wrapper">
@@ -3643,7 +4409,28 @@ nav.bottom button svg, .services-bottom-nav svg, .alertas-bottom-nav svg, .gasto
       <strong>Sair da conta</strong>
     </div>
   </button>
-</div><h1>Olá, Leandro</h1><p class="subtitle">Aqui está o resumo do seu veículo.</p><button class="vehicle" onclick="tap(this)"><img alt="Toyota Corolla" src="data:image/jpeg;base64,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"/><span><strong>Toyota Corolla</strong><small>BRA2E19 · 2021</small></span><span class="arr">›</span></button><div class="cards"><button class="card" onclick="tap(this); go('services')"><span class="iconline">✣</span><span class="title">Serviços &amp; Peças</span><span class="metric">12 registros</span></button><button class="card" onclick="tap(this); go('preventivas')"><span class="iconline">◴</span><span class="title">Revisões Preventivas</span><span class="metric green">Próxima em 8.000 km</span></button><button class="card" onclick="tap(this); go('alertas')"><span class="iconline">♧ <span class="badge">2</span></span><span class="title">Alertas &amp; Manutenções</span><span class="metric red">2 pendentes</span></button><button class="card" onclick="tap(this); go('gastos')"><span class="iconline">▣</span><span class="title">Gastos com Carro</span><span class="metric money green">R$ 2.430,00</span><span class="small">Últimos 6 meses</span></button><button class="card lock" onclick="tap(this)"><span class="iconline" style="color:#34557d">♙</span><span class="title">Mini OBD</span><span class="metric orange">Em breve</span></button><button class="card" onclick="tap(this); go('oficinas')"><span class="iconline">▣</span><span class="title">Oficinas da Rede</span><span class="metric" style="color:#31547d">3 oficinas</span></button></div><nav class="bottom" aria-label="Navegação principal">
+</div><h1 id="dash-greeting-h1">Olá, <span id="dash-user-name">Leandro</span></h1><p class="subtitle">Aqui está o resumo do seu veículo.</p><button class="vehicle" id="dash-car-card" onclick="tap(this); openCarDetailsModal();" type="button" aria-label="Ver detalhes completos do veículo">
+  <div class="vehicle-thumb-box">
+    <img id="dash-car-img" alt="Foto do veículo" src="data:image/jpeg;base64,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" onerror="this.onerror=null; this.src='img/icons/icon-192x192.png';"/>
+    <span class="vehicle-dna-tag" id="dash-car-dna-tag">DNA ATIVO</span>
+  </div>
+  <div class="vehicle-info-col">
+    <div class="vehicle-header-line">
+      <strong class="vehicle-title-text" id="dash-car-title">Toyota Corolla XEi 2.0 Aut.</strong>
+      <span class="arr" aria-hidden="true">›</span>
+    </div>
+    <div class="vehicle-plate-row">
+      <span class="vehicle-mercosul-plate" id="dash-car-plate"><span class="mercosul-flag">🇧🇷</span> <span id="dash-car-plate-val">BRA2E19</span></span>
+      <span class="vehicle-year-chip" id="dash-car-year">2021 / 2021</span>
+    </div>
+    <div class="vehicle-specs-grid">
+      <span class="spec-chip" id="dash-car-color">Branco</span>
+      <span class="spec-chip" id="dash-car-fuel">Flex</span>
+      <span class="spec-chip highlight-odo" id="dash-car-odo">88.500 km</span>
+      <span class="spec-chip highlight-fipe" id="dash-car-fipe">FIPE R$ 124.900</span>
+    </div>
+  </div>
+</button><div class="cards"><button class="card" onclick="tap(this); go('services')"><span class="iconline">✣</span><span class="title">Serviços &amp; Peças</span><span class="metric">12 registros</span></button><button class="card" onclick="tap(this); go('preventivas')"><span class="iconline">◴</span><span class="title">Revisões Preventivas</span><span class="metric green">Próxima em 8.000 km</span></button><button class="card" onclick="tap(this); go('alertas')"><span class="iconline">♧ <span class="badge">2</span></span><span class="title">Alertas &amp; Manutenções</span><span class="metric red">2 pendentes</span></button><button class="card" onclick="tap(this); go('gastos')"><span class="iconline">▣</span><span class="title">Gastos com Carro</span><span class="metric money green">R$ 2.430,00</span><span class="small">Últimos 6 meses</span></button><button class="card lock" onclick="tap(this)"><span class="iconline" style="color:#34557d">♙</span><span class="title">Mini OBD</span><span class="metric orange">Em breve</span></button><button class="card" onclick="tap(this); go('oficinas')"><span class="iconline">▣</span><span class="title">Oficinas da Rede</span><span class="metric" style="color:#31547d">3 oficinas</span></button></div><nav class="bottom" aria-label="Navegação principal">
     <button class="nav-btn active selected sel" type="button" data-nav="dashboard" onclick="go('dashboard')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 10 9-7 9 7v11h-7v-7h-4v7H3z"/></svg>
       <span>Início</span>
@@ -4059,52 +4846,135 @@ nav.bottom button svg, .services-bottom-nav svg, .alertas-bottom-nav svg, .gasto
       <p>Fique informado sobre o que precisa fazer no seu veículo.</p>
     </div>
     <div class="alertas-tabs">
-      <button class="alertas-tab active" type="button" data-filter="pending" onclick="filterAlerts('pending', this)">Pendentes (2)</button>
-      <button class="alertas-tab" type="button" data-filter="done" onclick="filterAlerts('done', this)">Concluídos</button>
+      <button class="alertas-tab active" id="tab-btn-pending" type="button" data-filter="pending" onclick="filterAlerts('pending', this)">Pendentes (<span id="alertas-pending-count">4</span>)</button>
+      <button class="alertas-tab" id="tab-btn-done" type="button" data-filter="done" onclick="filterAlerts('done', this)">Concluídos (<span id="alertas-done-count">2</span>)</button>
     </div>
     <div class="alertas-list" id="alertas-list">
-      <article class="alert-item red" data-status="pending">
+      
+      <!-- 1. Troca de Óleo do Motor -->
+      <article class="alert-item red" id="card-alert-oleo" data-alert-id="alerta-oleo" data-status="pending">
         <div class="alert-icon">
           <svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5m0 3v.2"/></svg>
         </div>
         <div class="alert-copy">
-          <h2>Troca de óleo</h2>
+          <h2>Troca de Óleo de Motor</h2>
           <p class="alert-distance">Faltam 3.000 km</p>
-          <p class="alert-recommended">Recomendado em 15.000 km</p>
-          <button class="alert-detail-btn" type="button" onclick="toast('Detalhes: Troca de óleo do motor')">
-            Ver detalhes <svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
-          </button>
+          <p class="alert-recommended">Recomendado aos 75.000 km · Óleo 5W30 Sintético e Filtro</p>
+          <div class="alert-actions-bar">
+            <button class="alert-detail-btn" type="button" onclick="toast('Detalhes: Troca de óleo 5W30 Sintético + Filtro Mahle. Recomendado a cada 10.000 km.')">
+              Ver detalhes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+            </button>
+            <button class="alert-conclude-btn" type="button" onclick="concluirAlertaServico('alerta-oleo', 'Troca de Óleo de Motor', event)">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              Concluir
+            </button>
+          </div>
         </div>
-        <svg class="alert-arrow" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
       </article>
-      <article class="alert-item yellow" data-status="pending">
+
+      <!-- 2. Pastilha de Freio -->
+      <article class="alert-item yellow" id="card-alert-freio" data-alert-id="alerta-freio" data-status="pending">
         <div class="alert-icon">
           <svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5m0 3v.2"/></svg>
         </div>
         <div class="alert-copy">
-          <h2>Pastilha de freio</h2>
+          <h2>Pastilhas de Freio Dianteiras</h2>
           <p class="alert-distance">Faltam 5.000 km</p>
-          <p class="alert-recommended">Recomendado em 40.000 km</p>
-          <button class="alert-detail-btn" type="button" onclick="toast('Detalhes: Pastilha de freio dianteira')">
-            Ver detalhes <svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
-          </button>
+          <p class="alert-recommended">Recomendado aos 45.000 km · Jogo de Pastilhas Cerâmica Bosch</p>
+          <div class="alert-actions-bar">
+            <button class="alert-detail-btn" type="button" onclick="toast('Detalhes: Inspeção de espessura das pastilhas e discos de freio dianteiros.')">
+              Ver detalhes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+            </button>
+            <button class="alert-conclude-btn" type="button" onclick="concluirAlertaServico('alerta-freio', 'Pastilhas de Freio Dianteiras', event)">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              Concluir
+            </button>
+          </div>
         </div>
-        <svg class="alert-arrow" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
       </article>
-      <article class="alert-item neutral" data-status="done" style="display:none;">
+
+      <!-- 3. Troca de Correia Dentada -->
+      <article class="alert-item yellow" id="card-alert-correia" data-alert-id="alerta-correia" data-status="pending">
+        <div class="alert-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5m0 3v.2"/></svg>
+        </div>
+        <div class="alert-copy">
+          <h2>Troca de Correia Dentada &amp; Tensor</h2>
+          <p class="alert-distance">Faltam 12.000 km</p>
+          <p class="alert-recommended">Recomendado aos 100.000 km ou 5 anos · Kit Correia Gates + Tensor</p>
+          <div class="alert-actions-bar">
+            <button class="alert-detail-btn" type="button" onclick="toast('Detalhes: Substituição preventiva do kit de correia dentada, rolamento e tensor.')">
+              Ver detalhes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+            </button>
+            <button class="alert-conclude-btn" type="button" onclick="concluirAlertaServico('alerta-correia', 'Troca de Correia Dentada', event)">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              Concluir
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- 4. Troca de Óleo do Câmbio Automático -->
+      <article class="alert-item blue" id="card-alert-cambio" data-alert-id="alerta-cambio" data-status="pending">
+        <div class="alert-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5m0 3v.2"/></svg>
+        </div>
+        <div class="alert-copy">
+          <h2>Troca de Óleo de Câmbio Automático</h2>
+          <p class="alert-distance">Faltam 18.000 km</p>
+          <p class="alert-recommended">Recomendado aos 80.000 km · Fluido ATF CVT FE + Filtro interno</p>
+          <div class="alert-actions-bar">
+            <button class="alert-detail-btn" type="button" onclick="toast('Detalhes: Troca por diálise completa do fluido da transmissão automática CVT.')">
+              Ver detalhes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+            </button>
+            <button class="alert-conclude-btn" type="button" onclick="concluirAlertaServico('alerta-cambio', 'Troca de Óleo de Câmbio Automático', event)">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              Concluir
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- 5. Fluido de Freio DOT 4 (Concluído previamente) -->
+      <article class="alert-item neutral done-item" id="card-alert-fluido" data-alert-id="alerta-fluido" data-status="done" style="display:none;">
         <div class="alert-icon">
           <svg viewBox="0 0 24 24"><path d="M8 4h8l1 3 3 2v9l-8 4-8-4V9l3-2 1-3Z"/><path d="M12 8v5l3 2"/></svg>
         </div>
         <div class="alert-copy">
-          <h2>Correia dentada</h2>
-          <p class="alert-distance">Faltam 40.000 km</p>
-          <p class="alert-recommended">Recomendado em 100.000 km</p>
-          <button class="alert-detail-btn" type="button" onclick="toast('Detalhes: Correia dentada revisada')">
-            Ver detalhes <svg viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
-          </button>
+          <h2>Fluido de Freio DOT 4</h2>
+          <p class="alert-distance">Concluído aos 80.000 km</p>
+          <p class="alert-recommended">Substituído com sangria técnica total · Válido até 100.000 km</p>
+          <div class="alert-actions-bar">
+            <button class="alert-detail-btn" type="button" onclick="toast('Registro auditado: Fluido de Freio DOT 4 Bosch substituído com sucesso.')">
+              Ver detalhes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+            </button>
+            <button class="alert-reopen-btn" type="button" onclick="reabrirAlertaServico('alerta-fluido', 'Fluido de Freio DOT 4', event)">
+              Reabrir Alerta
+            </button>
+          </div>
         </div>
-        <svg class="alert-arrow" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg>
       </article>
+
+      <!-- 6. Velas de Ignição Iridium (Concluído previamente) -->
+      <article class="alert-item neutral done-item" id="card-alert-velas" data-alert-id="alerta-velas" data-status="done" style="display:none;">
+        <div class="alert-icon">
+          <svg viewBox="0 0 24 24"><path d="M8 4h8l1 3 3 2v9l-8 4-8-4V9l3-2 1-3Z"/><path d="M12 8v5l3 2"/></svg>
+        </div>
+        <div class="alert-copy">
+          <h2>Velas de Ignição Iridium NGK</h2>
+          <p class="alert-distance">Concluído aos 60.000 km</p>
+          <p class="alert-recommended">Substituição do jogo quádruplo · Próxima revisão aos 120.000 km</p>
+          <div class="alert-actions-bar">
+            <button class="alert-detail-btn" type="button" onclick="toast('Registro auditado: Velas de Ignição Iridium NGK substituídas.')">
+              Ver detalhes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
+            </button>
+            <button class="alert-reopen-btn" type="button" onclick="reabrirAlertaServico('alerta-velas', 'Velas de Ignição Iridium', event)">
+              Reabrir Alerta
+            </button>
+          </div>
+        </div>
+      </article>
+
     </div>
   </div>
   <nav class="alertas-bottom-nav" aria-label="Navegação principal">
@@ -4222,7 +5092,7 @@ nav.bottom button svg, .services-bottom-nav svg, .alertas-bottom-nav svg, .gasto
 
 <section class="screen" id="oficinas">
   <header class="app-header">
-    <button class="back" id="back-oficinas" aria-label="Voltar" onclick="go('dashboard')" type="button">
+    <button class="back" id="back-oficinas" aria-label="Voltar para início" onclick="go('dashboard')" type="button">
       <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
     </button>
     <img class="logo" src="img/icons/dna-logo-official.png" alt="DNA AUTO">
@@ -4232,25 +5102,50 @@ nav.bottom button svg, .services-bottom-nav svg, .alertas-bottom-nav svg, .gasto
       <h1>Oficinas da Rede</h1>
       <p class="subtitle">Oficinas credenciadas perto de você.</p>
     </div>
+    
+    <!-- Mapa Real OpenStreetMap (Sem API Key) -->
     <div class="map-shell">
       <div id="oficinas-map" class="map" aria-label="Mapa interativo OpenStreetMap com oficinas credenciadas"></div>
-      <span class="map-note">Localizações no mapa · OpenStreetMap</span>
+      <span class="map-note">📍 OpenStreetMap Oficial · Toque no marcador</span>
     </div>
-    <div id="oficinas-list" class="shops-list"></div>
-    <p class="footnote">Oficinas credenciadas e auditadas pela rede DNA AUTO com telemetria e garantia de serviços.</p>
+
+    <!-- Lista de Oficinas Credenciadas -->
+    <div id="oficinas-list" class="shops-list" aria-label="Lista de oficinas credenciadas DNA AUTO"></div>
+
+    <p class="footnote" style="margin: 14px 4px 6px; font-size: 11px; color: #557096; line-height: 1.4; text-align: center;">
+      Oficinas credenciadas e auditadas pela rede oficial DNA AUTO com telemetria e garantia de serviços.
+    </p>
   </main>
+
+  <!-- Painel Bottom-Sheet Modal de Detalhes da Oficina -->
   <div class="oficinas-overlay" id="oficinas-overlay" role="dialog" aria-modal="true" aria-labelledby="oficinas-modal-title">
     <div class="oficinas-modal">
       <button class="close" id="oficinas-modal-close" aria-label="Fechar" type="button">✕</button>
-      <div class="modal-badge">CREDENCIADA OFICIAL DNA AUTO</div>
-      <h2 id="oficinas-modal-title">Oficina</h2>
+      <div class="modal-badge">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        CREDENCIADA OFICIAL DNA AUTO
+      </div>
+      <h2 id="oficinas-modal-title">Veloce Auto Center</h2>
       <div id="oficinas-modal-body"></div>
+      
+      <!-- 3 Ações Obrigatórias: Como Chegar (Rota Real), Ligar (tel:), Agendar Serviço -->
       <div class="oficinas-modal-actions">
-        <button type="button" class="btn-see-map" id="oficinas-see-map">Ver no mapa</button>
-        <button type="button" class="btn-contact-ws" id="oficinas-contact-ws">Contatar Oficina</button>
+        <a href="#" id="oficinas-btn-route" target="_blank" class="btn-rota-mapa">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+          Como chegar
+        </a>
+        <a href="#" id="oficinas-btn-call" class="btn-ligar-oficina">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          Ligar
+        </a>
+        <button type="button" id="oficinas-btn-schedule" class="btn-agendar-oficina">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Agendar serviço
+        </button>
       </div>
     </div>
   </div>
+
   <nav class="oficinas-bottom-nav" aria-label="Navegação principal">
     <button class="nav-btn" type="button" data-nav="dashboard" onclick="go('dashboard')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 10 9-7 9 7v11h-7v-7h-4v7H3z"/></svg>
@@ -4916,48 +5811,70 @@ window.go = function(id) {
 };
 
 
-// --- OFICINAS DA REDE COM OPENSTREETMAP & CARTODB VOYAGER (ULTRA FLUIDO E GRATUITO) ---
+// --- OFICINAS DA REDE CREDENCIADA COM OPENSTREETMAP & LEAFLET (SEM CHAVE DE API) ---
 const oficinasDaRede = [
   {
     id: 1,
-    nome: 'Oficina Premium',
+    nome: 'Veloce Auto Center',
     bairro: 'Centro',
-    distancia: '2,3 km',
-    nota: '5.0',
-    lat: -22.9064,
-    lng: -43.1805,
-    tipo: 'Mecânica geral e Injeção Eletrônica',
-    endereco: 'Av. Presidente Vargas, 1200 - Centro, Rio de Janeiro',
-    telefone: '(21) 98765-4321',
-    whatsapp: '5521987654321',
-    imagem: 'img/oficina-premium.jpg'
+    cidade: 'São Paulo',
+    distancia: '1,2 km',
+    nota: '4.9',
+    avaliacoes: 58,
+    lat: -23.55052,
+    lng: -46.633308,
+    tipo: 'Mecânica Geral, Injeção Eletrônica & Diagnóstico OBD2',
+    endereco: 'Av. Paulista, 1200 - Bela Vista, São Paulo - SP',
+    telefone: '(11) 99876-5432',
+    whatsapp: '5511998765432',
+    imagem: 'img/ws-workshop-thumb1.jpg'
   },
   {
     id: 2,
     nome: 'Auto Center Silva',
-    bairro: 'Vila Nova',
-    distancia: '4,1 km',
+    bairro: 'Moema',
+    cidade: 'São Paulo',
+    distancia: '2,8 km',
     nota: '4.8',
-    lat: -22.9124,
-    lng: -43.1888,
-    tipo: 'Suspensão, Freios e Pneus',
-    endereco: 'Rua das Oficinas, 450 - Vila Nova, Rio de Janeiro',
-    telefone: '(21) 97654-3210',
-    whatsapp: '5521976543210',
+    avaliacoes: 42,
+    lat: -23.6015,
+    lng: -46.6621,
+    tipo: 'Suspensão Laser 3D, Freios & Alinhamento',
+    endereco: 'Al. dos Maracatins, 450 - Moema, São Paulo - SP',
+    telefone: '(11) 98765-4321',
+    whatsapp: '5511987654321',
     imagem: 'img/autocenter-silva.jpg'
   },
   {
     id: 3,
-    nome: 'Mecânica Souza',
-    bairro: 'Jardim',
-    distancia: '6,5 km',
-    nota: '4.6',
-    lat: -22.9004,
-    lng: -43.1921,
-    tipo: 'Manutenção preventiva & Diagnóstico OBD2',
-    endereco: 'Estrada dos Bandeirantes, 890 - Jardim, Rio de Janeiro',
-    telefone: '(21) 96543-2109',
-    whatsapp: '5521965432109',
+    nome: 'Oficina Premium Jardins',
+    bairro: 'Jardins',
+    cidade: 'São Paulo',
+    distancia: '4,1 km',
+    nota: '5.0',
+    avaliacoes: 64,
+    lat: -23.5678,
+    lng: -46.6653,
+    tipo: 'Revisão Preventiva Padrão OEM & Câmbio Automático',
+    endereco: 'Rua Oscar Freire, 890 - Cerqueira César, São Paulo - SP',
+    telefone: '(11) 97654-3210',
+    whatsapp: '5511976543210',
+    imagem: 'img/oficina-premium.jpg'
+  },
+  {
+    id: 4,
+    nome: 'Auto Elétrica Central & Baterias',
+    bairro: 'Vila Mariana',
+    cidade: 'São Paulo',
+    distancia: '5,6 km',
+    nota: '4.7',
+    avaliacoes: 37,
+    lat: -23.5892,
+    lng: -46.6348,
+    tipo: 'Sistemas Elétricos, Alternadores, Baterias EFB/AGM & Start-Stop',
+    endereco: 'Rua Domingos de Morais, 1420 - Vila Mariana, São Paulo - SP',
+    telefone: '(11) 96543-2109',
+    whatsapp: '5511965432109',
     imagem: 'img/mecanica-souza.jpg'
   }
 ];
@@ -4966,18 +5883,21 @@ let oficinasMap = null;
 let selectedOficinaId = 1;
 const oficinasMarkers = {};
 
+// Marcador azul SVG oficial com ícone de oficina e sombra suave
 function pinMarkup(active) {
-  const fillColor = active ? '#0052D4' : '#0066FF';
-  return '<div class="pin ' + (active ? 'selected' : '') + '">' +
-    '<svg viewBox="0 0 32 40" width="32" height="40" xmlns="http://www.w3.org/2000/svg">' +
+  const primaryColor = active ? '#0047BA' : '#0066FF';
+  const strokeColor = active ? '#ffffff' : '#ffffff';
+  const scaleClass = active ? 'pin selected' : 'pin';
+  return '<div class="' + scaleClass + '">' +
+    '<svg viewBox="0 0 32 42" width="32" height="42" fill="none" xmlns="http://www.w3.org/2000/svg">' +
       '<defs>' +
-        '<filter id="pinShadow" x="-20%" y="-20%" width="140%" height="140%">' +
-          '<feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="rgba(0,40,100,0.4)"/>' +
+        '<filter id="pinShadow" x="-30%" y="-20%" width="160%" height="150%">' +
+          '<feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="rgba(0, 40, 120, 0.45)"/>' +
         '</filter>' +
       '</defs>' +
-      '<path d="M16 1C8.268 1 2 7.268 2 15c0 10.5 14 24 14 24s14-13.5 14-24C30 7.268 23.732 1 16 1Z" fill="' + fillColor + '" stroke="#ffffff" stroke-width="2" filter="url(#pinShadow)"/>' +
-      '<circle cx="16" cy="15" r="7" fill="#ffffff"/>' +
-      '<path d="M14 11h4v8h-4zM12 17h8v2h-8z" fill="' + fillColor + '" opacity="0.8"/>' +
+      '<path d="M16 1C8.268 1 2 7.268 2 15c0 10.8 14 26 14 26s14-15.2 14-26C30 7.268 23.732 1 16 1Z" fill="' + primaryColor + '" stroke="' + strokeColor + '" stroke-width="2" filter="url(#pinShadow)"/>' +
+      '<circle cx="16" cy="15" r="7.5" fill="#ffffff"/>' +
+      '<path d="M13.5 11.5h5v2h-5zM12 14.5h8v2h-8zM14 17.5h4v2h-4z" fill="' + primaryColor + '"/>' +
     '</svg>' +
   '</div>';
 }
@@ -4987,17 +5907,25 @@ function markerIcon(active) {
   return L.divIcon({
     className: 'custom-partner-marker',
     html: pinMarkup(active),
-    iconSize: [32, 40],
-    iconAnchor: [16, 39],
-    popupAnchor: [0, -36]
+    iconSize: [32, 42],
+    iconAnchor: [16, 41],
+    popupAnchor: [0, -38]
   });
 }
 
 function selectOficina(id, focus = true) {
   selectedOficinaId = id;
+  
+  // Destacar o card na lista e rolar até ele
   document.querySelectorAll('#oficinas .shop').forEach(el => {
-    el.classList.toggle('selected', Number(el.dataset.id) === id);
+    const isThis = Number(el.dataset.id) === id;
+    el.classList.toggle('selected', isThis);
+    if (isThis && focus) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   });
+
+  // Atualizar marcador no mapa
   if (oficinasMap && window.L) {
     Object.entries(oficinasMarkers).forEach(([key, m]) => {
       m.setIcon(markerIcon(Number(key) === id));
@@ -5016,23 +5944,45 @@ function openOficinaDetails(id) {
   const o = oficinasDaRede.find(x => x.id === id);
   if (!o) return;
   selectOficina(id, false);
+
   const title = document.getElementById('oficinas-modal-title');
   const body = document.getElementById('oficinas-modal-body');
   if (title) title.textContent = o.nome;
   if (body) {
-    body.innerHTML = '<p style="margin:0 0 10px; font-size:13px; line-height:1.5;">' +
-      '<b>Especialidade:</b> ' + o.tipo + '<br>' +
-      '<b>Endereço:</b> ' + o.endereco + '<br>' +
-      '<b>Região:</b> ' + o.bairro + ' · A ' + o.distancia + ' de você<br>' +
-      '<b>Avaliação:</b> ★ ' + o.nota + ' (Clientes Auditados DNA AUTO)<br>' +
-      '<b>Telefone:</b> ' + o.telefone + '</p>';
+    body.innerHTML = 
+      '<div style="font-size:13px; color:#1e3a5f; line-height:1.5; margin-bottom:12px;">' +
+        '<p style="margin:0 0 6px;"><strong>Especialidade:</strong> ' + o.tipo + '</p>' +
+        '<p style="margin:0 0 6px;"><strong>Endereço:</strong> ' + o.endereco + '</p>' +
+        '<p style="margin:0 0 6px;"><strong>Localização:</strong> ' + o.bairro + ' · A <strong>' + o.distancia + '</strong> de você</p>' +
+        '<p style="margin:0 0 6px;"><strong>Telefone:</strong> ' + o.telefone + '</p>' +
+        '<div style="display:inline-flex; align-items:center; gap:4px; background:#fffbeb; color:#b45309; padding:3px 8px; border-radius:6px; font-weight:750; font-size:11.5px; border:1px solid #fde68a; margin-top:2px;">' +
+          '★ ' + o.nota + ' · ' + (o.avaliacoes || 45) + ' avaliações reais auditadas' +
+        '</div>' +
+      '</div>';
   }
-  const btnContact = document.getElementById('oficinas-contact-ws');
-  if (btnContact) {
-    btnContact.onclick = () => {
-      window.open('https://wa.me/' + o.whatsapp + '?text=' + encodeURIComponent('Olá, sou usuário do DNA AUTO e gostaria de agendar uma revisão para meu veículo.'), '_blank');
+
+  // 1. Botão "Como chegar": Rota no Google Maps usando coordenadas reais
+  const btnRoute = document.getElementById('oficinas-btn-route');
+  if (btnRoute) {
+    btnRoute.href = 'https://www.google.com/maps/dir/?api=1&destination=' + o.lat + ',' + o.lng;
+  }
+
+  // 2. Botão "Ligar": Dispara tel: nativo
+  const btnCall = document.getElementById('oficinas-btn-call');
+  if (btnCall) {
+    const rawTel = o.telefone.replace(/\D/g, '');
+    btnCall.href = 'tel:' + rawTel;
+  }
+
+  // 3. Botão "Agendar serviço": Canal oficial integrado da oficina
+  const btnSchedule = document.getElementById('oficinas-btn-schedule');
+  if (btnSchedule) {
+    btnSchedule.onclick = () => {
+      const msg = 'Olá, sou usuário do aplicativo DNA AUTO e gostaria de agendar uma revisão para o meu veículo na ' + o.nome + '.';
+      window.open('https://wa.me/' + o.whatsapp + '?text=' + encodeURIComponent(msg), '_blank');
     };
   }
+
   const overlay = document.getElementById('oficinas-overlay');
   if (overlay) overlay.classList.add('open');
 }
@@ -5041,17 +5991,22 @@ function renderOficinasList() {
   const list = document.getElementById('oficinas-list');
   if (!list) return;
   list.innerHTML = '';
+
   oficinasDaRede.forEach(o => {
     const el = document.createElement('div');
     el.className = 'shop' + (o.id === selectedOficinaId ? ' selected' : '');
     el.dataset.id = o.id;
-    el.innerHTML = '<div class="shop-thumb">' +
-      '<img src="' + o.imagem + '" alt="' + o.nome + '" onerror="this.onerror=null; this.src=\'img/ws-workshop-thumb1.jpg\';">' +
+    el.innerHTML = 
+      '<div class="shop-thumb">' +
+        '<img src="' + o.imagem + '" alt="' + o.nome + '" onerror="this.onerror=null; this.src=\'img/ws-workshop-thumb1.jpg\';">' +
       '</div>' +
       '<div class="shop-info">' +
-      '<strong class="shop-name">' + o.nome + '</strong>' +
-      '<span class="shop-distance">' + o.distancia + ' • ' + o.bairro + '</span>' +
-      '<span class="shop-rating">★ ' + o.nota + '</span>' +
+        '<strong class="shop-name">' + o.nome + '</strong>' +
+        '<div class="shop-distance-line">' +
+          '<span class="shop-distance-pill">📍 ' + o.distancia + '</span>' +
+          '<span>' + o.bairro + '</span>' +
+        '</div>' +
+        '<div class="shop-rating-badge">★ ' + o.nota + '</div>' +
       '</div>' +
       '<button type="button" class="shop-details-btn">Ver detalhes</button>';
 
@@ -5076,24 +6031,22 @@ function initOficinasMap() {
   const closeBtn = document.getElementById('oficinas-modal-close');
   if (closeBtn) closeBtn.onclick = () => document.getElementById('oficinas-overlay').classList.remove('open');
   const overlay = document.getElementById('oficinas-overlay');
-  if (overlay) overlay.onclick = (e) => { if (e.target.id === 'oficinas-overlay') e.target.classList.remove('open'); };
-  const seeMapBtn = document.getElementById('oficinas-see-map');
-  if (seeMapBtn) {
-    seeMapBtn.onclick = () => {
-      document.getElementById('oficinas-overlay').classList.remove('open');
-      selectOficina(selectedOficinaId, true);
+  if (overlay) {
+    overlay.onclick = (e) => {
+      if (e.target.id === 'oficinas-overlay') overlay.classList.remove('open');
     };
   }
 
   const mapContainer = document.getElementById('oficinas-map');
   if (!mapContainer) return;
 
+  // Se mapa já existe, re-invalida tamanho e ajusta visão
   if (oficinasMap) {
-    [50, 200, 450].forEach(delay => {
+    [50, 200, 500].forEach(delay => {
       setTimeout(() => {
         if (oficinasMap) {
           oficinasMap.invalidateSize();
-          const current = oficinasDaRede.find(x => x.id === selectedOficinaId);
+          const current = oficinasDaRede.find(x => x.id === selectedOficinaId) || oficinasDaRede[0];
           if (current) oficinasMap.setView([current.lat, current.lng], 14);
         }
       }, delay);
@@ -5101,19 +6054,20 @@ function initOficinasMap() {
     return;
   }
 
+  // Inicialização com Leaflet.js e OpenStreetMap
   if (window.L) {
     try {
       oficinasMap = L.map('oficinas-map', {
         zoomControl: true,
         scrollWheelZoom: true,
         touchZoom: true
-      }).setView([-22.9075, -43.1860], 14);
+      }).setView([-23.565, -46.65], 13);
 
-      // CartoDB Voyager tiles (100% gratuito, ultra rápido e fluido com retina)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      // OpenStreetMap Tiles público, 100% gratuito e sem necessidade de API Key
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        subdomains: 'abcd',
-        attribution: '&copy; <a href="https://carto.com/" target="_blank">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OSM</a>'
+        subdomains: ['a', 'b', 'c'],
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
       }).addTo(oficinasMap);
 
       oficinasDaRede.forEach(o => {
@@ -5123,13 +6077,19 @@ function initOficinasMap() {
 
         const popContent = document.createElement('div');
         popContent.style.padding = '4px';
-        popContent.innerHTML = '<strong style="color:#0a2550; font-size:13px; display:block;">' + o.nome + '</strong>' +
-          '<span style="font-size:11px; color:#5b779a;">' + o.distancia + ' · ' + o.bairro + ' · ★ ' + o.nota + '</span>' +
-          '<div style="margin-top:6px;"><a href="https://wa.me/' + o.whatsapp + '" target="_blank" style="display:inline-block; background:#25D366; color:#fff; font-size:10.5px; font-weight:700; padding:3px 8px; border-radius:4px; text-decoration:none;">Falar no WhatsApp</a></div>';
+        popContent.innerHTML = 
+          '<strong style="color:#ffffff; font-size:13px; display:block; margin-bottom:2px;">' + o.nome + '</strong>' +
+          '<span style="font-size:11px; color:#cbd5e1; display:block; margin-bottom:4px;">📍 ' + o.bairro + ' · A ' + o.distancia + '</span>' +
+          '<div style="font-size:11px; color:#93c5fd; margin-bottom:6px;">' + o.endereco + '</div>' +
+          '<div style="display:flex; gap:6px;">' +
+            '<a href="tel:' + o.telefone.replace(/\D/g, '') + '" style="display:inline-block; background:#0066FF; color:#fff; font-size:10.5px; font-weight:700; padding:4px 8px; border-radius:5px; text-decoration:none;">Ligar</a>' +
+            '<a href="https://wa.me/' + o.whatsapp + '" target="_blank" style="display:inline-block; background:#25D366; color:#fff; font-size:10.5px; font-weight:700; padding:4px 8px; border-radius:5px; text-decoration:none;">WhatsApp</a>' +
+          '</div>';
+
         m.bindPopup(popContent);
 
         m.on('click', () => {
-          selectOficina(o.id, false);
+          selectOficina(o.id, true);
         });
 
         oficinasMarkers[o.id] = m;
@@ -5144,9 +6104,189 @@ function initOficinasMap() {
       console.warn('Erro ao inicializar mapa Leaflet:', e);
     }
   } else {
-    mapContainer.innerHTML = '<p style="padding:30px;font-size:12px;color:#2a4e80;text-align:center">Carregando mapa gratuito OpenStreetMap...</p>';
+    mapContainer.innerHTML = '<p style="padding:30px;font-size:12px;color:#2a4e80;text-align:center">Carregando mapa interativo OpenStreetMap...</p>';
   }
 }
+
+// ─── LÓGICA DE CONCLUSÃO E REABERTURA DE ALERTAS E MANUTENÇÕES ───
+function filterAlerts(status, btn) {
+  document.querySelectorAll('.alertas-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  const pendingItems = document.querySelectorAll('#alertas-list .alert-item[data-status="pending"]');
+  const doneItems = document.querySelectorAll('#alertas-list .alert-item[data-status="done"]');
+
+  if (status === 'pending') {
+    pendingItems.forEach(el => el.style.display = 'flex');
+    doneItems.forEach(el => el.style.display = 'none');
+  } else {
+    pendingItems.forEach(el => el.style.display = 'none');
+    doneItems.forEach(el => el.style.display = 'flex');
+  }
+}
+
+function atualizarContadoresAlertas() {
+  const pendingCount = document.querySelectorAll('#alertas-list .alert-item[data-status="pending"]').length;
+  const doneCount = document.querySelectorAll('#alertas-list .alert-item[data-status="done"]').length;
+
+  const pEl = document.getElementById('alertas-pending-count');
+  const dEl = document.getElementById('alertas-done-count');
+  if (pEl) pEl.textContent = pendingCount;
+  if (dEl) dEl.textContent = doneCount;
+
+  // Atualizar badge do dashboard
+  const dashBadge = document.querySelector('#dashboard .card[onclick*="alertas"] .badge');
+  const dashMetric = document.querySelector('#dashboard .card[onclick*="alertas"] .metric');
+  if (dashBadge) dashBadge.textContent = pendingCount;
+  if (dashMetric) dashMetric.textContent = pendingCount + ' pendente' + (pendingCount === 1 ? '' : 's');
+}
+
+function concluirAlertaServico(alertId, serviceName, event) {
+  if (event) event.stopPropagation();
+  const card = document.getElementById('card-alert-' + alertId.replace('alerta-', ''));
+  if (!card) return;
+
+  card.setAttribute('data-status', 'done');
+  card.classList.remove('red', 'yellow', 'blue');
+  card.classList.add('neutral', 'done-item');
+
+  // Adicionar botão de reabrir se não tiver
+  const actionsBar = card.querySelector('.alert-actions-bar');
+  if (actionsBar) {
+    const concludeBtn = actionsBar.querySelector('.alert-conclude-btn');
+    if (concludeBtn) concludeBtn.remove();
+
+    if (!actionsBar.querySelector('.alert-reopen-btn')) {
+      const reopenBtn = document.createElement('button');
+      reopenBtn.className = 'alert-reopen-btn';
+      reopenBtn.type = 'button';
+      reopenBtn.textContent = 'Reabrir Alerta';
+      reopenBtn.onclick = (e) => reabrirAlertaServico(alertId, serviceName, e);
+      actionsBar.appendChild(reopenBtn);
+    }
+  }
+
+  // Salvar no localStorage
+  try {
+    const concluded = JSON.parse(localStorage.getItem('dna_concluded_alerts') || '[]');
+    if (!concluded.includes(alertId)) {
+      concluded.push(alertId);
+      localStorage.setItem('dna_concluded_alerts', JSON.stringify(concluded));
+    }
+  } catch(e) {}
+
+  // Ocultar da aba pendentes atual
+  const activeTab = document.querySelector('.alertas-tab.active');
+  if (activeTab && activeTab.dataset.filter === 'pending') {
+    card.style.display = 'none';
+  }
+
+  atualizarContadoresAlertas();
+  toast('✅ ' + serviceName + ' concluído com sucesso! Registro auditado no Passaporte.');
+}
+
+function reabrirAlertaServico(alertId, serviceName, event) {
+  if (event) event.stopPropagation();
+  const card = document.getElementById('card-alert-' + alertId.replace('alerta-', ''));
+  if (!card) return;
+
+  card.setAttribute('data-status', 'pending');
+  card.classList.remove('neutral', 'done-item');
+  if (alertId === 'alerta-oleo') card.classList.add('red');
+  else if (alertId === 'alerta-cambio') card.classList.add('blue');
+  else card.classList.add('yellow');
+
+  const actionsBar = card.querySelector('.alert-actions-bar');
+  if (actionsBar) {
+    const reopenBtn = actionsBar.querySelector('.alert-reopen-btn');
+    if (reopenBtn) reopenBtn.remove();
+
+    if (!actionsBar.querySelector('.alert-conclude-btn')) {
+      const concludeBtn = document.createElement('button');
+      concludeBtn.className = 'alert-conclude-btn';
+      concludeBtn.type = 'button';
+      concludeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Concluir';
+      concludeBtn.onclick = (e) => concluirAlertaServico(alertId, serviceName, e);
+      actionsBar.appendChild(concludeBtn);
+    }
+  }
+
+  try {
+    let concluded = JSON.parse(localStorage.getItem('dna_concluded_alerts') || '[]');
+    concluded = concluded.filter(x => x !== alertId);
+    localStorage.setItem('dna_concluded_alerts', JSON.stringify(concluded));
+  } catch(e) {}
+
+  const activeTab = document.querySelector('.alertas-tab.active');
+  if (activeTab && activeTab.dataset.filter === 'done') {
+    card.style.display = 'none';
+  }
+
+  atualizarContadoresAlertas();
+  toast('Alerta ' + serviceName + ' reaberto e movido para Pendentes.');
+}
+
+// ─── SINCRONIZAÇÃO DINÂMICA DO CARD DO VEÍCULO NA DASHBOARD ───
+function atualizarCardVeiculoDashboard(veiculo) {
+  try {
+    const rawUser = localStorage.getItem('dna_logged_user');
+    if (rawUser) {
+      const user = JSON.parse(rawUser);
+      const nameEl = document.getElementById('dash-user-name');
+      if (nameEl && user.name) {
+        nameEl.textContent = user.name.split(' ')[0];
+      }
+    }
+
+    const v = veiculo || window.currentRegisteredVehicle;
+    const plate = (v && v.license_plate) || localStorage.getItem('dna_registered_plate') || 'BRA2E19';
+    
+    const brand = (v && v.brand) || 'Toyota';
+    const model = (v && v.model) || 'Corolla';
+    const version = (v && (v.version || v.version_label)) || 'XEi 2.0 Aut.';
+    const yearFab = (v && (v.manufacture_year || v.year)) || '2021';
+    const yearMod = (v && (v.model_year || v.year)) || '2021';
+    const color = (v && v.color && v.color !== 'Não informada') ? v.color : 'Branco Polar';
+    const fuel = (v && v.fuel_type) || 'Flex';
+    const mileage = (v && (v.current_mileage || v.odometer_km)) ? Number(v.current_mileage || v.odometer_km).toLocaleString('pt-BR') + ' km' : '88.500 km';
+    
+    let fipeStr = 'FIPE R$ 124.900';
+    if (v && v.fipe_price_formatted) {
+      fipeStr = 'FIPE ' + v.fipe_price_formatted;
+    } else if (v && v.fipe_price_cents) {
+      fipeStr = 'FIPE R$ ' + (v.fipe_price_cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 0 });
+    }
+
+    const titleEl = document.getElementById('dash-car-title');
+    if (titleEl) titleEl.textContent = (brand + ' ' + model + ' ' + version).trim();
+
+    const plateValEl = document.getElementById('dash-car-plate-val');
+    if (plateValEl) plateValEl.textContent = plate;
+
+    const yearEl = document.getElementById('dash-car-year');
+    if (yearEl) yearEl.textContent = yearFab + ' / ' + yearMod;
+
+    const colorEl = document.getElementById('dash-car-color');
+    if (colorEl) colorEl.textContent = color;
+
+    const fuelEl = document.getElementById('dash-car-fuel');
+    if (fuelEl) fuelEl.textContent = fuel;
+
+    const odoEl = document.getElementById('dash-car-odo');
+    if (odoEl) odoEl.textContent = mileage;
+
+    const fipeEl = document.getElementById('dash-car-fipe');
+    if (fipeEl) fipeEl.textContent = fipeStr;
+
+    if (v && v.photo_url) {
+      const imgEl = document.getElementById('dash-car-img');
+      if (imgEl) imgEl.src = v.photo_url;
+    }
+  } catch(e) {
+    console.warn('Erro ao atualizar card do veículo na dashboard:', e);
+  }
+}
+
 
 // ═══ CORREÇÃO 05: FILTRAGEM DE SERVIÇOS & PEÇAS E MODAL DE DETALHES ═══
 function filterServices(filterType, btn) {
@@ -5271,20 +6411,33 @@ function closeProfileModal() {
   if (modal) modal.classList.remove('open');
 }
 
-function carregarDadosUsuarioLogado() {
+async function carregarDadosUsuarioLogado() {
   try {
     const rawUser = localStorage.getItem('dna_logged_user');
-    if (!rawUser) return;
-    const user = JSON.parse(rawUser);
+    let user = null;
+    if (rawUser) {
+      try {
+        user = JSON.parse(rawUser);
+      } catch(e) {}
+    }
 
-    const pName = document.getElementById('profile-user-name');
-    const pEmail = document.getElementById('profile-user-email');
-    const pPhone = document.getElementById('profile-user-phone');
-    const pAvatar = document.getElementById('profile-avatar-letter');
-    if (pName && user.name) pName.textContent = user.name;
-    if (pEmail && user.email) pEmail.textContent = user.email;
-    if (pPhone && user.phone) pPhone.textContent = user.phone;
-    if (pAvatar && user.name) pAvatar.textContent = user.name.charAt(0).toUpperCase();
+    if (user) {
+      const pName = document.getElementById('profile-user-name');
+      const pEmail = document.getElementById('profile-user-email');
+      const pPhone = document.getElementById('profile-user-phone');
+      const pAvatar = document.getElementById('profile-avatar-letter');
+      const dName = document.getElementById('dash-user-name');
+
+      if (pName && user.name) pName.textContent = user.name;
+      if (pEmail && user.email) pEmail.textContent = user.email;
+      if (pPhone && user.phone) pPhone.textContent = user.phone;
+      if (pAvatar && user.name) pAvatar.textContent = user.name.charAt(0).toUpperCase();
+      if (dName && user.name) dName.textContent = user.name.split(' ')[0];
+
+      if (user.vehicle && !window.currentRegisteredVehicle) {
+        window.currentRegisteredVehicle = user.vehicle;
+      }
+    }
 
     const plate = localStorage.getItem('dna_registered_plate');
     if (plate) {
@@ -5292,8 +6445,59 @@ function carregarDadosUsuarioLogado() {
       if (pPlate) pPlate.textContent = plate + ' 🇧🇷';
       const mPlate = document.getElementById('modal-car-plate');
       if (mPlate) mPlate.textContent = '🇧🇷 ' + plate;
+
+      // Se não tiver o veículo carregado em memória, busca na API de veículos do usuário
+      if (!window.currentRegisteredVehicle) {
+        try {
+          const token = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+          const res = await fetch('/api/v1/vehicles/my-vehicles?plate=' + encodeURIComponent(plate), {
+            headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+          });
+          const data = await res.json();
+          if (data && data.vehicles && data.vehicles.length > 0) {
+            window.currentRegisteredVehicle = data.vehicles[0];
+          }
+        } catch(err) {
+          console.warn('Erro ao carregar dados do veículo da API:', err);
+        }
+      }
     }
-  } catch(e) {}
+
+    // Atualizar o card do veículo na dashboard
+    atualizarCardVeiculoDashboard(window.currentRegisteredVehicle);
+
+    // Restaurar alertas concluídos salvos
+    try {
+      const concluded = JSON.parse(localStorage.getItem('dna_concluded_alerts') || '[]');
+      concluded.forEach(alertId => {
+        const card = document.getElementById('card-alert-' + alertId.replace('alerta-', ''));
+        if (card) {
+          card.setAttribute('data-status', 'done');
+          card.classList.remove('red', 'yellow', 'blue');
+          card.classList.add('neutral', 'done-item');
+          const actionsBar = card.querySelector('.alert-actions-bar');
+          if (actionsBar) {
+            const concludeBtn = actionsBar.querySelector('.alert-conclude-btn');
+            if (concludeBtn) concludeBtn.remove();
+            if (!actionsBar.querySelector('.alert-reopen-btn')) {
+              const reopenBtn = document.createElement('button');
+              reopenBtn.className = 'alert-reopen-btn';
+              reopenBtn.type = 'button';
+              reopenBtn.textContent = 'Reabrir Alerta';
+              reopenBtn.onclick = (e) => reabrirAlertaServico(alertId, 'Manutenção', e);
+              actionsBar.appendChild(reopenBtn);
+            }
+          }
+        }
+      });
+      if (typeof atualizarContadoresAlertas === 'function') {
+        atualizarContadoresAlertas();
+      }
+    } catch(e) {}
+
+  } catch(e) {
+    console.warn('Erro em carregarDadosUsuarioLogado:', e);
+  }
 }
 
 function fazerLogoutDoApp() {

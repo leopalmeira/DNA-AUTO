@@ -561,3 +561,23 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
 - **Modal de Perfil com Logout:** Adicionado modal de perfil com dados do condutor e botão de logout que limpa a sessão e redireciona de volta para a tela de boas-vindas/login.
 - **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
 
+### Ciclo 96 — Refinamento de Navegação Universal, Isolamento de Revisões Preventivas e Modais Globais
+- **Navegação do Rodapé Universal:** Integração e harmonização dos 4 botões da barra de navegação inferior em todas as telas secundárias.
+- **Isolamento de Modais e Telas:** Modais globais desacoplados para o nível raiz sob `main.app`, eliminando colisões de sobreposição entre Revisões Preventivas e Perfil.
+- **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
+
+### Ciclo 97 — Dashboard Centralizada, Card do Veículo Dinâmico, Nome da Oficina em Serviços, Alertas Monitorados e Oficinas OSM sem API Key
+- **Dashboard Centralizada:** Alinhamento milimétrico e centralizado de todos os componentes da tela inicial da Dashboard (`#dashboard`), eliminando qualquer descentralização em telas mobile ou emuladores.
+- **Card do Veículo Dinâmico com Dados da API Placas e FIPE:** Card do veículo exibe marca, modelo, versão, placa Mercosul com bandeira do Brasil 🇧🇷, ano de fabricação/modelo, cor, combustível, odômetro formatado, valor oficial da Tabela FIPE e selo DNA Ativo, sincronizado via `atualizarCardVeiculoDashboard()` e com clique que abre o modal de ficha técnica completa.
+- **Nome da Oficina em Todos os Serviços:** Identificação clara e destacada da oficina responsável pela execução do serviço/peça em todos os cards da tela de Serviços & Peças (`#services`).
+- **Alertas Monitorados & Botão Concluir Interativo:** Monitoramento completo de Óleo do Motor, Pastilhas de Freio, Correia Dentada, Óleo de Câmbio Automático, Fluido de Freio e Velas. Botão "Concluir" funcional dentro do próprio card, que move o alerta para concluído, alterna para "Reabrir Alerta", decrementa o contador na Dashboard e persiste no `localStorage`.
+- **Refatoração Profissional de Oficinas da Rede:**
+  - Substituição total do mapa anterior por OpenStreetMap público + Leaflet.js 1.9.4 sem exigência de API Key.
+  - Marcadores azuis em SVG customizados com popup contendo dados e contato.
+  - Sincronização e foco bidirecional entre marcadores e cards de oficinas.
+  - Modal com botões funcionais: "Como chegar" (Google Maps com coordenadas reais), "Ligar" (`tel:`) e "Agendar serviço" (WhatsApp homologado).
+  - Layout vertical responsivo aproveitando a altura útil da tela, sem excesso de espaços vazios e sem sobreposição da barra inferior.
+- **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
+- **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
+
+
