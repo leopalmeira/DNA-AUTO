@@ -637,3 +637,25 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
   - Divisor "Ou continue com" e botões sociais de alta fidelidade para Google e Apple.
 - **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
 - **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
+
+### Ciclo 106 (24/10/2026)
+- **Refinamento da Tela de Login (Hero Completo Sem Cobrir o Carro, Card na Base Eliminando Vazio Inferior, Remoção de Botões Sociais e Limpeza Total de Credenciais/Erro ao Abrir) e Card Mini OBD 20% Mais Lento:**
+  - **Solicitações do Usuário:**
+    1. "no card Mini OBD da dashboard pode ser 20% mais lento na velocidade na pagina de login como mostrado no print a tela pode baixar um pouco mais para nao ficar tanto espaço em branco na parte de baixo e pode retirar o logo da apple e do google nao deve ficar ja carregado com logins e senhas de teste e credencias invalidas porque ja esta abrindo assim"
+    2. "o formulado esta cobrndo uma parte da parte de baixo do carro isso deve ser corrigido @[.agents/agent/frontend-specialist.md]"
+  - **Implementações Técnicas Realizadas:**
+    1. **Fim da Sobreposição e Carro 100% Visível:**
+       - Removida qualquer margem negativa do card branco (`margin: 0 auto !important`).
+       - O container do hero (`.login-hero-container`) recebeu altura adaptativa `clamp(220px, 35vh, 310px)` e a imagem oficial do carro azul (`.login-hero-banner-img`) foi configurada com `object-fit: contain; object-position: center bottom;`, garantindo que o parachoque, grade, faróis e rodas do carro apareçam integralmente sem corte e sem que o formulário suba em cima dele.
+    2. **Card Branco de Login Posicionado na Base (Zero Vazio Inferior):**
+       - O `.login-sheet-card` foi posicionado no rodapé da tela (`flex: 0 0 auto; margin-top: auto`), preenchendo a base de forma proporcional e acolhedora, eliminando por completo o espaço vazio branco gigante que sobrava na parte inferior.
+    3. **Remoção dos Botões Sociais e Divisor:**
+       - Removidos os botões do Google e Apple e a linha divisória "Ou continue com". O card agora finaliza de forma limpa, direta e elegante na linha "Não tem uma conta? Criar cadastro".
+    4. **Limpeza Absoluta de Credenciais e Correção do Alerta de Erro:**
+       - Identificada a causa da caixa vermelha aberta: o seletor `.login-error-alert` possuía `display: flex !important;`, o que sobrescrevia o `style="display:none;"` inline. Corrigido para `display: none;` por padrão e ativação via classe `.show`.
+       - Os campos de input foram configurados com `autocomplete="off"` e `autocomplete="new-password"` com `value=""`, e a função de navegação `go('login')` executa a limpeza imediata de qualquer resíduo (`emailInput.value = ''`, `passwordInput.value = ''`, `errorBox.style.display = 'none'`), impedindo que o navegador preencha credenciais salvas de admin ao abrir a tela.
+    5. **Velocidade da Aura no Card Mini OBD 20% Mais Lenta:**
+       - A rotação contínua da aura de 3px em tons de azul foi desacelerada em 20%, passando de `4.05s` para `4.86s` (`@keyframes obdBeamRotate 4.86s linear infinite`), proporcionando um efeito ainda mais fluido, elegante e tecnológico.
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (701.571 bytes em ambos).
+    - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
