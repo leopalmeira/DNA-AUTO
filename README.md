@@ -246,7 +246,7 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
     - Box do formulário encapsulado em container elegante com largura máxima contida (max-width: 360px), cantos arredondados (20px) e borda suave.
     - Preenchimento vertical balanceado com gradiente suave e rodapé discreto, eliminando espaços vazios na parte inferior.
   - **Dashboard do Cliente — Card Mini OBD com Aura Móvel Contínua (Ciclo 104):**
-    - Aura dinâmica com borda de 3px em tons de azul elétrico rotacionando continuamente a 360° (@keyframes obdBeamRotate).
+    - Aura dinâmica com borda de 3px em tons de azul elétrico rotacionando continuamente a 360° (@keyframes obdBeamRotate 4.05s), com velocidade 35% mais suave e rastro luminoso 10% mais amplo no entorno do card.
     - Badge atualizado para "Em breve" no card de telemetria OBD2.
 - **Design de Alta Fidelidade (Fullscreen Dark Obsidian & Neon Blue):**
   - **Fullscreen Nativo PWA:** Consumo de 100% da tela em smartphones e tablets, eliminando simulação de moldura/frame de celular e notch fake.

@@ -4580,7 +4580,7 @@ nav[aria-label="Navegação principal"] span,
   transform: scale(0.94) !important;
   background: #e5effd !important;
 }
-/* Card Mini OBD na Dashboard: Aura móvel contínua de 3px em tons de azul e badge Em breve */
+/* Card Mini OBD na Dashboard: Aura móvel contínua de 3px (velocidade 35% mais suave e rastro 10% mais amplo) */
 #dashboard .card.card-mini-obd {
   position: relative !important;
   overflow: hidden !important;
@@ -4588,7 +4588,7 @@ nav[aria-label="Navegação principal"] span,
   border-radius: 15px !important;
   border: none !important;
   background: #d4e5f9 !important;
-  box-shadow: 0 4px 14px rgba(14, 45, 90, 0.08), 0 0 12px rgba(0, 102, 255, 0.2) !important;
+  box-shadow: 0 4px 14px rgba(14, 45, 90, 0.08), 0 0 14px rgba(0, 102, 255, 0.24) !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: stretch !important;
@@ -4600,8 +4600,8 @@ nav[aria-label="Navegação principal"] span,
   left: -50% !important;
   width: 200% !important;
   height: 200% !important;
-  background: conic-gradient(from 0deg, transparent 0deg, transparent 200deg, rgba(0, 210, 255, 0.25) 240deg, #00D2FF 275deg, #0066FF 310deg, #38b6ff 345deg, #00F0FF 360deg) !important;
-  animation: obdBeamRotate 3s linear infinite !important;
+  background: conic-gradient(from 0deg, transparent 0deg, transparent 180deg, rgba(0, 210, 255, 0.12) 195deg, rgba(0, 210, 255, 0.28) 235deg, #00D2FF 270deg, #0066FF 305deg, #38b6ff 340deg, #00F0FF 360deg) !important;
+  animation: obdBeamRotate 4.05s linear infinite !important;
   z-index: 1 !important;
   pointer-events: none !important;
 }
