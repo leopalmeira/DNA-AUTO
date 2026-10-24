@@ -4718,6 +4718,118 @@ nav[aria-label="Navegação principal"] span,
   box-shadow: 0 3px 10px rgba(0, 102, 255, 0.25) !important;
 }
 
+
+/* ═══ GOOGLE MAPS OFICINAS DA REDE DNA AUTO ═══ */
+#oficinas .map-shell {
+  position: relative !important;
+  width: 100% !important;
+  height: 280px !important;
+  min-height: 280px !important;
+  border-radius: 18px !important;
+  overflow: hidden !important;
+  border: 1.5px solid #c7d8ed !important;
+  background: #e5effa !important;
+  box-shadow: 0 4px 16px rgba(10, 35, 70, 0.1) !important;
+  margin-bottom: 8px !important;
+}
+#google-maps-frame {
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  display: block !important;
+  background: #e5effa !important;
+}
+.map-floating-bar {
+  position: absolute !important;
+  bottom: 8px !important;
+  left: 8px !important;
+  right: 8px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(200, 220, 245, 0.8) !important;
+  border-radius: 12px !important;
+  padding: 8px 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  box-shadow: 0 4px 14px rgba(4, 20, 48, 0.12) !important;
+  z-index: 5 !important;
+}
+.map-floating-info {
+  display: flex !important;
+  flex-direction: column !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+}
+.map-floating-info strong {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: #081d42 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.map-floating-info span {
+  font-size: 10.5px !important;
+  color: #4b6688 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.btn-gmap-route {
+  background: linear-gradient(135deg, #0066FF, #0050d0) !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 6px 12px !important;
+  border-radius: 8px !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  white-space: nowrap !important;
+  box-shadow: 0 3px 8px rgba(0, 102, 255, 0.3) !important;
+  flex-shrink: 0 !important;
+}
+.btn-gmap-route:active {
+  transform: scale(0.96) !important;
+}
+.shop-chips-bar {
+  display: flex !important;
+  gap: 6px !important;
+  overflow-x: auto !important;
+  padding: 6px 2px 10px !important;
+  scrollbar-width: none !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+.shop-chips-bar::-webkit-scrollbar {
+  display: none !important;
+}
+.shop-chip {
+  padding: 5px 11px !important;
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  border: 1px solid #c7d8eb !important;
+  color: #173865 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 6px rgba(9, 32, 66, 0.04) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  flex-shrink: 0 !important;
+  transition: all 0.15s ease !important;
+}
+.shop-chip:active, .shop-chip.active {
+  background: #0066FF !important;
+  color: #ffffff !important;
+  border-color: #0056dc !important;
+  box-shadow: 0 3px 8px rgba(0, 102, 255, 0.25) !important;
+}
+
 </style><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 </head><body><main class="app"><section class="screen splash active" id="splash">
   <div class="splash-wrapper">
@@ -5472,25 +5584,44 @@ nav[aria-label="Navegação principal"] span,
     </div>
     
     <!-- Mapa Real OpenStreetMap (Sem API Key) -->
-    <!-- Controles de Visão do Mapa: Nacional vs Proximidade -->
-    <div class="map-view-switch" role="group" aria-label="Alternar visão do mapa">
-      <button type="button" class="btn-map-switch active" id="btn-map-brasil" onclick="resetMapToBrazil()">
+    <!-- Controles de Visão do Google Maps -->
+    <div class="map-view-switch" role="group" aria-label="Alternar visão do Google Maps">
+      <button type="button" class="btn-map-switch" id="btn-map-brasil" onclick="resetMapToBrazil()">
         <span>🇧🇷 Todo o País (Brasil)</span>
       </button>
-      <button type="button" class="btn-map-switch" id="btn-map-nearest" onclick="focusSelectedOficina()">
-        <span>📍 Oficina Selecionada</span>
+      <button type="button" class="btn-map-switch active" id="btn-map-nearest" onclick="focusSelectedOficina()">
+        <span>📍 Pino no Endereço</span>
       </button>
     </div>
 
-    <!-- Mapa Real OpenStreetMap (Sem API Key) com Cobertura Nacional -->
-    <div class="map-shell">
-      <div id="oficinas-map" class="map" aria-label="Mapa interativo OpenStreetMap com oficinas credenciadas no Brasil"></div>
-      <span class="map-note">📍 Rede Nacional DNA AUTO · Toque no pino</span>
-    </div>
-      <span class="map-note">📍 OpenStreetMap Oficial · Toque no marcador</span>
+    <!-- Chips Deslizantes de Oficinas Credenciadas -->
+    <div class="shop-chips-bar" id="shop-chips-bar" aria-label="Selecione uma oficina para ver o pino no endereço"></div>
+
+    <!-- Container do Google Maps Oficial (Iframe Responsivo com Pino no Endereço) -->
+    <div class="map-shell" id="google-map-shell">
+      <iframe id="google-maps-frame"
+        title="Google Maps com Oficinas Credenciadas DNA AUTO"
+        src="https://maps.google.com/maps?q=Av.+Paulista,+1200+-+Bela+Vista,+S%C3%A3o+Paulo+-+SP&t=&z=15&ie=UTF8&iwloc=&output=embed"
+        width="100%"
+        height="100%"
+        loading="lazy"
+        allowfullscreen=""
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+      
+      <!-- Card Flutuante com Nome da Oficina, Endereço e Botão Rota GPS -->
+      <div class="map-floating-bar" id="map-floating-bar">
+        <div class="map-floating-info">
+          <strong id="map-active-shop-name">📍 Veloce Auto Center</strong>
+          <span id="map-active-shop-addr">Av. Paulista, 1200 - São Paulo/SP</span>
+        </div>
+        <a href="https://www.google.com/maps/dir/?api=1&destination=Av.+Paulista,+1200+-+Bela+Vista,+S%C3%A3o+Paulo+-+SP" target="_blank" class="btn-gmap-route" id="btn-gmap-route" aria-label="Traçar rota no Google Maps">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+          Rota GPS
+        </a>
+      </div>
     </div>
 
-    <!-- Lista de Oficinas Credenciadas -->
     <div id="oficinas-list" class="shops-list" aria-label="Lista de oficinas credenciadas DNA AUTO"></div>
 
     <p class="footnote" style="margin: 14px 4px 6px; font-size: 11px; color: #557096; line-height: 1.4; text-align: center;">
@@ -6419,18 +6550,18 @@ window.go = function(id) {
 };
 
 
-// --- OFICINAS DA REDE CREDENCIADA COM OPENSTREETMAP & LEAFLET (SEM CHAVE DE API) ---
+// --- OFICINAS DA REDE CREDENCIADA COM GOOGLE MAPS (PINOS NOS ENDEREÇOS) ---
 const oficinasDaRede = [
   {
     id: 1,
     nome: 'Veloce Auto Center',
-    bairro: 'Centro',
-    cidade: 'São Paulo',
+    bairro: 'Bela Vista',
+    cidade: 'São Paulo - SP',
     distancia: '1,2 km',
     nota: '4.9',
     avaliacoes: 58,
-    lat: -23.55052,
-    lng: -46.633308,
+    lat: -23.565,
+    lng: -46.65,
     tipo: 'Mecânica Geral, Injeção Eletrônica & Diagnóstico OBD2',
     endereco: 'Av. Paulista, 1200 - Bela Vista, São Paulo - SP',
     telefone: '(11) 99876-5432',
@@ -6441,7 +6572,7 @@ const oficinasDaRede = [
     id: 2,
     nome: 'Auto Center Silva',
     bairro: 'Moema',
-    cidade: 'São Paulo',
+    cidade: 'São Paulo - SP',
     distancia: '2,8 km',
     nota: '4.8',
     avaliacoes: 42,
@@ -6457,7 +6588,7 @@ const oficinasDaRede = [
     id: 3,
     nome: 'Oficina Premium Jardins',
     bairro: 'Jardins',
-    cidade: 'São Paulo',
+    cidade: 'São Paulo - SP',
     distancia: '4,1 km',
     nota: '5.0',
     avaliacoes: 64,
@@ -6473,7 +6604,7 @@ const oficinasDaRede = [
     id: 4,
     nome: 'Auto Elétrica Central & Baterias',
     bairro: 'Vila Mariana',
-    cidade: 'São Paulo',
+    cidade: 'São Paulo - SP',
     distancia: '5,6 km',
     nota: '4.7',
     avaliacoes: 37,
@@ -6484,137 +6615,248 @@ const oficinasDaRede = [
     telefone: '(11) 96543-2109',
     whatsapp: '5511965432109',
     imagem: 'img/mecanica-souza.jpg'
+  },
+  {
+    id: 5,
+    nome: 'DNA Auto Rio Barra',
+    bairro: 'Barra da Tijuca',
+    cidade: 'Rio de Janeiro - RJ',
+    distancia: 'Rede RJ',
+    nota: '5.0',
+    avaliacoes: 71,
+    lat: -22.9995,
+    lng: -43.361,
+    tipo: 'Revisão Preventiva Padrão OEM & Câmbio Automático',
+    endereco: 'Av. das Américas, 3500 - Barra da Tijuca, Rio de Janeiro - RJ',
+    telefone: '(21) 98765-1234',
+    whatsapp: '5521987651234',
+    imagem: 'img/oficina-premium.jpg'
+  },
+  {
+    id: 6,
+    nome: 'Oficina Central Savassi',
+    bairro: 'Savassi',
+    cidade: 'Belo Horizonte - MG',
+    distancia: 'Rede MG',
+    nota: '4.9',
+    avaliacoes: 63,
+    lat: -19.9385,
+    lng: -43.935,
+    tipo: 'Diagnóstico Eletrônico & Revisão Completa',
+    endereco: 'Av. do Contorno, 6200 - Savassi, Belo Horizonte - MG',
+    telefone: '(31) 99876-4321',
+    whatsapp: '5531998764321',
+    imagem: 'img/mecanica-souza.jpg'
+  },
+  {
+    id: 7,
+    nome: 'Eurotech Curitiba',
+    bairro: 'Batel',
+    cidade: 'Curitiba - PR',
+    distancia: 'Rede PR',
+    nota: '4.9',
+    avaliacoes: 52,
+    lat: -25.445,
+    lng: -49.289,
+    tipo: 'Especializada em Importados e Nacionais',
+    endereco: 'Av. Batel, 1500 - Batel, Curitiba - PR',
+    telefone: '(41) 98765-9988',
+    whatsapp: '5541987659988',
+    imagem: 'img/autocenter-silva.jpg'
+  },
+  {
+    id: 8,
+    nome: 'Mecânica Capital Brasil',
+    bairro: 'Asa Sul',
+    cidade: 'Brasília - DF',
+    distancia: 'Rede DF',
+    nota: '4.8',
+    avaliacoes: 47,
+    lat: -15.798,
+    lng: -47.887,
+    tipo: 'Manutenção Preditiva & Injeção Direta',
+    endereco: 'SCS Quadra 4, Bloco A - Asa Sul, Brasília - DF',
+    telefone: '(61) 99888-7766',
+    whatsapp: '5561998887766',
+    imagem: 'img/ws-workshop-thumb1.jpg'
+  },
+  {
+    id: 9,
+    nome: 'Sul Auto Service Moinhos',
+    bairro: 'Moinhos de Vento',
+    cidade: 'Porto Alegre - RS',
+    distancia: 'Rede RS',
+    nota: '4.9',
+    avaliacoes: 39,
+    lat: -30.024,
+    lng: -51.198,
+    tipo: 'Freios ABS, Geometria 3D & Motor',
+    endereco: 'Rua 24 de Outubro, 1100 - Moinhos de Vento, Porto Alegre - RS',
+    telefone: '(51) 98123-4567',
+    whatsapp: '5551981234567',
+    imagem: 'img/mecanica-souza.jpg'
+  },
+  {
+    id: 10,
+    nome: 'Bahia Prime Oficina',
+    bairro: 'Caminho das Árvores',
+    cidade: 'Salvador - BA',
+    distancia: 'Rede BA',
+    nota: '4.8',
+    avaliacoes: 44,
+    lat: -12.981,
+    lng: -38.455,
+    tipo: 'Ar-condicionado, Baterias & Suspensão',
+    endereco: 'Av. Tancredo Neves, 1200 - Caminho das Árvores, Salvador - BA',
+    telefone: '(71) 99234-5678',
+    whatsapp: '5571992345678',
+    imagem: 'img/oficina-premium.jpg'
   }
 ];
 
-let oficinasMap = null;
 let selectedOficinaId = 1;
-const oficinasMarkers = {};
 
-// Marcador azul SVG oficial com ícone de oficina e sombra suave
-function pinMarkup(active) {
-  const primaryColor = active ? '#0047BA' : '#0066FF';
-  const strokeColor = active ? '#ffffff' : '#ffffff';
-  const scaleClass = active ? 'pin selected' : 'pin';
-  return '<div class="' + scaleClass + '">' +
-    '<svg viewBox="0 0 32 42" width="32" height="42" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-      '<defs>' +
-        '<filter id="pinShadow" x="-30%" y="-20%" width="160%" height="150%">' +
-          '<feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="rgba(0, 40, 120, 0.45)"/>' +
-        '</filter>' +
-      '</defs>' +
-      '<path d="M16 1C8.268 1 2 7.268 2 15c0 10.8 14 26 14 26s14-15.2 14-26C30 7.268 23.732 1 16 1Z" fill="' + primaryColor + '" stroke="' + strokeColor + '" stroke-width="2" filter="url(#pinShadow)"/>' +
-      '<circle cx="16" cy="15" r="7.5" fill="#ffffff"/>' +
-      '<path d="M13.5 11.5h5v2h-5zM12 14.5h8v2h-8zM14 17.5h4v2h-4z" fill="' + primaryColor + '"/>' +
-    '</svg>' +
-  '</div>';
-}
-
-function markerIcon(active) {
-  if (!window.L) return null;
-  return L.divIcon({
-    className: 'custom-partner-marker',
-    html: pinMarkup(active),
-    iconSize: [32, 42],
-    iconAnchor: [16, 41],
-    popupAnchor: [0, -38]
-  });
-}
-
-function selectOficina(id, focus = true) {
-  selectedOficinaId = id;
+// Atualiza o Google Maps oficial com pino no endereço exato da oficina
+function updateGoogleMap(query, zoom, shopName, shopAddress) {
+  const iframe = document.getElementById('google-maps-frame');
+  const z = zoom || 15;
+  const newSrc = 'https://maps.google.com/maps?q=' + encodeURIComponent(query) + '&t=&z=' + z + '&ie=UTF8&iwloc=&output=embed';
   
-  // Destacar o card na lista e rolar até ele
-  document.querySelectorAll('#oficinas .shop').forEach(el => {
-    const isThis = Number(el.dataset.id) === id;
-    el.classList.toggle('selected', isThis);
-    if (isThis && focus) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (iframe) {
+    iframe.src = newSrc;
+  }
+
+  const elName = document.getElementById('map-active-shop-name');
+  const elAddr = document.getElementById('map-active-shop-addr');
+  const elRoute = document.getElementById('btn-gmap-route');
+
+  if (elName) elName.textContent = '📍 ' + (shopName || 'Oficina Credenciada');
+  if (elAddr) elAddr.textContent = shopAddress || query;
+  if (elRoute) {
+    elRoute.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(shopAddress || query);
+  }
+}
+
+function selectOficina(id, focus) {
+  selectedOficinaId = id;
+
+  // Atualizar cards da lista
+  document.querySelectorAll('.shop-card').forEach(c => {
+    c.classList.toggle('selected', Number(c.dataset.id) === id);
+    if (Number(c.dataset.id) === id && focus) {
+      c.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   });
 
-  // Atualizar marcador no mapa
-  if (oficinasMap && window.L) {
-    Object.entries(oficinasMarkers).forEach(([key, m]) => {
-      m.setIcon(markerIcon(Number(key) === id));
-    });
-    const o = oficinasDaRede.find(x => x.id === id);
-    if (o && focus) {
-      oficinasMap.flyTo([o.lat, o.lng], 15, { duration: 0.5 });
-      if (oficinasMarkers[id]) {
-        oficinasMarkers[id].openPopup();
-      }
-    }
+  // Atualizar chips
+  document.querySelectorAll('.shop-chip').forEach(chip => {
+    chip.classList.toggle('active', Number(chip.dataset.id) === id);
+  });
+
+  // Atualizar botões de modo
+  const btnBrasil = document.getElementById('btn-map-brasil');
+  const btnNearest = document.getElementById('btn-map-nearest');
+  if (btnBrasil) btnBrasil.classList.remove('active');
+  if (btnNearest) btnNearest.classList.add('active');
+
+  // Atualizar o Google Maps com o pino no endereço da oficina
+  const o = oficinasDaRede.find(x => x.id === id);
+  if (o) {
+    updateGoogleMap(o.nome + ', ' + o.endereco, 15, o.nome, o.endereco);
   }
+}
+
+function resetMapToBrazil() {
+  const btnBrasil = document.getElementById('btn-map-brasil');
+  const btnNearest = document.getElementById('btn-map-nearest');
+  if (btnBrasil) btnBrasil.classList.add('active');
+  if (btnNearest) btnNearest.classList.remove('active');
+
+  document.querySelectorAll('.shop-chip').forEach(chip => chip.classList.remove('active'));
+
+  // Visão Geral de Todo o País no Google Maps
+  updateGoogleMap('Brasil Oficinas Mecânicas Auto Center', 4, 'Rede Nacional DNA AUTO (Brasil)', 'Cobertura em Capitais e Regiões Metropolitanas');
+}
+
+function focusSelectedOficina() {
+  selectOficina(selectedOficinaId, true);
+}
+
+function renderShopChips() {
+  const container = document.getElementById('shop-chips-bar');
+  if (!container) return;
+
+  container.innerHTML = '';
+  oficinasDaRede.forEach(o => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'shop-chip' + (o.id === selectedOficinaId ? ' active' : '');
+    chip.setAttribute('data-id', o.id);
+    const uf = o.cidade.includes(' - ') ? o.cidade.split(' - ')[1] : '';
+    chip.innerHTML = '<span>📍 ' + o.nome.split(' ')[0] + (uf ? ' (' + uf + ')' : '') + '</span>';
+    chip.onclick = () => selectOficina(o.id, true);
+    container.appendChild(chip);
+  });
 }
 
 function openOficinaDetails(id) {
   const o = oficinasDaRede.find(x => x.id === id);
   if (!o) return;
-  selectOficina(id, false);
 
   const title = document.getElementById('oficinas-modal-title');
   const body = document.getElementById('oficinas-modal-body');
+  const overlay = document.getElementById('oficinas-overlay');
+
   if (title) title.textContent = o.nome;
   if (body) {
     body.innerHTML = 
-      '<div style="font-size:13px; color:#1e3a5f; line-height:1.5; margin-bottom:12px;">' +
-        '<p style="margin:0 0 6px;"><strong>Especialidade:</strong> ' + o.tipo + '</p>' +
-        '<p style="margin:0 0 6px;"><strong>Endereço:</strong> ' + o.endereco + '</p>' +
-        '<p style="margin:0 0 6px;"><strong>Localização:</strong> ' + o.bairro + ' · A <strong>' + o.distancia + '</strong> de você</p>' +
-        '<p style="margin:0 0 6px;"><strong>Telefone:</strong> ' + o.telefone + '</p>' +
-        '<div style="display:inline-flex; align-items:center; gap:4px; background:#fffbeb; color:#b45309; padding:3px 8px; border-radius:6px; font-weight:750; font-size:11.5px; border:1px solid #fde68a; margin-top:2px;">' +
-          '★ ' + o.nota + ' · ' + (o.avaliacoes || 45) + ' avaliações reais auditadas' +
+      '<div class="modal-section" style="margin-bottom:12px;">' +
+        '<div style="font-size:12px; font-weight:700; color:#0b2c60; margin-bottom:4px;">' + o.tipo + '</div>' +
+        '<div style="font-size:12px; color:#4a6585; line-height:1.4;">📍 ' + o.endereco + '</div>' +
+        '<div style="display:flex; align-items:center; gap:8px; margin-top:6px;">' +
+          '<span style="background:#eaf3fe; color:#0066FF; font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px;">★ ' + o.nota + ' (' + o.avaliacoes + ' avaliações)</span>' +
+          '<span style="font-size:11px; color:#557096;">· ' + o.distancia + '</span>' +
         '</div>' +
       '</div>';
   }
 
-  // 1. Botão "Como chegar": Rota no Google Maps usando coordenadas reais
   const btnRoute = document.getElementById('oficinas-btn-route');
-  if (btnRoute) {
-    btnRoute.href = 'https://www.google.com/maps/dir/?api=1&destination=' + o.lat + ',' + o.lng;
-  }
+  if (btnRoute) btnRoute.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(o.endereco);
 
-  // 2. Botão "Ligar": Dispara tel: nativo
   const btnCall = document.getElementById('oficinas-btn-call');
-  if (btnCall) {
-    const rawTel = o.telefone.replace(/\D/g, '');
-    btnCall.href = 'tel:' + rawTel;
-  }
+  if (btnCall) btnCall.href = 'tel:' + o.telefone.replace(/\D/g, '');
 
-  // 3. Botão "Agendar serviço": Canal oficial integrado da oficina
   const btnSchedule = document.getElementById('oficinas-btn-schedule');
   if (btnSchedule) {
     btnSchedule.onclick = () => {
-      const msg = 'Olá, sou usuário do aplicativo DNA AUTO e gostaria de agendar uma revisão para o meu veículo na ' + o.nome + '.';
-      window.open('https://wa.me/' + o.whatsapp + '?text=' + encodeURIComponent(msg), '_blank');
+      const msg = encodeURIComponent('Olá! Encontrei a oficina no aplicativo DNA AUTO e gostaria de agendar uma revisão.');
+      window.open('https://wa.me/' + o.whatsapp + '?text=' + msg, '_blank');
     };
   }
 
-  const overlay = document.getElementById('oficinas-overlay');
   if (overlay) overlay.classList.add('open');
 }
 
 function renderOficinasList() {
   const list = document.getElementById('oficinas-list');
   if (!list) return;
-  list.innerHTML = '';
 
+  list.innerHTML = '';
   oficinasDaRede.forEach(o => {
-    const el = document.createElement('div');
-    el.className = 'shop' + (o.id === selectedOficinaId ? ' selected' : '');
-    el.dataset.id = o.id;
+    const el = document.createElement('article');
+    el.className = 'shop-card' + (o.id === selectedOficinaId ? ' selected' : '');
+    el.setAttribute('data-id', o.id);
     el.innerHTML = 
       '<div class="shop-thumb">' +
-        '<img src="' + o.imagem + '" alt="' + o.nome + '" onerror="this.onerror=null; this.src=\'img/ws-workshop-thumb1.jpg\';">' +
+        '<img src="' + o.imagem + '" alt="' + o.nome + '" loading="lazy" onerror="this.onerror=null; this.src=\'img/ws-workshop-thumb1.jpg\';">' +
       '</div>' +
       '<div class="shop-info">' +
         '<strong class="shop-name">' + o.nome + '</strong>' +
         '<div class="shop-distance-line">' +
-          '<span class="shop-distance-pill">📍 ' + o.distancia + '</span>' +
+          '<span class="shop-distance-pill">📍 ' + o.cidade + '</span>' +
           '<span>' + o.bairro + '</span>' +
         '</div>' +
-        '<div class="shop-rating-badge">★ ' + o.nota + '</div>' +
+        '<div class="shop-rating-badge">★ ' + o.nota + ' (' + o.avaliacoes + ')</div>' +
       '</div>' +
       '<button type="button" class="shop-details-btn">Ver detalhes</button>';
 
@@ -6634,6 +6876,7 @@ function renderOficinasList() {
 }
 
 function initOficinasMap() {
+  renderShopChips();
   renderOficinasList();
 
   const closeBtn = document.getElementById('oficinas-modal-close');
@@ -6645,76 +6888,13 @@ function initOficinasMap() {
     };
   }
 
-  const mapContainer = document.getElementById('oficinas-map');
-  if (!mapContainer) return;
-
-  // Se mapa já existe, re-invalida tamanho e ajusta visão
-  if (oficinasMap) {
-    [50, 200, 500].forEach(delay => {
-      setTimeout(() => {
-        if (oficinasMap) {
-          oficinasMap.invalidateSize();
-          const current = oficinasDaRede.find(x => x.id === selectedOficinaId) || oficinasDaRede[0];
-          if (current) oficinasMap.setView([current.lat, current.lng], 14);
-        }
-      }, delay);
-    });
-    return;
-  }
-
-  // Inicialização com Leaflet.js e OpenStreetMap
-  if (window.L) {
-    try {
-      oficinasMap = L.map('oficinas-map', {
-        zoomControl: true,
-        scrollWheelZoom: true,
-        touchZoom: true
-      }).setView([-23.565, -46.65], 13);
-
-      // OpenStreetMap Tiles público, 100% gratuito e sem necessidade de API Key
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        subdomains: ['a', 'b', 'c'],
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
-      }).addTo(oficinasMap);
-
-      oficinasDaRede.forEach(o => {
-        const m = L.marker([o.lat, o.lng], {
-          icon: markerIcon(o.id === selectedOficinaId)
-        }).addTo(oficinasMap);
-
-        const popContent = document.createElement('div');
-        popContent.style.padding = '4px';
-        popContent.innerHTML = 
-          '<strong style="color:#ffffff; font-size:13px; display:block; margin-bottom:2px;">' + o.nome + '</strong>' +
-          '<span style="font-size:11px; color:#cbd5e1; display:block; margin-bottom:4px;">📍 ' + o.bairro + ' · A ' + o.distancia + '</span>' +
-          '<div style="font-size:11px; color:#93c5fd; margin-bottom:6px;">' + o.endereco + '</div>' +
-          '<div style="display:flex; gap:6px;">' +
-            '<a href="tel:' + o.telefone.replace(/\D/g, '') + '" style="display:inline-block; background:#0066FF; color:#fff; font-size:10.5px; font-weight:700; padding:4px 8px; border-radius:5px; text-decoration:none;">Ligar</a>' +
-            '<a href="https://wa.me/' + o.whatsapp + '" target="_blank" style="display:inline-block; background:#25D366; color:#fff; font-size:10.5px; font-weight:700; padding:4px 8px; border-radius:5px; text-decoration:none;">WhatsApp</a>' +
-          '</div>';
-
-        m.bindPopup(popContent);
-
-        m.on('click', () => {
-          selectOficina(o.id, true);
-        });
-
-        oficinasMarkers[o.id] = m;
-      });
-
-      [100, 300, 600].forEach(delay => {
-        setTimeout(() => {
-          if (oficinasMap) oficinasMap.invalidateSize();
-        }, delay);
-      });
-    } catch (e) {
-      console.warn('Erro ao inicializar mapa Leaflet:', e);
-    }
-  } else {
-    mapContainer.innerHTML = '<p style="padding:30px;font-size:12px;color:#2a4e80;text-align:center">Carregando mapa interativo OpenStreetMap...</p>';
+  // Inicializar o Google Maps no endereço da oficina selecionada
+  const o = oficinasDaRede.find(x => x.id === selectedOficinaId) || oficinasDaRede[0];
+  if (o) {
+    updateGoogleMap(o.nome + ', ' + o.endereco, 15, o.nome, o.endereco);
   }
 }
+
 
 // ─── LÓGICA DE CONCLUSÃO E REABERTURA DE ALERTAS E MANUTENÇÕES ───
 function filterAlerts(status, btn) {

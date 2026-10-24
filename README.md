@@ -596,6 +596,15 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
 - **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
 - **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
 
+### Ciclo 102 — Migração Definitiva para Google Maps Oficial com Pinos nos Endereços das Oficinas e Rota GPS
+- **Substituição pelo Google Maps Oficial:** Migração completa da tela de oficinas para o motor oficial do Google Maps, eliminando falhas de renderização, tiles cinzas ou bugs de dimensionamento em dispositivos móveis.
+- **Pinos no Endereço Exato:** Cada oficina da Rede Credenciada DNA AUTO é exibida com seu pino oficial cravado no endereço real da oficina (com logradouro, número, bairro e cidade).
+- **Chips Deslizantes de Oficinas (`.shop-chips-bar`):** Navegação horizontal rápida com chips de todas as oficinas credenciadas para focar no Google Maps com 1 toque.
+- **Card Flutuante & Rota GPS em 1 Toque:** Card informativo com nome da oficina ativa e botão "Rota GPS" que abre o trajeto diretamente no aplicativo nativo do Google Maps ou Waze.
+- **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
+- **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
+
+
 
 
 

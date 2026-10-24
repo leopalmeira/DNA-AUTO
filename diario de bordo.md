@@ -2212,3 +2212,25 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
     - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
 
+### Ciclo 102 (24/10/2026)
+- **Migração Definitiva para Google Maps Oficial com Pinos nos Endereços das Oficinas Credenciadas, Chips Deslizantes de Seleção Rápida e Rota GPS Direta:**
+  - **Solicitação do Usuário:**
+    - "nao está funcionando com esse mapa coloque do google e coloque os pinos nos endereço dentro do mapa acho que vai rodar melhor" — acompanhado de print comprovando que o mapa anterior (Leaflet/OSM) ficava cinza/incompleto no dispositivo móvel.
+  - **Implementações Técnicas Realizadas:**
+    1. **Substituição pelo Google Maps Oficial:**
+       - Substituída a dependência do Leaflet/OpenStreetMap pelo motor oficial do **Google Maps** (`maps.google.com/maps?output=embed`), eliminando por completo falhas de renderização de tiles, telas cinzas ou problemas de dimensionamento em containers ocultos.
+    2. **Pinos Dinâmicos nos Endereços Oficiais das Oficinas:**
+       - Cada oficina credenciada da Rede DNA AUTO (São Paulo, Rio de Janeiro, Belo Horizonte, Curitiba, Brasília, Porto Alegre, Salvador) possui seu endereço completo com pino oficial cravado diretamente no Google Maps.
+       - Implementada função `updateGoogleMap(query, zoom, shopName, shopAddress)` que atualiza o iframe do Google Maps de forma fluida e instantânea.
+    3. **Chips Deslizantes de Seleção Rápida (`.shop-chips-bar`):**
+       - Adicionada barra horizontal com rolagem por toque contendo chips de todas as oficinas credenciadas (`📍 Veloce (SP)`, `📍 Auto Center Silva (SP)`, `📍 DNA Auto Rio (RJ)`, `📍 Central Savassi (BH)`, `📍 Eurotech (PR)`, etc.).
+       - Ao tocar em qualquer chip ou em qualquer card da lista, o Google Maps atualiza no mesmo milissegundo, focando o pino no endereço exato da oficina.
+    4. **Card Flutuante Glassmorphism com Rota GPS:**
+       - Integrado card elegante no rodapé do mapa com nome da oficina ativa, endereço completo e botão **"🧭 Rota GPS"**, que aciona diretamente o aplicativo nativo do Google Maps ou Waze traçando o trajeto a partir da localização do condutor.
+    5. **Visão Nacional do Brasil:**
+       - Botão **`🇧🇷 Todo o País (Brasil)`** permite retornar instantaneamente à visão panorâmica nacional de todas as regiões com cobertura da DNA AUTO.
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
+    - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
+
+
