@@ -241,6 +241,13 @@ O ambiente da oficina foi estruturado com foco em simplicidade, produtividade e 
   - **Formulário de Login Cyber-Pill:** Campos estilizados para E-mail/CPF e Senha com divisor vertical, ícones integrados e toggle de visibilidade.
   - **Botão Voltar Discreto:** Botão circular translúcido no topo esquerdo para retornar à splash com transição fluida.
   - **Roteamento e Paridade:** Disponível tanto em `/cliente`, `/app`, `/cliente.app` quanto em `/login` e `/dna-auto-login.html`.
+  - **Tela de Login Harmoniosa, Hero Livre e Box Contido (Ciclo 104):**
+    - Imagem hero oficial img/login-hero-official.png totalmente visível, sem cortes e sem formulário sobreposto.
+    - Box do formulário encapsulado em container elegante com largura máxima contida (max-width: 360px), cantos arredondados (20px) e borda suave.
+    - Preenchimento vertical balanceado com gradiente suave e rodapé discreto, eliminando espaços vazios na parte inferior.
+  - **Dashboard do Cliente — Card Mini OBD com Aura Móvel Contínua (Ciclo 104):**
+    - Aura dinâmica com borda de 3px em tons de azul elétrico rotacionando continuamente a 360° (@keyframes obdBeamRotate).
+    - Badge atualizado para "Em breve" no card de telemetria OBD2.
 - **Design de Alta Fidelidade (Fullscreen Dark Obsidian & Neon Blue):**
   - **Fullscreen Nativo PWA:** Consumo de 100% da tela em smartphones e tablets, eliminando simulação de moldura/frame de celular e notch fake.
   - **Upload Real de Fotos com Persistência:**

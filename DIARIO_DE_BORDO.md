@@ -2217,5 +2217,24 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (694.573 bytes em ambos).
     - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
 
+### Ciclo 104 (24/10/2026)
+- **Correção da Tela de Login (Imagem Hero Livre e Visível, Box Contido de 360px e Preenchimento Vertical Perfeito); Card Mini OBD com Aura Móvel Contínua de 3px em Tons de Azul e Badge "Em breve":**
+  - **Solicitações do Usuário:**
+    1. "corrija a tela de login porque está com varios erros a imagem ta com o formulario sobre ela, o css tá com o box muito largo, tem um espoço grande na parte de baixo corrija isso @[.agents/agent/frontend-specialist.md] @[.agents/agent/backend-specialist.md]"
+    2. "sobre a aura ela nao deve ser fix ou estatica ela deve ficar se movimentando como se estivesse movendo-se pela borda do card e onde está escrito conectar BLE deve ter 'EM BREVE'"
+  - **Implementações Técnicas Realizadas:**
+    1. **Reformulação Completa da Tela de Login (`#login`):**
+       - **Fim da Sobreposição e Imagem Hero 100% Livre:** O banner oficial `img/login-hero-official.png` (com o logo DNA AUTO, slogan e dianteira do carro azul) foi desacoplado de alturas restritivas cortadas e de margens negativas. Agora reside em container dedicado `.login-hero-wrap` com `max-width: 260px; object-fit: contain;`, totalmente visível e sem nenhuma sobreposição do formulário.
+       - **Box de Login Contido e Proporcional:** Criado container `.login-card-box` encapsulando o formulário `#login-form` com `max-width: 360px`, `background: #ffffff`, `border-radius: 20px`, `box-shadow: 0 10px 28px rgba(10, 40, 85, 0.08)` e `border: 1.5px solid #d3e4f5`, acabando com o visual esticado e box excessivamente largo.
+       - **Eliminação do Espaço Vazio Inferior:** Aplicado layout vertical harmonioso em `#login.screen` com `background: linear-gradient(180deg, #d8e8f8 0%, #ebf3fc 45%, #e0edfa 100%)`, `display: flex; flex-direction: column; justify-content: space-between; align-items: center; min-height: 100dvh;`. O conjunto (hero + box) fica perfeitamente centrado verticalmente em `.login-screen-inner`, e foi integrado rodapé sutil `.login-screen-footer` ("DNA AUTO · Conexão Inteligente & Diagnóstico Veicular"), preenchendo a tela com acabamento premium e eliminando buracos inferiores.
+       - **Limpeza de CSS Redundante:** Eliminadas as regras duplicadas das linhas antigas 3014-3118 que causavam conflitos de renderização.
+    2. **Aura Móvel Contínua no Card Mini OBD na Dashboard:**
+       - **Efeito Border Beam 360° em Movimento Contínuo:** A borda estática foi substituída por uma aura móvel dinâmica que percorre a borda do card continuamente. Implementada arquitetura com `.card-mini-obd` (`overflow: hidden; padding: 3px; border-radius: 15px; border: none; background: #d4e5f9`), camada giratória `.card-obd-beam` com `conic-gradient` rotacionado por `@keyframes obdBeamRotate 3s linear infinite` em tons de azul elétrico (`#00D2FF`, `#0066FF`, `#38b6ff`, `#00F0FF`), e miolo interno `.card-obd-inner` (`border-radius: 12px; background: linear-gradient(145deg, #f4f8ff, #e7effb); padding: 9px 9px 8px; z-index: 2`).
+       - **Badge "Em breve":** O texto métrico do card foi atualizado de "Conectar BLE" para `<span class="metric" style="color:#0066FF; font-weight:800;">Em breve</span>`, alinhando a expectativa do usuário para a funcionalidade de telemetria em desenvolvimento.
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
+    - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
+
+
 
 

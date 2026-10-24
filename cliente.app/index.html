@@ -2550,205 +2550,219 @@ section.splash .splash-bg {
   object-position: center top !important;
 }
 
-/* ═══ CORREÇÃO 02: TELA DE LOGIN CONFORME OS PRINTS 01 E 03 ═══ */
+/* ═══ CORREÇÃO 02: TELA DE LOGIN HARMONIOSA, HERO LIMPO E BOX CONTIDO ═══ */
 #login.screen {
-  background: #071322;
-  min-height: 100dvh;
+  background: linear-gradient(180deg, #d8e8f8 0%, #ebf3fc 45%, #e0edfa 100%) !important;
+  min-height: 100dvh !important;
+  box-sizing: border-box !important;
   display: none;
-  flex-direction: column;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: max(14px, env(safe-area-inset-top, 14px)) 16px max(16px, env(safe-area-inset-bottom, 16px)) !important;
+  overflow-y: auto !important;
+  position: relative !important;
 }
 #login.screen.active {
   display: flex !important;
 }
-.auth-hero-official {
-  position: relative;
-  width: 100%;
-  height: clamp(210px, 32dvh, 250px);
-  overflow: hidden;
-  background: #0b1c31;
-}
-.login-hero-banner-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-  display: block;
-}
 .login-back-pill {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  z-index: 10;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 0;
-  background: #ffffff;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-  cursor: pointer;
-  transition: transform 0.15s ease;
+  position: absolute !important;
+  top: max(14px, env(safe-area-inset-top, 14px)) !important;
+  left: 16px !important;
+  z-index: 20 !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  display: grid !important;
+  place-items: center !important;
+  box-shadow: 0 4px 14px rgba(10, 40, 85, 0.12) !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease, background 0.15s ease !important;
 }
 .login-back-pill:active {
-  transform: scale(0.92);
+  transform: scale(0.92) !important;
 }
-.login-card-container {
-  position: relative;
-  z-index: 5;
-  margin-top: -24px;
-  background: #f8fbff;
-  border-radius: 24px 24px 0 0;
-  padding: 22px 20px 30px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 -8px 24px rgba(3, 15, 33, 0.15);
+.login-screen-inner {
+  width: 100% !important;
+  max-width: 360px !important;
+  margin: auto 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 12px !important;
+  z-index: 5 !important;
 }
-.login-card-header {
-  margin-bottom: 16px;
+.login-hero-wrap {
+  width: 100% !important;
+  max-width: 260px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  margin: 0 auto !important;
+  padding-top: 10px !important;
 }
-.login-card-title {
-  font-family: Outfit, Inter, sans-serif;
-  font-size: 24px;
-  font-weight: 800;
-  color: #071938;
-  letter-spacing: -0.5px;
-  margin: 0 0 4px;
+.login-hero-banner-img {
+  width: 100% !important;
+  max-width: 250px !important;
+  height: auto !important;
+  object-fit: contain !important;
+  display: block !important;
+  filter: drop-shadow(0 8px 18px rgba(10, 40, 85, 0.1)) !important;
 }
-.login-card-subtitle {
-  font-size: 12.5px;
-  color: #4b6382;
-  margin: 0;
-  line-height: 1.4;
-}
-.login-error-alert {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  margin-bottom: 14px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #dc2626;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.35;
+.login-card-box {
+  width: 100% !important;
+  max-width: 360px !important;
+  background: #ffffff !important;
+  border-radius: 20px !important;
+  padding: 22px 18px 20px !important;
+  box-shadow: 0 10px 28px rgba(10, 40, 85, 0.08) !important;
+  border: 1.5px solid #d3e4f5 !important;
+  box-sizing: border-box !important;
 }
 .login-native-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 13px !important;
 }
 .login-field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+  text-align: left !important;
 }
 .login-field-group label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #0d264f;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  color: #0d264f !important;
 }
 .login-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
 }
 .forgot-link-btn {
-  border: 0;
-  background: transparent;
-  color: #0066FF;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  padding: 0;
+  border: 0 !important;
+  background: transparent !important;
+  color: #0066FF !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  padding: 0 !important;
 }
 .login-input-wrap {
-  height: 48px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 14px;
-  background: #ffffff;
-  border: 1.5px solid #d4e3f3;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(12, 40, 80, 0.04);
-  transition: border-color 0.18s, box-shadow 0.18s;
+  height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 0 13px !important;
+  background: #f7faff !important;
+  border: 1.5px solid #d3e4f5 !important;
+  border-radius: 14px !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s !important;
 }
 .login-input-wrap:focus-within {
-  border-color: #0066FF;
-  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.14);
+  background: #ffffff !important;
+  border-color: #0066FF !important;
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.14) !important;
 }
 .login-input-ico {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  flex-shrink: 0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 22px !important;
+  flex-shrink: 0 !important;
 }
 .login-input-wrap input {
-  border: 0;
-  outline: 0;
-  background: transparent;
-  width: 100%;
-  font-size: 13.5px;
-  color: #081d3e;
-  font-weight: 500;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  width: 100% !important;
+  font-size: 13.5px !important;
+  color: #081d3e !important;
+  font-weight: 500 !important;
 }
 .login-input-wrap input::placeholder {
-  color: #8da4be;
+  color: #8da4be !important;
 }
 .login-eye-btn {
-  border: 0;
-  background: transparent;
-  color: #0066FF;
-  display: grid;
-  place-items: center;
-  padding: 4px;
-  cursor: pointer;
+  border: 0 !important;
+  background: transparent !important;
+  color: #0066FF !important;
+  display: grid !important;
+  place-items: center !important;
+  padding: 4px !important;
+  cursor: pointer !important;
 }
 .login-pill-btn {
-  margin-top: 8px;
-  height: 50px;
-  width: 100%;
-  border: 0;
-  border-radius: 9999px;
-  background: linear-gradient(105deg, #0084FF 0%, #0055FF 100%);
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.35);
-  cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin-top: 6px !important;
+  height: 50px !important;
+  width: 100% !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, #0084FF 0%, #0052E6 100%) !important;
+  color: #ffffff !important;
+  font-family: 'Outfit', 'Inter', sans-serif !important;
+  font-size: 15.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.3px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  box-shadow: 0 10px 24px rgba(0, 102, 255, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.4) !important;
+  cursor: pointer !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.login-pill-btn:hover {
+  box-shadow: 0 12px 28px rgba(0, 102, 255, 0.45) !important;
+  transform: translateY(-1px) !important;
 }
 .login-pill-btn:active {
-  transform: scale(0.98);
+  transform: scale(0.98) !important;
 }
 .login-pill-btn:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
+  opacity: 0.65 !important;
+  cursor: not-allowed !important;
 }
 .login-footer-text {
-  text-align: center;
-  font-size: 12.5px;
-  color: #4b6382;
-  margin: 6px 0 0;
+  text-align: center !important;
+  font-size: 12.5px !important;
+  color: #4b6382 !important;
+  margin: 4px 0 0 !important;
 }
 .login-action-link {
-  border: 0;
-  background: transparent;
-  color: #0066FF;
-  font-weight: 800;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 0 3px;
-  text-decoration: underline;
+  border: 0 !important;
+  background: rgba(0, 102, 255, 0.08) !important;
+  color: #0066FF !important;
+  font-family: inherit !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  padding: 5px 12px !important;
+  border-radius: 20px !important;
+  margin-left: 6px !important;
+  transition: all 0.18s ease !important;
+}
+.login-action-link:hover {
+  background: rgba(0, 102, 255, 0.16) !important;
+  color: #0050d0 !important;
+  transform: translateY(-1px) !important;
+}
+.login-screen-footer {
+  width: 100% !important;
+  max-width: 360px !important;
+  text-align: center !important;
+  padding: 10px 0 4px !important;
+  font-size: 11px !important;
+  color: #6c84a3 !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.2px !important;
 }
 
 /* ═══ CORREÇÃO 04: BOTÕES INFERIORES DO DASHBOARD FUNCIONAIS ═══ */
@@ -3011,111 +3025,6 @@ section.splash .splash-bg, #splash .splash-bg {
 }
 
 
-/* ═══ CORREÇÃO 02: TELA DE LOGIN HERO E BOTÕES PROFISSIONAIS ═══ */
-#login.screen {
-  background: #071322;
-  min-height: 100dvh;
-  display: none;
-  flex-direction: column;
-  padding-top: 0 !important;
-  margin-top: 0 !important;
-}
-#login.screen.active {
-  display: flex !important;
-}
-.auth-hero-official {
-  position: relative;
-  width: 100%;
-  height: clamp(210px, 32dvh, 260px);
-  overflow: hidden;
-  background: #e6edf6;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-.login-hero-banner-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top !important;
-  display: block;
-}
-.login-back-pill {
-  position: absolute;
-  top: max(14px, env(safe-area-inset-top, 14px));
-  left: 14px;
-  z-index: 20;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: grid;
-  place-items: center;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
-  cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
-}
-.login-back-pill:active {
-  transform: scale(0.92);
-}
-.login-card-container {
-  position: relative;
-  z-index: 5;
-  margin-top: -24px;
-  background: #f8fbff;
-  border-radius: 24px 24px 0 0;
-  padding: 22px 20px 30px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-.login-pill-btn {
-  margin-top: 14px;
-  height: 52px;
-  width: 100%;
-  border: 0;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #0084FF 0%, #0052E6 100%);
-  color: #ffffff;
-  font-family: 'Outfit', 'Inter', sans-serif;
-  font-size: 15.5px;
-  font-weight: 800;
-  letter-spacing: 0.3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  box-shadow: 0 10px 24px rgba(0, 102, 255, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.4);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.login-pill-btn:hover {
-  box-shadow: 0 12px 28px rgba(0, 102, 255, 0.48), inset 0 1px 1px rgba(255, 255, 255, 0.5);
-  transform: translateY(-1px);
-}
-.login-pill-btn:active {
-  transform: scale(0.98);
-}
-.login-action-link {
-  border: 0;
-  background: rgba(0, 102, 255, 0.08);
-  color: #0066FF;
-  font-family: inherit;
-  font-weight: 800;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 6px 14px;
-  border-radius: 20px;
-  margin-left: 6px;
-  transition: all 0.18s ease;
-}
-.login-action-link:hover {
-  background: rgba(0, 102, 255, 0.16);
-  color: #0050d0;
-  transform: translateY(-1px);
-}
 .reg-submit-btn {
   width: 100%;
   height: 52px;
@@ -4671,36 +4580,78 @@ nav[aria-label="Navegação principal"] span,
   transform: scale(0.94) !important;
   background: #e5effd !important;
 }
-/* Card Mini OBD na Dashboard com aura em tons de azul e borda de 3px */
+/* Card Mini OBD na Dashboard: Aura móvel contínua de 3px em tons de azul e badge Em breve */
 #dashboard .card.card-mini-obd {
   position: relative !important;
-  border: 3px solid transparent !important;
+  overflow: hidden !important;
+  padding: 3px !important;
   border-radius: 15px !important;
-  background: 
-    linear-gradient(145deg, #ffffff, #f2f7fd) padding-box,
-    linear-gradient(135deg, #00D2FF 0%, #0066FF 30%, #38b6ff 55%, #0040C1 80%, #00E5FF 100%) border-box !important;
-  box-shadow: 
-    0 0 0 1px rgba(0, 102, 255, 0.25),
-    0 0 6px rgba(0, 180, 255, 0.45),
-    0 0 13px rgba(0, 102, 255, 0.22),
-    0 4px 14px rgba(14, 45, 90, 0.08) !important;
-  animation: obdAuraGlow 3s ease-in-out infinite !important;
+  border: none !important;
+  background: #d4e5f9 !important;
+  box-shadow: 0 4px 14px rgba(14, 45, 90, 0.08), 0 0 12px rgba(0, 102, 255, 0.2) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
 }
-@keyframes obdAuraGlow {
-  0%, 100% {
-    box-shadow: 
-      0 0 0 1px rgba(0, 102, 255, 0.25),
-      0 0 6px rgba(0, 180, 255, 0.45),
-      0 0 13px rgba(0, 102, 255, 0.22),
-      0 4px 14px rgba(14, 45, 90, 0.08) !important;
+#dashboard .card.card-mini-obd .card-obd-beam {
+  position: absolute !important;
+  top: -50% !important;
+  left: -50% !important;
+  width: 200% !important;
+  height: 200% !important;
+  background: conic-gradient(from 0deg, transparent 0deg, transparent 200deg, rgba(0, 210, 255, 0.25) 240deg, #00D2FF 275deg, #0066FF 310deg, #38b6ff 345deg, #00F0FF 360deg) !important;
+  animation: obdBeamRotate 3s linear infinite !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+}
+@keyframes obdBeamRotate {
+  0% {
+    transform: rotate(0deg);
   }
-  50% {
-    box-shadow: 
-      0 0 0 1.5px rgba(0, 210, 255, 0.35),
-      0 0 9px rgba(0, 150, 255, 0.6),
-      0 0 18px rgba(0, 102, 255, 0.32),
-      0 4px 14px rgba(14, 45, 90, 0.1) !important;
+  100% {
+    transform: rotate(360deg);
   }
+}
+#dashboard .card.card-mini-obd .card-obd-inner {
+  position: relative !important;
+  z-index: 2 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 12px !important;
+  background: linear-gradient(145deg, #f4f8ff, #e7effb) !important;
+  padding: 9px 9px 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-sizing: border-box !important;
+  text-align: left !important;
+}
+#dashboard .card.card-mini-obd .card-obd-inner .iconline {
+  flex: 0 0 24px !important;
+  min-height: 24px !important;
+  font-size: 20px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+#dashboard .card.card-mini-obd .card-obd-inner .title {
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: clamp(11.5px, 3.1vw, 12.5px) !important;
+  font-weight: 750 !important;
+  color: #091b40 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.2px !important;
+  margin-top: 4px !important;
+}
+#dashboard .card.card-mini-obd .card-obd-inner .metric {
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-size: clamp(10.5px, 2.8vw, 11.5px) !important;
+  line-height: 1.2 !important;
+  margin-top: auto !important;
+  padding-top: 4px !important;
+  color: #0066FF !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.2px !important;
 }
 
 /* ═══ MAPA E LISTA DE OFICINAS PARCEIRAS DNA AUTO ═══ */
@@ -5034,88 +4985,100 @@ nav[aria-label="Navegação principal"] span,
   </div>
 </section>
 <section class="screen auth" id="login">
-  <div class="auth-hero-official">
-      <button class="login-back-pill" onclick="go('splash')" aria-label="Voltar" type="button">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0b2c60" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m15 18-6-6 6-6"/>
-        </svg>
-      </button>
+  <button class="login-back-pill" onclick="go('splash')" aria-label="Voltar" type="button">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0b2c60" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m15 18-6-6 6-6"/>
+    </svg>
+  </button>
+  
+  <div class="login-screen-inner">
+    <!-- Imagem Hero DNA AUTO completa e sem sobreposição -->
+    <div class="login-hero-wrap">
       <img src="img/login-hero-official.png" alt="DNA AUTO Bem-vindo" class="login-hero-banner-img" />
     </div>
-    <form class="login-native-form" id="login-form" novalidate="novalidate" onsubmit="return handleLoginSubmit(event)">
-      
-      <!-- Campo E-mail -->
-      <div class="login-field-group">
-        <label for="login-email">E-mail</label>
-        <div class="login-input-wrap">
-          <span class="login-input-ico" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0066FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="5" width="18" height="14" rx="2"/>
-              <path d="m4 7 8 6 8-6"/>
-            </svg>
-          </span>
-          <input
-            id="login-email"
-            name="email"
-            type="email"
-            autocomplete="username"
-            placeholder="seu@email.com"
-            required
-            aria-label="E-mail cadastrado"
-          />
+
+    <!-- Box do Formulário com largura contida (máx 360px), elegante e moderno -->
+    <div class="login-card-box">
+      <form class="login-native-form" id="login-form" novalidate="novalidate" onsubmit="return handleLoginSubmit(event)">
+        
+        <!-- Campo E-mail -->
+        <div class="login-field-group">
+          <label for="login-email">E-mail</label>
+          <div class="login-input-wrap">
+            <span class="login-input-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0066FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                <path d="m4 7 8 6 8-6"/>
+              </svg>
+            </span>
+            <input
+              id="login-email"
+              name="email"
+              type="email"
+              autocomplete="username"
+              placeholder="seu@email.com"
+              required
+              aria-label="E-mail cadastrado"
+            />
+          </div>
         </div>
-      </div>
 
-      <!-- Campo Senha -->
-      <div class="login-field-group">
-        <div class="login-label-row">
-          <label for="login-password">Senha</label>
-          <button type="button" class="forgot-link-btn" onclick="toast('Para redefinir sua senha, solicite suporte à sua oficina ou equipe DNA AUTO.')">Esqueceu a senha?</button>
+        <!-- Campo Senha -->
+        <div class="login-field-group">
+          <div class="login-label-row">
+            <label for="login-password">Senha</label>
+            <button type="button" class="forgot-link-btn" onclick="toast('Para redefinir sua senha, solicite suporte à sua oficina ou equipe DNA AUTO.')">Esqueceu a senha?</button>
+          </div>
+          <div class="login-input-wrap">
+            <span class="login-input-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0066FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="10" width="14" height="11" rx="2"/>
+                <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>
+              </svg>
+            </span>
+            <input
+              id="login-password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Mínimo 6 caracteres"
+              required
+              aria-label="Senha de acesso"
+            />
+            <button
+              class="login-eye-btn"
+              id="login-eye-btn"
+              type="button"
+              aria-label="Mostrar ou ocultar senha"
+              onclick="togglePasswordVisibility('login-password')"
+            >
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0066FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
         </div>
-        <div class="login-input-wrap">
-          <span class="login-input-ico" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0066FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="5" y="10" width="14" height="11" rx="2"/>
-              <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>
-            </svg>
-          </span>
-          <input
-            id="login-password"
-            name="password"
-            type="password"
-            autocomplete="current-password"
-            placeholder="Mínimo 6 caracteres"
-            required
-            aria-label="Senha de acesso"
-          />
-          <button
-            class="login-eye-btn"
-            id="login-eye-btn"
-            type="button"
-            aria-label="Mostrar ou ocultar senha"
-            onclick="togglePasswordVisibility('login-password')"
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0066FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-          </button>
-        </div>
-      </div>
 
-      <!-- Botão Azul Pill idêntico ao modelo do Print 1 -->
-      <button class="login-pill-btn" id="btn-entrar" type="submit">
-        <span>Entrar</span>
-        <span class="btn-arrow" aria-hidden="true">➜</span>
-      </button>
+        <!-- Botão Azul Pill -->
+        <button class="login-pill-btn" id="btn-entrar" type="submit">
+          <span>Entrar</span>
+          <span class="btn-arrow" aria-hidden="true">➜</span>
+        </button>
 
-      <!-- Link idêntico ao modelo do Print 1 -->
-      <p class="login-footer-text">
-        Não possui uma conta?
-        <button type="button" class="login-action-link" onclick="go('register')">Cadastrar</button>
-      </p>
+        <!-- Link Cadastrar -->
+        <p class="login-footer-text">
+          Não possui uma conta?
+          <button type="button" class="login-action-link" onclick="go('register')">Cadastrar</button>
+        </p>
 
-    </form>
+      </form>
+    </div>
+  </div>
+
+  <!-- Rodapé elegante preenchendo a tela e eliminando o espaço vazio inferior -->
+  <div class="login-screen-footer">
+    <span>DNA AUTO · Conexão Inteligente & Diagnóstico Veicular</span>
   </div>
 </section>
 <section class="screen auth" id="register">
@@ -5236,7 +5199,7 @@ nav[aria-label="Navegação principal"] span,
     <span class="vehicle-sub-text" id="dash-car-sub">BRA2E19 · 2021</span>
   </div>
   <span class="vehicle-arr-icon" aria-hidden="true">›</span>
-</button><div class="cards"><button class="card" onclick="tap(this); go('services')"><span class="iconline">✣</span><span class="title">Serviços &amp; Peças</span><span class="metric">12 registros</span></button><button class="card" onclick="tap(this); go('preventivas')"><span class="iconline">◴</span><span class="title">Revisões Preventivas</span><span class="metric green">Próxima em 8.000 km</span></button><button class="card" onclick="tap(this); go('alertas')"><span class="iconline">♧ <span class="badge">2</span></span><span class="title">Alertas &amp; Manutenções</span><span class="metric red">2 pendentes</span></button><button class="card" onclick="tap(this); go('gastos')"><span class="iconline">▣</span><span class="title">Gastos com Carro</span><span class="metric money green">R$ 2.430,00</span><span class="small">Últimos 6 meses</span></button><button class="card lock card-mini-obd" onclick="tap(this); toast('Mini OBD2 BLE: Telemetria e diagnóstico veicular em tempo real.')" aria-label="Mini OBD2 BLE"><span class="iconline" style="color:#0066FF"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/><circle cx="8" cy="13" r="1.2" fill="#0066FF"/><circle cx="12" cy="13" r="1.2" fill="#0066FF"/><circle cx="16" cy="13" r="1.2" fill="#0066FF"/><path d="M8 17h8"/></svg></span><span class="title">Mini OBD</span><span class="metric" style="color:#0066FF; font-weight:750;">Conectar BLE</span></button><button class="card" onclick="tap(this); go('oficinas')"><span class="iconline">▣</span><span class="title">Oficinas da Rede</span><span class="metric" style="color:#31547d">3 oficinas</span></button></div><nav class="bottom" aria-label="Navegação principal">
+</button><div class="cards"><button class="card" onclick="tap(this); go('services')"><span class="iconline">✣</span><span class="title">Serviços &amp; Peças</span><span class="metric">12 registros</span></button><button class="card" onclick="tap(this); go('preventivas')"><span class="iconline">◴</span><span class="title">Revisões Preventivas</span><span class="metric green">Próxima em 8.000 km</span></button><button class="card" onclick="tap(this); go('alertas')"><span class="iconline">♧ <span class="badge">2</span></span><span class="title">Alertas &amp; Manutenções</span><span class="metric red">2 pendentes</span></button><button class="card" onclick="tap(this); go('gastos')"><span class="iconline">▣</span><span class="title">Gastos com Carro</span><span class="metric money green">R$ 2.430,00</span><span class="small">Últimos 6 meses</span></button><button class="card lock card-mini-obd" onclick="tap(this); toast('Mini OBD2 BLE: Telemetria e diagnóstico veicular em tempo real. Em breve!')" aria-label="Mini OBD2 BLE"><div class="card-obd-beam" aria-hidden="true"></div><div class="card-obd-inner"><span class="iconline" style="color:#0066FF"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle;"><rect x="3" y="7" width="18" height="13" rx="3"/><path d="M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2"/><circle cx="8" cy="13" r="1.2" fill="#0066FF"/><circle cx="12" cy="13" r="1.2" fill="#0066FF"/><circle cx="16" cy="13" r="1.2" fill="#0066FF"/><path d="M8 17h8"/></svg></span><span class="title">Mini OBD</span><span class="metric" style="color:#0066FF; font-weight:750;">Em breve</span></div></button><button class="card" onclick="tap(this); go('oficinas')"><span class="iconline">▣</span><span class="title">Oficinas da Rede</span><span class="metric" style="color:#31547d">3 oficinas</span></button></div><nav class="bottom" aria-label="Navegação principal">
     <button class="nav-btn active selected sel" type="button" data-nav="dashboard" onclick="go('dashboard')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 10 9-7 9 7v11h-7v-7h-4v7H3z"/></svg>
       <span>Início</span>
