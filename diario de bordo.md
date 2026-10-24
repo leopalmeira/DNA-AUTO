@@ -2233,4 +2233,28 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
     - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
 
+### Ciclo 103 (24/10/2026)
+- **Tela de Oficinas: Mapa Puro no Topo com Pino no Endereço, Lista Organizada Abaixo com Foco Suave no Mapa Sem Sair da Tela; Card Mini OBD com Borda de 3px em Tons de Azul e Aura Luminosa:**
+  - **Solicitações do Usuário:**
+    1. "deve ser apenas o mapa, sem ter os card pequenos de todo o pais (brasil) nem os pino de endereço ele deve ficar apenas dentro do mapa e nao precisa mostras os cards de oficinas parceiras por estado e as oficinas parceiras dewve ficar listadas a baixo bem organizadas e quando clicado nelas mostrar no mapa sem sair da tela quando clicado na oficina parceiro subir a tela para mostrar o mapa e a oficina no mapa que foi clicada faça isso @[.agents/agent/frontend-specialist.md] @[.agents/agent/backend-specialist.md]"
+    2. "no card na dashboard mini OBD mostrar uma aura bem fininha azul com vairios tons porem azul circulado na borda do card mais na mesma finura da linha brnaca do card do obd algo com 3px @[.agents/agent/frontend-specialist.md] @[.agents/agent/backend-specialist.md]"
+  - **Implementações Técnicas Realizadas:**
+    1. **Eliminação dos Cards Pequenos e Foco Exclusivo no Mapa no Topo (`#oficinas`):**
+       - Removida a barra de alternância `.map-view-switch` ("Todo o País (Brasil)" e "Pino no Endereço") e a barra horizontal de chips `.shop-chips-bar`.
+       - O topo da tela exibe exclusivamente o título e o container do Google Maps Oficial (`.map-shell` com altura confortável de `290px`), com seu pino vermelho nativo cravado no endereço exato da oficina ativa e card flutuante interno com botão "Rota GPS".
+    2. **Lista de Oficinas Parceiras Organizada Abaixo do Mapa:**
+       - Criada seção limpa com cabeçalho "Oficinas Parceiras" e badge de oficinas credenciadas.
+       - Cards de oficinas redesenhados com layout moderno: miniatura da oficina com cantos arredondados, nome em destaque, badge de avaliação com estrelas, especialidade técnica, endereço completo em 2 linhas e indicador de ação rápida "Ver no mapa".
+    3. **Seleção Direta Sem Sair da Tela e Subida Suave até o Mapa (`scrollToMap`):**
+       - Ao clicar em qualquer oficina parceira da lista, o sistema não abre modais nem sai da tela: atualiza de imediato o mapa para o endereço daquela oficina e executa uma rolagem suave até o topo (`window.scrollTo({ top: 0, behavior: 'smooth' })`, `.oficinas-content.scrollTo({ top: 0, behavior: 'smooth' })` e `mapShell.scrollIntoView({ behavior: 'smooth', block: 'start' })`), focalizando o mapa com o pino da oficina clicada diante dos olhos do usuário.
+       - A oficina clicada recebe a classe `.selected` com borda azul vibrante `#0066FF`, leve gradiente de fundo e badge "No Mapa".
+    4. **Card Mini OBD na Dashboard com Borda de 3px em Tons de Azul e Aura Luminosa Suave:**
+       - Implementada estilização no card do Mini OBD com borda de 3px utilizando técnica de duplo background com gradiente (`linear-gradient(...) padding-box, linear-gradient(135deg, #00D2FF, #0066FF, #38b6ff, #0040C1, #00E5FF) border-box`).
+       - Adicionada aura azul circundando o card com múltiplos tons e animação pulsante suave (`@keyframes obdAuraGlow`), conferindo visual tecnológico de telemetria ativa.
+       - Ícone vetorial SVG de dispositivo OBD2 integrado e tipografia refinada.
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (694.573 bytes em ambos).
+    - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
+
+
 

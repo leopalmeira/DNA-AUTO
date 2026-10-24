@@ -604,6 +604,15 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
 - **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
 - **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
 
+### Ciclo 103 — Tela de Oficinas com Mapa Limpo no Topo, Lista Organizada Abaixo e Foco Suave no Mapa Sem Sair da Tela; Card Mini OBD com Borda de 3px em Tons de Azul e Aura Luminosa
+- **Mapa Puro no Topo das Oficinas:** Removidos os botões de alternância e chips por estado. O topo da tela exibe exclusivamente o container do Google Maps Oficial (`.map-shell` de 290px de altura) com o pino nativo no endereço da oficina ativa e botão de Rota GPS flutuante.
+- **Lista de Oficinas Parceiras Abaixo do Mapa:** Oficinas parceiras listadas de forma limpa e organizada diretamente abaixo do mapa, com fotos reais, nome destacado, estrelas de avaliação, especialidades e endereço completo.
+- **Seleção Direta Sem Sair da Tela e Subida Suave até o Mapa:** Ao tocar em qualquer oficina parceira, a seleção atualiza o Google Maps instantaneamente no endereço daquela oficina e executa rolagem suave (`scrollToMap`) até o topo, colocando o mapa e o pino no centro da visão do usuário, sem abrir modais sobrepostos nem sair da tela.
+- **Card Mini OBD com Borda de 3px em Tons de Azul e Aura Luminosa:** Card do Mini OBD na Dashboard redesenhado com borda de 3px em múltiplos tons de azul (`#00D2FF`, `#0066FF`, `#38b6ff`, `#0040C1`, `#00E5FF`) e aura suave luminosa pulsante (`@keyframes obdAuraGlow`), ícone vetorial de dongle OBD2 e badge tecnológico "Conectar BLE".
+- **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
+- **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
+
+
 
 
 
