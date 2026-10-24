@@ -2324,3 +2324,24 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - **Qualidade, Paridade & Testes:**
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (701.571 bytes em ambos).
     - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
+
+### Ciclo 107 (24/10/2026)
+- **Refinamento Crítico da Tela de Login — Hero Banner de Ponta a Ponta (100% Width), Imagem em Alta Resolução Sem Bordas Brancas e Integração Fluida ao Sheet Card Inferior:**
+  - **Solicitações do Usuário:**
+    1. "a imagem nao deve ficar assim nao ela deveria preencher toda a tela por do espaço em branco e nao ficar assim"
+    2. "corrija isso @[.agents/agent/frontend-specialist.md]"
+    3. "deve ser assim porem sem os dois logo de login do google e da apple @[.agents/agent/frontend-specialist.md]" (com mockup oficial de referência anexado)
+  - **Diagnóstico & Causa Raiz:**
+    - O arquivo anterior `login-hero-official.png` continha bordas claras/brancas no topo e, associado ao estilo `object-fit: contain; width: auto; max-height: 100%`, gerava uma caixa quadrada flutuante com barras pretas laterais e um espaço escuro vazio vertical entre a imagem e o card de login.
+  - **Implementações Técnicas Realizadas:**
+    1. **Hero Banner de Ponta a Ponta (Edge-to-Edge):**
+       - Extração e geração em alta definição (768 x 693 com interpolação Lanczos3) a partir do mockup oficial do usuário, eliminando qualquer borda branca ou moldura clara.
+       - A área do botão voltar superior esquerdo foi suavizada com gradiente dark navy contínuo, permitindo que o botão nativo vetorial com backdrop-filter (`.login-back-pill`) seja renderizado com nitidez sobre a imagem.
+       - Aplicação de `width: 100% !important; height: 100% !important; object-fit: cover !important; object-position: center bottom !important;` em `.login-hero-banner-img`, preenchendo toda a largura da tela sem barras laterais e mantendo a dianteira do carro azul e o logotipo DNA AUTO em destaque absoluto.
+    2. **Encaixe Perfeito com o Card Branco (.login-sheet-card):**
+       - O `.login-sheet-card` recebeu `margin: -18px auto 0 !important; border-radius: 28px 28px 0 0 !important; flex: 1 1 auto !important;`, eliminando qualquer espaço escuro ou vazio inferior. O card preenche toda a base até o rodapé com fundo branco puro.
+       - Remoção mantida dos logotipos de login social (Google e Apple) e do divisor "Ou continue com", mantendo o fluxo estritamente direto e profissional ("Entrar" e "Criar cadastro").
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (701.406 bytes em ambos).
+    - 100% de paridade na imagem oficial `cliente.app/img/login-hero-official.png` e `public/img/login-hero-official.png` (160.760 bytes em ambos).
+    - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).

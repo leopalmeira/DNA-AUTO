@@ -34,7 +34,7 @@
 
 /* --- TELA DE LOGIN ULTRA-HD DNA AUTO --- */
 #login {
-  background: linear-gradient(180deg, #dceafa 0%, #eaf2fc 55%, #e1edfa 100%) !important;
+  background: #011022 !important;
   padding: 0 !important;
   margin: 0 !important;
   width: 100% !important;
@@ -2550,14 +2550,14 @@ section.splash .splash-bg {
   object-position: center top !important;
 }
 
-/* ═══ TELA DE LOGIN OFICIAL REFINADA (CICLO 106) ═══ */
+/* ═══ TELA DE LOGIN OFICIAL REFINADA (CICLO 107) ═══ */
 #login.screen {
-  background: #030b17 !important;
+  background: #011022 !important;
   min-height: 100dvh !important;
   box-sizing: border-box !important;
   display: none;
   flex-direction: column !important;
-  justify-content: space-between !important;
+  justify-content: flex-start !important;
   align-items: center !important;
   padding: 0 !important;
   overflow-x: hidden !important;
@@ -2570,45 +2570,42 @@ section.splash .splash-bg {
 .login-hero-container {
   position: relative !important;
   width: 100% !important;
-  max-width: 420px !important;
-  flex: 1 1 auto !important;
-  min-height: 220px !important;
-  max-height: 310px !important;
-  background: #030b17 !important;
-  display: flex !important;
-  align-items: flex-end !important;
-  justify-content: center !important;
-  margin: 0 auto !important;
-  padding: 0 10px 4px !important;
-  box-sizing: border-box !important;
-}
-.login-hero-banner-img {
-  max-width: 100% !important;
-  max-height: 100% !important;
-  width: auto !important;
-  height: auto !important;
-  object-fit: contain !important;
-  object-position: center bottom !important;
+  max-width: 480px !important;
+  height: clamp(250px, 42vh, 340px) !important;
+  flex: 0 0 auto !important;
+  background: #011022 !important;
   display: block !important;
   margin: 0 auto !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+.login-hero-banner-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center bottom !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
   pointer-events: none !important;
 }
 .login-back-pill {
   position: absolute !important;
-  top: max(14px, env(safe-area-inset-top, 14px)) !important;
+  top: max(16px, env(safe-area-inset-top, 16px)) !important;
   left: 16px !important;
   z-index: 30 !important;
   width: 40px !important;
   height: 40px !important;
   border-radius: 50% !important;
   border: 1.5px solid #00c3ff !important;
-  background: rgba(8, 22, 44, 0.65) !important;
+  background: rgba(8, 22, 44, 0.7) !important;
   backdrop-filter: blur(8px) !important;
   -webkit-backdrop-filter: blur(8px) !important;
   display: grid !important;
   place-items: center !important;
   cursor: pointer !important;
-  box-shadow: 0 0 14px rgba(0, 195, 255, 0.3) !important;
+  box-shadow: 0 0 14px rgba(0, 195, 255, 0.35) !important;
   transition: transform 0.15s ease, background 0.15s ease !important;
 }
 .login-back-pill:active {
@@ -2616,16 +2613,16 @@ section.splash .splash-bg {
 }
 .login-sheet-card {
   width: 100% !important;
-  max-width: 420px !important;
+  max-width: 480px !important;
   background: #ffffff !important;
   border-radius: 28px 28px 0 0 !important;
-  padding: 24px 20px 32px !important;
+  padding: 24px 22px 34px !important;
   box-sizing: border-box !important;
-  box-shadow: 0 -10px 30px rgba(0, 5, 15, 0.35) !important;
-  margin: 0 auto !important;
+  box-shadow: 0 -12px 32px rgba(0, 5, 15, 0.28) !important;
+  margin: -18px auto 0 !important;
   position: relative !important;
   z-index: 10 !important;
-  flex: 0 0 auto !important;
+  flex: 1 1 auto !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
