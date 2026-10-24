@@ -2235,6 +2235,31 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
     - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
 
-
-
-
+### Ciclo 105 (24/10/2026)
+- **Implementação da Tela de Login Idêntica ao Print Oficial do Cliente (Hero Escuro com Carro Neon, Card Branco Bottom-Sheet com Cantos de 28px, Campos com Divisória Vertical, Lembrar de Mim, Botão Pílula e Login Social Google/Apple):**
+  - **Solicitação do Usuário:**
+    - "a tela de login deve ser assim aplique isso @[.agents/agent/frontend-specialist.md] @[.agents/agent/backend-specialist.md]" — com envio da imagem oficial de alta fidelidade contendo o design exato do aplicativo móvel.
+  - **Implementações Técnicas Realizadas:**
+    1. **Hero Escuro com Carro Neon & Botão Voltar Circular:**
+       - O topo da tela (`.login-hero-container`) consome a imagem oficial [login-hero-official.png](file:///c:/Users/User/Desktop/DNA-AUTO/cliente.app/img/login-hero-official.png) com `object-fit: cover; object-position: center bottom;` e fundo `#030b17`.
+       - Botão circular de voltar `.login-back-pill` posicionado no topo esquerdo com fundo escuro translúcido (`rgba(8, 22, 44, 0.65)`), borda fina ciano neon (`#00c3ff`), glow luminoso e seta voltada para a esquerda em azul claro `#38b6ff`.
+    2. **Card Branco Estilo Bottom-Sheet (`.login-sheet-card`):**
+       - Container elevado com fundo branco puro `#ffffff`, cantos superiores arredondados em `28px 28px 0 0`, sombra elegante `0 -10px 30px rgba(0, 5, 15, 0.35)` e padding de `24px 20px 24px`.
+    3. **Campos de Entrada com Divisória Vertical e Ícones Azuis:**
+       - **Campo 1 (E-mail ou CPF):** Box com altura de 52px, borda arredondada de 14px, fundo `#f8fbff`, divisória vertical fina cinza separando o ícone de usuário azul (`#0066FF`) do input com placeholder `"E-mail ou CPF"`.
+       - **Campo 2 (Senha):** Box com altura de 52px, divisória vertical fina cinza separando o ícone de cadeado azul (`#0066FF`) do input de senha com placeholder `"Senha"`, com botão de alternância de visibilidade (olho azul `#0066FF`) no lado direito.
+    4. **Linha de Opções "Lembrar de mim" e "Esqueceu a senha?":**
+       - Checkbox quadrado com fundo azul e check branco `[✓]` acompanhado do texto `"Lembrar de mim"` à esquerda.
+       - Link `"Esqueceu a senha?"` em azul vibrante `#0066FF` e negrito à direita com aviso toast nativo.
+    5. **Botão Primário "Entrar ➔":**
+       - Formato pílula perfeita (`border-radius: 9999px; height: 50px;`), gradiente azul elétrico horizontal (`linear-gradient(90deg, #0077ff 0%, #0055ff 100%)`), texto em negrito e ícone de seta para a direita, com sombra azul projetada (`box-shadow: 0 8px 24px rgba(0, 102, 255, 0.4)`).
+    6. **Link de Cadastro & Divisor Social:**
+       - Texto centralizado `"Não tem uma conta? Criar cadastro"` com link direto para a tela de registro (`go('register')`).
+       - Linha divisória horizontal com `"Ou continue com"` centralizado.
+    7. **Botões de Login Social (Google e Apple):**
+       - Dois botões brancos com cantos arredondados (16px), borda suave `#e2e8f0` e sombra discreta:
+         - Botão Google com o logotipo oficial multicolorido G (SVG vetorial).
+         - Botão Apple com a maçã preta oficial da Apple (SVG vetorial).
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (703.893 bytes em ambos).
+    - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).

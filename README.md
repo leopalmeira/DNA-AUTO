@@ -619,8 +619,21 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
 - **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
 - **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
 
+### Ciclo 104 — Correção da Tela de Login e Aura Móvel 360° no Mini OBD
+- **Correção da Tela de Login:** Imagem hero oficial livre de sobreposições, box de login proporcional e contido com largura máxima de 360px e preenchimento vertical perfeito.
+- **Aura Móvel Contínua no Card Mini OBD:** Efeito Border Beam dinâmico de 3px em tons de azul elétrico rotacionando a 360° em torno do card com velocidade suave (4.05s) e rastro 10% mais amplo, e badge atualizado para "Em breve".
+- **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
+- **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
 
-
-
-
-
+### Ciclo 105 — Tela de Login 100% Idêntica ao Print Oficial do App
+- **Design de Alta Fidelidade Conforme Print do Usuário:**
+  - Topo escuro com foto do carro em neon e logo oficial DNA AUTO ("Seu veículo sempre protegido.").
+  - Botão de voltar circular no topo esquerdo com fundo translúcido escuro, borda fina ciano neon e seta voltada para a esquerda.
+  - Card branco estilo bottom-sheet elevado com cantos de 28px no topo e sombra moderna.
+  - Campos de entrada com divisória vertical cinza separando os ícones azuis: "E-mail ou CPF" e "Senha" com alternador de visibilidade (olho azul).
+  - Linha de opções com checkbox customizado "Lembrar de mim" e link "Esqueceu a senha?".
+  - Botão primário pílula "Entrar ➔" com gradiente azul e sombra suave.
+  - Linha de cadastro "Não tem uma conta? Criar cadastro".
+  - Divisor "Ou continue com" e botões sociais de alta fidelidade para Google e Apple.
+- **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
+- **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
