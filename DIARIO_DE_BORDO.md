@@ -2129,3 +2129,47 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - **Qualidade, Paridade & Testes:**
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
     - 56 de 56 testes automatizados aprovados (100% de sucesso).
+
+### Ciclo 101 (24/10/2026)
+- **Isolamento de Modais Globais no Nível Raiz do App, Modal Dedicado de Revisões Preventivas com Header Padronizado (Voltar e Fechar), Tela de Ficha Técnica do Carro com Seta ← e Botão ✕ no Topo, e Cobertura Nacional de Oficinas Credenciadas com OpenStreetMap e Leaflet (Sem Falha de Renderização de Tiles):**
+  - **Solicitações do Usuário:**
+    1. **Cards de Revisões Preventivas:** Ao clicar no card de revisões preventivas pela primeira vez apareciam os dados normais, mas no segundo clique aparecia o conteúdo do card do carro (modal de ficha técnica). Corrigido para exibir estritamente apenas os dados pertinentes à função de revisões preventivas, sem jamais acionar o modal do veículo.
+    2. **Card do Carro na Dashboard:** O card do carro na tela inicial não abria a visualização completa dos dados do veículo com o botão `✕` no topo para fechar e a seta `←` de voltar.
+    3. **Mapa na Tela de Oficinas da Rede:** O mapa interativo não carregava por inteiro (ficava com tiles incompletos/cinzas devido ao container inicialmente oculto) e devia carregar o mapa do país todo com visão do Brasil e os pinos nos endereços das oficinas credenciadas.
+  - **Implementações Técnicas Realizadas:**
+    1. **Diagnóstico Estrutural de Causa Raiz e Desacoplamento dos Modais Globais:**
+       - Descoberta a causa raiz da anomalia: os modais globais (`#car-details-modal`, `#service-detail-modal`, `#profile-modal`) haviam sido inseridos acidentalmente dentro da `<section class="screen" id="preventivas">`, dentro da div `.preventivas-container` e do elemento `<main class="main">`.
+       - Como resultado, quando o usuário estava na Dashboard (`#preventivas` com `display: none`), o modal da ficha técnica do carro não conseguia ser exibido; ao navegar para preventivas (`display: flex`), o modal do carro ficava acessível internamente e se manifestava nos cliques subsequentes.
+       - A tag `<section class="screen" id="preventivas">` foi devidamente isolada e fechada com seu próprio cabeçalho, conteúdo e barra de navegação inferior exclusiva.
+       - Todos os modais globais (`#car-details-modal`, `#service-detail-modal`, `#profile-modal` e o novo `#preventiva-detail-modal`) foram movidos para o nível raiz do container da aplicação (`<main class="app">`), garantindo independência total de ciclo de vida e renderização limpa e instantânea em qualquer tela.
+    2. **Modal Dedicado de Revisões Preventivas (`#preventiva-detail-modal`):**
+       - Desenvolvido modal exclusivo de revisão preventiva contendo cabeçalho com seta `←` (`.dna-modal-back-btn`), título centralizado e botão `✕` (`.dna-modal-close-btn`).
+       - Exibição técnica aprofundada para cada item (Troca de óleo e filtro, Correia dentada e tensor, Pastilhas de freio, Filtro de ar do motor e cabine, Fluido de freio):
+         * Título oficial da manutenção preventiva OEM
+         * Tag de status com quilometragem faltante
+         * Barra de progresso visual de vida útil
+         * Intervalo recomendado pela montadora (ex: 10.000 km ou 12 meses)
+         * Criticidade de atraso (Crucial, Gravíssima, etc.)
+         * Especificações técnicas sugeridas (ex: Óleo Sintético 5W-30 API SP, pastilhas cerâmicas, etc.)
+         * Procedimentos inspecionados no pacote
+         * Botão de ação direta "Agendar em Oficina Credenciada" conectado à rota de oficinas (`go('oficinas')`) e botão de fechar.
+       - Fluxo 100% blindado: qualquer clique repetido nos cards de preventivas sempre abre e fecha apenas o modal de revisão preventiva, sem qualquer vazamento de contexto com o veículo.
+    3. **Cabeçalho com Seta `←` e Botão `✕` no Modal de Ficha Técnica do Carro (`#car-details-modal`):**
+       - Cabeçalho padronizado (`.dna-modal-header`) contendo seta `←` de voltar à esquerda, título "Ficha Técnica do Veículo" centralizado e botão `✕` de fechar à direita.
+       - Abertura imediata ao tocar no card do carro na Dashboard (`#dash-car-card`) ou pelo menu lateral.
+       - Fechamento responsivo via seta `←`, botão `✕`, botão inferior "Fechar Ficha Técnica", tecla `Esc` ou clique no backdrop escuro.
+    4. **Mapa de Cobertura Nacional e Correção Definitiva de Tiles no Leaflet (`#oficinas`):**
+       - Corrigido o bug clássico de renderização incompleta de tiles do Leaflet em container oculto:
+         * Invocado `oficinasMap.invalidateSize(true)` com múltiplos ciclos assíncronos (50ms, 150ms, 300ms, 600ms, 1000ms).
+         * Disparado recálculo imediato de dimensões em `window.go('oficinas')`.
+         * Container `#oficinas .map-shell` ajustado para altura generosa de `270px` com `width: 100% !important; min-height: 270px;`.
+         * Configurado tileLayer oficial do OpenStreetMap com `crossOrigin: true`.
+       - Rede de Oficinas Credenciadas ampliada para cobertura nacional cobrindo capitais estratégicas do país (São Paulo/SP, Rio de Janeiro/RJ, Belo Horizonte/MG, Curitiba/PR, Brasília/DF, Porto Alegre/RS, Salvador/BA).
+       - Inicialização panorâmica abrangendo todo o Brasil (`setView([-14.235, -51.9253], 4)` e `fitBounds` dinâmico agrupando todos os pinos da rede).
+       - Criada barra de alternância com 2 botões de navegação rápida:
+         * `🇧🇷 Todo o País (Brasil)`: centraliza e ajusta o zoom automaticamente para enquadrar todos os pinos de oficinas credenciadas no Brasil.
+         * `📍 Oficina Selecionada`: aproxima suavemente com `flyTo([lat, lng], 14)` na oficina escolhida e abre o popup oficial com botões "Como chegar", "Ligar" e "WhatsApp".
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
+    - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
+

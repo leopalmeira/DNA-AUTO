@@ -588,5 +588,14 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
 - **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
 - **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
 
+### Ciclo 101 — Isolamento dos Modais Globais, Modal Dedicado de Revisões Preventivas com Header (Voltar e Fechar), Ficha Técnica com Seta ← e Botão ✕ no Topo, e Cobertura Nacional de Oficinas Credenciadas com OpenStreetMap e Leaflet
+- **Isolamento de Modais Globais no Nível Raiz:** Desacoplamento dos modais globais (`#car-details-modal`, `#service-detail-modal`, `#profile-modal`, `#preventiva-detail-modal`) de dentro da section `#preventivas`, posicionando-os no nível raiz de `main.app`. Elimina qualquer anomalia de herança de `display: none` ou interferência entre telas.
+- **Modal Exclusivo de Revisões Preventivas (`#preventiva-detail-modal`):** Cada card de manutenção preventiva (óleo, correia dentada, pastilhas, filtros, fluido de freio) agora abre um modal dedicado com especificações técnicas completas, quilometragem faltante, barra de progresso, procedimentos do pacote, botão "Agendar em Oficina Credenciada" e botões padronizados no topo (seta de voltar `←` e botão `✕`), com fluxo estritamente isolado da ficha do carro.
+- **Card do Carro na Dashboard & Modal com Seta `←` e Botão `✕`:** Abertura instantânea da Ficha Técnica do veículo ao tocar no card do carro na Dashboard (`#dash-car-card`), com cabeçalho padronizado contendo botão de voltar `←` à esquerda, título centralizado e botão `✕` à direita, além do fechamento por clique fora, botão inferior ou tecla Esc.
+- **Mapa de Oficinas com Cobertura Nacional & Correção de Tiles Leaflet:** Solução definitiva para a renderização do Leaflet em containers com ciclos de `invalidateSize(true)`, rede credenciada ampliada para cobrir capitais do Brasil (SP, RJ, MG, PR, DF, RS, BA) e alternância com 1 toque entre visão do país inteiro (`Todo o País - Brasil`) e aproximação detalhada com popup na oficina escolhida (`Oficina Selecionada`).
+- **100% de Paridade entre `cliente.app/index.html` e `public/cliente.html`.**
+- **56/56 Testes Automatizados Aprovados com 100% de Sucesso.**
+
+
 
 

@@ -4601,6 +4601,123 @@ nav[aria-label="Navegação principal"] span,
   box-sizing: border-box !important;
 }
 
+
+/* ═══ CABEÇALHO PADRÃO DE MODAIS DNA AUTO (VOLTAR E FECHAR) ═══ */
+.dna-modal-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  padding-bottom: 12px !important;
+  margin-bottom: 14px !important;
+  border-bottom: 1px solid #e1ecf8 !important;
+  position: sticky !important;
+  top: 0 !important;
+  background: #ffffff !important;
+  z-index: 10 !important;
+}
+.dna-modal-back-btn {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  border: 1px solid #cfdfef !important;
+  background: #f4f8fe !important;
+  color: #082855 !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+  transition: background 0.15s ease, transform 0.1s ease !important;
+}
+.dna-modal-back-btn:active {
+  transform: scale(0.94) !important;
+  background: #e5effd !important;
+}
+.dna-modal-back-btn svg {
+  width: 20px !important;
+  height: 20px !important;
+  stroke: currentColor !important;
+  stroke-width: 2.4 !important;
+  fill: none !important;
+}
+.dna-modal-header-title {
+  font-family: Outfit, Inter, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  color: #071a3a !important;
+  margin: 0 !important;
+  text-align: center !important;
+  flex: 1 !important;
+  letter-spacing: -0.2px !important;
+}
+.dna-modal-close-btn {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  border: 1px solid #cfdfef !important;
+  background: #f4f8fe !important;
+  color: #082855 !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  padding: 0 !important;
+  transition: background 0.15s ease, transform 0.1s ease !important;
+}
+.dna-modal-close-btn:active {
+  transform: scale(0.94) !important;
+  background: #e5effd !important;
+}
+/* Estilo aprimorado do Mapa de Oficinas com visão Brasil */
+#oficinas .map-shell {
+  position: relative !important;
+  width: 100% !important;
+  height: 270px !important;
+  min-height: 270px !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  border: 1.5px solid #c5d8ec !important;
+  background: #e6f0fa !important;
+  box-shadow: 0 4px 14px rgba(6, 22, 62, 0.08) !important;
+}
+#oficinas-map {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 270px !important;
+  z-index: 1 !important;
+}
+.map-view-switch {
+  display: flex !important;
+  gap: 8px !important;
+  margin-bottom: 10px !important;
+}
+.btn-map-switch {
+  flex: 1 !important;
+  padding: 8px 10px !important;
+  border-radius: 10px !important;
+  border: 1px solid #c7d9ec !important;
+  background: #ffffff !important;
+  color: #173b6a !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 6px rgba(11, 44, 96, 0.05) !important;
+  transition: all 0.15s ease !important;
+}
+.btn-map-switch.active {
+  background: #0066FF !important;
+  color: #ffffff !important;
+  border-color: #005ce6 !important;
+  box-shadow: 0 3px 10px rgba(0, 102, 255, 0.25) !important;
+}
+
 </style><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 </head><body><main class="app"><section class="screen splash active" id="splash">
   <div class="splash-wrapper">
@@ -4982,7 +5099,7 @@ nav[aria-label="Navegação principal"] span,
         <p>Acompanhe as próximas manutenções recomendadas para o seu veículo.</p>
       </div>
       <section class="cards" aria-label="Manutenções preventivas">
-        <button class="card" type="button" data-label="Troca de óleo e filtro" onclick="toast('Troca de óleo e filtro: programada para 15.000 km.')">
+        <button class="card" type="button" data-label="Troca de óleo e filtro" onclick="tap(this); openPreventivaModal('Troca de óleo do motor e filtro', 'Faltam 3.000 km', '12.000', '15.000', 80, '10.000 km ou 12 meses', 'Alta / Preventiva Crucial', 'Óleo Sintético 5W-30 API SP / ILSAC GF-6 + Filtro Blindado OEM', 'Substituição completa do lubrificante do cárter, troca do anel de vedação do bujão, instalação do filtro de óleo homologado e aferição técnica de estanqueidade.', 'A troca preventiva de óleo no prazo estrito evita borras, atrito metálico precoce e mantém o consumo de combustível e a potência nos padrões de fábrica.')">
           <span class="iconbox">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 3v4m6-4v4M9 12l2 2 4-4"/>
@@ -4991,14 +5108,14 @@ nav[aria-label="Navegação principal"] span,
           <span class="details">
             <span class="name">Troca de óleo e filtro</span>
             <span class="progress-row">
-              <span class="progress"><span class="fill" style="width:57%"></span></span>
+              <span class="progress"><span class="fill" style="width:80%"></span></span>
               <span class="tag">Faltam 3.000 km</span>
             </span>
             <span class="distance">12.000 / 15.000 km</span>
           </span>
         </button>
 
-        <button class="card" type="button" data-label="Correia dentada" onclick="toast('Correia dentada: programada para 100.000 km.')">
+        <button class="card" type="button" data-label="Correia dentada" onclick="tap(this); openPreventivaModal('Correia dentada e tensor', 'Faltam 40.000 km', '60.000', '100.000', 60, '100.000 km ou 5 anos', 'Crítica / Gravíssima', 'Correia sincronizadora reforçada HNBR + Rolamento tensor mecânico', 'Verificação do sincronismo mecânico do cabeçote, inspeção de microfissuras na borracha, teste de folga no tensor e substituição preventiva preventiva do kit completo.', 'A quebra da correia dentada em funcionamento causa o choque violento dos pistões com as válvulas, gerando retífica completa de motor e custos elevadíssimos.')">
           <span class="iconbox">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="m8 7 3 8m5-8-3 8M8.5 6h7"/>
@@ -5007,14 +5124,14 @@ nav[aria-label="Navegação principal"] span,
           <span class="details">
             <span class="name">Correia dentada</span>
             <span class="progress-row">
-              <span class="progress"><span class="fill" style="width:67%"></span></span>
+              <span class="progress"><span class="fill" style="width:60%"></span></span>
               <span class="tag">Faltam 40.000 km</span>
             </span>
             <span class="distance">60.000 / 100.000 km</span>
           </span>
         </button>
 
-        <button class="card" type="button" data-label="Pastilha de freio" onclick="toast('Pastilhas de freio: verificação preventiva em 40.000 km.')">
+        <button class="card" type="button" data-label="Pastilha de freio" onclick="tap(this); openPreventivaModal('Pastilhas de freio dianteiras e traseiras', 'Faltam 20.000 km', '20.000', '40.000', 50, '30.000 a 40.000 km', 'Alta / Segurança Ativa', 'Pastilhas cerâmicas de baixo ruído e menor liberação de fuligem (DOT homologado)', 'Medição com paquímetro da espessura do material de atrito, lubrificação dos pinos guias das pinças com graxa de silicone e verificação do empeno dos discos de freio.', 'Pastilhas gastas aumentam perigosamente o espaço de parada e destroem a pista de contato dos discos de freio por atrito ferro com ferro.')">
           <span class="iconbox">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2m-7 9 3 3 5-6m-8 8h8"/>
@@ -5023,14 +5140,14 @@ nav[aria-label="Navegação principal"] span,
           <span class="details">
             <span class="name">Pastilha de freio</span>
             <span class="progress-row">
-              <span class="progress"><span class="fill" style="width:60%"></span></span>
+              <span class="progress"><span class="fill" style="width:50%"></span></span>
               <span class="tag">Faltam 20.000 km</span>
             </span>
             <span class="distance">20.000 / 40.000 km</span>
           </span>
         </button>
 
-        <button class="card" type="button" data-label="Filtro de ar do motor" onclick="toast('Filtro de ar: revisão em 30.000 km.')">
+        <button class="card" type="button" data-label="Filtro de ar do motor" onclick="tap(this); openPreventivaModal('Filtro de ar do motor e cabine', 'Faltam 18.000 km', '12.000', '30.000', 40, '15.000 a 30.000 km', 'Média / Eficiência & Consumo', 'Elemento filtrante de microfibra antibacteriana e alta retenção de partículas', 'Substituição do filtro de admissão do motor e higienização com troca do filtro antipólen de cabine.', 'Filtro de ar saturado restringe a passagem de ar para o motor, elevando o consumo de combustível e acumulando fungos e ácaros no ar-condicionado.')">
           <span class="iconbox">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <path d="M5 5h8l3-3 3 3-3 3h-4v8h-3v4H5z"/><path d="M8 8v8m4-6 4 3 4-3m-4 3v5"/>
@@ -5039,14 +5156,14 @@ nav[aria-label="Navegação principal"] span,
           <span class="details">
             <span class="name">Filtro de ar do motor</span>
             <span class="progress-row">
-              <span class="progress"><span class="fill" style="width:35%"></span></span>
+              <span class="progress"><span class="fill" style="width:40%"></span></span>
               <span class="tag">Faltam 18.000 km</span>
             </span>
             <span class="distance">12.000 / 30.000 km</span>
           </span>
         </button>
 
-        <button class="card" type="button" data-label="Fluido de freio" onclick="toast('Fluido de freio: revisão em 40.000 km.')">
+        <button class="card" type="button" data-label="Fluido de freio" onclick="tap(this); openPreventivaModal('Fluido de freio hidráulico', 'Faltam 20.000 km', '20.000', '40.000', 50, '40.000 km ou 2 anos', 'Alta / Segurança Térmica', 'Fluido sintético DOT 4 / DOT 5.1 com ponto de ebulição seco > 260°C', 'Teste de contaminação por umidade com caneta óptica de ebuliometria, sangria computadorizada e troca do fluido no reservatório principal e pinças.', 'O fluido de freio é higroscópico (absorve água da atmosfera). Fluido velho ferve em frenagens intensas, gerando vapor que causa perda total do pedal de freio.')">
           <span class="iconbox">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 2 20 5v6c0 5-3 8-8 11-5-3-8-6-8-11V5z"/><path d="m9 12 2 2 4-4"/>
@@ -5055,166 +5172,14 @@ nav[aria-label="Navegação principal"] span,
           <span class="details">
             <span class="name">Fluido de freio</span>
             <span class="progress-row">
-              <span class="progress"><span class="fill" style="width:56%"></span></span>
+              <span class="progress"><span class="fill" style="width:50%"></span></span>
               <span class="tag">Faltam 20.000 km</span>
             </span>
             <span class="distance">20.000 / 40.000 km</span>
           </span>
         </button>
       </section>
-    
-
-<!-- ══════════════════════════════════════════════════════════════════
-     MODAIS GLOBAIS DO APLICATIVO DNA AUTO (NÍVEL RAIZ)
-     ══════════════════════════════════════════════════════════════════ -->
-
-<!-- MODAL 01: FICHA TÉCNICA OFICIAL & COTAÇÃO DA TABELA FIPE (API PLACAS) -->
-<div id="car-details-modal" class="dna-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-car-title">
-  <div class="dna-bottom-sheet">
-    <button class="dna-sheet-close" onclick="closeCarModal()" type="button" aria-label="Fechar">✕</button>
-    
-    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
-      <span style="background:#0284c7; color:#ffffff; font-size:11px; font-weight:800; padding:4px 8px; border-radius:6px; letter-spacing:0.5px;">OFICIAL • BASE NACIONAL</span>
-      <span class="car-plate-tag" id="modal-car-plate" style="font-size:12px; font-weight:800; background:#ffffff; border:1px solid #c7d8e9; padding:3px 8px; border-radius:6px; color:#0b2c60;">🇧🇷 BRA2E19</span>
-    </div>
-
-    <h2 id="modal-car-title" style="font-family:Outfit,Inter,sans-serif; font-size:20px; font-weight:800; color:#071938; margin:0 0 4px; line-height:1.25;">Toyota Corolla XEi 2.0 Flex 16V Aut.</h2>
-    <div id="modal-car-dna-status" style="display:inline-flex; align-items:center; gap:6px; background:#ecfdf5; color:#047857; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:20px; border:1px solid #a7f3d0; margin-bottom:12px;">
-      🛡️ Passaporte DNA AUTO Ativo · Score 93/100
-    </div>
-
-    <!-- Bloco Destaque FIPE Oficial -->
-    <div class="fipe-badge-card">
-      <div class="fipe-badge-title">
-        <span>📊 Cotação Oficial Tabela FIPE</span>
-        <span style="background:rgba(0,229,255,0.18); color:#00E5FF; padding:2px 6px; border-radius:4px; font-size:10px;">REFERÊNCIA NACIONAL</span>
-      </div>
-      <div class="fipe-badge-price" id="modal-fipe-val">R$ 124.900,00</div>
-      <div class="fipe-badge-sub" id="modal-fipe-sub">Cód. FIPE: 002165-2 · Mês Ref: Outubro/2026</div>
-    </div>
-
-    <!-- Tabela de Especificações Completas Puxadas da API Placas -->
-    <div class="vehicle-specs-table">
-      <div class="spec-box"><span class="label">Marca</span><span class="val" id="spec-marca">Toyota</span></div>
-      <div class="spec-box"><span class="label">Modelo</span><span class="val" id="spec-modelo">Corolla XEi 2.0</span></div>
-      <div class="spec-box"><span class="label">Ano Fabricação/Modelo</span><span class="val" id="spec-ano">2021 / 2022</span></div>
-      <div class="spec-box"><span class="label">Combustível</span><span class="val" id="spec-combustivel">Flex (Álcool/Gasolina)</span></div>
-      <div class="spec-box"><span class="label">Câmbio</span><span class="val" id="spec-cambio">Automático CVT (10 Vel.)</span></div>
-      <div class="spec-box"><span class="label">Potência / Cilindrada</span><span class="val" id="spec-potencia">177 cv · 1.987 cm³</span></div>
-      <div class="spec-box"><span class="label">Cor Oficial</span><span class="val" id="spec-cor">Branco Pérola</span></div>
-      <div class="spec-box"><span class="label">Município / UF</span><span class="val" id="spec-municipio">São Paulo / SP</span></div>
-      <div class="spec-box full"><span class="label">Chassi Homologado (Final)</span><span class="val" id="spec-chassi">***98745 (Auditado)</span></div>
-    </div>
-
-    <button type="button" class="btn-sheet-action" onclick="closeCarModal()">
-      Fechar Ficha Técnica
-    </button>
-  </div>
-</div>
-
-<!-- MODAL 02: DETALHES DE SERVIÇO & PEÇA COM FOTO REAL, VALOR DA NOTA, OFICINA E DATA COMPLETA -->
-<div id="service-detail-modal" class="dna-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-serv-title">
-  <div class="dna-bottom-sheet" style="padding-top:16px;">
-    <button class="dna-sheet-close" onclick="closeServiceDetailModal()" type="button" aria-label="Fechar">✕</button>
-    
-    <!-- Foto Real da Peça / Serviço com Moldura e Badges -->
-    <div style="position:relative; width:100%; height:195px; border-radius:16px; overflow:hidden; background:#071322; margin-bottom:14px; box-shadow:0 6px 18px rgba(0,0,0,0.18);">
-      <img id="modal-serv-img" src="img/part-oil.jpg" alt="Foto da Peça / Serviço" style="width:100%; height:100%; object-fit:cover; display:block;" />
-      <div style="position:absolute; bottom:0; inset-inline:0; padding:12px 14px; background:linear-gradient(to top, rgba(7,19,34,0.92) 0%, rgba(7,19,34,0.4) 60%, transparent 100%); display:flex; justify-content:space-between; align-items:flex-end;">
-        <span id="modal-serv-badge" style="background:#0066FF; color:#ffffff; font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:6px; letter-spacing:0.4px;">SERVIÇO AUDITADO</span>
-        <span id="modal-serv-valor-tag" style="background:rgba(0, 229, 255, 0.22); border:1px solid rgba(0, 229, 255, 0.45); color:#00E5FF; font-family:'Outfit', sans-serif; font-size:15px; font-weight:900; padding:3px 10px; border-radius:8px;">R$ 380,00</span>
-      </div>
-    </div>
-
-    <!-- Data Completa com Dia da Semana, Data e Ano -->
-    <div style="display:flex; align-items:center; gap:6px; color:#4a6688; font-size:12px; font-weight:700; margin-bottom:4px;">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      <span id="modal-serv-full-date">Terça-feira, 15 de Outubro de 2024</span>
-    </div>
-
-    <!-- Título do Serviço / Peça -->
-    <h2 id="modal-serv-title" style="font-family:Outfit,Inter,sans-serif; font-size:20px; font-weight:800; color:#071938; margin:0 0 12px; line-height:1.25;">Troca de óleo do motor</h2>
-    
-    <!-- Tabela de Especificações Completas e Comprovação -->
-    <div class="vehicle-specs-table">
-      <div class="spec-box full">
-        <span class="label">Descritivo Completo</span>
-        <span class="val" id="modal-serv-desc" style="font-size:13px; line-height:1.4; color:#0b2555; font-weight:600;">Óleo 5W30 Sintético Oficial Toyota + Filtro de Óleo Mahle. Troca completa com dreno por gravidade, arruela nova e lubrificação técnica das juntas.</span>
-      </div>
-      <div class="spec-box">
-        <span class="label">Valor da Nota de Serviço</span>
-        <span class="val" id="modal-serv-valor" style="color:#0066FF; font-weight:800; font-size:14.5px;">R$ 380,00</span>
-      </div>
-      <div class="spec-box">
-        <span class="label">Oficina Onde Foi Feito</span>
-        <span class="val" id="modal-serv-oficina" style="color:#071938; font-weight:800;">Veloce Auto Center</span>
-      </div>
-      <div class="spec-box">
-        <span class="label">Odômetro Registrado</span>
-        <span class="val" id="modal-serv-odo">88.500 km</span>
-      </div>
-      <div class="spec-box">
-        <span class="label">Técnico Responsável</span>
-        <span class="val" id="modal-serv-mecanico">Carlos Alberto Silva</span>
-      </div>
-      <div class="spec-box full">
-        <span class="label">Garantia Comprovada</span>
-        <span class="val" id="modal-serv-garantia" style="color:#047857; font-weight:700;">12 meses ou 10.000 km</span>
-      </div>
-    </div>
-
-    <!-- Selo de Inviolabilidade e Auditoria -->
-    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:12px 14px; margin-top:12px; display:flex; align-items:flex-start; gap:10px;">
-      <span style="font-size:18px;">🛡️</span>
-      <div>
-        <span style="font-size:12px; font-weight:800; color:#15803d; display:block;">
-          Registro Inviolável · Nota Fiscal &amp; OS Auditadas no DNA AUTO
-        </span>
-        <span style="font-size:11px; color:#166534; margin-top:2px; display:block; line-height:1.35;">
-          Comprovação registrada com hash criptográfico, garantindo procedência e valorizando a revenda do seu veículo no mercado.
-        </span>
-      </div>
-    </div>
-
-    <button type="button" class="btn-sheet-action" style="margin-top:16px;" onclick="closeServiceDetailModal()">
-      Fechar Detalhes
-    </button>
-  </div>
-</div>
-
-<!-- MODAL 03: PERFIL DO CLIENTE COM BOTÃO DE LOGOUT / SAIR DA CONTA -->
-<div id="profile-modal" class="dna-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="profile-user-name">
-  <div class="dna-bottom-sheet">
-    <button class="dna-sheet-close" onclick="closeProfileModal()" type="button" aria-label="Fechar">✕</button>
-    <div style="text-align:center; padding:10px 0 16px;">
-      <div style="width:68px; height:68px; border-radius:50%; background:linear-gradient(135deg, #0084FF, #0052D4); color:#ffffff; font-size:28px; font-weight:900; display:grid; place-items:center; margin:0 auto 10px; box-shadow:0 6px 18px rgba(0,102,255,0.35);" id="profile-avatar-letter">
-        C
-      </div>
-      <h2 id="profile-user-name" style="font-family:Outfit,Inter,sans-serif; font-size:20px; font-weight:800; color:#071938; margin:0 0 2px;">Carlos Alberto Silva</h2>
-      <p id="profile-user-email" style="font-size:12.5px; color:#5c7494; margin:0;">carlos.silva@email.com</p>
-      <div style="display:inline-block; margin-top:6px; background:#eef5ff; color:#0066FF; font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px; border:1px solid #cce1fb;">
-        Proprietário Verificado DNA AUTO
-      </div>
-    </div>
-
-    <div class="vehicle-specs-table">
-      <div class="spec-box"><span class="label">Veículo Principal</span><span class="val" id="profile-car-model">Toyota Corolla</span></div>
-      <div class="spec-box"><span class="label">Placa do Veículo</span><span class="val" id="profile-car-plate">BRA2E19 🇧🇷</span></div>
-      <div class="spec-box full"><span class="label">Passaporte DNA</span><span class="val" style="color:#0066FF;" id="profile-car-dna">DNA-BR-BRA2-E19-2026 (Ativo)</span></div>
-      <div class="spec-box full"><span class="label">Telefone / WhatsApp</span><span class="val" id="profile-user-phone">(11) 99999-9999</span></div>
-    </div>
-
-    <button type="button" class="btn-sheet-logout" onclick="fazerLogoutDoApp()">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
-      </svg>
-      <span>Sair da Minha Conta (Desconectar)</span>
-    </button>
-  </div>
-</div>
-
-</main>
-
+    </main>
     <nav class="bottom" aria-label="Navegação principal">
       <button class="nav-btn" type="button" data-nav="dashboard" onclick="go('dashboard')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m3 10 9-7 9 7v11h-7v-7h-4v7H3z"/></svg>
@@ -5507,8 +5472,21 @@ nav[aria-label="Navegação principal"] span,
     </div>
     
     <!-- Mapa Real OpenStreetMap (Sem API Key) -->
+    <!-- Controles de Visão do Mapa: Nacional vs Proximidade -->
+    <div class="map-view-switch" role="group" aria-label="Alternar visão do mapa">
+      <button type="button" class="btn-map-switch active" id="btn-map-brasil" onclick="resetMapToBrazil()">
+        <span>🇧🇷 Todo o País (Brasil)</span>
+      </button>
+      <button type="button" class="btn-map-switch" id="btn-map-nearest" onclick="focusSelectedOficina()">
+        <span>📍 Oficina Selecionada</span>
+      </button>
+    </div>
+
+    <!-- Mapa Real OpenStreetMap (Sem API Key) com Cobertura Nacional -->
     <div class="map-shell">
-      <div id="oficinas-map" class="map" aria-label="Mapa interativo OpenStreetMap com oficinas credenciadas"></div>
+      <div id="oficinas-map" class="map" aria-label="Mapa interativo OpenStreetMap com oficinas credenciadas no Brasil"></div>
+      <span class="map-note">📍 Rede Nacional DNA AUTO · Toque no pino</span>
+    </div>
       <span class="map-note">📍 OpenStreetMap Oficial · Toque no marcador</span>
     </div>
 
@@ -5605,6 +5583,203 @@ nav[aria-label="Navegação principal"] span,
     </button>
   </div>
 </aside>
+
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     MODAIS GLOBAIS DO APLICATIVO DNA AUTO (NÍVEL RAIZ DA APLICAÇÃO)
+     ══════════════════════════════════════════════════════════════════ -->
+
+<!-- MODAL 01: FICHA TÉCNICA OFICIAL & COTAÇÃO DA TABELA FIPE (API PLACAS) -->
+<div id="car-details-modal" class="dna-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-car-title">
+  <div class="dna-bottom-sheet">
+    <div class="dna-modal-header">
+      <button class="dna-modal-back-btn" onclick="closeCarModal()" type="button" aria-label="Voltar para a tela anterior">
+        <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="dna-modal-header-title">Ficha Técnica do Veículo</h2>
+      <button class="dna-modal-close-btn" onclick="closeCarModal()" type="button" aria-label="Fechar">✕</button>
+    </div>
+    
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+      <span style="background:#0284c7; color:#ffffff; font-size:11px; font-weight:800; padding:4px 8px; border-radius:6px; letter-spacing:0.5px;">OFICIAL • BASE NACIONAL</span>
+      <span class="car-plate-tag" id="modal-car-plate" style="font-size:12px; font-weight:800; background:#ffffff; border:1px solid #c7d8e9; padding:3px 8px; border-radius:6px; color:#0b2c60;">🇧🇷 BRA2E19</span>
+    </div>
+
+    <h2 id="modal-car-title" style="font-family:Outfit,Inter,sans-serif; font-size:20px; font-weight:800; color:#071938; margin:0 0 4px; line-height:1.25;">Toyota Corolla XEi 2.0 Flex 16V Aut.</h2>
+    <div id="modal-car-dna-status" style="display:inline-flex; align-items:center; gap:6px; background:#ecfdf5; color:#047857; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:20px; border:1px solid #a7f3d0; margin-bottom:12px;">
+      🛡️ Passaporte DNA AUTO Ativo · Score 93/100
+    </div>
+
+    <!-- Bloco Destaque FIPE Oficial -->
+    <div class="fipe-badge-card">
+      <div class="fipe-badge-title">
+        <span>📊 Cotação Oficial Tabela FIPE</span>
+        <span style="background:rgba(0,229,255,0.18); color:#00E5FF; padding:2px 6px; border-radius:4px; font-size:10px;">REFERÊNCIA NACIONAL</span>
+      </div>
+      <div class="fipe-badge-price" id="modal-fipe-val">R$ 124.900,00</div>
+      <div class="fipe-badge-sub" id="modal-fipe-sub">Cód. FIPE: 002165-2 · Mês Ref: Outubro/2026</div>
+    </div>
+
+    <!-- Tabela de Especificações Completas Puxadas da API Placas -->
+    <div class="vehicle-specs-table">
+      <div class="spec-box"><span class="label">Marca</span><span class="val" id="spec-marca">Toyota</span></div>
+      <div class="spec-box"><span class="label">Modelo</span><span class="val" id="spec-modelo">Corolla XEi 2.0</span></div>
+      <div class="spec-box"><span class="label">Ano Fabricação/Modelo</span><span class="val" id="spec-ano">2021 / 2022</span></div>
+      <div class="spec-box"><span class="label">Combustível</span><span class="val" id="spec-combustivel">Flex (Álcool/Gasolina)</span></div>
+      <div class="spec-box"><span class="label">Câmbio</span><span class="val" id="spec-cambio">Automático CVT (10 Vel.)</span></div>
+      <div class="spec-box"><span class="label">Potência / Cilindrada</span><span class="val" id="spec-potencia">177 cv · 1.987 cm³</span></div>
+      <div class="spec-box"><span class="label">Cor Oficial</span><span class="val" id="spec-cor">Branco Pérola</span></div>
+      <div class="spec-box"><span class="label">Município / UF</span><span class="val" id="spec-municipio">São Paulo / SP</span></div>
+      <div class="spec-box full"><span class="label">Chassi Homologado (Final)</span><span class="val" id="spec-chassi">***98745 (Auditado)</span></div>
+    </div>
+
+    <button type="button" class="btn-sheet-action" onclick="closeCarModal()">
+      Fechar Ficha Técnica
+    </button>
+  </div>
+</div>
+
+<!-- MODAL 02: DETALHES DE SERVIÇO & PEÇA COM FOTO REAL, VALOR DA NOTA, OFICINA E DATA COMPLETA -->
+<div id="service-detail-modal" class="dna-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-service-title">
+  <div class="dna-bottom-sheet">
+    <div class="dna-modal-header">
+      <button class="dna-modal-back-btn" onclick="closeServiceDetailModal()" type="button" aria-label="Voltar para a tela anterior">
+        <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="dna-modal-header-title">Comprovante de Serviço</h2>
+      <button class="dna-modal-close-btn" onclick="closeServiceDetailModal()" type="button" aria-label="Fechar">✕</button>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+      <span style="background:#0284c7; color:#ffffff; font-size:11px; font-weight:800; padding:4px 8px; border-radius:6px; letter-spacing:0.5px;" id="modal-service-tipo">SERVIÇO HOMOLOGADO</span>
+      <span style="font-size:11px; font-weight:700; color:#037248; background:#e6f9f0; padding:3px 8px; border-radius:6px; border:1px solid #a8ebd1;" id="modal-service-badge">Auditado DNA</span>
+    </div>
+
+    <h2 id="modal-service-title" style="font-family:Outfit,Inter,sans-serif; font-size:20px; font-weight:800; color:#071938; margin:0 0 4px; line-height:1.25;">Troca de óleo do motor 5W30 Sintético</h2>
+    <p id="modal-service-date" style="font-size:12.5px; color:#5c7494; margin:0 0 14px;">Terça-feira, 15 de Outubro de 2024</p>
+
+    <!-- Card Destaque Valor & Garantia -->
+    <div class="fipe-badge-card" style="background:linear-gradient(135deg, #092147 0%, #03152e 100%);">
+      <div class="fipe-badge-title">
+        <span>💰 Valor Total do Investimento</span>
+        <span style="background:rgba(0,229,255,0.18); color:#00E5FF; padding:2px 6px; border-radius:4px; font-size:10px;">NOTA FISCAL ELETRÔNICA</span>
+      </div>
+      <div class="fipe-badge-price" id="modal-service-price">R$ 380,00</div>
+      <div class="fipe-badge-sub" id="modal-service-garantia">Garantia Ativa: 12 meses ou 10.000 km</div>
+    </div>
+
+    <!-- Tabela de Detalhes Oficiais do Atendimento -->
+    <div class="vehicle-specs-table">
+      <div class="spec-box"><span class="label">Oficina Credenciada</span><span class="val" id="modal-service-oficina">Veloce Auto Center</span></div>
+      <div class="spec-box"><span class="label">Responsável Técnico</span><span class="val" id="modal-service-mecanico">Carlos Alberto Silva</span></div>
+      <div class="spec-box"><span class="label">Hodômetro de Entrada</span><span class="val" id="modal-service-odo">88.500 km</span></div>
+      <div class="spec-box"><span class="label">Protocolo de Auditoria</span><span class="val" style="color:#0066FF;" id="modal-service-hash">DNA-SRV-88500-OK</span></div>
+      <div class="spec-box full"><span class="label">Detalhamento dos Procedimentos</span><span class="val" id="modal-service-desc">Óleo 5W30 Sintético API SP, filtro de óleo blindado e anel do bujão com aperto em torquímetro aferido.</span></div>
+    </div>
+
+    <!-- Foto Real / Comprovante Anexo -->
+    <div style="margin:14px 0;">
+      <span class="label" style="font-size:11px; font-weight:700; color:#5c7494; text-transform:uppercase; display:block; margin-bottom:6px;">Registro Fotográfico / Comprovante do Serviço</span>
+      <div style="width:100%; height:160px; border-radius:12px; overflow:hidden; border:1px solid #c7d8e9; background:#0b1c36; position:relative;">
+        <img id="modal-service-img" src="img/oleo-troca.jpg" alt="Comprovante do serviço" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='img/ws-workshop-thumb1.jpg';"/>
+      </div>
+    </div>
+
+    <button type="button" class="btn-sheet-action" onclick="closeServiceDetailModal()">
+      Concluir Visualização
+    </button>
+  </div>
+</div>
+
+<!-- MODAL 03: PERFIL DO USUÁRIO & SAIR DA CONTA (LOGOUT) -->
+<div id="profile-modal" class="dna-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="profile-user-name">
+  <div class="dna-bottom-sheet">
+    <div class="dna-modal-header">
+      <button class="dna-modal-back-btn" onclick="closeProfileModal()" type="button" aria-label="Voltar para a tela anterior">
+        <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="dna-modal-header-title">Minha Conta</h2>
+      <button class="dna-modal-close-btn" onclick="closeProfileModal()" type="button" aria-label="Fechar">✕</button>
+    </div>
+
+    <div style="text-align:center; padding:10px 0 16px;">
+      <div style="width:68px; height:68px; border-radius:50%; background:linear-gradient(135deg, #0066FF, #00C6FF); color:#ffffff; font-size:28px; font-weight:800; display:grid; place-items:center; margin:0 auto 10px; box-shadow:0 6px 18px rgba(0,102,255,0.35);" id="profile-avatar-letter">
+        C
+      </div>
+      <h2 id="profile-user-name" style="font-family:Outfit,Inter,sans-serif; font-size:20px; font-weight:800; color:#071938; margin:0 0 2px;">Carlos Alberto Silva</h2>
+      <p id="profile-user-email" style="font-size:12.5px; color:#5c7494; margin:0;">carlos.silva@email.com</p>
+      <div style="display:inline-block; margin-top:6px; background:#eef5ff; color:#0066FF; font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px; border:1px solid #cce1fb;">
+        Proprietário Verificado DNA AUTO
+      </div>
+    </div>
+
+    <div class="vehicle-specs-table">
+      <div class="spec-box"><span class="label">Veículo Principal</span><span class="val" id="profile-car-model">Toyota Corolla</span></div>
+      <div class="spec-box"><span class="label">Placa do Veículo</span><span class="val" id="profile-car-plate">BRA2E19 🇧🇷</span></div>
+      <div class="spec-box full"><span class="label">Passaporte DNA</span><span class="val" style="color:#0066FF;" id="profile-car-dna">DNA-BR-BRA2-E19-2026 (Ativo)</span></div>
+      <div class="spec-box full"><span class="label">Telefone / WhatsApp</span><span class="val" id="profile-user-phone">(11) 99999-9999</span></div>
+    </div>
+
+    <button type="button" class="btn-sheet-logout" onclick="fazerLogoutDoApp()">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>
+      </svg>
+      <span>Sair da Minha Conta (Desconectar)</span>
+    </button>
+  </div>
+</div>
+
+<!-- MODAL 04: DETALHES DE REVISÃO PREVENTIVA (EXCLUSIVO DE PREVENTIVAS) -->
+<div id="preventiva-detail-modal" class="dna-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-prev-title">
+  <div class="dna-bottom-sheet">
+    <div class="dna-modal-header">
+      <button class="dna-modal-back-btn" onclick="closePreventivaModal()" type="button" aria-label="Voltar para a tela anterior">
+        <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+      <h2 class="dna-modal-header-title">Revisão Preventiva</h2>
+      <button class="dna-modal-close-btn" onclick="closePreventivaModal()" type="button" aria-label="Fechar">✕</button>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+      <span style="background:#0284c7; color:#ffffff; font-size:11px; font-weight:800; padding:4px 8px; border-radius:6px; letter-spacing:0.5px;" id="modal-prev-badge">REVISÃO PREVENTIVA OEM</span>
+      <span style="font-size:11px; font-weight:700; color:#037248; background:#e6f9f0; padding:3px 8px; border-radius:6px; border:1px solid #a8ebd1;" id="modal-prev-tag">Faltam 3.000 km</span>
+    </div>
+
+    <h2 id="modal-prev-title" style="font-family:Outfit,Inter,sans-serif; font-size:19px; font-weight:800; color:#071938; margin:0 0 4px; line-height:1.25;">Troca de Óleo do Motor e Filtro</h2>
+    <p id="modal-prev-desc" style="font-size:13px; color:#547094; line-height:1.4; margin:0 0 14px;">
+      A substituição preventiva do lubrificante e filtro garante a durabilidade do trem de força e mantém a garantia de fábrica.
+    </p>
+
+    <!-- Barra de Progresso no Modal -->
+    <div style="background:#f0f5fb; padding:12px 14px; border-radius:12px; margin-bottom:14px; border:1px solid #dbe6f3;">
+      <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; color:#173663; margin-bottom:6px;">
+        <span>Progresso da Troca</span>
+        <span id="modal-prev-km">12.000 / 15.000 km</span>
+      </div>
+      <div style="height:8px; border-radius:5px; background:#d2e1f0; overflow:hidden;">
+        <div id="modal-prev-bar" style="height:100%; width:80%; background:linear-gradient(90deg, #0077ff, #00d4ff); border-radius:5px;"></div>
+      </div>
+    </div>
+
+    <!-- Tabela de Especificações Preventivas -->
+    <div class="vehicle-specs-table">
+      <div class="spec-box"><span class="label">Intervalo Recomendado</span><span class="val" id="modal-prev-intervalo">10.000 km ou 12 meses</span></div>
+      <div class="spec-box"><span class="label">Criticidade de Atraso</span><span class="val" style="color:#d97706;" id="modal-prev-criticidade">Média / Importante</span></div>
+      <div class="spec-box full"><span class="label">Especificação Técnica Sugerida</span><span class="val" id="modal-prev-especificacao">Óleo Sintético 5W-30 API SP / ILSAC GF-6 + Filtro Blindado</span></div>
+      <div class="spec-box full"><span class="label">Procedimentos do Pacote</span><span class="val" id="modal-prev-itens">Bujão do cárter, anel de vedação, filtro de óleo e nível de fluido</span></div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:9px; margin-top:16px;">
+      <button type="button" class="btn-sheet-action" onclick="closePreventivaModal(); go('oficinas');" style="background:linear-gradient(110deg,#0070f3,#0052cc); box-shadow:0 6px 16px rgba(0,102,255,0.3);">
+        📍 Agendar em Oficina Credenciada
+      </button>
+      <button type="button" class="btn-sheet-action" onclick="closePreventivaModal()" style="background:#f0f5fb; color:#1b3964; border:1px solid #cfdeee; box-shadow:none;">
+        Fechar Detalhes da Revisão
+      </button>
+    </div>
+  </div>
+</div>
 
 </main><div class="toast" id="toast" role="status"></div><script>
 function navAction(name, el) {
@@ -6891,6 +7066,39 @@ function preencherModalDetalhesVeiculo(v, plateFallback) {
 
   const sChassi = document.getElementById('spec-chassi');
   if (sChassi) sChassi.textContent = info.chassis + ' (Auditado)';
+}
+
+
+// ═══ SISTEMA DE MODAL EXCLUSIVO DE REVISÕES PREVENTIVAS ═══
+function openPreventivaModal(nome, falta, km, total, perc, intervalo, criticidade, especificacao, itens, desc) {
+  const modal = document.getElementById('preventiva-detail-modal');
+  if (!modal) return;
+  const elTitle = document.getElementById('modal-prev-title');
+  const elTag = document.getElementById('modal-prev-tag');
+  const elKm = document.getElementById('modal-prev-km');
+  const elBar = document.getElementById('modal-prev-bar');
+  const elIntervalo = document.getElementById('modal-prev-intervalo');
+  const elCriticidade = document.getElementById('modal-prev-criticidade');
+  const elEspecificacao = document.getElementById('modal-prev-especificacao');
+  const elItens = document.getElementById('modal-prev-itens');
+  const elDesc = document.getElementById('modal-prev-desc');
+
+  if (elTitle) elTitle.textContent = nome || 'Revisão Preventiva';
+  if (elTag) elTag.textContent = falta || 'Recomendada';
+  if (elKm) elKm.textContent = (km || '0') + ' / ' + (total || '0') + ' km';
+  if (elBar) elBar.style.width = Math.min(100, Math.max(0, perc || 50)) + '%';
+  if (elIntervalo) elIntervalo.textContent = intervalo || 'Revisão Padrão OEM';
+  if (elCriticidade) elCriticidade.textContent = criticidade || 'Importante';
+  if (elEspecificacao) elEspecificacao.textContent = especificacao || 'Peças e fluidos homologados';
+  if (elItens) elItens.textContent = itens || 'Inspeção e substituição técnica';
+  if (elDesc && desc) elDesc.textContent = desc;
+
+  modal.classList.add('open');
+}
+
+function closePreventivaModal() {
+  const modal = document.getElementById('preventiva-detail-modal');
+  if (modal) modal.classList.remove('open');
 }
 
 async function openCarDetailsModal() {
