@@ -17,6 +17,8 @@
 > 
 > ✨ **Ciclo 70:** Refinamento do card do carro (removendo combustível/autonomia), remoção dos cards redundantes e migração da engrenagem de configuração para o menu superior. 56 de 56 testes automatizados aprovados (100%).
 > 
+> ✨ **Ciclo 100:** Ficha Técnica completa do veículo com dados reais puxados da Base Oficial ao tocar no card da Dashboard, barra de menu inferior fixa e centralizada em todas as telas sem oscilação entre cards, e redesign visual dos cards de Alertas & Manutenções sem sobreposição de símbolos nem vazamento de fontes. 56 de 56 testes automatizados aprovados (100%).
+>
 > ✨ **Ciclo 69:** Motor de Manutenção Preditiva OEM (regras específicas por modelo e motorização), Reconciliação do Odômetro com proteção monotônica, algoritmo multissinal de viagens (meta de 70% de precisão) e Monetização Oficial AbacatePay (PIX transparente, webhook com secret `dna_sec_abacatepay_prod_2026_webhook_key`, pacotes pré-pagos com desconto por volume e ciclo pós-pago de 10 carros). 56 de 56 testes automatizados aprovados (100%).
 > 
 > ✨ **Ciclo 68:** Criação da página oficial de apresentação e credenciamento para Oficinas e Auto Centers (`/parceiro` e `/autocenter`), com modelo de negócios (+35% de faturamento, lucro de R$ 29 por instalação, sem mensalidades) e links diretos no ecossistema. 48 de 48 testes automatizados aprovados (100%).

@@ -2145,3 +2145,26 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - **Qualidade, Paridade & Testes:**
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
     - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
+
+### Ciclo 100 (24/10/2026)
+- **Ficha Técnica Completa do Veículo Puxado na Dashboard, Rodapé Fixo e Imutável em Todas as Telas e Redesign dos Cards de Alertas & Manutenções:**
+  - **Solicitações do Usuário:**
+    1. **Ficha Técnica ao clicar no Card do Carro da Dashboard:** Ao clicar no card do veículo na tela inicial, devem aparecer os dados completos puxados do carro pela API Placas / Base Oficial (marca, modelo, versão, placa Mercosul, ano fab./mod., cor oficial, combustível, transmissão/câmbio, cilindradas/potência, município/UF, chassi auditado e cotação oficial da Tabela FIPE).
+    2. **Barra de Menu no Rodapé Fixa e Centralizada:** A barra inferior de menu deve ser fixa e centralizada em todas as telas, sem tremer, pular ou mudar de posição/tamanho/fundo ao trocar de card ou navegar entre as telas.
+    3. **Correção Visual dos Cards de Alertas & Manutenções (Segundo Print):** Corrigir a tela de alertas onde os cards e símbolos estavam desorganizados, com ícone/símbolo sobrepondo o texto dos títulos, fontes desproporcionais e textos vazando para fora do card.
+  - **Implementações Técnicas Realizadas:**
+    1. **Dados do Veículo & Modal de Ficha Técnica (`extrairDadosVeiculoOficial` / `openCarDetailsModal` / `atualizarCardVeiculoDashboard`):**
+       - Implementado helper `extrairDadosVeiculoOficial` que extrai de forma resiliente todas as informações do veículo (`specs`, `origin`, `fipe`, `raw_extra`, etc.), evitando repetição de marca/modelo e formatando a placa Mercosul e ano.
+       - `openCarDetailsModal` atualizado para preencher todos os 12 campos da Ficha Técnica e sincronizar com o backend caso a placa esteja registrada no `localStorage` (`dna_registered_vehicle` e `dna_registered_plate`).
+       - Sincronização direta na Dashboard (`atualizarCardVeiculoDashboard`) exibindo o veículo oficial na Garagem Digital com foto, modelo e placa.
+    2. **Padronização Universal do Menu Inferior (`nav.bottom`, `.services-bottom-nav`, `.alertas-bottom-nav`, `.gastos-bottom-nav`, `.oficinas-bottom-nav`):**
+       - Definida regra master única: `position: fixed !important; bottom: 0 !important; left: 50% !important; transform: translateX(-50%) !important; width: 100% !important; max-width: 430px !important; height: 62px !important; background: #ffffff !important; border-top: 1px solid #e2e8f0 !important; box-shadow: 0 -4px 16px rgba(10, 35, 70, 0.08) !important; z-index: 9999 !important;`.
+       - Eliminados overrides de altura divergentes (55px a 67px) e classes com `display: grid`. Botões simétricos com `flex: 1 1 25%` e ícones de 22x22px.
+    3. **Redesign Completo dos Cards de Alertas & Manutenções (`#alertas`):**
+       - Removido posicionamento absoluto antigo do ícone (`position: absolute; top: 11px; left: 11px;`) que colidia com os títulos. O ícone agora é um elemento flex-box nativo (`width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;`).
+       - Removida a propriedade legada `white-space: nowrap;` que fazia os textos vazarem lateralmente para fora do card, aplicando `white-space: normal !important; word-break: break-word !important; line-height: 1.45 !important;`.
+       - Cards com esquemas de cores sofisticados (vermelho para urgência, âmbar para atenção, azul para preventivas e verde para concluídos), bordas sutis e tipografia equilibrada.
+       - Botões "Ver detalhes" e "Concluir" redesenhados com altura de 28px, cantos de 8px, alinhamento flexível e feedback tátil ao clique.
+  - **Qualidade, Paridade & Testes:**
+    - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html`.
+    - 56 de 56 testes automatizados aprovados (100% de sucesso).

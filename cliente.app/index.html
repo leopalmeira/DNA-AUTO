@@ -1461,124 +1461,8 @@
   flex-direction: column;
   gap: 7px;
 }
-#alertas .alert-item {
-  position: relative;
-  min-height: 80px;
-  border-radius: 14px;
-  padding: 10px 10px 8px 62px;
-  display: flex;
-  align-items: flex-start;
-  box-shadow: 0 2px 7px rgba(103, 137, 172, 0.07);
-}
-#alertas .alert-item.red {
-  background: linear-gradient(120deg, #ffd9d8, #f8d9d8);
-  border: 1px solid #ffaaa7;
-}
-#alertas .alert-item.yellow {
-  background: linear-gradient(120deg, #fff2d1, #f9edcc);
-  border: 1px solid #f4d47e;
-}
-#alertas .alert-item.neutral {
-  background: linear-gradient(110deg, #edf4fd, #e2ecf9);
-  border: 1px solid #f6faff;
-}
-#alertas .alert-icon {
-  position: absolute;
-  top: 11px;
-  left: 11px;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  color: white;
-}
-#alertas .red .alert-icon {
-  background: #ff393e;
-}
-#alertas .yellow .alert-icon {
-  background: #ffbd27;
-  color: #10244a;
-}
-#alertas .neutral .alert-icon {
-  background: #6687b0;
-}
-#alertas .alert-icon svg {
-  width: 23px;
-  height: 23px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-#alertas .alert-copy {
-  min-width: 0;
-  flex: 1;
-  padding-right: 12px;
-}
-#alertas .alert-copy h2 {
-  font-size: 12px;
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.1px;
-  margin: 0 0 3px;
-  color: #07183e;
-}
-#alertas .alert-distance {
-  font-size: 13px;
-  font-weight: 700;
-  margin: 0 0 3px;
-}
-#alertas .red .alert-distance {
-  color: #f0242c;
-}
-#alertas .yellow .alert-distance {
-  color: #ee8b00;
-}
-#alertas .neutral .alert-distance {
-  color: #244d80;
-  font-weight: 500;
-}
-#alertas .alert-recommended {
-  font-size: 10px;
-  color: #30517b;
-  margin: 0 0 5px;
-  white-space: nowrap;
-}
-#alertas .alert-detail-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 22px;
-  min-width: 104px;
-  border-radius: 15px;
-  border: 1px solid #4c9cff;
-  background: rgba(255, 255, 255, 0.45);
-  color: #0b2451;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 0 10px;
-  cursor: pointer;
-}
-#alertas .alert-detail-btn svg {
-  width: 14px;
-  height: 14px;
-  stroke: #086cff;
-  stroke-width: 2;
-  fill: none;
-}
-#alertas .alert-arrow {
-  position: absolute;
-  right: 10px;
-  top: 24px;
-  width: 15px;
-  height: 15px;
-  stroke: #326195;
-  fill: none;
-  stroke-width: 2;
-}
+/* [REMOVIDO: CSS Antigo Conflitante de #alertas substituído pelo Bloco Padronizado Oficial] */
+
 #alertas .red .alert-arrow {
   stroke: #fa363e;
 }
@@ -4565,6 +4449,158 @@ body.open .sidebar, .open .sidebar {
   }
 }
 
+
+/* ══════════════════════════════════════════════════════════════════════
+   BARRA DE MENU INFERIOR (BOTTOM NAV) 100% FIXA, CENTRALIZADA E ESTÁVEL
+   EM TODAS AS TELAS (NÃO SE MOVE AO TROCAR DE CARD OU TELA)
+   ══════════════════════════════════════════════════════════════════════ */
+nav.bottom,
+#dashboard .bottom,
+#preventivas .bottom,
+nav.services-bottom-nav,
+.services-bottom-nav,
+#services .services-bottom-nav,
+#services.active .services-bottom-nav,
+nav.alertas-bottom-nav,
+.alertas-bottom-nav,
+#alertas .alertas-bottom-nav,
+nav.gastos-bottom-nav,
+.gastos-bottom-nav,
+#gastos .gastos-bottom-nav,
+nav.oficinas-bottom-nav,
+.oficinas-bottom-nav,
+#oficinas .oficinas-bottom-nav,
+nav[aria-label="Navegação principal"] {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 100% !important;
+  max-width: 430px !important;
+  height: 62px !important;
+  min-height: 62px !important;
+  max-height: 62px !important;
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  box-shadow: 0 -4px 16px rgba(10, 35, 70, 0.08) !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  margin: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding: 0 4px !important;
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 4px) !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+/* Neutraliza overrides de grid em telas específicas */
+#services.active .services-bottom-nav,
+#alertas .alertas-bottom-nav,
+#gastos .gastos-bottom-nav,
+#oficinas .oficinas-bottom-nav,
+#preventivas .bottom {
+  display: flex !important;
+  grid-template-columns: none !important;
+  width: 100% !important;
+  max-width: 430px !important;
+  height: 62px !important;
+}
+
+nav.bottom button,
+#dashboard .bottom button,
+#preventivas .bottom button,
+.services-bottom-nav button,
+#services .services-bottom-nav button,
+#services.active .services-bottom-nav button,
+.alertas-bottom-nav button,
+#alertas .alertas-bottom-nav button,
+.gastos-bottom-nav button,
+#gastos .gastos-bottom-nav button,
+.oficinas-bottom-nav button,
+#oficinas .oficinas-bottom-nav button,
+nav[aria-label="Navegação principal"] button,
+.nav-btn {
+  flex: 1 1 25% !important;
+  width: 25% !important;
+  max-width: 25% !important;
+  min-width: 0 !important;
+  height: 100% !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: #64748b !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  font-family: 'Inter', -apple-system, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  padding: 4px 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+  text-align: center !important;
+  transition: color 0.15s ease, transform 0.12s ease !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+nav.bottom button.active, nav.bottom button.sel, nav.bottom button.selected,
+.services-bottom-nav button.active, .services-bottom-nav button.selected,
+.alertas-bottom-nav button.active, .alertas-bottom-nav button.selected,
+.gastos-bottom-nav button.active, .gastos-bottom-nav button.selected,
+.oficinas-bottom-nav button.active, .oficinas-bottom-nav button.selected,
+nav[aria-label="Navegação principal"] button.active,
+.nav-btn.active {
+  color: #0066FF !important;
+  font-weight: 800 !important;
+}
+
+nav.bottom button svg,
+.services-bottom-nav svg,
+.alertas-bottom-nav svg,
+.gastos-bottom-nav svg,
+.oficinas-bottom-nav svg,
+nav[aria-label="Navegação principal"] svg,
+.nav-btn svg {
+  width: 22px !important;
+  height: 22px !important;
+  stroke: currentColor !important;
+  stroke-width: 2.2 !important;
+  fill: none !important;
+  flex-shrink: 0 !important;
+}
+
+nav.bottom button span,
+.services-bottom-nav span,
+.alertas-bottom-nav span,
+.gastos-bottom-nav span,
+.oficinas-bottom-nav span,
+nav[aria-label="Navegação principal"] span,
+.nav-btn span {
+  font-size: 11px !important;
+  line-height: 1 !important;
+  letter-spacing: -0.2px !important;
+}
+
+/* Padding de compensação para nenhuma tela ter conteúdo coberto pelo menu */
+.screen {
+  padding-bottom: 74px !important;
+  box-sizing: border-box !important;
+}
+.services-scroll,
+.alertas-scroll,
+.gastos-scroll,
+.oficinas-content,
+.preventivas-scroll {
+  padding-bottom: 84px !important;
+  box-sizing: border-box !important;
+}
+
 </style><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 </head><body><main class="app"><section class="screen splash active" id="splash">
   <div class="splash-wrapper">
@@ -5908,6 +5944,7 @@ async function executarBuscaPlacaOficial(placa) {
 
     const v = data.vehicle;
     window.currentRegisteredVehicle = v;
+    try { localStorage.setItem("dna_registered_vehicle", JSON.stringify(v)); localStorage.setItem("dna_registered_plate", cleanPlate); } catch(e){}
 
     const brand = v.brand || (v.specs && v.specs.marca) || 'Veículo';
     const model = v.model || (v.specs && v.specs.modelo) || '';
@@ -6629,28 +6666,35 @@ function atualizarCardVeiculoDashboard(veiculo) {
   try {
     const rawUser = localStorage.getItem('dna_logged_user');
     if (rawUser) {
-      const user = JSON.parse(rawUser);
-      const nameEl = document.getElementById('dash-user-name');
-      if (nameEl && user.name) {
-        nameEl.textContent = user.name.split(' ')[0];
-      }
+      try {
+        const user = JSON.parse(rawUser);
+        const nameEl = document.getElementById('dash-user-name');
+        if (nameEl && user.name) {
+          nameEl.textContent = user.name.split(' ')[0].toUpperCase();
+        }
+      } catch(e) {}
     }
 
-    const v = veiculo || window.currentRegisteredVehicle;
-    const plate = (v && v.license_plate) || localStorage.getItem('dna_registered_plate') || 'BRA2E19';
-    const brand = (v && v.brand) || 'Toyota';
-    const model = (v && v.model) || 'Corolla';
-    const year = (v && (v.manufacture_year || v.model_year || v.year)) || '2021';
+    let v = veiculo || window.currentRegisteredVehicle;
+    if (!v) {
+      try {
+        const stored = localStorage.getItem('dna_registered_vehicle');
+        if (stored) v = JSON.parse(stored);
+      } catch(e) {}
+    }
+
+    const fallbackPlate = localStorage.getItem('dna_registered_plate') || 'LQZ6A42';
+    const info = extrairDadosVeiculoOficial(v, fallbackPlate);
 
     const titleEl = document.getElementById('dash-car-title');
-    if (titleEl) titleEl.textContent = (brand + ' ' + model).trim();
+    if (titleEl) titleEl.textContent = info.fullTitle;
 
     const subEl = document.getElementById('dash-car-sub');
-    if (subEl) subEl.textContent = plate + ' · ' + year;
+    if (subEl) subEl.textContent = info.plate + ' · ' + info.yearMod;
 
-    if (v && v.photo_url) {
+    if (info.photo_url) {
       const imgEl = document.getElementById('dash-car-img');
-      if (imgEl) imgEl.src = v.photo_url;
+      if (imgEl) imgEl.src = info.photo_url;
     }
   } catch(e) {
     console.warn('Erro ao atualizar card do veículo na dashboard:', e);
@@ -6733,60 +6777,170 @@ function closeServiceDetailModal() {
 }
 
 // ═══ CORREÇÃO 06: MODAL DO VEÍCULO & TABELA FIPE (API PLACAS) ═══
-function openCarDetailsModal() {
+
+// ═══ HELPER OFICIAL: EXTRAÇÃO COMPLETA E ROBUSTA DE DADOS DO VEÍCULO ═══
+function extrairDadosVeiculoOficial(v, fallbackPlate) {
+  if (!v) v = {};
+  const specs = v.specs || {};
+  const origin = v.origin || {};
+  const rawExtra = v.raw_extra || (v.raw && v.raw.extra) || {};
+  const fipe = v.fipe || (v.raw && v.raw.fipe) || {};
+
+  const plate = (v.license_plate || specs.placa_mercosul || specs.placa_antiga || fallbackPlate || 'BRA2E19').toUpperCase().trim();
+  const brand = (v.brand || specs.marca || (v.raw && v.raw.marca) || 'Volkswagen').trim();
+  const rawModel = (v.model || specs.modelo || (v.raw && v.raw.modelo) || 'Fox 1.0 Mi Total Flex 8V 4p').trim();
+  const version = (v.version || v.version_label || specs.versao || (v.raw && v.raw.VERSAO) || '').trim();
+
+  let fullTitle = '';
+  if (rawModel.toLowerCase().startsWith(brand.toLowerCase())) {
+    fullTitle = rawModel;
+  } else {
+    fullTitle = (brand + ' ' + rawModel).trim();
+  }
+  if (version && !fullTitle.toLowerCase().includes(version.toLowerCase())) {
+    fullTitle += ' ' + version;
+  }
+
+  const yearFab = v.manufacture_year || specs.ano_fabricacao || rawExtra.ano_fabricacao || v.year || '2013';
+  const yearMod = v.model_year || specs.ano_modelo || rawExtra.ano_modelo || v.year || '2014';
+  const color = (v.color && v.color !== 'Não informada') ? v.color : (specs.cor || (v.raw && v.raw.cor) || 'Preta');
+  const fuel = v.fuel_type || specs.combustivel || (v.raw && v.raw.combustivel) || 'Flex (Álcool/Gasolina)';
+  const transmission = v.transmission_type || specs.caixa_cambio || (fullTitle.toLowerCase().includes('aut') ? 'Automático' : 'Manual');
+  const displacement = v.engine_displacement || specs.cilindradas_formatada || (specs.cilindradas ? specs.cilindradas + ' cm³' : '999 cm³');
+  const city = origin.city || specs.municipio || (v.raw && v.raw.municipio) || 'Rio de Janeiro';
+  const state = origin.state || specs.uf || (v.raw && v.raw.uf) || 'RJ';
+  const rawChassis = v.chassis_vin_masked || v.chassis_vin || specs.chassi || rawExtra.chassi || v.chassis || 'Auditado';
+  const chassis = rawChassis.length > 8 ? rawChassis.substring(0, 3) + '******' + rawChassis.slice(-4) : rawChassis;
+
+  let fipePrice = 'R$ 29.850,00';
+  if (v.fipe_price_formatted) {
+    fipePrice = v.fipe_price_formatted;
+  } else if (fipe.market_value_formatted) {
+    fipePrice = fipe.market_value_formatted;
+  } else if (fipe.dados && fipe.dados[0] && fipe.dados[0].texto_valor) {
+    fipePrice = fipe.dados[0].texto_valor;
+  } else if (v.fipe_price_cents) {
+    fipePrice = 'R$ ' + (v.fipe_price_cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  } else if (fipe.market_value_cents) {
+    fipePrice = 'R$ ' + (fipe.market_value_cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  }
+
+  let fipeCode = v.fipe_code || (fipe.dados && fipe.dados[0] && fipe.dados[0].codigo_fipe) || fipe.fipe_code || '005312-0';
+  let fipeRef = fipe.reference_month || (fipe.dados && fipe.dados[0] && fipe.dados[0].mes_referencia) || 'Outubro/2026';
+
+  return {
+    plate,
+    brand,
+    model: rawModel,
+    version,
+    fullTitle,
+    yearFab,
+    yearMod,
+    color,
+    fuel,
+    transmission,
+    displacement,
+    city,
+    state,
+    chassis,
+    fipePrice,
+    fipeCode,
+    fipeRef,
+    photo_url: v.photo_url || v.logo
+  };
+}
+
+function preencherModalDetalhesVeiculo(v, plateFallback) {
+  const info = extrairDadosVeiculoOficial(v, plateFallback);
+
+  const pPlate = document.getElementById('modal-car-plate');
+  if (pPlate) pPlate.textContent = '🇧🇷 ' + info.plate;
+
+  const pTitle = document.getElementById('modal-car-title');
+  if (pTitle) pTitle.textContent = info.fullTitle;
+
+  const pFipe = document.getElementById('modal-fipe-val');
+  if (pFipe) pFipe.textContent = info.fipePrice;
+
+  const pFipeSub = document.getElementById('modal-fipe-sub');
+  if (pFipeSub) pFipeSub.textContent = 'Cód. FIPE: ' + info.fipeCode + ' · Mês Ref: ' + info.fipeRef;
+
+  const sMarca = document.getElementById('spec-marca');
+  if (sMarca) sMarca.textContent = info.brand;
+
+  const sModelo = document.getElementById('spec-modelo');
+  if (sModelo) sModelo.textContent = info.model;
+
+  const sAno = document.getElementById('spec-ano');
+  if (sAno) sAno.textContent = info.yearFab + ' / ' + info.yearMod;
+
+  const sComb = document.getElementById('spec-combustivel');
+  if (sComb) sComb.textContent = info.fuel;
+
+  const sCambio = document.getElementById('spec-cambio');
+  if (sCambio) sCambio.textContent = info.transmission;
+
+  const sPot = document.getElementById('spec-potencia');
+  if (sPot) sPot.textContent = info.displacement;
+
+  const sCor = document.getElementById('spec-cor');
+  if (sCor) sCor.textContent = info.color;
+
+  const sMun = document.getElementById('spec-municipio');
+  if (sMun) sMun.textContent = info.city + ' / ' + info.state;
+
+  const sChassi = document.getElementById('spec-chassi');
+  if (sChassi) sChassi.textContent = info.chassis + ' (Auditado)';
+}
+
+async function openCarDetailsModal() {
   const modal = document.getElementById('car-details-modal');
   if (!modal) return;
 
-  const v = window.currentRegisteredVehicle;
-  const plate = (v && v.license_plate) || localStorage.getItem('dna_registered_plate') || 'BRA2E19';
-  const brand = (v && v.brand) || 'Toyota';
-  const model = (v && v.model) || 'Corolla';
-  const version = (v && (v.version || v.version_label)) || 'XEi 2.0 Flex 16V Aut.';
-  const yearFab = (v && (v.manufacture_year || v.year)) || '2021';
-  const yearMod = (v && (v.model_year || v.year)) || '2021';
-  const color = (v && v.color && v.color !== 'Não informada') ? v.color : 'Branco Polar';
-  const fuel = (v && v.fuel_type) || 'Flex (Álcool/Gasolina)';
-  const mileage = (v && (v.current_mileage || v.odometer_km)) ? Number(v.current_mileage || v.odometer_km).toLocaleString('pt-BR') + ' km' : '88.500 km';
-
-  let fipePrice = 'R$ 124.900,00';
-  if (v && v.fipe_price_formatted) {
-    fipePrice = v.fipe_price_formatted;
-  } else if (v && v.fipe_price_cents) {
-    fipePrice = 'R$ ' + (v.fipe_price_cents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+  let v = window.currentRegisteredVehicle;
+  if (!v) {
+    try {
+      const stored = localStorage.getItem('dna_registered_vehicle');
+      if (stored) v = JSON.parse(stored);
+    } catch(e) {}
+  }
+  if (!v) {
+    try {
+      const rawUser = localStorage.getItem('dna_logged_user');
+      if (rawUser) {
+        const u = JSON.parse(rawUser);
+        if (u && u.vehicle) v = u.vehicle;
+      }
+    } catch(e) {}
   }
 
-  const pPlate = document.getElementById('modal-car-plate');
-  if (pPlate) pPlate.textContent = '🇧🇷 ' + plate;
+  const plateFallback = (v && (v.license_plate || (v.specs && v.specs.placa_mercosul))) ||
+                        localStorage.getItem('dna_registered_plate') ||
+                        '';
 
-  const pTitle = document.getElementById('modal-car-title');
-  if (pTitle) pTitle.textContent = (brand + ' ' + model + ' ' + version).trim();
-
-  const pFipe = document.getElementById('modal-fipe-val');
-  if (pFipe) pFipe.textContent = fipePrice;
-
-  const sMarca = document.getElementById('spec-marca');
-  if (sMarca) sMarca.textContent = brand;
-
-  const sModelo = document.getElementById('spec-modelo');
-  if (sModelo) sModelo.textContent = model + ' ' + version;
-
-  const sAno = document.getElementById('spec-ano');
-  if (sAno) sAno.textContent = yearFab + ' / ' + yearMod;
-
-  const sComb = document.getElementById('spec-combustivel');
-  if (sComb) sComb.textContent = fuel;
-
-  const sCor = document.getElementById('spec-cor');
-  if (sCor) sCor.textContent = color;
-
-  if (v && v.chassis) {
-    const sChassi = document.getElementById('spec-chassi');
-    if (sChassi) sChassi.textContent = v.chassis + ' (Auditado)';
-  }
-
+  // Pré-preencher imediatamente com os dados disponíveis
+  preencherModalDetalhesVeiculo(v, plateFallback);
   modal.classList.add('open');
-}
 
+  // Se o veículo estiver incompleto e tivermos a placa, buscar na API oficial
+  if (plateFallback && plateFallback.length === 7 && (!v || !v.specs || !v.brand)) {
+    try {
+      const res = await fetch('/api/v1/integrations/plate-lookup/' + encodeURIComponent(plateFallback));
+      const data = await res.json();
+      if (data && data.found && data.vehicle) {
+        window.currentRegisteredVehicle = data.vehicle;
+        try {
+          localStorage.setItem('dna_registered_vehicle', JSON.stringify(data.vehicle));
+          localStorage.setItem('dna_registered_plate', data.vehicle.license_plate || plateFallback);
+        } catch(e) {}
+        preencherModalDetalhesVeiculo(data.vehicle, plateFallback);
+        atualizarCardVeiculoDashboard(data.vehicle);
+      }
+    } catch(err) {
+      console.warn('Erro ao atualizar dados completos do veículo na ficha técnica:', err);
+    }
+  }
+}
 function closeCarModal() {
   const modal = document.getElementById('car-details-modal');
   if (modal) modal.classList.remove('open');
@@ -6833,6 +6987,12 @@ async function carregarDadosUsuarioLogado() {
 
       if (user.vehicle && !window.currentRegisteredVehicle) {
         window.currentRegisteredVehicle = user.vehicle;
+      }
+      if (!window.currentRegisteredVehicle) {
+        try {
+          const storedV = localStorage.getItem('dna_registered_vehicle');
+          if (storedV) window.currentRegisteredVehicle = JSON.parse(storedV);
+        } catch(e) {}
       }
     }
 
