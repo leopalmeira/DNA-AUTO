@@ -204,6 +204,26 @@ function seedDemoCars(dbInstance) {
         });
 
         insertUser.run({
+            id: 'usr_workshop_oficina',
+            name: 'Carlos - Auto Center Silva',
+            email: 'oficina@autocenter.com.br',
+            password_hash: passwordHash,
+            phone: '(11) 98888-3333',
+            role_id: 'role_workshop_owner',
+            status: 'ACTIVE'
+        });
+
+        insertUser.run({
+            id: 'usr_workshop_dna',
+            name: 'Oficina Credenciada DNA AUTO',
+            email: 'oficina@dnaauto.com.br',
+            password_hash: passwordHash,
+            phone: '(11) 98888-4444',
+            role_id: 'role_workshop_owner',
+            status: 'ACTIVE'
+        });
+
+        insertUser.run({
             id: 'usr_owner_carlos',
             name: 'Carlos Alberto Silva',
             email: 'carlos.silva@email.com',
@@ -302,6 +322,24 @@ function seedDemoCars(dbInstance) {
             workshop_id: 'ws_veloce',
             user_id: 'usr_workshop_roberto',
             position_title: 'Mecânico Chefe Responsável',
+            can_activate_dna: 1,
+            can_prove_services: 1
+        });
+
+        insertWorkshopUser.run({
+            id: 'wu_3',
+            workshop_id: 'ws_veloce',
+            user_id: 'usr_workshop_oficina',
+            position_title: 'Gestor da Auto Center Silva',
+            can_activate_dna: 1,
+            can_prove_services: 1
+        });
+
+        insertWorkshopUser.run({
+            id: 'wu_4',
+            workshop_id: 'ws_veloce',
+            user_id: 'usr_workshop_dna',
+            position_title: 'Oficina Credenciada Master',
             can_activate_dna: 1,
             can_prove_services: 1
         });
