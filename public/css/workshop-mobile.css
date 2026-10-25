@@ -3456,3 +3456,1182 @@ textarea:focus {
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
 }
 
+/* ==============================================================================
+   16.0 MOCKUPS OFICIAIS DO APP DA OFICINA (DESIGN 1:1 CONFORME MODELO)
+   ============================================================================== */
+
+/* Viewport Global das Telas da Oficina */
+.ws-model-body {
+    background: #F1F5F9;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 74px;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #0F172A;
+}
+
+/* Header Dark Navy Oficial das Telas Internas */
+.ws-model-header {
+    background: #060F1E;
+    color: #FFFFFF;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 14px;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ws-model-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px;
+    position: relative;
+}
+
+.ws-model-back-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: 700;
+    transition: background 0.2s;
+    text-decoration: none;
+}
+.ws-model-back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.ws-model-brand-center {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 auto;
+}
+
+.ws-model-brand-center .brand-logo-icon {
+    width: 26px;
+    height: 26px;
+}
+
+.ws-model-brand-center .brand-title {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #FFFFFF;
+    font-family: 'Outfit', sans-serif;
+}
+.ws-model-brand-center .brand-title span {
+    color: #0084FF;
+}
+
+.ws-model-bell-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+    position: relative;
+    cursor: pointer;
+    border: none;
+}
+.ws-model-bell-dot {
+    position: absolute;
+    top: 6px;
+    right: 7px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #EF4444;
+    border: 1.5px solid #060F1E;
+}
+
+/* Saudação no Topo do Dashboard (Tela 3) */
+.ws-model-greeting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 4px;
+}
+.ws-model-greeting-text h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #FFFFFF;
+    margin: 0;
+    line-height: 1.2;
+}
+.ws-model-greeting-text p {
+    font-size: 13px;
+    color: #94A3B8;
+    margin: 2px 0 0;
+}
+.ws-model-ws-icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(0, 102, 255, 0.15);
+    border: 1px solid rgba(0, 102, 255, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00D4FF;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* Grade de 8 Cards do Dashboard (Tela 3) */
+.ws-model-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 14px 16px 20px;
+}
+
+.ws-model-dash-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 14px 12px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 125px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    box-sizing: border-box;
+    text-align: left;
+}
+.ws-model-dash-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 102, 255, 0.12);
+    border-color: #0066FF;
+}
+.ws-model-dash-card:active {
+    transform: scale(0.98);
+}
+
+.ws-model-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.ws-model-card-icon-box {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #EFF6FF;
+    color: #0066FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+}
+.ws-model-card-icon-box.green {
+    background: #ECFDF5;
+    color: #10B981;
+}
+
+.ws-model-card-arrow {
+    color: #94A3B8;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.ws-model-card-content h3 {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #0F172A;
+    margin: 0 0 3px;
+    line-height: 1.25;
+}
+.ws-model-card-content p {
+    font-size: 11px;
+    color: #64748B;
+    margin: 0;
+    line-height: 1.35;
+}
+
+/* Barra de Navegação Inferior Fixa com 5 Abas */
+.ws-model-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #FFFFFF;
+    border-top: 1px solid #E2E8F0;
+    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    z-index: 50;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    max-width: 480px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.ws-model-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: #64748B;
+    text-decoration: none;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 6px 0;
+    font-family: inherit;
+}
+.ws-model-nav-item.active {
+    color: #0066FF;
+}
+.ws-model-nav-item .nav-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+.ws-model-nav-item .nav-label {
+    font-size: 10.5px;
+    font-weight: 700;
+}
+
+/* Barra de Pesquisa Padronizada */
+.ws-model-search-box {
+    position: relative;
+    margin: 12px 16px;
+}
+.ws-model-search-box input {
+    width: 100%;
+    height: 44px;
+    background: #FFFFFF !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 12px;
+    padding: 0 14px 0 40px !important;
+    font-size: 13.5px !important;
+    color: #0F172A !important;
+    box-sizing: border-box;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+.ws-model-search-box .search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748B;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+/* Pills de Filtro Horizontais */
+.ws-model-pills-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.ws-model-pills-row::-webkit-scrollbar {
+    display: none;
+}
+.ws-model-pill {
+    padding: 7px 15px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+    color: #64748B;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+.ws-model-pill.active {
+    background: #0066FF;
+    color: #FFFFFF;
+    border-color: #0066FF;
+    box-shadow: 0 2px 8px rgba(0, 102, 255, 0.3);
+}
+
+/* Cards de Lista Brancos */
+.ws-model-list-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin: 0 16px 10px;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+    box-sizing: border-box;
+}
+.ws-model-list-card:hover {
+    border-color: #0066FF;
+    transform: translateY(-1px);
+}
+
+/* Badge de Status Oficial */
+.ws-model-badge-status {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+.ws-model-badge-status.green {
+    background: #DCFCE7;
+    color: #15803D;
+}
+.ws-model-badge-status.amber {
+    background: #FEF3C7;
+    color: #B45309;
+}
+.ws-model-badge-status.blue {
+    background: #DBEAFE;
+    color: #1D4ED8;
+}
+
+/* Stepper de 4 Passos (Tela 5) */
+.ws-model-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E2E8F0;
+    margin-bottom: 14px;
+}
+.ws-model-step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+    z-index: 2;
+}
+.ws-model-step-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #E2E8F0;
+    color: #64748B;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ws-model-step-item.active .ws-model-step-circle {
+    background: #0066FF;
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(0, 102, 255, 0.35);
+}
+.ws-model-step-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748B;
+}
+.ws-model-step-item.active .ws-model-step-label {
+    color: #0066FF;
+}
+
+/* Botão Azul Grande Primário */
+.ws-model-btn-primary {
+    width: calc(100% - 32px);
+    margin: 14px 16px;
+    height: 48px;
+    background: #0066FF;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 102, 255, 0.35);
+    transition: transform 0.15s ease, background 0.15s ease;
+    box-sizing: border-box;
+}
+.ws-model-btn-primary:hover {
+    background: #0052CC;
+    transform: translateY(-1px);
+}
+.ws-model-btn-primary:active {
+    transform: scale(0.98);
+}
+
+/* ==============================================================================
+   TELA 1: SPLASH OFICIAL DA OFICINA
+   ============================================================================== */
+.ws-splash-screen {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: radial-gradient(circle at 50% 20%, #0A1C38 0%, #030814 80%);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: calc(24px + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px));
+    box-sizing: border-box;
+    overflow: hidden;
+    color: #FFFFFF;
+}
+
+.ws-splash-hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.ws-splash-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(3, 8, 20, 0.4) 0%, rgba(3, 8, 20, 0.85) 60%, #030814 100%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.ws-splash-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 4vh;
+}
+
+.ws-splash-logo-box {
+    text-align: center;
+}
+
+.ws-splash-symbol {
+    font-size: 64px;
+    font-weight: 900;
+    font-style: italic;
+    color: #0084FF;
+    letter-spacing: -6px;
+    transform: skew(-10deg);
+    display: inline-block;
+    line-height: 1;
+}
+
+.ws-splash-brand-title {
+    font-size: 32px;
+    font-weight: 900;
+    color: #FFFFFF;
+    letter-spacing: -1px;
+    margin-top: 4px;
+    line-height: 1;
+    font-family: 'Outfit', sans-serif;
+}
+
+.ws-splash-brand-sub {
+    font-size: 16px;
+    font-weight: 700;
+    color: #38BDF8;
+    margin-top: 4px;
+}
+
+.ws-splash-tagline {
+    font-size: 14.5px;
+    color: #CBD5E1;
+    line-height: 1.45;
+    text-align: center;
+    max-width: 320px;
+    margin: 8px auto 0;
+}
+
+.ws-splash-benefits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 18px;
+    max-width: 320px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+.ws-splash-benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(15, 28, 54, 0.65);
+    border: 1px solid rgba(0, 132, 255, 0.25);
+    border-radius: 14px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #F1F5F9;
+    backdrop-filter: blur(8px);
+}
+
+.ws-splash-benefit-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0, 132, 255, 0.2);
+    border: 1.5px solid #0084FF;
+    color: #00D4FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.ws-splash-actions {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+}
+
+.ws-splash-btn-entrar {
+    width: 100%;
+    height: 50px;
+    border-radius: 25px;
+    background: linear-gradient(110deg, #0284C7 0%, #0066FF 100%);
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 18px rgba(0, 102, 255, 0.45);
+    transition: transform 0.15s ease;
+}
+.ws-splash-btn-entrar:hover {
+    transform: translateY(-1px);
+}
+
+.ws-splash-btn-cadastrar {
+    width: 100%;
+    height: 50px;
+    border-radius: 25px;
+    background: rgba(10, 22, 44, 0.8);
+    border: 1.5px solid rgba(56, 189, 248, 0.4);
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+}
+.ws-splash-btn-cadastrar:hover {
+    background: rgba(0, 132, 255, 0.15);
+}
+
+/* ==============================================================================
+   TELA 2: LOGIN OFICIAL DA OFICINA
+   ============================================================================== */
+.ws-login-screen {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: #F1F5F9;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.ws-login-hero {
+    height: clamp(200px, 32vh, 260px);
+    background: radial-gradient(circle at 50% 30%, #0A1C38 0%, #030814 100%);
+    position: relative;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.ws-login-hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.ws-login-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(3, 8, 20, 0.2) 0%, rgba(3, 8, 20, 0.7) 60%, #030814 100%);
+    pointer-events: none;
+}
+
+.ws-login-hero-content {
+    position: relative;
+    z-index: 5;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.ws-login-hero-content .brand-title {
+    font-size: 26px;
+    font-weight: 900;
+    color: #FFFFFF;
+    letter-spacing: -0.5px;
+    font-family: 'Outfit', sans-serif;
+}
+.ws-login-hero-content .brand-title span {
+    color: #0084FF;
+}
+
+.ws-login-hero-content .brand-sub {
+    font-size: 14px;
+    font-weight: 700;
+    color: #38BDF8;
+    margin-top: 2px;
+}
+
+.ws-login-hero-content .brand-desc {
+    font-size: 12px;
+    color: #94A3B8;
+    margin-top: 4px;
+}
+
+/* Card Branco Sheet Inferior de Login */
+.ws-login-card-sheet {
+    position: relative;
+    z-index: 10;
+    background: #FFFFFF;
+    border-radius: 24px 24px 0 0;
+    margin-top: -20px;
+    flex: 1;
+    padding: 24px 20px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
+}
+
+.ws-login-input-row {
+    height: 48px;
+    background: #FFFFFF !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+    gap: 10px;
+    box-sizing: border-box;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.ws-login-input-row .icon {
+    font-size: 18px;
+    color: #64748B;
+    flex-shrink: 0;
+}
+.ws-login-input-row input {
+    flex: 1;
+    border: none !important;
+    background: transparent !important;
+    font-size: 14px !important;
+    color: #0F172A !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.ws-login-options-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #64748B;
+    margin: 2px 2px;
+}
+.ws-login-options-row label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.ws-login-options-row a {
+    color: #0066FF;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.ws-login-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #94A3B8;
+    font-size: 12px;
+    margin: 8px 0;
+}
+.ws-login-divider::before,
+.ws-login-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #E2E8F0;
+}
+.ws-login-divider:not(:empty)::before {
+    margin-right: 12px;
+}
+.ws-login-divider:not(:empty)::after {
+    margin-left: 12px;
+}
+
+.ws-login-social-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+.ws-login-social-btn {
+    width: 60px;
+    height: 44px;
+    border-radius: 12px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.ws-login-signup-text {
+    text-align: center;
+    font-size: 13px;
+    color: #64748B;
+    margin-top: 10px;
+}
+.ws-login-signup-text a {
+    color: #0066FF;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* ==============================================================================
+   TELA 4 & 5: FORMULÁRIOS & SELETORES (ENTRADA DE VEÍCULOS & LANÇAR SERVIÇOS)
+   ============================================================================== */
+.ws-model-form-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 12px 16px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    box-sizing: border-box;
+}
+
+.ws-model-form-group {
+    margin-bottom: 14px;
+}
+.ws-model-form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 5px;
+}
+.ws-model-form-group input,
+.ws-model-form-group select,
+.ws-model-form-group textarea {
+    width: 100%;
+    height: 42px;
+    background: #FFFFFF !important;
+    border: 1px solid #CBD5E1 !important;
+    border-radius: 10px;
+    padding: 0 12px !important;
+    font-size: 13.5px !important;
+    color: #0F172A !important;
+    box-sizing: border-box;
+}
+.ws-model-form-group textarea {
+    height: 64px;
+    padding: 8px 12px !important;
+    resize: none;
+}
+
+.ws-model-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* Slots de Fotos Horizontais (Tela 4) */
+.ws-model-photo-slots-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+}
+.ws-model-photo-slot {
+    height: 72px;
+    border-radius: 10px;
+    background: #F8FAFC;
+    border: 1.5px dashed #CBD5E1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+}
+.ws-model-photo-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.ws-model-photo-slot.add-slot {
+    border-color: #0066FF;
+    background: #EFF6FF;
+    color: #0066FF;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* Peças Utilizadas (Tela 5) */
+.ws-model-parts-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    margin-bottom: 8px;
+}
+.ws-model-parts-section-header strong {
+    font-size: 13.5px;
+    color: #0F172A;
+}
+.ws-model-parts-add-btn {
+    background: none;
+    border: none;
+    color: #0066FF;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.ws-model-part-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    font-size: 12.5px;
+}
+.ws-model-part-delete-btn {
+    background: none;
+    border: none;
+    color: #EF4444;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 6px;
+}
+
+/* ==============================================================================
+   TELA 6: NOTAS FISCAIS
+   ============================================================================== */
+.ws-model-nf-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin: 0 16px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+
+.ws-model-date-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.1;
+    flex-shrink: 0;
+}
+.ws-model-date-box .day {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0F172A;
+}
+.ws-model-date-box .month {
+    font-size: 10px;
+    font-weight: 700;
+    color: #64748B;
+    text-transform: uppercase;
+}
+
+.ws-model-nf-details {
+    flex: 1;
+}
+.ws-model-nf-plate {
+    font-size: 13.5px;
+    font-weight: 800;
+    font-family: monospace;
+    color: #0F172A;
+}
+.ws-model-nf-client {
+    font-size: 11.5px;
+    color: #64748B;
+    margin-top: 2px;
+}
+.ws-model-nf-amount {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0F172A;
+    margin-top: 2px;
+}
+
+/* ==============================================================================
+   TELA 7 & 11: BUSCAR VEÍCULOS & ORDENS DE SERVIÇO (CARDS COM FOTO)
+   ============================================================================== */
+.ws-model-veh-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: #E2E8F0;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+/* ==============================================================================
+   TELA 8: MANUTENÇÃO PREVENTIVA (ALERTAS COLORIDOS)
+   ============================================================================== */
+.ws-model-maint-card {
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin: 0 16px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 1px solid #E2E8F0;
+    background: #FFFFFF;
+}
+.ws-model-maint-card.danger {
+    background: #FFF1F2;
+    border-color: #FECDD3;
+}
+.ws-model-maint-card.warning {
+    background: #FEFCE8;
+    border-color: #FEF08A;
+}
+.ws-model-maint-card.info {
+    background: #EFF6FF;
+    border-color: #BFDBFE;
+}
+
+.ws-model-maint-icon-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.ws-model-maint-card.danger .ws-model-maint-icon-circle {
+    background: #FFE4E6;
+    color: #E11D48;
+}
+.ws-model-maint-card.warning .ws-model-maint-icon-circle {
+    background: #FEF9C3;
+    color: #CA8A04;
+}
+.ws-model-maint-card.info .ws-model-maint-icon-circle {
+    background: #DBEAFE;
+    color: #2563EB;
+}
+
+/* ==============================================================================
+   TELA 9: WHATSAPP (MENSAGENS & CONVERSAS)
+   ============================================================================== */
+.ws-model-chat-item {
+    background: #FFFFFF;
+    border-bottom: 1px solid #F1F5F9;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+}
+.ws-model-chat-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #E2E8F0;
+    flex-shrink: 0;
+}
+.ws-model-chat-info {
+    flex: 1;
+    overflow: hidden;
+}
+.ws-model-chat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 3px;
+}
+.ws-model-chat-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #0F172A;
+}
+.ws-model-chat-time {
+    font-size: 10.5px;
+    color: #94A3B8;
+}
+.ws-model-chat-plate {
+    display: inline-block;
+    padding: 1px 6px;
+    background: #F1F5F9;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: monospace;
+    font-weight: 700;
+    color: #475569;
+    margin-left: 6px;
+}
+.ws-model-chat-preview {
+    font-size: 12px;
+    color: #64748B;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ws-model-chat-unread-badge {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #10B981;
+    color: #FFFFFF;
+    font-size: 10px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ==============================================================================
+   TELA 10: FINANCEIRO (GRÁFICO DE BARRAS & FATURAMENTO)
+   ============================================================================== */
+.ws-model-finance-hero {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 16px;
+    margin: 12px 16px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+.ws-model-finance-label {
+    font-size: 12px;
+    color: #64748B;
+    font-weight: 600;
+}
+.ws-model-finance-amount-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 12px;
+}
+.ws-model-finance-amount {
+    font-size: 26px;
+    font-weight: 900;
+    color: #0F172A;
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.5px;
+}
+.ws-model-finance-trend {
+    background: #DCFCE7;
+    color: #15803D;
+    font-size: 11.5px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 12px;
+}
+
+/* Gráfico de Barras Diárias Estilizado */
+.ws-model-bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 70px;
+    padding-top: 10px;
+    border-bottom: 1px solid #E2E8F0;
+    margin-bottom: 8px;
+}
+.ws-model-chart-bar {
+    flex: 1;
+    background: #0084FF;
+    border-radius: 3px 3px 0 0;
+    min-height: 4px;
+    transition: background 0.2s;
+}
+.ws-model-chart-bar:hover {
+    background: #0052CC;
+}
+
+
+

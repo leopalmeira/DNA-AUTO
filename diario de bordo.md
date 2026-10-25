@@ -2363,3 +2363,27 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Qualidade, Paridade & Testes:**
   - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (mesmo hash SHA-256).
   - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
+
+### 🏭 Ciclo 109: Reformulação Fiel 1:1 de Todas as 12 Telas do Modelo do App da Oficina
+- **Origem da Demanda:** Usuário enviou o modelo visual consolidado contendo as 12 telas oficiais do aplicativo da oficina mecânica e exigiu que o app da oficina (`oficina.app` / `public/oficina.html`) recebesse rigorosamente o mesmo CSS, layout, design e toda a estrutura, idêntico ao modelo fornecido, preservando o contato de dados, APIs e RAG.
+- **Mapeamento & Implementação das 12 Telas Oficiais:**
+  1. `1. Splash - Oficina`: Hero escuro com esportivo azul e faróis acesos, logotipo DNA AUTO Oficina, subtítulo institucional, 3 pills de benefícios com checkmarks ("Controle de serviços", "Veículos e histórico", "Tudo integrado ao app do cliente") e botões "Entrar →" e "Cadastrar".
+  2. `2. Login - Oficina`: Hero superior escuro com botão voltar circular `<`, logotipo DNA AUTO Oficina, subtítulo "Acesse sua conta para continuar", sheet card branco com inputs de E-mail/CPF (ícone de usuário) e Senha (com toggle de visualização 👁️), opções "Lembrar de mim" e "Esqueceu a senha?", botão primário "Entrar →", divisor social (Google e Apple) e link "Não tem uma conta? Criar cadastro".
+  3. `3. Dashboard - Oficina`: Header dark navy com sino de notificações e dot vermelho, saudação personalizada "Olá, Carlos - Auto Center Silva", botão de oficina no topo e **grade oficial com EXATAMENTE OS 8 CARDS SOLICITADOS NO MODELO** (Entrada de Veículos, Lançar Serviços, Notas Fiscais, Buscar Veículos, Manutenção dos Veículos, Avisos WhatsApp, Financeiro, Suporte).
+  4. `4. Entrada de Veículos (Recepção de Veículo)`: Header com `<`, título Recepção de Veículo, campos Placa (com botão de busca e lupa integrada), Cliente (com atalho "+ Novo"), seletores de Marca/Modelo e Ano/Versão, Quilometragem atual (com ícone de odômetro), Tipo de atendimento, 3 slots de fotos (frente do veículo, painel/odômetro e slot de adição) e botão "Receber Veículo →".
+  5. `5. Lançar Serviços`: Stepper horizontal de 4 passos numerados (1. Serviço, 2. Peças, 3. Fotos/Notas, 4. Confirmar), Dados do serviço (tipo, data e km lado a lado, valor, descrição), seção "Peças utilizadas" com botão "+ Adicionar" e lista de peças com quantidade, valor unitário e botão de exclusão 🗑️, finalizando com botão "Avançar →".
+  6. `6. Notas Fiscais`: Barra de busca com lupa, pills de filtro (Todas 12, Emitidas 8, Pendentes 4), lista de cards com data box ("20 NOV", "18 NOV", etc.), placa, cliente, valor formatado e badge de status ("Emitida" verde ou "Pendente" amarelo).
+  7. `7. Buscar Veículos`: Barra de busca por placa, cliente ou chassi, pills (Recentes, Na oficina, Todos), cards com miniatura do veículo, placa, modelo, cliente e tag de status ("Na oficina", "Aguardando", "Em execução", "Concluído").
+  8. `8. Manutenção dos Veículos (Manutenção Preventiva)`: Header com `<`, pills (Pendentes 8, Vencidos 2, Concluídos), cards de alerta com ícone em círculo colorido suave e contagem regressiva de quilometragem ("Faltam 3.000 km", "Faltam 20.000 km", etc.).
+  9. `9. Avisos WhatsApp`: Pills (Conversas, Lembretes, Modelos), barra de busca de cliente por placa, lista de conversas estilo mensageiro com avatar, badge cinza com a placa, última mensagem, horário, badge de não lidas verde e botão flutuante inferior "💬 Nova Mensagem".
+  10. `10. Financeiro`: Header dark com dropdown de período ("Este mês ▾"), Card Hero com Faturamento gigante (R$ 24.320,00) e badge de crescimento (↑ 18%), gráfico de barras diárias (01 a 30), mini cards de Serviços (R$ 18.450,00) e Peças (R$ 5.870,00) e lista de "Últimos lançamentos" com valores positivos em verde.
+  11. `11. Ordens de Serviço`: Header com `<`, pills (Todas 12, Em execução 5, Concluídas), busca por serviço, cards com foto miniatura do veículo, placa, modelo, descrição do serviço e badges de status coloridos ("Em execução", "Aguardando peças", "Orçamento", "Concluída", "Aguardando").
+  13. `13. Suporte`: Lista vertical de 5 cards brancos com ícone azul arredondado e chevron `›` (Central de Ajuda, Falar com o Suporte com link direto para WhatsApp, Status do Sistema, Solicitar Melhoria e Sobre o DNA Auto v1.0.0).
+- **Design System & Componentes:**
+  - Estilos criados em `oficina.app/css/workshop-mobile.css` com tokens de cores HSL, tipografia Outfit/Inter, cantos arredondados padronizados, estados hover/active táteis e elevações suaves de sombra.
+  - Barra de navegação inferior fixa com as 5 abas oficiais ativas: **Início, Veículos, Serviços, Agenda, Mais**.
+- **Qualidade, Paridade & Testes:**
+  - 100% de paridade estrita mantida entre `oficina.app/css/workshop-mobile.css` e `public/css/workshop-mobile.css`.
+  - 100% de paridade estrita mantida entre `oficina.app/js/components/workshopMobileView.js` e `public/js/components/workshopMobileView.js`.
+  - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes). Base demo repovoada com sucesso.
+

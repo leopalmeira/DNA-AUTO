@@ -296,14 +296,13 @@
         const container = document.getElementById('view-content');
         if (!container) return;
 
-        // Se o usuário estiver no primeiro acesso e o veículo não estiver selecionado, usa o primeiro como ativo
         if (!this.selectedMobileVehicle) {
             const list = this.getEffectiveVehiclesList();
             this.selectedMobileVehicle = list[0] || null;
         }
 
         container.innerHTML = `
-            <div class="dna-mobile-shell" id="dna-mobile-shell">
+            <div class="ws-model-body" id="dna-mobile-shell">
                 <!-- HEADER SUPERIOR -->
                 ${this.renderMobileHeader()}
 
@@ -312,7 +311,9 @@
                     ${this.renderMobileActiveSection()}
                 </main>
 
-                <!-- CONTAINER DE MODAL PARA TROCA DE DISPOSITIVO / MODO WEB -->
+                <!-- BARRA INFERIOR DE NAVEGAÇÃO COM 5 ABAS -->
+                ${this.renderMobileBottomNav()}
+
                 <div id="dna-mobile-modal-root"></div>
             </div>
         `;
@@ -321,49 +322,126 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // HEADER SUPERIOR DO APP
+    // HEADER SUPERIOR DO APP (CONFORME MODELO OFICIAL)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileHeader = function() {
-        const wsName = this.officialWorkshopName || 'Oficina Mecânica Exemplo';
-        return `
-            <header class="dna-mobile-header">
-                <div class="dna-mobile-header-top">
-                    <!-- Brand DNA AUTO -->
-                    <div class="dna-mobile-brand" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <div class="dna-mobile-logo-icon">
-                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                                <path d="M2 17l10 5 10-5"></path>
-                                <path d="M2 12l10 5 10-5"></path>
+        const sec = this.currentSection || 'dashboard';
+        const wsName = this.officialWorkshopName || 'Auto Center Silva';
+
+        // TELA 3: HEADER DO DASHBOARD (COM SAUDAÇÃO & CARDS SOLICITADOS)
+        if (sec === 'dashboard') {
+            return `
+                <header class="ws-model-header">
+                    <div class="ws-model-header-top">
+                        <div style="width:36px;"></div>
+
+                        <div class="ws-model-brand-center" onclick="WorkshopView.switchMobileSection('dashboard')">
+                            <svg class="brand-logo-icon" viewBox="0 0 100 100" fill="none">
+                                <path d="M20 15 H55 C78 15 90 28 90 50 C90 72 78 85 55 85 H20 L35 62 H52 C63 62 68 56 68 50 C68 44 63 38 52 38 H35 L20 15Z" fill="#0084FF"/>
                             </svg>
+                            <span class="brand-title">DNA <span>AUTO</span></span>
                         </div>
-                        <div class="dna-mobile-brand-title">DNA <span>AUTO</span></div>
+
+                        <button type="button" class="ws-model-bell-btn" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')" title="Notificações">
+                            <span>🔔</span>
+                            <span class="ws-model-bell-dot"></span>
+                        </button>
                     </div>
 
-                    <!-- Botão de Sair Rápido -->
-                    <button type="button" class="dna-mobile-logout-btn" onclick="WorkshopView.showOficinaLoginScreen()">
-                        <span>Sair</span> <span>↗</span>
+                    <div class="ws-model-greeting-row">
+                        <div class="ws-model-greeting-text">
+                            <h2>Olá, Carlos</h2>
+                            <p>${wsName}</p>
+                        </div>
+                        <div class="ws-model-ws-icon-btn" onclick="WorkshopView.showOficinaLoginScreen()" title="Trocar conta ou sair">
+                            <span>🏢</span>
+                        </div>
+                    </div>
+                </header>
+            `;
+        }
+
+        // TÍTULOS CONTEXTUAIS PARA AS DEMAIS TELAS (TELAS 4 A 13)
+        const titles = {
+            'entrada-veiculos': 'Recepção de Veículo',
+            'lancar-servicos': 'Lançar Serviços',
+            'nota-fiscal': 'Notas Fiscais',
+            'notas-fiscais': 'Notas Fiscais',
+            'buscar-veiculos': 'Buscar Veículos',
+            'manutencao-veiculos': 'Manutenção Preventiva',
+            'avisos-whatsapp': 'WhatsApp',
+            'avisos-manutencao': 'WhatsApp',
+            'financeiro': 'Financeiro',
+            'ordens-servico': 'Ordens de Serviço',
+            'suporte': 'Suporte'
+        };
+
+        const currentTitle = titles[sec] || 'DNA AUTO';
+
+        return `
+            <header class="ws-model-header">
+                <div class="ws-model-header-top">
+                    <button type="button" class="ws-model-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')" title="Voltar ao Início">
+                        ‹
                     </button>
-                </div>
 
-                <!-- Linha Limpa da Oficina Credenciada -->
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px;">
-                    <div class="dna-mobile-badge-workshop" style="max-width:100%; border:none; padding:0; background:transparent;">
-                        <span>🏢</span>
-                        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:240px; color:#E2E8F0; font-weight:700;">${wsName}</span>
-                        <span class="online-dot" title="Oficina Conectada"></span>
-                        <span style="font-size:10px; color:#10B981; font-weight:800;">Online</span>
+                    <div class="ws-model-brand-center" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <svg class="brand-logo-icon" viewBox="0 0 100 100" fill="none">
+                            <path d="M20 15 H55 C78 15 90 28 90 50 C90 72 78 85 55 85 H20 L35 62 H52 C63 62 68 56 68 50 C68 44 63 38 52 38 H35 L20 15Z" fill="#0084FF"/>
+                        </svg>
+                        <span class="brand-title" style="font-size:16px;">${currentTitle}</span>
                     </div>
+
+                    ${sec === 'financeiro' ? `
+                        <div style="font-size:12px; color:#94A3B8; font-weight:700; cursor:pointer;" onclick="WorkshopView.showToast('Período: Este mês', 'info')">
+                            Este mês ▾
+                        </div>
+                    ` : `
+                        <button type="button" class="ws-model-bell-btn" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')" title="Notificações">
+                            <span>🔔</span>
+                            <span class="ws-model-bell-dot"></span>
+                        </button>
+                    `}
                 </div>
             </header>
         `;
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // BARRA DE NAVEGAÇÃO INFERIOR
+    // BARRA DE NAVEGAÇÃO INFERIOR FIXA COM AS 5 ABAS OFICIAIS DO MODELO
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileBottomNav = function() {
-        return ''; // Navegação 100% orientada em cards (sem botões em baixo)
+        const sec = this.currentSection || 'dashboard';
+        const isInicio = (sec === 'dashboard');
+        const isVeiculos = (sec === 'buscar-veiculos' || sec === 'entrada-veiculos');
+        const isServicos = (sec === 'ordens-servico' || sec === 'lancar-servicos');
+        const isAgenda = (sec === 'manutencao-veiculos' || sec === 'avisos-whatsapp');
+        const isMais = (sec === 'suporte' || sec === 'financeiro' || sec === 'nota-fiscal');
+
+        return `
+            <nav class="ws-model-bottom-nav">
+                <button type="button" class="ws-model-nav-item ${isInicio ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('dashboard')">
+                    <span class="nav-icon">🏠</span>
+                    <span class="nav-label">Início</span>
+                </button>
+                <button type="button" class="ws-model-nav-item ${isVeiculos ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
+                    <span class="nav-icon">🚗</span>
+                    <span class="nav-label">Veículos</span>
+                </button>
+                <button type="button" class="ws-model-nav-item ${isServicos ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('ordens-servico')">
+                    <span class="nav-icon">🔧</span>
+                    <span class="nav-label">Serviços</span>
+                </button>
+                <button type="button" class="ws-model-nav-item ${isAgenda ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-label">Agenda</span>
+                </button>
+                <button type="button" class="ws-model-nav-item ${isMais ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('suporte')">
+                    <span class="nav-icon">⋯</span>
+                    <span class="nav-label">Mais</span>
+                </button>
+            </nav>
+        `;
     };
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -373,36 +451,41 @@
         switch (this.currentSection) {
             case 'auth':
             case 'login':
-            case 'cadastro':
-                return this.renderMobileAuthView();
+                return this.showOficinaLoginForm();
+            case 'splash':
+                return this.showOficinaLoginScreen();
             case 'entrada-veiculos':
                 return this.renderMobileVehicleEntryView();
             case 'cadastrar-cliente':
-                return this.renderMobileClientRegisterView();
+                return this.renderMobileClientRegisterView ? this.renderMobileClientRegisterView() : this.renderMobileVehicleEntryView();
             case 'lancar-servicos':
                 return this.renderMobileLaunchServicesView();
             case 'detalhe-servico':
-                return this.renderMobileServiceDetailView();
+                return this.renderMobileOrdersView();
             case 'manutencao-veiculos':
                 return this.renderMobileMaintenanceVehiclesView();
+            case 'avisos-whatsapp':
             case 'avisos-manutencao':
-                return this.renderMobileMaintenanceAlertsView();
+                return this.renderMobileWhatsAppView();
             case 'enviar-fotos':
                 return this.renderMobileSendPhotosView();
             case 'nota-fiscal':
+            case 'notas-fiscais':
                 return this.renderMobileInvoiceView();
             case 'clientes':
-                return this.renderMobileClientsView();
+                return this.renderMobileSearchVehiclesView();
             case 'buscar-veiculos':
                 return this.renderMobileSearchVehiclesView();
+            case 'ordens-servico':
+                return this.renderMobileOrdersView();
             case 'relatorios':
-                return this.renderMobileReportsView();
+                return this.renderMobileFinancialView();
             case 'financeiro':
                 return this.renderMobileFinancialView();
             case 'estoque':
-                return this.renderMobileStockView();
+                return this.renderMobileOrdersView();
             case 'configuracoes':
-                return this.renderMobileConfigView();
+                return this.renderMobileSupportView();
             case 'suporte':
                 return this.renderMobileSupportView();
             case 'dashboard':
@@ -413,166 +496,126 @@
 
     // Alternar de Seção no Modo Mobile
     WorkshopView.switchMobileSection = function(sectionId) {
-        // Enforce senha do financeiro sempre ao sair da tela de estoque
-        if (this.currentSection === 'estoque' && sectionId !== 'estoque') {
-            this.stockAuthenticated = false;
-        }
         this.currentSection = sectionId;
         const viewport = document.getElementById('ws-mobile-active-viewport');
+        const shell = document.getElementById('dna-mobile-shell');
+
+        if (shell) {
+            // Atualiza Header e BottomNav conforme a seção ativa
+            const oldHeader = shell.querySelector('.ws-model-header, .dna-mobile-header');
+            if (oldHeader) oldHeader.outerHTML = this.renderMobileHeader();
+
+            const oldBottomNav = shell.querySelector('.ws-model-bottom-nav');
+            if (oldBottomNav) oldBottomNav.outerHTML = this.renderMobileBottomNav();
+        }
+
         if (viewport) {
             viewport.innerHTML = this.renderMobileActiveSection();
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (sectionId === 'lancar-servicos') {
-                setTimeout(() => this.initVerticalCardCarousel(), 40);
-            }
         } else {
             this.render();
-            if (sectionId === 'lancar-servicos') {
-                setTimeout(() => this.initVerticalCardCarousel(), 80);
-            }
         }
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 1 & 2: DASHBOARD DA OFICINA COM CARDS
+    // TELA 3: DASHBOARD DA OFICINA (SOMENTE OS 8 CARDS SOLICITADOS NO MODELO)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileDashboardView = function() {
-        const stats = (this.dashboardData && this.dashboardData.stats) || {};
-        const countToday = stats.vehiclesToday || stats.vehicles_today || 6;
-        const countInProgress = stats.inProgress || stats.active_services || 4;
-        const countPending = stats.waiting || stats.pending_vehicles || 2;
-
         return `
-            <div style="padding-bottom: 24px; width:100%;">
-                <!-- 1. RESUMO OPERACIONAL COMPACTO NO TOPO -->
-                <div class="dna-mobile-stats-card" style="margin: 8px 12px 10px;">
-                    <div class="dna-mobile-stat-col">
-                        <span class="dna-mobile-stat-number blue">${countToday}</span>
-                        <span class="dna-mobile-stat-label">Veículos hoje</span>
+            <div class="ws-model-dashboard-grid">
+                <!-- Card 1: Entrada de Veículos -->
+                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('entrada-veiculos')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box">🚗</div>
+                        <span class="ws-model-card-arrow">›</span>
                     </div>
-                    <div class="dna-mobile-stat-col">
-                        <span class="dna-mobile-stat-number green">${countInProgress}</span>
-                        <span class="dna-mobile-stat-label">Em andamento</span>
-                    </div>
-                    <div class="dna-mobile-stat-col">
-                        <span class="dna-mobile-stat-number amber">${countPending}</span>
-                        <span class="dna-mobile-stat-label">Aguardando</span>
+                    <div class="ws-model-card-content">
+                        <h3>Entrada de Veículos</h3>
+                        <p>Cadastrar ou receber veículo na oficina</p>
                     </div>
                 </div>
 
-                <!-- 2. CARDS DE ACESSO RÁPIDO OPERACIONAIS DA OFICINA (DIRETOS AO PONTO) -->
-                <div class="dna-mobile-grid-section">
-                    <div class="dna-mobile-actions-grid">
-                        <!-- Card 1: Entrada de Veículos -->
-                        <div class="dna-mobile-action-card dna-card-blue" onclick="WorkshopView.switchMobileSection('entrada-veiculos')">
-                            <div class="dna-card-icon-box">🚗</div>
-                            <div>
-                                <h3 class="dna-card-title">Entrada de Veículos</h3>
-                                <p class="dna-card-desc">Localizar pela placa e receber veículo</p>
-                            </div>
-                        </div>
+                <!-- Card 2: Lançar Serviços -->
+                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box">🔧</div>
+                        <span class="ws-model-card-arrow">›</span>
+                    </div>
+                    <div class="ws-model-card-content">
+                        <h3>Lançar Serviços</h3>
+                        <p>Registrar serviços, peças e fotos</p>
+                    </div>
+                </div>
 
-                        <!-- Card 2: Lançar Serviços -->
-                        <div class="dna-mobile-action-card dna-card-green" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
-                            <div class="dna-card-icon-box">🔧</div>
-                            <div>
-                                <h3 class="dna-card-title">Lançar Serviços</h3>
-                                <p class="dna-card-desc">Adicionar serviços, peças e observações</p>
-                            </div>
-                        </div>
+                <!-- Card 3: Notas Fiscais -->
+                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('nota-fiscal')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box">📄</div>
+                        <span class="ws-model-card-arrow">›</span>
+                    </div>
+                    <div class="ws-model-card-content">
+                        <h3>Notas Fiscais</h3>
+                        <p>Emitir e gerenciar notas fiscais</p>
+                    </div>
+                </div>
 
-                        <!-- Card 3: Clientes -->
-                        <div class="dna-mobile-action-card dna-card-purple" onclick="WorkshopView.switchMobileSection('clientes')">
-                            <div class="dna-card-icon-box">👤</div>
-                            <div>
-                                <h3 class="dna-card-title">Clientes</h3>
-                                <p class="dna-card-desc">Cadastrar e gerenciar clientes</p>
-                            </div>
-                        </div>
+                <!-- Card 4: Buscar Veículos -->
+                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box">🔍</div>
+                        <span class="ws-model-card-arrow">›</span>
+                    </div>
+                    <div class="ws-model-card-content">
+                        <h3>Buscar Veículos</h3>
+                        <p>Pesquisar por placa, cliente ou chassi</p>
+                    </div>
+                </div>
 
-                        <!-- Card 4: Notas Fiscais -->
-                        <div class="dna-mobile-action-card dna-card-amber" onclick="WorkshopView.switchMobileSection('nota-fiscal')">
-                            <div class="dna-card-icon-box">📄</div>
-                            <div>
-                                <h3 class="dna-card-title">Notas Fiscais</h3>
-                                <p class="dna-card-desc">Emitir e anexar notas com fotos</p>
-                            </div>
-                        </div>
+                <!-- Card 5: Manutenção dos Veículos -->
+                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box">🔔</div>
+                        <span class="ws-model-card-arrow">›</span>
+                    </div>
+                    <div class="ws-model-card-content">
+                        <h3>Manutenção dos Veículos</h3>
+                        <p>Alertas e revisões preventivas</p>
+                    </div>
+                </div>
 
-                        <!-- Card 6: Buscar Veículos -->
-                        <div class="dna-mobile-action-card dna-card-cyan" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
-                            <div class="dna-card-icon-box">🔍</div>
-                            <div>
-                                <h3 class="dna-card-title">Buscar Veículos</h3>
-                                <p class="dna-card-desc">Por placa, chassi ou cliente</p>
-                            </div>
-                        </div>
+                <!-- Card 6: Avisos WhatsApp -->
+                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box green">💬</div>
+                        <span class="ws-model-card-arrow">›</span>
+                    </div>
+                    <div class="ws-model-card-content">
+                        <h3>Avisos WhatsApp</h3>
+                        <p>Lembretes e comunicações</p>
+                    </div>
+                </div>
 
-                        <!-- Card 7: Manutenção dos Veículos -->
-                        <div class="dna-mobile-action-card dna-card-indigo" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
-                            <div class="dna-card-icon-box">🛠️</div>
-                            <div>
-                                <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
-                <h3 class="dna-card-title" style="margin:0;">Alerta de Manutenção dos Veículos</h3>
-                <span class="badge-proof" style="background:#ef4444; color:#fff; font-size:9.5px; padding:2px 6px; border-radius:10px; font-weight:800; white-space:nowrap;">4 Alertas</span>
-            </div>
-            <p class="dna-card-desc" style="margin-top:3px;">Problemas identificados, OBD2, preventiva e WhatsApp</p>
-                            </div>
-                        </div>
+                <!-- Card 7: Financeiro -->
+                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('financeiro')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box">💵</div>
+                        <span class="ws-model-card-arrow">›</span>
+                    </div>
+                    <div class="ws-model-card-content">
+                        <h3>Financeiro</h3>
+                        <p>Receitas, despesas e faturamento</p>
+                    </div>
+                </div>
 
-                        <!-- Card 8: Avisos WhatsApp -->
-                        <div class="dna-mobile-action-card dna-card-emerald" onclick="WorkshopView.switchMobileSection('avisos-manutencao')">
-                            <div class="dna-card-icon-box">🔔</div>
-                            <div>
-                                <h3 class="dna-card-title">Avisos WhatsApp</h3>
-                                <p class="dna-card-desc">Lembretes para clientes a vencer</p>
-                            </div>
-                        </div>
-
-                        <!-- Card 9: Relatórios -->
-                        <div class="dna-mobile-action-card dna-card-navy" onclick="WorkshopView.switchMobileSection('relatorios')">
-                            <div class="dna-card-icon-box">📊</div>
-                            <div>
-                                <h3 class="dna-card-title">Relatórios</h3>
-                                <p class="dna-card-desc">Produtividade, histórico e serviços</p>
-                            </div>
-                        </div>
-
-                        <!-- Card 10: Financeiro (Protegido por Senha) -->
-                        <div class="dna-mobile-action-card dna-card-gold" onclick="WorkshopView.switchMobileSection('financeiro')">
-                            <div class="dna-card-icon-box">💵</div>
-                            <div>
-                                <h3 class="dna-card-title">Financeiro</h3>
-                                <p class="dna-card-desc">Aparelhos, faturamento e ranking R$ 5 mil</p>
-                            </div>
-                        </div>
-
-                        <!-- Card 11: Estoque de Peças -->
-                        <div class="dna-mobile-action-card dna-card-teal" onclick="WorkshopView.switchMobileSection('estoque')">
-                            <div class="dna-card-icon-box">📦</div>
-                            <div>
-                                <h3 class="dna-card-title">Estoque / Peças</h3>
-                                <p class="dna-card-desc">Controle de peças e materiais usados</p>
-                            </div>
-                        </div>
-
-                        <!-- Card 12: Configurações -->
-                        <div class="dna-mobile-action-card dna-card-slate" onclick="WorkshopView.switchMobileSection('configuracoes')">
-                            <div class="dna-card-icon-box">⚙️</div>
-                            <div>
-                                <h3 class="dna-card-title">Configurações</h3>
-                                <p class="dna-card-desc">Dados da oficina e preferências</p>
-                            </div>
-                        </div>
-
-                        <!-- Card 13: Suporte Técnico & Equipamentos Matriz -->
-                        <div class="dna-mobile-action-card dna-card-violet" onclick="WorkshopView.switchMobileSection('suporte')">
-                            <div class="dna-card-icon-box">🎧</div>
-                            <div>
-                                <h3 class="dna-card-title">Suporte</h3>
-                                <p class="dna-card-desc">Central Admin & Pedir Equipamentos</p>
-                            </div>
-                        </div>
+                <!-- Card 8: Suporte -->
+                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('suporte')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box">🎧</div>
+                        <span class="ws-model-card-arrow">›</span>
+                    </div>
+                    <div class="ws-model-card-content">
+                        <h3>Suporte</h3>
+                        <p>Central de ajuda e suporte técnico</p>
                     </div>
                 </div>
             </div>
@@ -580,75 +623,829 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 3: ENTRADA DE VEÍCULOS
+    // TELA 4: ENTRADA DE VEÍCULOS (RECEPÇÃO DE VEÍCULO CONFORME MODELO)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileVehicleEntryView = function() {
-        const vehicles = this.getEffectiveVehiclesList();
-        const tab = this.mobileVehicleEntryTab || 'buscar';
+        const activePlate = this.mobileActivePlate || 'BRA2E19';
+        const clientName = this.mobileSelectedClient || 'João Silva';
 
         return `
-            <div class="dna-mobile-subpage">
-                <!-- Barra Superior com Voltar -->
-                <div class="dna-mobile-subpage-header">
-                    <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
-                    </button>
-                    <span class="dna-mobile-subpage-title">Entrada de Veículos</span>
-                    
+            <div style="padding-bottom: 24px;">
+                <div style="padding: 16px 16px 6px;">
+                    <h2 style="font-size:18px; font-weight:800; color:#0F172A; margin:0 0 2px;">Recepção de Veículo</h2>
+                    <p style="font-size:12.5px; color:#64748B; margin:0;">Cadastre ou receba um veículo na oficina.</p>
                 </div>
 
-                <div class="dna-mobile-subpage-body">
-                    <!-- Segmented Tabs -->
-                    <div class="dna-segmented-control">
-                        <button class="dna-segment-btn ${tab === 'buscar' ? 'active' : ''}" onclick="WorkshopView.setMobileEntryTab('buscar')">Buscar Placa</button>
-                        <button class="dna-segment-btn ${tab === 'manual' ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('cadastrar-cliente')">Cadastrar Manual</button>
-                        <button class="dna-segment-btn ${tab === 'recentes' ? 'active' : ''}" onclick="WorkshopView.setMobileEntryTab('recentes')">Veículos Recentes</button>
-                    </div>
-
-                    <!-- Campo de Busca por Placa -->
-                    <div class="dna-input-group">
-                        <label class="dna-input-label">Digite a placa do veículo</label>
-                        <div class="dna-input-search-row">
+                <div class="ws-model-form-card">
+                    <!-- Placa -->
+                    <div class="ws-model-form-group">
+                        <label>Placa *</label>
+                        <div style="position:relative;">
                             <input 
                                 type="text" 
-                                id="mobile-entry-plate-input" 
-                                class="dna-plate-input" 
-                                placeholder="Ex: ABC1D23" 
+                                id="ws-entry-plate" 
+                                value="${activePlate}" 
+                                placeholder="ABC1D23" 
                                 maxlength="8"
-                                value="${this.mobileActivePlate || ''}"
-                                oninput="this.value = this.value.toUpperCase()"
-                                onkeydown="if(event.key==='Enter') WorkshopView.handleMobilePlateEntrySearch()"
+                                style="text-transform:uppercase; font-family:monospace; font-weight:800; font-size:15px; letter-spacing:1px; padding-right:40px !important;"
+                                oninput="this.value = this.value.toUpperCase(); WorkshopView.mobileActivePlate = this.value;"
                             />
-                            <button class="dna-search-action-btn" onclick="WorkshopView.handleMobilePlateEntrySearch()" title="Pesquisar Placa">
+                            <button type="button" onclick="WorkshopView.handleMobileVehicleEntrySearch(document.getElementById('ws-entry-plate')?.value)" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; font-size:18px; cursor:pointer; color:#0066FF;" title="Buscar Placa">
                                 🔍
                             </button>
                         </div>
                     </div>
 
-                    <!-- Área de Resultado da Busca -->
-                    <div id="mobile-entry-lookup-result">
-                        ${this.renderMobileEntryResultContent()}
+                    <!-- Cliente -->
+                    <div class="ws-model-form-group">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:5px;">
+                            <label style="margin:0;">Cliente *</label>
+                            <button type="button" onclick="WorkshopView.promptNewClient()" style="background:none; border:none; color:#0066FF; font-size:12px; font-weight:700; cursor:pointer;">
+                                + Novo
+                            </button>
+                        </div>
+                        <select id="ws-entry-client" class="form-control">
+                            <option value="João Silva" ${clientName === 'João Silva' ? 'selected' : ''}>João Silva</option>
+                            <option value="Ana Costa">Ana Costa</option>
+                            <option value="Ricardo Lima">Ricardo Lima</option>
+                            <option value="Marcos Santos">Marcos Santos</option>
+                            <option value="Fernanda Alves">Fernanda Alves</option>
+                        </select>
                     </div>
 
+                    <!-- Marca & Modelo -->
+                    <div class="ws-model-two-col">
+                        <div class="ws-model-form-group">
+                            <label>Marca *</label>
+                            <select id="ws-entry-brand">
+                                <option value="Toyota" selected>Toyota</option>
+                                <option value="Honda">Honda</option>
+                                <option value="Jeep">Jeep</option>
+                                <option value="Fiat">Fiat</option>
+                                <option value="Renault">Renault</option>
+                                <option value="Volkswagen">Volkswagen</option>
+                            </select>
+                        </div>
+                        <div class="ws-model-form-group">
+                            <label>Modelo *</label>
+                            <select id="ws-entry-model">
+                                <option value="Corolla" selected>Corolla</option>
+                                <option value="HR-V">HR-V</option>
+                                <option value="Compass">Compass</option>
+                                <option value="Toro">Toro</option>
+                                <option value="Duster">Duster</option>
+                                <option value="Gol">Gol</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Ano & Versão -->
+                    <div class="ws-model-two-col">
+                        <div class="ws-model-form-group">
+                            <label>Ano *</label>
+                            <select id="ws-entry-year">
+                                <option value="2021" selected>2021</option>
+                                <option value="2022">2022</option>
+                                <option value="2023">2023</option>
+                                <option value="2024">2024</option>
+                                <option value="2020">2020</option>
+                            </select>
+                        </div>
+                        <div class="ws-model-form-group">
+                            <label>Versão</label>
+                            <input type="text" id="ws-entry-version" value="XEi 2.0" placeholder="Ex: XEi 2.0" />
+                        </div>
+                    </div>
+
+                    <!-- Quilometragem Atual -->
+                    <div class="ws-model-form-group">
+                        <label>Quilometragem atual *</label>
+                        <div style="position:relative;">
+                            <input type="text" id="ws-entry-km" value="12.450 km" placeholder="Ex: 12.450 km" />
+                            <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); font-size:16px; color:#64748B;">⏱️</span>
+                        </div>
+                    </div>
+
+                    <!-- Tipo de Atendimento -->
+                    <div class="ws-model-form-group">
+                        <label>Tipo de atendimento *</label>
+                        <select id="ws-entry-service-type">
+                            <option value="Troca de óleo e filtro" selected>Troca de óleo e filtro</option>
+                            <option value="Revisão Periódica">Revisão Periódica</option>
+                            <option value="Pastilha de freio">Pastilha de freio</option>
+                            <option value="Alinhamento e Balanceamento">Alinhamento e Balanceamento</option>
+                            <option value="Diagnóstico Eletrônico">Diagnóstico Eletrônico</option>
+                        </select>
+                    </div>
+
+                    <!-- Fotos do Veículo -->
+                    <div class="ws-model-form-group" style="margin-bottom:0;">
+                        <label>Fotos do veículo</label>
+                        <div class="ws-model-photo-slots-row">
+                            <div class="ws-model-photo-slot" onclick="WorkshopView.showToast('Foto da frente do veículo anexada.', 'success')">
+                                <img src="./img/splash-car-front.jpg" alt="Frente do carro" onerror="this.src='/img/splash-car-hero.jpg'" />
+                            </div>
+                            <div class="ws-model-photo-slot" onclick="WorkshopView.showToast('Foto do painel / odômetro anexada.', 'success')">
+                                <img src="./img/cl-hero-car-phone.jpg" alt="Painel Odômetro" onerror="this.src='/img/splash-car-hero.jpg'" />
+                            </div>
+                            <div class="ws-model-photo-slot add-slot" onclick="WorkshopView.showToast('Selecione uma foto da câmera ou galeria.', 'info')">
+                                +
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Botão Inferior Fixo -->
-                <div class="dna-mobile-fixed-bottom-bar">
-                    <button class="dna-primary-btn-lg" onclick="WorkshopView.switchMobileSection('cadastrar-cliente')">
-                        <span>+</span> <span>Adicionar Veículo</span>
-                    </button>
+                <button type="button" class="ws-model-btn-primary" onclick="WorkshopView.handleConfirmVehicleReception()">
+                    <span>Receber Veículo</span> <span>→</span>
+                </button>
+            </div>
+        `;
+    };
 
-                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+    WorkshopView.promptNewClient = function() {
+        const nome = prompt('Digite o nome do novo cliente:');
+        if (nome && nome.trim()) {
+            this.mobileSelectedClient = nome.trim();
+            this.switchMobileSection('entrada-veiculos');
+            this.showToast(`Cliente "${nome.trim()}" selecionado com sucesso!`, 'success');
+        }
+    };
+
+    WorkshopView.handleConfirmVehicleReception = function() {
+        const plate = (document.getElementById('ws-entry-plate')?.value || 'BRA2E19').toUpperCase();
+        const client = document.getElementById('ws-entry-client')?.value || 'João Silva';
+        this.showToast(`✅ Veículo ${plate} (${client}) recebido na oficina com sucesso!`, 'success');
+        setTimeout(() => this.switchMobileSection('ordens-servico'), 700);
+    };
+
+    WorkshopView.handleMobileVehicleEntrySearch = async function(plate) {
+        if (!plate || plate.trim().length < 3) {
+            this.showToast('Digite uma placa válida para pesquisar.', 'warning');
+            return;
+        }
+        const cleanPlate = plate.trim().toUpperCase();
+        this.showToast(`Buscando histórico do veículo ${cleanPlate}...`, 'info');
+        try {
+            if (typeof API !== 'undefined' && API.getPlateInfo) {
+                const info = await API.getPlateInfo(cleanPlate);
+                if (info && info.brand) {
+                    const brandEl = document.getElementById('ws-entry-brand');
+                    const modelEl = document.getElementById('ws-entry-model');
+                    if (brandEl) brandEl.value = info.brand;
+                    if (modelEl) modelEl.value = info.model;
+                    this.showToast(`Veículo ${cleanPlate} identificado via base técnica!`, 'success');
+                }
+            }
+        } catch (_) {}
+    };
+
+    WorkshopView.setMobileEntryTab = function(tab) {
+        this.mobileVehicleEntryTab = tab;
+        this.switchMobileSection('entrada-veiculos');
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // TELA 5: LANÇAR SERVIÇOS (CONFORME MODELO OFICIAL)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.renderMobileLaunchServicesView = function() {
+        const activePlate = this.mobileActivePlate || 'BRA2E19';
+        const clientName = this.mobileSelectedClient || 'João Silva';
+
+        return `
+            <div style="padding-bottom: 24px;">
+                <!-- Stepper 4 Passos -->
+                <div class="ws-model-stepper">
+                    <div class="ws-model-step-item active">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Serviço</div>
+                    </div>
+                    <div class="ws-model-step-line"></div>
+                    <div class="ws-model-step-item">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Peças</div>
+                    </div>
+                    <div class="ws-model-step-line"></div>
+                    <div class="ws-model-step-item">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">Fotos/Notas</div>
+                    </div>
+                    <div class="ws-model-step-line"></div>
+                    <div class="ws-model-step-item">
+                        <div class="step-circle">4</div>
+                        <div class="step-label">Confirmar</div>
+                    </div>
+                </div>
+
+                <div class="ws-model-form-card">
+                    <h3 style="font-size:15px; font-weight:800; color:#0F172A; margin:0 0 14px;">Dados do serviço</h3>
+
+                    <!-- Tipo de serviço -->
+                    <div class="ws-model-form-group">
+                        <label>Tipo de serviço *</label>
+                        <select id="ws-launch-type">
+                            <option value="Troca de óleo e filtro" selected>Troca de óleo e filtro</option>
+                            <option value="Pastilha de freio">Pastilha de freio</option>
+                            <option value="Revisão Periódica">Revisão Periódica</option>
+                            <option value="Alinhamento e Balanceamento">Alinhamento e Balanceamento</option>
+                            <option value="Correia Dentada">Correia Dentada</option>
+                        </select>
+                    </div>
+
+                    <!-- Data e Quilometragem Lado a Lado -->
+                    <div class="ws-model-two-col">
+                        <div class="ws-model-form-group">
+                            <label>Data do serviço *</label>
+                            <div style="position:relative;">
+                                <input type="text" id="ws-launch-date" value="20/11/2024" />
+                                <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:14px; color:#64748B;">📅</span>
+                            </div>
+                        </div>
+                        <div class="ws-model-form-group">
+                            <label>Quilometragem *</label>
+                            <div style="position:relative;">
+                                <input type="text" id="ws-launch-km" value="12.450 km" />
+                                <span style="position:absolute; right:10px; top:50%; transform:translateY(-50%); font-size:14px; color:#64748B;">⏱️</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Valor do serviço -->
+                    <div class="ws-model-form-group">
+                        <label>Valor do serviço *</label>
+                        <input type="text" id="ws-launch-price" value="R$ 250,00" />
+                    </div>
+
+                    <!-- Descrição -->
+                    <div class="ws-model-form-group">
+                        <label>Descrição (opcional)</label>
+                        <input type="text" id="ws-launch-desc" value="Troca de óleo do motor e filtro." />
+                    </div>
+
+                    <!-- Peças Utilizadas -->
+                    <div style="margin-top:16px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                            <strong style="font-size:14px; font-weight:800; color:#0F172A;">Peças utilizadas</strong>
+                            <button type="button" onclick="WorkshopView.promptAddPart()" style="background:none; border:none; color:#0066FF; font-size:12px; font-weight:700; cursor:pointer;">
+                                + Adicionar
+                            </button>
+                        </div>
+
+                        <div class="ws-model-parts-list" id="ws-model-parts-container">
+                            <!-- Peça 1 -->
+                            <div class="ws-model-part-row">
+                                <span class="part-name">Óleo 5W30</span>
+                                <span class="part-qty">1 un</span>
+                                <span class="part-price">R$ 120,00</span>
+                                <button type="button" class="part-delete-btn" onclick="this.closest('.ws-model-part-row').remove()" title="Remover">🗑️</button>
+                            </div>
+                            <!-- Peça 2 -->
+                            <div class="ws-model-part-row">
+                                <span class="part-name">Filtro de óleo</span>
+                                <span class="part-qty">1 un</span>
+                                <span class="part-price">R$ 45,00</span>
+                                <button type="button" class="part-delete-btn" onclick="this.closest('.ws-model-part-row').remove()" title="Remover">🗑️</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="ws-model-btn-primary" onclick="WorkshopView.handleConfirmLaunchService()">
+                    <span>Avançar</span> <span>→</span>
+                </button>
+            </div>
+        `;
+    };
+
+    WorkshopView.promptAddPart = function() {
+        const nome = prompt('Nome da peça:');
+        if (!nome) return;
+        const valor = prompt('Valor da peça (ex: R$ 80,00):') || 'R$ 0,00';
+        const container = document.getElementById('ws-model-parts-container');
+        if (container) {
+            const row = document.createElement('div');
+            row.className = 'ws-model-part-row';
+            row.innerHTML = `
+                <span class="part-name">${nome}</span>
+                <span class="part-qty">1 un</span>
+                <span class="part-price">${valor}</span>
+                <button type="button" class="part-delete-btn" onclick="this.closest('.ws-model-part-row').remove()" title="Remover">🗑️</button>
+            `;
+            container.appendChild(row);
+            this.showToast(`Peça "${nome}" adicionada!`, 'success');
+        }
+    };
+
+    WorkshopView.handleConfirmLaunchService = function() {
+        this.showToast('✅ Serviço lançado com sucesso na OS do veículo!', 'success');
+        setTimeout(() => this.switchMobileSection('ordens-servico'), 700);
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // TELA 6: NOTAS FISCAIS (CONFORME MODELO OFICIAL)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.renderMobileInvoiceView = function() {
+        const invoices = [
+            { day: '20', month: 'NOV', plate: 'BRA2E19', client: 'João Silva', price: 'R$ 250,00', status: 'Emitida', statusClass: 'emitida' },
+            { day: '18', month: 'NOV', plate: 'KZX4D21', client: 'Ana Costa', price: 'R$ 680,00', status: 'Emitida', statusClass: 'emitida' },
+            { day: '16', month: 'NOV', plate: 'LMH7A33', client: 'Ricardo Lima', price: 'R$ 430,00', status: 'Pendente', statusClass: 'pendente' },
+            { day: '10', month: 'NOV', plate: 'QWESF67', client: 'Marcos Santos', price: 'R$ 320,00', status: 'Emitida', statusClass: 'emitida' },
+            { day: '05', month: 'NOV', plate: 'RST8I90', client: 'Fernanda Alves', price: 'R$ 150,00', status: 'Emitida', statusClass: 'emitida' }
+        ];
+
+        return `
+            <div style="padding-bottom: 24px;">
+                <!-- Busca com Lupa -->
+                <div class="ws-model-search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        placeholder="Buscar por placa, cliente ou nº da nota"
+                        oninput="WorkshopView.filterNfList(this.value)"
+                    />
+                </div>
+
+                <!-- Pills de Filtro -->
+                <div class="ws-model-filter-pills">
+                    <button type="button" class="ws-model-pill active" onclick="WorkshopView.setNfFilter('todas', this)">Todas (12)</button>
+                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setNfFilter('emitidas', this)">Emitidas (8)</button>
+                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setNfFilter('pendentes', this)">Pendentes (4)</button>
+                </div>
+
+                <!-- Lista de Cards -->
+                <div class="ws-model-list-container" id="ws-model-nf-list">
+                    ${invoices.map(nf => `
+                        <div class="ws-model-nf-card" onclick="WorkshopView.showToast('Nota fiscal do veículo ${nf.plate} (${nf.price})', 'info')">
+                            <div class="ws-model-nf-date-box">
+                                <span class="day">${nf.day}</span>
+                                <span class="month">${nf.month}</span>
+                            </div>
+                            <div class="ws-model-nf-info">
+                                <div class="plate">${nf.plate}</div>
+                                <div class="client">${nf.client}</div>
+                                <div class="price">${nf.price}</div>
+                            </div>
+                            <div class="ws-model-status-badge ${nf.statusClass}">
+                                ${nf.status}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    };
+
+    WorkshopView.setNfFilter = function(filter, btn) {
+        document.querySelectorAll('.ws-model-filter-pills .ws-model-pill').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        this.showToast(`Filtro "${filter}" aplicado às notas fiscais.`, 'info');
+    };
+
+    WorkshopView.filterNfList = function(term) {
+        const clean = (term || '').toLowerCase().trim();
+        const cards = document.querySelectorAll('#ws-model-nf-list .ws-model-nf-card');
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(clean) ? 'flex' : 'none';
+        });
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // TELA 7: BUSCAR VEÍCULOS (CONFORME MODELO OFICIAL)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.renderMobileSearchVehiclesView = function() {
+        const vehicles = [
+            { img: './img/splash-car-front.jpg', plate: 'BRA2E19', model: 'Toyota Corolla', client: 'João Silva', status: 'Na oficina', statusClass: 'na-oficina' },
+            { img: './img/cl-hero-car-phone.jpg', plate: 'KZX4D21', model: 'Honda HR-V', client: 'Ana Costa', status: 'Aguardando', statusClass: 'aguardando' },
+            { img: './img/splash-car-hero.jpg', plate: 'LMH7A33', model: 'Jeep Compass', client: 'Ricardo Lima', status: 'Em execução', statusClass: 'em-execucao' },
+            { img: './img/splash-car-front.jpg', plate: 'QWESF67', model: 'Fiat Toro', client: 'Marcos Santos', status: 'Concluído', statusClass: 'concluido' },
+            { img: './img/cl-hero-car-phone.jpg', plate: 'RST8I90', model: 'Renault Duster', client: 'Fernanda Alves', status: 'Na oficina', statusClass: 'na-oficina' }
+        ];
+
+        return `
+            <div style="padding-bottom: 24px;">
+                <!-- Campo de Busca -->
+                <div class="ws-model-search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        placeholder="Buscar por placa, cliente ou chassi"
+                        oninput="WorkshopView.filterVehiclesSearchList(this.value)"
+                    />
+                </div>
+
+                <!-- Pills de Filtro -->
+                <div class="ws-model-filter-pills">
+                    <button type="button" class="ws-model-pill active" onclick="WorkshopView.setVehiclesSearchFilter('recentes', this)">Recentes</button>
+                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setVehiclesSearchFilter('na-oficina', this)">Na oficina</button>
+                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setVehiclesSearchFilter('todos', this)">Todos</button>
+                </div>
+
+                <!-- Lista de Cards de Veículos -->
+                <div class="ws-model-list-container" id="ws-model-vehicles-list">
+                    ${vehicles.map(v => `
+                        <div class="ws-model-vehicle-search-card" onclick="WorkshopView.selectSearchedVehicle('${v.plate}')">
+                            <div class="vehicle-thumb">
+                                <img src="${v.img}" alt="${v.model}" onerror="this.src='/img/splash-car-hero.jpg'" />
+                            </div>
+                            <div class="vehicle-info">
+                                <div class="plate">${v.plate}</div>
+                                <div class="model">${v.model}</div>
+                                <div class="client">${v.client}</div>
+                            </div>
+                            <div class="ws-model-status-badge ${v.statusClass}">
+                                ${v.status}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    };
+
+    WorkshopView.setVehiclesSearchFilter = function(filter, btn) {
+        document.querySelectorAll('.ws-model-filter-pills .ws-model-pill').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        this.showToast(`Exibindo veículos: ${filter}`, 'info');
+    };
+
+    WorkshopView.filterVehiclesSearchList = function(term) {
+        const clean = (term || '').toLowerCase().trim();
+        const cards = document.querySelectorAll('#ws-model-vehicles-list .ws-model-vehicle-search-card');
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(clean) ? 'flex' : 'none';
+        });
+    };
+
+    WorkshopView.selectSearchedVehicle = function(plate) {
+        this.mobileActivePlate = plate;
+        this.showToast(`Veículo ${plate} selecionado.`, 'success');
+        this.switchMobileSection('entrada-veiculos');
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // TELA 8: MANUTENÇÃO DOS VEÍCULOS (MANUTENÇÃO PREVENTIVA CONFORME MODELO)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.renderMobileMaintenanceVehiclesView = function() {
+        const alerts = [
+            { icon: '⚠️', title: 'Troca de óleo', vehicle: 'BRA2E19 - Toyota Corolla', km: 'Faltam 3.000 km', styleClass: 'red' },
+            { icon: '⚠️', title: 'Pastilha de freio', vehicle: 'KZX4D21 - Honda HR-V', km: 'Faltam 20.000 km', styleClass: 'yellow' },
+            { icon: '🎯', title: 'Correia dentada', vehicle: 'LMH7A33 - Jeep Compass', km: 'Faltam 40.000 km', styleClass: 'blue' },
+            { icon: '📄', title: 'Filtro de ar', vehicle: 'QWESF67 - Fiat Toro', km: 'Faltam 8.000 km', styleClass: 'gray' },
+            { icon: '🛢️', title: 'Revisão periódica', vehicle: 'RST8I90 - Renault Duster', km: 'Faltam 7.000 km', styleClass: 'purple' }
+        ];
+
+        return `
+            <div style="padding-bottom: 24px;">
+                <!-- Pills de Filtro -->
+                <div class="ws-model-filter-pills" style="margin-top:4px;">
+                    <button type="button" class="ws-model-pill active" onclick="WorkshopView.setMaintFilter('pendentes', this)">Pendentes (8)</button>
+                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setMaintFilter('vencidos', this)">Vencidos (2)</button>
+                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setMaintFilter('concluidos', this)">Concluídos</button>
+                </div>
+
+                <!-- Lista de Cards de Alerta -->
+                <div class="ws-model-list-container">
+                    ${alerts.map(a => `
+                        <div class="ws-model-maint-card ${a.styleClass}" onclick="WorkshopView.showToast('Alerta selecionado: ${a.title} (${a.vehicle})', 'info')">
+                            <div class="maint-icon-circle ${a.styleClass}">
+                                ${a.icon}
+                            </div>
+                            <div class="maint-info">
+                                <h4>${a.title}</h4>
+                                <div class="vehicle">${a.vehicle}</div>
+                                <div class="km-alert">${a.km}</div>
+                            </div>
+                            <div class="maint-arrow">›</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    };
+
+    WorkshopView.setMaintFilter = function(filter, btn) {
+        document.querySelectorAll('.ws-model-filter-pills .ws-model-pill').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        this.showToast(`Filtro de manutenções: ${filter}`, 'info');
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // TELA 9: AVISOS WHATSAPP (CONFORME MODELO OFICIAL)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.renderMobileWhatsAppView = function() {
+        const chats = [
+            { avatar: '👤', name: 'João Silva', plate: 'BRA2E19', time: '10:34', message: 'Oi, o carro já está pronto?', unread: 2 },
+            { avatar: '👩', name: 'Ana Costa', plate: 'KZX4D21', time: '09:15', message: 'Confirmação, estarei às 14h.', unread: 1 },
+            { avatar: '👨', name: 'Ricardo Lima', plate: 'LMH7A33', time: 'Ontem', message: 'Pode me enviar o orçamento?', unread: 0 },
+            { avatar: '🧔', name: 'Marcos Santos', plate: 'QWESF67', time: 'Ontem', message: 'Obrigado pelo serviço!', unread: 0 },
+            { avatar: '👩‍🦰', name: 'Fernanda Alves', plate: 'RST8I90', time: '18/11', message: 'Qual valor da revisão?', unread: 0 }
+        ];
+
+        return `
+            <div style="padding-bottom: 80px;">
+                <!-- Abas WhatsApp -->
+                <div class="ws-model-filter-pills" style="margin-top:4px;">
+                    <button type="button" class="ws-model-pill active" onclick="WorkshopView.setWhatsAppTab('conversas', this)">Conversas</button>
+                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setWhatsAppTab('lembretes', this)">Lembretes</button>
+                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setWhatsAppTab('modelos', this)">Modelos</button>
+                </div>
+
+                <!-- Busca de Cliente por Placa -->
+                <div class="ws-model-search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        placeholder="Buscar cliente por placa"
+                        oninput="WorkshopView.filterWhatsAppChats(this.value)"
+                    />
+                </div>
+
+                <!-- Lista de Conversas -->
+                <div class="ws-model-chat-list" id="ws-model-chat-container">
+                    ${chats.map(c => `
+                        <div class="ws-model-chat-item" onclick="WorkshopView.openWhatsAppChat('${c.name}', '${c.plate}')">
+                            <div class="chat-avatar">${c.avatar}</div>
+                            <div class="chat-body">
+                                <div class="chat-header-row">
+                                    <div class="chat-name-wrap">
+                                        <span class="chat-name">${c.name}</span>
+                                        <span class="chat-plate-badge">${c.plate}</span>
+                                    </div>
+                                    <span class="chat-time">${c.time}</span>
+                                </div>
+                                <div class="chat-message-row">
+                                    <span class="chat-message">${c.message}</span>
+                                    ${c.unread > 0 ? `
+                                        <span class="chat-unread-badge">${c.unread}</span>
+                                    ` : `
+                                        <span class="chat-wa-icon">💬</span>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <!-- Botão Flutuante Inferior Nova Mensagem -->
+                <div style="padding: 12px 16px;">
+                    <button type="button" class="ws-model-btn-primary" onclick="WorkshopView.promptNewWhatsAppMessage()">
+                        <span>💬 Nova Mensagem</span>
                     </button>
                 </div>
             </div>
         `;
     };
 
-    WorkshopView.setMobileEntryTab = function(tab) {
-        this.mobileVehicleEntryTab = tab;
-        this.switchMobileSection('entrada-veiculos');
+    WorkshopView.setWhatsAppTab = function(tab, btn) {
+        document.querySelectorAll('.ws-model-filter-pills .ws-model-pill').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        this.showToast(`Aba WhatsApp: ${tab}`, 'info');
+    };
+
+    WorkshopView.filterWhatsAppChats = function(term) {
+        const clean = (term || '').toLowerCase().trim();
+        const items = document.querySelectorAll('#ws-model-chat-container .ws-model-chat-item');
+        items.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(clean) ? 'flex' : 'none';
+        });
+    };
+
+    WorkshopView.openWhatsAppChat = function(name, plate) {
+        this.showToast(`Abrindo conversa com ${name} (${plate})...`, 'info');
+    };
+
+    WorkshopView.promptNewWhatsAppMessage = function() {
+        const plate = prompt('Digite a placa do veículo para enviar aviso WhatsApp:');
+        if (plate) {
+            this.showToast(`Mensagem preparada para a placa ${plate.toUpperCase()}.`, 'success');
+        }
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // TELA 10: FINANCEIRO (CONFORME MODELO OFICIAL)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.renderMobileFinancialView = function() {
+        return `
+            <div style="padding-bottom: 24px;">
+                <!-- Card Hero Faturamento -->
+                <div class="ws-model-finance-hero">
+                    <div class="hero-label">Faturamento</div>
+                    <div class="hero-value-row">
+                        <span class="hero-value">R$ 24.320,00</span>
+                        <span class="hero-badge-growth">↑ 18%</span>
+                    </div>
+
+                    <!-- Gráfico de Barras Diárias (01 a 30) -->
+                    <div class="ws-model-bar-chart">
+                        <div class="chart-bars-wrap">
+                            <div class="chart-bar" style="height:32%;"></div>
+                            <div class="chart-bar" style="height:48%;"></div>
+                            <div class="chart-bar" style="height:65%;"></div>
+                            <div class="chart-bar" style="height:38%;"></div>
+                            <div class="chart-bar" style="height:55%;"></div>
+                            <div class="chart-bar" style="height:70%;"></div>
+                            <div class="chart-bar" style="height:82%;"></div>
+                            <div class="chart-bar" style="height:60%;"></div>
+                            <div class="chart-bar" style="height:45%;"></div>
+                            <div class="chart-bar" style="height:90%;"></div>
+                            <div class="chart-bar" style="height:75%;"></div>
+                            <div class="chart-bar" style="height:50%;"></div>
+                            <div class="chart-bar" style="height:68%;"></div>
+                            <div class="chart-bar" style="height:85%;"></div>
+                            <div class="chart-bar" style="height:92%;"></div>
+                            <div class="chart-bar" style="height:40%;"></div>
+                            <div class="chart-bar" style="height:62%;"></div>
+                            <div class="chart-bar" style="height:78%;"></div>
+                            <div class="chart-bar" style="height:54%;"></div>
+                            <div class="chart-bar" style="height:88%;"></div>
+                            <div class="chart-bar" style="height:95%;"></div>
+                            <div class="chart-bar" style="height:70%;"></div>
+                            <div class="chart-bar" style="height:60%;"></div>
+                            <div class="chart-bar" style="height:80%;"></div>
+                            <div class="chart-bar" style="height:90%;"></div>
+                            <div class="chart-bar" style="height:65%;"></div>
+                            <div class="chart-bar" style="height:85%;"></div>
+                            <div class="chart-bar" style="height:72%;"></div>
+                            <div class="chart-bar" style="height:98%;"></div>
+                            <div class="chart-bar" style="height:82%;"></div>
+                        </div>
+                        <div class="chart-axis-labels">
+                            <span>01</span>
+                            <span>05</span>
+                            <span>10</span>
+                            <span>15</span>
+                            <span>20</span>
+                            <span>25</span>
+                            <span>30</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mini Cards Serviços & Peças -->
+                <div class="ws-model-finance-grid">
+                    <div class="ws-model-mini-kpi blue">
+                        <div class="kpi-icon">🔧</div>
+                        <div class="kpi-info">
+                            <span class="label">Serviços</span>
+                            <span class="value">R$ 18.450,00</span>
+                        </div>
+                    </div>
+                    <div class="ws-model-mini-kpi green">
+                        <div class="kpi-icon">📦</div>
+                        <div class="kpi-info">
+                            <span class="label">Peças</span>
+                            <span class="value">R$ 5.870,00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Últimos Lançamentos -->
+                <div class="ws-model-recent-launches-card">
+                    <div class="launches-header">
+                        <h4>Últimos lançamentos</h4>
+                        <a href="javascript:void(0)" onclick="WorkshopView.showToast('Exibindo histórico financeiro completo...', 'info')">Ver todos</a>
+                    </div>
+
+                    <div class="launches-list">
+                        <div class="launch-item">
+                            <div class="date">20/11</div>
+                            <div class="desc">Troca de óleo - BRA2E19</div>
+                            <div class="amount">+ R$ 250,00</div>
+                        </div>
+                        <div class="launch-item">
+                            <div class="date">19/11</div>
+                            <div class="desc">Revisão - KZX4D21</div>
+                            <div class="amount">+ R$ 680,00</div>
+                        </div>
+                        <div class="launch-item">
+                            <div class="date">18/11</div>
+                            <div class="desc">Pastilha de freio - LMH7A33</div>
+                            <div class="amount">+ R$ 430,00</div>
+                        </div>
+                        <div class="launch-item">
+                            <div class="date">17/11</div>
+                            <div class="desc">Ar condicionado - RST8I90</div>
+                            <div class="amount">+ R$ 320,00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // TELA 11: ORDENS DE SERVIÇO (CONFORME MODELO OFICIAL)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.renderMobileOrdersView = function() {
+        const orders = [
+            { img: './img/splash-car-front.jpg', plate: 'BRA2E19', model: 'Toyota Corolla', service: 'Troca de óleo e filtro', status: 'Em execução', statusClass: 'em-execucao' },
+            { img: './img/cl-hero-car-phone.jpg', plate: 'KZX4D21', model: 'Honda HR-V', service: 'Pastilha de freio', status: 'Aguardando peças', statusClass: 'aguardando-pecas' },
+            { img: './img/splash-car-hero.jpg', plate: 'LMH7A33', model: 'Jeep Compass', service: 'Revisão completa', status: 'Orçamento', statusClass: 'orcamento' },
+            { img: './img/splash-car-front.jpg', plate: 'QWESF67', model: 'Fiat Toro', service: 'Correia dentada', status: 'Concluída', statusClass: 'concluida' },
+            { img: './img/cl-hero-car-phone.jpg', plate: 'RST8I90', model: 'Renault Duster', service: 'Ar condicionado', status: 'Aguardando', statusClass: 'aguardando' }
+        ];
+
+        return `
+            <div style="padding-bottom: 24px;">
+                <!-- Pills de Filtro -->
+                <div class="ws-model-filter-pills" style="margin-top:4px;">
+                    <button type="button" class="ws-model-pill active" onclick="WorkshopView.setOrdersFilter('todas', this)">Todas (12)</button>
+                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setOrdersFilter('em-execucao', this)">Em execução (5)</button>
+                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setOrdersFilter('concluidas', this)">Concluídas</button>
+                </div>
+
+                <!-- Campo de Busca -->
+                <div class="ws-model-search-bar">
+                    <span class="search-icon">🔍</span>
+                    <input 
+                        type="text" 
+                        placeholder="Buscar por placa, cliente ou serviço"
+                        oninput="WorkshopView.filterOrdersList(this.value)"
+                    />
+                </div>
+
+                <!-- Lista de Cards de Ordens de Serviço -->
+                <div class="ws-model-list-container" id="ws-model-orders-list">
+                    ${orders.map(os => `
+                        <div class="ws-model-os-card" onclick="WorkshopView.showToast('OS do veículo ${os.plate} (${os.service})', 'info')">
+                            <div class="os-thumb">
+                                <img src="${os.img}" alt="${os.model}" onerror="this.src='/img/splash-car-hero.jpg'" />
+                            </div>
+                            <div class="os-info">
+                                <div class="plate">${os.plate}</div>
+                                <div class="model">${os.model}</div>
+                                <div class="service">${os.service}</div>
+                            </div>
+                            <div class="ws-model-status-badge ${os.statusClass}">
+                                ${os.status}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    };
+
+    WorkshopView.setOrdersFilter = function(filter, btn) {
+        document.querySelectorAll('.ws-model-filter-pills .ws-model-pill').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        this.showToast(`Exibindo Ordens de Serviço: ${filter}`, 'info');
+    };
+
+    WorkshopView.filterOrdersList = function(term) {
+        const clean = (term || '').toLowerCase().trim();
+        const cards = document.querySelectorAll('#ws-model-orders-list .ws-model-os-card');
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(clean) ? 'flex' : 'none';
+        });
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // TELA 13: SUPORTE (CONFORME MODELO OFICIAL)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.renderMobileSupportView = function() {
+        const items = [
+            { icon: '📖', title: 'Central de Ajuda', desc: 'Dúvidas frequentes e tutoriais', action: 'ajuda' },
+            { icon: '🎧', title: 'Falar com o Suporte', desc: 'Abertura de chamado', action: 'chamado' },
+            { icon: '🟢', title: 'Status do Sistema', desc: 'Verificar o funcionamento', action: 'status' },
+            { icon: '💡', title: 'Solicitar Melhoria', desc: 'Envie sugestões para o app', action: 'melhoria' },
+            { icon: 'ℹ️', title: 'Sobre o DNA Auto', desc: 'Versão 1.0.0', action: 'sobre' }
+        ];
+
+        return `
+            <div style="padding-bottom: 24px;">
+                <div class="ws-model-support-list">
+                    ${items.map(it => `
+                        <div class="ws-model-support-item" onclick="WorkshopView.handleSupportAction('${it.action}', '${it.title}')">
+                            <div class="support-icon-box">
+                                ${it.icon}
+                            </div>
+                            <div class="support-info">
+                                <h4>${it.title}</h4>
+                                <p>${it.desc}</p>
+                            </div>
+                            <div class="support-arrow">›</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    };
+
+    WorkshopView.handleSupportAction = function(action, title) {
+        if (action === 'chamado') {
+            const tel = '5511999999999';
+            window.open(`https://wa.me/${tel}?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20no%20app%20DNA%20AUTO%20Oficina`, '_blank');
+        } else if (action === 'status') {
+            this.showToast('🟢 Todos os sistemas operacionais e servidores ativos!', 'success');
+        } else if (action === 'sobre') {
+            this.showToast('DNA AUTO Oficina v1.0.0 • Gestão e RAG Integrados.', 'info');
+        } else {
+            this.showToast(`${title} selecionado.`, 'info');
+        }
     };
 
     // Renderiza o conteúdo da busca no card de entrada
@@ -4073,10 +4870,9 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA DE LOGIN EXCLUSIVA DO APP DA OFICINA (ESTILO WALLPAPER DNA AUTO)
+    // TELA 1 & 2: SPLASH & LOGIN OFICIAL DO APP DA OFICINA
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.showOficinaLoginScreen = function() {
-        // Limpa sessão e registra estado de logout
         this.financialAuthenticated = false;
         this.stockAuthenticated = false;
         localStorage.setItem('dna_logged_out', 'true');
@@ -4086,30 +4882,67 @@
         const container = document.getElementById('view-content');
         if (!container) return;
 
-        // Segunda imagem (oficinas/auto centers): DNA AUTO com carro Hyundai e ícones de monitoramento
         const bgImageUrl = './img/dna-auto-login-hero.jpg';
 
         container.innerHTML = `
-            <div class="dna-oficina-splash-screen">
-                <!-- Imagem de Fundo em Tela Cheia -->
-                <img src="${bgImageUrl}" alt="DNA AUTO Oficinas" class="dna-oficina-splash-bg" />
-                <!-- Gradiente suave na parte inferior para destacar os botões -->
-                <div class="dna-oficina-splash-gradient"></div>
+            <div class="ws-splash-screen">
+                <img src="${bgImageUrl}" alt="DNA AUTO Oficina" class="ws-splash-hero-bg" onerror="this.src='/img/dna-auto-login-hero.jpg'" />
+                <div class="ws-splash-overlay"></div>
 
-                <!-- Botões na parte inferior (igual ao app do cliente) -->
-                <div class="dna-oficina-splash-actions">
-                    <button type="button" class="dna-oficina-btn-entrar" onclick="WorkshopView.showOficinaLoginForm()">
-                        Entrar
+                <div class="ws-splash-content">
+                    <div class="ws-splash-logo-box">
+                        <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                            <svg width="46" height="46" viewBox="0 0 100 100" fill="none">
+                                <path d="M20 15 H55 C78 15 90 28 90 50 C90 72 78 85 55 85 H20 L35 62 H52 C63 62 68 56 68 50 C68 44 63 38 52 38 H35 L20 15Z" fill="#0084FF"/>
+                            </svg>
+                            <span style="font-size:32px; font-weight:900; letter-spacing:-1px; color:#FFFFFF; font-family:'Outfit', sans-serif;">DNA <span style="color:#0084FF;">AUTO</span></span>
+                        </div>
+                        <div class="ws-splash-brand-sub">Oficina</div>
+                        <p class="ws-splash-tagline">
+                            Gestão completa da sua oficina com a mesma tecnologia do DNA Auto.
+                        </p>
+                    </div>
+
+                    <div class="ws-splash-benefits-list">
+                        <div class="ws-splash-benefit-item">
+                            <div class="ws-splash-benefit-check">✓</div>
+                            <span>Controle de serviços</span>
+                        </div>
+                        <div class="ws-splash-benefit-item">
+                            <div class="ws-splash-benefit-check">✓</div>
+                            <span>Veículos e histórico</span>
+                        </div>
+                        <div class="ws-splash-benefit-item">
+                            <div class="ws-splash-benefit-check">✓</div>
+                            <span>Tudo integrado ao app do cliente</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ws-splash-actions">
+                    <button type="button" class="ws-splash-btn-entrar" onclick="WorkshopView.showOficinaLoginForm()">
+                        <span>Entrar</span> <span>→</span>
                     </button>
-                    <button type="button" class="dna-oficina-btn-cadastrar" onclick="WorkshopView.showOficinaRegisterForm();">
-                        Cadastrar
+                    <button type="button" class="ws-splash-btn-cadastrar" onclick="WorkshopView.showOficinaRegisterForm()">
+                        <span>Cadastrar</span>
                     </button>
                 </div>
             </div>
         `;
     };
 
-    // Exibe o formulário de login (chamado ao clicar "Entrar" na tela splash)
+    WorkshopView.togglePasswordVisibility = function(inputId, btn) {
+        const inp = document.getElementById(inputId);
+        if (!inp) return;
+        if (inp.type === 'password') {
+            inp.type = 'text';
+            btn.textContent = '👁️‍🗨️';
+        } else {
+            inp.type = 'password';
+            btn.textContent = '👁️';
+        }
+    };
+
     WorkshopView.showOficinaLoginForm = function() {
         const container = document.getElementById('view-content');
         if (!container) return;
@@ -4117,55 +4950,80 @@
         const bgImageUrl = './img/dna-auto-login-hero.jpg';
 
         container.innerHTML = `
-            <div class="dna-oficina-login-screen">
-                <div class="dna-oficina-login-bg" style="background-image: url('${bgImageUrl}');"></div>
-                <div class="dna-oficina-login-gradient"></div>
+            <div class="ws-login-screen">
+                <div class="ws-login-hero">
+                    <img src="${bgImageUrl}" alt="DNA AUTO Oficina" class="ws-login-hero-bg" onerror="this.src='/img/dna-auto-login-hero.jpg'" />
+                    <div class="ws-login-hero-overlay"></div>
 
-                <!-- Seta de Voltar (igual ao app do cliente) -->
-                <button
-                    type="button"
-                    onclick="WorkshopView.showOficinaLoginScreen()"
-                    style="position:absolute; top:calc(18px + env(safe-area-inset-top,0px)); left:16px; z-index:20; background:rgba(0,0,0,0.45); border:none; border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);"
-                    aria-label="Voltar"
-                >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15 18 9 12 15 6"/>
-                    </svg>
-                </button>
+                    <button type="button" class="ws-model-back-btn" onclick="WorkshopView.showOficinaLoginScreen()" aria-label="Voltar">
+                        ‹
+                    </button>
 
-                <div class="dna-oficina-login-card">
-                    <div class="dna-oficina-login-form">
-                        <div class="dna-login-input-group">
-                            <span class="dna-login-input-icon">✉️</span>
-                            <input
-                                type="email"
-                                id="oficina-login-email"
-                                class="dna-oficina-login-input"
-                                placeholder="E-mail da sua oficina"
-                                autocomplete="username"
-                            />
+                    <div class="ws-login-hero-content">
+                        <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                            <svg width="34" height="34" viewBox="0 0 100 100" fill="none">
+                                <path d="M20 15 H55 C78 15 90 28 90 50 C90 72 78 85 55 85 H20 L35 62 H52 C63 62 68 56 68 50 C68 44 63 38 52 38 H35 L20 15Z" fill="#0084FF"/>
+                            </svg>
+                            <span style="font-size:26px; font-weight:900; letter-spacing:-0.5px; color:#FFFFFF; font-family:'Outfit', sans-serif;">DNA <span style="color:#0084FF;">AUTO</span></span>
                         </div>
+                        <div class="ws-login-hero-content brand-sub">Oficina</div>
+                        <div class="ws-login-hero-content brand-desc">Acesse sua conta para continuar</div>
+                    </div>
+                </div>
 
-                        <div class="dna-login-input-group">
-                            <span class="dna-login-input-icon">🔒</span>
-                            <input
-                                type="password"
-                                id="oficina-login-password"
-                                class="dna-oficina-login-input"
-                                placeholder="Senha de acesso"
-                                autocomplete="current-password"
-                                onkeydown="if(event.key==='Enter') WorkshopView.handleOficinaLogin()"
-                            />
-                        </div>
+                <div class="ws-login-card-sheet">
+                    <div class="ws-login-input-row">
+                        <span class="icon">👤</span>
+                        <input
+                            type="text"
+                            id="oficina-login-email"
+                            placeholder="E-mail ou CPF"
+                            autocomplete="username"
+                        />
+                    </div>
 
-                        <button type="button" class="dna-oficina-login-btn" onclick="WorkshopView.handleOficinaLogin()">
-                            <span>Entrar</span>
+                    <div class="ws-login-input-row">
+                        <span class="icon">🔒</span>
+                        <input
+                            type="password"
+                            id="oficina-login-password"
+                            placeholder="Senha"
+                            autocomplete="current-password"
+                            onkeydown="if(event.key==='Enter') WorkshopView.handleOficinaLogin()"
+                        />
+                        <button type="button" onclick="WorkshopView.togglePasswordVisibility('oficina-login-password', this)" style="background:none; border:none; color:#0066FF; font-size:18px; cursor:pointer; padding:2px 4px;">
+                            👁️
                         </button>
+                    </div>
 
-                        <div style="text-align:center; margin-top:8px;">
-                            <span style="color:#64748B; font-size:12.5px;">Não tem conta? </span>
-                            <a href="javascript:void(0)" onclick="WorkshopView.showOficinaRegisterForm()" style="color:#00D4FF; font-size:12.5px; font-weight:700; text-decoration:none;">Cadastre-se</a>
-                        </div>
+                    <div class="ws-login-options-row">
+                        <label>
+                            <input type="checkbox" id="oficina-remember-me" checked />
+                            <span>Lembrar de mim</span>
+                        </label>
+                        <a href="javascript:void(0)" onclick="WorkshopView.showToast('Para recuperar sua senha, entre em contato com o suporte ou gestor da oficina.', 'info')">
+                            Esqueceu a senha?
+                        </a>
+                    </div>
+
+                    <button type="button" class="ws-model-btn-primary" style="margin:4px 0 0; width:100%;" onclick="WorkshopView.handleOficinaLogin()">
+                        <span>Entrar</span> <span>→</span>
+                    </button>
+
+                    <div class="ws-login-divider">ou continue com</div>
+
+                    <div class="ws-login-social-row">
+                        <button type="button" class="ws-login-social-btn" onclick="WorkshopView.showToast('Login com Google em processo de conexão.', 'info')" title="Entrar com Google">
+                            <span style="font-weight:900; font-size:20px; background:conic-gradient(#4285f4 0 90deg,#34a853 90deg 170deg,#fbbc05 170deg 235deg,#ea4335 235deg 310deg,#4285f4 310deg); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">G</span>
+                        </button>
+                        <button type="button" class="ws-login-social-btn" onclick="WorkshopView.showToast('Login com Apple ID em processo de conexão.', 'info')" title="Entrar com Apple">
+                            <span style="font-size:20px; color:#0F172A;"></span>
+                        </button>
+                    </div>
+
+                    <div class="ws-login-signup-text">
+                        <span>Não tem uma conta? </span>
+                        <a href="javascript:void(0)" onclick="WorkshopView.showOficinaRegisterForm()">Criar cadastro</a>
                     </div>
                 </div>
             </div>
