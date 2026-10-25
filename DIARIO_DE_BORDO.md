@@ -2306,3 +2306,21 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (701.406 bytes em ambos).
     - 100% de paridade na imagem oficial `cliente.app/img/login-hero-official.png` e `public/img/login-hero-official.png` (160.760 bytes em ambos).
     - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
+
+
+### 📱 Ciclo 108: Tela de Login do Cliente — Logo Sem Corte no Topo e Encaixe Perfeito dentro das Margens
+- **Origem da Demanda:** Usuário alertou que na tela de login oficial do aplicativo do cliente (`/cliente` / `cliente.app/index.html`), o logo estava sendo cortado no topo e no rodapé havia muito espaço vazio em branco sobrando; o card deveria descer para a base para não cortar o logo e manter todos os elementos dentro das margens da tela.
+- **Ações Imediatas & Limpeza de Repositório:**
+  - Reversão imediata dos commits anteriores que haviam sido direcionados para arquivo incorreto (`git reset --hard eb5ac2d` e `git push origin master --force`), garantindo que apenas a verdadeira tela oficial do app do cliente faça parte do histórico.
+- **Implementações Técnicas Realizadas em `cliente.app/index.html` e `public/cliente.html`:**
+  1. **Preservação Absoluta do Topo e Logotipo:**
+     - Aplicação de `object-position: center top !important;` na imagem `.login-hero-banner-img`, ancorando o topo onde estão o isotipo "D", o logotipo "DNA AUTO" e o slogan "Seu veículo sempre protegido.", impedindo qualquer corte superior.
+     - `.login-hero-container` configurado com `flex: 1 1 auto !important; min-height: 200px !important; max-height: calc(100dvh - 280px) !important; display: flex !important; align-items: flex-end !important;`, acomodando dinamicamente o espaço livre superior.
+  2. **Rebaixamento do Card e Eliminação de Vazio no Rodapé:**
+     - `#login.screen` atualizado para `justify-content: flex-end !important; height: 100dvh !important; max-height: 100dvh !important;`, descendo o formulário até a base da tela.
+     - `.login-sheet-card` ajustado para `flex: 0 0 auto !important;` com padding inferior enxuto e responsivo `calc(clamp(16px, 2.4vh, 22px) + env(safe-area-inset-bottom, 0px))`, eliminando todo o espaço em branco excessivo do rodapé.
+  3. **Tudo Dentro da Viewport sem Cortes:**
+     - Enquadramento 100% contido na altura da tela (100dvh), tanto em smartphones com notch quanto em navegadores desktop, sem necessidade de rolagem e sem fuga de margens.
+- **Qualidade, Paridade & Testes:**
+  - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (mesmo hash SHA-256).
+  - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).

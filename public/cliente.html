@@ -2550,14 +2550,16 @@ section.splash .splash-bg {
   object-position: center top !important;
 }
 
-/* ═══ TELA DE LOGIN OFICIAL REFINADA (CICLO 107) ═══ */
+/* ═══ TELA DE LOGIN OFICIAL REFINADA (CICLO 108) ═══ */
 #login.screen {
   background: #011022 !important;
   min-height: 100dvh !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
   box-sizing: border-box !important;
   display: none;
   flex-direction: column !important;
-  justify-content: flex-start !important;
+  justify-content: flex-end !important;
   align-items: center !important;
   padding: 0 !important;
   overflow-x: hidden !important;
@@ -2571,10 +2573,12 @@ section.splash .splash-bg {
   position: relative !important;
   width: 100% !important;
   max-width: 480px !important;
-  height: clamp(250px, 42vh, 340px) !important;
-  flex: 0 0 auto !important;
+  flex: 1 1 auto !important;
+  min-height: 200px !important;
+  max-height: calc(100dvh - 280px) !important;
   background: #011022 !important;
-  display: block !important;
+  display: flex !important;
+  align-items: flex-end !important;
   margin: 0 auto !important;
   padding: 0 !important;
   box-sizing: border-box !important;
@@ -2584,7 +2588,7 @@ section.splash .splash-bg {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
-  object-position: center bottom !important;
+  object-position: center top !important;
   display: block !important;
   margin: 0 !important;
   padding: 0 !important;
@@ -2592,11 +2596,11 @@ section.splash .splash-bg {
 }
 .login-back-pill {
   position: absolute !important;
-  top: max(16px, env(safe-area-inset-top, 16px)) !important;
-  left: 16px !important;
+  top: max(14px, env(safe-area-inset-top, 14px)) !important;
+  left: 14px !important;
   z-index: 30 !important;
-  width: 40px !important;
-  height: 40px !important;
+  width: 38px !important;
+  height: 38px !important;
   border-radius: 50% !important;
   border: 1.5px solid #00c3ff !important;
   background: rgba(8, 22, 44, 0.7) !important;
@@ -2616,13 +2620,13 @@ section.splash .splash-bg {
   max-width: 480px !important;
   background: #ffffff !important;
   border-radius: 28px 28px 0 0 !important;
-  padding: 24px 22px 34px !important;
+  padding: clamp(16px, 2.4vh, 22px) clamp(16px, 4vw, 22px) calc(clamp(16px, 2.4vh, 22px) + env(safe-area-inset-bottom, 0px)) !important;
   box-sizing: border-box !important;
   box-shadow: 0 -12px 32px rgba(0, 5, 15, 0.28) !important;
-  margin: -18px auto 0 !important;
+  margin: -16px auto 0 !important;
   position: relative !important;
   z-index: 10 !important;
-  flex: 1 1 auto !important;
+  flex: 0 0 auto !important;
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
