@@ -2375,3 +2375,22 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Paridade absoluta mantida entre `cliente.app/index.html`, `public/cliente.html`, `cliente.app/js/components/ownerView.js` e `public/js/components/ownerView.js`.
 - **Qualidade & Testes:**
   - 100% dos 56 testes automatizados aprovados com sucesso (`npm test`).
+
+
+### 🚀 Ciclo 111: Apenas os 2 Cards na Tela de Oficinas — SP em Azul Ativo e RJ Cinza ("Breve" com Contador Regressivo de 30 Dias)
+- **Origem da Demanda:** Usuário solicitou que fiquem apenas os dois cards abaixo do mapa na tela de Oficinas da Rede: **SP em Azul Ativo** e **RJ Cinza** com a indicação "Breve" e um **contador regressivo de 30 dias**.
+- **Implementações Técnicas Realizadas:**
+  1. **Layout 50/50 Exclusivo com 2 Cards (`.oficinas-uf-bar`):**
+     - O container agora utiliza `display: grid; grid-template-columns: 1fr 1fr; gap: 10px;`, preenchendo perfeitamente a largura da tela em dispositivos móveis e desktops, sem rolagem desnecessária.
+  2. **Card SP em Azul Ativo (`.sp-card`):**
+     - Gradiente azul vibrante oficial (`linear-gradient(145deg, #0066FF, #0050d0)`), sombra com glow azul e textos brancos de alto contraste.
+     - Indicador `4 ativas` e badge de status `✓ Ativo na Rede`.
+     - Selecionado por padrão: exibe imediatamente a lista de oficinas credenciadas de São Paulo (`Veloce Auto Center`, `Auto Center Silva`, etc.) e foca o mapa no endereço de SP com Rota GPS.
+  3. **Card RJ Cinza com Contador Regressivo de 30 Dias (`.rj-card`):**
+     - Estilo cinza sutil (`background: #f1f5f9; border: 1.5px dashed #94a3b8;`) com tipografia ardósia e badge de status âmbar `● Breve: [tempo]`.
+     - Implementado **Contador Regressivo Vivo em Tempo Real** (`getRjCountdown()` + `startRjCountdownTimer()`) que calcula os 30 dias exatos (`30d 00h`, decrementando a cada segundo) e atualiza o badge do card e o modal/banner de previsão.
+     - Ao clicar no RJ, apresenta banner informativo amigável explicando a fase final de homologação técnica da rede no Rio de Janeiro (Barra da Tijuca e Botafogo) e botão direto para retornar às oficinas ativas de SP.
+  4. **Paridade Rigorosa Mantida:**
+     - Atualizados `cliente.app/index.html`, `public/cliente.html`, `cliente.app/js/components/ownerView.js` e `public/js/components/ownerView.js`.
+- **Qualidade & Testes:**
+  - 100% dos 56 testes automatizados aprovados com sucesso (`npm test`).

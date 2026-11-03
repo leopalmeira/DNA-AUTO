@@ -4786,56 +4786,108 @@ nav[aria-label="Navegação principal"] span,
 }
 
 
-/* Barra Horizontal de Cards de Cidade / Estado (Filtro por Sigla: RJ, SP, etc.) */
+/* Barra de 2 Cards de Estado: RJ (Cinza/Breve 30 dias) e SP (Azul Ativo) */
 .oficinas-uf-bar {
-  display: flex !important;
-  align-items: stretch !important;
-  gap: 8px !important;
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-  padding: 8px 2px 12px 2px !important;
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+  padding: 8px 2px 14px 2px !important;
   margin: 0 !important;
-  scrollbar-width: none !important;
-  -webkit-overflow-scrolling: touch !important;
-}
-.oficinas-uf-bar::-webkit-scrollbar {
-  display: none !important;
-}
-
-.uf-card {
-  flex: 0 0 auto !important;
-  min-width: 90px !important;
-  background: #ffffff !important;
-  border: 1.5px solid #d9e6f5 !important;
-  border-radius: 14px !important;
-  padding: 8px 12px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: space-between !important;
-  gap: 3px !important;
-  cursor: pointer !important;
-  text-align: left !important;
-  box-shadow: 0 2px 8px rgba(11, 40, 80, 0.04) !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  user-select: none !important;
-  -webkit-tap-highlight-color: transparent !important;
   box-sizing: border-box !important;
 }
 
-.uf-card:hover {
-  border-color: #9ac2f4 !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.1) !important;
+.uf-card {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  border-radius: 14px !important;
+  padding: 10px 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 4px !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  position: relative !important;
 }
 
-.uf-card:active {
-  transform: scale(0.96) !important;
-}
-
-.uf-card.active {
+/* Card SP: Azul Ativo */
+.uf-card.sp-card {
   background: linear-gradient(145deg, #0066FF 0%, #0050d0 100%) !important;
-  border-color: #0066FF !important;
-  box-shadow: 0 4px 14px rgba(0, 102, 255, 0.3) !important;
+  border: 1.5px solid #0066FF !important;
+  box-shadow: 0 4px 14px rgba(0, 102, 255, 0.28) !important;
+}
+.uf-card.sp-card:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 18px rgba(0, 102, 255, 0.35) !important;
+}
+.uf-card.sp-card:active {
+  transform: scale(0.97) !important;
+}
+.uf-card.sp-card .uf-sigla {
+  color: #ffffff !important;
+}
+.uf-card.sp-card .uf-nome {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+.uf-card.sp-card .uf-counter-pill {
+  background: rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+}
+.uf-card.sp-card .uf-badge-status {
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  background: rgba(0, 0, 0, 0.18) !important;
+  padding: 2px 6px !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  width: fit-content !important;
+}
+
+/* Card RJ: Cinza com "Breve" e Contador Regressivo de 30 Dias */
+.uf-card.rj-card {
+  background: #f1f5f9 !important;
+  border: 1.5px dashed #94a3b8 !important;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04) !important;
+}
+.uf-card.rj-card:hover {
+  border-color: #64748b !important;
+  background: #e9eef5 !important;
+}
+.uf-card.rj-card:active {
+  transform: scale(0.97) !important;
+}
+.uf-card.rj-card .uf-sigla {
+  color: #475569 !important;
+}
+.uf-card.rj-card .uf-nome {
+  color: #64748b !important;
+}
+.uf-card.rj-card .uf-counter-pill {
+  background: #e2e8f0 !important;
+  color: #334155 !important;
+  border: 1px solid #cbd5e1 !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+}
+.uf-card.rj-card .uf-badge-status {
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  color: #b45309 !important;
+  background: #fef3c7 !important;
+  border: 1px solid #fde68a !important;
+  padding: 2px 6px !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  width: fit-content !important;
 }
 
 .uf-card-top {
@@ -4851,12 +4903,7 @@ nav[aria-label="Navegação principal"] span,
   font-size: 16px !important;
   font-weight: 900 !important;
   letter-spacing: 0.5px !important;
-  color: #081d42 !important;
   line-height: 1 !important;
-}
-
-.uf-card.active .uf-sigla {
-  color: #ffffff !important;
 }
 
 .uf-counter-pill {
@@ -4864,26 +4911,14 @@ nav[aria-label="Navegação principal"] span,
   font-weight: 800 !important;
   padding: 2px 6px !important;
   border-radius: 10px !important;
-  background: #eaf3fe !important;
-  color: #0056cc !important;
   line-height: 1 !important;
-}
-
-.uf-card.active .uf-counter-pill {
-  background: rgba(255, 255, 255, 0.25) !important;
-  color: #ffffff !important;
 }
 
 .uf-nome {
   font-size: 10.5px !important;
   font-weight: 600 !important;
-  color: #557096 !important;
   white-space: nowrap !important;
   line-height: 1.2 !important;
-}
-
-.uf-card.active .uf-nome {
-  color: rgba(255, 255, 255, 0.9) !important;
 }
 
 .oficinas-list-header {
@@ -5893,8 +5928,8 @@ nav[aria-label="Navegação principal"] span,
     <div class="oficinas-uf-bar" id="oficinas-uf-bar" role="tablist" aria-label="Filtrar oficinas credenciadas por estado"></div>
 
     <div class="oficinas-list-header">
-      <h2 class="oficinas-list-title" id="oficinas-list-title">Oficinas Parceiras · RJ</h2>
-      <span class="oficinas-list-badge" id="oficinas-list-badge">2 credenciadas</span>
+      <h2 class="oficinas-list-title" id="oficinas-list-title">Oficinas Parceiras · SP</h2>
+      <span class="oficinas-list-badge" id="oficinas-list-badge">4 credenciadas</span>
     </div>
 
     <div id="oficinas-list" class="shops-list" aria-label="Lista de oficinas credenciadas DNA AUTO"></div>
@@ -6839,56 +6874,61 @@ window.go = function(id) {
 };
 
 
-// --- OFICINAS DA REDE CREDENCIADA COM GOOGLE MAPS (PINOS NOS ENDEREÇOS) ---
-// Estados/Cidades com Siglas: Rio de Janeiro é o 1º da esquerda para a direita, São Paulo é o 2º
+// --- OFICINAS DA REDE CREDENCIADA COM GOOGLE MAPS ---
+// Apenas os 2 cards: SP em Azul Ativo e RJ Cinza com Contador Regressivo de 30 Dias ("Breve")
 const estadosDisponiveis = [
-  { uf: 'RJ', nome: 'Rio de Janeiro' },
-  { uf: 'SP', nome: 'São Paulo' },
-  { uf: 'DF', nome: 'Brasília' },
-  { uf: 'MG', nome: 'Belo Horizonte' },
-  { uf: 'PR', nome: 'Curitiba' },
-  { uf: 'RS', nome: 'Porto Alegre' },
-  { uf: 'BA', nome: 'Salvador' },
-  { uf: 'TODOS', nome: 'Todas' }
+  { uf: 'RJ', nome: 'Rio de Janeiro', status: 'BREVE' },
+  { uf: 'SP', nome: 'São Paulo', status: 'ATIVO' }
 ];
 
-let selectedUfFilter = 'RJ'; // RJ é o primeiro card da esquerda para a direita
+let selectedUfFilter = 'SP'; // SP é o card em azul ativo padrão
+
+// Contador Regressivo Oficial de 30 Dias para a Rede do Rio de Janeiro
+function getRjCountdown() {
+  const storageKey = 'dna_rj_launch_timestamp_v1';
+  let launchTime = localStorage.getItem(storageKey);
+  if (!launchTime) {
+    launchTime = Date.now() + (30 * 24 * 60 * 60 * 1000);
+    localStorage.setItem(storageKey, launchTime);
+  } else {
+    launchTime = Number(launchTime);
+  }
+  const now = Date.now();
+  const diff = Math.max(0, launchTime - now);
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+
+  return {
+    diff,
+    days,
+    hours,
+    minutes,
+    seconds,
+    badge: days + 'd ' + String(hours).padStart(2, '0') + 'h',
+    mini: days + 'd ' + String(hours).padStart(2, '0') + 'h ' + String(minutes).padStart(2, '0') + 'm',
+    full: days + ' dias, ' + String(hours).padStart(2, '0') + 'h ' + String(minutes).padStart(2, '0') + 'm ' + String(seconds).padStart(2, '0') + 's'
+  };
+}
+
+let rjCountdownInterval = null;
+function startRjCountdownTimer() {
+  if (rjCountdownInterval) clearInterval(rjCountdownInterval);
+  const tick = () => {
+    const cd = getRjCountdown();
+    const badgeEl = document.getElementById('rj-countdown-badge');
+    const miniEl = document.getElementById('rj-countdown-mini');
+    const listEl = document.getElementById('rj-list-countdown-full');
+    if (badgeEl) badgeEl.textContent = '⏳ ' + cd.badge;
+    if (miniEl) miniEl.textContent = cd.mini;
+    if (listEl) listEl.textContent = cd.full;
+  };
+  tick();
+  rjCountdownInterval = setInterval(tick, 1000);
+}
 
 const oficinasDaRede = [
-  {
-    id: 5,
-    nome: 'DNA Auto Rio Barra',
-    bairro: 'Barra da Tijuca',
-    cidade: 'Rio de Janeiro - RJ',
-    uf: 'RJ',
-    distancia: 'Rede RJ',
-    nota: '5.0',
-    avaliacoes: 71,
-    lat: -22.9995,
-    lng: -43.361,
-    tipo: 'Revisão Preventiva Padrão OEM & Câmbio Automático',
-    endereco: 'Av. das Américas, 3500 - Barra da Tijuca, Rio de Janeiro - RJ',
-    telefone: '(21) 98765-1234',
-    whatsapp: '5521987651234',
-    imagem: 'img/oficina-premium.jpg'
-  },
-  {
-    id: 11,
-    nome: 'Carioca Prime Auto Center',
-    bairro: 'Botafogo',
-    cidade: 'Rio de Janeiro - RJ',
-    uf: 'RJ',
-    distancia: 'Rede RJ',
-    nota: '4.9',
-    avaliacoes: 58,
-    lat: -22.9519,
-    lng: -43.1856,
-    tipo: 'Injeção Eletrônica, Freios ABS & Diagnóstico OBD2',
-    endereco: 'Rua São Clemente, 185 - Botafogo, Rio de Janeiro - RJ',
-    telefone: '(21) 97654-4321',
-    whatsapp: '5521976544321',
-    imagem: 'img/ws-workshop-thumb1.jpg'
-  },
   {
     id: 1,
     nome: 'Veloce Auto Center',
@@ -6958,93 +6998,42 @@ const oficinasDaRede = [
     imagem: 'img/mecanica-souza.jpg'
   },
   {
-    id: 8,
-    nome: 'Mecânica Capital Brasil',
-    bairro: 'Asa Sul',
-    cidade: 'Brasília - DF',
-    uf: 'DF',
-    distancia: 'Rede DF',
-    nota: '4.8',
-    avaliacoes: 47,
-    lat: -15.798,
-    lng: -47.887,
-    tipo: 'Manutenção Preditiva & Injeção Direta',
-    endereco: 'SCS Quadra 4, Bloco A - Asa Sul, Brasília - DF',
-    telefone: '(61) 99888-7766',
-    whatsapp: '5561998887766',
-    imagem: 'img/ws-workshop-thumb1.jpg'
-  },
-  {
-    id: 6,
-    nome: 'Oficina Central Savassi',
-    bairro: 'Savassi',
-    cidade: 'Belo Horizonte - MG',
-    uf: 'MG',
-    distancia: 'Rede MG',
-    nota: '4.9',
-    avaliacoes: 63,
-    lat: -19.9385,
-    lng: -43.935,
-    tipo: 'Diagnóstico Eletrônico & Revisão Completa',
-    endereco: 'Av. do Contorno, 6200 - Savassi, Belo Horizonte - MG',
-    telefone: '(31) 99876-4321',
-    whatsapp: '5531998764321',
-    imagem: 'img/mecanica-souza.jpg'
-  },
-  {
-    id: 7,
-    nome: 'Eurotech Curitiba',
-    bairro: 'Batel',
-    cidade: 'Curitiba - PR',
-    uf: 'PR',
-    distancia: 'Rede PR',
-    nota: '4.9',
-    avaliacoes: 52,
-    lat: -25.445,
-    lng: -49.289,
-    tipo: 'Especializada em Importados e Nacionais',
-    endereco: 'Av. Batel, 1500 - Batel, Curitiba - PR',
-    telefone: '(41) 98765-9988',
-    whatsapp: '5541987659988',
-    imagem: 'img/autocenter-silva.jpg'
-  },
-  {
-    id: 9,
-    nome: 'Sul Auto Service Moinhos',
-    bairro: 'Moinhos de Vento',
-    cidade: 'Porto Alegre - RS',
-    uf: 'RS',
-    distancia: 'Rede RS',
-    nota: '4.9',
-    avaliacoes: 39,
-    lat: -30.024,
-    lng: -51.198,
-    tipo: 'Freios ABS, Geometria 3D & Motor',
-    endereco: 'Rua 24 de Outubro, 1100 - Moinhos de Vento, Porto Alegre - RS',
-    telefone: '(51) 98123-4567',
-    whatsapp: '5551981234567',
-    imagem: 'img/mecanica-souza.jpg'
-  },
-  {
-    id: 10,
-    nome: 'Bahia Prime Oficina',
-    bairro: 'Caminho das Árvores',
-    cidade: 'Salvador - BA',
-    uf: 'BA',
-    distancia: 'Rede BA',
-    nota: '4.8',
-    avaliacoes: 44,
-    lat: -12.981,
-    lng: -38.455,
-    tipo: 'Ar-condicionado, Baterias & Suspensão',
-    endereco: 'Av. Tancredo Neves, 1200 - Caminho das Árvores, Salvador - BA',
-    telefone: '(71) 99234-5678',
-    whatsapp: '5571992345678',
+    id: 5,
+    nome: 'DNA Auto Rio Barra',
+    bairro: 'Barra da Tijuca',
+    cidade: 'Rio de Janeiro - RJ',
+    uf: 'RJ',
+    distancia: 'Rede RJ (Breve)',
+    nota: '5.0',
+    avaliacoes: 71,
+    lat: -22.9995,
+    lng: -43.361,
+    tipo: 'Revisão Preventiva Padrão OEM & Câmbio Automático',
+    endereco: 'Av. das Américas, 3500 - Barra da Tijuca, Rio de Janeiro - RJ',
+    telefone: '(21) 98765-1234',
+    whatsapp: '5521987651234',
     imagem: 'img/oficina-premium.jpg'
+  },
+  {
+    id: 11,
+    nome: 'Carioca Prime Auto Center',
+    bairro: 'Botafogo',
+    cidade: 'Rio de Janeiro - RJ',
+    uf: 'RJ',
+    distancia: 'Rede RJ (Breve)',
+    nota: '4.9',
+    avaliacoes: 58,
+    lat: -22.9519,
+    lng: -43.1856,
+    tipo: 'Injeção Eletrônica, Freios ABS & Diagnóstico OBD2',
+    endereco: 'Rua São Clemente, 185 - Botafogo, Rio de Janeiro - RJ',
+    telefone: '(21) 97654-4321',
+    whatsapp: '5521976544321',
+    imagem: 'img/ws-workshop-thumb1.jpg'
   }
 ];
 
-let selectedOficinaId = 5;
+let selectedOficinaId = 1;
 
 // Atualiza o Google Maps oficial com pino no endereço exato da oficina
 function updateGoogleMap(query, zoom, shopName, shopAddress) {
@@ -7091,18 +7080,15 @@ function scrollToMap() {
 function selectOficina(id, autoScroll) {
   selectedOficinaId = id;
 
-  // Atualizar seleção visual dos cards
   document.querySelectorAll('.shop-card').forEach(c => {
     c.classList.toggle('selected', Number(c.dataset.id) === id);
   });
 
-  // Atualizar o Google Maps com o pino no endereço da oficina selecionada
   const o = oficinasDaRede.find(x => x.id === id);
   if (o) {
     updateGoogleMap(o.nome + ', ' + o.endereco, 15, o.nome, o.endereco);
   }
 
-  // Subir a tela suavemente até o mapa sem sair da tela
   if (autoScroll) {
     scrollToMap();
   }
@@ -7111,22 +7097,19 @@ function selectOficina(id, autoScroll) {
 function selectUfFilter(uf) {
   selectedUfFilter = uf;
 
-  // Atualiza seleção visual dos cards de UF
-  document.querySelectorAll('.uf-card').forEach(btn => {
-    const isAct = btn.dataset.uf === uf;
-    btn.classList.toggle('active', isAct);
-    btn.setAttribute('aria-selected', isAct ? 'true' : 'false');
-  });
-
+  renderOficinasUfBar();
   renderOficinasList();
 
-  // Focalizar primeira oficina correspondente no mapa
-  const filtered = (selectedUfFilter === 'TODOS')
-    ? oficinasDaRede
-    : oficinasDaRede.filter(o => o.uf === selectedUfFilter);
-
-  if (filtered.length > 0) {
-    selectOficina(filtered[0].id, false);
+  if (uf === 'SP') {
+    const spList = oficinasDaRede.filter(o => o.uf === 'SP');
+    if (spList.length > 0) {
+      selectOficina(spList[0].id, false);
+    }
+  } else if (uf === 'RJ') {
+    const rjList = oficinasDaRede.filter(o => o.uf === 'RJ');
+    if (rjList.length > 0) {
+      selectOficina(rjList[0].id, false);
+    }
   }
 }
 
@@ -7134,64 +7117,74 @@ function renderOficinasUfBar() {
   const container = document.getElementById('oficinas-uf-bar');
   if (!container) return;
 
-  container.innerHTML = '';
-  estadosDisponiveis.forEach(est => {
-    const count = est.uf === 'TODOS'
-      ? oficinasDaRede.length
-      : oficinasDaRede.filter(o => o.uf === est.uf).length;
+  const cd = getRjCountdown();
 
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'uf-card' + (est.uf === selectedUfFilter ? ' active' : '');
-    btn.setAttribute('data-uf', est.uf);
-    btn.setAttribute('role', 'tab');
-    btn.setAttribute('aria-selected', est.uf === selectedUfFilter ? 'true' : 'false');
-    btn.setAttribute('aria-label', 'Filtrar por ' + est.uf + ' (' + est.nome + ') - ' + count + ' oficinas');
-
-    btn.innerHTML =
+  // Exatamente os dois cards: RJ à esquerda (Cinza "Breve" + contador de 30 dias) e SP à direita (Azul Ativo)
+  container.innerHTML =
+    '<!-- Card 1: RJ (Cinza, Breve, Contador Regressivo de 30 Dias) -->' +
+    '<button type="button" class="uf-card rj-card' + (selectedUfFilter === 'RJ' ? ' selected-filter' : '') + '" data-uf="RJ" onclick="selectUfFilter(\'RJ\')" aria-label="Rio de Janeiro - Em breve em 30 dias">' +
       '<div class="uf-card-top">' +
-        '<span class="uf-sigla">' + est.uf + '</span>' +
-        '<span class="uf-counter-pill">' + count + '</span>' +
+        '<span class="uf-sigla">RJ</span>' +
+        '<span class="uf-counter-pill" id="rj-countdown-badge">⏳ ' + cd.badge + '</span>' +
       '</div>' +
-      '<span class="uf-nome">' + est.nome + '</span>';
+      '<span class="uf-nome">Rio de Janeiro</span>' +
+      '<span class="uf-badge-status">' +
+        '<span>●</span> Breve: <strong id="rj-countdown-mini" style="font-weight:800;">' + cd.mini + '</strong>' +
+      '</span>' +
+    '</button>' +
 
-    btn.onclick = () => selectUfFilter(est.uf);
-    container.appendChild(btn);
-  });
+    '<!-- Card 2: SP (Azul Ativo) -->' +
+    '<button type="button" class="uf-card sp-card active' + (selectedUfFilter === 'SP' ? ' selected-filter' : '') + '" data-uf="SP" onclick="selectUfFilter(\'SP\')" aria-label="São Paulo - Rede Ativa">' +
+      '<div class="uf-card-top">' +
+        '<span class="uf-sigla">SP</span>' +
+        '<span class="uf-counter-pill">4 ativas</span>' +
+      '</div>' +
+      '<span class="uf-nome">São Paulo</span>' +
+      '<span class="uf-badge-status">' +
+        '<span>✓</span> Ativo na Rede' +
+      '</span>' +
+    '</button>';
 }
 
 function renderOficinasList() {
   const list = document.getElementById('oficinas-list');
   if (!list) return;
 
-  const filtered = (selectedUfFilter === 'TODOS')
-    ? oficinasDaRede
-    : oficinasDaRede.filter(o => o.uf === selectedUfFilter);
-
   const headerTitle = document.getElementById('oficinas-list-title');
   const headerBadge = document.getElementById('oficinas-list-badge');
-  if (headerTitle) {
-    headerTitle.textContent = selectedUfFilter === 'TODOS'
-      ? 'Oficinas Parceiras'
-      : 'Oficinas Parceiras · ' + selectedUfFilter;
-  }
-  if (headerBadge) {
-    const qtd = filtered.length;
-    headerBadge.textContent = qtd + ' credenciada' + (qtd === 1 ? '' : 's');
-  }
 
-  list.innerHTML = '';
+  if (selectedUfFilter === 'RJ') {
+    if (headerTitle) headerTitle.textContent = 'Oficinas Parceiras · RJ (Em breve)';
+    if (headerBadge) headerBadge.textContent = 'Inauguração em 30 dias';
 
-  if (filtered.length === 0) {
-    list.innerHTML = 
-      '<div style="text-align:center; padding:24px 16px; background:#ffffff; border:1.5px dashed #cbd5e1; border-radius:14px; margin:8px 0;">' +
-        '<p style="font-size:13.5px; font-weight:750; color:#1e293b; margin:0 0 4px 0;">Nenhuma oficina credenciada em ' + selectedUfFilter + '</p>' +
-        '<p style="font-size:11.5px; color:#64748b; margin:0;">Rede em constante expansão pelo Brasil. Novas oficinas serão homologadas em breve.</p>' +
+    const cd = getRjCountdown();
+    list.innerHTML =
+      '<div style="background:#ffffff; border:1.5px dashed #94a3b8; border-radius:16px; padding:24px 18px; text-align:center; box-shadow:0 3px 12px rgba(11,40,80,0.04); margin:6px 0;">' +
+        '<div style="display:inline-flex; align-items:center; justify-content:center; width:52px; height:52px; border-radius:50%; background:#fef3c7; color:#b45309; font-size:24px; margin-bottom:10px;">⏳</div>' +
+        '<h3 style="font-size:16px; font-weight:800; color:#0f172a; margin:0 0 6px 0;">Rede Rio de Janeiro em Breve</h3>' +
+        '<p style="font-size:12px; color:#64748b; margin:0 0 14px 0; line-height:1.45;">' +
+          'A expansão da rede oficial DNA AUTO no Rio de Janeiro está em homologação técnica nas regiões da Barra da Tijuca e Botafogo.' +
+        '</p>' +
+        '<div style="display:inline-flex; align-items:center; gap:8px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:10px; padding:8px 14px; margin-bottom:14px;">' +
+          '<span style="font-size:11.5px; font-weight:700; color:#475569;">Inauguração em:</span>' +
+          '<strong style="font-size:13.5px; font-weight:800; color:#0066FF;" id="rj-list-countdown-full">' + cd.full + '</strong>' +
+        '</div>' +
+        '<div>' +
+          '<button type="button" onclick="selectUfFilter(\'SP\')" style="background:linear-gradient(135deg, #0066FF, #0050d0); color:#fff; font-weight:750; font-size:12px; border:none; border-radius:8px; padding:9px 18px; cursor:pointer; box-shadow:0 3px 10px rgba(0,102,255,0.25);">' +
+            'Ver oficinas ativas em São Paulo (SP) →' +
+          '</button>' +
+        '</div>' +
       '</div>';
     return;
   }
 
-  filtered.forEach(o => {
+  // Modo SP (Ativo)
+  const spList = oficinasDaRede.filter(o => o.uf === 'SP');
+  if (headerTitle) headerTitle.textContent = 'Oficinas Parceiras · SP';
+  if (headerBadge) headerBadge.textContent = spList.length + ' credenciadas';
+
+  list.innerHTML = '';
+  spList.forEach(o => {
     const el = document.createElement('article');
     el.className = 'shop-card' + (o.id === selectedOficinaId ? ' selected' : '');
     el.setAttribute('data-id', o.id);
@@ -7226,7 +7219,6 @@ function renderOficinasList() {
         '</div>' +
       '</div>';
 
-    // Ao clicar em qualquer parte do card, atualiza o mapa e sobe a tela sem sair dela
     el.onclick = () => selectOficina(o.id, true);
     el.onkeydown = (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -7241,6 +7233,7 @@ function renderOficinasList() {
 
 function initOficinasMap() {
   renderOficinasUfBar();
+  startRjCountdownTimer();
   renderOficinasList();
 
   const closeBtn = document.getElementById('oficinas-modal-close');
@@ -7252,11 +7245,9 @@ function initOficinasMap() {
     };
   }
 
-  // Inicializar o Google Maps no endereço da oficina selecionada
-  const filtered = (selectedUfFilter === 'TODOS')
-    ? oficinasDaRede
-    : oficinasDaRede.filter(o => o.uf === selectedUfFilter);
-  const o = filtered.find(x => x.id === selectedOficinaId) || filtered[0] || oficinasDaRede[0];
+  // Inicializar no primeiro de SP (Veloce Auto Center)
+  const spList = oficinasDaRede.filter(o => o.uf === 'SP');
+  const o = spList.find(x => x.id === selectedOficinaId) || spList[0] || oficinasDaRede[0];
   if (o) {
     selectOficina(o.id, false);
   }

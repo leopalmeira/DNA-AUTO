@@ -668,3 +668,11 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
   - Seleção reativa de cards que filtra instantaneamente as oficinas credenciadas da região correspondente e posiciona o pino do Google Maps no endereço exato da oficina.
   - Paridade rigorosa entre `cliente.app/`, `public/` e a API do backend (`/api/v1/workshops/network`).
   - 56/56 testes automatizados aprovados (100% de sucesso).
+
+
+### Ciclo 111 (02/11/2026)
+- **Apenas os 2 Cards na Tela de Oficinas da Rede (SP Azul Ativo e RJ Cinza com Contador Regressivo de 30 Dias):**
+  - Grid simétrico 50/50 com apenas 2 cards abaixo do mapa: RJ à esquerda e SP à direita.
+  - SP em Azul Ativo selecionado por padrão, exibindo as 4 oficinas credenciadas com mapa e rotas.
+  - RJ estilizado em cinza com indicador "Breve" e contador regressivo ao vivo de 30 dias (`⏳ 30d 00h`).
+  - Paridade total entre `cliente.app/` e `public/`. 56/56 testes aprovados (100% de sucesso).

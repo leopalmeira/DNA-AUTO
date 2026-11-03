@@ -3717,6 +3717,27 @@ const OwnerView = {
                     </div>
                 </div>
 
+                <!-- Cards de Estado: RJ (Cinza/Breve 30 dias) e SP (Azul Ativo) -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0 6px 0;">
+                    <div style="background:#f1f5f9; border:1.5px dashed #94a3b8; border-radius:14px; padding:10px 12px; cursor:pointer;" onclick="alert('Rede Rio de Janeiro em fase final de homologação. Inauguração oficial em 30 dias!');">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong style="font-size:16px; color:#475569; font-weight:900;">RJ</strong>
+                            <span style="font-size:9.5px; font-weight:800; background:#e2e8f0; color:#334155; padding:2px 6px; border-radius:8px; border:1px solid #cbd5e1;">⏳ 30 dias</span>
+                        </div>
+                        <span style="font-size:10.5px; color:#64748b; font-weight:600; display:block; margin:2px 0 4px;">Rio de Janeiro</span>
+                        <span style="font-size:9.5px; font-weight:800; color:#b45309; background:#fef3c7; border:1px solid #fde68a; padding:1px 5px; border-radius:4px;">● Breve (30d)</span>
+                    </div>
+
+                    <div style="background:linear-gradient(145deg, #0066FF, #0050d0); border:1.5px solid #0066FF; border-radius:14px; padding:10px 12px; cursor:pointer; box-shadow:0 4px 14px rgba(0,102,255,0.28);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <strong style="font-size:16px; color:#ffffff; font-weight:900;">SP</strong>
+                            <span style="font-size:9.5px; font-weight:800; background:rgba(255,255,255,0.25); color:#ffffff; padding:2px 6px; border-radius:8px; border:1px solid rgba(255,255,255,0.35);">3 ativas</span>
+                        </div>
+                        <span style="font-size:10.5px; color:rgba(255,255,255,0.9); font-weight:600; display:block; margin:2px 0 4px;">São Paulo</span>
+                        <span style="font-size:9.5px; font-weight:800; color:#ffffff; background:rgba(0,0,0,0.18); padding:1px 5px; border-radius:4px;">✓ Ativo</span>
+                    </div>
+                </div>
+
                 <!-- 2. Barra de Busca de Oficinas -->
                 <div class="dna-print-search-box">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.3"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
