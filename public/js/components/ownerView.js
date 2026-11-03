@@ -3628,32 +3628,60 @@ const OwnerView = {
 
         const defaultNetwork = [
             {
-                name: 'Auto Mecânica Silva & Filhos',
+                name: 'DNA Auto Rio Barra',
+                rating: '5.0',
+                reviews: '71',
+                distance: '1,5 km',
+                uf: 'RJ',
+                city: 'Rio de Janeiro',
+                specialties: 'Revisão Preventiva Padrão OEM & Câmbio Automático',
+                photoUrl: '/img/oficina-premium.jpg',
+                phone: '21987651234'
+            },
+            {
+                name: 'Carioca Prime Auto Center',
                 rating: '4.9',
-                reviews: '128',
-                distance: '1,8 km',
-                specialties: 'Injeção eletrônica, freios, revisão geral',
+                reviews: '58',
+                distance: '3,2 km',
+                uf: 'RJ',
+                city: 'Rio de Janeiro',
+                specialties: 'Injeção Eletrônica, Freios ABS & Diagnóstico OBD2',
+                photoUrl: '/img/ws-workshop-thumb1.jpg',
+                phone: '21976544321'
+            },
+            {
+                name: 'Veloce Auto Center',
+                rating: '4.9',
+                reviews: '58',
+                distance: '1,2 km',
+                uf: 'SP',
+                city: 'São Paulo',
+                specialties: 'Mecânica Geral, Injeção Eletrônica & Diagnóstico OBD2',
                 photoUrl: '/img/ws-workshop-thumb1.jpg',
                 phone: '11998765432'
             },
             {
-                name: 'Oficina Premium Car Center',
+                name: 'Auto Center Silva',
                 rating: '4.8',
-                reviews: '94',
-                distance: '2,3 km',
-                specialties: 'Câmbio automático, suspensão, scanner',
-                photoUrl: '/img/ws-workshop-thumb3.jpg',
-                phone: '11987654321',
-                featured: true
+                reviews: '42',
+                distance: '2,8 km',
+                uf: 'SP',
+                city: 'São Paulo',
+                specialties: 'Suspensão Laser 3D, Freios & Alinhamento',
+                photoUrl: '/img/autocenter-silva.jpg',
+                phone: '11987654321'
             },
             {
-                name: 'Auto Center Morumbi Especializado',
+                name: 'Oficina Premium Jardins',
                 rating: '5.0',
-                reviews: '210',
-                distance: '3,5 km',
-                specialties: 'Geometria 3D, ar condicionado, revisão preventiva',
-                photoUrl: '/img/ws-workshop-thumb1.jpg',
-                phone: '11976543210'
+                reviews: '64',
+                distance: '4,1 km',
+                uf: 'SP',
+                city: 'São Paulo',
+                specialties: 'Revisão Preventiva Padrão OEM & Câmbio Automático',
+                photoUrl: '/img/oficina-premium.jpg',
+                phone: '11976543210',
+                featured: true
             }
         ];
 

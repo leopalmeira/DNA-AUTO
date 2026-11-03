@@ -659,3 +659,12 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
   - **Qualidade, Paridade & Testes:**
     - 100% de paridade estrita mantida entre `cliente.app/index.html` e `public/cliente.html` (701.571 bytes em ambos).
     - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes).
+
+
+### Ciclo 110 (02/11/2026)
+- **Cards de Estado/Cidade por Sigla ("RJ, SP") na Tela de Oficinas da Rede:**
+  - Adicionada barra horizontal de seleção por sigla de estado/cidade abaixo do mapa na tela "Oficinas da Rede".
+  - Ordem rigorosa da esquerda para a direita: **RJ** em 1º lugar e **SP** em 2º lugar, seguido por DF, MG, PR, RS, BA e TODOS.
+  - Seleção reativa de cards que filtra instantaneamente as oficinas credenciadas da região correspondente e posiciona o pino do Google Maps no endereço exato da oficina.
+  - Paridade rigorosa entre `cliente.app/`, `public/` e a API do backend (`/api/v1/workshops/network`).
+  - 56/56 testes automatizados aprovados (100% de sucesso).

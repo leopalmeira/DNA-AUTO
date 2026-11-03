@@ -4785,6 +4785,107 @@ nav[aria-label="Navegação principal"] span,
   transform: scale(0.96) !important;
 }
 
+
+/* Barra Horizontal de Cards de Cidade / Estado (Filtro por Sigla: RJ, SP, etc.) */
+.oficinas-uf-bar {
+  display: flex !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  padding: 8px 2px 12px 2px !important;
+  margin: 0 !important;
+  scrollbar-width: none !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+.oficinas-uf-bar::-webkit-scrollbar {
+  display: none !important;
+}
+
+.uf-card {
+  flex: 0 0 auto !important;
+  min-width: 90px !important;
+  background: #ffffff !important;
+  border: 1.5px solid #d9e6f5 !important;
+  border-radius: 14px !important;
+  padding: 8px 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 3px !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  box-shadow: 0 2px 8px rgba(11, 40, 80, 0.04) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  box-sizing: border-box !important;
+}
+
+.uf-card:hover {
+  border-color: #9ac2f4 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.1) !important;
+}
+
+.uf-card:active {
+  transform: scale(0.96) !important;
+}
+
+.uf-card.active {
+  background: linear-gradient(145deg, #0066FF 0%, #0050d0 100%) !important;
+  border-color: #0066FF !important;
+  box-shadow: 0 4px 14px rgba(0, 102, 255, 0.3) !important;
+}
+
+.uf-card-top {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 6px !important;
+  width: 100% !important;
+}
+
+.uf-sigla {
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px !important;
+  color: #081d42 !important;
+  line-height: 1 !important;
+}
+
+.uf-card.active .uf-sigla {
+  color: #ffffff !important;
+}
+
+.uf-counter-pill {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  padding: 2px 6px !important;
+  border-radius: 10px !important;
+  background: #eaf3fe !important;
+  color: #0056cc !important;
+  line-height: 1 !important;
+}
+
+.uf-card.active .uf-counter-pill {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+}
+
+.uf-nome {
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  color: #557096 !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+}
+
+.uf-card.active .uf-nome {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
 .oficinas-list-header {
   display: flex !important;
   align-items: center !important;
@@ -5788,9 +5889,12 @@ nav[aria-label="Navegação principal"] span,
       </div>
     </div>
 
+    <!-- Cards de Estado/Cidade da Oficina por Sigla (RJ Primeiro da Esquerda para Direita, Depois SP) -->
+    <div class="oficinas-uf-bar" id="oficinas-uf-bar" role="tablist" aria-label="Filtrar oficinas credenciadas por estado"></div>
+
     <div class="oficinas-list-header">
-      <h2 class="oficinas-list-title">Oficinas Parceiras</h2>
-      <span class="oficinas-list-badge">10 credenciadas</span>
+      <h2 class="oficinas-list-title" id="oficinas-list-title">Oficinas Parceiras · RJ</h2>
+      <span class="oficinas-list-badge" id="oficinas-list-badge">2 credenciadas</span>
     </div>
 
     <div id="oficinas-list" class="shops-list" aria-label="Lista de oficinas credenciadas DNA AUTO"></div>
@@ -6736,12 +6840,61 @@ window.go = function(id) {
 
 
 // --- OFICINAS DA REDE CREDENCIADA COM GOOGLE MAPS (PINOS NOS ENDEREÇOS) ---
+// Estados/Cidades com Siglas: Rio de Janeiro é o 1º da esquerda para a direita, São Paulo é o 2º
+const estadosDisponiveis = [
+  { uf: 'RJ', nome: 'Rio de Janeiro' },
+  { uf: 'SP', nome: 'São Paulo' },
+  { uf: 'DF', nome: 'Brasília' },
+  { uf: 'MG', nome: 'Belo Horizonte' },
+  { uf: 'PR', nome: 'Curitiba' },
+  { uf: 'RS', nome: 'Porto Alegre' },
+  { uf: 'BA', nome: 'Salvador' },
+  { uf: 'TODOS', nome: 'Todas' }
+];
+
+let selectedUfFilter = 'RJ'; // RJ é o primeiro card da esquerda para a direita
+
 const oficinasDaRede = [
+  {
+    id: 5,
+    nome: 'DNA Auto Rio Barra',
+    bairro: 'Barra da Tijuca',
+    cidade: 'Rio de Janeiro - RJ',
+    uf: 'RJ',
+    distancia: 'Rede RJ',
+    nota: '5.0',
+    avaliacoes: 71,
+    lat: -22.9995,
+    lng: -43.361,
+    tipo: 'Revisão Preventiva Padrão OEM & Câmbio Automático',
+    endereco: 'Av. das Américas, 3500 - Barra da Tijuca, Rio de Janeiro - RJ',
+    telefone: '(21) 98765-1234',
+    whatsapp: '5521987651234',
+    imagem: 'img/oficina-premium.jpg'
+  },
+  {
+    id: 11,
+    nome: 'Carioca Prime Auto Center',
+    bairro: 'Botafogo',
+    cidade: 'Rio de Janeiro - RJ',
+    uf: 'RJ',
+    distancia: 'Rede RJ',
+    nota: '4.9',
+    avaliacoes: 58,
+    lat: -22.9519,
+    lng: -43.1856,
+    tipo: 'Injeção Eletrônica, Freios ABS & Diagnóstico OBD2',
+    endereco: 'Rua São Clemente, 185 - Botafogo, Rio de Janeiro - RJ',
+    telefone: '(21) 97654-4321',
+    whatsapp: '5521976544321',
+    imagem: 'img/ws-workshop-thumb1.jpg'
+  },
   {
     id: 1,
     nome: 'Veloce Auto Center',
     bairro: 'Bela Vista',
     cidade: 'São Paulo - SP',
+    uf: 'SP',
     distancia: '1,2 km',
     nota: '4.9',
     avaliacoes: 58,
@@ -6758,6 +6911,7 @@ const oficinasDaRede = [
     nome: 'Auto Center Silva',
     bairro: 'Moema',
     cidade: 'São Paulo - SP',
+    uf: 'SP',
     distancia: '2,8 km',
     nota: '4.8',
     avaliacoes: 42,
@@ -6774,6 +6928,7 @@ const oficinasDaRede = [
     nome: 'Oficina Premium Jardins',
     bairro: 'Jardins',
     cidade: 'São Paulo - SP',
+    uf: 'SP',
     distancia: '4,1 km',
     nota: '5.0',
     avaliacoes: 64,
@@ -6790,6 +6945,7 @@ const oficinasDaRede = [
     nome: 'Auto Elétrica Central & Baterias',
     bairro: 'Vila Mariana',
     cidade: 'São Paulo - SP',
+    uf: 'SP',
     distancia: '5,6 km',
     nota: '4.7',
     avaliacoes: 37,
@@ -6802,26 +6958,28 @@ const oficinasDaRede = [
     imagem: 'img/mecanica-souza.jpg'
   },
   {
-    id: 5,
-    nome: 'DNA Auto Rio Barra',
-    bairro: 'Barra da Tijuca',
-    cidade: 'Rio de Janeiro - RJ',
-    distancia: 'Rede RJ',
-    nota: '5.0',
-    avaliacoes: 71,
-    lat: -22.9995,
-    lng: -43.361,
-    tipo: 'Revisão Preventiva Padrão OEM & Câmbio Automático',
-    endereco: 'Av. das Américas, 3500 - Barra da Tijuca, Rio de Janeiro - RJ',
-    telefone: '(21) 98765-1234',
-    whatsapp: '5521987651234',
-    imagem: 'img/oficina-premium.jpg'
+    id: 8,
+    nome: 'Mecânica Capital Brasil',
+    bairro: 'Asa Sul',
+    cidade: 'Brasília - DF',
+    uf: 'DF',
+    distancia: 'Rede DF',
+    nota: '4.8',
+    avaliacoes: 47,
+    lat: -15.798,
+    lng: -47.887,
+    tipo: 'Manutenção Preditiva & Injeção Direta',
+    endereco: 'SCS Quadra 4, Bloco A - Asa Sul, Brasília - DF',
+    telefone: '(61) 99888-7766',
+    whatsapp: '5561998887766',
+    imagem: 'img/ws-workshop-thumb1.jpg'
   },
   {
     id: 6,
     nome: 'Oficina Central Savassi',
     bairro: 'Savassi',
     cidade: 'Belo Horizonte - MG',
+    uf: 'MG',
     distancia: 'Rede MG',
     nota: '4.9',
     avaliacoes: 63,
@@ -6838,6 +6996,7 @@ const oficinasDaRede = [
     nome: 'Eurotech Curitiba',
     bairro: 'Batel',
     cidade: 'Curitiba - PR',
+    uf: 'PR',
     distancia: 'Rede PR',
     nota: '4.9',
     avaliacoes: 52,
@@ -6850,26 +7009,11 @@ const oficinasDaRede = [
     imagem: 'img/autocenter-silva.jpg'
   },
   {
-    id: 8,
-    nome: 'Mecânica Capital Brasil',
-    bairro: 'Asa Sul',
-    cidade: 'Brasília - DF',
-    distancia: 'Rede DF',
-    nota: '4.8',
-    avaliacoes: 47,
-    lat: -15.798,
-    lng: -47.887,
-    tipo: 'Manutenção Preditiva & Injeção Direta',
-    endereco: 'SCS Quadra 4, Bloco A - Asa Sul, Brasília - DF',
-    telefone: '(61) 99888-7766',
-    whatsapp: '5561998887766',
-    imagem: 'img/ws-workshop-thumb1.jpg'
-  },
-  {
     id: 9,
     nome: 'Sul Auto Service Moinhos',
     bairro: 'Moinhos de Vento',
     cidade: 'Porto Alegre - RS',
+    uf: 'RS',
     distancia: 'Rede RS',
     nota: '4.9',
     avaliacoes: 39,
@@ -6886,6 +7030,7 @@ const oficinasDaRede = [
     nome: 'Bahia Prime Oficina',
     bairro: 'Caminho das Árvores',
     cidade: 'Salvador - BA',
+    uf: 'BA',
     distancia: 'Rede BA',
     nota: '4.8',
     avaliacoes: 44,
@@ -6899,7 +7044,7 @@ const oficinasDaRede = [
   }
 ];
 
-let selectedOficinaId = 1;
+let selectedOficinaId = 5;
 
 // Atualiza o Google Maps oficial com pino no endereço exato da oficina
 function updateGoogleMap(query, zoom, shopName, shopAddress) {
@@ -6963,12 +7108,90 @@ function selectOficina(id, autoScroll) {
   }
 }
 
+function selectUfFilter(uf) {
+  selectedUfFilter = uf;
+
+  // Atualiza seleção visual dos cards de UF
+  document.querySelectorAll('.uf-card').forEach(btn => {
+    const isAct = btn.dataset.uf === uf;
+    btn.classList.toggle('active', isAct);
+    btn.setAttribute('aria-selected', isAct ? 'true' : 'false');
+  });
+
+  renderOficinasList();
+
+  // Focalizar primeira oficina correspondente no mapa
+  const filtered = (selectedUfFilter === 'TODOS')
+    ? oficinasDaRede
+    : oficinasDaRede.filter(o => o.uf === selectedUfFilter);
+
+  if (filtered.length > 0) {
+    selectOficina(filtered[0].id, false);
+  }
+}
+
+function renderOficinasUfBar() {
+  const container = document.getElementById('oficinas-uf-bar');
+  if (!container) return;
+
+  container.innerHTML = '';
+  estadosDisponiveis.forEach(est => {
+    const count = est.uf === 'TODOS'
+      ? oficinasDaRede.length
+      : oficinasDaRede.filter(o => o.uf === est.uf).length;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'uf-card' + (est.uf === selectedUfFilter ? ' active' : '');
+    btn.setAttribute('data-uf', est.uf);
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-selected', est.uf === selectedUfFilter ? 'true' : 'false');
+    btn.setAttribute('aria-label', 'Filtrar por ' + est.uf + ' (' + est.nome + ') - ' + count + ' oficinas');
+
+    btn.innerHTML =
+      '<div class="uf-card-top">' +
+        '<span class="uf-sigla">' + est.uf + '</span>' +
+        '<span class="uf-counter-pill">' + count + '</span>' +
+      '</div>' +
+      '<span class="uf-nome">' + est.nome + '</span>';
+
+    btn.onclick = () => selectUfFilter(est.uf);
+    container.appendChild(btn);
+  });
+}
+
 function renderOficinasList() {
   const list = document.getElementById('oficinas-list');
   if (!list) return;
 
+  const filtered = (selectedUfFilter === 'TODOS')
+    ? oficinasDaRede
+    : oficinasDaRede.filter(o => o.uf === selectedUfFilter);
+
+  const headerTitle = document.getElementById('oficinas-list-title');
+  const headerBadge = document.getElementById('oficinas-list-badge');
+  if (headerTitle) {
+    headerTitle.textContent = selectedUfFilter === 'TODOS'
+      ? 'Oficinas Parceiras'
+      : 'Oficinas Parceiras · ' + selectedUfFilter;
+  }
+  if (headerBadge) {
+    const qtd = filtered.length;
+    headerBadge.textContent = qtd + ' credenciada' + (qtd === 1 ? '' : 's');
+  }
+
   list.innerHTML = '';
-  oficinasDaRede.forEach(o => {
+
+  if (filtered.length === 0) {
+    list.innerHTML = 
+      '<div style="text-align:center; padding:24px 16px; background:#ffffff; border:1.5px dashed #cbd5e1; border-radius:14px; margin:8px 0;">' +
+        '<p style="font-size:13.5px; font-weight:750; color:#1e293b; margin:0 0 4px 0;">Nenhuma oficina credenciada em ' + selectedUfFilter + '</p>' +
+        '<p style="font-size:11.5px; color:#64748b; margin:0;">Rede em constante expansão pelo Brasil. Novas oficinas serão homologadas em breve.</p>' +
+      '</div>';
+    return;
+  }
+
+  filtered.forEach(o => {
     const el = document.createElement('article');
     el.className = 'shop-card' + (o.id === selectedOficinaId ? ' selected' : '');
     el.setAttribute('data-id', o.id);
@@ -6993,7 +7216,7 @@ function renderOficinasList() {
         '</div>' +
         '<div class="shop-meta-row">' +
           '<div class="shop-meta-tags">' +
-            '<span class="shop-dist-tag">' + o.cidade.split(' - ')[0] + '</span>' +
+            '<span class="shop-dist-tag">' + (o.uf || o.cidade.split(' - ')[0]) + '</span>' +
             '<span>' + o.avaliacoes + ' avaliações</span>' +
           '</div>' +
           '<span class="shop-view-action">' +
@@ -7017,6 +7240,7 @@ function renderOficinasList() {
 }
 
 function initOficinasMap() {
+  renderOficinasUfBar();
   renderOficinasList();
 
   const closeBtn = document.getElementById('oficinas-modal-close');
@@ -7029,9 +7253,12 @@ function initOficinasMap() {
   }
 
   // Inicializar o Google Maps no endereço da oficina selecionada
-  const o = oficinasDaRede.find(x => x.id === selectedOficinaId) || oficinasDaRede[0];
+  const filtered = (selectedUfFilter === 'TODOS')
+    ? oficinasDaRede
+    : oficinasDaRede.filter(o => o.uf === selectedUfFilter);
+  const o = filtered.find(x => x.id === selectedOficinaId) || filtered[0] || oficinasDaRede[0];
   if (o) {
-    updateGoogleMap(o.nome + ', ' + o.endereco, 15, o.nome, o.endereco);
+    selectOficina(o.id, false);
   }
 }
 

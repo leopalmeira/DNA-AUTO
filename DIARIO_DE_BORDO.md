@@ -2348,3 +2348,30 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - 100% de paridade estrita mantida entre `oficina.app/js/components/workshopMobileView.js` e `public/js/components/workshopMobileView.js`.
   - Bateria completa de testes automatizados (`npm test`) executada e aprovada com 100% de sucesso (56/56 testes). Base demo repovoada com sucesso.
 
+
+
+### 🚀 Ciclo 110: Cards de Localidade por Sigla ("RJ, SP") na Tela de Oficinas da Rede
+- **Origem da Demanda:** Usuário solicitou que na tela de "Oficinas da Rede" (abaixo do mapa), sejam adicionados os cards de cidade/estado da oficina com siglas ("SP, RJ"), com o Rio de Janeiro (RJ) sendo obrigatoriamente o primeiro card da esquerda para a direita e São Paulo (SP) o segundo, filtrando a lista abaixo ao selecionar o card.
+- **Implementações Técnicas Realizadas:**
+  1. **Barra de Cards de Estado/Localidade por Sigla (`.oficinas-uf-bar`):**
+     - Criado container flexível com rolagem horizontal touch (`overflow-x: auto; scrollbar-width: none;`) posicionado diretamente abaixo do mapa Google Maps.
+     - Cada card (`.uf-card`) apresenta a **Sigla em destaque visual** (`.uf-sigla` - ex: "RJ", "SP", "DF"), pílula de contagem de credenciadas (`.uf-counter-pill`) e subtítulo da localidade (`.uf-nome`).
+     - **Ordem rigorosa da esquerda para a direita:**
+       1. **RJ** (Rio de Janeiro - 2 oficinas credenciadas)
+       2. **SP** (São Paulo - 4 oficinas credenciadas)
+       3. **DF** (Brasília)
+       4. **MG** (Belo Horizonte)
+       5. **PR** (Curitiba)
+       6. **RS** (Porto Alegre)
+       7. **BA** (Salvador)
+       8. **TODOS** (Todas as oficinas)
+  2. **Comportamento Reativo de Filtragem & Focalização do Mapa:**
+     - Ao clicar no card de um estado (ex: "SP"), apenas as oficinas do estado selecionado são exibidas na lista inferior.
+     - O título é reativamente atualizado para `Oficinas Parceiras · SP` e o badge exibe a contagem exata (ex: `4 credenciadas`).
+     - O mapa Google Maps e o card flutuante superior sincronizam imediatamente com o endereço da primeira oficina do estado selecionado.
+     - Ao clicar em "RJ", são exibidas as oficinas do Rio de Janeiro (`DNA Auto Rio Barra` e `Carioca Prime Auto Center`).
+  3. **Backend & Paridade Multi-Arquivo:**
+     - Rota `/api/v1/workshops/network` em `server/src/modules/workshops/workshops.routes.js` aprimorada para suportar filtro por `uf` / `state` com fallback incluindo RJ e SP.
+     - Paridade absoluta mantida entre `cliente.app/index.html`, `public/cliente.html`, `cliente.app/js/components/ownerView.js` e `public/js/components/ownerView.js`.
+- **Qualidade & Testes:**
+  - 100% dos 56 testes automatizados aprovados com sucesso (`npm test`).

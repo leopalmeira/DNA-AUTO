@@ -92,9 +92,12 @@ router.get('/ranking/most-active', (req, res) => {
     }
 });
 
-// Rede de Oficinas Credenciadas (Para o App do Cliente / Dono)
+// Rede de Oficinas Credenciadas (Para o App do Cliente / Dono) com filtro por Estado/Sigla (RJ, SP, etc.)
 router.get('/network', (req, res) => {
     try {
+        const { state, uf } = req.query;
+        const requestedUf = (uf || state || '').toUpperCase().trim();
+
         const workshops = db.prepare(`
             SELECT id, trade_name as name, cnpj, phone, email, address_street, address_number, address_neighborhood, city, state, zip_code, verified_badge, status
             FROM workshops
@@ -102,12 +105,22 @@ router.get('/network', (req, res) => {
             ORDER BY verified_badge DESC, trade_name ASC
         `).all();
 
-        const formatted = (workshops.length > 0 ? workshops : [
-            { id: 'ws_autotech', name: 'AutoTech Centro Automotivo', city: 'São Paulo', state: 'SP', phone: '(11) 99876-5432', address_neighborhood: 'Jardins', verified_badge: 1 },
-            { id: 'ws_speedcar', name: 'Speed Car Oficina Especializada', city: 'São Paulo', state: 'SP', phone: '(11) 98765-4321', address_neighborhood: 'Moema', verified_badge: 1 },
+        const defaultFallback = [
+            { id: 'ws_riobarra', name: 'DNA Auto Rio Barra', city: 'Rio de Janeiro', state: 'RJ', phone: '(21) 98765-1234', address_neighborhood: 'Barra da Tijuca', verified_badge: 1 },
+            { id: 'ws_riobotafogo', name: 'Carioca Prime Auto Center', city: 'Rio de Janeiro', state: 'RJ', phone: '(21) 97654-4321', address_neighborhood: 'Botafogo', verified_badge: 1 },
+            { id: 'ws_veloce', name: 'Veloce Auto Center', city: 'São Paulo', state: 'SP', phone: '(11) 99876-5432', address_neighborhood: 'Bela Vista', verified_badge: 1 },
+            { id: 'ws_autotech', name: 'Auto Center Silva', city: 'São Paulo', state: 'SP', phone: '(11) 98765-4321', address_neighborhood: 'Moema', verified_badge: 1 },
             { id: 'ws_topmotors', name: 'Top Motors Performance', city: 'Campinas', state: 'SP', phone: '(11) 97654-3210', address_neighborhood: 'Cambuí', verified_badge: 1 },
             { id: 'ws_marcelo', name: 'Oficina Mecânica do Marcelo', city: 'São Bernardo', state: 'SP', phone: '(11) 96543-2109', address_neighborhood: 'Rudge Ramos', verified_badge: 1 }
-        ]).map((w, idx) => ({
+        ];
+
+        let baseList = workshops.length > 0 ? workshops : defaultFallback;
+
+        if (requestedUf && requestedUf !== 'TODOS') {
+            baseList = baseList.filter(w => (w.state || '').toUpperCase() === requestedUf);
+        }
+
+        const formatted = baseList.map((w, idx) => ({
             id: w.id,
             name: w.name || w.trade_name || 'Oficina Credenciada DNA AUTO',
             rating: (4.7 + (idx % 3) * 0.1).toFixed(1),
