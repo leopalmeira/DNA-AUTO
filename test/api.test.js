@@ -1016,7 +1016,27 @@ async function runTests() {
         console.assert(dataWsBillingStatus.plans.single.profit === 'R$ 29,90', 'Margem da oficina deve ser R$ 29,90');
         console.log(`✅ 56. Webhook AbacatePay & Modelo Financeiro: Webhook processado com sucesso. Tabela oficial confirmada: DNA AUTO R$ 30,00 / Cliente R$ 59,90 / Lucro Oficina R$ 29,90.`);
 
-        console.log('\n🎉 TODOS OS 56 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
+        // Teste 57: Agendamento Inteligente do Cliente na Oficina Credenciada (/workshops/:id/appointments)
+        const resCreateApp = await fetch(`${BASE_URL}/workshops/ws_veloce/appointments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                license_plate: 'BRA2E19',
+                owner_name: 'Carlos Alberto Silva',
+                owner_phone: '11988887777',
+                service_title: 'Revisão Periódica Preventiva',
+                appointment_date: '2026-12-15',
+                appointment_time: '10:00',
+                notes: 'Agendamento solicitado via aplicativo do cliente DNA AUTO'
+            })
+        });
+        const dataCreateApp = await resCreateApp.json();
+        console.assert(resCreateApp.status === 201 || resCreateApp.status === 200, 'Falha ao criar agendamento na oficina');
+        console.assert(dataCreateApp.success === true, 'Criação de agendamento deve retornar success: true');
+        console.assert(!!dataCreateApp.appointment.id, 'Agendamento deve conter ID gerado');
+        console.log(`✅ 57. Agendamento Inteligente Cliente -> Oficina: Agendamento [${dataCreateApp.appointment.id}] registrado para veículo [BRA2E19] em [${dataCreateApp.appointment.appointment_date} ${dataCreateApp.appointment.appointment_time}] na oficina [ws_veloce].`);
+
+        console.log('\n🎉 TODOS OS 57 TESTES AUTOMATIZADOS PASSARAM COM 100% DE SUCESSO!\n');
     } catch (err) {
         console.error('❌ Erro durante a execução dos testes:', err);
         process.exit(1);

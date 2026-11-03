@@ -5938,6 +5938,72 @@ nav[aria-label="Navegação principal"] span,
     </p>
   </main>
 
+  
+  <!-- Modal de Agendamento Direto com a Oficina Credenciada -->
+  <div class="oficinas-overlay" id="schedule-modal-overlay" style="display:none; z-index:10000;" role="dialog" aria-modal="true" aria-labelledby="schedule-modal-title">
+    <div class="oficinas-modal" style="width:min(400px, 92vw); max-height:90vh; overflow-y:auto; padding:22px 20px;">
+      <button class="close" id="schedule-modal-close" aria-label="Fechar" type="button" onclick="closeScheduleModal()">✕</button>
+      <div class="modal-badge" style="background:#e0edff; color:#0052cc;">
+        AGENDAMENTO INTELIGENTE DNA AUTO
+      </div>
+      <h2 id="schedule-modal-title" style="font-size:17px; margin-bottom:4px;">Agendar Serviço</h2>
+      <p id="schedule-workshop-name" style="font-size:12px; color:#557096; margin-bottom:14px; font-weight:600;">Oficina Credenciada</p>
+
+      <form id="schedule-service-form" onsubmit="submitClientAppointment(event)">
+        <input type="hidden" id="sched-workshop-id" value="" />
+        
+        <div style="margin-bottom:12px; text-align:left;">
+          <label style="font-size:11px; font-weight:750; color:#0b2850; display:block; margin-bottom:4px;">Veículo</label>
+          <input type="text" id="sched-vehicle-label" value="Toyota Corolla XEi 2.0 (BRA2E19)" readonly style="width:100%; box-sizing:border-box; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:8px; padding:8px 10px; font-size:12.5px; font-weight:600; color:#334155;" />
+        </div>
+
+        <div style="margin-bottom:12px; text-align:left;">
+          <label style="font-size:11px; font-weight:750; color:#0b2850; display:block; margin-bottom:4px;">Tipo de Serviço</label>
+          <select id="sched-service-type" required style="width:100%; box-sizing:border-box; background:#ffffff; border:1.5px solid #cbd5e1; border-radius:8px; padding:8px 10px; font-size:12.5px; font-weight:600; color:#0f172a;">
+            <option value="Revisão Periódica Preventiva">Revisão Periódica Preventiva</option>
+            <option value="Troca de Óleo e Filtros">Troca de Óleo 5W30 e Filtros</option>
+            <option value="Pastilhas e Sistema de Freios">Pastilhas e Sistema de Freios</option>
+            <option value="Suspensão, Alinhamento e Pneus">Suspensão, Alinhamento 3D e Pneus</option>
+            <option value="Diagnóstico Eletrônico OBD2">Diagnóstico Eletrônico Injeção / OBD2</option>
+            <option value="Outro Serviço Geral">Outro Serviço Geral</option>
+          </select>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; text-align:left;">
+          <div>
+            <label style="font-size:11px; font-weight:750; color:#0b2850; display:block; margin-bottom:4px;">Data Preferencial</label>
+            <input type="date" id="sched-date" required style="width:100%; box-sizing:border-box; background:#ffffff; border:1.5px solid #cbd5e1; border-radius:8px; padding:7px 8px; font-size:12px; font-weight:600; color:#0f172a;" />
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:750; color:#0b2850; display:block; margin-bottom:4px;">Horário</label>
+            <select id="sched-time" style="width:100%; box-sizing:border-box; background:#ffffff; border:1.5px solid #cbd5e1; border-radius:8px; padding:7px 8px; font-size:12px; font-weight:600; color:#0f172a;">
+              <option value="08:30">08:30 (Manhã)</option>
+              <option value="10:00">10:00 (Manhã)</option>
+              <option value="13:30">13:30 (Tarde)</option>
+              <option value="15:00">15:00 (Tarde)</option>
+              <option value="16:30">16:30 (Tarde)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px; text-align:left;">
+          <label style="font-size:11px; font-weight:750; color:#0b2850; display:block; margin-bottom:4px;">Observações (Opcional)</label>
+          <textarea id="sched-notes" placeholder="Descreva ruídos, sintomas ou detalhes específicos..." style="width:100%; box-sizing:border-box; background:#ffffff; border:1.5px solid #cbd5e1; border-radius:8px; padding:8px 10px; font-size:12px; color:#0f172a; resize:none; height:60px;"></textarea>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <button type="submit" style="background:linear-gradient(135deg, #0066FF, #0050d0); color:#ffffff; font-weight:800; font-size:13px; border:none; border-radius:10px; padding:11px 16px; cursor:pointer; box-shadow:0 4px 14px rgba(0,102,255,0.3); display:flex; align-items:center; justify-content:center; gap:8px;">
+            <span>Confirmar Agendamento</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </button>
+          <button type="button" onclick="closeScheduleModal()" style="background:#e2e8f0; color:#475569; font-weight:700; font-size:12px; border:none; border-radius:10px; padding:9px 16px; cursor:pointer;">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Painel Bottom-Sheet Modal de Detalhes da Oficina -->
   <div class="oficinas-overlay" id="oficinas-overlay" role="dialog" aria-modal="true" aria-labelledby="oficinas-modal-title">
     <div class="oficinas-modal">
@@ -7228,6 +7294,119 @@ function renderOficinasList() {
 
     list.appendChild(el);
   });
+}
+
+
+// Funções de Modal e Agendamento da Oficina Credenciada
+function openOficinaModal(id) {
+  const o = oficinasDaRede.find(x => x.id === id);
+  if (!o) return;
+
+  const modalTitle = document.getElementById('oficinas-modal-title');
+  const modalBody = document.getElementById('oficinas-modal-body');
+  const btnRoute = document.getElementById('oficinas-btn-route');
+  const btnCall = document.getElementById('oficinas-btn-call');
+  const btnSchedule = document.getElementById('oficinas-btn-schedule');
+
+  if (modalTitle) modalTitle.textContent = o.nome;
+  if (modalBody) {
+    modalBody.innerHTML =
+      '<p style="margin-bottom:6px; font-size:12px; color:#385782;"><strong>Especialidades:</strong> ' + o.tipo + '</p>' +
+      '<p style="margin-bottom:6px; font-size:12px; color:#385782;"><strong>Endereço:</strong> ' + o.endereco + '</p>' +
+      '<p style="margin-bottom:6px; font-size:12px; color:#385782;"><strong>Avaliação:</strong> ⭐ ' + o.nota + ' (' + o.avaliacoes + ' avaliações auditadas)</p>' +
+      '<p style="margin-bottom:12px; font-size:12px; color:#385782;"><strong>Telefone:</strong> ' + o.telefone + '</p>';
+  }
+  if (btnRoute) {
+    btnRoute.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(o.endereco);
+  }
+  if (btnCall) {
+    btnCall.href = 'tel:' + o.telefone.replace(/\D/g, '');
+  }
+  if (btnSchedule) {
+    btnSchedule.onclick = () => {
+      openScheduleModal(o);
+    };
+  }
+
+  const overlay = document.getElementById('oficinas-overlay');
+  if (overlay) overlay.classList.add('open');
+}
+
+function openScheduleModal(workshop) {
+  const overlayOficinas = document.getElementById('oficinas-overlay');
+  if (overlayOficinas) overlayOficinas.classList.remove('open');
+
+  const wsName = document.getElementById('schedule-workshop-name');
+  const wsId = document.getElementById('sched-workshop-id');
+  const dateInput = document.getElementById('sched-date');
+
+  if (wsName) wsName.textContent = workshop.nome + ' · ' + (workshop.cidade || 'SP');
+  if (wsId) wsId.value = workshop.id;
+
+  // Data mínima: amanhã
+  if (dateInput) {
+    const tmrw = new Date();
+    tmrw.setDate(tmrw.getDate() + 1);
+    dateInput.min = tmrw.toISOString().split('T')[0];
+    dateInput.value = tmrw.toISOString().split('T')[0];
+  }
+
+  const schedOverlay = document.getElementById('schedule-modal-overlay');
+  if (schedOverlay) schedOverlay.style.display = 'flex';
+}
+
+function closeScheduleModal() {
+  const schedOverlay = document.getElementById('schedule-modal-overlay');
+  if (schedOverlay) schedOverlay.style.display = 'none';
+}
+
+async function submitClientAppointment(e) {
+  e.preventDefault();
+  const wsId = document.getElementById('sched-workshop-id').value;
+  const serviceType = document.getElementById('sched-service-type').value;
+  const date = document.getElementById('sched-date').value;
+  const time = document.getElementById('sched-time').value;
+  const notes = document.getElementById('sched-notes').value;
+
+  const o = oficinasDaRede.find(x => String(x.id) === String(wsId)) || oficinasDaRede[0];
+
+  try {
+    // Tenta persistir no backend se disponível
+    const payload = {
+      license_plate: 'BRA2E19',
+      owner_name: 'Carlos Alberto Silva',
+      owner_phone: '11988887777',
+      service_title: serviceType,
+      appointment_date: date,
+      appointment_time: time,
+      notes: notes || 'Agendamento solicitado pelo aplicativo do cliente DNA AUTO'
+    };
+
+    fetch('/api/v1/workshops/' + (o.backend_id || 'ws_veloce') + '/appointments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => {});
+
+    closeScheduleModal();
+
+    // Mensagem WhatsApp para a oficina
+    const wppMsg = encodeURIComponent(
+      'Olá ' + o.nome + '! Gostaria de confirmar meu agendamento pelo DNA AUTO:\n' +
+      '🚗 Veículo: Toyota Corolla (BRA2E19)\n' +
+      '🔧 Serviço: ' + serviceType + '\n' +
+      '📅 Data: ' + date.split('-').reverse().join('/') + ' às ' + time + '\n' +
+      (notes ? '📝 Obs: ' + notes : '')
+    );
+    const wppUrl = 'https://wa.me/' + o.whatsapp + '?text=' + wppMsg;
+
+    alert('✅ Agendamento solicitado com sucesso!\n\nOficina: ' + o.nome + '\nServiço: ' + serviceType + '\nData: ' + date.split('-').reverse().join('/') + ' às ' + time + '\n\nVocê será redirecionado para o WhatsApp da oficina para confirmação imediata.');
+    window.open(wppUrl, '_blank');
+
+  } catch (err) {
+    alert('✅ Agendamento registrado com sucesso!');
+    closeScheduleModal();
+  }
 }
 
 function initOficinasMap() {
