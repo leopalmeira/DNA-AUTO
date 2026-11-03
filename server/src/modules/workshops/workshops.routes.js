@@ -222,8 +222,8 @@ router.get('/:id/maintenance-alerts', (req, res) => {
             LEFT JOIN owners o ON o.id = ot.new_owner_id
             LEFT JOIN users u ON u.id = o.user_id
             LEFT JOIN service_records sr ON sr.vehicle_id = v.id
-            WHERE sr.workshop_id = ? OR vd.activated_by_workshop_id = ? OR ? = 'ws_veloce'
-        `).all(workshopId, workshopId, workshopId);
+            WHERE sr.workshop_id = ? OR vd.activated_by_workshop_id = ?
+        `).all(workshopId, workshopId);
 
         const alerts = [];
 
@@ -462,9 +462,9 @@ router.get('/:id/appointments', (req, res) => {
         const workshopId = req.params.id;
         const appointments = db.prepare(`
             SELECT * FROM workshop_appointments
-            WHERE workshop_id = ? OR ? = 'ws_veloce'
+            WHERE workshop_id = ?
             ORDER BY appointment_date ASC, appointment_time ASC
-        `).all(workshopId, workshopId);
+        `).all(workshopId);
 
         res.json({ success: true, appointments });
     } catch (err) {
@@ -564,20 +564,54 @@ try {
 } catch (_) {}
 
 
-// Atualizar status do agendamento
+// Atualizar status do agendamento e registrar taxa oficial por atendimento concluído (R$ 6,90)
 router.patch('/:id/appointments/:appId/status', (req, res) => {
     try {
         const { status } = req.body;
         const { id, appId } = req.params;
 
-        db.prepare(`
-            UPDATE workshop_appointments
-            SET status = ?
-            WHERE id = ? AND workshop_id = ?
-        `).run(status, appId, id);
+        let feeRegistered = false;
 
-        res.json({ success: true, message: 'Status do agendamento atualizado com sucesso.' });
+        db.transaction(() => {
+            db.prepare(`
+                UPDATE workshop_appointments
+                SET status = ?
+                WHERE id = ? AND workshop_id = ?
+            `).run(status, appId, id);
+
+            // Se o atendimento foi concluído (COMPLETED), registra a taxa oficial de R$ 6,90 (690 centavos)
+            // com chave única de idempotência para impedir cobranças duplicadas
+            if (status === 'COMPLETED') {
+                const app = db.prepare('SELECT * FROM workshop_appointments WHERE id = ?').get(appId);
+                if (app) {
+                    const idempotencyKey = `att_${appId}_690`;
+                    const existingFee = db.prepare('SELECT id FROM workshop_attendance_fees WHERE idempotency_key = ?').get(idempotencyKey);
+                    if (!existingFee) {
+                        db.prepare(`
+                            INSERT INTO workshop_attendance_fees (
+                                id, workshop_id, appointment_id, vehicle_id, amount_cents, status, idempotency_key, notes
+                            ) VALUES (?, ?, ?, ?, 690, 'CONFIRMED', ?, ?)
+                        `).run(
+                            'att_fee_' + Date.now(),
+                            id,
+                            appId,
+                            app.vehicle_id || null,
+                            idempotencyKey,
+                            `Taxa oficial de atendimento concluído - ${app.service_title}`
+                        );
+                        feeRegistered = true;
+                    }
+                }
+            }
+        })();
+
+        res.json({
+            success: true,
+            message: 'Status do agendamento atualizado com sucesso.',
+            attendance_fee: feeRegistered ? { amount_cents: 690, formatted: 'R$ 6,90', status: 'CONFIRMED' } : null
+        });
     } catch (err) {
+        console.error('Erro ao atualizar agendamento:', err);
         res.status(500).json({ error: 'Erro ao atualizar status do agendamento.' });
     }
 });
@@ -1246,6 +1280,17 @@ router.post('/:id/clients/register-activation', async (req, res) => {
                 VALUES (?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP, ?, 'NORMAL', 5990, ?)
             `).run(dnaId, vehicle.id, dnaCode, workshopId, certHash);
 
+            const actCommId = 'act_' + Date.now();
+            db.prepare(`
+                INSERT INTO dna_activations (id, vehicle_dna_id, workshop_id, pricing_plan_id, payment_status, amount_paid_cents, commission_amount_cents, notes)
+                VALUES (?, ?, ?, 'plan_normal', 'COMPLETED', 5990, 2995, 'Ativação via oficina com split 50/50')
+            `).run(actCommId, dnaId, workshopId);
+
+            db.prepare(`
+                INSERT INTO commissions (id, workshop_id, dna_activation_id, amount_cents, status)
+                VALUES (?, ?, ?, 2995, 'AVAILABLE')
+            `).run('comm_' + Date.now(), workshopId, actCommId);
+
             const existsScore = db.prepare('SELECT id FROM health_scores WHERE vehicle_id = ?').get(vehicle.id);
             if (!existsScore) {
                 db.prepare(`
@@ -1376,12 +1421,12 @@ router.post('/:id/clients/register-activation', async (req, res) => {
                 dna_code: dnaCode
             },
             pricing: {
-                dna_cost_per_car: 'R$ 30,00',
-                dna_cost_cents: 3000,
+                dna_cost_per_car: 'R$ 29,95',
+                dna_cost_cents: 2995,
                 customer_price_suggested: 'R$ 59,90',
                 customer_price_cents: 5990,
-                workshop_profit_reais: 'R$ 29,90',
-                workshop_profit_cents: 2990,
+                workshop_profit_reais: 'R$ 29,95',
+                workshop_profit_cents: 2995,
                 billing_status: billingResult.billing_status,
                 consumed_prepaid_credit: billingResult.consumed_credit,
                 remaining_prepaid_credits: balance.prepaid_cars_credits,

@@ -5924,7 +5924,31 @@ nav[aria-label="Navegação principal"] span,
     </div>
 
     <!-- Cards de Estado/Cidade da Oficina por Sigla (RJ Primeiro da Esquerda para Direita, Depois SP) -->
-    <div class="oficinas-uf-bar" id="oficinas-uf-bar" role="tablist" aria-label="Filtrar oficinas credenciadas por estado"></div>
+    <div class="oficinas-uf-bar" id="oficinas-uf-bar" role="tablist" aria-label="Filtrar oficinas credenciadas por estado">
+      <!-- Card 1: RJ (Cinza, Breve, Contador Regressivo de 30 Dias) - Primeiro da esquerda para a direita -->
+      <button type="button" class="uf-card rj-card" data-uf="RJ" onclick="selectUfFilter('RJ')" aria-label="Rio de Janeiro - Em breve em 30 dias">
+        <div class="uf-card-top">
+          <span class="uf-sigla">RJ</span>
+          <span class="uf-counter-pill" id="rj-countdown-badge">⏳ 30d 00h</span>
+        </div>
+        <span class="uf-nome">Rio de Janeiro</span>
+        <span class="uf-badge-status">
+          <span>●</span> Breve: <strong id="rj-countdown-mini" style="font-weight:800;">30 dias</strong>
+        </span>
+      </button>
+
+      <!-- Card 2: SP (Azul Ativo) - Segundo da esquerda para a direita -->
+      <button type="button" class="uf-card sp-card active selected-filter" data-uf="SP" onclick="selectUfFilter('SP')" aria-label="São Paulo - Rede Ativa">
+        <div class="uf-card-top">
+          <span class="uf-sigla">SP</span>
+          <span class="uf-counter-pill">4 ativas</span>
+        </div>
+        <span class="uf-nome">São Paulo</span>
+        <span class="uf-badge-status">
+          <span>✓</span> Ativo na Rede
+        </span>
+      </button>
+    </div>
 
     <div class="oficinas-list-header">
       <h2 class="oficinas-list-title" id="oficinas-list-title">Oficinas Parceiras · SP</h2>

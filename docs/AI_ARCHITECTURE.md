@@ -108,3 +108,4 @@ sequenceDiagram
 - **Baileys (Socket Direto) + Evolution API v2 (Cloud Gateway):** Comunicação de alta resiliência com proteção anti-bloqueio.
 - **AbacatePay:** Cobrança PIX automatizada e conciliação instantânea via webhook.
 - **Keep-Alive Service:** Garantia de uptime 24/7 na nuvem Render.
+

@@ -2,7 +2,8 @@ const bcrypt = require('bcryptjs');
 
 // Limpar tabelas existentes para reset limpo e idempotente
 const clearTables = [
-    'workshop_pix_charges', 'workshop_billing_balances',
+    'workshop_pix_charges', 'workshop_billing_balances', 'workshop_attendance_fees',
+    'password_reset_tokens',
     'trip_classification_metrics', 'vehicle_maintenance_predictions', 'maintenance_rules',
     'vehicle_trips', 'odometer_readings', 'monitoring_preferences',
     'client_activations', 'whatsapp_messages', 'whatsapp_sessions',
@@ -88,26 +89,25 @@ function seedBase(dbInstance) {
             id: 'plan_normal',
             code: 'PLAN_NORMAL',
             title: 'Passaporte Digital DNA AUTO (Vitalício)',
-            description: 'Histórico completo de manutenções, trocas de peças e atividades do veículo',
+            description: 'Histórico completo oficial DNA AUTO com divisão R$ 29,95 plataforma e R$ 29,95 oficina',
             price_cents: 5990,
-            workshop_price_cents: 3990,
+            workshop_price_cents: 2995,
             discount_percentage: 0,
             is_courtesy: 0,
-            commission_percentage: 25
+            commission_percentage: 50
         });
 
         insertPlan.run({
             id: 'plan_workshop_promo',
             code: 'PLAN_WORKSHOP_PROMO',
             title: 'Campanha Oficina Credenciada',
-            description: 'Preço promocional aplicado durante serviços na oficina',
-            price_cents: 7900,
-            workshop_price_cents: 4900,
-            discount_percentage: 47,
+            description: 'Passaporte Digital DNA AUTO Oficial com divisão 50/50 (R$ 29,95 DNA AUTO / R$ 29,95 Oficina)',
+            price_cents: 5990,
+            workshop_price_cents: 2995,
+            discount_percentage: 0,
             is_courtesy: 0,
-            commission_percentage: 25
+            commission_percentage: 50
         });
-
         insertPlan.run({
             id: 'plan_discount_50',
             code: 'PLAN_DISCOUNT_50',

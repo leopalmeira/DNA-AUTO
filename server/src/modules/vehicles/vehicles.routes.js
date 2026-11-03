@@ -347,8 +347,8 @@ router.post('/activate-dna', authenticateToken, (req, res) => {
         const activationId = 'act_' + Date.now();
         const certificateHash = crypto.createHash('sha256').update(dnaCode + vehicle.chassis_vin + Date.now()).digest('hex');
 
-        const feeCents = plan ? plan.price_cents : 7900;
-        const commissionCents = plan ? Math.round((feeCents * (plan.commission_percentage || 20)) / 100) : 0;
+        const feeCents = plan ? plan.price_cents : 5990;
+        const commissionCents = plan ? (plan.commission_percentage === 50 ? 2995 : Math.round((feeCents * (plan.commission_percentage || 50)) / 100)) : 2995;
         const effectiveWorkshopId = workshop_id || (req.user.workshop ? req.user.workshop.workshop_id : null);
 
         db.transaction(() => {

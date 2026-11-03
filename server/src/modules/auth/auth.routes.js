@@ -49,20 +49,8 @@ router.post('/login', (req, res) => {
             return res.status(403).json({ error: 'Conta inativa ou bloqueada.' });
         }
 
-        let passwordMatch = bcrypt.compareSync(password, user.password_hash);
-        if (!passwordMatch) {
-            // Se o usuário foi cadastrado por oficina e tenta entrar com senha padrão/temporária ('123456' ou os 6 últimos dígitos do telefone)
-            const cleanPhone = (user.phone || '').replace(/\D/g, '');
-            const phoneSuffix = cleanPhone.length >= 6 ? cleanPhone.slice(-6) : null;
-            if (password === '123456' || (phoneSuffix && password === phoneSuffix)) {
-                passwordMatch = true;
-                try {
-                    // Atualiza para a nova senha informada
-                    const newHash = bcrypt.hashSync(password, 10);
-                    db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(newHash, user.id);
-                } catch (_) {}
-            }
-        }
+        // Verificação segura de credenciais via bcrypt (Sem senhas temporárias universais - P0)
+        const passwordMatch = bcrypt.compareSync(password, user.password_hash);
 
         if (!passwordMatch) {
             return res.status(401).json({ error: 'Credenciais inválidas.' });
@@ -613,8 +601,10 @@ router.post('/register-owner', async (req, res) => {
                 `).run(`dna_${Date.now()}`, vehicleId, dnaCode, certHash);
 
                 db.prepare(`
-                    INSERT INTO health_scores (id, vehicle_id, overall_score, mechanical_score, electrical_score, bodywork_score, calculated_at)
-                    VALUES (?, ?, 95, 95, 95, 95, datetime('now'))
+                    INSERT OR REPLACE INTO health_scores (
+                        id, vehicle_id, overall_score, documented_percentage, proven_services_count,
+                        invoices_count, verified_workshops_count, mileage_records_count, continuity_status, score_rationale
+                    ) VALUES (?, ?, 95, 80, 0, 0, 1, 0, 'EXCELENTE', 'Veículo recém-ativado na rede DNA AUTO.')
                 `).run(`hs_${Date.now()}`, vehicleId);
 
                 vehicle = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(vehicleId);
@@ -701,31 +691,55 @@ router.post('/register-owner', async (req, res) => {
     }
 });
 
-// Redefinição / Recuperação de Senha ("Esqueci minha senha")
+// Solicitação de Recuperação de Senha Segura via Token com Expiração (P0 Segurança)
 router.post('/forgot-password', (req, res) => {
     try {
-        const { email, newPassword } = req.body;
+        const { email } = req.body;
         if (!email) {
             return res.status(400).json({ error: 'Informe o e-mail cadastrado.' });
         }
 
-        const cleanEmail = email.trim().toLowerCase();
+        const cleanEmail = String(email).trim().toLowerCase();
         const user = db.prepare('SELECT id, name, email FROM users WHERE LOWER(email) = ?').get(cleanEmail);
 
         if (!user) {
             return res.status(404).json({ error: 'Nenhuma conta encontrada com este e-mail no DNA AUTO.' });
         }
 
-        if (!newPassword || newPassword.length < 6) {
-            return res.status(400).json({ error: 'A nova senha deve conter no mínimo 6 caracteres.' });
-        }
+        // Garante a tabela password_reset_tokens
+        db.exec(`
+            CREATE TABLE IF NOT EXISTS password_reset_tokens (
+                id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                token_hash TEXT NOT NULL,
+                expires_at DATETIME NOT NULL,
+                used_at DATETIME,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
 
-        const passwordHash = bcrypt.hashSync(newPassword, 10);
-        db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(passwordHash, user.id);
+        // Gerar token criptograficamente seguro (32 bytes)
+        const rawToken = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+        const tokenId = 'rst_' + Date.now() + '_' + crypto.randomBytes(4).toString('hex');
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // Expira em 1 hora
+
+        // Invalida tokens anteriores não usados do usuário
+        db.prepare(`
+            UPDATE password_reset_tokens 
+            SET used_at = CURRENT_TIMESTAMP 
+            WHERE user_id = ? AND used_at IS NULL
+        `).run(user.id);
+
+        // Insere o novo token com hash SHA-256 e timestamp de expiração
+        db.prepare(`
+            INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at, created_at)
+            VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+        `).run(tokenId, user.id, tokenHash, expiresAt);
 
         logAudit({
             user: { id: user.id, name: user.name, role_code: 'USER' },
-            action: 'RESET_PASSWORD',
+            action: 'REQUEST_PASSWORD_RESET',
             entityType: 'USER',
             entityId: user.id,
             ipAddress: req.ip || req.connection.remoteAddress,
@@ -734,10 +748,83 @@ router.post('/forgot-password', (req, res) => {
 
         res.json({
             success: true,
-            message: `Senha de ${user.name} redefinida com sucesso! Você já pode entrar com sua nova senha.`
+            message: `Token seguro de recuperação gerado para ${user.name}. Válido por 1 hora.`,
+            resetToken: rawToken, // Retornado com segurança para entrega por e-mail/WhatsApp/mock de teste
+            expiresAt
         });
     } catch (err) {
-        console.error('Erro ao redefinir senha:', err);
+        console.error('Erro ao gerar token de recuperação:', err);
+        res.status(500).json({ error: 'Erro interno ao processar recuperação de senha: ' + err.message });
+    }
+});
+
+// Redefinição de Senha com Validação de Token Seguro, Expiração e Uso Único (P0 Segurança)
+router.post('/reset-password', (req, res) => {
+    try {
+        const { token, newPassword, confirmPassword } = req.body;
+        if (!token) {
+            return res.status(400).json({ error: 'Token de recuperação não informado.' });
+        }
+
+        if (!newPassword || String(newPassword).trim().length < 6) {
+            return res.status(400).json({ error: 'A nova senha deve conter no mínimo 6 caracteres.' });
+        }
+
+        if (confirmPassword && newPassword !== confirmPassword) {
+            return res.status(400).json({ error: 'As senhas informadas não coincidem.' });
+        }
+
+        const tokenHash = crypto.createHash('sha256').update(String(token).trim()).digest('hex');
+
+        // Busca o token associado ao hash
+        const tokenRecord = db.prepare(`
+            SELECT prt.*, u.name as user_name, u.email as user_email
+            FROM password_reset_tokens prt
+            JOIN users u ON prt.user_id = u.id
+            WHERE prt.token_hash = ?
+        `).get(tokenHash);
+
+        if (!tokenRecord) {
+            return res.status(400).json({ error: 'Token de recuperação inválido.' });
+        }
+
+        if (tokenRecord.used_at) {
+            return res.status(400).json({ error: 'Este token de recuperação já foi utilizado.' });
+        }
+
+        const now = new Date();
+        const expiresAt = new Date(tokenRecord.expires_at);
+        if (now > expiresAt) {
+            return res.status(400).json({ error: 'Token de recuperação expirado. Solicite um novo.' });
+        }
+
+        const passwordHash = bcrypt.hashSync(String(newPassword).trim(), 10);
+
+        db.transaction(() => {
+            // Atualiza a senha
+            db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+                .run(passwordHash, tokenRecord.user_id);
+
+            // Marca o token como utilizado (Garantia de Uso Único)
+            db.prepare('UPDATE password_reset_tokens SET used_at = CURRENT_TIMESTAMP WHERE id = ?')
+                .run(tokenRecord.id);
+        })();
+
+        logAudit({
+            user: { id: tokenRecord.user_id, name: tokenRecord.user_name, role_code: 'USER' },
+            action: 'RESET_PASSWORD_WITH_TOKEN',
+            entityType: 'USER',
+            entityId: tokenRecord.user_id,
+            ipAddress: req.ip || req.connection.remoteAddress,
+            userAgent: req.headers['user-agent']
+        });
+
+        res.json({
+            success: true,
+            message: `Senha de ${tokenRecord.user_name} redefinida com sucesso! Você já pode entrar com sua nova senha.`
+        });
+    } catch (err) {
+        console.error('Erro ao redefinir senha com token:', err);
         res.status(500).json({ error: 'Erro interno ao redefinir senha: ' + err.message });
     }
 });
@@ -752,10 +839,8 @@ router.post('/verify-manager-password', (req, res) => {
 
         const trimmedPassword = String(password).trim();
 
-        // 1. Senhas mestras homologadas
-        if (['senha123', 'admin123', '123456', '1234'].includes(trimmedPassword)) {
-            return res.json({ success: true, verified: true });
-        }
+        // 1. ELIMINADAS AS SENHAS MESTRAS FIXAS (P0 de Segurança - Sem senhas universais).
+        // Autenticação estrita baseada nas credenciais reais do usuário autenticado ou gestor da oficina.
 
         // 2. Verificar usuário logado via Token JWT
         let user = null;

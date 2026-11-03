@@ -92,11 +92,23 @@ const API = {
             body: JSON.stringify(data)
         });
     },
-    resetPassword(email, newPassword) {
+    requestPasswordReset(email) {
         return this.request('/auth/forgot-password', {
             method: 'POST',
-            body: JSON.stringify({ email, newPassword })
+            body: JSON.stringify({ email })
         });
+    },
+    resetPasswordWithToken(token, newPassword, confirmPassword) {
+        return this.request('/auth/reset-password', {
+            method: 'POST',
+            body: JSON.stringify({ token, newPassword, confirmPassword })
+        });
+    },
+    resetPassword(tokenOrEmail, newPassword) {
+        if (newPassword) {
+            return this.resetPasswordWithToken(tokenOrEmail, newPassword);
+        }
+        return this.requestPasswordReset(tokenOrEmail);
     },
     verifyManagerPassword(password) {
         return this.request('/auth/verify-manager-password', {

@@ -59,6 +59,18 @@ function authenticateToken(req, res, next) {
             return res.status(403).json({ error: 'Usuário não encontrado ou inativo.' });
         }
 
+        // Carrega oficina associada se o usuário for membro ou gestor de oficina
+        const wsUser = db.prepare(`
+            SELECT wu.workshop_id, wu.position_title, wu.can_activate_dna, wu.can_prove_services,
+                   w.trade_name as workshop_name, w.cnpj as workshop_cnpj, w.status as workshop_status
+            FROM workshop_users wu
+            JOIN workshops w ON wu.workshop_id = w.id
+            WHERE wu.user_id = ?
+        `).get(user.id);
+        if (wsUser) {
+            user.workshop = wsUser;
+        }
+
         req.user = user;
         next();
     });

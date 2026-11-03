@@ -2454,3 +2454,38 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Adicionado o **Teste 57** em `test/api.test.js`, validando a criação e persistência do agendamento solicitado pelo cliente.
 - **Qualidade & Testes:**
   - 100% dos 57 testes automatizados aprovados com sucesso (`npm test`).
+
+
+### 🛡️ Ciclo 113: Blindagem P0 de Segurança, Modelo Financeiro Oficial e Homologação dos 16 Passos (58 Testes)
+- **Origem da Demanda:** Auditoria de segurança e consolidação do modelo financeiro do MVP do DNA AUTO sob a orquestração autônoma dos 4 agentes especialistas Gemini.
+- **Implementações Técnicas Realizadas:**
+  1. **Blindagem P0 de Segurança em Autenticação (`auth.routes.js`):**
+     - Remoção definitiva de senhas mestras e senhas de bypass (`123456`, sufixos de telefone) de `POST /api/v1/auth/login`.
+     - Remoção de senhas fixas de gerente (`senha123`, `admin123`, `1234`, `123456`) em `POST /api/v1/auth/verify-manager-password`.
+     - Implementação de fluxo criptográfico de recuperação de senha (`POST /api/v1/auth/forgot-password` e `POST /api/v1/auth/reset-password`) com tokens aleatórios de 32 bytes gerados via `crypto.randomBytes`, hash SHA-256 no banco (`password_reset_tokens`), expiração em 1 hora e bloqueio de reuso com `used_at`.
+  2. **Isolamento Multi-Tenant Rigoroso entre Oficinas:**
+     - Remoção de clausulas permissivas (`OR ? = 'ws_veloce'`) nos endpoints de agendamentos e alertas em `workshops.routes.js`, garantindo privacidade absoluta entre oficinas credenciadas.
+     - Contexto de oficina fixado no middleware de autenticação JWT (`req.user.workshop`).
+  3. **Padronização do Modelo Financeiro Oficial:**
+     - Preço do Passaporte DNA padronizado em **R$ 59,90** (`5990` centavos) com split exato de 50/50: **R$ 29,95** para o DNA AUTO e **R$ 29,95** para a Oficina credenciada.
+     - Taxa única de atendimento pós-conclusão padronizada em **R$ 6,90** (`690` centavos) em `workshop_attendance_fees` com chave de idempotência (`att_${appId}_690`) evitando qualquer duplicidade.
+  4. **Suíte de Testes com Bloqueio Fatal & 16 Passos Oficiais:**
+     - Refatoração do `console.assert` para lançar exceção fatal com `process.exit(1)` em caso de qualquer falha.
+     - Criação do **Teste 58** em `test/api.test.js`, validando integralmente o cenário de 16 passos de ponta a ponta (cadastro de oficina, visão admin, registro de veículo, ativação de passaporte, split 50/50, manutenção, dossiê, recálculo preditivo, agendamento, atendimento, taxa de R$ 6,90, consolidação admin, isolamento multi-tenant e preservação do app do cliente).
+- **Qualidade & Testes:**
+  - 100% dos 58 testes automatizados aprovados com sucesso (`npm test`).
+
+
+### 📍 Ciclo 114: Homologação Visual dos Cards RJ/SP com Contador Regressivo e Pré-renderização Estática
+- **Origem da Demanda:** Alinhamento visual da tela "Oficinas da Rede" (`#oficinas`) no aplicativo do cliente com os dois cards de estado/cidade por sigla: **RJ** (esquerda, cinza com contador regressivo de 30 dias) e **SP** (direita, azul ativo com oficinas parceiras).
+- **Implementações Técnicas Realizadas:**
+  1. **Disposição e Prioridade Visual das Siglas:**
+     - Card do **RJ** posicionado como primeiro elemento da esquerda para a direita, em estilo cinza inativo com badge âmbar, contador regressivo dinâmico e aviso de homologação técnica.
+     - Card do **SP** posicionado como segundo elemento da esquerda para a direita, em estilo azul ativo oficial DNA AUTO (`linear-gradient(145deg, #0066FF, #0050d0)`), selecionado por padrão com lista de oficinas credenciadas de São Paulo.
+  2. **Pré-renderização Estática e Zero Layout Shift:**
+     - Inclusão dos cards diretamente na estrutura HTML inicial de `cliente.app/index.html` e `public/cliente.html` para exibição imediata antes da execução do JavaScript.
+     - Inclusão de `initOficinasMap()` no evento `DOMContentLoaded` para sincronização instantânea do mapa e timer regressivo.
+  3. **Atualização do Service Worker (PWA):**
+     - Atualização do identificador de cache para `dna-auto-v1.6.0` em `cliente.app/sw.js` e `public/sw.js` com ativação imediata (`self.skipWaiting()` e `clients.claim()`).
+- **Qualidade & Testes:**
+  - 100% dos 58 testes automatizados aprovados com sucesso (`npm test`).

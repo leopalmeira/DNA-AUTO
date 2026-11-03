@@ -693,3 +693,36 @@ CREATE TABLE IF NOT EXISTS workshop_billing_balances (
 CREATE INDEX IF NOT EXISTS idx_workshop_pix_ws ON workshop_pix_charges(workshop_id);
 CREATE INDEX IF NOT EXISTS idx_workshop_pix_status ON workshop_pix_charges(status);
 
+-- Tokens Criptográficos de Redefinição de Senha (Segurança P0)
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    token_hash TEXT NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_pwd_reset_hash ON password_reset_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_pwd_reset_user ON password_reset_tokens(user_id);
+
+-- Taxa Oficial por Atendimento Concluído (R$ 6,90 / 690 centavos com Idempotência)
+CREATE TABLE IF NOT EXISTS workshop_attendance_fees (
+    id TEXT PRIMARY KEY,
+    workshop_id TEXT NOT NULL,
+    appointment_id TEXT,
+    service_record_id TEXT,
+    vehicle_id TEXT,
+    amount_cents INTEGER NOT NULL DEFAULT 690,
+    status TEXT NOT NULL DEFAULT 'CONFIRMED',
+    idempotency_key TEXT UNIQUE,
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (workshop_id) REFERENCES workshops(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_att_fees_ws ON workshop_attendance_fees(workshop_id);
+CREATE INDEX IF NOT EXISTS idx_att_fees_app ON workshop_attendance_fees(appointment_id);
+
+
