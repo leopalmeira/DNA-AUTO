@@ -2450,3 +2450,29 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Atualização do identificador de cache para `dna-auto-v1.6.0` em `cliente.app/sw.js` e `public/sw.js` com ativação imediata (`self.skipWaiting()` e `clients.claim()`).
 - **Qualidade & Testes:**
   - 100% dos 58 testes automatizados aprovados com sucesso (`npm test`).
+
+
+---
+
+### 🏁 Ciclo 70: Operação Autônoma de Recuperação Funcional do Aplicativo da Oficina
+- **Objetivo:** Investigação, recuperação estrutural, correção e validação de 100% dos cards, botões, rotas e formulários do aplicativo da oficina (`oficina.app`).
+- **Implementações Técnicas Realizadas:**
+  1. **Carrossel 3D Vertical ("Lançar Serviços"):**
+     - Vinculação do ciclo de vida: gancho pós-renderização em `switchMobileSection('lancar-servicos')` e acionador autônomo com imagem base64 1x1.
+     - Métodos padrão de segurança: `WorkshopView.selectCarouselCard(idx)` e `WorkshopView.moveCarousel(delta)` disponíveis globalmente no protótipo.
+     - Centralização geométrica e perspectiva: cards organizados sem sobreposição, com scale, rotação 3D (`rotateX`) e opacidade progressiva.
+  2. **Correção Crítica no Roteador de Subtelas:**
+     - Ajuste na rota `detalhe-servico` em `renderMobileActiveSection`, direcionando para `renderMobileServiceDetailView()` em vez de `renderMobileOrdersView()`.
+     - Correção e proteção contra referências nulas em `renderUniversalVehiclePlateBar()` e `renderMobileServiceDetailView()`.
+  3. **Gestão Dinâmica de Peças e Valores:**
+     - Implementação de `mobileDetailParts` com métodos de prompt, cálculo de valores unitários, exclusão de peças e somatório em tempo real somado à mão de obra.
+     - Serialização em `parts_json` e persistência via `POST /api/v1/services/workshop-register` gerando registro Nível 4 (VERIFIED).
+  4. **Modal Autônomo de WhatsApp:**
+     - Inclusão do modal `#dna-mobile-whatsapp-modal` para disparo direto de mensagens formatadas de monitoramento preventivo.
+  5. **Bateria de Testes Automatizados (Sem Navegador):**
+     - `test/oficina.components.test.js`: 5 testes cobrindo Dashboard (8 cards), 17 rotas operacionais, carrossel 3D, peças e modal de WhatsApp (100% aprovado).
+     - `test/oficina.integration.test.js`: Bateria completa dos 20 passos oficiais (Autenticação, Entrada, Odômetro monotônico, Ativação DNA, Split 50/50 R$ 29,95, Carrossel, Peças, Gravação Nível 4, Dossiê Digital, Recalibração Preditiva, Agendamento, Taxa de R$ 6,90, Consolidação Admin).
+  6. **Documentação Oficial:**
+     - Criação de `docs/OFICINA_AUDITORIA_FUNCIONAL.md` (45 componentes inventariados) e `docs/OFICINA_TESTES_INTEGRACAO.md` (20 passos documentados).
+- **Qualidade & Testes:**
+  - 100% dos testes unitários e de integração aprovados sem uso de navegador.

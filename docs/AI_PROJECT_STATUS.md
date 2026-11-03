@@ -19,6 +19,7 @@
 | **Consulta Oficial de Placas (WDAPI2 / Sinesp)** | `IMPLEMENTADO` | 100% (Testes 18, 19, 20) | Retorno em tempo real de FIPE, débitos, chassi e motor |
 | **Registro de Serviços Nível 4 pela Oficina** | `IMPLEMENTADO` | 100% (Testes 9, 37, 54) | Peças, mão de obra, fotos multipart e NF auditada |
 | **Motor de Manutenção Preditiva OEM** | `IMPLEMENTADO` | 100% (Testes 53, 54) | 35 regras de fábrica com desgaste por KM e margem de incerteza |
+| **Aplicativo da Oficina (Mobile First & ERP)** | `RECUPERADO & HOMOLOGADO` | 100% (`oficina.components` e `oficina.integration`) | Carrossel 3D de serviços, 8 cards do dashboard, 17 rotas operacionais, gestão dinâmica de peças e submissão Nível 4 |
 | **Hodômetro Monotônico Anti-Fraude** | `IMPLEMENTADO` | 100% (Teste 52) | Bloqueio automático de tentativas de redução de quilometragem |
 | **Telemetria Mini OBD2 (BLE ELM327)** | `IMPLEMENTADO` | 100% (Testes 32, 46) | RPM, temperatura, voltagem, status DTC e odômetro virtual |
 | **Monitoramento de Viagens & LGPD** | `IMPLEMENTADO` | 100% (Testes 49, 50, 51) | Classificação probabilística Multissinal (98% precisão) e consentimento |

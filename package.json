@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node server/src/server.js",
     "seed": "node server/src/database/seed.js",
-    "test": "node test/api.test.js"
+    "test:api": "node test/api.test.js",
+    "test:oficina:components": "node test/oficina.components.test.js",
+    "test:oficina:integration": "node test/oficina.integration.test.js",
+    "test": "node test/api.test.js && node test/oficina.components.test.js && node test/oficina.integration.test.js"
   },
   "keywords": [],
   "author": "",

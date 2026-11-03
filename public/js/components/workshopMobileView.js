@@ -319,6 +319,13 @@
         `;
 
         this.checkDevicePrompt();
+        if (this.currentSection === 'lancar-servicos') {
+            setTimeout(() => {
+                if (typeof WorkshopView.initVerticalCardCarousel === 'function') {
+                    WorkshopView.initVerticalCardCarousel();
+                }
+            }, 30);
+        }
     };
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -461,31 +468,32 @@
             case 'lancar-servicos':
                 return this.renderMobileLaunchServicesView();
             case 'detalhe-servico':
-                return this.renderMobileOrdersView();
+                return this.renderMobileServiceDetailView();
             case 'manutencao-veiculos':
                 return this.renderMobileMaintenanceVehiclesView();
             case 'avisos-whatsapp':
-            case 'avisos-manutencao':
                 return this.renderMobileWhatsAppView();
+            case 'avisos-manutencao':
+                return this.renderMobileMaintenanceAlertsView ? this.renderMobileMaintenanceAlertsView() : this.renderMobileWhatsAppView();
             case 'enviar-fotos':
                 return this.renderMobileSendPhotosView();
             case 'nota-fiscal':
             case 'notas-fiscais':
                 return this.renderMobileInvoiceView();
             case 'clientes':
-                return this.renderMobileSearchVehiclesView();
+                return this.renderMobileClientsView ? this.renderMobileClientsView() : this.renderMobileSearchVehiclesView();
             case 'buscar-veiculos':
                 return this.renderMobileSearchVehiclesView();
             case 'ordens-servico':
                 return this.renderMobileOrdersView();
             case 'relatorios':
-                return this.renderMobileFinancialView();
+                return this.renderMobileReportsView ? this.renderMobileReportsView() : this.renderMobileFinancialView();
             case 'financeiro':
                 return this.renderMobileFinancialView();
             case 'estoque':
-                return this.renderMobileOrdersView();
+                return this.renderMobileStockView ? this.renderMobileStockView() : this.renderMobileOrdersView();
             case 'configuracoes':
-                return this.renderMobileSupportView();
+                return this.renderMobileConfigView ? this.renderMobileConfigView() : this.renderMobileSupportView();
             case 'suporte':
                 return this.renderMobileSupportView();
             case 'dashboard':
@@ -512,6 +520,14 @@
         if (viewport) {
             viewport.innerHTML = this.renderMobileActiveSection();
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            // Inicialização imediata pós-renderização de componentes interativos (ex: Carrossel 3D)
+            if (sectionId === 'lancar-servicos') {
+                setTimeout(() => {
+                    if (typeof WorkshopView.initVerticalCardCarousel === 'function') {
+                        WorkshopView.initVerticalCardCarousel();
+                    }
+                }, 30);
+            }
         } else {
             this.render();
         }
@@ -2188,6 +2204,7 @@
                         </div>
 
                         <div class="indicator" id="dna-carousel-indicator"></div>
+                        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" style="display:none;" alt="" onload="if(typeof WorkshopView!=='undefined'&&WorkshopView.initVerticalCardCarousel)setTimeout(function(){WorkshopView.initVerticalCardCarousel();},20);" />
 
                         <div class="controls">
                             <button type="button" class="control" id="carousel-up-btn" onclick="WorkshopView.moveCarousel(-1)">↑</button>
@@ -2466,6 +2483,75 @@
     };
 
     // Abertura do detalhe do serviço com vinculação garantida do veículo
+    
+    // Modal Autônomo Mobile para Envio de WhatsApp aos Clientes
+    WorkshopView.openClientMonitoringWhatsAppModal = function(clientName, clientPhone, plate, model, condition, type, encodedMsg) {
+        let modal = document.getElementById('dna-mobile-whatsapp-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'dna-mobile-whatsapp-modal';
+            modal.className = 'modal-overlay active';
+            document.body.appendChild(modal);
+        } else {
+            modal.classList.add('active');
+        }
+
+        const cleanPhone = (clientPhone || '11998765432').replace(/\D/g, '');
+        const decodedMsg = decodeURIComponent(encodedMsg || ('Olá ' + (clientName || 'Cliente') + ', aqui é da oficina credenciada DNA AUTO. Notamos que seu veículo ' + (model || '') + ' (' + (plate || '') + ') precisa de atenção em ' + (condition || 'manutenção preventiva') + '.'));
+
+        modal.innerHTML = `
+            <div class="modal-container" style="max-width:440px; background:#0B132B; border:1.5px solid #25D366; border-radius:18px; padding:0; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.85); margin:20px auto;">
+                <div class="modal-header" style="background:#101B2E; border-bottom:1px solid rgba(37,211,102,0.25); padding:16px 20px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:20px;">💬</span>
+                        <div>
+                            <h3 style="margin:0; font-size:15px; font-weight:800; color:#FFFFFF;">Avisar Cliente no WhatsApp</h3>
+                            <span style="font-size:11px; color:#25D366; font-weight:700;">Alerta Preventivo DNA AUTO</span>
+                        </div>
+                    </div>
+                    <button class="modal-close-btn" style="color:#94A3B8; font-size:22px; cursor:pointer; background:none; border:none; padding:4px;" onclick="document.getElementById('dna-mobile-whatsapp-modal').classList.remove('active')">&times;</button>
+                </div>
+
+                <div class="modal-body" style="padding:18px; display:flex; flex-direction:column; gap:12px;">
+                    <div style="background:#101B2E; border:1px solid #1E293B; border-radius:10px; padding:10px 14px; font-size:12px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span style="color:#94A3B8;">Cliente:</span>
+                            <strong style="color:#FFFFFF;">${clientName} (${clientPhone})</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                            <span style="color:#94A3B8;">Veículo:</span>
+                            <strong style="color:#00D4FF;">${model} • ${plate}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="color:#94A3B8;">Item:</span>
+                            <strong style="color:${type === 'CRITICAL' ? '#EF4444' : '#F59E0B'};">${condition}</strong>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="font-size:11px; font-weight:800; color:#CBD5E1; text-transform:uppercase; display:block; margin-bottom:6px;">Mensagem:</label>
+                        <textarea id="dna-mobile-wpp-msg-text" style="width:100%; box-sizing:border-box; background:#070C18; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:10px; font-size:12px; color:#FFFFFF; resize:none; height:100px;">${decodedMsg}</textarea>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-top:6px;">
+                        <button type="button" class="btn" style="background:#25D366; color:#0A101D; font-weight:800; font-size:13px; border:none; border-radius:10px; padding:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="
+                            const msg = encodeURIComponent(document.getElementById('dna-mobile-wpp-msg-text').value);
+                            const wppUrl = 'https://wa.me/55${cleanPhone}?text=' + msg;
+                            window.open(wppUrl, '_blank');
+                            document.getElementById('dna-mobile-whatsapp-modal').classList.remove('active');
+                            if (typeof WorkshopView.showToast === 'function') WorkshopView.showToast('✅ Redirecionando para o WhatsApp do cliente!', 'success');
+                        ">
+                            <span>📲</span> <span>Abrir WhatsApp e Enviar</span>
+                        </button>
+                        <button type="button" class="btn" style="background:rgba(255,255,255,0.08); color:#CBD5E1; font-weight:700; font-size:12px; border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px; cursor:pointer;" onclick="document.getElementById('dna-mobile-whatsapp-modal').classList.remove('active')">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
     WorkshopView.handleMobileSelectServiceToDetail = function(serviceId) {
         // Encontra o serviço no catálogo geral ou de carrossel
         const s = this.monitoredServicesCatalog.find(item => item.id === serviceId) || 
@@ -2505,6 +2591,17 @@
     };
 
     // Stubs de compatibilidade
+    WorkshopView.selectCarouselCard = function(index) {
+        const max = (this.launchCarouselServices && this.launchCarouselServices.length) ? this.launchCarouselServices.length : 13;
+        if (index < 0) index = max - 1;
+        if (index >= max) index = 0;
+        this._carouselCurrentIndex = index;
+        if (typeof this._renderCarouselDom === 'function') this._renderCarouselDom();
+    };
+    WorkshopView.moveCarousel = function(direction) {
+        const cur = this._carouselCurrentIndex || 0;
+        this.selectCarouselCard(cur + direction);
+    };
     WorkshopView.handleWheelStep = function(delta) { this.moveCarousel(delta); };
     WorkshopView._initWheelAfterRender = function() { this.initVerticalCardCarousel(); };
     WorkshopView._updateWheelActiveItem = function() {};
@@ -2519,15 +2616,15 @@
     // TELA 6: DETALHE DO SERVIÇO (EX: TROCA DE ÓLEO E FILTROS)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileServiceDetailView = function() {
-        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
-        const s = this.selectedMobileService || this.monitoredServicesCatalog[0];
+        const v = this.selectedMobileVehicle || (typeof this.getEffectiveVehiclesList === 'function' && this.getEffectiveVehiclesList()[0]) || { license_plate: (this.mobileActivePlate || 'BRA2E19'), model: 'Toyota Corolla', mileage: 45000 };
+        const s = this.selectedMobileService || (Array.isArray(this.monitoredServicesCatalog) && this.monitoredServicesCatalog[0]) || { num: 1, title: 'Troca de Óleo', defaultMonths: 6, defaultKm: 10000, category: 'PREVENTIVA' };
 
         const todayStr = new Date().toISOString().split('T')[0];
         const nextDate = new Date();
         nextDate.setMonth(nextDate.getMonth() + (s.defaultMonths || 6));
         const nextDateStr = nextDate.toISOString().split('T')[0];
 
-        const currentMileage = v.mileage || 45000;
+        const currentMileage = (v && v.mileage) ? v.mileage : 45000;
         const nextMileage = currentMileage + (s.defaultKm || 10000);
 
         return `
@@ -2560,6 +2657,49 @@
 
                     <!-- 4. FOTOS LADO A LADO: FOTO DA PEÇA (ESQUERDA) + FOTO DA NOTA FISCAL (DIREITA) -->
                     ${this.renderSideBySideProofsSection('srv-detail')}
+
+                    <!-- 4.1 PEÇAS UTILIZADAS / APLICADAS NO SERVIÇO -->
+                    <div style="background:var(--dna-ws-bg-card); border:1px solid var(--dna-ws-border); border-radius:var(--dna-ws-radius-lg); padding:14px; display:flex; flex-direction:column; gap:10px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="dna-mobile-section-label" style="margin:0;">Peças Substituídas / Aplicadas</span>
+                            <button type="button" onclick="WorkshopView.promptAddDetailPart()" style="background:rgba(0,102,255,0.15); border:1px solid rgba(0,102,255,0.4); color:#38BDF8; font-size:11.5px; font-weight:800; border-radius:6px; padding:5px 12px; cursor:pointer;">
+                                + Adicionar Peça
+                            </button>
+                        </div>
+                        <div id="mobile-srv-parts-container" style="display:flex; flex-direction:column; gap:6px;">
+                            ${(this.mobileDetailParts && this.mobileDetailParts.length > 0) ? this.mobileDetailParts.map((p, pIdx) => `
+                                <div class="ws-model-part-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px;">
+                                    <div style="display:flex; flex-direction:column;">
+                                        <strong style="font-size:12.5px; color:#FFFFFF;">${p.part_name}</strong>
+                                        <span style="font-size:11px; color:#94A3B8;">${p.quantity} un • R$ ${(p.unit_price_cents / 100).toFixed(2).replace('.', ',')}</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <span style="font-size:12px; font-weight:800; color:#10B981;">R$ ${((p.unit_price_cents * p.quantity) / 100).toFixed(2).replace('.', ',')}</span>
+                                        <button type="button" onclick="WorkshopView.removeDetailPart(${pIdx})" style="background:none; border:none; color:#EF4444; font-size:14px; cursor:pointer; padding:2px;">🗑️</button>
+                                    </div>
+                                </div>
+                            `).join('') : `
+                                <div style="padding:10px; text-align:center; font-size:11.5px; color:#64748B; border:1px dashed rgba(255,255,255,0.08); border-radius:8px;">
+                                    Nenhuma peça avulsa adicionada. Toque em "+ Adicionar Peça" se houver troca.
+                                </div>
+                            `}
+                        </div>
+                    </div>
+
+                    <!-- 4.2 CUSTOS DO SERVIÇO & MÃO DE OBRA -->
+                    <div style="background:var(--dna-ws-bg-card); border:1px solid var(--dna-ws-border); border-radius:var(--dna-ws-radius-lg); padding:14px; display:flex; flex-direction:column; gap:10px;">
+                        <span class="dna-mobile-section-label" style="margin:0;">Valores do Atendimento</span>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div class="dna-input-group">
+                                <label class="dna-input-label" style="font-size:11px;">Mão de Obra (R$)</label>
+                                <input type="number" id="mobile-srv-labor-cost" value="150" min="0" step="10" oninput="WorkshopView.recalculateDetailTotal()" style="height:44px; padding:0 10px; font-size:13px; font-weight:700; color:#FFF;" />
+                            </div>
+                            <div class="dna-input-group">
+                                <label class="dna-input-label" style="font-size:11px;">Total da Ordem (R$)</label>
+                                <input type="text" id="mobile-srv-total-cost" value="R$ 150,00" readonly style="height:44px; padding:0 10px; font-size:13px; font-weight:800; color:#10B981; background:rgba(16,185,129,0.1); border:1.5px solid rgba(16,185,129,0.4); text-align:center; border-radius:8px;" />
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- 5. CONDIÇÃO PARA TROCA -->
                     <div style="background:var(--dna-ws-bg-card); border:1px solid var(--dna-ws-border); border-radius:var(--dna-ws-radius-lg); padding:14px; display:flex; flex-direction:column; gap:12px;">
@@ -2637,30 +2777,178 @@
         `;
     };
 
-    WorkshopView.handleMobileSaveServiceRecord = async function() {
-        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
-        const s = this.selectedMobileService || this.monitoredServicesCatalog[0];
-        const lastKm = document.getElementById('mobile-srv-last-km')?.value || v.mileage;
-        const nextKm = document.getElementById('mobile-srv-next-km')?.value || (Number(lastKm) + 10000);
+    // Gerenciador de peças dinâmicas na tela de detalhes do serviço
+    WorkshopView.mobileDetailParts = WorkshopView.mobileDetailParts || [];
 
-        try {
-            // Salva na API se disponível
-            if (API.registerWorkshopService) {
-                const fd = new FormData();
-                fd.append('vehicle_id', v.id || v.license_plate);
-                fd.append('license_plate', v.license_plate);
-                fd.append('service_title', s.title);
-                fd.append('mileage', lastKm);
-                fd.append('category', 'Manutenção Preventiva');
-                await API.registerWorkshopService(fd).catch(() => {});
-            }
-        } catch (_) {}
+    WorkshopView.promptAddDetailPart = function() {
+        const nome = prompt('Nome da peça aplicada / substituída:');
+        if (!nome || !nome.trim()) return;
+        const qtdStr = prompt('Quantidade aplicada:', '1');
+        const qtd = Math.max(1, parseInt(qtdStr, 10) || 1);
+        const valStr = prompt('Valor unitário da peça em R$ (ex: 85.00):', '80.00');
+        const valClean = (valStr || '0').replace('R$', '').replace(',', '.').trim();
+        const unitPriceCents = Math.round((parseFloat(valClean) || 0) * 100);
 
-        alert(`✅ Serviço "${s.title}" registrado com sucesso para o veículo ${v.license_plate}!\nOdômetro atual: ${lastKm} km | Próxima troca: ${nextKm} km.`);
-        this.switchMobileSection('dashboard');
+        this.mobileDetailParts.push({
+            part_name: nome.trim(),
+            quantity: qtd,
+            unit_price_cents: unitPriceCents
+        });
+
+        this.recalculateDetailTotal();
+        // Re-renderiza somente o container de peças
+        const container = document.getElementById('mobile-srv-parts-container');
+        if (container) {
+            container.innerHTML = this.mobileDetailParts.map((p, pIdx) => `
+                <div class="ws-model-part-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px;">
+                    <div style="display:flex; flex-direction:column;">
+                        <strong style="font-size:12.5px; color:#FFFFFF;">${p.part_name}</strong>
+                        <span style="font-size:11px; color:#94A3B8;">${p.quantity} un • R$ ${(p.unit_price_cents / 100).toFixed(2).replace('.', ',')}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-size:12px; font-weight:800; color:#10B981;">R$ ${((p.unit_price_cents * p.quantity) / 100).toFixed(2).replace('.', ',')}</span>
+                        <button type="button" onclick="WorkshopView.removeDetailPart(${pIdx})" style="background:none; border:none; color:#EF4444; font-size:14px; cursor:pointer; padding:2px;">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
     };
 
-    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.removeDetailPart = function(pIdx) {
+        if (this.mobileDetailParts && this.mobileDetailParts[pIdx]) {
+            this.mobileDetailParts.splice(pIdx, 1);
+            this.recalculateDetailTotal();
+            const container = document.getElementById('mobile-srv-parts-container');
+            if (container) {
+                if (this.mobileDetailParts.length === 0) {
+                    container.innerHTML = `<div style="padding:10px; text-align:center; font-size:11.5px; color:#64748B; border:1px dashed rgba(255,255,255,0.08); border-radius:8px;">Nenhuma peça avulsa adicionada. Toque em "+ Adicionar Peça" se houver troca.</div>`;
+                } else {
+                    container.innerHTML = this.mobileDetailParts.map((p, idx) => `
+                        <div class="ws-model-part-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px;">
+                            <div style="display:flex; flex-direction:column;">
+                                <strong style="font-size:12.5px; color:#FFFFFF;">${p.part_name}</strong>
+                                <span style="font-size:11px; color:#94A3B8;">${p.quantity} un • R$ ${(p.unit_price_cents / 100).toFixed(2).replace('.', ',')}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:12px; font-weight:800; color:#10B981;">R$ ${((p.unit_price_cents * p.quantity) / 100).toFixed(2).replace('.', ',')}</span>
+                                <button type="button" onclick="WorkshopView.removeDetailPart(${idx})" style="background:none; border:none; color:#EF4444; font-size:14px; cursor:pointer; padding:2px;">🗑️</button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+    };
+
+    WorkshopView.recalculateDetailTotal = function() {
+        const laborVal = parseFloat(document.getElementById('mobile-srv-labor-cost')?.value || '0') || 0;
+        let partsTotal = 0;
+        if (this.mobileDetailParts) {
+            this.mobileDetailParts.forEach(p => {
+                partsTotal += ((p.unit_price_cents * p.quantity) / 100);
+            });
+        }
+        const grandTotal = laborVal + partsTotal;
+        const totalEl = document.getElementById('mobile-srv-total-cost');
+        if (totalEl) {
+            totalEl.value = 'R$ ' + grandTotal.toFixed(2).replace('.', ',');
+        }
+    };
+
+    WorkshopView.handleMobileSaveServiceRecord = async function() {
+        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
+        if (!v) {
+            if (typeof this.showToast === 'function') this.showToast('Nenhum veículo selecionado.', 'warning');
+            else alert('Nenhum veículo selecionado.');
+            return;
+        }
+        const s = this.selectedMobileService || this.monitoredServicesCatalog[0];
+        const lastKm = document.getElementById('mobile-srv-last-km')?.value || v.mileage || 10000;
+        const nextKm = document.getElementById('mobile-srv-next-km')?.value || (Number(lastKm) + 10000);
+        const notes = document.getElementById('mobile-srv-detail-notes')?.value || `Serviço de ${s.title} executado e inspecionado conforme especificações técnicas.`;
+        const srvDate = document.getElementById('mobile-srv-last-date')?.value || new Date().toISOString().split('T')[0];
+        const laborVal = parseFloat(document.getElementById('mobile-srv-labor-cost')?.value || '150') || 150;
+        const laborCents = Math.round(laborVal * 100);
+
+        const parts = (this.mobileDetailParts && this.mobileDetailParts.length > 0)
+            ? this.mobileDetailParts
+            : [{ part_name: s.title, quantity: 1, unit_price_cents: 0 }];
+
+        try {
+            const token = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+            if (token && typeof API !== 'undefined') API.setToken(token);
+
+            // 1. Garantir que o veículo está cadastrado na base de dados
+            let targetVehId = v.id;
+            if (typeof API !== 'undefined') {
+                try {
+                    const vRes = await API.getVehicleDossier(v.license_plate);
+                    if (vRes && vRes.vehicle && vRes.vehicle.id) {
+                        targetVehId = vRes.vehicle.id;
+                    }
+                } catch (_) {
+                    // Se não localizado, cadastra dinamicamente
+                    try {
+                        const reg = await API.registerVehicleFromApi(v.license_plate, {
+                            model: v.model || 'Modelo Padrão',
+                            brand: v.brand || 'Marca',
+                            mileage: Number(lastKm)
+                        }, true);
+                        if (reg && reg.vehicle && reg.vehicle.id) {
+                            targetVehId = reg.vehicle.id;
+                        }
+                    } catch (regErr) {
+                        console.warn('Registro dinâmico de veículo fallback:', regErr);
+                    }
+                }
+            }
+
+            // 2. Montar FormData multipart para o endpoint /services/workshop-register
+            if (typeof API !== 'undefined' && API.registerWorkshopService) {
+                const fd = new FormData();
+                fd.append('vehicle_id', targetVehId || v.license_plate);
+                fd.append('license_plate', v.license_plate);
+                fd.append('service_title', s.title);
+                fd.append('category', s.title.includes('Óleo') ? 'Óleo e Filtros' : (s.title.includes('Freio') ? 'Freios' : 'Manutenção Preventiva'));
+                fd.append('mileage', String(lastKm));
+                fd.append('description', notes);
+                fd.append('service_date', srvDate);
+                fd.append('labor_cost_cents', String(laborCents));
+                fd.append('parts_json', JSON.stringify(parts));
+
+                const activeWsId = this.currentWorkshopId || (typeof localStorage !== 'undefined' ? localStorage.getItem('dna_workshop_id') : null) || 'ws_veloce';
+                fd.append('workshop_id', activeWsId);
+
+                await API.registerWorkshopService(fd);
+            }
+
+            const successMsg = `✅ Serviço "${s.title}" registrado com sucesso no Dossiê do veículo ${v.license_plate}!
+Odômetro atual: ${lastKm} km | Próxima revisão: ${nextKm} km.`;
+            if (typeof this.showToast === 'function') {
+                this.showToast(successMsg, 'success', 5000);
+            } else {
+                alert(successMsg);
+            }
+
+            // Limpar estado temporário
+            this.mobileDetailParts = [];
+            this.mobileUploadedPhotos = [];
+            this.mobileInvoicePhoto = null;
+            v.mileage = Number(lastKm);
+
+            // Redireciona para ordens de serviço / dashboard
+            setTimeout(() => {
+                WorkshopView.switchMobileSection('ordens-servico');
+            }, 500);
+
+        } catch (err) {
+            console.error('Erro ao salvar serviço:', err);
+            const errMsg = `Erro ao salvar serviço: ${err.message || 'Falha na conexão'}`;
+            if (typeof this.showToast === 'function') this.showToast(errMsg, 'error');
+            else alert(errMsg);
+        }
+    };
+
     // TELA 7: MANUTENÇÃO DOS VEÍCULOS (SEÇÃO 10 DO PROMPT)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileMaintenanceVehiclesView = function() {
@@ -4508,8 +4796,9 @@
     // HELPER UNIVERSAL: BUSCA DE VEÍCULO POR PLACA EM QUALQUER SERVIÇO
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderUniversalVehiclePlateBar = function() {
-        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
-        const recents = this.getEffectiveVehiclesList().slice(0, 4);
+        const vehicles = (typeof this.getEffectiveVehiclesList === 'function' ? this.getEffectiveVehiclesList() : null) || [];
+        const v = this.selectedMobileVehicle || vehicles[0] || { license_plate: (this.mobileActivePlate || 'BRA2E19'), model: 'Toyota Corolla' };
+        const recents = vehicles.slice(0, 4);
 
         return `
             <div class="dna-universal-plate-box">
