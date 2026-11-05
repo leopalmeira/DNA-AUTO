@@ -5382,18 +5382,6 @@ Odômetro atual: ${lastKm} km | Próxima revisão: ${nextKm} km.`;
                 <img src="${bgImageUrl}" alt="DNA AUTO Oficina" class="ws-splash-hero-bg" onerror="this.src='/img/dna-auto-login-hero.jpg'" />
                 <div class="ws-splash-overlay"></div>
 
-                <div class="ws-splash-content">
-                    <div class="ws-splash-logo-box">
-                        <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
-                            <svg width="46" height="46" viewBox="0 0 100 100" fill="none">
-                                <path d="M20 15 H55 C78 15 90 28 90 50 C90 72 78 85 55 85 H20 L35 62 H52 C63 62 68 56 68 50 C68 44 63 38 52 38 H35 L20 15Z" fill="#0084FF"/>
-                            </svg>
-                            <span style="font-size:32px; font-weight:900; letter-spacing:-1px; color:#FFFFFF; font-family:'Outfit', sans-serif;">DNA <span style="color:#0084FF;">AUTO</span></span>
-                        </div>
-                        <div class="ws-splash-brand-sub">Oficina</div>
-                        </div>
-                </div>
-
                 <div class="ws-splash-actions">
                     <button type="button" class="ws-splash-btn-entrar" onclick="WorkshopView.showOficinaLoginForm()">
                         <span>Entrar</span> <span>→</span>

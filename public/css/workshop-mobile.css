@@ -3893,12 +3893,13 @@ textarea:focus {
     width: 100%;
     min-height: 100vh;
     min-height: 100dvh;
-    background: radial-gradient(circle at 50% 20%, #0A1C38 0%, #030814 80%);
+    background: linear-gradient(180deg, #010C1A 0%, #010712 40%, #000812 100%);
     position: relative;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: calc(24px + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px));
+    justify-content: flex-end;
+    align-items: center;
+    padding: calc(24px + env(safe-area-inset-top, 0px)) 20px calc(24px + env(safe-area-inset-bottom, 12px));
     box-sizing: border-box;
     overflow: hidden;
     color: #FFFFFF;
@@ -3909,17 +3910,21 @@ textarea:focus {
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     object-position: center top;
-    opacity: 0.35;
+    opacity: 1;
     pointer-events: none;
     z-index: 1;
 }
 
 .ws-splash-overlay {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(3, 8, 20, 0.4) 0%, rgba(3, 8, 20, 0.85) 60%, #030814 100%);
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 160px;
+    background: linear-gradient(to top, rgba(1, 10, 22, 0.92) 0%, rgba(1, 10, 22, 0.45) 60%, transparent 100%);
     z-index: 2;
     pointer-events: none;
 }

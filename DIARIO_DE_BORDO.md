@@ -2504,3 +2504,7 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Qualidade & Testes:**
   - 100% de aprovação nas 4 baterias automatizadas (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js` e `oficina.finance.test.js`).
   - Aplicativo do cliente (`cliente.app`) 100% preservado sem modificações.
+
+- **Ajuste Visual complementar na Splash da Oficina (Ciclo 115.1):**
+  - Removido o bloco `<div class="ws-splash-content">` que exibia o texto duplicado `DNA AUTO / Oficina` na frente da imagem de fundo.
+  - Ajustado `.ws-splash-hero-bg` para `opacity: 1` (100% aceso, antes estava `0.35` apagado) e `.ws-splash-overlay` restrito apenas aos 160px inferiores atrás dos botões `Entrar →` e `Cadastrar`, deixando o logotipo original do background, o slogan *"Monitorando seus clientes."* e o veículo totalmente acesos e nítidos.
