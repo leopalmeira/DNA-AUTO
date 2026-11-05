@@ -684,3 +684,9 @@ Projeto desenvolvido com tecnologia proprietária sob licença ISC. Todos os dir
   - Criada a documentação mestre em `docs/AI_ARCHITECTURE.md`, `docs/AI_PROJECT_STATUS.md` e `docs/AI_TASK_QUEUE.md`.
   - Concluído o fluxo de Agendamento Inteligente do Cliente diretamente pelo modal da oficina credenciada com envio de API e WhatsApp.
   - Bateria de testes automatizados expandida para 57 testes com 100% de aprovação (`npm test`).
+
+- **Ciclo 115 (05/11/2026) — Gestão Financeira da Oficina em 6 Blocos, Ranking Mensal (R$ 18k) e Limpeza da Splash:**
+  - **Splash Screen Limpa:** Removidos os 3 cards intermediários e a tagline da tela inicial da oficina para não encobrir a arte do veículo, logotipo e slogan de fundo.
+  - **Painel Financeiro em 6 Blocos:** Proteção por PIN (`123456`), separação contábil estrita entre Passaportes (R$ 59,90 = R$ 29,95 Oficina + R$ 29,95 DNA AUTO), Serviços Mecânicos e Taxas de Atendimento (R$ 6,90).
+  - **Desafio DNA AUTO — Premiação Mensal:** Pódio nacional (1º R$ 10.000, 2º R$ 5.000, 3º R$ 3.000), meta mínima de 100 ativações pagas no mês civil, barra de progresso e regra de continuidade garantida.
+  - **Homologação QA:** 20 novos cenários financeiros automatizados em `test/oficina.finance.test.js` aprovados com 100% de êxito (`npm test`).

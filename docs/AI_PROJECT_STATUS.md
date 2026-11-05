@@ -14,6 +14,7 @@
 | **Autenticação & JWT (Admin, Oficina, Cliente)** | `IMPLEMENTADO` | 100% (Testes 2, 13, 44) | Multi-role com Bearer Token e hashing Bcrypt.js |
 | **Segurança P0 & Multi-Tenant** | `IMPLEMENTADO` | 100% (Testes 13, 14, 58) | Eliminação de senhas mestras, reset com token criptográfico SHA-256 e isolamento rigoroso entre oficinas |
 | **Modelo Financeiro Oficial** | `IMPLEMENTADO` | 100% (Testes 56, 58) | Passaporte R$ 59,90 (Split 50/50: R$ 29,95 DNA / R$ 29,95 Oficina) e Taxa de Atendimento R$ 6,90 idempotente |
+| **Gestão Financeira em 6 Blocos & Desafio Mensal** | `IMPLEMENTADO & HOMOLOGADO` | 100% (`oficina.finance.test.js` - 20/20) | 6 blocos contábeis, proteção por PIN (`123456`), meta de 100 ativações mensais, pódio R$ 10k/5k/3k, continuidade garantida e isolamento multi-tenant |
 | **Passaporte DNA Veicular Criptografado** | `IMPLEMENTADO` | 100% (Testes 6, 7, 21) | Hash imutável `DNA-BR-XXXX-XXXX-XXX` |
 | **Dossiê 360° com Lupa de Pesquisa** | `IMPLEMENTADO` | 100% (Testes 4, 5, 8) | Histórico completo Nível 1 a 4 com filtro por termo |
 | **Consulta Oficial de Placas (WDAPI2 / Sinesp)** | `IMPLEMENTADO` | 100% (Testes 18, 19, 20) | Retorno em tempo real de FIPE, débitos, chassi e motor |
@@ -60,7 +61,7 @@
 
 ## 3. Indicadores de Qualidade
 
-- **Bateria de Testes Automatizados:** 58 / 58 Aprovados (100%)
+- **Bateria de Testes Automatizados:** 4 Baterias Aprovadas (58 API + 5 Componentes + 20 Integração Oficina + 20 Financeiro/Ranking = 100% Sucesso)
 - **Testes de Regressão:** 0 falhas identificadas
-- **Conformidade de Identidade Visual:** 100% aderente (Paleta Azul DNA AUTO, sem violeta, sem elementos genéricos)
+- **Conformidade de Identidade Visual:** 100% aderente (Paleta Azul DNA AUTO, Splash limpa sem sobreposição ao carro/logo, sem violeta)
 - **Status do Build:** Produção pronta para execução com `npm start`

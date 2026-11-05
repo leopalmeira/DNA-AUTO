@@ -34,6 +34,50 @@ const uploadWhatsAppMedia = multer({
     limits: { fileSize: 30 * 1024 * 1024 } // 30MB
 });
 
+// ------------------------------------------------------------------------------
+// HELPERS PARA AUDITORIA FINANCEIRA E RANKING MENSAL (DESAFIO DNA AUTO)
+// ------------------------------------------------------------------------------
+function getMonthMetadata(monthStr) {
+    const now = new Date();
+    const targetMonth = (monthStr && /^\d{4}-\d{2}$/.test(monthStr)) 
+        ? monthStr 
+        : now.toISOString().substring(0, 7);
+    const [year, month] = targetMonth.split('-').map(Number);
+    
+    const monthNames = [
+        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    const monthLabel = `${monthNames[(month - 1) % 12]}/${year}`;
+    
+    // Último dia do mês
+    const lastDayOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+    const diffMs = lastDayOfMonth.getTime() - now.getTime();
+    const daysRemaining = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+    
+    return {
+        month: targetMonth,
+        monthLabel,
+        lastDayFormatted: lastDayOfMonth.toISOString().split('T')[0],
+        daysRemaining
+    };
+}
+
+function checkWorkshopAccess(req, workshopId) {
+    if (!req.user) return true;
+    const role = (req.user.role_code || req.user.role || '').toUpperCase();
+    if (role === 'ADMIN' || req.user.role_id === 'role_admin') return true;
+    
+    if (req.user.workshop && (req.user.workshop.id === workshopId || req.user.workshop.workshop_id === workshopId)) return true;
+    try {
+        const wsUser = db.prepare('SELECT workshop_id FROM workshop_users WHERE user_id = ?').get(req.user.id);
+        if (wsUser && wsUser.workshop_id === workshopId) return true;
+    } catch (_) {}
+    
+    return false;
+}
+
+
 // Alias oficial para Cadastro de Oficina (Suporte a /api/v1/workshops/register e PWA mobile)
 router.post('/register', (req, res) => {
     if (authRoutes.handleRegisterWorkshop) {
@@ -67,6 +111,94 @@ router.get('/', (req, res) => {
 });
 
 // Ranking de Oficinas Mais Ativas (Para o Dashboard Administrativo)
+
+// Ranking Oficial do Desafio DNA AUTO — Premiação Mensal (R$ 10k, R$ 5k, R$ 3k)
+// Regra: Mínimo 100 ativações pagas no mês civil para elegibilidade aos prêmios.
+router.get('/ranking/monthly', authenticateToken, (req, res) => {
+    try {
+        const meta = getMonthMetadata(req.query.month);
+        const targetMonth = meta.month;
+
+        // Oficinas ativas e contagem de ativações pagas dentro do mês selecionado
+        const rows = db.prepare(`
+            SELECT 
+                w.id as workshop_id,
+                w.trade_name,
+                COALESCE(w.city, 'São Paulo') as city,
+                COALESCE(w.state, 'SP') as state,
+                w.verified_badge,
+                COUNT(CASE WHEN da.payment_status = 'COMPLETED' THEN da.id END) as valid_activations,
+                MAX(CASE WHEN da.payment_status = 'COMPLETED' THEN da.activated_at END) as last_activation_at,
+                COUNT(DISTINCT CASE WHEN sr.proof_level = 4 THEN sr.id END) as proven_services_count
+            FROM workshops w
+            LEFT JOIN dna_activations da ON da.workshop_id = w.id 
+                 AND strftime('%Y-%m', da.activated_at) = ?
+            LEFT JOIN service_records sr ON sr.workshop_id = w.id
+            WHERE w.status != 'INACTIVE' AND w.status != 'BLOCKED'
+            GROUP BY w.id
+            ORDER BY valid_activations DESC, last_activation_at ASC, proven_services_count DESC, w.trade_name ASC
+        `).all(targetMonth);
+
+        // Montagem do ranking oficial com badges de elegibilidade e premiação
+        const ranking = rows.map((r, index) => {
+            const rank = index + 1;
+            const validCount = Number(r.valid_activations) || 0;
+            const isEligible = validCount >= 100;
+            
+            let potentialPrizeCents = 0;
+            if (isEligible) {
+                if (rank === 1) potentialPrizeCents = 1000000;      // R$ 10.000,00
+                else if (rank === 2) potentialPrizeCents = 500000;  // R$ 5.000,00
+                else if (rank === 3) potentialPrizeCents = 300000;  // R$ 3.000,00
+            }
+
+            return {
+                rank,
+                workshop_id: r.workshop_id,
+                trade_name: r.trade_name,
+                city: r.city,
+                state: r.state,
+                verified_badge: Boolean(r.verified_badge),
+                valid_activations: validCount,
+                is_eligible: isEligible,
+                eligibility_badge: isEligible ? 'ELEGÍVEL' : 'NÃO ELEGÍVEL (<100)',
+                activations_to_target: Math.max(0, 100 - validCount),
+                progress_percentage: Math.min(100, Math.round((validCount / 100) * 100)),
+                potential_prize_cents: potentialPrizeCents,
+                potential_prize_formatted: potentialPrizeCents > 0 
+                    ? `R$ ${(potentialPrizeCents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` 
+                    : null
+            };
+        });
+
+        // Top 3 participantes
+        const top3 = ranking.slice(0, 3);
+
+        res.json({
+            success: true,
+            month: meta.month,
+            month_label: meta.monthLabel,
+            is_provisional: true, // Classificação provisória até o fechamento oficial do mês
+            days_remaining: meta.daysRemaining,
+            rules: {
+                min_activations: 100,
+                total_prizes_cents: 1800000, // R$ 18.000,00 total
+                prizes: [
+                    { place: 1, label: '1º Lugar', amount_cents: 1000000, formatted: 'R$ 10.000,00' },
+                    { place: 2, label: '2º Lugar', amount_cents: 500000, formatted: 'R$ 5.000,00' },
+                    { place: 3, label: '3º Lugar', amount_cents: 300000, formatted: 'R$ 3.000,00' }
+                ],
+                continuity: 'A contagem é mensal. Caso não alcance 100 ativações, a oficina permanece 100% habilitada para disputar no mês seguinte com contagem zerada.'
+            },
+            ranking,
+            top3
+        });
+    } catch (err) {
+        console.error('Erro ao gerar ranking mensal do Desafio DNA AUTO:', err);
+        res.status(500).json({ error: 'Erro ao gerar ranking mensal.' });
+    }
+});
+
 router.get('/ranking/most-active', (req, res) => {
     try {
         const ranking = db.prepare(`
@@ -143,6 +275,272 @@ router.get('/network', (req, res) => {
 
 
 // Dashboard Exclusivo da Oficina (Métricas da Oficina Logada ou Especificada)
+
+// Resumo Financeiro Oficial da Oficina (6 Blocos de Governança Contábil)
+router.get('/:id/financial-summary', authenticateToken, (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const workshop = db.prepare('SELECT * FROM workshops WHERE id = ?').get(workshopId);
+        if (!workshop) {
+            return res.status(404).json({ error: 'Oficina não encontrada.' });
+        }
+
+        // Validação multi-tenant
+        if (!checkWorkshopAccess(req, workshopId)) {
+            return res.status(403).json({ error: 'Acesso negado: dados financeiros restritos à própria oficina.' });
+        }
+
+        const meta = getMonthMetadata(req.query.month);
+        const targetMonth = meta.month;
+
+        // 1. Passaportes Ativados no Mês (Somente COMPLETED é considerado válido)
+        const actRow = db.prepare(`
+            SELECT 
+                COUNT(CASE WHEN payment_status = 'COMPLETED' THEN 1 END) as valid_count,
+                COUNT(CASE WHEN payment_status = 'PENDING' THEN 1 END) as pending_count,
+                COUNT(CASE WHEN payment_status IN ('CANCELLED', 'REFUNDED') THEN 1 END) as cancelled_count,
+                COALESCE(SUM(CASE WHEN payment_status = 'COMPLETED' THEN amount_paid_cents END), 0) as gross_amount_cents,
+                COALESCE(SUM(CASE WHEN payment_status = 'COMPLETED' THEN commission_amount_cents END), 0) as commission_amount_cents
+            FROM dna_activations
+            WHERE workshop_id = ? AND strftime('%Y-%m', activated_at) = ?
+        `).get(workshopId, targetMonth);
+
+        const validPassportsCount = Number(actRow.valid_count) || 0;
+        const cancelledPassportsCount = Number(actRow.cancelled_count) || 0;
+
+        // Split Oficial DNA AUTO: R$ 59,90 total = R$ 29,95 Oficina + R$ 29,95 Plataforma
+        const passportPriceCents = 5990;
+        const commissionPerPassportCents = 2995;
+        const platformSharePerPassportCents = 2995;
+
+        const totalCommissionGeneratedCents = validPassportsCount * commissionPerPassportCents;
+        const totalPlatformShareCents = validPassportsCount * platformSharePerPassportCents;
+
+        // Comissões pagas e pendentes de repasse
+        const commRow = db.prepare(`
+            SELECT 
+                COALESCE(SUM(CASE WHEN status = 'PAID' THEN amount_cents END), 0) as paid_cents,
+                COALESCE(SUM(CASE WHEN status = 'AVAILABLE' THEN amount_cents END), 0) as available_cents
+            FROM commissions
+            WHERE workshop_id = ?
+        `).get(workshopId);
+
+        const commissionsReceivedCents = Number(commRow.paid_cents) || 0;
+        const pendingPayoutCents = Math.max(0, totalCommissionGeneratedCents - commissionsReceivedCents);
+
+        // 2. Taxas por Atendimentos Concluídos (R$ 6,90 por atendimento)
+        const feeRow = db.prepare(`
+            SELECT 
+                COUNT(*) as total_attendance,
+                COALESCE(SUM(amount_cents), 0) as total_fees_cents,
+                COUNT(CASE WHEN status = 'PAID' THEN 1 END) as paid_count,
+                COALESCE(SUM(CASE WHEN status = 'PAID' THEN amount_cents END), 0) as paid_fees_cents
+            FROM workshop_attendance_fees
+            WHERE workshop_id = ? AND strftime('%Y-%m', created_at) = ?
+        `).get(workshopId, targetMonth);
+
+        const attendanceCount = Number(feeRow.total_attendance) || 0;
+        const attendanceFeesCents = attendanceCount * 690;
+        const attendanceFeesPaidCents = Number(feeRow.paid_fees_cents) || 0;
+        const attendanceFeesPendingCents = Math.max(0, attendanceFeesCents - attendanceFeesPaidCents);
+
+        // 3. Faturamento da Oficina com Serviços Mecânicos (SEPARADO DOS PASSAPORTES)
+        const srvRow = db.prepare(`
+            SELECT 
+                COUNT(*) as count,
+                COALESCE(SUM(labor_cost_cents), 0) as labor_cents,
+                COALESCE(SUM(parts_cost_cents), 0) as parts_cents,
+                COALESCE(SUM(total_cost_cents), 0) as total_cents
+            FROM service_records
+            WHERE workshop_id = ? AND strftime('%Y-%m', service_date) = ?
+        `).get(workshopId, targetMonth);
+
+        const mechanicalServicesCount = Number(srvRow.count) || 0;
+        const mechanicalLaborCents = Number(srvRow.labor_cents) || 0;
+        const mechanicalPartsCents = Number(srvRow.parts_cents) || 0;
+        const mechanicalTotalRevenueCents = Number(srvRow.total_cents) || (mechanicalLaborCents + mechanicalPartsCents);
+
+        // 4. Cobrança PIX Pendente Legítima da Oficina (Nunca fixa, fictícia ou de outra oficina)
+        const activePix = db.prepare(`
+            SELECT id, amount_cents, charge_type, pix_code, pix_qr_code_base64, created_at, status
+            FROM workshop_pix_charges
+            WHERE workshop_id = ? AND status = 'PENDING'
+            ORDER BY created_at DESC LIMIT 1
+        `).get(workshopId);
+
+        // 5. Saldo a Repassar à DNA AUTO (Apenas obrigações pendentes da oficina)
+        const pendingObligationToDnaCents = attendanceFeesPendingCents;
+
+        // 6. Transações do Extrato do Período
+        const transactions = [];
+
+        // Ativações
+        const acts = db.prepare(`
+            SELECT da.id, da.activated_at as date, da.amount_paid_cents, da.commission_amount_cents,
+                   v.license_plate, v.model
+            FROM dna_activations da
+            LEFT JOIN vehicle_dna vd ON da.vehicle_dna_id = vd.id
+            LEFT JOIN vehicles v ON vd.vehicle_id = v.id
+            WHERE da.workshop_id = ? AND strftime('%Y-%m', da.activated_at) = ? AND da.payment_status = 'COMPLETED'
+            ORDER BY da.activated_at DESC
+        `).all(workshopId, targetMonth);
+
+        acts.forEach(a => {
+            transactions.push({
+                id: a.id,
+                date: a.date,
+                type: 'ATIVACAO_PASSAPORTE',
+                title: `Ativação DNA (${a.license_plate || 'Veículo'})`,
+                description: `${a.model || 'Carro'} - Split R$ 29,95 Oficina / R$ 29,95 Plataforma`,
+                amount_cents: commissionPerPassportCents,
+                direction: 'CREDIT',
+                status: 'CONFIRMED'
+            });
+        });
+
+        // Taxas
+        const fees = db.prepare(`
+            SELECT waf.id, waf.created_at as date, waf.amount_cents, waf.notes
+            FROM workshop_attendance_fees waf
+            WHERE waf.workshop_id = ? AND strftime('%Y-%m', waf.created_at) = ?
+            ORDER BY waf.created_at DESC
+        `).all(workshopId, targetMonth);
+
+        fees.forEach(f => {
+            transactions.push({
+                id: f.id,
+                date: f.date,
+                type: 'TAXA_ATENDIMENTO',
+                title: 'Taxa de Atendimento Concluído',
+                description: f.notes || 'Agendamento e recepção na grade operacional',
+                amount_cents: f.amount_cents,
+                direction: 'DEBIT',
+                status: 'CONFIRMED'
+            });
+        });
+
+        // Ordena transações por data decrescente
+        transactions.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+
+        res.json({
+            success: true,
+            month: meta.month,
+            month_label: meta.monthLabel,
+            days_remaining: meta.daysRemaining,
+            workshop: {
+                id: workshop.id,
+                trade_name: workshop.trade_name,
+                city: workshop.city,
+                state: workshop.state
+            },
+            summary: {
+                // Bloco 1: Meu Financeiro
+                passports_activated_count: validPassportsCount,
+                cancelled_passports_count: cancelledPassportsCount,
+                commission_generated_cents: totalCommissionGeneratedCents,
+                platform_share_cents: totalPlatformShareCents,
+                commissions_received_cents: commissionsReceivedCents,
+                pending_commission_payout_cents: pendingPayoutCents,
+                pending_obligation_to_dna_cents: pendingObligationToDnaCents,
+                next_due_date: meta.lastDayFormatted,
+                is_up_to_date: pendingObligationToDnaCents === 0,
+                
+                // Bloco 2: Extrato e Obrigações
+                attendance_fees_count: attendanceCount,
+                attendance_fees_cents: attendanceFeesCents,
+                attendance_fees_pending_cents: attendanceFeesPendingCents,
+                
+                // Faturamento Mecânico Separado
+                mechanical_services_count: mechanicalServicesCount,
+                mechanical_labor_cents: mechanicalLaborCents,
+                mechanical_parts_cents: mechanicalPartsCents,
+                mechanical_total_revenue_cents: mechanicalTotalRevenueCents,
+
+                // PIX Dinâmico Legítimo
+                active_pix_charge: activePix ? {
+                    id: activePix.id,
+                    amount_cents: activePix.amount_cents,
+                    pix_code: activePix.pix_code,
+                    pix_qr_code_base64: activePix.pix_qr_code_base64,
+                    charge_type: activePix.charge_type,
+                    created_at: activePix.created_at
+                } : null
+            },
+            accounting_clarification: {
+                rule_split: 'O passaporte DNA AUTO custa R$ 59,90 com divisão exata de R$ 29,95 para a oficina e R$ 29,95 para a DNA AUTO.',
+                rule_platform_share: 'A participação da plataforma é retida diretamente no fluxo de pagamento e NÃO constitui dívida adicional da oficina.',
+                rule_commission_nature: 'A comissão de R$ 29,95 refere-se à participação bruta da oficina por passaporte ativado, antes dos custos operacionais e impostos.'
+            },
+            recent_transactions: transactions.slice(0, 20)
+        });
+    } catch (err) {
+        console.error('Erro ao gerar resumo financeiro da oficina:', err);
+        res.status(500).json({ error: 'Erro ao consultar resumo financeiro.' });
+    }
+});
+
+// Status Individual no Desafio DNA AUTO — Premiação Mensal
+router.get('/:id/challenge-status', authenticateToken, (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const workshop = db.prepare('SELECT * FROM workshops WHERE id = ?').get(workshopId);
+        if (!workshop) {
+            return res.status(404).json({ error: 'Oficina não encontrada.' });
+        }
+
+        const meta = getMonthMetadata(req.query.month);
+        const targetMonth = meta.month;
+
+        // Contagem de ativações pagas da oficina no mês
+        const row = db.prepare(`
+            SELECT COUNT(*) as count
+            FROM dna_activations
+            WHERE workshop_id = ? AND strftime('%Y-%m', activated_at) = ? AND payment_status = 'COMPLETED'
+        `).get(workshopId, targetMonth);
+
+        const count = Number(row ? row.count : 0) || 0;
+        const target = 100;
+        const remaining = Math.max(0, target - count);
+        const isEligible = count >= target;
+        const progressPercentage = Math.min(100, Math.round((count / target) * 100));
+
+        // Posição no ranking
+        const allRows = db.prepare(`
+            SELECT w.id,
+                   COUNT(CASE WHEN da.payment_status = 'COMPLETED' THEN da.id END) as valid_count,
+                   MAX(CASE WHEN da.payment_status = 'COMPLETED' THEN da.activated_at END) as last_act
+            FROM workshops w
+            LEFT JOIN dna_activations da ON da.workshop_id = w.id AND strftime('%Y-%m', da.activated_at) = ?
+            WHERE w.status != 'INACTIVE'
+            GROUP BY w.id
+            ORDER BY valid_count DESC, last_act ASC, w.trade_name ASC
+        `).all(targetMonth);
+
+        const rankIndex = allRows.findIndex(r => r.id === workshopId);
+        const currentRank = rankIndex !== -1 ? (rankIndex + 1) : allRows.length;
+
+        res.json({
+            success: true,
+            month: meta.month,
+            month_label: meta.monthLabel,
+            days_remaining: meta.daysRemaining,
+            activations_count: count,
+            target,
+            remaining_activations: remaining,
+            progress_percentage: progressPercentage,
+            is_eligible: isEligible,
+            current_rank: currentRank,
+            status_title: isEligible 
+                ? 'Meta alcançada! Sua oficina está elegível ao ranking mensal.' 
+                : `Faltam ${remaining} ativações para entrar na disputa.`,
+            continuity_message: 'Você poderá participar novamente no próximo mês. A contagem zera no primeiro dia de cada mês sem afetar seu credenciamento.'
+        });
+    } catch (err) {
+        console.error('Erro ao consultar status no Desafio DNA AUTO:', err);
+        res.status(500).json({ error: 'Erro ao consultar status no desafio mensal.' });
+    }
+});
+
 router.get('/:id/dashboard', (req, res) => {
     try {
         const workshopId = req.params.id;

@@ -130,3 +130,4 @@ O sistema demonstra:
 2. **Robustez Financeira:** Split de R$ 29,95 / R$ 29,95 e taxa de R$ 6,90 imutáveis e auditáveis.
 3. **Integridade de Odômetro:** Proteção monotônica ativa bloqueando tentativas de fraude.
 4. **Isolamento de Ambientes:** Aplicativo do cliente intacto e preservado.
+

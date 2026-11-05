@@ -2476,3 +2476,31 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Criação de `docs/OFICINA_AUDITORIA_FUNCIONAL.md` (45 componentes inventariados) e `docs/OFICINA_TESTES_INTEGRACAO.md` (20 passos documentados).
 - **Qualidade & Testes:**
   - 100% dos testes unitários e de integração aprovados sem uso de navegador.
+
+
+---
+
+### Ciclo 115 — Reestruturação da Gestão Financeira em 6 Blocos, Desafio Mensal (Ranking R$ 18k) e Limpeza da Splash Screen (05/11/2026)
+- **Objetivo:** Reestruturar integralmente a tela Financeiro do aplicativo mobile da oficina em 6 blocos contábeis claros e legíveis, implementar o Ranking Nacional de Premiação Mensal (Desafio DNA AUTO) e limpar a tela inicial (Splash Screen) da oficina.
+- **Alterações Realizadas:**
+  1. **Limpeza da Splash Screen Inicial da Oficina (`workshopMobileView.js`):**
+     - Removida a frase *"Gestão completa da sua oficina com a mesma tecnologia do DNA Auto."* (`ws-splash-tagline`).
+     - Removidos os 3 cards intermediários (*"Controle de serviços"*, *"Veículos e histórico"*, *"Tudo integrado ao app do cliente"*) que cobriam o logotipo, carro hero e slogan ao fundo. Mantidos apenas o cabeçalho limpo no topo e os botões *"Entrar →"* e *"Cadastrar"* na base.
+  2. **Unificação e Reestruturação da Gestão Financeira em 6 Blocos (`workshopMobileView.js`):**
+     - Unificadas as definições de `renderMobileFinancialView` mantendo a trava de segurança por PIN (`123456`) e renderizando os 6 blocos oficiais quando desbloqueado:
+       - **Bloco 1:** Identificação da oficina, CNPJ, mês de referência e 3 KPIs rápidos (Ganhos Ativações, Serviços Mecânicos e Taxas Pendentes).
+       - **Bloco 2:** Participação em Ativações de Passaportes (Preço oficial R$ 59,90, comissão da oficina R$ 29,95 e participação DNA AUTO R$ 29,95 retida no checkout sem gerar dívida).
+       - **Bloco 3:** Ganhos com Serviços Mecânicos (Mão de obra e peças separadas das comissões de passaporte).
+       - **Bloco 4:** Obrigações e Repasses à Plataforma (Taxa de R$ 6,90 por atendimento concluído e exibição condicional de código PIX Copia e Cola apenas quando há cobrança legítima pendente).
+       - **Bloco 5:** Desafio DNA AUTO — Premiação Mensal (Pódio R$ 10.000 / R$ 5.000 / R$ 3.000, barra de progresso da meta mínima de 100 ativações mensais, contador de dias restantes, ranking Top 5 provisório e acordeão com as 6 regras oficiais e garantia de continuidade).
+       - **Bloco 6:** Histórico Recente e Extrato Consolidado retrátil.
+  3. **Endpoints de Backend e Multi-Tenant (`workshops.routes.js`):**
+     - Implementados e blindados com `authenticateToken` e `checkWorkshopAccess`:
+       - `GET /api/v1/workshops/:id/financial-summary`
+       - `GET /api/v1/workshops/:id/challenge-status`
+       - `GET /api/v1/workshops/ranking/monthly`
+  4. **Bateria de Testes Automatizados (`test/oficina.finance.test.js`):**
+     - Criada suíte com 20 cenários cobrindo 0, 42, 99, 100 e 150 ativações, virada de mês com continuidade garantida, desempate por tempo, exclusão de cancelados/estornados/pendentes, taxas de R$ 6,90, bloqueio multi-tenant (HTTP 403) e renderização dos 6 blocos.
+- **Qualidade & Testes:**
+  - 100% de aprovação nas 4 baterias automatizadas (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js` e `oficina.finance.test.js`).
+  - Aplicativo do cliente (`cliente.app`) 100% preservado sem modificações.

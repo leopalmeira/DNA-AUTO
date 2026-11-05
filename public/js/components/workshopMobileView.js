@@ -1242,113 +1242,90 @@
     // ──────────────────────────────────────────────────────────────────────────
     // TELA 10: FINANCEIRO (CONFORME MODELO OFICIAL)
     // ──────────────────────────────────────────────────────────────────────────
-    WorkshopView.renderMobileFinancialView = function() {
-        return `
-            <div style="padding-bottom: 24px;">
-                <!-- Card Hero Faturamento -->
-                <div class="ws-model-finance-hero">
-                    <div class="hero-label">Faturamento</div>
-                    <div class="hero-value-row">
-                        <span class="hero-value">R$ 24.320,00</span>
-                        <span class="hero-badge-growth">↑ 18%</span>
-                    </div>
+    // ──────────────────────────────────────────────────────────────────────────
+    // GESTÃO FINANCEIRA: HELPERS DE API, EXTRATO E ACORDEÃO DO DESAFIO DNA AUTO
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView._financialCache = null;
+    WorkshopView._rankingCache = null;
+    WorkshopView._financialLoading = false;
+    WorkshopView._showFullLedger = false;
+    WorkshopView._accordionOpen = false;
 
-                    <!-- Gráfico de Barras Diárias (01 a 30) -->
-                    <div class="ws-model-bar-chart">
-                        <div class="chart-bars-wrap">
-                            <div class="chart-bar" style="height:32%;"></div>
-                            <div class="chart-bar" style="height:48%;"></div>
-                            <div class="chart-bar" style="height:65%;"></div>
-                            <div class="chart-bar" style="height:38%;"></div>
-                            <div class="chart-bar" style="height:55%;"></div>
-                            <div class="chart-bar" style="height:70%;"></div>
-                            <div class="chart-bar" style="height:82%;"></div>
-                            <div class="chart-bar" style="height:60%;"></div>
-                            <div class="chart-bar" style="height:45%;"></div>
-                            <div class="chart-bar" style="height:90%;"></div>
-                            <div class="chart-bar" style="height:75%;"></div>
-                            <div class="chart-bar" style="height:50%;"></div>
-                            <div class="chart-bar" style="height:68%;"></div>
-                            <div class="chart-bar" style="height:85%;"></div>
-                            <div class="chart-bar" style="height:92%;"></div>
-                            <div class="chart-bar" style="height:40%;"></div>
-                            <div class="chart-bar" style="height:62%;"></div>
-                            <div class="chart-bar" style="height:78%;"></div>
-                            <div class="chart-bar" style="height:54%;"></div>
-                            <div class="chart-bar" style="height:88%;"></div>
-                            <div class="chart-bar" style="height:95%;"></div>
-                            <div class="chart-bar" style="height:70%;"></div>
-                            <div class="chart-bar" style="height:60%;"></div>
-                            <div class="chart-bar" style="height:80%;"></div>
-                            <div class="chart-bar" style="height:90%;"></div>
-                            <div class="chart-bar" style="height:65%;"></div>
-                            <div class="chart-bar" style="height:85%;"></div>
-                            <div class="chart-bar" style="height:72%;"></div>
-                            <div class="chart-bar" style="height:98%;"></div>
-                            <div class="chart-bar" style="height:82%;"></div>
-                        </div>
-                        <div class="chart-axis-labels">
-                            <span>01</span>
-                            <span>05</span>
-                            <span>10</span>
-                            <span>15</span>
-                            <span>20</span>
-                            <span>25</span>
-                            <span>30</span>
-                        </div>
-                    </div>
-                </div>
+    WorkshopView.loadFinancialData = async function(forceRefresh = false) {
+        if (this._financialLoading && !forceRefresh) return;
+        this._financialLoading = true;
 
-                <!-- Mini Cards Serviços & Peças -->
-                <div class="ws-model-finance-grid">
-                    <div class="ws-model-mini-kpi blue">
-                        <div class="kpi-icon">🔧</div>
-                        <div class="kpi-info">
-                            <span class="label">Serviços</span>
-                            <span class="value">R$ 18.450,00</span>
-                        </div>
-                    </div>
-                    <div class="ws-model-mini-kpi green">
-                        <div class="kpi-icon">📦</div>
-                        <div class="kpi-info">
-                            <span class="label">Peças</span>
-                            <span class="value">R$ 5.870,00</span>
-                        </div>
-                    </div>
-                </div>
+        try {
+            const token = localStorage.getItem('dna_token');
+            const ws = (typeof this.getCurrentWorkshop === 'function' ? this.getCurrentWorkshop() : null) || {};
+            const wsId = ws.id || ws.workshop_id || 'ws_1793680372992';
 
-                <!-- Últimos Lançamentos -->
-                <div class="ws-model-recent-launches-card">
-                    <div class="launches-header">
-                        <h4>Últimos lançamentos</h4>
-                        <a href="javascript:void(0)" onclick="WorkshopView.showToast('Exibindo histórico financeiro completo...', 'info')">Ver todos</a>
-                    </div>
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
 
-                    <div class="launches-list">
-                        <div class="launch-item">
-                            <div class="date">20/11</div>
-                            <div class="desc">Troca de óleo - BRA2E19</div>
-                            <div class="amount">+ R$ 250,00</div>
-                        </div>
-                        <div class="launch-item">
-                            <div class="date">19/11</div>
-                            <div class="desc">Revisão - KZX4D21</div>
-                            <div class="amount">+ R$ 680,00</div>
-                        </div>
-                        <div class="launch-item">
-                            <div class="date">18/11</div>
-                            <div class="desc">Pastilha de freio - LMH7A33</div>
-                            <div class="amount">+ R$ 430,00</div>
-                        </div>
-                        <div class="launch-item">
-                            <div class="date">17/11</div>
-                            <div class="desc">Ar condicionado - RST8I90</div>
-                            <div class="amount">+ R$ 320,00</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+            const [resSummary, resRanking] = await Promise.all([
+                fetch('/api/v1/workshops/' + wsId + '/financial-summary', { headers })
+                    .then(r => r.ok ? r.json() : null)
+                    .catch(() => null),
+                fetch('/api/v1/workshops/ranking/monthly', { headers })
+                    .then(r => r.ok ? r.json() : null)
+                    .catch(() => null)
+            ]);
+
+            if (resSummary && resSummary.success) {
+                this._financialCache = resSummary;
+            }
+            if (resRanking && resRanking.success) {
+                this._rankingCache = resRanking;
+            }
+        } catch (e) {
+            console.warn('[Financial] Erro ao carregar dados:', e);
+        } finally {
+            this._financialLoading = false;
+            if (this.currentSection === 'financeiro' && this.financialAuthenticated) {
+                const viewport = document.getElementById('ws-mobile-active-viewport');
+                if (viewport) {
+                    viewport.innerHTML = this.renderMobileFinancialView();
+                }
+            }
+        }
+    };
+
+    WorkshopView.toggleFinancialLedger = function() {
+        this._showFullLedger = !this._showFullLedger;
+        const el = document.getElementById('dna-financial-ledger-container');
+        const btn = document.getElementById('dna-btn-toggle-ledger');
+        if (el) {
+            el.style.display = this._showFullLedger ? 'block' : 'none';
+        }
+        if (btn) {
+            btn.textContent = this._showFullLedger ? 'Ocultar Extrato Completo ▲' : 'Ver Extrato Completo ▼';
+        }
+    };
+
+    WorkshopView.toggleChallengeAccordion = function() {
+        this._accordionOpen = !this._accordionOpen;
+        const content = document.getElementById('dna-challenge-accordion-content');
+        const arrow = document.getElementById('dna-challenge-accordion-arrow');
+        if (content) {
+            content.style.display = this._accordionOpen ? 'block' : 'none';
+        }
+        if (arrow) {
+            arrow.textContent = this._accordionOpen ? '▲' : '▼';
+        }
+    };
+
+    WorkshopView.copyActivePixCode = function(pixCode) {
+        if (!pixCode) return;
+        if (navigator && navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(pixCode).then(() => {
+                this.showToast ? this.showToast('Código PIX copiado com sucesso!', 'success') : alert('Código PIX copiado!');
+            }).catch(() => {
+                prompt('Copie o código PIX abaixo:', pixCode);
+            });
+        } else {
+            prompt('Copie o código PIX abaixo:', pixCode);
+        }
     };
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -3817,7 +3794,7 @@ Odômetro atual: ${lastKm} km | Próxima revisão: ${nextKm} km.`;
     };
 
     WorkshopView.renderMobileFinancialView = function() {
-        // Se ainda não autenticado com senha, exibe a tela de bloqueio
+        // Se ainda não autenticado com senha, exibe a tela de bloqueio com PIN
         if (!this.financialAuthenticated) {
             return `
                 <div class="dna-mobile-subpage">
@@ -3825,176 +3802,403 @@ Odômetro atual: ${lastKm} km | Próxima revisão: ${nextKm} km.`;
                         <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
                             <span>‹</span> <span>Voltar</span>
                         </button>
-                        <span class="dna-mobile-subpage-title">Financeiro</span>
+                        <h2 class="dna-mobile-subpage-title">Painel Financeiro</h2>
+                        <div style="width: 32px;"></div>
                     </div>
 
-                    <div class="dna-mobile-subpage-body" style="align-items:center; text-align:center; padding-top:24px;">
-                        <div style="width:68px; height:68px; border-radius:50%; background:rgba(234,179,8,0.15); border:1.5px solid #EAB308; display:flex; align-items:center; justify-content:center; font-size:32px; margin-bottom:12px; box-shadow:0 0 25px rgba(234,179,8,0.25);">
+                    <div style="padding: 32px 20px; text-align: center; max-width: 380px; margin: 40px auto; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; backdrop-filter: blur(12px); box-shadow: 0 16px 40px rgba(0,0,0,0.5);">
+                        <div style="width: 72px; height: 72px; border-radius: 50%; background: rgba(0, 212, 255, 0.1); border: 2px solid var(--dna-ws-cyan); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; font-size: 32px;">
                             🔒
                         </div>
-                        <h3 style="color:#FFFFFF; font-size:18px; font-weight:800; margin:0 0 6px;">Acesso Restrito ao Dono</h3>
-                        <p style="color:var(--dna-ws-text-muted); font-size:12.5px; max-width:290px; margin:0 0 20px; line-height:1.4;">
-                            Área exclusiva para o proprietário da oficina. Digite a senha para acessar faturamento, aparelhos e premiações:
+                        <h3 style="color: #fff; font-size: 20px; font-weight: 800; margin-bottom: 8px;">Acesso Restrito</h3>
+                        <p style="color: var(--dna-ws-muted); font-size: 13.5px; line-height: 1.5; margin-bottom: 24px;">
+                            O Painel Financeiro contém informações confidenciais de faturamento e repasses. Digite o PIN de Segurança para desbloquear.
                         </p>
 
-                        <div style="width:100%; max-width:280px; margin-bottom:14px;">
-                            <input 
-                                type="password" 
-                                id="mobile-finance-pwd-input" 
-                                placeholder="••••••" 
-                                maxlength="20"
-                                style="width:100%; height:48px; background:rgba(6,11,20,0.95); border:1.5px solid rgba(0,102,255,0.4); border-radius:12px; color:#fff; text-align:center; font-size:22px; letter-spacing:6px; font-weight:800; box-sizing:border-box;"
-                                onkeydown="if(event.key==='Enter') WorkshopView.handleVerifyFinancialPassword()"
-                            />
-                            <div id="mobile-finance-pwd-error" style="color:#EF4444; font-size:11.5px; font-weight:700; margin-top:8px; display:none;">
-                                ⚠️ Senha incorreta. Tente novamente.
-                            </div>
+                        <div style="margin-bottom: 24px;">
+                            <input type="password" id="dna-ws-fin-pin" maxlength="6" placeholder="••••••" style="width: 100%; max-width: 220px; padding: 14px 16px; font-size: 24px; text-align: center; letter-spacing: 8px; border-radius: 12px; border: 1.5px solid rgba(0, 212, 255, 0.3); background: rgba(2, 6, 23, 0.8); color: #fff; outline: none; transition: all 0.2s ease;">
+                            <div style="font-size: 11px; color: #64748B; margin-top: 8px;">Senha padrão inicial: <strong>123456</strong></div>
                         </div>
 
-                        <button type="button" class="dna-primary-btn-lg" style="width:100%; max-width:280px; height:46px;" onclick="WorkshopView.handleVerifyFinancialPassword()">
-                            <span>🔓</span> <span>Acessar Painel Financeiro</span>
+                        <button onclick="WorkshopView.handleVerifyFinancialPassword()" style="width: 100%; padding: 14px 20px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--dna-ws-cyan), var(--dna-ws-blue)); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3); transition: transform 0.15s ease;">
+                            Desbloquear Painel
                         </button>
-
-                        <div style="margin-top:28px;">
-                            <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                                <span>‹</span> <span>Voltar para Todos os Cards</span>
-                            </button>
-                        </div>
                     </div>
                 </div>
             `;
         }
 
-        // Painel Financeiro Autenticado
+        // Se autenticado, dispara busca assíncrona se cache estiver vazio
+        if (!this._financialCache && !this._financialLoading) {
+            setTimeout(() => { if (typeof this.loadFinancialData === 'function') this.loadFinancialData(); }, 10);
+        }
+
+        const data = this._financialCache || {};
+        const rankingData = this._rankingCache || {};
+        const ws = (typeof this.getCurrentWorkshop === 'function' ? this.getCurrentWorkshop() : null) || data.workshop || {};
+        const fin = data.summary || data.financial || {};
+        const challenge = data.challenge || {};
+        const ranking = rankingData.ranking || [];
+
+        const formatBRL = (val) => {
+            const num = Number(val) || 0;
+            return 'R$ ' + num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        };
+
+        const totalActivations = fin.passports_activated_count !== undefined ? fin.passports_activated_count : (fin.total_activations || 0);
+        const grossParticipation = fin.commission_generated_cents !== undefined ? (fin.commission_generated_cents / 100) : (fin.workshop_gross_brl || (totalActivations * 29.95));
+        const dnaSplitTotal = fin.platform_share_cents !== undefined ? (fin.platform_share_cents / 100) : (fin.dna_auto_fee_brl || (totalActivations * 29.95));
+        const serviceRev = fin.mechanical_total_revenue_cents !== undefined ? (fin.mechanical_total_revenue_cents / 100) : (fin.service_revenue_brl || 0);
+        const pendingDebt = fin.pending_obligation_to_dna_cents !== undefined ? (fin.pending_obligation_to_dna_cents / 100) : (fin.pending_obligations_brl || 0);
+        const paidDebt = fin.commissions_received_cents !== undefined ? (fin.commissions_received_cents / 100) : (fin.paid_obligations_brl || 0);
+        const rawPix = fin.active_pix_charge || data.pending_pix || null;
+        const pixCharge = rawPix ? { ...rawPix, pix_copia_cola: rawPix.pix_copia_cola || rawPix.pix_code } : null;
+
+        const currentCount = challenge.current !== undefined ? challenge.current : totalActivations;
+        const targetCount = challenge.target || 100;
+        const percentage = Math.min(100, Math.round((currentCount / targetCount) * 100));
+        const remaining = Math.max(0, targetCount - currentCount);
+        const isEligible = currentCount >= targetCount;
+        const daysLeft = data.days_remaining !== undefined ? data.days_remaining : (challenge.days_left !== undefined ? challenge.days_left : 25);
+
+        const currentMonthName = new Date().toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+
         return `
-            <div class="dna-mobile-subpage">
-                <div class="dna-mobile-subpage-header">
-                    <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+            <div class="dna-mobile-subpage" style="padding-bottom: 90px; background: #0A0F1D; color: #F8FAFC; min-height: 100vh;">
+                <!-- HEADER PADRÃO COM BOTÃO VOLTAR E BLOQUEAR -->
+                <div class="dna-mobile-subpage-header" style="display:flex; align-items:center; justify-content:space-between; padding:16px 20px; background:rgba(15,23,42,0.85); backdrop-filter:blur(10px); border-bottom:1px solid rgba(255,255,255,0.08); position:sticky; top:0; z-index:50;">
+                    <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')" style="background:none; border:none; color:var(--dna-ws-cyan); font-size:15px; font-weight:700; display:flex; align-items:center; gap:4px; cursor:pointer;">
                         <span>‹</span> <span>Voltar</span>
                     </button>
-                    <span class="dna-mobile-subpage-title">Gestão Financeira</span>
-                    <button type="button" onclick="WorkshopView.handleLockFinancialPanel()" style="background:rgba(239,68,68,0.15); border:1px solid #EF4444; color:#EF4444; padding:5px 10px; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer;">
-                        🔒 Bloquear
+                    <h2 class="dna-mobile-subpage-title" style="font-size:16.5px; font-weight:800; color:#fff; margin:0; letter-spacing:0.3px;">Gestão Financeira</h2>
+                    <button onclick="WorkshopView.financialAuthenticated = false; WorkshopView.switchMobileSection('financeiro');" title="Bloquear tela" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#EF4444; border-radius:8px; padding:6px 10px; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                        <span>🔒</span> <span>Bloquear</span>
                     </button>
                 </div>
 
-                <div class="dna-mobile-subpage-body">
-                    <!-- 1. RANKING DE PREMIAÇÃO DAS 3 MELHORES LOJAS DO MÊS (DESTAQUE MÁXIMO) -->
-                    <div style="background:linear-gradient(145deg, rgba(234,179,8,0.22), rgba(202,138,4,0.08)); border:1.5px solid #EAB308; border-radius:14px; padding:16px;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span style="font-size:24px;">🏆</span>
-                                <strong style="color:#FFFFFF; font-size:15px; font-weight:800;">Ranking de Premiação do Mês</strong>
+                <div style="padding: 16px 16px 30px 16px; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px;">
+
+                    <!-- BLOCO 1: IDENTIFICAÇÃO E VISÃO GERAL -->
+                    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 18px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div>
+                                <span style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--dna-ws-cyan);">BLOCO 1: IDENTIFICAÇÃO E VISÃO GERAL</span>
+                                <h3 style="font-size:18px; font-weight:800; color:#fff; margin:2px 0 0 0;">${ws.name || ws.trade_name || 'Oficina Credenciada'}</h3>
+                                <div style="font-size:12px; color:#94A3B8; margin-top:2px;">CNPJ: ${ws.cnpj || '12.345.678/0001-90'} • Período: <strong style="color:#F1F5F9; text-transform:capitalize;">${currentMonthName}</strong></div>
                             </div>
-                            <span style="background:#EAB308; color:#000; font-size:10px; font-weight:800; padding:2px 8px; border-radius:9999px;">R$ 10.000 EM PRÊMIOS</span>
+                            <div style="text-align:right;">
+                                <span style="display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:800; background:rgba(34,197,94,0.15); color:#22C55E; border:1px solid rgba(34,197,94,0.3);">OFICINA ATIVA</span>
+                            </div>
                         </div>
 
-                        <p style="font-size:12px; color:#E2E8F0; margin:0 0 12px; line-height:1.4;">
-                            Premiações pagas diretamente pela Matriz DNA AUTO para as 3 lojas mais ativadoras de aparelhos e laudos:
-                        </p>
+                        <!-- 3 CARDS GRANDES DE RESUMO -->
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:14px;">
+                            <!-- Card 1: Ganhos com Ativações -->
+                            <div style="background:rgba(2,6,23,0.6); border:1px solid rgba(0,212,255,0.2); border-radius:12px; padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
+                                <div>
+                                    <span style="font-size:11px; font-weight:700; color:#94A3B8; display:block; margin-bottom:4px;">Ganhos Ativações</span>
+                                    <div style="font-size:19px; font-weight:900; color:#38BDF8; letter-spacing:-0.5px;">${formatBRL(grossParticipation)}</div>
+                                </div>
+                                <span style="font-size:10.5px; color:#64748B; margin-top:6px;">R$ 29,95 por passaporte</span>
+                            </div>
 
-                        <!-- Pódios Oficiais -->
+                            <!-- Card 2: Serviços Mecânicos -->
+                            <div style="background:rgba(2,6,23,0.6); border:1px solid rgba(34,197,94,0.2); border-radius:12px; padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
+                                <div>
+                                    <span style="font-size:11px; font-weight:700; color:#94A3B8; display:block; margin-bottom:4px;">Serviços Mecânicos</span>
+                                    <div style="font-size:19px; font-weight:900; color:#4ADE80; letter-spacing:-0.5px;">${formatBRL(serviceRev)}</div>
+                                </div>
+                                <span style="font-size:10.5px; color:#64748B; margin-top:6px;">Mão de obra e peças</span>
+                            </div>
+
+                            <!-- Card 3: Obrigações Pendentes -->
+                            <div style="background:rgba(2,6,23,0.6); border:1px solid ${pendingDebt > 0 ? 'rgba(239,68,68,0.3)' : 'rgba(148,163,184,0.15)'}; border-radius:12px; padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
+                                <div>
+                                    <span style="font-size:11px; font-weight:700; color:#94A3B8; display:block; margin-bottom:4px;">Taxas Pendentes</span>
+                                    <div style="font-size:19px; font-weight:900; color:${pendingDebt > 0 ? '#F87171' : '#94A3B8'}; letter-spacing:-0.5px;">${formatBRL(pendingDebt)}</div>
+                                </div>
+                                <span style="font-size:10.5px; color:${pendingDebt > 0 ? '#FCA5A5' : '#64748B'}; margin-top:6px;">${pendingDebt > 0 ? 'Repasse obrigatório' : 'Tudo em dia'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BLOCO 2: PARTICIPAÇÃO EM ATIVAÇÕES DE PASSAPORTES (COMISSÃO R$ 29,95) -->
+                    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 18px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                        <span style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#38BDF8;">BLOCO 2: PARTICIPAÇÃO EM ATIVAÇÕES</span>
+                        <h4 style="font-size:16px; font-weight:800; color:#fff; margin:4px 0 12px 0;">Passaporte Digital DNA AUTO</h4>
+
+                        <div style="background:rgba(2,6,23,0.5); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:14px; margin-bottom:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
+                                <span style="color:#94A3B8;">Passaportes ativados no período:</span>
+                                <strong style="color:#fff; font-size:15px;">${totalActivations} veículos</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
+                                <span style="color:#94A3B8;">Preço oficial ao motorista:</span>
+                                <strong style="color:#E2E8F0;">R$ 59,90 cada</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
+                                <span style="color:#94A3B8;">Sua comissão por ativação:</span>
+                                <strong style="color:#38BDF8;">R$ 29,95 (50%)</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:13px;">
+                                <span style="color:#94A3B8;">Participação DNA AUTO:</span>
+                                <span style="color:#64748B;">R$ 29,95 (retido no checkout)</span>
+                            </div>
+                            <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:700; color:#F8FAFC; font-size:13.5px;">Total Bruto de Participação:</span>
+                                <span style="font-size:18px; font-weight:900; color:#38BDF8;">${formatBRL(grossParticipation)}</span>
+                            </div>
+                        </div>
+
+                        <div style="background:rgba(56,189,248,0.06); border-left:3px solid #38BDF8; border-radius:4px 8px 8px 4px; padding:8px 12px; font-size:11px; color:#94A3B8; line-height:1.4;">
+                            * A taxa da DNA AUTO de R$ 29,95 é retida automaticamente no processamento do pagamento. O valor exibido acima é sua participação bruta antes de tributos.
+                        </div>
+                    </div>
+
+                    <!-- BLOCO 3: GANHOS COM SERVIÇOS MECÂNICOS -->
+                    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 18px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                        <span style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#4ADE80;">BLOCO 3: GANHOS COM SERVIÇOS MECÂNICOS</span>
+                        <h4 style="font-size:16px; font-weight:800; color:#fff; margin:4px 0 12px 0;">Faturamento Operacional da Oficina</h4>
+
+                        <div style="background:rgba(2,6,23,0.5); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:14px; margin-bottom:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
+                                <span style="color:#94A3B8;">Mão de obra e serviços:</span>
+                                <strong style="color:#fff;">${formatBRL(serviceRev * 0.65)}</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:13px;">
+                                <span style="color:#94A3B8;">Peças e insumos aplicados:</span>
+                                <strong style="color:#fff;">${formatBRL(serviceRev * 0.35)}</strong>
+                            </div>
+                            <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:700; color:#F8FAFC; font-size:13.5px;">Receita Operacional Total:</span>
+                                <span style="font-size:18px; font-weight:900; color:#4ADE80;">${formatBRL(serviceRev)}</span>
+                            </div>
+                        </div>
+
+                        <div style="font-size:11px; color:#64748B; line-height:1.4;">
+                            * Receitas originadas diretamente das Ordens de Serviço e manutenções registradas no ecossistema DNA AUTO.
+                        </div>
+                    </div>
+
+                    <!-- BLOCO 4: OBRIGAÇÕES E REPASSES À PLATAFORMA (TAXA R$ 6,90) -->
+                    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 18px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                            <span style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:${pendingDebt > 0 ? '#F87171' : '#94A3B8'};">BLOCO 4: OBRIGAÇÕES E REPASSES</span>
+                            <span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; background:${pendingDebt > 0 ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)'}; color:${pendingDebt > 0 ? '#EF4444' : '#22C55E'};">
+                                ${pendingDebt > 0 ? 'PENDENTE' : 'EM DIA'}
+                            </span>
+                        </div>
+                        <h4 style="font-size:16px; font-weight:800; color:#fff; margin:0 0 12px 0;">Taxas de Atendimento Concluído</h4>
+
+                        <div style="background:rgba(2,6,23,0.5); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:14px; margin-bottom:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
+                                <span style="color:#94A3B8;">Taxa por atendimento concluído:</span>
+                                <strong style="color:#E2E8F0;">R$ 6,90 / atendimento</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
+                                <span style="color:#94A3B8;">Taxas já quitadas no mês:</span>
+                                <strong style="color:#22C55E;">${formatBRL(paidDebt)}</strong>
+                            </div>
+                            <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
+                                <span style="font-weight:700; color:#F8FAFC; font-size:13.5px;">Valor Pendente de Repasse:</span>
+                                <span style="font-size:18px; font-weight:900; color:${pendingDebt > 0 ? '#F87171' : '#94A3B8'};">${formatBRL(pendingDebt)}</span>
+                            </div>
+                        </div>
+
+                        ${pendingDebt > 0 && pixCharge && pixCharge.pix_copia_cola ? `
+                            <!-- ÁREA PIX OFICIAL -->
+                            <div style="background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.25); border-radius:12px; padding:14px; margin-bottom:8px;">
+                                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                                    <span style="font-size:18px;">⚡</span>
+                                    <div>
+                                        <div style="font-size:13px; font-weight:800; color:#fff;">Pagamento via PIX Copia e Cola</div>
+                                        <div style="font-size:11px; color:#FCA5A5;">Evite a suspensão de novos agendamentos liquidando o saldo pendente.</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex; gap:8px;">
+                                    <input type="text" readonly value="${pixCharge.pix_copia_cola}" style="flex:1; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:8px 10px; font-size:11px; color:#CBD5E1; font-family:monospace; outline:none; text-overflow:ellipsis;">
+                                    <button onclick="WorkshopView.copyActivePixCode('${pixCharge.pix_copia_cola}')" style="background:#EF4444; color:#fff; border:none; border-radius:8px; padding:8px 14px; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap;">
+                                        Copiar PIX
+                                    </button>
+                                </div>
+                            </div>
+                        ` : `
+                            <div style="background:rgba(34,197,94,0.06); border:1px solid rgba(34,197,94,0.2); border-radius:10px; padding:10px 14px; font-size:11.5px; color:#86EFAC; display:flex; align-items:center; gap:8px;">
+                                <span>✓</span> <span>Nenhum débito pendente. Sua oficina está 100% regularizada no ecossistema DNA AUTO.</span>
+                            </div>
+                        `}
+                    </div>
+
+                    <!-- BLOCO 5: DESAFIO DNA AUTO — PREMIAÇÃO MENSAL (RANKING NACIONAL) -->
+                    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1.5px solid rgba(234, 179, 8, 0.35); border-radius: 16px; padding: 18px 16px; box-shadow: 0 4px 25px rgba(234, 179, 8, 0.08);">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                            <div>
+                                <span style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#EAB308;">BLOCO 5: DESAFIO DNA AUTO</span>
+                                <h3 style="font-size:18px; font-weight:900; color:#FDE047; margin:2px 0 0 0; display:flex; align-items:center; gap:6px;">
+                                    <span>🏆</span> <span>Premiação Mensal das Oficinas</span>
+                                </h3>
+                                <div style="font-size:11px; color:#94A3B8; margin-top:2px;">R$ 18.000,00 em prêmios mensais distribuídos todo mês</div>
+                            </div>
+                            <span style="background:rgba(234,179,8,0.15); border:1px solid rgba(234,179,8,0.4); color:#FDE047; font-size:10px; font-weight:800; padding:4px 8px; border-radius:6px; text-transform:uppercase;">
+                                PROVISÓRIO
+                            </span>
+                        </div>
+
+                        <!-- CARDS DOS PRÊMIOS DO PÓDIO -->
+                        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:14px;">
+                            <div style="background:rgba(234,179,8,0.1); border:1px solid rgba(234,179,8,0.3); border-radius:10px; padding:10px 6px; text-align:center;">
+                                <span style="font-size:18px; display:block; margin-bottom:2px;">🥇</span>
+                                <span style="font-size:10px; font-weight:800; color:#FDE047; display:block;">1º LUGAR</span>
+                                <strong style="font-size:13px; font-weight:900; color:#fff;">R$ 10.000</strong>
+                            </div>
+                            <div style="background:rgba(148,163,184,0.1); border:1px solid rgba(148,163,184,0.25); border-radius:10px; padding:10px 6px; text-align:center;">
+                                <span style="font-size:18px; display:block; margin-bottom:2px;">🥈</span>
+                                <span style="font-size:10px; font-weight:800; color:#E2E8F0; display:block;">2º LUGAR</span>
+                                <strong style="font-size:13px; font-weight:900; color:#fff;">R$ 5.000</strong>
+                            </div>
+                            <div style="background:rgba(180,83,9,0.1); border:1px solid rgba(180,83,9,0.3); border-radius:10px; padding:10px 6px; text-align:center;">
+                                <span style="font-size:18px; display:block; margin-bottom:2px;">🥉</span>
+                                <span style="font-size:10px; font-weight:800; color:#FDBA74; display:block;">3º LUGAR</span>
+                                <strong style="font-size:13px; font-weight:900; color:#fff;">R$ 3.000</strong>
+                            </div>
+                        </div>
+
+                        <!-- STATUS DA SUA OFICINA (META DE 100) -->
+                        <div style="background:rgba(2,6,23,0.7); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:14px; margin-bottom:14px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <span style="font-size:12px; font-weight:700; color:#E2E8F0;">Meta Mínima de Qualificação:</span>
+                                <span style="font-size:11px; font-weight:800; padding:2px 8px; border-radius:12px; background:${isEligible ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'}; color:${isEligible ? '#22C55E' : '#EF4444'}; border:1px solid ${isEligible ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'};">
+                                    ${isEligible ? 'QUALIFICADA P/ O PÓDIO' : 'NÃO ELEGÍVEL (<100)'}
+                                </span>
+                            </div>
+
+                            <!-- Barra de Progresso da Meta -->
+                            <div style="background:rgba(255,255,255,0.08); height:12px; border-radius:6px; overflow:hidden; position:relative; margin-bottom:8px;">
+                                <div style="background:linear-gradient(90deg, #38BDF8, ${isEligible ? '#22C55E' : '#EAB308'}); height:100%; width:${percentage}%; border-radius:6px; transition:width 0.4s ease;"></div>
+                            </div>
+
+                            <div style="display:flex; justify-content:space-between; font-size:11.5px; color:#94A3B8;">
+                                <span>${currentCount} / 100 ativados (${percentage}%)</span>
+                                <span>${remaining > 0 ? `Faltam <strong>${remaining}</strong> ativações` : '🎉 Meta atingida!'}</span>
+                            </div>
+
+                            <div style="margin-top:10px; font-size:11px; color:#64748B; border-top:1px solid rgba(255,255,255,0.05); padding-top:8px;">
+                                Dias restantes no mês: <strong style="color:#F1F5F9;">${daysLeft} dias</strong> • Se não atingir 100, sua oficina continua ativa e disputará novamente no mês seguinte!
+                            </div>
+                        </div>
+
+                        <!-- TABELA DO RANKING TOP 3 -->
+                        <div style="margin-bottom:12px;">
+                            <div style="font-size:12.5px; font-weight:800; color:#E2E8F0; margin-bottom:8px;">Classificação Provisória Atual:</div>
+                            <div style="display:flex; flex-direction:column; gap:6px;">
+                                ${ranking.length > 0 ? ranking.slice(0, 5).map(item => `
+                                    <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:rgba(2,6,23,0.5); border:1px solid ${item.workshop_id === ws.id ? 'rgba(0,212,255,0.4)' : 'rgba(255,255,255,0.04)'}; border-radius:8px; font-size:12px;">
+                                        <div style="display:flex; align-items:center; gap:8px;">
+                                            <span style="font-weight:900; width:18px; color:${item.rank === 1 ? '#FDE047' : item.rank === 2 ? '#E2E8F0' : item.rank === 3 ? '#FDBA74' : '#94A3B8'};">#${item.rank}</span>
+                                            <div>
+                                                <strong style="color:${item.workshop_id === ws.id ? '#38BDF8' : '#fff'};">${item.trade_name || item.workshop_name || 'Oficina'}</strong>
+                                                ${item.workshop_id === ws.id ? '<span style="font-size:10px; background:rgba(0,212,255,0.2); color:#38BDF8; padding:1px 5px; border-radius:4px; margin-left:4px;">Sua Oficina</span>' : ''}
+                                            </div>
+                                        </div>
+                                        <div style="text-align:right;">
+                                            <span style="font-weight:800; color:#fff;">${item.valid_activations !== undefined ? item.valid_activations : (item.activations_count || 0)} ativ.</span>
+                                            ${(item.potential_prize_cents > 0 || item.potential_prize_brl > 0) ? `<div style="font-size:10.5px; font-weight:800; color:#4ADE80;">+${formatBRL(item.potential_prize_brl || (item.potential_prize_cents / 100))}</div>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('') : `
+                                    <div style="text-align:center; padding:16px; font-size:12px; color:#64748B; background:rgba(2,6,23,0.4); border-radius:8px;">
+                                        Nenhuma oficina atingiu 100 ativações neste mês ainda. Seja a primeira a se qualificar!
+                                    </div>
+                                `}
+                            </div>
+                        </div>
+
+                        <!-- ACORDEÃO COM REGRAS DO DESAFIO -->
+                        <div style="background:rgba(2,6,23,0.4); border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:10px 12px; cursor:pointer;" onclick="WorkshopView.toggleChallengeAccordion()">
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; font-weight:700; color:#38BDF8;">
+                                <span style="display:flex; align-items:center; gap:6px;">
+                                    <span>ℹ️</span> <span>Regras e Regulamento do Desafio</span>
+                                </span>
+                                <span id="dna-challenge-accordion-arrow" style="font-size:12px; color:#38BDF8;">▼</span>
+                            </div>
+
+                            <div id="dna-challenge-accordion-content" style="display:none; margin-top:12px; font-size:12px; color:#CBD5E1; line-height:1.5;">
+                                <ol style="margin:0; padding-left:18px; display:flex; flex-direction:column; gap:8px;">
+                                    <li><strong>Cadastre e ative passaportes:</strong> A cada carro recebido, ative o Passaporte Digital DNA AUTO.</li>
+                                    <li><strong>Bata a meta de 100:</strong> Ao atingir 100 ativações pagas no mês civil, sua oficina entra automaticamente na disputa oficial de prêmios.</li>
+                                    <li><strong>Dispute o pódio nacional:</strong> As 3 oficinas com maior volume no mês ganham R$ 10.000 (1º), R$ 5.000 (2º) e R$ 3.000 (3º).</li>
+                                    <li><strong>Acompanhe em tempo real:</strong> A classificação exibida durante o mês é provisória e atualizada a cada ativação confirmada.</li>
+                                    <li><strong>Apuração definitiva:</strong> No último dia do mês, os dados são auditados e os vencedores homologados.</li>
+                                    <li><strong>Continuidade garantida:</strong> Se não atingir 100 ativações, sua oficina começa automaticamente no mês seguinte com nova contagem, sem perder credenciamento.</li>
+                                </ol>
+
+                                <div style="margin-top:12px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.06); font-size:10.5px; color:#64748B;">
+                                    * Sujeito aos termos e condições do regulamento operacional do DNA AUTO. Os prêmios mensais são válidos para campanhas ativas e homologadas pela administração.
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- BLOCO 6: HISTÓRICO RECENTE E EXTRATO CONSOLIDADO -->
+                    <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 18px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div>
+                                <span style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#94A3B8;">BLOCO 6: HISTÓRICO RECENTE</span>
+                                <h4 style="font-size:16px; font-weight:800; color:#fff; margin:2px 0 0 0;">Últimas Movimentações</h4>
+                            </div>
+                            <button id="dna-btn-toggle-ledger" onclick="WorkshopView.toggleFinancialLedger()" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); color:#38BDF8; padding:6px 10px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;">
+                                Ver Extrato Completo ▼
+                            </button>
+                        </div>
+
+                        <!-- Lista de Transações Recentes -->
                         <div style="display:flex; flex-direction:column; gap:8px;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.35); border:1px solid rgba(234,179,8,0.4); border-radius:10px; padding:8px 12px;">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="font-size:20px;">🥇</span>
+                            ${data.recent_transactions && data.recent_transactions.length > 0 ? data.recent_transactions.slice(0, 4).map(tx => `
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:rgba(2,6,23,0.5); border:1px solid rgba(255,255,255,0.04); border-radius:8px; font-size:12px;">
                                     <div>
-                                        <strong style="color:#fff; font-size:13px;">1º Lugar: Auto Center Speed Prime</strong>
-                                        <div style="font-size:11px; color:var(--dna-ws-text-muted);">42 aparelhos ativados</div>
+                                        <div style="font-weight:700; color:#F1F5F9;">${tx.description || 'Movimentação Operacional'}</div>
+                                        <div style="font-size:10.5px; color:#64748B;">${tx.date || 'Hoje'} • ${tx.type || 'Geral'}</div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <div style="font-weight:800; color:${tx.status === 'credit' ? '#4ADE80' : tx.status === 'debit' ? '#F87171' : '#94A3B8'};">
+                                            ${tx.status === 'credit' ? '+' : tx.status === 'debit' ? '-' : ''}${formatBRL(tx.amount)}
+                                        </div>
                                     </div>
                                 </div>
-                                <span style="color:#EAB308; font-size:14px; font-weight:800;">R$ 5.000,00</span>
-                            </div>
-
-                            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.35); border:1px solid rgba(192,192,192,0.3); border-radius:10px; padding:8px 12px;">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="font-size:20px;">🥈</span>
+                            `).join('') : `
+                                <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:rgba(2,6,23,0.5); border:1px solid rgba(255,255,255,0.04); border-radius:8px; font-size:12px;">
                                     <div>
-                                        <strong style="color:#fff; font-size:13px;">2º Lugar: Oficina Mecânica Estrela</strong>
-                                        <div style="font-size:11px; color:var(--dna-ws-text-muted);">38 aparelhos ativados</div>
+                                        <div style="font-weight:700; color:#F1F5F9;">Ativação Passaporte Digital</div>
+                                        <div style="font-size:10.5px; color:#64748B;">Comissão creditada à oficina</div>
+                                    </div>
+                                    <div style="text-align:right;">
+                                        <div style="font-weight:800; color:#4ADE80;">+R$ 29,95</div>
                                     </div>
                                 </div>
-                                <span style="color:#C0C0C0; font-size:14px; font-weight:800;">R$ 3.000,00</span>
-                            </div>
+                            `}
+                        </div>
 
-                            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.35); border:1px solid rgba(205,127,50,0.3); border-radius:10px; padding:8px 12px;">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="font-size:20px;">🥉</span>
-                                    <div>
-                                        <strong style="color:#fff; font-size:13px;">3º Lugar: Auto Center Paulista</strong>
-                                        <div style="font-size:11px; color:var(--dna-ws-text-muted);">31 aparelhos ativados</div>
-                                    </div>
+                        <!-- EXTRATO COMPLETO RETRÁTIL -->
+                        <div id="dna-financial-ledger-container" style="display:none; margin-top:14px; padding-top:12px; border-top:1px dashed rgba(255,255,255,0.1);">
+                            <div style="font-size:12px; font-weight:800; color:#94A3B8; margin-bottom:8px;">Extrato Consolidado do Exercício:</div>
+                            <div style="background:rgba(2,6,23,0.7); border-radius:8px; padding:12px; font-size:11.5px; display:flex; flex-direction:column; gap:8px;">
+                                <div style="display:flex; justify-content:space-between; color:#94A3B8;">
+                                    <span>Total de Créditos (Comissões + Serviços):</span>
+                                    <strong style="color:#4ADE80;">${formatBRL(grossParticipation + serviceRev)}</strong>
                                 </div>
-                                <span style="color:#CD7F32; font-size:14px; font-weight:800;">R$ 2.000,00</span>
-                            </div>
-
-                            <!-- Posição da Loja Atual -->
-                            <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,102,255,0.18); border:1px solid var(--dna-ws-cyan); border-radius:10px; padding:8px 12px; margin-top:4px;">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <span style="font-size:18px;">🏢</span>
-                                    <div>
-                                        <strong style="color:#fff; font-size:13px;">Sua Oficina: Veloce Auto Center</strong>
-                                        <div style="font-size:11px; color:var(--dna-ws-cyan); font-weight:700;">4º Lugar • 24 ativações (Faltam 7 para o pódio!)</div>
-                                    </div>
+                                <div style="display:flex; justify-content:space-between; color:#94A3B8;">
+                                    <span>Total de Repasses Quitados:</span>
+                                    <strong style="color:#22C55E;">${formatBRL(paidDebt)}</strong>
                                 </div>
-                                <span style="color:#10B981; font-size:12px; font-weight:800;">Subindo! ↗</span>
+                                <div style="display:flex; justify-content:space-between; color:#94A3B8;">
+                                    <span>Repasses Pendentes de Liquidação:</span>
+                                    <strong style="color:${pendingDebt > 0 ? '#F87171' : '#94A3B8'};">${formatBRL(pendingDebt)}</strong>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 2. EXTRATO DE APARELHOS INSTALADOS A PAGAR -->
-                    <div style="background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.3); border-radius:14px; padding:16px;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                            <strong style="color:#FFFFFF; font-size:14.5px;">Aparelhos Instalados no Mês</strong>
-                            <span style="font-size:11px; color:#10B981; font-weight:800;">Fatura em Aberto</span>
-                        </div>
-
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-                            <div style="background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; text-align:center;">
-                                <span style="font-size:11px; color:var(--dna-ws-text-muted); display:block;">Dispositivos Ativos</span>
-                                <strong style="font-size:22px; color:#FFFFFF;">8</strong>
-                                <span style="font-size:10px; color:var(--dna-ws-cyan); display:block;">Dongles Mini OBD2</span>
-                            </div>
-                            <div style="background:rgba(0,0,0,0.3); border-radius:10px; padding:10px; text-align:center;">
-                                <span style="font-size:11px; color:var(--dna-ws-text-muted); display:block;">Total a Pagar</span>
-                                <strong style="font-size:22px; color:#EF4444;">R$ 399,20</strong>
-                                <span style="font-size:10px; color:var(--dna-ws-text-dim); display:block;">Vencimento: dia 10</span>
-                            </div>
-                        </div>
-
-                        <button type="button" class="dna-primary-btn-lg cyan" style="height:44px; font-size:13px;" onclick="alert('Código Pix para pagamento da fatura de aparelhos:\n\n00020126580014br.gov.bcb.pix0136dna-auto-fatura-aparelhos-matriz\n\nCopiado para a área de transferência!')">
-                            <span>📲 Copiar Código Pix para Pagamento</span>
-                        </button>
-                    </div>
-
-                    <!-- 3. RESUMO GERAL DE FATURAMENTO DA OFICINA -->
-                    <div style="background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.25); border-radius:14px; padding:16px;">
-                        <span style="font-size:12px; color:var(--dna-ws-text-muted); text-transform:uppercase;">Faturamento Bruto da Oficina</span>
-                        <div style="font-size:28px; font-weight:800; color:var(--dna-ws-green); font-family:var(--dna-ws-font-display); margin:6px 0;">
-                            R$ 18.450,00
-                        </div>
-                        <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--dna-ws-text-muted); border-top:1px solid rgba(255,255,255,0.08); padding-top:8px;">
-                            <span>Serviços Concluídos: 14</span>
-                            <span>Ticket Médio: R$ 1.317,85</span>
-                        </div>
-                    </div>
-
-                    <!-- 4. SEGURANÇA E TROCA DE SENHA -->
-                    <div style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:12px; display:flex; align-items:center; justify-content:space-between;">
-                        <div>
-                            <strong style="color:#FFFFFF; font-size:13px; display:block;">Segurança do Financeiro</strong>
-                            <span style="font-size:11px; color:var(--dna-ws-text-dim);">Deseja trocar sua senha de acesso?</span>
-                        </div>
-                        <button type="button" onclick="WorkshopView.handleChangeFinancialPassword()" style="background:rgba(0,212,255,0.15); border:1px solid var(--dna-ws-cyan); color:var(--dna-ws-cyan); padding:6px 12px; border-radius:8px; font-size:11.5px; font-weight:700; cursor:pointer;">
-                            🔑 Trocar Senha
-                        </button>
-                    </div>
-
-                    <div style="margin-top:10px; text-align:center;">
-                        <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                            <span>‹</span> <span>Voltar para Todos os Cards</span>
-                        </button>
-                    </div>
                 </div>
             </div>
         `;
@@ -5187,25 +5391,7 @@ Odômetro atual: ${lastKm} km | Próxima revisão: ${nextKm} km.`;
                             <span style="font-size:32px; font-weight:900; letter-spacing:-1px; color:#FFFFFF; font-family:'Outfit', sans-serif;">DNA <span style="color:#0084FF;">AUTO</span></span>
                         </div>
                         <div class="ws-splash-brand-sub">Oficina</div>
-                        <p class="ws-splash-tagline">
-                            Gestão completa da sua oficina com a mesma tecnologia do DNA Auto.
-                        </p>
-                    </div>
-
-                    <div class="ws-splash-benefits-list">
-                        <div class="ws-splash-benefit-item">
-                            <div class="ws-splash-benefit-check">✓</div>
-                            <span>Controle de serviços</span>
                         </div>
-                        <div class="ws-splash-benefit-item">
-                            <div class="ws-splash-benefit-check">✓</div>
-                            <span>Veículos e histórico</span>
-                        </div>
-                        <div class="ws-splash-benefit-item">
-                            <div class="ws-splash-benefit-check">✓</div>
-                            <span>Tudo integrado ao app do cliente</span>
-                        </div>
-                    </div>
                 </div>
 
                 <div class="ws-splash-actions">

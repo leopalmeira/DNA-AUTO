@@ -9,7 +9,8 @@
     "test:api": "node test/api.test.js",
     "test:oficina:components": "node test/oficina.components.test.js",
     "test:oficina:integration": "node test/oficina.integration.test.js",
-    "test": "node test/api.test.js && node test/oficina.components.test.js && node test/oficina.integration.test.js"
+    "test:oficina:finance": "node test/oficina.finance.test.js",
+    "test": "node test/api.test.js && node test/oficina.components.test.js && node test/oficina.integration.test.js && node test/oficina.finance.test.js"
   },
   "keywords": [],
   "author": "",
