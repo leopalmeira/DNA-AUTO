@@ -2547,3 +2547,8 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Ajuste Visual complementar na Splash da Oficina (Ciclo 115.1):**
   - Removido o bloco `<div class="ws-splash-content">` que exibia o texto duplicado `DNA AUTO / Oficina` na frente da imagem de fundo.
   - Ajustado `.ws-splash-hero-bg` para `opacity: 1` (100% aceso, antes estava `0.35` apagado) e `.ws-splash-overlay` restrito apenas aos 160px inferiores atrás dos botões `Entrar →` e `Cadastrar`, deixando o logotipo original do background, o slogan *"Monitorando seus clientes."* e o veículo totalmente acesos e nítidos.
+
+- **Redesign Dark Cyber-Automotive da Tela "Lançar Serviços" & Carrossel 3D (Ciclo 115.2):**
+  - Eliminado o fundo branco (`#F1F5F9` que vazava pela transparência de `.dna-mobile-subpage`) aplicando gradiente Dark Navy oficial (`radial-gradient(circle at 50% 0%, #0E2244 0%, #081226 45%, #050B16 100%) !important`).
+  - Estilizado o palco do carrossel vertical 3D (`#dna-vertical-carousel`) com superfície glassmórfica azul marinho, borda luminosa ciano e máscaras de fade suaves integradas ao tom escuro (eliminando o contraste brusco preto/branco que aparecia antes).
+  - Ocultado o cabeçalho duplicado do shell nas subtelas que já possuem `.dna-mobile-subpage-header` próprio e refinado o input de placa para o padrão escuro com alto contraste.

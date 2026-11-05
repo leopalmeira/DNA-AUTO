@@ -383,6 +383,16 @@
             'suporte': 'Suporte'
         };
 
+        const subpagesWithOwnHeader = [
+            'lancar-servicos', 'detalhe-servico', 'cadastrar-cliente',
+            'manutencao-veiculos', 'avisos-manutencao', 'enviar-fotos',
+            'nota-fiscal', 'notas-fiscais', 'clientes', 'buscar-veiculos',
+            'relatorios', 'financeiro', 'estoque', 'configuracoes', 'suporte'
+        ];
+        if (subpagesWithOwnHeader.includes(sec)) {
+            return '<header class="ws-model-header" style="display:none;"></header>';
+        }
+
         const currentTitle = titles[sec] || 'DNA AUTO';
 
         return `
@@ -2152,12 +2162,15 @@
                     </div>
 
                     <!-- 2. TÍTULO DO CARROSSEL -->
-                    <div style="margin-top:14px; margin-bottom:8px; text-align:center;">
-                        <span style="font-size:16px; font-weight:800; color:#FFFFFF; letter-spacing:-0.3px;">
-                            Escolha o serviço
+                    <div style="margin-top:6px; margin-bottom:4px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:4px;">
+                        <span style="display:inline-block; padding:3px 10px; border-radius:999px; background:rgba(0, 212, 255, 0.12); border:1px solid rgba(0, 212, 255, 0.28); color:#38BDF8; font-size:10px; font-weight:800; letter-spacing:0.8px; text-transform:uppercase;">
+                            Catálogo Oficial DNA AUTO
                         </span>
-                        <div style="font-size:11px; color:#7f8995; margin-top:2px;">
-                            Deslize verticalmente ↕ e toque no serviço selecionado
+                        <span style="font-size:17px; font-weight:800; color:#FFFFFF; letter-spacing:-0.3px;">
+                            Escolha o serviço realizado
+                        </span>
+                        <div style="font-size:11.5px; color:#94A3B8;">
+                            Deslize verticalmente ↕ ou toque no card para abrir
                         </div>
                     </div>
 

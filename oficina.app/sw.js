@@ -1,5 +1,5 @@
 // DNA AUTO Service Worker — PWA Oficial (Google Play Store & TWA Ready)
-const CACHE_NAME = 'dna-auto-v1.8.0';
+const CACHE_NAME = 'dna-auto-v1.9.0';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
