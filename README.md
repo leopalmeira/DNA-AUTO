@@ -9,7 +9,13 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 99):** **Novo Menu Lateral Oficial (Drawer / Sidebar Menu) no App do Cliente**: Substituição completa do antigo menu suspenso pelo novo menu lateral em gaveta fluida Dark Navy (`#06172c` -> `#08254b`) com logo de alta resolução, card de perfil conectado ao condutor autenticado (`#profileName`), 10 rotas ativas mapeadas para os fluxos reais do DNA AUTO (Dashboard, Meu Veículo, Serviços, Revisões, Oficinas, Agendamento, Notas Fiscais, Alertas com contador dinâmico, Configurações e Suporte) e botão de Logout real integrado. 56 de 56 testes automatizados aprovados (100%).
+> ✨ **Novidades Recentes (Ciclo 113 — Portal de Representantes Comerciais `/representante`, Painel com Menu Lateral à Esquerda & Credenciamento por Indicação):**
+> - **Landing Page Pública Limpa e Atraente (Desktop & Smartphone):** Topo limpo sem excesso de links poluindo o cabeçalho, banner Hero responsivo com foto em destaque na versão mobile, simulador interativo de ganhos e **Menu Sanduíche (`☰`) posicionado no topo à esquerda da tela** quando acessado por telefone celular.
+> - **Painel Exclusivo do Representante Autorizado com Menu Lateral à Esquerda:** Após o cadastro e validação pela plataforma (ou login com conta autorizada), o representante acessa um **Painel SaaS dedicado com Menu Lateral à Esquerda** no desktop e **Menu Sanduíche (`☰`) no topo à esquerda** no celular, reunindo todas as funções: *Minha Produtividade (14 KPIs)*, *Meu Link & QR Code Individual*, *Minhas Oficinas Vinculadas (8 colunas com CNPJ mascarado)*, *Histórico de Comissões*, *Folheto Comercial Oficial* e *Academia DNA AUTO (10 módulos + LGPD)*.
+> - **Isolamento Operacional Absoluto (RBAC & LGPD):** O representante comercial atua exclusivamente no portal `/representante` e é bloqueado (`403 Forbidden`) de acessar o aplicativo da oficina (`/oficina`) ou o aplicativo do cliente (`/cliente`). Apenas o proprietário da oficina realiza seu cadastro e opera o sistema.
+> - **Divisão Oficial de Receita e Comissionamento:** Cada novo cadastro pago de cliente custa **R$ 49,90** → **50% (R$ 24,95)** para a oficina e **50% (R$ 24,95)** para a plataforma DNA AUTO, saindo da parte da plataforma a comissão de **R$ 5,90** do representante comercial por até **24 meses**.
+>
+> ✨ **Ciclo 99:** **Novo Menu Lateral Oficial (Drawer / Sidebar Menu) no App do Cliente**: Substituição completa do antigo menu suspenso pelo novo menu lateral em gaveta fluida Dark Navy (`#06172c` -> `#08254b`) com logo de alta resolução, card de perfil conectado ao condutor autenticado (`#profileName`), 10 rotas ativas mapeadas para os fluxos reais do DNA AUTO (Dashboard, Meu Veículo, Serviços, Revisões, Oficinas, Agendamento, Notas Fiscais, Alertas com contador dinâmico, Configurações e Suporte) e botão de Logout real integrado. 56 de 56 testes automatizados aprovados (100%).
 > 
 > ✨ **Ciclos Anteriores (97 e 98):** Centralização absoluta da Dashboard e do rodapé simétrico em 4 colunas (25%), despoluição do card do veículo com dados completos carregados no modal FIPE, oficinas da rede com Leaflet/OpenStreetMap sem chaves pagas e tela de alertas monitorados com botão concluir funcional.
 > 
@@ -57,16 +63,28 @@ Abaixo estão discriminados todos os links exclusivos do ecossistema DNA AUTO co
 
 ---
 
-### 🏛️ 3. Portais Institucionais, Matriz & Infraestrutura
+### 🤝 3. Portal de Representantes Comerciais & Indicação de Oficinas (Novo!)
 
-| Portal / Serviço | Descrição | Link Direto Oficial |
-| :--- | :--- | :--- |
-| 🏠 **Portal Principal / Home** | Página inicial com direcionamento visual para Dono de Carro e Dono de Oficina | [**https://dna-auto-vua4.onrender.com/**](https://dna-auto-vua4.onrender.com/) |
-| 🛡️ **Painel Administrativo Matriz** | Cockpit de governança multi-tenant, auditoria e gestão da rede | [**https://dna-auto-vua4.onrender.com/admin**](https://dna-auto-vua4.onrender.com/admin) |
-| 📚 **Documentação da API (Swagger)** | Especificação OpenAPI interativa de todos os endpoints RESTful | [**https://dna-auto-vua4.onrender.com/api/docs/**](https://dna-auto-vua4.onrender.com/api/docs/) |
-| ❤️ **Health Check & Diagnóstico** | Monitoramento de disponibilidade e integridade do banco SQLite | [**https://dna-auto-vua4.onrender.com/health**](https://dna-auto-vua4.onrender.com/health) |
-| 📂 **Repositório GitHub** | Código-fonte, testes e histórico de commits | [**https://github.com/leopalmeira/DNA-AUTO**](https://github.com/leopalmeira/DNA-AUTO) |
-| 📓 **Diário de Bordo Completo** | Registro de todos os ciclos de engenharia e decisões arquiteturais | [**DIARIO_DE_BORDO.md**](DIARIO_DE_BORDO.md) |
+| Ambiente / Recurso | Perfil de Uso | Link Oficial de Produção (Render) | Link Local (Desenvolvimento) | Descrição Completa das Funcionalidades |
+| :--- | :--- | :--- | :--- | :--- |
+| 🤝 **Portal Oficial de Representantes (Landing Page + Painel)** | Candidatos a representante e Representantes Comerciais Autorizados | [**https://dna-auto-vua4.onrender.com/representante**](https://dna-auto-vua4.onrender.com/representante) | `http://localhost:3000/representante` | **Duas visões integradas:**<br>1. **Landing Page Atraente (Desktop e Celular):** Topo limpo sem links poluídos, foto Hero visível no smartphone, simulador de ganhos e botão de **Menu Sanduíche (`☰`) no topo à esquerda da tela**.<br>2. **Painel do Representante Autorizado:** Liberado após cadastro/validação ou login, com **Menu Lateral à Esquerda** contendo todas as funções (*Minha Produtividade*, *Meu Link & QR Code*, *Minhas Oficinas*, *Comissões*, *Folheto Oficial* e *Academia*). |
+| 📊 **Painel Direto do Representante (Menu Lateral à Esquerda)** | Representantes Comerciais Autorizados (`REP000123`) | [**https://dna-auto-vua4.onrender.com/representante#painel-comercial**](https://dna-auto-vua4.onrender.com/representante#painel-comercial) | `http://localhost:3000/representante#painel-comercial` | Abre diretamente o **Painel do Representante Autorizado** com menu lateral à esquerda no computador e menu sanduíche (`☰`) no topo à esquerda no telefone celular. |
+| 🔗 **Página Oficial de Indicação para Oficinas (Link do Representante)** | Proprietários de oficinas convidados pelo representante | [**https://dna-auto-vua4.onrender.com/representante/indicacao/REP000123**](https://dna-auto-vua4.onrender.com/representante/indicacao/REP000123) | `http://localhost:3000/representante/indicacao/REP000123` | Página oficial que o dono da oficina abre ao clicar no link do representante ou escanear seu QR Code. Apresenta os benefícios (repasse de 50% = R$ 24,95 no cadastro e retorno por quilometragem), registra a pré-vinculação persistente no backend e direciona para o aplicativo oficial da oficina (`/oficina`). |
+| 🖼️ **Folheto Comercial Oficial (Material de Campo)** | Representantes e Proprietários de Oficinas | [**https://dna-auto-vua4.onrender.com/img/folheto-comercial-representante.jpg**](https://dna-auto-vua4.onrender.com/img/folheto-comercial-representante.jpg) | `http://localhost:3000/img/folheto-comercial-representante.jpg` | Folheto oficial de alta resolução (*"Mais Faturamento para sua Oficina"*) integrado ao portal e disponível para download e envio pelo WhatsApp. |
+
+---
+
+### 🏛️ 4. Portais Institucionais, Matriz & Infraestrutura
+
+| Portal / Serviço | Descrição | Link Direto Oficial (Produção) | Link Local |
+| :--- | :--- | :--- | :--- |
+| 🏠 **Portal Principal / Home** | Página inicial com direcionamento visual para Dono de Carro, Dono de Oficina e Representante | [**https://dna-auto-vua4.onrender.com/**](https://dna-auto-vua4.onrender.com/) | `http://localhost:3000/` |
+| 🔧 **Landing Page para Oficinas (`/parceiro` / `/autocenter`)** | Apresentação comercial dedicada para credenciamento direto de oficinas e auto centers | [**https://dna-auto-vua4.onrender.com/parceiro**](https://dna-auto-vua4.onrender.com/parceiro) | `http://localhost:3000/parceiro` |
+| 🛡️ **Painel Administrativo Matriz** | Cockpit de governança multi-tenant, auditoria de vínculos comerciais, resolução de disputas e gestão da rede | [**https://dna-auto-vua4.onrender.com/admin**](https://dna-auto-vua4.onrender.com/admin) | `http://localhost:3000/admin` |
+| 📚 **Documentação da API (Swagger)** | Especificação OpenAPI interativa de todos os endpoints RESTful | [**https://dna-auto-vua4.onrender.com/api/docs/**](https://dna-auto-vua4.onrender.com/api/docs/) | `http://localhost:3000/api/docs/` |
+| ❤️ **Health Check & Diagnóstico** | Monitoramento de disponibilidade e integridade do banco SQLite | [**https://dna-auto-vua4.onrender.com/health**](https://dna-auto-vua4.onrender.com/health) | `http://localhost:3000/health` |
+| 📂 **Repositório GitHub** | Código-fonte, testes e histórico de commits | [**https://github.com/leopalmeira/DNA-AUTO**](https://github.com/leopalmeira/DNA-AUTO) | — |
+| 📓 **Diário de Bordo Completo** | Registro de todos os ciclos de engenharia e decisões arquiteturais | [**DIARIO_DE_BORDO.md**](DIARIO_DE_BORDO.md) | — |
 
 ---
 
@@ -341,7 +359,8 @@ O sistema conta com isolamento rígido de perfis:
 |---|---|---|
 | **CLIENTE (`OWNER`)** | `/` (após login) | Acessa seus veículos, histórico do dossiê, declara novos serviços e gera relatórios de venda. |
 | **OFICINA (`WORKSHOP`)** | `/` (após login) | Gerencia sua bancada, valida notas fiscais, registra peças instaladas e credencia veículos. |
-| **ADMIN (`ADMIN`)** | `/admin` | Visão total da rede, faturamento consolidado em R$, auditoria, alertas de WhatsApp e clientes por oficina. |
+| **REPRESENTANTE (`REPRESENTATIVE`)** | `/representante` | Acessa exclusivamente o portal comercial com menu lateral à esquerda (link de indicação, QR Code, 14 indicadores de produtividade, carteira de oficinas com CNPJ mascarado e comissões de R$ 5,90). **Bloqueado (`403 Forbidden`) de entrar em `/oficina` e `/cliente`.** |
+| **ADMIN (`ADMIN`)** | `/admin` | Visão total da rede, faturamento consolidado em R$, auditoria de indicações/disputas, alertas de WhatsApp e clientes por oficina. |
 
 ---
 
@@ -403,9 +422,16 @@ O banco de dados de desenvolvimento vem pré-configurado com os seguintes usuár
 * **Senha:** `senha123`
 
 ### 3. Cliente Proprietário (Honda Civic com DNA)
-* **URL de Acesso:** `http://localhost:3000` *(Aba "Sou Cliente")*
+* **URL de Acesso:** `http://localhost:3000/cliente`
 * **E-mail:** `carlos.silva@email.com`
 * **Senha:** `senha123`
+
+### 4. Representante Comercial Autorizado (Carlos Mendes — REP000123)
+* **URL do Portal / Painel:** `http://localhost:3000/representante` *(ou `https://dna-auto-vua4.onrender.com/representante`)*
+* **URL Direta de Indicação da Oficina:** `http://localhost:3000/representante/indicacao/REP000123`
+* **Código Comercial Exclusivo:** `REP000123`
+* **E-mail:** `representante@dnaauto.com.br`
+* **Senha:** `rep123456`
 
 ### 4. Veículos Demonstrativos Prontos para Teste
 * **Honda Civic Touring 1.5 Turbo 2021:** Placa `BRA2E19` • Código DNA: `DNA-BR-8F72-29A4-X91` *(Histórico Nível 4 com Score 93/100)*
