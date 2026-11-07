@@ -56,6 +56,18 @@ router.post('/login', (req, res) => {
             return res.status(401).json({ error: 'Credenciais inválidas.' });
         }
 
+        // REGRA ABSOLUTA: O representante comercial NÃO pode acessar o aplicativo da oficina nem o aplicativo do cliente
+        if (user.role_code === 'REPRESENTATIVE') {
+            const appContext = String(req.body.app_context || req.headers['x-app-context'] || '').toUpperCase();
+            const referer = String(req.headers['referer'] || '').toLowerCase();
+            if (appContext !== 'REPRESENTATIVE_PORTAL' || referer.includes('/oficina') || referer.includes('/cliente')) {
+                return res.status(403).json({
+                    error: 'REGRA ABSOLUTA DE SEGURANÇA: O representante comercial não pode acessar o aplicativo da oficina nem o aplicativo do cliente. Acesse exclusivamente o portal /representante.',
+                    code: 'REPRESENTATIVE_APP_ACCESS_DENIED'
+                });
+            }
+        }
+
         // Buscar oficina caso seja usuário de oficina
         const workshopUser = db.prepare(`
             SELECT wu.workshop_id, wu.position_title, wu.can_activate_dna, wu.can_prove_services,
@@ -221,9 +233,37 @@ router.post('/seed', (req, res) => {
 });
 
 
+// Auxiliar para verificar se a requisição partiu de um representante autenticado (proibido em fluxos operacionais)
+function isRequestFromRepresentative(req) {
+    try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        if (token) {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            if (decoded && decoded.role_code === 'REPRESENTATIVE') return true;
+            if (decoded && decoded.id) {
+                const u = db.prepare(`SELECT r.code as role_code FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = ?`).get(decoded.id);
+                if (u && u.role_code === 'REPRESENTATIVE') return true;
+            }
+        }
+        const demoUserId = req.headers['x-demo-user-id'];
+        if (demoUserId) {
+            const u = db.prepare(`SELECT r.code as role_code FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = ?`).get(demoUserId);
+            if (u && u.role_code === 'REPRESENTATIVE') return true;
+        }
+    } catch (_) {}
+    return false;
+}
+
 // Cadastro de Novo Cliente (Proprietário)
 router.post('/register-client', async (req, res) => {
     try {
+        if (isRequestFromRepresentative(req)) {
+            return res.status(403).json({
+                error: 'REGRA ABSOLUTA DE SEGURANÇA: O representante comercial não pode cadastrar clientes ou veículos nem acessar o aplicativo do cliente.',
+                code: 'REPRESENTATIVE_CLIENT_REGISTRATION_FORBIDDEN'
+            });
+        }
         const { name, email, password, phone, cpf, plate, license_plate } = req.body;
         if (!name || !email || !password) {
             return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios.' });
@@ -694,6 +734,12 @@ router.post('/register-owner', async (req, res) => {
 // Solicitação de Recuperação de Senha Segura via Token com Expiração (P0 Segurança)
 router.post('/forgot-password', (req, res) => {
     try {
+        if (isRequestFromRepresentative(req)) {
+            return res.status(403).json({
+                error: 'REGRA ABSOLUTA DE SEGURANÇA: O representante comercial não pode criar, visualizar, alterar ou redefinir senhas de oficinas ou clientes.',
+                code: 'REPRESENTATIVE_PASSWORD_RESET_FORBIDDEN'
+            });
+        }
         const { email } = req.body;
         if (!email) {
             return res.status(400).json({ error: 'Informe o e-mail cadastrado.' });
@@ -761,6 +807,12 @@ router.post('/forgot-password', (req, res) => {
 // Redefinição de Senha com Validação de Token Seguro, Expiração e Uso Único (P0 Segurança)
 router.post('/reset-password', (req, res) => {
     try {
+        if (isRequestFromRepresentative(req)) {
+            return res.status(403).json({
+                error: 'REGRA ABSOLUTA DE SEGURANÇA: O representante comercial não pode criar, visualizar, alterar ou redefinir senhas de oficinas ou clientes.',
+                code: 'REPRESENTATIVE_PASSWORD_RESET_FORBIDDEN'
+            });
+        }
         const { token, newPassword, confirmPassword } = req.body;
         if (!token) {
             return res.status(400).json({ error: 'Token de recuperação não informado.' });
@@ -832,6 +884,12 @@ router.post('/reset-password', (req, res) => {
 // Validação de Senha de Gestor para Área Restrita (Faturamento da Oficina)
 router.post('/verify-manager-password', (req, res) => {
     try {
+        if (isRequestFromRepresentative(req)) {
+            return res.status(403).json({
+                error: 'REGRA ABSOLUTA DE SEGURANÇA: O representante comercial não possui acesso ao painel ou área restrita da oficina.',
+                code: 'REPRESENTATIVE_MANAGER_ACCESS_FORBIDDEN'
+            });
+        }
         const { password } = req.body;
         if (!password) {
             return res.status(400).json({ error: 'Senha não informada.' });
@@ -876,12 +934,20 @@ router.post('/verify-manager-password', (req, res) => {
 // Cadastro de Nova Oficina Parceira / Empresa Credenciada
 function handleRegisterWorkshop(req, res) {
     try {
-        const tradeName = (req.body.tradeName || req.body.trade_name || req.body.name || req.body.nome || '').trim();
+        // REGRA ABSOLUTA: O representante comercial NÃO cadastra oficinas diretamente no aplicativo
+        if (isRequestFromRepresentative(req)) {
+            return res.status(403).json({
+                error: 'REGRA ABSOLUTA DE SEGURANÇA: O representante comercial não pode cadastrar oficinas diretamente no aplicativo nem criar contas em nome dos proprietários.',
+                code: 'REPRESENTATIVE_DIRECT_WORKSHOP_REGISTRATION_FORBIDDEN'
+            });
+        }
+
+        const tradeName = (req.body.tradeName || req.body.trade_name || req.body.workshop_name || req.body.name || req.body.nome || '').trim();
         const companyName = (req.body.companyName || req.body.company_name || tradeName).trim();
         const phone = (req.body.phone || req.body.whatsapp || req.body.telefone || '').trim();
         const email = (req.body.email || '').trim();
         const password = req.body.password || req.body.senha || '';
-        const technicianName = (req.body.technicianName || req.body.technician_name || tradeName).trim();
+        const technicianName = (req.body.technicianName || req.body.technician_name || req.body.admin_name || tradeName).trim();
         const addressStreet = req.body.addressStreet || req.body.address_street || 'Av. Principal';
         const addressNumber = req.body.addressNumber || req.body.address_number || '100';
         const addressNeighborhood = req.body.addressNeighborhood || req.body.address_neighborhood || 'Centro';
@@ -914,6 +980,12 @@ function handleRegisterWorkshop(req, res) {
         `).run();
 
         const existingUser = db.prepare('SELECT id, name, email, password_hash, role_id FROM users WHERE LOWER(email) = ?').get(cleanEmail);
+        if (existingUser && existingUser.role_id === 'role_representative') {
+            return res.status(403).json({
+                error: 'REGRA ABSOLUTA DE SEGURANÇA: Conta de representante comercial não pode ser utilizada para cadastrar ou acessar uma oficina.',
+                code: 'REPRESENTATIVE_ACCOUNT_ISOLATION'
+            });
+        }
         
         let userId;
         let adminName = technicianName ? technicianName.trim() : tradeName.trim();
@@ -1021,8 +1093,167 @@ function handleRegisterWorkshop(req, res) {
             userAgent: req.headers['user-agent']
         });
 
+        // VINCULAÇÃO AUTOMÁTICA DA OFICINA AO REPRESENTANTE COMERCIAL (Etapa 3 do Fluxo Oficial)
+        let referralLinkInfo = null;
+        try {
+            // Verifica se a oficina já possui vínculo anterior (nunca sobrescrever vínculo anterior sem auditoria administrativa)
+            const existingReferral = db.prepare('SELECT * FROM workshop_referrals WHERE workshop_id = ?').get(workshopId);
+            if (!existingReferral) {
+                const rawRepCode = String(
+                    req.body.rep_code ||
+                    req.body.representative_code ||
+                    req.query?.rep_code ||
+                    req.headers['x-rep-code'] ||
+                    ''
+                ).trim().toUpperCase();
+                const rawInviteToken = String(
+                    req.body.invite_token ||
+                    req.query?.invite_token ||
+                    req.headers['x-invite-token'] ||
+                    ''
+                ).trim();
+                const cleanPhoneDigits = (phone || '').replace(/\D/g, '');
+                const hasExplicitCnpj = Boolean(rawCnpj && rawCnpj.replace(/\D/g, '').length >= 11);
+
+                let matchedInvite = null;
+                if (rawInviteToken) {
+                    matchedInvite = db.prepare(`
+                        SELECT * FROM representative_invites
+                        WHERE invite_token = ?
+                        ORDER BY updated_at DESC LIMIT 1
+                    `).get(rawInviteToken);
+                }
+
+                // Busca por pré-associação registrada na página de convite (/representante/indicacao/:code)
+                // Garante persistência mesmo quando o proprietário instala o app e abre depois sem parâmetros na URL
+                if (!matchedInvite) {
+                    const candidateInvites = db.prepare(`
+                        SELECT * FROM representative_invites
+                        WHERE status IN ('CREATED', 'ACCESSED', 'STARTED')
+                          AND workshop_id IS NULL
+                        ORDER BY updated_at DESC
+                    `).all();
+
+                    for (const inv of candidateInvites) {
+                        const invCnpj = (inv.prospect_cnpj || '').replace(/\D/g, '');
+                        const invEmail = (inv.prospect_email || '').trim().toLowerCase();
+                        const invPhone = (inv.prospect_phone || '').replace(/\D/g, '');
+
+                        const cnpjMatch = hasExplicitCnpj && invCnpj && invCnpj === cleanCnpj;
+                        const emailMatch = invEmail && invEmail === cleanEmail;
+                        const phoneMatch = cleanPhoneDigits.length >= 10 && invPhone.length >= 10 && invPhone.slice(-10) === cleanPhoneDigits.slice(-10);
+
+                        if (cnpjMatch || emailMatch || phoneMatch) {
+                            matchedInvite = inv;
+                            break;
+                        }
+                    }
+                }
+
+                const targetRepCode = matchedInvite ? matchedInvite.rep_code : rawRepCode;
+                if (targetRepCode) {
+                    const rep = db.prepare(`
+                        SELECT * FROM representatives
+                        WHERE UPPER(rep_code) = UPPER(?) AND status = 'ACTIVE'
+                    `).get(targetRepCode);
+
+                    if (rep) {
+                        const nowIso = new Date().toISOString().replace('T', ' ').slice(0, 19);
+                        const validUntilDate = new Date();
+                        validUntilDate.setMonth(validUntilDate.getMonth() + 24);
+                        const validUntilIso = validUntilDate.toISOString().replace('T', ' ').slice(0, 19);
+                        const referralId = `wref_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+                        let finalInviteId = matchedInvite ? matchedInvite.id : null;
+                        if (matchedInvite) {
+                            db.prepare(`
+                                UPDATE representative_invites
+                                SET status = 'ACTIVATED',
+                                    workshop_id = ?,
+                                    completed_at = COALESCE(completed_at, ?),
+                                    activated_at = COALESCE(activated_at, ?),
+                                    updated_at = ?
+                                WHERE id = ?
+                            `).run(workshopId, nowIso, nowIso, nowIso, matchedInvite.id);
+                        } else {
+                            finalInviteId = `rinv_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+                            db.prepare(`
+                                INSERT INTO representative_invites (
+                                    id, representative_id, rep_code, invite_token,
+                                    prospect_workshop_name, prospect_cnpj, prospect_email, prospect_phone,
+                                    clicks_count, status, workshop_id, created_at, updated_at,
+                                    accessed_at, started_at, completed_at, activated_at
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 'ACTIVATED', ?, ?, ?, ?, ?, ?, ?)
+                            `).run(
+                                finalInviteId,
+                                rep.id,
+                                rep.rep_code,
+                                `tok_auto_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+                                tradeName.trim(),
+                                cleanCnpj,
+                                cleanEmail,
+                                phone || null,
+                                workshopId,
+                                nowIso, nowIso, nowIso, nowIso, nowIso, nowIso
+                            );
+                        }
+
+                        db.prepare(`
+                            INSERT INTO workshop_referrals (
+                                id, workshop_id, representative_id, invite_id, rep_code,
+                                origin_channel, linked_at, valid_until, status, created_by, justification
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', 'SYSTEM_AUTO', ?)
+                        `).run(
+                            referralId,
+                            workshopId,
+                            rep.id,
+                            finalInviteId,
+                            rep.rep_code,
+                            matchedInvite ? 'INVITE_PORTAL_LINK' : 'DIRECT_REP_CODE',
+                            nowIso,
+                            validUntilIso,
+                            'Vinculação automática no credenciamento da oficina pelo proprietário'
+                        );
+
+                        db.prepare(`
+                            INSERT INTO representative_audit_logs (
+                                id, representative_id, workshop_id, action, actor_id, actor_role, justification, metadata_json, ip_address
+                            ) VALUES (?, ?, ?, 'WORKSHOP_AUTO_LINKED', ?, 'WORKSHOP_OWNER', ?, ?, ?)
+                        `).run(
+                            `ral_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                            rep.id,
+                            workshopId,
+                            userId,
+                            `Oficina ${tradeName.trim()} vinculada automaticamente ao representante ${rep.rep_code}`,
+                            JSON.stringify({ referral_id: referralId, invite_id: finalInviteId, rep_code: rep.rep_code, valid_until: validUntilIso }),
+                            req.ip || '127.0.0.1'
+                        );
+
+                        referralLinkInfo = {
+                            referral_id: referralId,
+                            representative_id: rep.id,
+                            rep_code: rep.rep_code,
+                            linked_at: nowIso,
+                            valid_until: validUntilIso,
+                            status: 'ACTIVE'
+                        };
+                    }
+                }
+            }
+        } catch (linkErr) {
+            console.warn('Aviso na verificação de vínculo de representante:', linkErr.message);
+        }
+
         res.status(201).json({
             token,
+            referral: referralLinkInfo,
+            workshop: {
+                id: workshopId,
+                workshop_id: workshopId,
+                trade_name: tradeName.trim(),
+                cnpj: cleanCnpj,
+                status: 'APPROVED'
+            },
             user: {
                 id: userId,
                 name: adminName,

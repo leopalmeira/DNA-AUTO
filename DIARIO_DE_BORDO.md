@@ -2513,3 +2513,26 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - Eliminado o fundo branco (`#F1F5F9` que vazava pela transparência de `.dna-mobile-subpage`) aplicando gradiente Dark Navy oficial (`radial-gradient(circle at 50% 0%, #0E2244 0%, #081226 45%, #050B16 100%) !important`).
   - Estilizado o palco do carrossel vertical 3D (`#dna-vertical-carousel`) com superfície glassmórfica azul marinho, borda luminosa ciano e máscaras de fade suaves integradas ao tom escuro (eliminando o contraste brusco preto/branco que aparecia antes).
   - Ocultado o cabeçalho duplicado do shell nas subtelas que já possuem `.dna-mobile-subpage-header` próprio e refinado o input de placa para o padrão escuro com alto contraste.
+
+---
+
+### Ciclo 116 — Sistema Oficial de Representantes Comerciais (`/representante`): Credenciamento por Indicação, Vinculação Automática, Comissões e Menu Sanduíche Mobile (07/11/2026)
+- **Objetivo:** Implementar o sistema completo de indicação comercial, pré-vinculação e atribuição automática de oficinas, gestão de carteira e comissionamento no portal `/representante`, preservando 100% os aplicativos existentes (`cliente.app` e `oficina.app`).
+- **Implementações Realizadas:**
+  1. **Regra Absoluta de Isolamento Operacional e Segurança (LGPD):**
+     - Criado perfil exclusivo `role_representative` (`REPRESENTATIVE`) com bloqueio global (`blockRepresentativeOutsidePortal` e `enforceRepresentativeBoundary` em `server/src/middlewares/auth.js` + travas em `auth.routes.js`).
+     - O representante comercial é bloqueado (`403 Forbidden`) caso tente acessar o aplicativo da oficina (`/oficina`), o aplicativo do cliente (`/cliente`), cadastrar oficinas diretamente no app ou redefinir senhas. **Apenas o próprio dono da oficina cadastra e utiliza o aplicativo da oficina.**
+     - Nenhum dado pessoal de clientes finais (nome, CPF, telefone, e-mail, placa, chassi, NF ou OS) é exposto nos endpoints do representante; o CNPJ das oficinas é mascarado no formato `XX.XXX.***/0001-XX`.
+  2. **Identificação Exclusiva, Link de Indicação, QR Code e Convite WhatsApp (`/representante` e `/representante/indicacao/:code`):**
+     - Cada representante possui ID interno permanente (`rep_000123`), código comercial exclusivo (`REP000123`), link oficial (`/representante/indicacao/REP000123`), QR Code individual dinâmico e botão **"Convidar oficina pelo WhatsApp"** com a mensagem comercial oficial editável.
+     - Página oficial do proprietário (`public/representante-indicacao.html`) apresenta os benefícios para a oficina, o folheto comercial oficial (`/img/folheto-comercial-representante.jpg`) e registra a pré-associação (`representative_invites`) por CNPJ, e-mail e WhatsApp antes de redirecionar para `/oficina`.
+  3. **Vinculação Automática e Persistência Pós-Instalação (24 Meses):**
+     - Quando o proprietário conclui o cadastro de sua oficina em `POST /api/v1/auth/register-workshop`, o backend reconcilia automaticamente o convite (mesmo sem parâmetros na URL após instalação do app), cria o vínculo permanente em `workshop_referrals` com vigência de 24 meses (`valid_until`), impede duplicidade de oficina por CNPJ e nunca sobrescreve vínculo anterior caso um segundo representante envie link para oficina já vinculada.
+  4. **Modelo de Remuneração, Split 50/50 e Comissão de R$ 5,90 (`workshops.routes.js`, `abacatePay.service.js`, `billing.routes.js`):**
+     - Para oficinas vinculadas a representante (dentro dos 24 meses): valor do cadastro do cliente = **R$ 49,90** (`4990` centavos), dividido em **50% para a oficina (R$ 24,95)** e **50% para a plataforma DNA AUTO (R$ 24,95)**.
+     - Comissão do representante de **R$ 5,90** (`590` centavos) deduzida exclusivamente da parte da plataforma (`1905` centavos líquidos), sem jamais reduzir os 50% (`R$ 24,95`) da oficina.
+     - Pagamentos pendentes geram apenas comissão prevista (`PROJECTED`), confirmações PIX promovem para `CONFIRMED` com idempotência por `source_payment_id`, e estornos (`POST /api/v1/billing/pix/:chargeId/refund`) atualizam para `REFUNDED`.
+  5. **Painéis "Minha Produtividade" (14 Indicadores), "Minhas Oficinas" (8 Colunas), Academia DNA AUTO e Menu Sanduíche Responsivo (`☰`):**
+     - Construído `public/representante.html` integrando a base premium `DNA_AUTO_Representantes_Premium_Organizado.html`, o folheto comercial oficial `/img/folheto-comercial-representante.jpg`, os 14 indicadores reais com filtro de período, a tabela "Minhas Oficinas" com as 8 colunas obrigatórias, o extrato de comissões, os 10 módulos da Academia e o **menu de sanduíche (`☰`)** totalmente adaptativo e responsivo para acesso pelo telefone celular.
+  6. **Homologação Automatizada dos 20 Cenários (`test/representante.homologation.test.js`):**
+     - 20/20 cenários obrigatórios homologados com 100% de aprovação em Node.js sem regressões nas demais 4 suítes do projeto.

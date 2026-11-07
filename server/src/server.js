@@ -46,6 +46,10 @@ const transfersRoutes = require('./modules/transfers/transfers.routes');
 const billingRoutes = require('./modules/billing/billing.routes');
 const integrationsRoutes = require('./modules/integrations/integrations.routes');
 const reportsRoutes = require('./modules/reports/reports.routes');
+const representativesRoutes = require('./modules/representatives/representatives.routes');
+
+const { blockRepresentativeOutsidePortal } = require('./middlewares/auth');
+app.use('/api/v1', blockRepresentativeOutsidePortal);
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/admin', adminRoutes);
@@ -57,6 +61,7 @@ app.use('/api/v1/transfers', transfersRoutes);
 app.use('/api/v1/billing', billingRoutes);
 app.use('/api/v1/integrations', integrationsRoutes);
 app.use('/api/v1/reports', reportsRoutes);
+app.use('/api/v1/representatives', representativesRoutes);
 
 // Healthcheck
 app.get('/api/v1/health', (req, res) => {
@@ -354,6 +359,21 @@ app.get(['/parceiro', '/parceiros', '/seja-parceiro', '/autocenter', '/autocente
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
     res.sendFile(path.join(__dirname, '..', '..', 'public', 'parceiro.html'));
+});
+
+// Rotas Dedicadas para o Portal Oficial de Representantes Comerciais (/representante) e Link de Indicação (/representante/indicacao/:code)
+app.get(['/representante', '/representantes', '/representante.html'], (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.sendFile(path.join(__dirname, '..', '..', 'public', 'representante.html'));
+});
+
+app.get(['/representante/indicacao/:code', '/representantes/indicacao/:code'], (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.sendFile(path.join(__dirname, '..', '..', 'public', 'representante-indicacao.html'));
 });
 
 // Fallback para SPA no Frontend

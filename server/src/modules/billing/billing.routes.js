@@ -178,6 +178,18 @@ router.post('/pix/:chargeId/confirm', (req, res) => {
     }
 });
 
+// 5.1 Estornar/Cancelar Pagamento do PIX (Ajusta comissão da oficina e do representante para REFUNDED)
+router.post('/pix/:chargeId/refund', (req, res) => {
+    try {
+        const reason = (req.body && req.body.reason) || 'Estorno/Cancelamento de pagamento';
+        const result = AbacatePayService.refundPixCharge(db, req.params.chargeId, reason);
+        res.json(result);
+    } catch (err) {
+        console.error('Erro ao estornar PIX:', err);
+        res.status(400).json({ error: err.message || 'Erro ao estornar pagamento PIX.' });
+    }
+});
+
 // 6. Webhook Oficial da AbacatePay (Notificação em Tempo Real)
 router.post('/webhook/abacatepay', (req, res) => {
     try {

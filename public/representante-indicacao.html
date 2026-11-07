@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DNA AUTO | Convite Oficial para Credenciamento de Oficina</title>
+  <style>
+    :root {
+      --bg-0: #050b16;
+      --bg-1: #081223;
+      --bg-2: #0d1d36;
+      --card: rgba(13, 27, 52, 0.92);
+      --border: rgba(56, 189, 248, 0.24);
+      --cyan: #18c8ff;
+      --blue: #1a7dff;
+      --green: #18d47b;
+      --amber: #f5b942;
+      --danger: #ff647c;
+      --text: #f5f9ff;
+      --muted: #b8cae6;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(24,200,255,0.16), transparent 28%),
+        radial-gradient(circle at 86% 10%, rgba(26,125,255,0.18), transparent 32%),
+        linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 48%, #06101e 100%);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+    .container { width: min(1160px, calc(100% - 32px)); margin: 0 auto; }
+    .topbar {
+      position: sticky; top: 0; z-index: 60;
+      backdrop-filter: blur(18px);
+      background: rgba(5, 11, 22, 0.9);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.16);
+    }
+    .topbar-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; padding: 14px 0;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 900; font-size: 1.15rem; letter-spacing: .03em; }
+    .brand span { color: var(--cyan); }
+    .nav-links { display: flex; align-items: center; gap: 18px; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: .92rem; }
+    .nav-links a:hover { color: #fff; }
+    .hamburger-btn {
+      display: none;
+      align-items: center; justify-content: center;
+      width: 44px; height: 44px; border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15, 31, 58, 0.9);
+      color: var(--cyan); font-size: 1.35rem; cursor: pointer;
+    }
+    .mobile-drawer {
+      display: none;
+      flex-direction: column; gap: 10px;
+      padding: 16px;
+      background: rgba(8, 18, 35, 0.98);
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-drawer.open { display: flex; }
+    .mobile-drawer a {
+      color: var(--text); text-decoration: none; font-weight: 700;
+      padding: 10px 12px; border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+    }
+    .hero { padding: 40px 0 32px; }
+    .hero-grid { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: 26px; align-items: start; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 999px;
+      background: rgba(24, 200, 255, 0.12);
+      border: 1px solid rgba(24, 200, 255, 0.34);
+      color: #a8ecff; font-weight: 800; font-size: .82rem;
+      text-transform: uppercase; letter-spacing: .04em; margin-bottom: 16px;
+    }
+    h1 { font-size: clamp(1.9rem, 3.5vw, 3rem); line-height: 1.1; font-weight: 900; margin-bottom: 14px; }
+    h1 .cyan { color: var(--cyan); }
+    .lead { color: var(--muted); font-size: 1.05rem; margin-bottom: 22px; }
+    .card {
+      background: linear-gradient(180deg, rgba(14, 29, 55, 0.95), rgba(9, 20, 39, 0.95));
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: 0 20px 55px rgba(0, 0, 0, 0.42);
+    }
+    .rep-banner {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+      padding: 16px 18px; border-radius: var(--radius-md);
+      background: rgba(24, 212, 123, 0.1);
+      border: 1px solid rgba(24, 212, 123, 0.35);
+      margin-bottom: 20px;
+    }
+    .rep-banner strong { color: #b8ffde; }
+    .benefits-list { display: grid; gap: 12px; margin: 18px 0; }
+    .benefit-item {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px; border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+    .benefit-icon {
+      width: 30px; height: 30px; border-radius: 9px; flex: 0 0 30px;
+      display: grid; place-items: center;
+      background: rgba(24, 200, 255, 0.16); color: var(--cyan); font-weight: 900;
+    }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: .86rem; font-weight: 700; color: #dbe9ff; margin-bottom: 6px; }
+    .form-control {
+      width: 100%; padding: 13px 14px; border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      background: rgba(6, 14, 28, 0.92); color: #fff; font-size: .96rem;
+    }
+    .form-control:focus { outline: none; border-color: var(--cyan); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 15px 20px; border-radius: 14px; border: 0;
+      font-weight: 800; font-size: 1rem; cursor: pointer; text-decoration: none;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--blue) 100%);
+      color: #04101f;
+      box-shadow: 0 12px 28px rgba(24, 200, 255, 0.28);
+    }
+    .btn-primary:hover { transform: translateY(-1px); }
+    .security-note {
+      margin-top: 16px; padding: 14px; border-radius: 14px;
+      background: rgba(245, 185, 66, 0.1);
+      border: 1px solid rgba(245, 185, 66, 0.3);
+      color: #ffe3a3; font-size: .88rem;
+    }
+    .flyer-wrap { margin-top: 24px; text-align: center; }
+    .flyer-wrap img {
+      width: 100%; max-width: 560px; border-radius: 18px;
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 45px rgba(0,0,0,0.45);
+    }
+    .responsive-info {
+      margin-top: 16px; padding: 13px 16px; border-radius: 14px;
+      background: rgba(24, 200, 255, 0.08);
+      border: 1px solid rgba(24, 200, 255, 0.24);
+      font-size: .88rem; color: #c7ecff;
+    }
+    @media (max-width: 900px) {
+      .nav-links { display: none; }
+      .hamburger-btn { display: inline-flex; }
+      .hero-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">DNA <span>AUTO</span> — Credenciamento Oficial de Oficinas</div>
+      <nav class="nav-links">
+        <a href="#beneficios">Benefícios para a Oficina</a>
+        <a href="#folheto">Material Oficial</a>
+        <a href="#credenciar">Baixar / Acessar App da Oficina</a>
+      </nav>
+      <button class="hamburger-btn" id="btnMobileMenu" aria-label="Abrir menu de navegação (Sanduíche)">☰</button>
+    </div>
+    <div class="mobile-drawer" id="mobileDrawer">
+      <a href="#beneficios" onclick="toggleDrawer(false)">Benefícios para a Oficina</a>
+      <a href="#folheto" onclick="toggleDrawer(false)">Folheto Comercial Oficial</a>
+      <a href="#credenciar" onclick="toggleDrawer(false)">Baixar ou Acessar App da Oficina</a>
+    </div>
+  </header>
+
+  <main class="hero">
+    <div class="container">
+      <div class="rep-banner" id="repBanner">
+        <div>
+          <strong>Convite Comercial Oficial DNA AUTO</strong>
+          <div id="repIdentificationText" style="font-size:.92rem; color:var(--muted);">
+            Validando código de indicação do representante comercial...
+          </div>
+        </div>
+        <div id="repCodeBadge" style="padding:6px 12px; border-radius:999px; background:rgba(5,11,22,0.6); font-weight:800; color:var(--cyan);">
+          REP---
+        </div>
+      </div>
+
+      <div class="hero-grid">
+        <section id="beneficios">
+          <div class="badge">Passaporte Digital do Veículo • Mais Faturamento para sua Oficina</div>
+          <h1>Transforme o cadastro do cliente em <span class="cyan">lucro imediato</span> e em novos serviços recorrentes.</h1>
+          <p class="lead">
+            Com o DNA AUTO, sua oficina cadastra o cliente no aplicativo, recebe <strong>50% do valor do cadastro (R$ 24,95 sobre R$ 49,90)</strong> e o sistema acompanha a quilometragem e o histórico do veículo para trazer o cliente de volta no momento ideal para novas manutenções.
+          </p>
+
+          <div class="benefits-list">
+            <div class="benefit-item">
+              <div class="benefit-icon">1</div>
+              <div>
+                <strong>Repasse imediato de 50% do cadastro (R$ 24,95 por cliente)</strong>
+                <p style="color:var(--muted); font-size:.92rem;">O cadastro do cliente no programa custa R$ 49,90: 50% (R$ 24,95) fica direto para a sua oficina e 50% (R$ 24,95) para a plataforma DNA AUTO.</p>
+              </div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon">2</div>
+              <div>
+                <strong>Monitoramento por quilometragem e retorno recorrente</strong>
+                <p style="color:var(--muted); font-size:.92rem;">A plataforma avisa o momento ideal para troca de óleo do motor, fluido de câmbio automático, correia dentada, pastilhas de freio, velas e revisões conforme o fabricante.</p>
+              </div>
+            </div>
+            <div class="benefit-item">
+              <div class="benefit-icon">3</div>
+              <div>
+                <strong>Autonomia e Segurança Total para o Proprietário da Oficina</strong>
+                <p style="color:var(--muted); font-size:.92rem;">Somente você (proprietário ou responsável da oficina) realiza o cadastro e cria sua senha diretamente no aplicativo da oficina. O representante comercial não acessa o aplicativo da sua oficina nem os dados dos seus clientes.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="responsive-info">
+            📱 <strong>Plataforma 100% Adaptativa para Smartphone:</strong> Ao acessar pelo telefone celular, utilize o <strong>menu sanduíche (☰)</strong> no topo direito para navegar de forma rápida e totalmente responsiva.
+          </div>
+
+          <div class="flyer-wrap" id="folheto">
+            <img src="/img/folheto-comercial-representante.jpg" alt="Folheto Oficial DNA AUTO — Mais Faturamento para sua Oficina" />
+          </div>
+        </section>
+
+        <aside class="card" id="credenciar">
+          <h2 style="font-size:1.35rem; margin-bottom:8px;">Baixar ou Acessar o Aplicativo da Oficina</h2>
+          <p style="color:var(--muted); font-size:.92rem; margin-bottom:18px;">
+            Confirme os dados básicos da sua oficina abaixo para garantir a vinculação automática ao convite oficial antes de abrir ou instalar o aplicativo da oficina:
+          </p>
+
+          <form id="startOnboardingForm">
+            <div class="form-group">
+              <label for="wsTradeName">Nome Fantasia da Oficina *</label>
+              <input type="text" id="wsTradeName" class="form-control" placeholder="Ex.: Auto Center Prime" required />
+            </div>
+            <div class="form-group">
+              <label for="wsCnpj">CNPJ da Oficina *</label>
+              <input type="text" id="wsCnpj" class="form-control" placeholder="00.000.000/0001-00" required />
+            </div>
+            <div class="form-group">
+              <label for="wsEmail">E-mail do Proprietário / Oficina *</label>
+              <input type="email" id="wsEmail" class="form-control" placeholder="contato@suaoficina.com.br" required />
+            </div>
+            <div class="form-group">
+              <label for="wsPhone">WhatsApp / Telefone *</label>
+              <input type="tel" id="wsPhone" class="form-control" placeholder="(11) 99999-0000" required />
+            </div>
+
+            <div id="onboardingFeedback" style="display:none; margin-bottom:14px; padding:12px; border-radius:12px; font-size:.9rem;"></div>
+
+            <button type="submit" class="btn btn-primary" id="btnGoToWorkshopApp">
+              📲 Baixar ou acessar o aplicativo da oficina
+            </button>
+          </form>
+
+          <div style="margin-top:12px; text-align:center;">
+            <a href="/oficina" id="directAppLink" style="color:var(--cyan); font-size:.88rem; font-weight:700; text-decoration:none;">
+              Já iniciou o cadastro? Ir direto para o aplicativo da oficina →
+            </a>
+          </div>
+
+          <div class="security-note">
+            🔒 <strong>Garantia de Privacidade e LGPD:</strong> O seu cadastro definitivo e a criação da sua senha serão feitos pessoalmente por você dentro do aplicativo oficial da oficina (<code>/oficina</code>). O vínculo da indicação é registrado automaticamente pelo backend do DNA AUTO.
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function toggleDrawer(force) {
+      const drawer = document.getElementById('mobileDrawer');
+      if (!drawer) return;
+      if (typeof force === 'boolean') {
+        drawer.classList.toggle('open', force);
+      } else {
+        drawer.classList.toggle('open');
+      }
+    }
+
+    document.getElementById('btnMobileMenu').addEventListener('click', () => toggleDrawer());
+
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    const repCodeFromUrl = (pathParts[pathParts.length - 1] || 'REP000123').toUpperCase();
+    let activeInviteToken = null;
+
+    async function loadInviteInfo() {
+      const badgeEl = document.getElementById('repCodeBadge');
+      const textEl = document.getElementById('repIdentificationText');
+      badgeEl.textContent = repCodeFromUrl;
+
+      try {
+        const res = await fetch(`/api/v1/representatives/indicacao/${encodeURIComponent(repCodeFromUrl)}/info`);
+        const data = await res.json();
+        if (res.ok && data.valid && data.representative) {
+          activeInviteToken = data.invite_token || null;
+          badgeEl.textContent = data.representative.rep_code;
+          textEl.innerHTML = `Oficina convidada por <strong>${data.representative.name}</strong> (${data.representative.city}/${data.representative.state}) • Código Comercial Verificado: <strong>${data.representative.rep_code}</strong>`;
+          localStorage.setItem('dna_rep_code', data.representative.rep_code);
+          if (activeInviteToken) {
+            localStorage.setItem('dna_invite_token', activeInviteToken);
+          }
+        } else {
+          textEl.textContent = data.error || 'Código de indicação não localizado. Você ainda pode acessar o aplicativo da oficina normalmente.';
+        }
+      } catch (e) {
+        textEl.textContent = `Indicação comercial código ${repCodeFromUrl}.`;
+      }
+    }
+
+    document.getElementById('startOnboardingForm').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const btn = document.getElementById('btnGoToWorkshopApp');
+      const fb = document.getElementById('onboardingFeedback');
+      const trade_name = document.getElementById('wsTradeName').value.trim();
+      const cnpj = document.getElementById('wsCnpj').value.trim();
+      const email = document.getElementById('wsEmail').value.trim();
+      const phone = document.getElementById('wsPhone').value.trim();
+
+      btn.disabled = true;
+      btn.textContent = 'Registrando vinculação oficial...';
+
+      try {
+        const res = await fetch(`/api/v1/representatives/indicacao/${encodeURIComponent(repCodeFromUrl)}/start-onboarding`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ trade_name, cnpj, email, phone })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          fb.style.display = 'block';
+          fb.style.background = 'rgba(255, 100, 124, 0.14)';
+          fb.style.border = '1px solid rgba(255, 100, 124, 0.4)';
+          fb.style.color = '#ffd2da';
+          fb.textContent = data.error || 'Não foi possível registrar os dados iniciais.';
+          btn.disabled = false;
+          btn.textContent = '📲 Baixar ou acessar o aplicativo da oficina';
+          return;
+        }
+
+        if (data.invite_token) localStorage.setItem('dna_invite_token', data.invite_token);
+        localStorage.setItem('dna_rep_code', data.rep_code || repCodeFromUrl);
+
+        fb.style.display = 'block';
+        fb.style.background = 'rgba(24, 212, 123, 0.14)';
+        fb.style.border = '1px solid rgba(24, 212, 123, 0.4)';
+        fb.style.color = '#c7ffe4';
+        fb.textContent = 'Indicação vinculada com sucesso! Redirecionando para o aplicativo oficial da oficina...';
+
+        setTimeout(() => {
+          window.location.href = data.redirect_url || '/oficina';
+        }, 700);
+      } catch (err) {
+        window.location.href = '/oficina';
+      }
+    });
+
+    loadInviteInfo();
+  </script>
+</body>
+</html>

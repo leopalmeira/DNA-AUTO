@@ -285,7 +285,139 @@ try {
 
         CREATE INDEX IF NOT EXISTS idx_workshop_pix_ws ON workshop_pix_charges(workshop_id);
         CREATE INDEX IF NOT EXISTS idx_workshop_pix_status ON workshop_pix_charges(status);
+
+        CREATE TABLE IF NOT EXISTS representatives (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+            rep_code TEXT NOT NULL UNIQUE,
+            name TEXT NOT NULL,
+            cpf_cnpj TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            phone TEXT NOT NULL,
+            city TEXT NOT NULL,
+            state TEXT NOT NULL,
+            pix_key TEXT,
+            experience TEXT,
+            status TEXT NOT NULL DEFAULT 'ACTIVE',
+            max_workshops_limit INTEGER NOT NULL DEFAULT 15,
+            monthly_goal_workshops INTEGER NOT NULL DEFAULT 5,
+            monthly_goal_activations INTEGER NOT NULL DEFAULT 220,
+            links_shared_count INTEGER NOT NULL DEFAULT 0,
+            training_completed INTEGER NOT NULL DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS representative_invites (
+            id TEXT PRIMARY KEY,
+            representative_id TEXT NOT NULL REFERENCES representatives(id) ON DELETE CASCADE,
+            rep_code TEXT NOT NULL,
+            invite_token TEXT NOT NULL UNIQUE,
+            prospect_workshop_name TEXT,
+            prospect_cnpj TEXT,
+            prospect_email TEXT,
+            prospect_phone TEXT,
+            clicks_count INTEGER NOT NULL DEFAULT 0,
+            status TEXT NOT NULL DEFAULT 'CREATED',
+            workshop_id TEXT REFERENCES workshops(id) ON DELETE SET NULL,
+            ip_address TEXT,
+            user_agent TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            accessed_at DATETIME,
+            started_at DATETIME,
+            completed_at DATETIME,
+            activated_at DATETIME
+        );
+
+        CREATE TABLE IF NOT EXISTS workshop_referrals (
+            id TEXT PRIMARY KEY,
+            workshop_id TEXT NOT NULL UNIQUE REFERENCES workshops(id) ON DELETE CASCADE,
+            representative_id TEXT NOT NULL REFERENCES representatives(id) ON DELETE CASCADE,
+            invite_id TEXT REFERENCES representative_invites(id) ON DELETE SET NULL,
+            rep_code TEXT NOT NULL,
+            origin_channel TEXT NOT NULL DEFAULT 'WHATSAPP_LINK',
+            linked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            valid_until DATETIME NOT NULL,
+            status TEXT NOT NULL DEFAULT 'ACTIVE',
+            created_by TEXT DEFAULT 'SYSTEM_AUTO',
+            justification TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS representative_commissions (
+            id TEXT PRIMARY KEY,
+            representative_id TEXT NOT NULL REFERENCES representatives(id) ON DELETE CASCADE,
+            workshop_id TEXT NOT NULL REFERENCES workshops(id) ON DELETE CASCADE,
+            referral_id TEXT REFERENCES workshop_referrals(id) ON DELETE SET NULL,
+            dna_activation_id TEXT REFERENCES dna_activations(id) ON DELETE SET NULL,
+            source_payment_id TEXT NOT NULL UNIQUE,
+            vehicle_id TEXT REFERENCES vehicles(id) ON DELETE SET NULL,
+            registration_amount_cents INTEGER NOT NULL DEFAULT 4990,
+            workshop_split_cents INTEGER NOT NULL DEFAULT 2495,
+            platform_split_cents INTEGER NOT NULL DEFAULT 2495,
+            commission_amount_cents INTEGER NOT NULL DEFAULT 590,
+            status TEXT NOT NULL DEFAULT 'PROJECTED',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            confirmed_at DATETIME,
+            paid_at DATETIME,
+            refunded_at DATETIME,
+            notes TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS representative_audit_logs (
+            id TEXT PRIMARY KEY,
+            representative_id TEXT,
+            workshop_id TEXT,
+            action TEXT NOT NULL,
+            actor_id TEXT,
+            actor_role TEXT,
+            justification TEXT,
+            metadata_json TEXT,
+            ip_address TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_rep_code ON representatives(rep_code);
+        CREATE INDEX IF NOT EXISTS idx_rep_invites_rep ON representative_invites(representative_id);
+        CREATE INDEX IF NOT EXISTS idx_rep_invites_code ON representative_invites(rep_code);
+        CREATE INDEX IF NOT EXISTS idx_rep_invites_cnpj ON representative_invites(prospect_cnpj);
+        CREATE INDEX IF NOT EXISTS idx_ws_referrals_rep ON workshop_referrals(representative_id);
+        CREATE INDEX IF NOT EXISTS idx_ws_referrals_ws ON workshop_referrals(workshop_id);
+        CREATE INDEX IF NOT EXISTS idx_rep_comm_rep ON representative_commissions(representative_id);
+        CREATE INDEX IF NOT EXISTS idx_rep_comm_ws ON representative_commissions(workshop_id);
+        CREATE INDEX IF NOT EXISTS idx_rep_comm_status ON representative_commissions(status);
+
+        INSERT OR IGNORE INTO roles (id, code, name, description)
+        VALUES ('role_representative', 'REPRESENTATIVE', 'Representante Comercial', 'Indicação comercial de oficinas e acompanhamento de comissões (sem acesso operacional)');
+
+        INSERT OR IGNORE INTO pricing_plans (id, code, title, description, price_cents, workshop_price_cents, discount_percentage, is_courtesy, commission_percentage, is_active)
+        VALUES ('plan_rep_program', 'PLAN_REP_PROGRAM', 'Passaporte Digital DNA AUTO — Programa Representantes (R$ 49,90)', 'Cadastro R$ 49,90 com 50% Oficina (R$ 24,95), 50% Plataforma (R$ 24,95) e comissão comercial R$ 5,90 custeada pela plataforma', 4990, 2495, 0, 0, 50, 1);
     `);
+
+    const bcrypt = require('bcryptjs');
+    const existingDemoRep = db.prepare("SELECT id FROM representatives WHERE rep_code = 'REP000123'").get();
+    if (!existingDemoRep) {
+        const repHash = bcrypt.hashSync('rep123456', 10);
+        db.prepare(`
+            INSERT OR IGNORE INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
+            VALUES ('usr_rep_000123', 'Leonardo Palmeira (Representante Comercial)', 'representante@dnaauto.com.br', ?, '(11) 99888-0123', 'role_representative', 'ACTIVE', 0)
+        `).run(repHash);
+        db.prepare(`
+            INSERT OR IGNORE INTO representatives (
+                id, user_id, rep_code, name, cpf_cnpj, email, phone, city, state,
+                pix_key, experience, status, max_workshops_limit, monthly_goal_workshops,
+                monthly_goal_activations, links_shared_count, training_completed
+            ) VALUES (
+                'rep_000123', 'usr_rep_000123', 'REP000123',
+                'Leonardo Palmeira (Representante Comercial)', '123.456.789-00',
+                'representante@dnaauto.com.br', '(11) 99888-0123', 'São Paulo', 'SP',
+                'representante@dnaauto.com.br', 'Vendas B2B Automotivo e Autopeças',
+                'ACTIVE', 15, 5, 220, 3, 1
+            )
+        `).run();
+    }
 
     // Inicializar regras padrão se ainda não existirem
     const PredictiveMaintenanceService = require('../services/predictiveMaintenance.service');

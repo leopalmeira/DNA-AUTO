@@ -3,6 +3,29 @@ const db = require('../database/db');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dna_auto_secret_jwt_key_2026_super_secure';
 
+function enforceRepresentativeBoundary(user, req, res) {
+    if (user && user.role_code === 'REPRESENTATIVE') {
+        const rep = db.prepare(`SELECT * FROM representatives WHERE user_id = ?`).get(user.id);
+        if (rep) {
+            user.representative = rep;
+        }
+        const url = String(req.originalUrl || req.url || '').split('?')[0];
+        const allowedPrefixes = [
+            '/api/v1/representatives',
+            '/api/v1/auth/me'
+        ];
+        const isAllowed = allowedPrefixes.some(prefix => url === prefix || url.startsWith(prefix + '/'));
+        if (!isAllowed) {
+            res.status(403).json({
+                error: 'REGRA ABSOLUTA DE SEGURANÇA: O representante comercial possui acesso restrito exclusivamente ao portal /representante e não pode acessar o aplicativo da oficina nem o aplicativo do cliente.',
+                code: 'REPRESENTATIVE_ROLE_ISOLATION'
+            });
+            return false;
+        }
+    }
+    return true;
+}
+
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -18,6 +41,7 @@ function authenticateToken(req, res, next) {
                 WHERE u.id = ?
             `).get(demoUserId);
             if (user) {
+                if (!enforceRepresentativeBoundary(user, req, res)) return;
                 req.user = user;
                 return next();
             }
@@ -41,6 +65,7 @@ function authenticateToken(req, res, next) {
                     WHERE u.id = ? AND u.status = 'ACTIVE'
                 `).get(demoUserId);
                 if (fallbackUser) {
+                    if (!enforceRepresentativeBoundary(fallbackUser, req, res)) return;
                     req.user = fallbackUser;
                     return next();
                 }
@@ -58,6 +83,8 @@ function authenticateToken(req, res, next) {
         if (!user) {
             return res.status(403).json({ error: 'Usuário não encontrado ou inativo.' });
         }
+
+        if (!enforceRepresentativeBoundary(user, req, res)) return;
 
         // Carrega oficina associada se o usuário for membro ou gestor de oficina
         const wsUser = db.prepare(`
@@ -90,8 +117,26 @@ function authorizeRoles(...allowedRoles) {
     };
 }
 
+function blockRepresentativeOutsidePortal(req, res, next) {
+    try {
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];
+        if (token) {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            if (decoded && decoded.role_code === 'REPRESENTATIVE') {
+                if (!enforceRepresentativeBoundary({ id: decoded.id, role_code: 'REPRESENTATIVE' }, req, res)) {
+                    return;
+                }
+            }
+        }
+    } catch (_) {}
+    next();
+}
+
 module.exports = {
     authenticateToken,
     authorizeRoles,
+    enforceRepresentativeBoundary,
+    blockRepresentativeOutsidePortal,
     JWT_SECRET
 };

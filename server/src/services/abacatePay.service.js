@@ -33,10 +33,37 @@ const AbacatePayService = {
     WORKSHOP_PROFIT_CENTS: 2995,      // R$ 29,95
     ATTENDANCE_FEE_CENTS: 690,        // R$ 6,90 (Taxa por atendimento posterior concluído)
 
+    // Programa Oficial de Representantes Comerciais (Seção 7)
+    REP_PROGRAM_CUSTOMER_PRICE_CENTS: 4990,   // R$ 49,90
+    REP_PROGRAM_WORKSHOP_SPLIT_CENTS: 2495,   // R$ 24,95 (50% Oficina)
+    REP_PROGRAM_PLATFORM_SPLIT_CENTS: 2495,   // R$ 24,95 (50% Plataforma DNA AUTO)
+    REP_COMMISSION_CENTS: 590,                // R$ 5,90 (Comissão do Representante, custeada pela plataforma)
+
     PRICE_TIER_10_CENTS: 2900,        // R$ 29,00 para >= 10 créditos
     PRICE_TIER_30_CENTS: 2800,        // R$ 28,00 para >= 30 créditos
 
     WEBHOOK_SECRET,
+
+    /**
+     * Verifica se a oficina possui vínculo ativo e vigente (até 24 meses) com um representante comercial
+     */
+    getActiveWorkshopReferral(db, workshopId) {
+        if (!workshopId) return null;
+        try {
+            return db.prepare(`
+                SELECT wr.*, r.rep_code as active_rep_code, r.name as rep_name, r.status as rep_status
+                FROM workshop_referrals wr
+                JOIN representatives r ON wr.representative_id = r.id
+                WHERE wr.workshop_id = ?
+                  AND wr.status = 'ACTIVE'
+                  AND r.status = 'ACTIVE'
+                  AND datetime(wr.valid_until) >= datetime('now')
+                LIMIT 1
+            `).get(workshopId) || null;
+        } catch (_) {
+            return null;
+        }
+    },
 
     /**
      * Calcula o preço unitário e total por quantidade de créditos pré-pagos
@@ -169,7 +196,13 @@ const AbacatePayService = {
         let customerCents = this.CUSTOMER_PRICE_CENTS;
         let profitCents = this.WORKSHOP_PROFIT_CENTS;
         let carsCount = 1;
-        let description = `DNA AUTO - Ativacao Veicular (${activationCode || '1 carro'} - 30.00 BRL)`;
+        const activeReferral = this.getActiveWorkshopReferral(db, workshopId);
+        if (chargeType === 'SINGLE' && activeReferral) {
+            customerCents = this.REP_PROGRAM_CUSTOMER_PRICE_CENTS; // 4990 (R$ 49,90)
+            amountCents = this.REP_PROGRAM_PLATFORM_SPLIT_CENTS;   // 2495 (R$ 24,95)
+            profitCents = this.REP_PROGRAM_WORKSHOP_SPLIT_CENTS;   // 2495 (R$ 24,95)
+        }
+        let description = `DNA AUTO - Ativacao Veicular (${activationCode || '1 carro'} - ${(amountCents / 100).toFixed(2)} BRL)`;
 
         if (chargeType === 'POSTPAID_10') {
             carsCount = 10;
@@ -252,7 +285,18 @@ const AbacatePayService = {
         }
 
         if (charge.status === 'PAID') {
-            return { success: true, message: 'Cobrança já confirmada anteriormente.', charge };
+            const existingRepComm = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(charge.id);
+            return {
+                success: true,
+                idempotent: true,
+                message: 'Cobrança já confirmada anteriormente (idempotência garantida).',
+                charge,
+                representative_commission: existingRepComm || null
+            };
+        }
+
+        if (charge.status === 'REFUNDED' || charge.status === 'CANCELLED') {
+            throw new Error('Não é possível confirmar uma cobrança estornada ou cancelada.');
         }
 
         db.prepare(`
@@ -303,14 +347,212 @@ const AbacatePayService = {
             } catch (_) {}
         }
 
+        // Atualiza ativação DNA e comissão da oficina/representante quando aplicável
+        let representativeCommission = null;
+        if (charge.charge_type === 'SINGLE') {
+            let dnaAct = null;
+            if (charge.vehicle_id) {
+                dnaAct = db.prepare(`
+                    SELECT da.* FROM dna_activations da
+                    JOIN vehicle_dna vd ON da.vehicle_dna_id = vd.id
+                    WHERE da.workshop_id = ? AND vd.vehicle_id = ?
+                    ORDER BY da.activated_at DESC LIMIT 1
+                `).get(charge.workshop_id, charge.vehicle_id);
+            }
+            if (dnaAct) {
+                db.prepare(`
+                    UPDATE dna_activations
+                    SET payment_status = 'COMPLETED'
+                    WHERE id = ?
+                `).run(dnaAct.id);
+                db.prepare(`
+                    UPDATE commissions
+                    SET status = 'AVAILABLE'
+                    WHERE dna_activation_id = ? AND workshop_id = ?
+                `).run(dnaAct.id, charge.workshop_id);
+            }
+
+            // Verifica se a oficina possui vínculo ativo e dentro da vigência de 24 meses com representante
+            const activeReferral = this.getActiveWorkshopReferral(db, charge.workshop_id);
+            if (activeReferral) {
+                const nowIso = new Date().toISOString().replace('T', ' ').slice(0, 19);
+                const existingComm = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(charge.id);
+                if (existingComm) {
+                    if (existingComm.status !== 'CONFIRMED' && existingComm.status !== 'PAID') {
+                        db.prepare(`
+                            UPDATE representative_commissions
+                            SET status = 'CONFIRMED',
+                                confirmed_at = ?,
+                                notes = 'Comissão confirmada mediante pagamento PIX liquidado'
+                            WHERE id = ?
+                        `).run(nowIso, existingComm.id);
+                    }
+                    representativeCommission = db.prepare('SELECT * FROM representative_commissions WHERE id = ?').get(existingComm.id);
+                } else {
+                    const repCommId = `rcomm_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+                    db.prepare(`
+                        INSERT OR IGNORE INTO representative_commissions (
+                            id, representative_id, workshop_id, referral_id, dna_activation_id,
+                            source_payment_id, vehicle_id, registration_amount_cents,
+                            workshop_split_cents, platform_split_cents, commission_amount_cents,
+                            status, created_at, confirmed_at, notes
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'CONFIRMED', ?, ?, ?)
+                    `).run(
+                        repCommId,
+                        activeReferral.representative_id,
+                        charge.workshop_id,
+                        activeReferral.id,
+                        dnaAct ? dnaAct.id : null,
+                        charge.id,
+                        charge.vehicle_id || null,
+                        this.REP_PROGRAM_CUSTOMER_PRICE_CENTS, // 4990
+                        this.REP_PROGRAM_WORKSHOP_SPLIT_CENTS, // 2495
+                        this.REP_PROGRAM_PLATFORM_SPLIT_CENTS, // 2495
+                        this.REP_COMMISSION_CENTS,             // 590
+                        nowIso,
+                        nowIso,
+                        'Comissão confirmada mediante pagamento PIX liquidado'
+                    );
+                    representativeCommission = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(charge.id);
+                }
+
+                // Garante que o convite conste como ACTIVATED
+                if (activeReferral.invite_id) {
+                    db.prepare(`
+                        UPDATE representative_invites
+                        SET status = 'ACTIVATED',
+                            activated_at = COALESCE(activated_at, ?),
+                            updated_at = ?
+                        WHERE id = ?
+                    `).run(nowIso, nowIso, activeReferral.invite_id);
+                }
+
+                db.prepare(`
+                    INSERT INTO representative_audit_logs (
+                        id, representative_id, workshop_id, action, actor_id, actor_role, justification, metadata_json, ip_address
+                    ) VALUES (?, ?, ?, 'COMMISSION_CONFIRMED', 'SYSTEM_PAYMENT', 'SYSTEM', ?, ?, '127.0.0.1')
+                `).run(
+                    `ral_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                    activeReferral.representative_id,
+                    charge.workshop_id,
+                    `Comissão de R$ 5,90 confirmada pelo pagamento ${charge.id}`,
+                    JSON.stringify({
+                        source_payment_id: charge.id,
+                        registration_amount_cents: 4990,
+                        workshop_split_cents: 2495,
+                        platform_split_cents: 2495,
+                        commission_amount_cents: 590
+                    })
+                );
+            }
+        }
+
         const updatedCharge = db.prepare('SELECT * FROM workshop_pix_charges WHERE id = ?').get(charge.id);
         const updatedBalance = db.prepare('SELECT * FROM workshop_billing_balances WHERE workshop_id = ?').get(charge.workshop_id);
 
         return {
             success: true,
+            idempotent: false,
             message: '🎉 Pagamento PIX confirmado com sucesso!',
             charge: updatedCharge,
-            balance: updatedBalance
+            balance: updatedBalance,
+            representative_commission: representativeCommission
+        };
+    },
+
+    /**
+     * Cancelamento, Estorno ou Chargeback de Pagamento PIX (Ajusta comissão da oficina e do representante para REFUNDED)
+     */
+    refundPixCharge(db, chargeIdOrAbacateId, reason = 'Estorno ou cancelamento de pagamento') {
+        const charge = db.prepare('SELECT * FROM workshop_pix_charges WHERE id = ? OR abacate_id = ?').get(chargeIdOrAbacateId, chargeIdOrAbacateId);
+        if (!charge) {
+            throw new Error('Cobrança PIX não encontrada para estorno.');
+        }
+
+        if (charge.status === 'REFUNDED') {
+            const existingRepComm = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(charge.id);
+            return {
+                success: true,
+                idempotent: true,
+                message: 'Cobrança já estornada anteriormente.',
+                charge,
+                representative_commission: existingRepComm || null
+            };
+        }
+
+        const nowIso = new Date().toISOString().replace('T', ' ').slice(0, 19);
+
+        db.prepare(`
+            UPDATE workshop_pix_charges
+            SET status = 'REFUNDED'
+            WHERE id = ?
+        `).run(charge.id);
+
+        if (charge.activation_code) {
+            try {
+                db.prepare(`
+                    UPDATE client_activations
+                    SET billing_status = 'REFUNDED', status = 'CANCELLED'
+                    WHERE activation_code = ?
+                `).run(charge.activation_code);
+            } catch (_) {}
+        }
+
+        if (charge.vehicle_id) {
+            const dnaAct = db.prepare(`
+                SELECT da.* FROM dna_activations da
+                JOIN vehicle_dna vd ON da.vehicle_dna_id = vd.id
+                WHERE da.workshop_id = ? AND vd.vehicle_id = ?
+                ORDER BY da.activated_at DESC LIMIT 1
+            `).get(charge.workshop_id, charge.vehicle_id);
+
+            if (dnaAct) {
+                db.prepare(`
+                    UPDATE dna_activations
+                    SET payment_status = 'REFUNDED', notes = ?
+                    WHERE id = ?
+                `).run(reason, dnaAct.id);
+
+                db.prepare(`
+                    UPDATE commissions
+                    SET status = 'CANCELLED'
+                    WHERE dna_activation_id = ? AND workshop_id = ?
+                `).run(dnaAct.id, charge.workshop_id);
+            }
+        }
+
+        // Estorna comissão do representante vinculada a este pagamento
+        const repComm = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(charge.id);
+        let updatedRepComm = null;
+        if (repComm) {
+            db.prepare(`
+                UPDATE representative_commissions
+                SET status = 'REFUNDED',
+                    refunded_at = ?,
+                    notes = ?
+                WHERE id = ?
+            `).run(nowIso, reason, repComm.id);
+            updatedRepComm = db.prepare('SELECT * FROM representative_commissions WHERE id = ?').get(repComm.id);
+
+            db.prepare(`
+                INSERT INTO representative_audit_logs (
+                    id, representative_id, workshop_id, action, actor_id, actor_role, justification, metadata_json, ip_address
+                ) VALUES (?, ?, ?, 'COMMISSION_REFUNDED', 'SYSTEM_PAYMENT', 'SYSTEM', ?, ?, '127.0.0.1')
+            `).run(
+                `ral_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                repComm.representative_id,
+                charge.workshop_id,
+                reason,
+                JSON.stringify({ source_payment_id: charge.id, commission_id: repComm.id, status: 'REFUNDED' })
+            );
+        }
+
+        const updatedCharge = db.prepare('SELECT * FROM workshop_pix_charges WHERE id = ?').get(charge.id);
+        return {
+            success: true,
+            message: 'Pagamento e comissões vinculadas ajustados como ESTORNADOS (REFUNDED).',
+            charge: updatedCharge,
+            representative_commission: updatedRepComm
         };
     },
 
@@ -333,6 +575,12 @@ const AbacatePayService = {
         const targetId = externalId || abacateId;
         if (!targetId) {
             return { success: false, message: 'Nenhum identificador de cobrança no payload.' };
+        }
+
+        const evtLower = String(event || '').toLowerCase();
+        const statusUpper = String((data && data.status) || '').toUpperCase();
+        if (evtLower.includes('refund') || evtLower.includes('cancel') || evtLower.includes('chargeback') || statusUpper === 'REFUNDED' || statusUpper === 'CANCELLED') {
+            return this.refundPixCharge(db, targetId, (data && data.reason) || 'Estorno/Cancelamento via Webhook AbacatePay');
         }
 
         return this.confirmPixCharge(db, targetId);

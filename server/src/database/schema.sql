@@ -725,4 +725,109 @@ CREATE TABLE IF NOT EXISTS workshop_attendance_fees (
 CREATE INDEX IF NOT EXISTS idx_att_fees_ws ON workshop_attendance_fees(workshop_id);
 CREATE INDEX IF NOT EXISTS idx_att_fees_app ON workshop_attendance_fees(appointment_id);
 
+-- Sistema Comercial de Representantes, Indicação, Vinculação Automática e Comissões
+CREATE TABLE IF NOT EXISTS representatives (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    rep_code TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
+    cpf_cnpj TEXT NOT NULL,
+    email TEXT NOT NULL UNIQUE,
+    phone TEXT NOT NULL,
+    city TEXT NOT NULL,
+    state TEXT NOT NULL,
+    pix_key TEXT,
+    experience TEXT,
+    status TEXT NOT NULL DEFAULT 'ACTIVE',
+    max_workshops_limit INTEGER NOT NULL DEFAULT 15,
+    monthly_goal_workshops INTEGER NOT NULL DEFAULT 5,
+    monthly_goal_activations INTEGER NOT NULL DEFAULT 220,
+    links_shared_count INTEGER NOT NULL DEFAULT 0,
+    training_completed INTEGER NOT NULL DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS representative_invites (
+    id TEXT PRIMARY KEY,
+    representative_id TEXT NOT NULL REFERENCES representatives(id) ON DELETE CASCADE,
+    rep_code TEXT NOT NULL,
+    invite_token TEXT NOT NULL UNIQUE,
+    prospect_workshop_name TEXT,
+    prospect_cnpj TEXT,
+    prospect_email TEXT,
+    prospect_phone TEXT,
+    clicks_count INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'CREATED',
+    workshop_id TEXT REFERENCES workshops(id) ON DELETE SET NULL,
+    ip_address TEXT,
+    user_agent TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    accessed_at DATETIME,
+    started_at DATETIME,
+    completed_at DATETIME,
+    activated_at DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS workshop_referrals (
+    id TEXT PRIMARY KEY,
+    workshop_id TEXT NOT NULL UNIQUE REFERENCES workshops(id) ON DELETE CASCADE,
+    representative_id TEXT NOT NULL REFERENCES representatives(id) ON DELETE CASCADE,
+    invite_id TEXT REFERENCES representative_invites(id) ON DELETE SET NULL,
+    rep_code TEXT NOT NULL,
+    origin_channel TEXT NOT NULL DEFAULT 'WHATSAPP_LINK',
+    linked_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    valid_until DATETIME NOT NULL,
+    status TEXT NOT NULL DEFAULT 'ACTIVE',
+    created_by TEXT DEFAULT 'SYSTEM_AUTO',
+    justification TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS representative_commissions (
+    id TEXT PRIMARY KEY,
+    representative_id TEXT NOT NULL REFERENCES representatives(id) ON DELETE CASCADE,
+    workshop_id TEXT NOT NULL REFERENCES workshops(id) ON DELETE CASCADE,
+    referral_id TEXT REFERENCES workshop_referrals(id) ON DELETE SET NULL,
+    dna_activation_id TEXT REFERENCES dna_activations(id) ON DELETE SET NULL,
+    source_payment_id TEXT NOT NULL UNIQUE,
+    vehicle_id TEXT REFERENCES vehicles(id) ON DELETE SET NULL,
+    registration_amount_cents INTEGER NOT NULL DEFAULT 4990,
+    workshop_split_cents INTEGER NOT NULL DEFAULT 2495,
+    platform_split_cents INTEGER NOT NULL DEFAULT 2495,
+    commission_amount_cents INTEGER NOT NULL DEFAULT 590,
+    status TEXT NOT NULL DEFAULT 'PROJECTED',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    confirmed_at DATETIME,
+    paid_at DATETIME,
+    refunded_at DATETIME,
+    notes TEXT
+);
+
+CREATE TABLE IF NOT EXISTS representative_audit_logs (
+    id TEXT PRIMARY KEY,
+    representative_id TEXT,
+    workshop_id TEXT,
+    action TEXT NOT NULL,
+    actor_id TEXT,
+    actor_role TEXT,
+    justification TEXT,
+    metadata_json TEXT,
+    ip_address TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_rep_code ON representatives(rep_code);
+CREATE INDEX IF NOT EXISTS idx_rep_invites_rep ON representative_invites(representative_id);
+CREATE INDEX IF NOT EXISTS idx_rep_invites_code ON representative_invites(rep_code);
+CREATE INDEX IF NOT EXISTS idx_rep_invites_cnpj ON representative_invites(prospect_cnpj);
+CREATE INDEX IF NOT EXISTS idx_ws_referrals_rep ON workshop_referrals(representative_id);
+CREATE INDEX IF NOT EXISTS idx_ws_referrals_ws ON workshop_referrals(workshop_id);
+CREATE INDEX IF NOT EXISTS idx_rep_comm_rep ON representative_commissions(representative_id);
+CREATE INDEX IF NOT EXISTS idx_rep_comm_ws ON representative_commissions(workshop_id);
+CREATE INDEX IF NOT EXISTS idx_rep_comm_status ON representative_commissions(status);
+
+
 

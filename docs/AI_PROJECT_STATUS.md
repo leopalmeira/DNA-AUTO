@@ -30,6 +30,7 @@
 | **Rede de Oficinas Credenciadas (Filtros RJ/SP)**| `IMPLEMENTADO` | 100% (Testes 45, 58) | 2 cards por sigla (RJ à esquerda cinza com contador 30d, SP à direita azul ativo) |
 | **App PWA do Cliente (`cliente.app` / 9 telas)**| `IMPLEMENTADO` | 100% (Teste 42) | Dashboard Toyota Corolla, alertas, serviços, gastos, rede |
 | **ERP PWA da Oficina (`oficina.app` / 12 telas)**| `IMPLEMENTADO` | 100% (Teste 43) | Recepção, ordens, peças, WhatsApp, financeiro, clientes |
+| **Portal Comercial de Representantes (`/representante`)** | `IMPLEMENTADO & HOMOLOGADO` | 100% (`representante.homologation.test.js` - 20/20) | Credenciamento por indicação (`REP000123`), pré-vinculação e auto-linking por 24 meses, split R$ 49,90 (50% Oficina R$ 24,95 / 50% Plataforma R$ 24,95 -> R$ 5,90 Representante), 14 KPIs de produtividade, 8 colunas em Minhas Oficinas (CNPJ mascarado LGPD), folheto comercial e menu sanduíche mobile (`☰`) |
 | **Keep-Alive Service (Anti-Sleep Render Free)** | `IMPLEMENTADO` | 100% (Teste 17) | Ping periódico de 14 min garantindo uptime |
 | **Conexão Reativa Cliente <-> Backend em Produção** | `PARCIALMENTE IMPLEMENTADO` | Em andamento | O app do cliente possui dados de demonstração; precisa de toggle dinâmico suave para veículos reais |
 | **Agendamento com Seletor Direto de Oficina** | `IMPLEMENTADO` | 100% (Testes 57, 58) | Conexão completa cliente -> oficina com WhatsApp e persistência |
@@ -61,7 +62,7 @@
 
 ## 3. Indicadores de Qualidade
 
-- **Bateria de Testes Automatizados:** 4 Baterias Aprovadas (58 API + 5 Componentes + 20 Integração Oficina + 20 Financeiro/Ranking = 100% Sucesso)
+- **Bateria de Testes Automatizados:** 5 Baterias Aprovadas (58 API + 5 Componentes + 20 Integração Oficina + 20 Financeiro/Ranking + 20 Homologação Representantes = 100% Sucesso)
 - **Testes de Regressão:** 0 falhas identificadas
-- **Conformidade de Identidade Visual:** 100% aderente (Paleta Azul DNA AUTO, Splash limpa sem sobreposição ao carro/logo, sem violeta)
+- **Conformidade de Identidade Visual:** 100% aderente (Paleta Azul DNA AUTO, Splash limpa sem sobreposição ao carro/logo, sem violeta, menu sanduíche responsivo mobile `☰`)
 - **Status do Build:** Produção pronta para execução com `npm start`

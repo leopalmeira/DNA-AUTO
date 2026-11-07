@@ -2,6 +2,8 @@ const bcrypt = require('bcryptjs');
 
 // Limpar tabelas existentes para reset limpo e idempotente
 const clearTables = [
+    'representative_audit_logs', 'representative_commissions', 'workshop_referrals',
+    'representative_invites', 'representatives',
     'workshop_pix_charges', 'workshop_billing_balances', 'workshop_attendance_fees',
     'password_reset_tokens',
     'trip_classification_metrics', 'vehicle_maintenance_predictions', 'maintenance_rules',
@@ -57,7 +59,8 @@ function seedBase(dbInstance) {
             { id: 'role_workshop_owner', code: 'WORKSHOP_OWNER', name: 'Gestor da Oficina', description: 'Gerenciamento da oficina e equipe' },
             { id: 'role_workshop_manager', code: 'WORKSHOP_MANAGER', name: 'Gerente da Oficina', description: 'Operação e confirmação de serviços' },
             { id: 'role_workshop_mechanic', code: 'WORKSHOP_MECHANIC', name: 'Mecânico Chefe', description: 'Registro técnico de serviços e peças' },
-            { id: 'role_owner', code: 'OWNER', name: 'Proprietário de Veículo', description: 'Acompanhamento do DNA e transferências' }
+            { id: 'role_owner', code: 'OWNER', name: 'Proprietário de Veículo', description: 'Acompanhamento do DNA e transferências' },
+            { id: 'role_representative', code: 'REPRESENTATIVE', name: 'Representante Comercial', description: 'Indicação comercial de oficinas e acompanhamento de comissões (sem acesso operacional)' }
         ];
         for (const r of roles) insertRole.run(r);
 
@@ -131,6 +134,44 @@ function seedBase(dbInstance) {
             is_courtesy: 1,
             commission_percentage: 0
         });
+
+        insertPlan.run({
+            id: 'plan_rep_program',
+            code: 'PLAN_REP_PROGRAM',
+            title: 'Passaporte Digital DNA AUTO — Programa Representantes (R$ 49,90)',
+            description: 'Cadastro R$ 49,90 com 50% Oficina (R$ 24,95), 50% Plataforma (R$ 24,95) e comissão comercial R$ 5,90 custeada pela plataforma',
+            price_cents: 4990,
+            workshop_price_cents: 2495,
+            discount_percentage: 0,
+            is_courtesy: 0,
+            commission_percentage: 50
+        });
+
+        // Representante Comercial Padrão (Homologação e Demonstração REP000123)
+        const repHash = bcrypt.hashSync('rep123456', 10);
+        insertUser.run({
+            id: 'usr_rep_000123',
+            name: 'Leonardo Palmeira (Representante Comercial)',
+            email: 'representante@dnaauto.com.br',
+            password_hash: repHash,
+            phone: '(11) 99888-0123',
+            role_id: 'role_representative',
+            status: 'ACTIVE'
+        });
+
+        db.prepare(`
+            INSERT OR REPLACE INTO representatives (
+                id, user_id, rep_code, name, cpf_cnpj, email, phone, city, state,
+                pix_key, experience, status, max_workshops_limit, monthly_goal_workshops,
+                monthly_goal_activations, links_shared_count, training_completed
+            ) VALUES (
+                'rep_000123', 'usr_rep_000123', 'REP000123',
+                'Leonardo Palmeira (Representante Comercial)', '123.456.789-00',
+                'representante@dnaauto.com.br', '(11) 99888-0123', 'São Paulo', 'SP',
+                'representante@dnaauto.com.br', 'Vendas B2B Automotivo e Autopeças',
+                'ACTIVE', 15, 5, 220, 3, 1
+            )
+        `).run();
 
         // 5. Integrações Oficiais
         const insertIntegration = db.prepare(`

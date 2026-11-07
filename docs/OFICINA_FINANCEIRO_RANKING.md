@@ -109,3 +109,4 @@ Todos os 20 cenários exigidos foram implementados e validados sem navegador (He
 18. **Cenário 18:** Exatidão matemática centesimal do split (R$ 59,90 = R$ 29,95 + R$ 29,95).
 19. **Cenário 19:** Renderização completa dos 6 blocos estruturais no DOM simulado.
 20. **Cenário 20:** Não-regressão das demais rotas da oficina e preservação integral do aplicativo do cliente (`cliente.app`).
+

@@ -1608,7 +1608,7 @@ router.post('/:id/clients/register-activation', async (req, res) => {
     try {
         const workshopId = req.params.id;
         const plate = (req.body.license_plate || req.body.plate || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-        const clientName = (req.body.client_name || req.body.name || '').trim();
+        const clientName = (req.body.client_name || req.body.name || req.body.full_name || '').trim();
         const rawPhone = (req.body.whatsapp || req.body.phone || req.body.client_phone || '').trim();
         const cleanEmail = (req.body.email || req.body.client_email || '').trim().toLowerCase();
         const rawPassword = req.body.password || req.body.client_password || '';
@@ -1667,27 +1667,48 @@ router.post('/:id/clients/register-activation', async (req, res) => {
         }
 
         // 1.5. Garante que o Veículo tenha Passaporte DNA AUTO Oficial ativo e Health Score inicial zerado
+        const activeReferral = AbacatePayService.getActiveWorkshopReferral(db, workshopId);
+        const isRepProgram = Boolean(activeReferral || req.body.program_mode === 'REPRESENTATIVE' || Number(req.body.customer_price_cents) === 4990);
+        const registrationFeeCents = isRepProgram ? 4990 : 5990;
+        const workshopSplitCents = isRepProgram ? 2495 : 2995;
+        const platformSplitCents = isRepProgram ? 2495 : 2995;
+        const activePlanId = isRepProgram ? 'plan_rep_program' : 'plan_normal';
+        const isImmediatePaymentConfirmed = req.body.payment_confirmed === true || req.body.mark_as_paid === true || req.body.payment_status === 'COMPLETED' || req.body.payment_status === 'PAID';
+
         let dna = db.prepare('SELECT * FROM vehicle_dna WHERE vehicle_id = ?').get(vehicle.id);
         let dnaCode = dna ? dna.dna_code : null;
+        let actCommId = null;
         if (!dna) {
             dnaCode = generateDnaCode();
             const dnaId = `dna_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
             const certHash = crypto.createHash('sha256').update(dnaCode + (vehicle.chassis_vin || vehicle.license_plate)).digest('hex');
             db.prepare(`
                 INSERT INTO vehicle_dna (id, vehicle_id, dna_code, status, activated_at, activated_by_workshop_id, activation_modality, activation_fee_cents, certificate_hash)
-                VALUES (?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP, ?, 'NORMAL', 5990, ?)
-            `).run(dnaId, vehicle.id, dnaCode, workshopId, certHash);
+                VALUES (?, ?, ?, 'ACTIVE', CURRENT_TIMESTAMP, ?, 'NORMAL', ?, ?)
+            `).run(dnaId, vehicle.id, dnaCode, workshopId, registrationFeeCents, certHash);
 
-            const actCommId = 'act_' + Date.now();
+            actCommId = 'act_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5);
+            const initialPaymentStatus = (activeReferral && !isImmediatePaymentConfirmed) ? 'PENDING' : 'COMPLETED';
             db.prepare(`
                 INSERT INTO dna_activations (id, vehicle_dna_id, workshop_id, pricing_plan_id, payment_status, amount_paid_cents, commission_amount_cents, notes)
-                VALUES (?, ?, ?, 'plan_normal', 'COMPLETED', 5990, 2995, 'Ativação via oficina com split 50/50')
-            `).run(actCommId, dnaId, workshopId);
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            `).run(
+                actCommId,
+                dnaId,
+                workshopId,
+                activePlanId,
+                initialPaymentStatus,
+                registrationFeeCents,
+                workshopSplitCents,
+                isRepProgram
+                    ? 'Ativação via oficina vinculada a representante (R$ 49,90 -> 50% Oficina R$ 24,95 / 50% Plataforma R$ 24,95)'
+                    : 'Ativação via oficina com split 50/50'
+            );
 
             db.prepare(`
                 INSERT INTO commissions (id, workshop_id, dna_activation_id, amount_cents, status)
-                VALUES (?, ?, ?, 2995, 'AVAILABLE')
-            `).run('comm_' + Date.now(), workshopId, actCommId);
+                VALUES (?, ?, ?, ?, 'AVAILABLE')
+            `).run('comm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5), workshopId, actCommId, workshopSplitCents);
 
             const existsScore = db.prepare('SELECT id FROM health_scores WHERE vehicle_id = ?').get(vehicle.id);
             if (!existsScore) {
@@ -1783,6 +1804,7 @@ router.post('/:id/clients/register-activation', async (req, res) => {
 
         // 7. Gera cobrança PIX vinculada via AbacatePay (opção para quitação avulsa imediata)
         let pixCharge = null;
+        let representativeCommission = null;
         try {
             pixCharge = await AbacatePayService.createPixCharge(db, {
                 workshopId,
@@ -1793,10 +1815,46 @@ router.post('/:id/clients/register-activation', async (req, res) => {
                 clientName: clientName,
                 clientPhone: rawPhone
             });
+
+            if (activeReferral && pixCharge && pixCharge.charge_id && actCommId) {
+                const nowIso = new Date().toISOString().replace('T', ' ').slice(0, 19);
+                const repCommId = `rcomm_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+                db.prepare(`
+                    INSERT OR IGNORE INTO representative_commissions (
+                        id, representative_id, workshop_id, referral_id, dna_activation_id,
+                        source_payment_id, vehicle_id, registration_amount_cents,
+                        workshop_split_cents, platform_split_cents, commission_amount_cents,
+                        status, created_at, notes
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, 4990, 2495, 2495, 590, 'PROJECTED', ?, ?)
+                `).run(
+                    repCommId,
+                    activeReferral.representative_id,
+                    workshopId,
+                    activeReferral.id,
+                    actCommId,
+                    pixCharge.charge_id,
+                    vehicle.id,
+                    nowIso,
+                    'Comissão prevista — aguardando confirmação do pagamento do cadastro'
+                );
+                representativeCommission = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(pixCharge.charge_id);
+            }
+
+            if ((isImmediatePaymentConfirmed || billingResult.consumed_credit) && pixCharge && pixCharge.charge_id) {
+                const confirmRes = AbacatePayService.confirmPixCharge(db, pixCharge.charge_id);
+                if (confirmRes && confirmRes.charge) {
+                    pixCharge.status = confirmRes.charge.status;
+                }
+                if (confirmRes && confirmRes.representative_commission) {
+                    representativeCommission = confirmRes.representative_commission;
+                }
+            }
         } catch (_) {}
 
         const baseUrl = process.env.SERVER_URL || 'https://dna-auto-vua4.onrender.com';
         const clientAppUrl = `${baseUrl}/cliente?code=${activationCode}`;
+        const formattedPrice = `R$ ${(registrationFeeCents / 100).toFixed(2).replace('.', ',')}`;
+        const formattedSplit = `R$ ${(workshopSplitCents / 100).toFixed(2).replace('.', ',')}`;
 
         res.status(201).json({
             success: true,
@@ -1819,19 +1877,26 @@ router.post('/:id/clients/register-activation', async (req, res) => {
                 dna_code: dnaCode
             },
             pricing: {
-                dna_cost_per_car: 'R$ 29,95',
-                dna_cost_cents: 2995,
-                customer_price_suggested: 'R$ 59,90',
-                customer_price_cents: 5990,
-                workshop_profit_reais: 'R$ 29,95',
-                workshop_profit_cents: 2995,
+                dna_cost_per_car: formattedSplit,
+                dna_cost_cents: platformSplitCents,
+                customer_price_suggested: formattedPrice,
+                customer_price_cents: registrationFeeCents,
+                workshop_profit_reais: formattedSplit,
+                workshop_profit_cents: workshopSplitCents,
                 billing_status: billingResult.billing_status,
                 consumed_prepaid_credit: billingResult.consumed_credit,
                 remaining_prepaid_credits: balance.prepaid_cars_credits,
                 unbilled_cars_count: balance.unbilled_cars_count,
                 postpaid_cycle_status: `${balance.unbilled_cars_count}/10 carros acumulados`
             },
-            pix_charge: pixCharge,
+            financial_summary: {
+                gross_amount_cents: registrationFeeCents,
+                workshop_amount_cents: workshopSplitCents,
+                platform_gross_amount_cents: platformSplitCents,
+                representative_commission_cents: activeReferral ? 590 : 0
+            },
+            representative_commission: representativeCommission,
+            pix_charge: pixCharge ? { ...pixCharge, id: pixCharge.charge_id || pixCharge.id } : null,
             whatsapp_share_text: `Olá ${clientName}! Seu cadastro no DNA AUTO foi realizado pela oficina ${workshop.trade_name}.\n\n🚗 Veículo: *${plate}* (${model || vehicle.model || 'Veículo'})\n🧬 Passaporte DNA: *${dnaCode}*\n\n📲 Para acessar seu carro e histórico, acesse o link abaixo ou use o código:\nLink: ${clientAppUrl}\nCódigo de ativação: *${activationCode}*`
         });
     } catch (err) {
