@@ -24,13 +24,14 @@ const AdminView = {
         `;
 
         try {
-            const [statsData, rankingData, plansData, alertsData, fleetData, clientsData] = await Promise.all([
+            const [statsData, rankingData, plansData, alertsData, fleetData, clientsData, repsData] = await Promise.all([
                 API.getNetworkStats(),
                 API.getWorkshopRanking(),
                 API.getPricingPlans(),
                 API.getMaintenanceAlerts().catch(() => ({ totalAlerts: 0, alerts: [] })),
                 API.getFleet().catch(() => ({ count: 0, vehicles: [] })),
-                API.getAllClients().catch(() => ({ count: 0, clients: [] }))
+                API.getAllClients().catch(() => ({ count: 0, clients: [] })),
+                API.getAdminRepresentatives().catch(() => ({ count: 0, pending_count: 0, items: [] }))
             ]);
 
             this.cacheData = {
@@ -39,7 +40,9 @@ const AdminView = {
                 plans: plansData,
                 alerts: alertsData.alerts || [],
                 fleet: fleetData.vehicles || [],
-                clients: clientsData.clients || []
+                clients: clientsData.clients || [],
+                representatives: repsData.items || [],
+                pendingRepsCount: repsData.pending_count || 0
             };
 
             this.renderLayout();
@@ -153,6 +156,11 @@ const AdminView = {
                     <span>Alertas WhatsApp</span>
                     <span class="admin-tab-count">${this.cacheData.alerts.length}</span>
                 </button>
+                <button class="admin-tab-btn ${this.currentTab === 'representatives' ? 'active' : ''}" data-tab="representatives" onclick="AdminView.switchTab('representatives')">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M19 8v6M22 11h-6"></path></svg>
+                    <span>Representantes</span>
+                    <span class="admin-tab-count">${(this.cacheData.representatives || []).length}${this.cacheData.pendingRepsCount ? ` • ${this.cacheData.pendingRepsCount} pendente(s)` : ''}</span>
+                </button>
                 <button class="admin-tab-btn ${this.currentTab === 'audit' ? 'active' : ''}" data-tab="audit" onclick="AdminView.switchTab('audit')">
                     <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                     <span>Auditoria</span>
@@ -177,6 +185,8 @@ const AdminView = {
                 return this.renderClientsTab();
             case 'whatsapp':
                 return this.renderWhatsAppTab();
+            case 'representatives':
+                return this.renderRepresentativesTab();
             case 'audit':
                 return this.renderAuditTab();
             case 'dashboard':
@@ -934,6 +944,85 @@ const AdminView = {
             this.render();
         } catch (err) {
             alert('Erro ao homologar oficina: ' + err.message);
+        }
+    },
+
+    renderRepresentativesTab() {
+        const reps = this.cacheData?.representatives || [];
+        return `
+            <div class="panel-box">
+                <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <strong style="font-size:16px; color:#fff;">🤝 Credenciamento e Aprovação de Representantes Comerciais</strong>
+                        <p style="margin:4px 0 0; font-size:12.5px; color:var(--text-muted);">Somente após a aprovação pela DNA AUTO o representante poderá fazer login e acessar seu Painel Comercial e Treinamento.</p>
+                    </div>
+                    <span class="badge-proof badge-proven">${reps.length} Cadastrado(s)</span>
+                </div>
+                <div class="table-responsive" style="margin-top:14px;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nome Completo</th>
+                                <th>E-mail / WhatsApp</th>
+                                <th>Cidade / UF</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${reps.length === 0 ? `
+                                <tr><td colspan="6" style="text-align:center; padding:24px; color:var(--text-muted);">Nenhum representante cadastrado.</td></tr>
+                            ` : reps.map(r => {
+                                const isPending = r.status === 'PENDING_APPROVAL';
+                                const isActive = r.status === 'ACTIVE';
+                                const badge = isActive
+                                    ? '<span class="badge-proof badge-proven">APROVADO (ATIVO)</span>'
+                                    : isPending
+                                        ? '<span class="badge-proof badge-warning">AGUARDANDO APROVAÇÃO</span>'
+                                        : `<span class="badge-proof" style="background:rgba(239,68,68,.18);color:#f87171;">${r.status}</span>`;
+                                return `
+                                    <tr>
+                                        <td class="mono" style="color:var(--brand-cyan); font-weight:700;">${r.rep_code}</td>
+                                        <td><strong>${r.name}</strong><div style="font-size:11px; color:var(--text-muted);">${r.cpf_cnpj || ''}</div></td>
+                                        <td><div>${r.email}</div><div style="font-size:11px; color:var(--text-muted);">${r.phone || ''}</div></td>
+                                        <td>${r.city || '-'}/${r.state || '-'}</td>
+                                        <td>${badge}</td>
+                                        <td>
+                                            ${isPending ? `
+                                                <button class="btn btn-sm btn-primary" onclick="AdminView.approveRep('${r.id}')" style="padding:5px 10px; font-size:11.5px;">✅ Aprovar</button>
+                                                <button class="btn btn-sm btn-secondary" onclick="AdminView.rejectRep('${r.id}')" style="padding:5px 10px; font-size:11.5px; color:#f87171;">✕ Recusar</button>
+                                            ` : isActive ? `
+                                                <span style="font-size:12px; color:#10b981; font-weight:600;">✓ Liberado para Login</span>
+                                            ` : '-'}
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    },
+
+    async approveRep(repId) {
+        try {
+            await API.approveRepresentative(repId);
+            alert('✅ Representante aprovado com sucesso! Agora ele já pode fazer login no portal /representante.');
+            this.render('representatives');
+        } catch (err) {
+            alert('Erro ao aprovar representante: ' + err.message);
+        }
+    },
+
+    async rejectRep(repId) {
+        try {
+            await API.rejectRepresentative(repId);
+            alert('Solicitação de representante recusada.');
+            this.render('representatives');
+        } catch (err) {
+            alert('Erro ao recusar representante: ' + err.message);
         }
     }
 };

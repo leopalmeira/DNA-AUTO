@@ -5,6 +5,13 @@ const jwt = require('jsonwebtoken');
 const db = require('../../database/db');
 const { authenticateToken, authorizeRoles, JWT_SECRET } = require('../../middlewares/auth');
 
+const REP_STATUS = Object.freeze({
+    PENDING: 'PENDING_APPROVAL',
+    ACTIVE: 'ACTIVE',
+    REJECTED: 'REJECTED',
+    SUSPENDED: 'SUSPENDED'
+});
+
 function formatBrl(cents) {
     const val = (Number(cents || 0) / 100).toFixed(2).replace('.', ',');
     return `R$ ${val}`;
@@ -150,13 +157,13 @@ router.post('/register', (req, res) => {
                     city, state, pix_key, experience, status,
                     max_workshops_limit, monthly_goal_workshops, monthly_goal_activations,
                     links_shared_count, training_completed
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ACTIVE', 15, 5, 220, 0, 1)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '${REP_STATUS.PENDING}', 15, 5, 220, 0, 0)
             `).run(repId, userId, repCode, name, cpfCnpj, email, phone, city, state, pixKey, experience);
 
             db.prepare(`
                 INSERT INTO representative_audit_logs (
                     id, representative_id, workshop_id, action, actor_id, actor_role, justification, metadata_json, ip_address
-                ) VALUES (?, ?, NULL, 'REPRESENTATIVE_REGISTERED', ?, 'REPRESENTATIVE', 'Credenciamento comercial de representante aprovado', ?, ?)
+                ) VALUES (?, ?, NULL, 'REPRESENTATIVE_REGISTERED', ?, 'REPRESENTATIVE', 'Cadastro recebido — aguardando aprovação da DNA AUTO', ?, ?)
             `).run(
                 `ral_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
                 repId,
@@ -166,18 +173,12 @@ router.post('/register', (req, res) => {
             );
         })();
 
-        const rep = db.prepare('SELECT * FROM representatives WHERE id = ?').get(repId);
-        const token = jwt.sign(
-            { id: userId, email, role_code: 'REPRESENTATIVE', rep_id: repId, rep_code: repCode },
-            JWT_SECRET,
-            { expiresIn: '7d' }
-        );
-
+        // Sem token: o acesso ao painel só é liberado após a aprovação da DNA AUTO
         res.status(201).json({
             success: true,
-            message: `Representante ${name} credenciado com sucesso! Código comercial exclusivo: ${repCode}`,
-            token,
-            representative: buildRepresentativePayload(rep, req)
+            approval_status: REP_STATUS.PENDING,
+            message: `Cadastro recebido, ${name}! Sua solicitação está em análise pela equipe DNA AUTO. Você receberá a confirmação e poderá fazer login assim que for aprovado.`,
+            representative: { id: repId, rep_code: repCode, name, email, status: REP_STATUS.PENDING }
         });
     } catch (err) {
         console.error('Erro ao cadastrar representante:', err);
@@ -207,13 +208,26 @@ router.post('/login', (req, res) => {
             return res.status(401).json({ error: 'Credenciais de representante inválidas.' });
         }
 
-        if (rep.status !== 'ACTIVE' || rep.user_status !== 'ACTIVE') {
-            return res.status(403).json({ error: 'Cadastro de representante inativo ou bloqueado.' });
-        }
-
         const match = bcrypt.compareSync(password, rep.password_hash);
         if (!match) {
             return res.status(401).json({ error: 'Credenciais de representante inválidas.' });
+        }
+
+        // Status só é revelado após a senha correta, evitando enumeração de contas
+        if (rep.status === REP_STATUS.PENDING) {
+            return res.status(403).json({
+                code: 'REPRESENTATIVE_PENDING_APPROVAL',
+                error: 'Seu cadastro está em análise pela equipe DNA AUTO. O painel e o treinamento serão liberados assim que sua solicitação for aprovada.'
+            });
+        }
+        if (rep.status === REP_STATUS.REJECTED) {
+            return res.status(403).json({
+                code: 'REPRESENTATIVE_REJECTED',
+                error: 'Sua solicitação de credenciamento não foi aprovada pela DNA AUTO. Em caso de dúvidas, fale com o suporte comercial.'
+            });
+        }
+        if (rep.status !== REP_STATUS.ACTIVE || rep.user_status !== 'ACTIVE') {
+            return res.status(403).json({ code: 'REPRESENTATIVE_INACTIVE', error: 'Cadastro de representante inativo ou bloqueado.' });
         }
 
         const token = jwt.sign(
@@ -254,8 +268,25 @@ function getAuthenticatedRep(req) {
     return null;
 }
 
+// Somente representantes aprovados pela DNA AUTO acessam o painel (/me/*)
+function requireApprovedRepresentative(req, res, next) {
+    const rep = getAuthenticatedRep(req);
+    if (!rep) {
+        return res.status(404).json({ error: 'Perfil de representante não encontrado.' });
+    }
+    if (rep.status !== REP_STATUS.ACTIVE) {
+        return res.status(403).json({
+            code: rep.status === REP_STATUS.PENDING ? 'REPRESENTATIVE_PENDING_APPROVAL' : 'REPRESENTATIVE_INACTIVE',
+            error: 'Acesso ao painel liberado somente para representantes aprovados pela DNA AUTO.'
+        });
+    }
+    next();
+}
+
+const repAuth = [authenticateToken, authorizeRoles('REPRESENTATIVE'), requireApprovedRepresentative];
+
 // 3. Dados do Representante Autenticado, Link Exclusivo, QR Code e Mensagem WhatsApp (Seções 2 e 10)
-router.get('/me', authenticateToken, authorizeRoles('REPRESENTATIVE'), (req, res) => {
+router.get('/me', repAuth, (req, res) => {
     try {
         const rep = getAuthenticatedRep(req);
         if (!rep) {
@@ -271,7 +302,7 @@ router.get('/me', authenticateToken, authorizeRoles('REPRESENTATIVE'), (req, res
 });
 
 // 4. Consultar ou Registrar Compartilhamento de Link / Convite de Oficina pelo WhatsApp (Etapa 1 — Seções 3 e 10)
-router.get('/me/share-link', authenticateToken, authorizeRoles('REPRESENTATIVE'), (req, res) => {
+router.get('/me/share-link', repAuth, (req, res) => {
     try {
         const rep = getAuthenticatedRep(req);
         if (!rep) {
@@ -295,7 +326,7 @@ router.get('/me/share-link', authenticateToken, authorizeRoles('REPRESENTATIVE')
     }
 });
 
-router.post('/me/share-link', authenticateToken, authorizeRoles('REPRESENTATIVE'), (req, res) => {
+router.post('/me/share-link', repAuth, (req, res) => {
     try {
         const rep = getAuthenticatedRep(req);
         if (!rep) {
@@ -368,7 +399,7 @@ router.post('/me/share-link', authenticateToken, authorizeRoles('REPRESENTATIVE'
 });
 
 // 5. Painel "Minha Produtividade" com todos os 14 Indicadores Reais e Filtro por Período (Seção 8)
-router.get('/me/productivity', authenticateToken, authorizeRoles('REPRESENTATIVE'), (req, res) => {
+router.get('/me/productivity', repAuth, (req, res) => {
     try {
         const rep = getAuthenticatedRep(req);
         if (!rep) {
@@ -576,7 +607,7 @@ router.get('/me/productivity', authenticateToken, authorizeRoles('REPRESENTATIVE
 });
 
 // 6. Painel "Minhas Oficinas" — Lista todas as oficinas vinculadas ao representante com as 8 colunas obrigatórias (Seção 9)
-router.get('/me/workshops', authenticateToken, authorizeRoles('REPRESENTATIVE'), (req, res) => {
+router.get('/me/workshops', repAuth, (req, res) => {
     try {
         const rep = getAuthenticatedRep(req);
         if (!rep) {
@@ -679,7 +710,7 @@ router.get('/me/workshops', authenticateToken, authorizeRoles('REPRESENTATIVE'),
 });
 
 // 7. Detalhes Comerciais Autorizados de uma Oficina da Carteira (Sem dados de clientes/veículos e com isolamento entre representantes - Seção 9 e 13)
-router.get('/me/workshops/:workshopId', authenticateToken, authorizeRoles('REPRESENTATIVE'), (req, res) => {
+router.get('/me/workshops/:workshopId', repAuth, (req, res) => {
     try {
         const rep = getAuthenticatedRep(req);
         if (!rep) {
@@ -776,7 +807,7 @@ router.get('/me/workshops/:workshopId', authenticateToken, authorizeRoles('REPRE
 });
 
 // 8. Histórico de Comissões do Representante (Seção 7)
-router.get('/me/commissions', authenticateToken, authorizeRoles('REPRESENTATIVE'), (req, res) => {
+router.get('/me/commissions', repAuth, (req, res) => {
     try {
         const rep = getAuthenticatedRep(req);
         if (!rep) {
@@ -1121,5 +1152,73 @@ router.get('/admin/audit-logs', authenticateToken, authorizeRoles('ADMIN'), (req
         res.status(500).json({ error: 'Erro ao consultar logs de auditoria de representantes.' });
     }
 });
+
+// 12. Aprovação de Representantes pela DNA AUTO (cadastro → análise → aprovado/recusado)
+router.get('/admin/representatives', authenticateToken, authorizeRoles('ADMIN'), (req, res) => {
+    try {
+        const statusFilter = String(req.query.status || '').toUpperCase();
+        let sql = `
+            SELECT id, rep_code, name, cpf_cnpj, email, phone, city, state, experience, status, created_at, updated_at
+            FROM representatives
+        `;
+        const params = [];
+        if (Object.values(REP_STATUS).includes(statusFilter)) {
+            sql += ' WHERE status = ?';
+            params.push(statusFilter);
+        }
+        sql += ` ORDER BY CASE status WHEN '${REP_STATUS.PENDING}' THEN 0 ELSE 1 END, created_at DESC`;
+        const items = db.prepare(sql).all(...params);
+        const pendingCount = items.filter(r => r.status === REP_STATUS.PENDING).length;
+        res.json({ success: true, count: items.length, pending_count: pendingCount, items });
+    } catch (err) {
+        res.status(500).json({ error: 'Erro ao listar representantes.' });
+    }
+});
+
+function changeRepresentativeStatus(req, res, newStatus, action, defaultJustification) {
+    try {
+        const rep = db.prepare('SELECT * FROM representatives WHERE id = ? OR UPPER(rep_code) = UPPER(?)').get(req.params.id, req.params.id);
+        if (!rep) {
+            return res.status(404).json({ error: 'Representante não encontrado.' });
+        }
+        const justification = String(req.body.justification || defaultJustification).trim();
+        const nowIso = new Date().toISOString().replace('T', ' ').slice(0, 19);
+
+        db.transaction(() => {
+            db.prepare('UPDATE representatives SET status = ?, updated_at = ? WHERE id = ?').run(newStatus, nowIso, rep.id);
+            db.prepare(`
+                INSERT INTO representative_audit_logs (
+                    id, representative_id, workshop_id, action, actor_id, actor_role, justification, metadata_json, ip_address
+                ) VALUES (?, ?, NULL, ?, ?, ?, ?, ?, ?)
+            `).run(
+                `ral_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                rep.id,
+                action,
+                req.user.id,
+                req.user.role_code,
+                justification,
+                JSON.stringify({ rep_code: rep.rep_code, previous_status: rep.status, new_status: newStatus }),
+                req.ip || '127.0.0.1'
+            );
+        })();
+
+        res.json({ success: true, id: rep.id, rep_code: rep.rep_code, status: newStatus });
+    } catch (err) {
+        console.error('Erro ao alterar status do representante:', err);
+        res.status(500).json({ error: 'Erro ao atualizar o status do representante.' });
+    }
+}
+
+router.post('/admin/representatives/:id/approve', authenticateToken, authorizeRoles('ADMIN'), (req, res) =>
+    changeRepresentativeStatus(req, res, REP_STATUS.ACTIVE, 'REPRESENTATIVE_APPROVED', 'Cadastro aprovado pela DNA AUTO')
+);
+
+router.post('/admin/representatives/:id/reject', authenticateToken, authorizeRoles('ADMIN'), (req, res) =>
+    changeRepresentativeStatus(req, res, REP_STATUS.REJECTED, 'REPRESENTATIVE_REJECTED', 'Cadastro não aprovado pela DNA AUTO')
+);
+
+router.post('/admin/representatives/:id/suspend', authenticateToken, authorizeRoles('ADMIN'), (req, res) =>
+    changeRepresentativeStatus(req, res, REP_STATUS.SUSPENDED, 'REPRESENTATIVE_SUSPENDED', 'Acesso do representante suspenso pela DNA AUTO')
+);
 
 module.exports = router;

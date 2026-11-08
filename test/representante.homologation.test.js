@@ -92,9 +92,30 @@ test('HOMOLOGAÇÃO OFICIAL — 20 CENÁRIOS OBRIGATÓRIOS DO PORTAL DE REPRESEN
       password: 'repBpassword123'
     });
     assert.equal(regB.status, 201, 'Cadastro do segundo representante deve retornar 201');
-    repBToken = regB.data.token;
+    assert.equal(regB.data.approval_status, 'PENDING_APPROVAL', 'Novo cadastro deve aguardar aprovação da DNA AUTO');
+    assert.equal(regB.data.token, undefined, 'Cadastro pendente não deve receber token de acesso ao painel');
     repBCode = regB.data.representative.rep_code;
     assert.match(repBCode, /^REP\d{6}$/);
+
+    const repBCredentials = { email: `rep.b.${uniqueSuffix}@dnaauto.com.br`, password: 'repBpassword123' };
+    const pendingLogin = await request('POST', '/api/v1/representatives/login', repBCredentials);
+    assert.equal(pendingLogin.status, 403, 'Login antes da aprovação deve ser bloqueado');
+    assert.equal(pendingLogin.data.code, 'REPRESENTATIVE_PENDING_APPROVAL');
+
+    const adminLogin = await request('POST', '/api/v1/auth/login', { email: 'admin@dnaauto.com.br', password: 'admin123' });
+    assert.equal(adminLogin.status, 200, 'Login do administrador deve retornar 200');
+    const pendingList = await request('GET', '/api/v1/representatives/admin/representatives?status=PENDING_APPROVAL', null, adminLogin.data.token);
+    assert.equal(pendingList.status, 200);
+    const pendingRep = pendingList.data.items.find(r => r.rep_code === repBCode);
+    assert.ok(pendingRep, 'Representante pendente deve aparecer na fila de aprovação do administrador');
+
+    const approveRes = await request('POST', `/api/v1/representatives/admin/representatives/${pendingRep.id}/approve`, {}, adminLogin.data.token);
+    assert.equal(approveRes.status, 200);
+    assert.equal(approveRes.data.status, 'ACTIVE');
+
+    const approvedLogin = await request('POST', '/api/v1/representatives/login', repBCredentials);
+    assert.equal(approvedLogin.status, 200, 'Representante aprovado deve conseguir fazer login');
+    repBToken = approvedLogin.data.token;
   });
 
   await t.test('1. Representante tentando entrar no aplicativo da oficina: acesso bloqueado (403)', async () => {

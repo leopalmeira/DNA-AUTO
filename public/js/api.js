@@ -233,6 +233,22 @@ const API = {
             body: JSON.stringify({ status })
         });
     },
+    getAdminRepresentatives(status = '') {
+        const qs = status ? `?status=${encodeURIComponent(status)}` : '';
+        return this.request(`/representatives/admin/representatives${qs}`);
+    },
+    approveRepresentative(repId, justification = 'Cadastro aprovado pela DNA AUTO') {
+        return this.request(`/representatives/admin/representatives/${encodeURIComponent(repId)}/approve`, {
+            method: 'POST',
+            body: JSON.stringify({ justification })
+        });
+    },
+    rejectRepresentative(repId, justification = 'Solicitação recusada pela administração DNA AUTO') {
+        return this.request(`/representatives/admin/representatives/${encodeURIComponent(repId)}/reject`, {
+            method: 'POST',
+            body: JSON.stringify({ justification })
+        });
+    },
     getMaintenanceAlerts() {
         return this.request('/admin/maintenance-alerts');
     },

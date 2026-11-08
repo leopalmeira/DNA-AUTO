@@ -2536,3 +2536,27 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Construído `public/representante.html` integrando a base premium `DNA_AUTO_Representantes_Premium_Organizado.html`, o folheto comercial oficial `/img/folheto-comercial-representante.jpg`, os 14 indicadores reais com filtro de período, a tabela "Minhas Oficinas" com as 8 colunas obrigatórias, o extrato de comissões, os 10 módulos da Academia e o **menu de sanduíche (`☰`)** totalmente adaptativo e responsivo para acesso pelo telefone celular.
   6. **Homologação Automatizada dos 20 Cenários (`test/representante.homologation.test.js`):**
      - 20/20 cenários obrigatórios homologados com 100% de aprovação em Node.js sem regressões nas demais 4 suítes do projeto.
+
+
+---
+
+### Ciclo 117 — Refinamento Mobile da Landing Page `/representante`, Fluxo de Aprovação pela DNA AUTO e Painel/Treinamento Exclusivo Pós-Login (08/11/2026)
+- **Objetivo:** Atender integralmente aos ajustes visuais e de fluxo solicitados nos 3 prints mobile de `/representante`:
+  1. **Zero Menu Sanduíche Antes do Login (Print 2):**
+     - Na landing page pública (`#landingPageShell`), não existe mais menu hambúrguer (`☰`) nem drawer lateral antes de o usuário fazer login.
+     - O cabeçalho público exibe apenas a marca DNA AUTO e os botões diretos **`Fazer Login`** e **`Cadastre-se`**.
+     - O menu sanduíche (`☰` `#menuToggle`) passa a existir **exclusivamente dentro da Área Exclusiva Pós-Login (`#painel-comercial`)** no topo esquerdo em telas mobile, e como **Sidebar Lateral Fixa à Esquerda** no desktop.
+  2. **Remoção de Bordas na Foto do Representante e Remoção da Tag `"Passaporte Digital do Veículo • Expansão Comercial"` (Print 1):**
+     - Eliminadas todas as bordas, contornos e sombras de `.hero-mobile-photo` e `.top` (`border: 0 !important; outline: 0 !important; box-shadow: none !important; border-radius: 0 !important;`), integrando a foto do representante apertando a mão do mecânico de forma limpa e contínua ao fundo escuro.
+     - Removido o texto `"Passaporte Digital do Veículo • Expansão Comercial"`.
+  3. **Substituição de `"Entrar no Painel"` por `"Fazer Login"` e `"Cadastre-se"` (Print 3, Topo e Hero):**
+     - Em toda a landing page pública (barra superior, hero e card azul de chamada final no rodapé), os botões foram padronizados para **`Cadastre-se`** e **`Fazer Login`** (sem botões públicos de "Entrar no Painel").
+  4. **Fluxo de Aprovação pela DNA AUTO (`PENDING_APPROVAL` → `ACTIVE`) e Módulos de Treinamento Pós-Login:**
+     - Novos cadastros (`POST /api/v1/representatives/register`) entram com status `PENDING_APPROVAL` e exibem aviso claro de que o cadastro foi enviado para análise da DNA AUTO.
+     - Tentativas de login antes da aprovação retornam `403` (`REPRESENTATIVE_PENDING_APPROVAL`) informando que o acesso ao Painel e ao Treinamento será liberado assim que aprovado pela DNA AUTO.
+     - Adicionada aba **Representantes** no Backoffice Admin (`public/js/components/adminView.js`) e endpoints `GET /api/v1/representatives/admin/representatives`, `POST .../approve` e `POST .../reject` para aprovação em 1 clique.
+     - Após aprovação e login, o representante acessa a **Área Exclusiva Pós-Login (`#painel-comercial`)**, que abre na seção **Treinamento & Como é a DNA AUTO (`#academia`)** explicando em detalhes os 3 Pilares do Ecossistema, a Regra Financeira Completa (R$ 49,90 → 50% Oficina R$ 24,95 / 50% Plataforma R$ 24,95 → R$ 5,90 Representante por 24 meses) e os **10 Módulos de Treinamento Oficial**, além das abas de Link & QR Code, Minha Produtividade, Minhas Oficinas, Comissões e Folheto Comercial.
+  5. **CSS Mobile Fluido e Extração de Imagens Estáticas:**
+     - Imagens Base64 extraídas para `public/img/rep-hero.webp`, `public/img/rep-logo.png` e `public/img/rep-device.webp`, reduzindo `public/representante.html` de 1,76 MB para ~112 KB e garantindo rolagem ultra-fluida no celular.
+- **Qualidade & Testes:**
+  - 100% de aprovação nas 5 baterias automatizadas do projeto (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js`, `oficina.finance.test.js` e `representante.homologation.test.js`).
