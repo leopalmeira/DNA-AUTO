@@ -2560,3 +2560,34 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Imagens Base64 extraídas para `public/img/rep-hero.webp`, `public/img/rep-logo.png` e `public/img/rep-device.webp`, reduzindo `public/representante.html` de 1,76 MB para ~112 KB e garantindo rolagem ultra-fluida no celular.
 - **Qualidade & Testes:**
   - 100% de aprovação nas 5 baterias automatizadas do projeto (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js`, `oficina.finance.test.js` e `representante.homologation.test.js`).
+
+
+---
+
+### Ciclo 118 — Reestruturação do Painel Educacional (Módulos 1 ao 10), Minha Produtividade Mobile, Menu Organizado e Logout Acessível (08/11/2026)
+- **Objetivo:** Atender às solicitações de melhoria do painel pós-login do representante (`/representante`), com foco absoluto na experiência touch mobile:
+  1. **Remoção do Card de "Isolamento Operacional" (`rep-security-banner`):**
+     - Eliminado o banner/card de isolamento de acesso de dentro da área autenticada pós-login do representante. O foco do painel agora é 100% didático, educacional e comercial.
+  2. **Minha Produtividade Reorganizada para Smartphones (`#produtividade`):**
+     - Substituída a antiga grade monótona de 14 caixas brutas por 3 blocos estruturados e de alta legibilidade no celular:
+       - **Bloco 1 (Destaque Principal): 💰 Suas Comissões da Carteira**: Destaque em verde esmeralda para Comissões Confirmadas (`#kpiComissoesConfirmadas`), dourado para Comissões Previstas (`#kpiComissoesPrevistas`), linha secundária com Comissões Pagas (`#kpiComissoesPagas`) e Total Acumulado (`#kpiComissoesAcumuladas`), com botão direto touch `[ Ver Extrato Completo → ]`.
+       - **Bloco 2: 🏢 Desempenho da Carteira de Oficinas**: Grade 2x2 com Oficinas Ativas (`#kpiOficinasAtivas`), Oficinas Cadastradas (`#kpiOficinasCadastradas`), Pendentes de Ativação (`#kpiOficinasPendentes`), Sem Movimento (`#kpiSemMovimento30d`) e indicador discreto de encerramento de 24 meses (`#kpiProximas24m`).
+       - **Bloco 3: 🚀 Funil de Indicação & Clientes Pagos**: Links Compartilhados (`#kpiOficinasIndicadas`), Convites Abertos (`#kpiConvitesAbertos`), Cadastros Iniciados (`#kpiCadastrosIniciados`), Novos Clientes Pagos no Mês (`#kpiCadastrosPagosMes`) e Total Geral na Carteira (`#kpiTotalClientesPagos`).
+       - Seletor de período mobile-friendly com `select` e `month` limpos.
+  3. **Menu Reorganizado & Botão de Sair 100% Acessível (`#repSidebar` e TopBar):**
+     - O menu lateral no desktop e gaveta (drawer) no smartphone foi totalmente despoluído:
+       - Cabeçalho com logo, botão `×` touch-friendly (40x40px), nome e código comercial `REP000123`.
+       - Botão de acesso rápido em destaque: `💰 Ver Minhas Comissões`.
+       - Seção educacional clara: `🎓 Formação & Capacitação` -> `Painel de Aprendizado (10 Aulas)`.
+       - Seção operacional: `💼 Operação Comercial` -> Produtividade, Comissões, Link/QR Code, Oficinas e Folheto.
+       - **Botão de Sair Acessível no Rodapé:** Botão `🚪 Encerrar Sessão (Sair)` agora é fixado na base da gaveta com área de toque mínima de 48px e margem de segurança para a barra de navegação dos celulares (`padding-bottom: max(18px, env(safe-area-inset-bottom))`).
+       - **Botão de Sair Também na Topbar:** Adicionado botão `🚪 Sair` na barra superior do painel (`rep-panel-topbar`), permitindo sair instantaneamente sem precisar abrir o menu.
+       - Backdrop escuro no mobile (`#repSidebarBackdrop`) para fechar o menu ao tocar fora.
+  4. **Painel Educacional Completo com Módulo 01 até o Módulo 10 (`#academia`):**
+     - Apresentação estruturada como uma verdadeira Academia de Formação Profissional do Representante.
+     - Botão em destaque no topo da trilha: `💰 Ver Minhas Comissões`.
+     - Cards dos 3 Pilares didáticos (O Motorista, A Oficina e O Representante).
+     - Barra de progresso da trilha oficial (10 de 10 liberados).
+     - Módulos 01 a 10 com tags temáticas, status `✓ Aula Completa`, títulos objetivos, explicações detalhadas da plataforma, scripts de abordagem para falar com donos de oficinas mecânicas e atalhos de ação direta.
+- **Qualidade & Testes:**
+  - 100% de aprovação nas 5 suítes automatizadas de teste (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js`, `oficina.finance.test.js` e `representante.homologation.test.js`).
