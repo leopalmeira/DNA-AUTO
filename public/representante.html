@@ -1572,6 +1572,591 @@
         grid-template-columns: 1fr;
       }
     }
+  
+    /* ========================================================================
+       SISTEMA EDUCACIONAL LMS — 1 MÓDULO POR VEZ NA TELA + QUIZ DE 5 PERGUNTAS
+       ======================================================================== */
+    .lms-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .lms-header-left {
+      flex: 1;
+      min-width: 260px;
+    }
+    .lms-step-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(0, 102, 255, 0.25) 0%, rgba(0, 212, 255, 0.25) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #38bdf8;
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+    .lms-module-title {
+      font-size: clamp(19px, 3.8vw, 25px);
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+      line-height: 1.28;
+    }
+    .lms-module-selector-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 34, 64, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: 12px;
+      padding: 6px 12px;
+      flex-shrink: 0;
+    }
+    .lms-select-label {
+      font-size: 11.5px;
+      color: #94a3b8;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .lms-module-select {
+      background: transparent;
+      border: none;
+      color: #38bdf8;
+      font-weight: 700;
+      font-size: 13px;
+      outline: none;
+      cursor: pointer;
+      max-width: 220px;
+    }
+    .lms-module-select option {
+      background: #071326;
+      color: #e2e8f0;
+    }
+
+    /* Barra de Progresso Global */
+    .lms-progress-wrap {
+      background: rgba(15, 34, 64, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 22px;
+    }
+    .lms-progress-labels {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #cbd5e1;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .lms-progress-labels strong { color: #34d399; }
+    .lms-progress-track {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .lms-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0066ff, #00d4ff 75%, #10b981 100%);
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    /* Área de Conteúdo da Aula */
+    .lms-lesson-body {
+      color: #cbd5e1;
+      font-size: 14.5px;
+      line-height: 1.68;
+    }
+    .lms-sec-title {
+      font-size: clamp(17px, 3.2vw, 21px);
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 12px;
+    }
+    .lms-p {
+      margin: 0 0 18px;
+      font-size: 14.5px;
+      line-height: 1.68;
+      color: #e2e8f0;
+    }
+    .lms-dual-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin: 20px 0;
+    }
+    .lms-card-advantage {
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+    .lms-card-advantage.car-owner {
+      background: linear-gradient(135deg, rgba(0, 102, 255, 0.15) 0%, rgba(0, 212, 255, 0.08) 100%), #0c1d38;
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+    .lms-card-advantage.workshop {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(0, 102, 255, 0.08) 100%), #0c1d38;
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+    .lms-card-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.3);
+      color: #38bdf8;
+      margin-bottom: 10px;
+    }
+    .lms-card-advantage.workshop .lms-card-badge { color: #34d399; }
+    .lms-card-advantage h4 {
+      font-size: 16.5px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 12px;
+      line-height: 1.3;
+    }
+    .lms-bullet-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .lms-bullet-list li {
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #cbd5e1;
+      position: relative;
+      padding-left: 22px;
+    }
+    .lms-bullet-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #38bdf8;
+      font-weight: 900;
+    }
+    .lms-card-advantage.workshop .lms-bullet-list li::before { color: #34d399; }
+
+    /* Caixas de Destaque e Scripts */
+    .lms-script-box {
+      background: rgba(0, 102, 255, 0.12);
+      border: 1px dashed rgba(56, 189, 248, 0.45);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin: 20px 0;
+    }
+    .lms-script-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #38bdf8;
+      margin-bottom: 8px;
+    }
+    .lms-script-box p {
+      margin: 0;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: #f1f5f9;
+      font-style: italic;
+    }
+
+    /* Diagrama de Split Financeiro */
+    .lms-split-diagram {
+      background: rgba(15, 34, 64, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .lms-split-box {
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(12, 29, 56, 0.9);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+    .lms-split-pill {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      margin-bottom: 6px;
+    }
+    .lms-split-pill.green { color: #34d399; background: rgba(16, 185, 129, 0.15); }
+    .lms-split-pill.blue { color: #38bdf8; background: rgba(0, 102, 255, 0.18); }
+    .lms-split-value {
+      display: block;
+      font-size: 24px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    .lms-split-value.green { color: #34d399; }
+    .lms-split-value.blue { color: #38bdf8; }
+    .lms-split-arrows {
+      font-size: 20px;
+      color: #38bdf8;
+      margin: 10px 0;
+    }
+    .lms-split-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 520px) {
+      .lms-split-row { grid-template-columns: 1fr; }
+    }
+
+    /* Linha do Tempo e Cards Especiais */
+    .lms-steps-timeline, .lms-value-pillars, .lms-algorithm-grid, .lms-services-grid, .lms-approach-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin: 20px 0;
+    }
+    .lms-step-card, .lms-value-card, .lms-algo-step, .lms-service-card, .lms-approach-step, .lms-feat-item {
+      background: rgba(15, 34, 64, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .lms-step-badge, .lms-srv-badge, .lms-appr-num {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(0, 102, 255, 0.2);
+      color: #38bdf8;
+      margin-bottom: 8px;
+    }
+    .lms-srv-badge.highlight { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    .lms-step-card h4, .lms-value-card h4, .lms-algo-step h4, .lms-service-card h4, .lms-approach-step h4, .lms-feat-item h4 {
+      font-size: 15.5px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 8px;
+      line-height: 1.3;
+    }
+    .lms-step-card p, .lms-value-card p, .lms-algo-step p, .lms-service-card p, .lms-approach-step p, .lms-feat-item p {
+      font-size: 13px;
+      line-height: 1.55;
+      color: #cbd5e1;
+      margin: 0;
+    }
+    .lms-algo-icon { font-size: 26px; display: block; margin-bottom: 8px; }
+
+    /* Simulação de Carteira */
+    .lms-simulation-table {
+      background: rgba(15, 34, 64, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 14px;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+    .lms-sim-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1.2fr;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      font-size: 13px;
+      color: #cbd5e1;
+      align-items: center;
+      min-width: 520px;
+    }
+    .lms-sim-row.head {
+      background: rgba(12, 29, 56, 0.95);
+      color: #38bdf8;
+      font-weight: 800;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .lms-sim-row.highlight { background: rgba(56, 189, 248, 0.06); }
+    .lms-sim-row .val { font-weight: 800; }
+    .lms-sim-row .val.green { color: #34d399; font-size: 14px; }
+
+    /* Pódio do Desafio */
+    .lms-challenge-podium {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin: 20px 0;
+    }
+    .lms-podium-card {
+      background: rgba(15, 34, 64, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 14px;
+      padding: 18px;
+      text-align: center;
+    }
+    .lms-podium-card.gold { border-color: rgba(245, 158, 11, 0.5); background: rgba(245, 158, 11, 0.08); }
+    .lms-podium-card.silver { border-color: rgba(148, 163, 184, 0.5); }
+    .lms-podium-card.bronze { border-color: rgba(217, 119, 6, 0.5); }
+    .lms-podium-badge { font-size: 13px; font-weight: 800; display: block; margin-bottom: 6px; }
+    .lms-podium-card h4 { font-size: 22px; font-weight: 900; color: #fff; margin: 0 0 6px; }
+    .lms-podium-card.gold h4 { color: #fbbf24; }
+    .lms-podium-card p { font-size: 12.5px; color: #cbd5e1; margin: 0; line-height: 1.45; }
+
+    .lms-highlight-note {
+      background: rgba(12, 29, 56, 0.95);
+      border-left: 4px solid #38bdf8;
+      padding: 14px 16px;
+      border-radius: 0 12px 12px 0;
+      margin: 20px 0;
+    }
+    .lms-highlight-note strong { color: #38bdf8; font-size: 12.5px; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 6px; }
+    .lms-highlight-note p { margin: 0; font-size: 13px; line-height: 1.55; color: #cbd5e1; }
+
+    /* Rodapé da Aula: Chamada para o Quiz */
+    .lms-lesson-footer {
+      margin-top: 30px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(56, 189, 248, 0.22);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .lms-quiz-notice-box {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      background: rgba(0, 102, 255, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    .lms-notice-icon { font-size: 28px; flex-shrink: 0; }
+    .lms-quiz-notice-box strong { color: #ffffff; font-size: 14.5px; display: block; margin-bottom: 4px; }
+    .lms-quiz-notice-box p { margin: 0; font-size: 13px; line-height: 1.5; color: #cbd5e1; }
+
+    .btn-lms-primary {
+      padding: 14px 24px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #0066ff 0%, #00d4ff 100%);
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 14.5px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 102, 255, 0.4);
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .btn-lms-primary:hover {
+      box-shadow: 0 12px 30px rgba(0, 212, 255, 0.5);
+      transform: translateY(-1px);
+    }
+    .btn-lms-secondary {
+      padding: 12px 20px;
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      background: rgba(15, 34, 64, 0.85);
+      color: #38bdf8;
+      font-weight: 700;
+      font-size: 13.5px;
+      cursor: pointer;
+      min-height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-sizing: border-box;
+    }
+    .btn-lms-secondary:hover {
+      background: rgba(56, 189, 248, 0.15);
+      color: #fff;
+    }
+
+    /* ========================================================================
+       TELA DO QUIZ DE 5 PERGUNTAS
+       ======================================================================== */
+    .lms-quiz-header {
+      background: linear-gradient(135deg, rgba(0, 102, 255, 0.16) 0%, rgba(0, 212, 255, 0.08) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 22px;
+    }
+    .lms-quiz-eyebrow {
+      font-size: 11px;
+      font-weight: 800;
+      color: #38bdf8;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+    .lms-quiz-header h3 {
+      font-size: clamp(18px, 3.5vw, 22px);
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 6px;
+    }
+    .lms-quiz-sub {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #cbd5e1;
+    }
+    .lms-questions-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    .lms-question-card {
+      background: rgba(15, 34, 64, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    .lms-question-text {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.45;
+      margin: 0 0 14px;
+    }
+    .lms-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .lms-option-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      background: rgba(12, 29, 56, 0.9);
+      cursor: pointer;
+      transition: all 0.16s ease;
+      min-height: 48px;
+      box-sizing: border-box;
+      user-select: none;
+    }
+    .lms-option-item:hover {
+      background: rgba(56, 189, 248, 0.08);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .lms-option-item.selected {
+      background: rgba(0, 102, 255, 0.22);
+      border-color: #00d4ff;
+      box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.28);
+    }
+    .lms-option-item.correct {
+      background: rgba(16, 185, 129, 0.2) !important;
+      border-color: #10b981 !important;
+    }
+    .lms-option-item.wrong {
+      background: rgba(239, 68, 68, 0.2) !important;
+      border-color: #ef4444 !important;
+    }
+    .lms-option-letter {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      background: rgba(15, 34, 64, 0.8);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 11.5px;
+      color: #38bdf8;
+      flex-shrink: 0;
+    }
+    .lms-option-item.selected .lms-option-letter {
+      background: #0066ff;
+      color: #fff;
+      border-color: #00d4ff;
+    }
+    .lms-option-item.correct .lms-option-letter {
+      background: #10b981;
+      color: #fff;
+      border-color: #10b981;
+    }
+    .lms-option-item.wrong .lms-option-letter {
+      background: #ef4444;
+      color: #fff;
+      border-color: #ef4444;
+    }
+    .lms-option-label {
+      font-size: 13.5px;
+      color: #e2e8f0;
+      line-height: 1.45;
+    }
+    .lms-q-feedback-text {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      line-height: 1.45;
+      background: rgba(0, 102, 255, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #cbd5e1;
+      display: none;
+    }
+
+    .lms-quiz-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .lms-quiz-actions button { flex: 1; min-width: 200px; }
+
+    /* Resultado Final do Quiz */
+    .lms-quiz-result-card {
+      border-radius: 16px;
+      padding: 22px;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .lms-quiz-result-card.success {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(0, 102, 255, 0.15) 100%), #0c1d38;
+      border: 1px solid rgba(16, 185, 129, 0.45);
+    }
+    .lms-quiz-result-card.fail {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(245, 158, 11, 0.15) 100%), #0c1d38;
+      border: 1px solid rgba(239, 68, 68, 0.45);
+    }
+    .lms-res-icon { font-size: 38px; margin-bottom: 8px; }
+    .lms-res-title { font-size: 20px; font-weight: 800; color: #fff; margin: 0 0 6px; }
+    .lms-res-score { font-size: 15px; font-weight: 800; color: #34d399; margin-bottom: 12px; }
+    .lms-quiz-result-card.fail .lms-res-score { color: #fca5a5; }
+    .lms-res-desc { font-size: 13.5px; line-height: 1.55; color: #cbd5e1; max-width: 540px; margin: 0 auto 18px; }
+
   </style>
 </head>
 <body>
@@ -1865,247 +2450,82 @@
         <div class="rep-tab-pane active" id="tab-academia">
           <div class="rep-card" id="academia">
             
-            <!-- Hero Educacional com Botão de Ação para Comissões -->
-            <div class="edu-hero-box">
-              <div class="edu-hero-top">
-                <div>
-                  <span class="eyebrow" style="color:#38bdf8">FORMAÇÃO PROFISSIONAL • CAPACITAÇÃO DNA AUTO</span>
-                  <h3 class="edu-hero-title">Painel de Aprendizado do Representante</h3>
-                  <p class="edu-hero-desc">Capacitação completa em 10 módulos: entenda como a DNA AUTO funciona, como apresentar os benefícios ao proprietário da oficina e como maximizar seus ganhos de R$ 5,90 por cliente pago.</p>
+            <!-- Barra Superior do LMS: Módulo Atual e Seletor Rápido de Aulas -->
+            <div class="lms-header-bar">
+              <div class="lms-header-left">
+                <div class="lms-step-pill" id="lmsStepPill">MÓDULO 1 DE 10</div>
+                <h3 class="lms-module-title" id="lmsModuleMainTitle">O Passaporte Digital do Veículo &amp; O Dossiê com Fotos de Peças</h3>
+              </div>
+              
+              <div class="lms-module-selector-wrap">
+                <label for="lmsModuleSelect" class="lms-select-label">Ir para Aula:</label>
+                <select id="lmsModuleSelect" class="lms-module-select" aria-label="Selecionar Módulo de Treinamento">
+                  <!-- Gerado dinamicamente: Módulo 1 (Atual), Módulo 2 (🔒 Bloqueado), etc. -->
+                </select>
+              </div>
+            </div>
+
+            <!-- Barra de Progresso Global da Formação Oficial -->
+            <div class="lms-progress-wrap">
+              <div class="lms-progress-labels">
+                <span>Progresso na Formação Oficial: <strong id="lmsProgressPercent">10% Concluído</strong></span>
+                <span id="lmsCompletedModulesText">1 de 10 módulos liberados</span>
+              </div>
+              <div class="lms-progress-track">
+                <div class="lms-progress-fill" id="lmsProgressFill" style="width:10%"></div>
+              </div>
+            </div>
+
+            <!-- TELA 1: LEITURA DA AULA DO MÓDULO (#lmsLessonView) -->
+            <div id="lmsLessonView">
+              <div id="lmsLessonBody" class="lms-lesson-body">
+                <!-- Conteúdo do módulo injetado via JavaScript -->
+              </div>
+
+              <!-- Rodapé da Aula: Botão para o Teste Obrigatório de 5 Perguntas -->
+              <div class="lms-lesson-footer">
+                <div class="lms-quiz-notice-box">
+                  <div class="lms-notice-icon">📝</div>
+                  <div>
+                    <strong>Pronto para o Teste de Fixação?</strong>
+                    <p>Para liberar o próximo módulo da formação e continuar sua capacitação, você precisa responder e acertar as 5 perguntas práticas sobre esta aula.</p>
+                  </div>
                 </div>
-                <button class="btn-edu-comissoes" type="button" onclick="window.switchRepPanelTab('comissoes')">
-                  <span>💰</span><span>Ver Minhas Comissões</span>
+                <button class="btn-lms-primary" id="btnStartModuleQuiz" type="button">
+                  <span>📝 Responder as 5 Perguntas do Módulo →</span>
                 </button>
               </div>
-
-              <!-- 3 Pilares Didáticos -->
-              <div class="edu-pillars-grid">
-                <div class="edu-pillar-card">
-                  <span class="edu-pillar-tag">1. O Motorista</span>
-                  <h4>Passaporte Digital</h4>
-                  <p>Histórico com fotos e notas fiscais, odômetro auditado e alertas preventivos no WhatsApp para revisão.</p>
-                </div>
-                <div class="edu-pillar-card">
-                  <span class="edu-pillar-tag">2. A Oficina</span>
-                  <h4>50% de Lucro + Retenção</h4>
-                  <p>Cadastro a R$ 49,90 = R$ 24,95 de repasse imediato para a oficina + o cliente fidelizado voltando na hora certa.</p>
-                </div>
-                <div class="edu-pillar-card">
-                  <span class="edu-pillar-tag">3. O Representante</span>
-                  <h4>R$ 5,90 por Cadastro Pago</h4>
-                  <p>Sua comissão sai dos 50% da plataforma, sem tirar nada da oficina, garantida por 24 meses por oficina vinculada.</p>
-                </div>
-              </div>
             </div>
 
-            <!-- Progresso na Trilha -->
-            <div class="edu-progress-bar-wrap">
-              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
-                <strong style="color:#fff;font-size:13.5px">Trilha de Formação Oficial</strong>
-                <span style="color:#34d399;font-weight:800;font-size:12px">10 de 10 Módulos Liberados (100%)</span>
+            <!-- TELA 2: QUIZ DE FIXAÇÃO COM 5 PERGUNTAS (#lmsQuizView) -->
+            <div id="lmsQuizView" style="display:none">
+              <div class="lms-quiz-header">
+                <div class="lms-quiz-eyebrow">TESTE DE FIXAÇÃO OBRIGATÓRIO</div>
+                <h3 id="lmsQuizTitle">5 Perguntas Práticas — Módulo 1</h3>
+                <p class="lms-quiz-sub">Selecione a alternativa correta em cada uma das 5 perguntas abaixo. É necessário acertar para liberar o próximo módulo.</p>
               </div>
-              <div class="edu-progress-track">
-                <div class="edu-progress-fill"></div>
-              </div>
+
+              <!-- Container das 5 Perguntas Interativas -->
+              <form id="lmsQuizForm">
+                <div id="lmsQuestionsContainer" class="lms-questions-container">
+                  <!-- Perguntas renderizadas via JavaScript -->
+                </div>
+
+                <!-- Botões de Ação do Quiz -->
+                <div class="lms-quiz-actions">
+                  <button class="btn-lms-secondary" id="btnBackToLesson" type="button">
+                    <span>← Voltar e Reler a Aula</span>
+                  </button>
+                  <button class="btn-lms-primary" id="btnSubmitQuiz" type="submit">
+                    <span>✅ Enviar Respostas e Avaliar →</span>
+                  </button>
+                </div>
+              </form>
+
+              <!-- Feedback do Resultado do Quiz -->
+              <div id="lmsQuizFeedback" style="display:none"></div>
             </div>
 
-            <!-- Lista dos 10 Módulos de Aprendizado -->
-            <div class="edu-modules-list">
-              
-              <!-- MÓDULO 01 -->
-              <article class="edu-module-item">
-                <div class="edu-module-header">
-                  <span class="edu-module-badge">Módulo 01 • Visão Geral</span>
-                  <span class="edu-module-status">✓ Aula Completa</span>
-                </div>
-                <div class="edu-module-body">
-                  <h4>O que é a DNA AUTO e o Passaporte Digital do Veículo</h4>
-                  <p>O DNA AUTO é o ecossistema brasileiro de Passaporte Digital Automotivo que resolve o maior problema das oficinas mecânicas: o cliente que faz um serviço e esquece de voltar quando atinge a quilometragem da próxima revisão.</p>
-                  <ul class="edu-bullet-list">
-                    <li>Histórico técnico do veículo auditado com notas fiscais e fotos reais das peças.</li>
-                    <li>O motorista acompanha a saúde do carro diretamente pelo celular sem complicação.</li>
-                    <li>A oficina deixa de depender da memória do motorista ou da etiqueta de óleo de papel.</li>
-                  </ul>
-                  <div class="edu-script-box">
-                    <strong>Script de Abordagem para a Oficina:</strong>
-                    <p>"Dono da oficina, você gasta dinheiro tentando trazer cliente novo, mas perde os clientes que já vieram porque ninguém lembra de voltar aos 10.000 km. O DNA AUTO traz esse cliente de volta pra você no momento exato."</p>
-                  </div>
-                </div>
-              </article>
-
-              <!-- MÓDULO 02 -->
-              <article class="edu-module-item">
-                <div class="edu-module-header">
-                  <span class="edu-module-badge">Módulo 02 • Modelo Financeiro</span>
-                  <span class="edu-module-status">✓ Aula Completa</span>
-                </div>
-                <div class="edu-module-body">
-                  <h4>Divisão Financeira: R$ 49,90 (50% Oficina / 50% Plataforma)</h4>
-                  <p>A matemática do DNA AUTO foi desenhada para encantar o dono da oficina no primeiro minuto de conversa:</p>
-                  <ul class="edu-bullet-list">
-                    <li><strong>Valor pago pelo motorista:</strong> R$ 49,90 no ato do cadastramento no aplicativo.</li>
-                    <li><strong>Repasse Direto para a Oficina (50%):</strong> R$ 24,95 de lucro limpo e imediato por cada carro cadastrado.</li>
-                    <li><strong>Participação da Plataforma (50%):</strong> R$ 24,95 para a DNA AUTO sustentar a tecnologia e servidores.</li>
-                    <li><strong>Sua Comissão de Representante:</strong> R$ 5,90 por cada cliente pago, deduzida exclusivamente da parcela da plataforma. A oficina recebe seus 50% integrais sem nenhum desconto.</li>
-                  </ul>
-                  <div style="margin-top:12px">
-                    <button class="btn-topbar-action btn-topbar-gold" type="button" onclick="window.switchRepPanelTab('comissoes')">
-                      <span>💰</span><span>Ver Histórico de Comissões da Minha Carteira →</span>
-                    </button>
-                  </div>
-                </div>
-              </article>
-
-              <!-- MÓDULO 03 -->
-              <article class="edu-module-item">
-                <div class="edu-module-header">
-                  <span class="edu-module-badge">Módulo 03 • Tecnologia Preditiva</span>
-                  <span class="edu-module-status">✓ Aula Completa</span>
-                </div>
-                <div class="edu-module-body">
-                  <h4>Algoritmo de Monitoramento por Quilometragem</h4>
-                  <p>Como a plataforma calcula e aciona o motorista para retornar à mesma oficina:</p>
-                  <ul class="edu-bullet-list">
-                    <li>No momento em que o mecânico lança a entrada do veículo, o odômetro é auditado.</li>
-                    <li>O algoritmo prevê a curva de quilometragem e o tempo estimado para as próximas trocas.</li>
-                    <li>Quando faltam 1.000 km ou 15 dias, o cliente recebe um aviso no WhatsApp e no app, direcionando o agendamento exclusivo para a oficina credenciada.</li>
-                  </ul>
-                </div>
-              </article>
-
-              <!-- MÓDULO 04 -->
-              <article class="edu-module-item">
-                <div class="edu-module-header">
-                  <span class="edu-module-badge">Módulo 04 • Serviços Recorrentes</span>
-                  <span class="edu-module-status">✓ Aula Completa</span>
-                </div>
-                <div class="edu-module-body">
-                  <h4>Os 6 Serviços que Mais Trazem Faturamento Recorrente</h4>
-                  <p>Apresente estes itens ao dono da oficina para demonstrar o ganho em serviços mecânicos de alto valor:</p>
-                  <ul class="edu-bullet-list">
-                    <li><strong>Troca de óleo de motor e filtros:</strong> Retorno constante a cada 5.000 a 10.000 km.</li>
-                    <li><strong>Fluido de câmbio automático:</strong> Serviço de alto ticket (R$ 800 a R$ 2.500) a cada 40.000 km.</li>
-                    <li><strong>Correia dentada e tensores:</strong> Manutenção preventiva crítica de alto valor de mão de obra.</li>
-                    <li><strong>Freios (pastilhas, discos e fluido) e Velas:</strong> Segurança e economia de combustível.</li>
-                    <li><strong>Suspensão e alinhamento:</strong> Desgaste natural monitorado por rodagem.</li>
-                  </ul>
-                </div>
-              </article>
-
-              <!-- MÓDULO 05 -->
-              <article class="edu-module-item">
-                <div class="edu-module-header">
-                  <span class="edu-module-badge">Módulo 05 • Abordagem Prática</span>
-                  <span class="edu-module-status">✓ Aula Completa</span>
-                </div>
-                <div class="edu-module-body">
-                  <h4>Roteiro de Visita Presencial ao Dono da Oficina</h4>
-                  <p>Como conduzir a conversa em 4 etapas práticas de alto impacto:</p>
-                  <ul class="edu-bullet-list">
-                    <li><strong>1. Quebra de gelo:</strong> Pergunte quantos carros passam pela oficina por mês e quantos voltam para revisão.</li>
-                    <li><strong>2. Apresentação do Folheto:</strong> Abra a aba "Folheto Comercial" no seu celular e mostre a divisão 50/50.</li>
-                    <li><strong>3. Prova do Lucro Imediato:</strong> Demonstre que com 2 carros cadastrados por dia, são R$ 1.097,80 extras de lucro só de cadastro.</li>
-                    <li><strong>4. Fechamento:</strong> Envie seu link pelo WhatsApp para o dono clicar e se cadastrar na mesma hora.</li>
-                  </ul>
-                </div>
-              </article>
-
-              <!-- MÓDULO 06 -->
-              <article class="edu-module-item">
-                <div class="edu-module-header">
-                  <span class="edu-module-badge">Módulo 06 • Ferramentas Comerciais</span>
-                  <span class="edu-module-status">✓ Aula Completa</span>
-                </div>
-                <div class="edu-module-body">
-                  <h4>Como Usar Seu Link Exclusivo e QR Code Individual</h4>
-                  <p>Toda a tecnologia de atribuição trabalha a seu favor de forma automática:</p>
-                  <ul class="edu-bullet-list">
-                    <li>Acesse a aba <strong>Meu Link &amp; QR Code</strong> para copiar seu link oficial.</li>
-                    <li>O botão de WhatsApp já gera a mensagem formatada para você enviar em 1 toque.</li>
-                    <li>Mesmo que o dono abra o link, instale o aplicativo e conclua o cadastro depois, o backend reconhece e vincula a oficina a você.</li>
-                  </ul>
-                  <div style="margin-top:12px">
-                    <button class="btn-topbar-action btn-topbar-gold" type="button" onclick="window.switchRepPanelTab('meu-link')">
-                      <span>🔗</span><span>Acessar Meu Link e QR Code →</span>
-                    </button>
-                  </div>
-                </div>
-              </article>
-
-              <!-- MÓDULO 07 -->
-              <article class="edu-module-item">
-                <div class="edu-module-header">
-                  <span class="edu-module-badge">Módulo 07 • Autonomia &amp; Postura</span>
-                  <span class="edu-module-status">✓ Aula Completa</span>
-                </div>
-                <div class="edu-module-body">
-                  <h4>Autonomia do Proprietário da Oficina e Postura Profissional</h4>
-                  <p>O representante comercial é um parceiro estratégico e consultor de negócios da oficina:</p>
-                  <ul class="edu-bullet-list">
-                    <li>O proprietário da oficina é quem cria sua conta, cadastra sua senha e gerencia o pátio.</li>
-                    <li>Você não precisa se preocupar com suporte técnico operacional nem com ordens de serviço.</li>
-                    <li>Sua missão é acompanhar os indicadores de produção e incentivar a oficina a cadastrar os clientes.</li>
-                  </ul>
-                </div>
-              </article>
-
-              <!-- MÓDULO 08 -->
-              <article class="edu-module-item">
-                <div class="edu-module-header">
-                  <span class="edu-module-badge">Módulo 08 • Gestão no Celular</span>
-                  <span class="edu-module-status">✓ Aula Completa</span>
-                </div>
-                <div class="edu-module-body">
-                  <h4>Como Acompanhar a Aba 'Minha Produtividade' no Telefone</h4>
-                  <p>Gerencie sua carteira em tempo real com as métricas do painel:</p>
-                  <ul class="edu-bullet-list">
-                    <li><strong>Comissões Confirmadas:</strong> Valores prontos para repasse referentes a pagamentos auditados.</li>
-                    <li><strong>Oficinas Ativas:</strong> Quantas oficinas já estão cadastrando clientes regularmente.</li>
-                    <li><strong>Pendentes de Ativação:</strong> Oficinas cadastradas que ainda não fizeram o primeiro cadastro (momento ideal para uma visita de suporte!).</li>
-                  </ul>
-                  <div style="margin-top:12px">
-                    <button class="btn-topbar-action btn-topbar-gold" type="button" onclick="window.switchRepPanelTab('produtividade')">
-                      <span>📊</span><span>Ir para Minha Produtividade →</span>
-                    </button>
-                  </div>
-                </div>
-              </article>
-
-              <!-- MÓDULO 09 -->
-              <article class="edu-module-item">
-                <div class="edu-module-header">
-                  <span class="edu-module-badge">Módulo 09 • Renda Recorrente</span>
-                  <span class="edu-module-status">✓ Aula Completa</span>
-                </div>
-                <div class="edu-module-body">
-                  <h4>Construção de Carteira e Ganhos por 24 Meses</h4>
-                  <p>O poder dos ganhos acumulados ao longo dos meses:</p>
-                  <ul class="edu-bullet-list">
-                    <li>Cada oficina permanece vinculada à sua carteira pelo período oficial de <strong>24 meses</strong>.</li>
-                    <li>Com 10 oficinas ativas na carteira cadastrando 30 clientes por mês cada uma: são 300 cadastros pagos/mês.</li>
-                    <li><strong>300 clientes × R$ 5,90 = R$ 1.770,00 por mês</strong> de renda recorrente gerada pela sua carteira!</li>
-                  </ul>
-                </div>
-              </article>
-
-              <!-- MÓDULO 10 -->
-              <article class="edu-module-item">
-                <div class="edu-module-header">
-                  <span class="edu-module-badge">Módulo 10 • Desafio &amp; Metas</span>
-                  <span class="edu-module-status">✓ Aula Completa</span>
-                </div>
-                <div class="edu-module-body">
-                  <h4>Desafio DNA AUTO, Premiação Mensal e Ética Comercial</h4>
-                  <p>Campanhas de incentivo para os representantes com melhor desempenho comercial:</p>
-                  <ul class="edu-bullet-list">
-                    <li><strong>Desafio Mensal:</strong> Premiações financeiras extras para quem atingir a meta mínima de 100 ativações pagas no mês.</li>
-                    <li><strong>Postura Ética:</strong> Nunca prometa números irreais. A plataforma é uma ferramenta profissional com métricas auditáveis.</li>
-                    <li>O sucesso do representante é construído com oficinas parceiras ativas e engajadas no longo prazo.</li>
-                  </ul>
-                </div>
-              </article>
-
-            </div>
           </div>
         </div>
 
@@ -2893,6 +3313,270 @@
     }
 
     // Inicialização
+    
+    // ========================================================================
+    // ENGINE DO SISTEMA EDUCACIONAL LMS — 1 MÓDULO POR VEZ + QUIZ DE 5 PERGUNTAS
+    // ========================================================================
+    const LMS_MODULES = [{"num":1,"title":"O Passaporte Digital do Veículo & O Dossiê com Fotos de Peças","tag":"Fundamentos & Dossiê","readingTime":"4 min","contentHtml":"\n      <div class=\"lms-content-section\">\n        <h3 class=\"lms-sec-title\">📖 O que é o DNA AUTO e Como a Plataforma Funciona</h3>\n        <p class=\"lms-p\">O DNA AUTO é o ecossistema brasileiro de <strong>Passaporte Digital Veicular</strong> que conecta oficinas mecânicas diretamente aos proprietários de veículos. Em vez de anotações soltas, carimbos ilegíveis ou etiquetas de papel que caem do para-brisa, cada carro ganha um passaporte digital criptografado, permanente e atrelado ao seu chassi e placa.</p>\n        \n        <div class=\"lms-dual-cards\">\n          <div class=\"lms-card-advantage car-owner\">\n            <div class=\"lms-card-badge\">🚗 Para o Dono do Carro</div>\n            <h4>Transparência Absoluta &amp; Dossiê de Peças com Fotos</h4>\n            <ul class=\"lms-bullet-list\">\n              <li><strong>Sabe exatamente quais peças foram trocadas:</strong> A oficina fotografa a peça instalada e a peça substituída, anexando diretamente ao serviço no sistema.</li>\n              <li><strong>Composição de gastos no semestre:</strong> O motorista acompanha todos os valores de serviços e peças, tendo o controle financeiro do semestre e do ano na palma da mão.</li>\n              <li><strong>Valorização brutal na hora de revender:</strong> Ao vender o veículo, o comprador pode acessar o Dossiê 360° e comprovar cada manutenção com nota fiscal e fotos reais.</li>\n            </ul>\n          </div>\n\n          <div class=\"lms-card-advantage workshop\">\n            <div class=\"lms-card-badge\">🔧 Para a Oficina Mecânica</div>\n            <h4>Lucro Imediato no Cadastro &amp; Fidelização Permanente</h4>\n            <ul class=\"lms-bullet-list\">\n              <li><strong>Lucro Imediato no Cadastro:</strong> O cliente paga R$ 49,90 no cadastramento e <strong>50% (R$ 24,95) vai direto para a oficina</strong> na hora!</li>\n              <li><strong>Cliente que volta sempre:</strong> Ao cadastrar a quilometragem e o serviço, o sistema monitora a rodagem e avisa o motorista para voltar <em>exclusivamente</em> àquela mesma oficina.</li>\n              <li><strong>Eliminação de desconfiança:</strong> Mostrar a foto da peça trocada e a nota fiscal cria confiança inabalável com o cliente mecânico.</li>\n            </ul>\n          </div>\n        </div>\n\n        <div class=\"lms-script-box\">\n          <span class=\"lms-script-label\">🗣️ O que falar para o dono da oficina:</span>\n          <p>\"Dono da oficina, o cliente hoje é desconfiado e tem medo de ser enganado na troca de peças. Com o DNA AUTO, você tira a foto da peça nova na hora do serviço, registra o valor e o cliente vê tudo no app dele. Além disso, no ato do cadastro de R$ 49,90 você já fica com R$ 24,95 de lucro limpo e garante que ele volte pra cá nas próximas revisões!\"</p>\n        </div>\n      </div>\n    ","questions":[{"q":"1. Como o dono do veículo tem certeza de quais peças foram realmente trocadas na oficina?","options":["Apenas confiando na palavra do mecânico sem nenhum registro visual","Através de fotos reais das peças e notas fiscais anexadas no Dossiê Digital pelo sistema","Olhando uma etiqueta adesiva colada no para-brisa do veículo","Esperando o carro quebrar para conferir o que foi feito"],"answer":1,"explanation":"O DNA AUTO permite à oficina anexar fotos reais das peças instaladas e notas fiscais diretamente no Dossiê Digital do veículo."},{"q":"2. Qual é a vantagem do relatório de gastos semestrais para o proprietário do carro?","options":["Ocultar o histórico de manutenções para pagar menos impostos","Ter controle financeiro dos serviços realizados e valorizar o carro na revenda com histórico comprovado","Obrigar o dono a pagar mensalidades obrigatórias de manutenção","Não serve para nada além de ocupar espaço no celular"],"answer":1,"explanation":"O relatório semestral permite ao motorista controlar seus gastos e comprovar o histórico para valorizar o veículo na hora da venda."},{"q":"3. Quanto a oficina mecânica recebe de lucro imediato a cada cliente cadastrado no aplicativo por R$ 49,90?","options":["R$ 5,00 (10%)","R$ 10,00 (20%)","R$ 24,95 (50% do valor do cadastro)","A oficina não recebe nada no cadastro"],"answer":2,"explanation":"A oficina recebe exatamente 50% do valor do cadastro pago (R$ 24,95) como receita imediata."},{"q":"4. Por que a comprovação fotográfica das peças trocadas gera mais negócios para a oficina?","options":["Porque gera transparência e confiança com o cliente, aumentando a aprovação de orçamentos e serviços","Porque a foto é enviada automaticamente para a polícia rodoviária","Porque substitui a necessidade de mão de obra do mecânico","Porque impede que o carro precise de gasolina"],"answer":0,"explanation":"A transparência fotográfica elimina a desconfiança do cliente, construindo fidelidade e facilitando a aprovação de revisões futuras."},{"q":"5. Quanto o representante comercial recebe por cada novo cliente cadastrado e pago nas oficinas da sua carteira?","options":["R$ 1,00 por ano","R$ 5,90 por cliente pago durante até 24 meses","R$ 50,00 descontados da oficina","O representante recebe apenas pontuação em milhas"],"answer":1,"explanation":"O representante recebe R$ 5,90 por novo cadastro pago, saindo da parte da plataforma, com vigência de até 24 meses por oficina."}]},{"num":2,"title":"A Vantagem Financeira da Oficina & Divisão 50/50","tag":"Modelo Financeiro","readingTime":"4 min","contentHtml":"\n      <div class=\"lms-content-section\">\n        <h3 class=\"lms-sec-title\">📖 A Divisão Financeira Exata (R$ 49,90)</h3>\n        <p class=\"lms-p\">Para vender com total segurança para o dono da oficina, você precisa dominar cada centavo da regra financeira do programa comercial do DNA AUTO:</p>\n\n        <div class=\"lms-split-diagram\">\n          <div class=\"lms-split-box total\">\n            <span class=\"lms-split-pill\">Valor do Cadastro do Cliente</span>\n            <strong class=\"lms-split-value\">R$ 49,90</strong>\n            <small>Pago pelo cliente final no aplicativo</small>\n          </div>\n          <div class=\"lms-split-arrows\">➔</div>\n          <div class=\"lms-split-row\">\n            <div class=\"lms-split-box workshop\">\n              <span class=\"lms-split-pill green\">50% para a Oficina</span>\n              <strong class=\"lms-split-value green\">R$ 24,95</strong>\n              <small>Lucro limpo imediato da oficina</small>\n            </div>\n            <div class=\"lms-split-box platform\">\n              <span class=\"lms-split-pill blue\">50% Plataforma DNA AUTO</span>\n              <strong class=\"lms-split-value blue\">R$ 24,95</strong>\n              <small>Sua comissão de <strong>R$ 5,90</strong> sai daqui!</small>\n            </div>\n          </div>\n        </div>\n\n        <div class=\"lms-highlight-note\">\n          <strong>⚠️ REGRA ABSOLUTA DE INTEGRIDADE:</strong>\n          <p>A sua comissão de <strong>R$ 5,90</strong> sai exclusivamente dos R$ 24,95 da plataforma. <strong>A oficina NÃO perde nenhum centavo</strong> do seu repasse de 50% (R$ 24,95). Você pode enfatizar isso com orgulho para o dono da oficina!</p>\n        </div>\n\n        <div class=\"lms-script-box\">\n          <span class=\"lms-script-label\">🗣️ Exemplo prático de ganhos para apresentar à oficina:</span>\n          <p>\"Se a sua oficina cadastrar 2 carros por dia útil (44 carros no mês): você ganha <strong>R$ 1.097,80 de lucro extra limpo</strong> só pelo cadastro no app, fora o faturamento de peças e mão de obra dos clientes que voltam!\"</p>\n        </div>\n      </div>\n    ","questions":[{"q":"1. Como é dividida a receita de R$ 49,90 do cadastro do cliente?","options":["100% fica para a plataforma DNA AUTO","50% (R$ 24,95) para a oficina e 50% (R$ 24,95) para a plataforma","R$ 40,00 para o representante e R$ 9,90 para a oficina","O valor é retido pelo governo em impostos"],"answer":1,"explanation":"A receita é dividida em 50% (R$ 24,95) para a oficina credenciada e 50% (R$ 24,95) para a plataforma DNA AUTO."},{"q":"2. De onde sai a comissão de R$ 5,90 do representante comercial?","options":["É descontada dos R$ 24,95 que seriam da oficina","Sai exclusivamente da parcela de 50% da plataforma DNA AUTO","É cobrada como taxa extra na fatura de luz da oficina","O cliente paga uma taxa adicional de R$ 5,90"],"answer":1,"explanation":"A comissão do representante sai da parcela da plataforma, mantendo o ganho da oficina 100% intacto em R$ 24,95."},{"q":"3. Se uma oficina cadastrar 40 clientes no mês, quanto ela lucra apenas de comissão de cadastro?","options":["R$ 200,00","R$ 998,00 (40 × R$ 24,95)","R$ 50,00","R$ 49,90"],"answer":1,"explanation":"40 cadastros multiplicados por R$ 24,95 totalizam R$ 998,00 de lucro imediato para a oficina."},{"q":"4. E quanto o representante ganha sobre esses 40 cadastros da oficina da sua carteira?","options":["R$ 40,00","R$ 236,00 (40 × R$ 5,90)","R$ 5,90 no total","R$ 0,00"],"answer":1,"explanation":"40 cadastros elegíveis e pagos multiplicados por R$ 5,90 geram R$ 236,00 para o representante."},{"q":"5. Por quanto tempo o representante tem direito a receber sobre os cadastros da oficina vinculada?","options":["Apenas no primeiro mês","Por até 24 meses a partir da data de ativação da oficina","Por 3 dias apenas","Até o dono da oficina trocar de celular"],"answer":1,"explanation":"O programa de representação estabelece o período de comissionamento de até 24 meses por oficina vinculada."}]},{"num":3,"title":"Como a Oficina Lança Serviços & Registra Fotos de Peças","tag":"Operação da Ferramenta","readingTime":"4 min","contentHtml":"\n      <div class=\"lms-content-section\">\n        <h3 class=\"lms-sec-title\">📖 O Processo Operacional na Rotina da Oficina</h3>\n        <p class=\"lms-p\">O aplicativo da oficina foi desenhado para mecânicos e consultores técnicos. Não há burocracia nem termos complexos. O lançamento de uma manutenção é feito em menos de 1 minuto diretamente pelo celular do mecânico.</p>\n\n        <div class=\"lms-steps-timeline\">\n          <div class=\"lms-step-card\">\n            <span class=\"lms-step-badge\">Passo 1</span>\n            <h4>Entrada do Carro &amp; Odômetro</h4>\n            <p>O mecânico seleciona o veículo pela placa e digita o odômetro atual (KM de entrada). Isso alimenta o cálculo da rodagem.</p>\n          </div>\n          <div class=\"lms-step-card\">\n            <span class=\"lms-step-badge\">Passo 2</span>\n            <h4>Seleção do Serviço no Carrossel</h4>\n            <p>No carrossel 3D vertical, o mecânico toca no serviço realizado: Troca de Óleo, Pastilhas, Correia, Revisão, etc.</p>\n          </div>\n          <div class=\"lms-step-card\">\n            <span class=\"lms-step-badge\">Passo 3</span>\n            <h4>Lançamento das Peças &amp; Fotos Reais</h4>\n            <p>O mecânico lista as peças trocadas com seus valores e tira <strong>fotos reais da peça instalada</strong> e da nota fiscal.</p>\n          </div>\n          <div class=\"lms-step-card\">\n            <span class=\"lms-step-badge\">Passo 4</span>\n            <h4>Comprovação Nível 4 &amp; Envio ao App do Cliente</h4>\n            <p>O serviço é certificado no backend com selo Nível 4 (VERIFIED) e aparece imediatamente no aplicativo do motorista.</p>\n          </div>\n        </div>\n\n        <div class=\"lms-script-box\">\n          <span class=\"lms-script-label\">🗣️ Argumento de Produtividade para a Oficina:</span>\n          <p>\"Dono da oficina, seu mecânico não perde tempo com papéis. Ele pega o celular, seleciona o serviço, bate uma foto da peça trocada, digita o valor e pronto! O cliente recebe a confirmação na hora e fica encantado com a tecnologia da sua oficina.\"</p>\n        </div>\n      </div>\n    ","questions":[{"q":"1. Como o mecânico registra um novo serviço no aplicativo da oficina?","options":["Preenchendo um caderno de papel e enviando por correio","Selecionando o veículo, informando o odômetro, escolhendo o serviço no carrossel e anexando fotos das peças","Ligando para a central de atendimento para ditar os dados","Apenas tirando foto da placa sem cadastrar peças"],"answer":1,"explanation":"O fluxo é ágil e 100% digital: seleção da placa, KM, escolha do serviço e upload de fotos das peças e notas."},{"q":"2. O que o aplicativo da oficina exige no cadastro de peças trocadas?","options":["Apenas o nome da peça sem fotos nem valores","Discriminação da peça, valor e foto real comprovando a instalação","Que a peça seja importada da Alemanha","Nada, o campo de peças é proibido"],"answer":1,"explanation":"A ferramenta registra nome da peça, valor unitário e foto real da peça instalada para compor o dossiê."},{"q":"3. O que acontece assim que o serviço é finalizado no aplicativo da oficina?","options":["O serviço é enviado imediatamente para o celular do cliente com fotos e comprovantes","O carro é automaticamente desativado do sistema","O dono da oficina perde o acesso ao aplicativo","O cliente precisa pagar uma multa para visualizar"],"answer":0,"explanation":"A sincronização é imediata: o cliente recebe a comprovação no Dossiê Digital do seu veículo no app."},{"q":"4. Qual é o benefício para a oficina de registrar o odômetro (KM) na entrada do veículo?","options":["Apenas para multar o motorista","Alimentar o algoritmo preditivo para calcular quando o carro precisará das próximas trocas","Cobrar pedágio do cliente","Não possui nenhuma utilidade técnica"],"answer":1,"explanation":"O odômetro atualizado permite à plataforma prever a quilometragem das revisões e avisar o cliente para retornar."},{"q":"5. Quanto tempo leva para o mecânico lançar um serviço com peças no app da oficina?","options":["Cerca de 2 a 3 horas de digitação","Menos de 1 minuto de forma direta e intuitiva no celular","Mais de 1 semana","O mecânico não consegue fazer pelo celular"],"answer":1,"explanation":"A interface foi desenhada para operação rápida no pátio em menos de 1 minuto."}]},{"num":4,"title":"O Relatório do Carro e Gastos Semestrais para o Motorista","tag":"Valorização do Veículo","readingTime":"4 min","contentHtml":"\n      <div class=\"lms-content-section\">\n        <h3 class=\"lms-sec-title\">📖 O Dossiê 360° e a Composição dos Gastos</h3>\n        <p class=\"lms-p\">O carro é o segundo bem mais valioso da maioria das famílias brasileiras. Porém, na hora de vender, o motorista não consegue comprovar o cuidado que teve. O comprador sempre desconfia e joga o preço para baixo.</p>\n\n        <div class=\"lms-value-pillars\">\n          <div class=\"lms-value-card\">\n            <h4>📊 Histórico Semestral de Investimentos</h4>\n            <p>O aplicativo agrupa os gastos com peças e mão de obra por semestre. O dono sabe exatamente quanto investiu na manutenção preventiva do veículo.</p>\n          </div>\n          <div class=\"lms-value-card\">\n            <h4>📷 Galeria de Peças e Notas Fiscais</h4>\n            <p>Cada filtro trocado, pastilha, correia dentada e litro de óleo possui fotografia anexada pela oficina e nota fiscal correspondente.</p>\n          </div>\n          <div class=\"lms-value-card\">\n            <h4>💰 Valorização de até 15% na Revenda</h4>\n            <p>Um carro com Dossiê DNA AUTO 100% auditado vende mais rápido e por valor acima da tabela FIPE, pois comprova procedência e zero adulteração de odômetro.</p>\n          </div>\n        </div>\n\n        <div class=\"lms-script-box\">\n          <span class=\"lms-script-label\">🗣️ Argumento para o dono da oficina falar para o cliente dele:</span>\n          <p>\"Cliente, por apenas R$ 49,90 você tem o histórico digital completo do seu carro com todas as fotos das peças que trocamos hoje. Quando você for vender esse carro, o comprador vai pagar o valor justo porque você tem a prova real de tudo que foi feito aqui na nossa oficina!\"</p>\n        </div>\n      </div>\n    ","questions":[{"q":"1. Por que o Dossiê Digital DNA AUTO valoriza o carro na hora da revenda?","options":["Porque ele vem com adesivo decorativo para o vidro","Porque comprova com fotos reais de peças e notas fiscais todo o histórico auditado de manutenções","Porque apaga todas as multas do Detran automaticamente","Porque altera o ano de fabricação do carro no documento"],"answer":1,"explanation":"Comprovação com fotos de peças e notas fiscais elimina a dúvida do comprador e valoriza o preço do veículo."},{"q":"2. Como o aplicativo do cliente organiza o histórico financeiro de manutenções?","options":["Apagando os valores após 24 horas","Em um relatório semestral e anual detalhando os valores investidos em cada serviço e peça","Cobrando taxa de visualização por consulta","Misturando os dados com carros de outras pessoas"],"answer":1,"explanation":"Os gastos são organizados por semestre e ano, dando clareza total do investimento na saúde do carro."},{"q":"3. O que acontece se o odômetro de um carro for adulterado?","options":["O DNA AUTO detecta a regressão com proteção monotônica e bloqueia a fraude no histórico","O sistema aceita a adulteração sem problemas","O sistema diminui a velocidade do carro na rua","O aplicativo desinstala sozinho"],"answer":0,"explanation":"O motor DNA AUTO possui proteção monotônica rigorosa que impede adulterações ou retrocesso de quilometragem."},{"q":"4. Qual é o papel da galeria de fotos de peças no aplicativo do cliente?","options":["Apenas para postar em redes sociais","Comprovar visualmente a peça nova instalada e a peça antiga substituída pela oficina","Não há fotos no aplicativo","Apenas para propaganda de marcas de carros"],"answer":1,"explanation":"A galeria comprova a integridade mecânica com fotos reais registradas pelo mecânico responsável."},{"q":"5. Quanto custa para o dono do carro manter o histórico de fotos e serviços no aplicativo?","options":["R$ 49,90 por mês","Taxa única de cadastro de R$ 49,90 sem mensalidades abusivas","R$ 500,00 por serviço","R$ 10,00 por foto visualizada"],"answer":1,"explanation":"O modelo é acessível e direto: taxa de ativação de R$ 49,90 sem cobrança de mensalidades para o cliente."}]},{"num":5,"title":"O Algoritmo Preditivo e o Retorno Automático à Mesma Oficina","tag":"Tecnologia Preditiva","readingTime":"4 min","contentHtml":"\n      <div class=\"lms-content-section\">\n        <h3 class=\"lms-sec-title\">📖 A Inteligência que Faz o Cliente Voltar</h3>\n        <p class=\"lms-p\">A maioria dos motoristas não troca óleo ou correia por maldade; eles simplesmente <strong>esquecem</strong>. A oficina perde esse faturamento para o posto de combustível da esquina ou para concorrentes.</p>\n\n        <div class=\"lms-algorithm-grid\">\n          <div class=\"lms-algo-step\">\n            <span class=\"lms-algo-icon\">🚗</span>\n            <h4>1. Registro do Odômetro</h4>\n            <p>A cada entrada do veículo, o odômetro é auditado. O sistema calcula a rodagem média diária do motorista (Ex: 35 km/dia).</p>\n          </div>\n          <div class=\"lms-algo-step\">\n            <span class=\"lms-algo-icon\">⚙️</span>\n            <h4>2. Curva de Manutenção</h4>\n            <p>O algoritmo cruza os 35 km/dia com o prazo da próxima troca (Ex: óleo aos 10.000 km = em 72 dias).</p>\n          </div>\n          <div class=\"lms-algo-step\">\n            <span class=\"lms-algo-icon\">📲</span>\n            <h4>3. Notificação Preventiva</h4>\n            <p>Faltando 1.000 km ou 15 dias, o cliente recebe um alerta no WhatsApp com link direto para agendar na mesma oficina.</p>\n          </div>\n        </div>\n\n        <div class=\"lms-highlight-note\">\n          <strong>🔒 FIDELIZAÇÃO EXCLUSIVA:</strong>\n          <p>O cliente cadastrado por uma oficina NUNCA é direcionado para concorrentes. O sistema protege a carteira da oficina credenciada que fez o cadastro original!</p>\n        </div>\n      </div>\n    ","questions":[{"q":"1. Como o algoritmo do DNA AUTO prevê a data da próxima manutenção preventiva?","options":["Por adivinhação sem base de dados","Calculando a média diária de rodagem com base nos registros auditados de odômetro","Pelo ano de fabricação do carro apenas","Pela cor do veículo"],"answer":1,"explanation":"O algoritmo analisa a rodagem diária do motorista e calcula a estimativa de quando a quilometragem limite será atingida."},{"q":"2. Quando o cliente recebe a notificação preventiva de revisão?","options":["Apenas quando o motor funde","Quando faltam cerca de 1.000 km ou 15 dias para o vencimento do serviço","10 anos após a revisão","O cliente nunca é avisado"],"answer":1,"explanation":"O alerta preventivo é disparado antecipadamente para que o cliente agende com calma antes do prazo expirar."},{"q":"3. Para qual oficina o cliente é direcionado quando clica para agendar a revisão?","options":["Para a concessionária mais cara da cidade","Exclusivamente para a oficina que cadastrou e atendeu o veículo anteriormente","Para uma oficina sorteada aleatoriamente","Para a oficina concorrente do bairro vizinho"],"answer":1,"explanation":"A plataforma protege a oficina credenciada, direcionando o agendamento de volta para o estabelecimento parceiro."},{"q":"4. Qual é o maior benefício do alerta preditivo para o dono da oficina?","options":["Garantir fluxo contínuo de clientes recorrentes sem gastar com anúncios ou marketing","Ter que pagar para enviar cada mensagem","Receber reclamações de clientes","Diminuir o faturamento mensal"],"answer":0,"explanation":"A retenção automática garante pátio cheio e faturamento previsível sem necessidade de custos extras de marketing."},{"q":"5. Por qual canal principal o cliente recebe o alerta de revisão preventiva?","options":["Por carta registrada nos Correios","Pelo WhatsApp e notificação push no aplicativo do celular","Por telegrama","Por alto-falante na rua"],"answer":1,"explanation":"A mensagem chega diretamente no WhatsApp do cliente com link prático para agendamento em 1 clique."}]},{"num":6,"title":"Os 6 Serviços Recorrentes que Mais Faturam na Oficina","tag":"Serviços & Faturamento","readingTime":"4 min","contentHtml":"\n      <div class=\"lms-content-section\">\n        <h3 class=\"lms-sec-title\">📖 Os Serviços de Maior Retorno Financeiro</h3>\n        <p class=\"lms-p\">Quando visitar a oficina, apresente os 6 grupos de serviços monitorados pelo DNA AUTO. Mostre que o sistema não cuida apenas de 'troca de óleo', mas sim de serviços mecânicos de alto valor agregado:</p>\n\n        <div class=\"lms-services-grid\">\n          <div class=\"lms-service-card\">\n            <span class=\"lms-srv-badge\">Ticket Recorrente</span>\n            <h4>1. Troca de Óleo e Filtros</h4>\n            <p>Retorno a cada 5.000 a 10.000 km. É a porta de entrada para identificar outros problemas no carro.</p>\n          </div>\n          <div class=\"lms-service-card\">\n            <span class=\"lms-srv-badge highlight\">Alto Ticket</span>\n            <h4>2. Câmbio Automático</h4>\n            <p>Fluido de transmissão automática (a cada 40.000 a 60.000 km). Serviço de alto valor (R$ 800 a R$ 2.500).</p>\n          </div>\n          <div class=\"lms-service-card\">\n            <span class=\"lms-srv-badge highlight\">Segurança Crítica</span>\n            <h4>3. Correia Dentada &amp; Tensores</h4>\n            <p>Prevenção de quebra de motor. Serviço de alto valor de mão de obra e peças genuínas.</p>\n          </div>\n          <div class=\"lms-service-card\">\n            <span class=\"lms-srv-badge\">Segurança</span>\n            <h4>4. Sistema de Freios</h4>\n            <p>Pastilhas, discos e fluido de freio DOT 4 / 5.1. Substituição regular por desgaste natural.</p>\n          </div>\n          <div class=\"lms-service-card\">\n            <span class=\"lms-srv-badge\">Eficiência</span>\n            <h4>5. Velas de Ignição &amp; Bobinas</h4>\n            <p>Economia de combustível e emissão de poluentes. Revisão preventiva a cada 20.000 a 40.000 km.</p>\n          </div>\n          <div class=\"lms-service-card\">\n            <span class=\"lms-srv-badge\">Rodagem</span>\n            <h4>6. Suspensão, Pneus &amp; Geometria</h4>\n            <p>Amortecedores, buchas, pivôs, alinhamento e balanceamento monitorados pela rodagem das ruas brasileiras.</p>\n          </div>\n        </div>\n      </div>\n    ","questions":[{"q":"1. Qual desses serviços representa um dos maiores tickets médios monitorados pelo DNA AUTO?","options":["Calibragem de pneus","Troca de fluido de transmissão de câmbio automático (R$ 800 a R$ 2.500)","Lavagem simples do para-brisa","Ajuste do relógio do painel"],"answer":1,"explanation":"O serviço de câmbio automático tem alto ticket médio e exige máquinas especializadas e fluidos de alto valor."},{"q":"2. Por que o monitoramento preventivo da correia dentada é fundamental para o cliente?","options":["Porque a quebra da correia danifica as válvulas e funde o cabeçote do motor, gerando prejuízos de milhares de reais","Porque a correia serve apenas para tocar o rádio","Porque o carro anda mais rápido sem correia","Não há benefício na prevenção de correia"],"answer":0,"explanation":"A quebra da correia dentada gera atropelamento de válvulas e consertos caríssimos que a prevenção evita."},{"q":"3. Como a oficina comprova que trocou o óleo correto e filtros especificados pela montadora?","options":["Tirando fotos dos frascos de óleo com viscosidade correta e das caixas de filtros no aplicativo","Colocando qualquer óleo usado sem avisar","Não registrando nada no sistema","Dizendo que não lembra qual óleo usou"],"answer":0,"explanation":"O aplicativo permite fotografar as embalagens de óleo e peças instaladas com especificações do fabricante."},{"q":"4. Qual é a frequência típica de retorno para revisões de suspensão e freios nas ruas brasileiras?","options":["A cada 100 anos","A cada 10.000 a 20.000 km devido às irregularidades e impactos das vias urbanas","Nunca precisam de manutenção","Apenas se a roda cair"],"answer":1,"explanation":"O asfalto brasileiro desgasta buchas, amortecedores e pastilhas com frequência entre 10.000 e 20.000 km."},{"q":"5. Como o registro dos 6 serviços no DNA AUTO ajuda a oficina mecânica?","options":["Faz a oficina perder clientes para o posto de gasolina","Aumenta o ticket médio com manutenções preventivas completas em vez de apenas consertos emergenciais","Gera despesas de processo judicial","Obriga a oficina a fechar aos sábados"],"answer":1,"explanation":"O cliente informado sobre os 6 serviços aceita revisões preventivas completas com muito mais facilidade."}]},{"num":7,"title":"Abordagem Comercial na Prática: Scripts e Apresentação do Folheto","tag":"Técnicas de Vendas","readingTime":"4 min","contentHtml":"\n      <div class=\"lms-content-section\">\n        <h3 class=\"lms-sec-title\">📖 Como Abordar o Dono da Oficina</h3>\n        <p class=\"lms-p\">Donos de oficinas mecânicas são profissionais práticos e ocupados. Eles não querem palestras longas nem jargões tecnológicos complicados. A melhor abordagem é direta, focada no lucro no cadastro e na retenção de clientes.</p>\n\n        <div class=\"lms-approach-steps\">\n          <div class=\"lms-approach-step\">\n            <span class=\"lms-appr-num\">Etapa 1</span>\n            <h4>Apresente-se com Segurança</h4>\n            <p>\"Olá, sou representante oficial da DNA AUTO. Vim apresentar uma tecnologia que coloca <strong>R$ 24,95 de lucro limpo no seu bolso a cada carro cadastrado</strong> e traz o cliente de volta pra cá na hora da revisão.\"</p>\n          </div>\n          <div class=\"lms-approach-step\">\n            <span class=\"lms-appr-num\">Etapa 2</span>\n            <h4>Abra o Folheto Comercial no Celular</h4>\n            <p>Vá até a aba <strong>Folheto Comercial</strong> no seu painel e mostre a imagem oficial. O folheto visual resume os 50% de repasse e os 6 serviços de retorno em segundos!</p>\n          </div>\n          <div class=\"lms-approach-step\">\n            <span class=\"lms-appr-num\">Etapa 3</span>\n            <h4>Quebre a Objeção de \"Não tenho tempo\"</h4>\n            <p>\"Dono da oficina, o cadastro do cliente e o lançamento do serviço leva menos de 1 minuto no celular. Seu próprio mecânico faz enquanto o carro está no elevador!\"</p>\n          </div>\n          <div class=\"lms-approach-step\">\n            <span class=\"lms-appr-num\">Etapa 4</span>\n            <h4>Envie Seu Link no WhatsApp na Hora</h4>\n            <p>Abra a aba <strong>Meu Link &amp; QR Code</strong> e toque em \"Convidar oficina pelo WhatsApp\". O dono abre a página oficial no celular dele e cadastra a oficina!</p>\n          </div>\n        </div>\n      </div>\n    ","questions":[{"q":"1. Qual é a melhor postura ao visitar o proprietário de uma oficina mecânica?","options":["Falar termos técnicos incompreensíveis e ficar 2 horas conversando","Ser objetivo, respeitar o tempo da oficina e focar no lucro de R$ 24,95 e na fidelização do cliente","Exigir que o mecânico pare todos os consertos para te ouvir","Dizer que a oficina dele é ruim e ultrapassada"],"answer":1,"explanation":"Objetividade e respeito ao tempo do mecânico com foco no lucro e retenção geram aceitação imediata."},{"q":"2. Como o representante utiliza o Folheto Comercial Oficial durante a visita?","options":["Imprime 5.000 panfletos e joga na calçada","Abre a aba 'Folheto Comercial' no próprio celular ou tablet e mostra a divisão de 50% e os benefícios","Guarda o folheto em segredo","O folheto não deve ser mostrado a ninguém"],"answer":1,"explanation":"O folheto visual no celular é a ferramenta perfeita de apoio para demonstrar a proposta de valor em segundos."},{"q":"3. O que responder se o dono da oficina disser que 'não tem tempo para preencher sistemas'?","options":["Dizer que ele precisa contratar um estagiário apenas para isso","Mostrar que o lançamento leva menos de 1 minuto pelo celular, tirando uma foto rápida da peça no pátio","Concordar e desistir da visita","Desligar o disjuntor da oficina"],"answer":1,"explanation":"A operação no celular é ultrarrápida e desenhada para ser feita pelo próprio mecânico em menos de 1 minuto."},{"q":"4. Como o representante conclui o credenciamento da oficina?","options":["Pegando os documentos da oficina e levando embora","Enviando seu link oficial pelo WhatsApp para que o proprietário faça o cadastro da empresa pelo próprio celular","Criando uma senha secreta que o dono da oficina não sabe","Assinando um contrato em cartório de 20 páginas"],"answer":1,"explanation":"O proprietário recebe o link pelo WhatsApp e realiza pessoalmente o cadastro com total autonomia."},{"q":"5. O representante deve preencher o cadastro ou cadastrar a senha no lugar do proprietário da oficina?","options":["Sim, o representante deve operar o sistema da oficina","Não! O proprietário da oficina realiza pessoalmente seu cadastro e cria suas próprias credenciais com autonomia","Tanto faz, não há regras","O representante deve ficar com as senhas de todas as oficinas"],"answer":1,"explanation":"Regra fundamental da DNA AUTO: o proprietário é quem cadastra sua oficina e cria suas próprias credenciais."}]},{"num":8,"title":"Seu Link Exclusivo, QR Code e Atribuição por 24 Meses","tag":"Tecnologia de Indicação","readingTime":"4 min","contentHtml":"\n      <div class=\"lms-content-section\">\n        <h3 class=\"lms-sec-title\">📖 A Tecnologia de Vinculação Comercial</h3>\n        <p class=\"lms-p\">Cada representante aprovado pela DNA AUTO recebe um identificador comercial único e intransferível (Ex: <strong>REP000123</strong>). Toda a mecânica de rastreamento é tratada automaticamente pelo backend.</p>\n\n        <div class=\"lms-features-cards\">\n          <div class=\"lms-feat-item\">\n            <h4>🔗 Link Pessoal &amp; WhatsApp</h4>\n            <p>Seu link no formato <code>dnaauto.com.br/representante/indicacao/SEU_CODIGO</code> já gera a mensagem oficial formatada para envio no WhatsApp com 1 toque.</p>\n          </div>\n          <div class=\"lms-feat-item\">\n            <h4>📱 QR Code Dinâmico</h4>\n            <p>Ideal para visitas presenciais. O dono da oficina aponta a câmera do celular para o QR Code na sua tela e abre a página de apresentação imediatamente.</p>\n          </div>\n          <div class=\"lms-feat-item\">\n            <h4>🛡️ Persistência Pós-Instalação</h4>\n            <p>Mesmo que o dono abra o link, feche o navegador, instale o aplicativo e conclua o cadastro horas ou dias depois, o backend reconcilia o convite pelo CNPJ e vincula a oficina à sua carteira por <strong>24 meses</strong>!</p>\n          </div>\n        </div>\n\n        <div class=\"lms-highlight-note\">\n          <strong>🔒 PROTEÇÃO CONTRA DUPLICIDADE:</strong>\n          <p>Uma oficina vinculada ao seu código não pode ser 'roubada' por outro representante. O primeiro representante que originou o cadastro válido mantém o vínculo garantido pelos 24 meses!</p>\n        </div>\n      </div>\n    ","questions":[{"q":"1. Como o representante acessa seu link exclusivo de indicação?","options":["Pedindo por e-mail para o suporte a cada visita","Dentro do seu painel na aba 'Meu Link & QR Code'","Procurando no Google","Inventando um link aleatório"],"answer":1,"explanation":"O link oficial exclusivo e o QR Code ficam permanentemente disponíveis na aba 'Meu Link & QR Code'."},{"q":"2. O que acontece se o dono da oficina abrir o link no WhatsApp e só concluir o cadastro no dia seguinte?","options":["O vínculo é perdido para sempre","O sistema mantém a pré-vinculação no backend e associa a oficina à sua carteira assim que o cadastro é concluído","O representante é multado","A oficina é deletada"],"answer":1,"explanation":"O backend do DNA AUTO registra o convite e realiza a atribuição automática mesmo após fechamento do navegador."},{"q":"3. Por quanto tempo a vinculação comercial entre representante e oficina é válida?","options":["Por 1 semana","Por até 24 meses (2 anos) contados da data de credenciamento da oficina","Por 30 dias apenas","Até o final da semana"],"answer":1,"explanation":"O programa comercial garante a vigência de 24 meses por oficina vinculada à carteira do representante."},{"q":"4. Se um segundo representante enviar outro link para uma oficina que já é da sua carteira, o que acontece?","options":["O segundo representante rouba a oficina automaticamente","O vínculo original com você é estritamente preservado e o sistema bloqueia a substituição","A oficina é dividida ao meio","As duas contas são canceladas"],"answer":1,"explanation":"O sistema possui trava anti-duplicidade que preserva o representante que originou o credenciamento da oficina."},{"q":"5. Como o representante utiliza o QR Code individual?","options":["Mostra a tela do celular para o mecânico escanear com a câmera fotográfica do próprio aparelho","Imprime o QR Code e cola em árvores","Envia por fax","O QR Code não funciona no celular"],"answer":0,"explanation":"Na visita presencial, o dono da oficina aponta a câmera para o QR Code na tela do representante e abre a página na hora."}]},{"num":9,"title":"Construção de Carteira Recorrente (10 a 15 Oficinas)","tag":"Planejamento Financeiro","readingTime":"4 min","contentHtml":"\n      <div class=\"lms-content-section\">\n        <h3 class=\"lms-sec-title\">📖 O Poder dos Ganhos Acumulados</h3>\n        <p class=\"lms-p\">A maior vantagem de ser um Representante Comercial DNA AUTO é a <strong>recorrência</strong>. Você conquista a oficina uma única vez e continua recebendo comissões de R$ 5,90 sobre cada cliente cadastrado por ela ao longo de 24 meses.</p>\n\n        <div class=\"lms-simulation-table\">\n          <div class=\"lms-sim-row head\">\n            <div>Oficinas Ativas</div>\n            <div>Cadastros / Mês por Oficina</div>\n            <div>Total Cadastros / Mês</div>\n            <div>Sua Renda Mensal (R$ 5,90)</div>\n          </div>\n          <div class=\"lms-sim-row\">\n            <div>3 oficinas</div>\n            <div>30 clientes</div>\n            <div>90 clientes</div>\n            <div class=\"val\">R$ 531,00 / mês</div>\n          </div>\n          <div class=\"lms-sim-row\">\n            <div>5 oficinas</div>\n            <div>35 clientes</div>\n            <div>175 clientes</div>\n            <div class=\"val\">R$ 1.032,50 / mês</div>\n          </div>\n          <div class=\"lms-sim-row highlight\">\n            <div>10 oficinas</div>\n            <div>30 clientes</div>\n            <div>300 clientes</div>\n            <div class=\"val green\">R$ 1.770,00 / mês</div>\n          </div>\n          <div class=\"lms-sim-row highlight\">\n            <div>15 oficinas (Carteira Plena)</div>\n            <div>40 clientes</div>\n            <div>600 clientes</div>\n            <div class=\"val green\">R$ 3.540,00 / mês</div>\n          </div>\n        </div>\n\n        <div class=\"lms-highlight-note\">\n          <strong>💡 DICA DE OURO PARA MANTER A CARTEIRA ATIVA:</strong>\n          <p>Visite ou mande uma mensagem para as suas oficinas vinculadas a cada 15 dias. Parabenize pelo número de carros cadastrados e incentive o consultor técnico da oficina a oferecer o DNA AUTO para todo veículo que entrar no pátio!</p>\n        </div>\n      </div>\n    ","questions":[{"q":"1. Qual é a principal característica da renda do Representante Comercial DNA AUTO?","options":["É um salário fixo pago pelo governo","É uma renda recorrente gerada pelos novos clientes cadastrados pelas oficinas da carteira ao longo de 24 meses","É paga apenas uma vez e depois cancelada","Depende de sorteio na loteria"],"answer":1,"explanation":"O modelo é de receita recorrente construída com a produtividade acumulada das oficinas vinculadas."},{"q":"2. Com 10 oficinas ativas na carteira cadastrando 30 clientes cada por mês (300 cadastros), quanto o representante recebe?","options":["R$ 59,00","R$ 1.770,00 por mês (300 × R$ 5,90)","R$ 300,00","R$ 500,00"],"answer":1,"explanation":"300 novos clientes multiplicados por R$ 5,90 resultam em R$ 1.770,00 de comissão no mês."},{"q":"3. Qual é o limite de oficinas que um representante pode manter em sua carteira inicial?","options":["Apenas 1 oficina","Até 15 oficinas ativas na carteira","1.000 oficinas no primeiro dia","Não há nenhum limite"],"answer":1,"explanation":"O programa define um limite inicial de até 15 oficinas para garantir foco e suporte de excelência."},{"q":"4. O que o representante deve fazer para incentivar a oficina a cadastrar mais carros?","options":["Brigar com os clientes da oficina","Fazer follow-up periódico, tirar dúvidas e incentivar o mecânico a oferecer o passaporte na entrada do carro","Não falar mais com a oficina","Bloquear o aplicativo da oficina"],"answer":1,"explanation":"O suporte consultivo e incentivo contínuo aumentam o volume de carros cadastrados e a receita de ambos."},{"q":"5. Se uma oficina tiver clientes pagando o cadastro no 18º mês de vínculo, o representante recebe comissão?","options":["Não, só recebe até o 2º mês","Sim! A vigência comercial é de até 24 meses por oficina vinculada","Apenas se o carro for 0 km","O sistema não paga comissões no 18º mês"],"answer":1,"explanation":"Dentro do período de 24 meses, todos os novos cadastros pagos geram a comissão de R$ 5,90."}]},{"num":10,"title":"O Desafio DNA AUTO, Ética & Padrão de Excelência","tag":"Desafio & Ética","readingTime":"4 min","contentHtml":"\n      <div class=\"lms-content-section\">\n        <h3 class=\"lms-sec-title\">📖 Premiação Mensal &amp; Ética Profissional</h3>\n        <p class=\"lms-p\">A DNA AUTO premia os melhores representantes comerciais do Brasil através do <strong>Desafio Mensal de Expansão</strong>. Além das comissões regulares de R$ 5,90 por cliente, os líderes do ranking concorrem a bonificações exclusivas em dinheiro.</p>\n\n        <div class=\"lms-challenge-podium\">\n          <div class=\"lms-podium-card gold\">\n            <span class=\"lms-podium-badge\">🥇 1º Lugar</span>\n            <h4>R$ 10.000,00</h4>\n            <p>Bônus em dinheiro para o representante com maior volume de ativações (mínimo 100).</p>\n          </div>\n          <div class=\"lms-podium-card silver\">\n            <span class=\"lms-podium-badge\">🥈 2º Lugar</span>\n            <h4>R$ 5.000,00</h4>\n            <p>Bônus em dinheiro para o segundo colocado com meta mínima atingida.</p>\n          </div>\n          <div class=\"lms-podium-card bronze\">\n            <span class=\"lms-podium-badge\">🥉 3º Lugar</span>\n            <h4>R$ 3.000,00</h4>\n            <p>Bônus em dinheiro para o terceiro colocado com meta mínima atingida.</p>\n          </div>\n        </div>\n\n        <div class=\"lms-highlight-note\">\n          <strong>⚖️ CÓDIGO DE ÉTICA DO REPRESENTANTE DNA AUTO:</strong>\n          <ul class=\"lms-bullet-list\">\n            <li><strong>Nunca prometa faturamento ilusório:</strong> Use sempre a matemática real dos R$ 24,95 de repasse da oficina e R$ 5,90 de comissão.</li>\n            <li><strong>Respeite a privacidade da oficina:</strong> Você não mexe no aplicativo interno nem nas senhas dos proprietários.</li>\n            <li><strong>Compromisso com a verdade:</strong> O DNA AUTO é uma solução sólida, séria e auditada por tecnologia de ponta.</li>\n          </ul>\n        </div>\n      </div>\n    ","questions":[{"q":"1. Qual é a meta mínima de ativações válidas e pagas no mês para concorrer aos bônus do Desafio Mensal?","options":["1 ativação apenas","Mínimo de 100 ativações válidas e pagas no mês civil","5.000 ativações","Não há meta mínima"],"answer":1,"explanation":"O regulamento oficial estabelece a meta mínima de 100 ativações válidas no mês civil para qualificação no pódio."},{"q":"2. Qual é a premiação extra em dinheiro para o 1º colocado qualificado no Desafio Mensal?","options":["R$ 500,00","R$ 10.000,00 em bonificação financeira","Um boné de brinde","R$ 50,00"],"answer":1,"explanation":"O primeiro colocado que atingir a meta mínima concorre à premiação de R$ 10.000,00 no ranking oficial."},{"q":"3. O que acontece com o ranking do Desafio Mensal na virada de cada mês civil?","options":["A carteira do representante é cancelada","O contador do desafio mensal zera para uma nova disputa justa, mantendo todas as comissões acumuladas na carteira","As oficinas são deletadas do sistema","O representante tem que pagar taxa de reinscrição"],"answer":1,"explanation":"A contagem do desafio zera a cada mês para dar igualdade de disputa a todos, enquanto os vínculos de 24 meses continuam firmes."},{"q":"4. Qual é a postura ética correta do representante comercial ao apresentar os ganhos para uma oficina?","options":["Garantir que o dono vai ficar milionário em 2 dias","Apresentar a divisão real e transparente (50% = R$ 24,95) com exemplos baseados na quantidade real de carros atendidos","Dizer qualquer mentira para fechar a venda","Ocultar que o cliente paga R$ 49,90"],"answer":1,"explanation":"A transparência e integridade constroem parcerias duradouras com as oficinas da rede."},{"q":"5. O que certifica que você é um Representante Comercial Oficial e Autorizado DNA AUTO?","options":["Apenas um papel impresso em casa","Seu cadastro aprovado pela DNA AUTO com Código Comercial oficial (Ex: REP000123), link pessoal e acesso ao painel","Qualquer pessoa pode se autodeclarar representante sem cadastro","Não existe credenciamento oficial"],"answer":1,"explanation":"A DNA AUTO aprova e identifica cada representante com código comercial exclusivo e chancela oficial."}]}];
+
+    let currentModuleIdx = 0; // 0 a 9
+    let maxUnlockedModuleIdx = 0; // O maior módulo desbloqueado (0 a 9)
+    let quizSelectedAnswers = {}; // { q0: 1, q1: 2, ... }
+
+    // Carrega progresso salvo no localStorage
+    function loadLmsProgress() {
+      try {
+        const repKey = 'dna_rep_lms_unlocked_' + (currentRep?.rep_code || 'default');
+        const saved = parseInt(localStorage.getItem(repKey), 10);
+        if (!isNaN(saved) && saved >= 0 && saved < LMS_MODULES.length) {
+          maxUnlockedModuleIdx = saved;
+          currentModuleIdx = saved;
+        } else {
+          maxUnlockedModuleIdx = 0;
+          currentModuleIdx = 0;
+        }
+      } catch (e) {
+        maxUnlockedModuleIdx = 0;
+        currentModuleIdx = 0;
+      }
+    }
+
+    function saveLmsProgress() {
+      try {
+        const repKey = 'dna_rep_lms_unlocked_' + (currentRep?.rep_code || 'default');
+        localStorage.setItem(repKey, String(maxUnlockedModuleIdx));
+      } catch (e) {}
+    }
+
+    // Renderiza a leitura do módulo atual na tela (Apenas 1 módulo na tela!)
+    function renderModuleLesson(idx) {
+      if (idx < 0) idx = 0;
+      if (idx >= LMS_MODULES.length) idx = LMS_MODULES.length - 1;
+      currentModuleIdx = idx;
+      quizSelectedAnswers = {};
+
+      const mod = LMS_MODULES[idx];
+      if (!mod) return;
+
+      // Atualiza Header e Indicadores
+      if ($('lmsStepPill')) $('lmsStepPill').textContent = 'MÓDULO ' + mod.num + ' DE 10 • ' + mod.tag.toUpperCase();
+      if ($('lmsModuleMainTitle')) $('lmsModuleMainTitle').textContent = mod.title;
+
+      // Barra de progresso
+      const percent = Math.round(((maxUnlockedModuleIdx + 1) / LMS_MODULES.length) * 100);
+      if ($('lmsProgressPercent')) $('lmsProgressPercent').textContent = percent + '% Concluído';
+      if ($('lmsCompletedModulesText')) $('lmsCompletedModulesText').textContent = (maxUnlockedModuleIdx + 1) + ' de 10 módulos liberados';
+      if ($('lmsProgressFill')) $('lmsProgressFill').style.width = percent + '%';
+
+      // Atualiza Seletor de Aulas
+      const selectEl = $('lmsModuleSelect');
+      if (selectEl) {
+        selectEl.innerHTML = LMS_MODULES.map((m, mIdx) => {
+          const isDone = mIdx < maxUnlockedModuleIdx;
+          const isCurrent = mIdx === currentModuleIdx;
+          const isLocked = mIdx > maxUnlockedModuleIdx;
+          let label = 'Módulo ' + m.num + ': ' + m.tag;
+          if (isDone) label = '✓ ' + label;
+          else if (isCurrent) label = '🟢 ' + label + ' (Atual)';
+          else if (isLocked) label = '🔒 ' + label + ' (Bloqueado)';
+          const disabledAttr = isLocked ? ' disabled' : '';
+          const selectedAttr = isCurrent ? ' selected' : '';
+          return '<option value="' + mIdx + '"' + disabledAttr + selectedAttr + '>' + label + '</option>';
+        }).join('');
+      }
+
+      // Injeta Conteúdo da Aula
+      if ($('lmsLessonBody')) $('lmsLessonBody').innerHTML = mod.contentHtml;
+
+      // Alterna visualizações: Mostra aula, oculta quiz
+      if ($('lmsLessonView')) $('lmsLessonView').style.display = 'block';
+      if ($('lmsQuizView')) $('lmsQuizView').style.display = 'none';
+
+      // Rola suavemente para o início do módulo
+      const acadCard = $('academia');
+      if (acadCard) acadCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Abre a tela de Quiz de 5 Perguntas para o módulo atual
+    function openModuleQuiz(idx) {
+      const mod = LMS_MODULES[idx];
+      if (!mod) return;
+
+      quizSelectedAnswers = {};
+      if ($('lmsQuizTitle')) $('lmsQuizTitle').textContent = '5 Perguntas Práticas — Módulo ' + mod.num + ': ' + mod.tag;
+
+      // Renderiza as 5 Perguntas
+      const container = $('lmsQuestionsContainer');
+      if (container) {
+        container.innerHTML = mod.questions.map((qObj, qIdx) => {
+          const letters = ['A', 'B', 'C', 'D'];
+          const optionsHtml = qObj.options.map((optText, optIdx) => {
+            return '<div class="lms-option-item" data-q="' + qIdx + '" data-opt="' + optIdx + '">' +
+              '<span class="lms-option-letter">' + letters[optIdx] + '</span>' +
+              '<span class="lms-option-label">' + optText + '</span>' +
+            '</div>';
+          }).join('');
+
+          return '<div class="lms-question-card" id="lmsQCard_' + qIdx + '">' +
+            '<h4 class="lms-question-text">' + qObj.q + '</h4>' +
+            '<div class="lms-options-list">' + optionsHtml + '</div>' +
+            '<div class="lms-q-feedback-text" id="lmsQFeedback_' + qIdx + '"></div>' +
+          '</div>';
+        }).join('');
+
+        // Event listeners para selecionar opções touch
+        container.querySelectorAll('.lms-option-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const q = parseInt(item.getAttribute('data-q'), 10);
+            const opt = parseInt(item.getAttribute('data-opt'), 10);
+            quizSelectedAnswers[q] = opt;
+
+            // Atualiza classe visual no grupo daquela pergunta
+            const parent = item.closest('.lms-options-list');
+            if (parent) {
+              parent.querySelectorAll('.lms-option-item').forEach(el => el.classList.remove('selected'));
+            }
+            item.classList.add('selected');
+          });
+        });
+      }
+
+      // Esconde feedback anterior
+      const fb = $('lmsQuizFeedback');
+      if (fb) { fb.style.display = 'none'; fb.innerHTML = ''; }
+
+      // Alterna telas
+      if ($('lmsLessonView')) $('lmsLessonView').style.display = 'none';
+      if ($('lmsQuizView')) $('lmsQuizView').style.display = 'block';
+
+      // Rola para o topo do quiz
+      if ($('lmsQuizView')) $('lmsQuizView').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Avalia o Quiz de 5 Perguntas
+    function evaluateModuleQuiz(e) {
+      e.preventDefault();
+      const mod = LMS_MODULES[currentModuleIdx];
+      if (!mod) return;
+
+      // Verifica se todas as 5 perguntas foram respondidas
+      for (let i = 0; i < mod.questions.length; i++) {
+        if (quizSelectedAnswers[i] === undefined) {
+          alert('Por favor, responda a pergunta ' + (i + 1) + ' antes de enviar.');
+          const card = $('lmsQCard_' + i);
+          if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
+      }
+
+      let correctCount = 0;
+      mod.questions.forEach((qObj, qIdx) => {
+        const userChoice = quizSelectedAnswers[qIdx];
+        const isRight = userChoice === qObj.answer;
+        if (isRight) correctCount++;
+
+        const card = $('lmsQCard_' + qIdx);
+        if (card) {
+          card.querySelectorAll('.lms-option-item').forEach(optEl => {
+            const optIdx = parseInt(optEl.getAttribute('data-opt'), 10);
+            optEl.classList.remove('selected', 'correct', 'wrong');
+            if (optIdx === qObj.answer) optEl.classList.add('correct');
+            else if (optIdx === userChoice && !isRight) optEl.classList.add('wrong');
+          });
+
+          const fbEl = $('lmsQFeedback_' + qIdx);
+          if (fbEl) {
+            fbEl.style.display = 'block';
+            fbEl.innerHTML = (isRight ? '✅ <strong>Correto!</strong> ' : '❌ <strong>Incorreto!</strong> ') + qObj.explanation;
+          }
+        }
+      });
+
+      const fb = $('lmsQuizFeedback');
+      if (!fb) return;
+
+      const isApproved = correctCount >= 4; // Exige no mínimo 4 de 5 acertos (80%+)
+      fb.style.display = 'block';
+
+      if (isApproved) {
+        // Atualiza desbloqueio do próximo módulo
+        if (currentModuleIdx + 1 > maxUnlockedModuleIdx && currentModuleIdx + 1 < LMS_MODULES.length) {
+          maxUnlockedModuleIdx = currentModuleIdx + 1;
+          saveLmsProgress();
+        }
+
+        const isLast = currentModuleIdx === LMS_MODULES.length - 1;
+        const nextBtnHtml = isLast
+          ? '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">' +
+              '<button type="button" class="btn-lms-primary" onclick="window.switchRepPanelTab(\'comissoes\')" style="width:auto;min-width:220px">💰 Acessar Meus Ganhos &amp; Comissões →</button>' +
+              '<button type="button" class="btn-lms-secondary" onclick="window.switchRepPanelTab(\'meu-link\')" style="width:auto;min-width:200px">🔗 Pegar Meu Link de Indicação</button>' +
+            '</div>'
+          : '<button type="button" class="btn-lms-primary" id="btnGoToNextModule" onclick="window.lmsGoToNextModule()">🚀 Avançar para o Módulo ' + (mod.num + 1) + ' →</button>';
+
+        fb.innerHTML = '<div class="lms-quiz-result-card success">' +
+          '<div class="lms-res-icon">🎉</div>' +
+          '<h3 class="lms-res-title">' + (isLast ? 'Parabéns! Formação Oficial Concluída!' : 'Módulo ' + mod.num + ' Aprovado com Sucesso!') + '</h3>' +
+          '<div class="lms-res-score">Você acertou ' + correctCount + ' de 5 perguntas (' + Math.round((correctCount/5)*100) + '%)</div>' +
+          '<p class="lms-res-desc">' + (isLast
+            ? 'Você dominou todos os 10 módulos da Academia DNA AUTO e está plenamente capacitado para conquistar oficinas na sua região.'
+            : 'Seu conhecimento prático sobre este módulo foi validado. O próximo módulo foi desbloqueado com sucesso!') + '</p>' +
+          nextBtnHtml +
+        '</div>';
+      } else {
+        fb.innerHTML = '<div class="lms-quiz-result-card fail">' +
+          '<div class="lms-res-icon">⚠️</div>' +
+          '<h3 class="lms-res-title">Revise o Conteúdo e Tente Novamente</h3>' +
+          '<div class="lms-res-score">Você acertou ' + correctCount + ' de 5 perguntas (' + Math.round((correctCount/5)*100) + '%)</div>' +
+          '<p class="lms-res-desc">Para liberar o próximo módulo, é necessário acertar pelo menos 4 de 5 perguntas. Revise as explicações assinaladas acima e tente novamente.</p>' +
+          '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">' +
+            '<button type="button" class="btn-lms-primary" onclick="window.lmsOpenQuizAgain()" style="width:auto;min-width:200px">🔄 Tentar o Teste Novamente</button>' +
+            '<button type="button" class="btn-lms-secondary" onclick="window.lmsBackToLesson()" style="width:auto;min-width:200px">📖 Reler o Módulo ' + mod.num + '</button>' +
+          '</div>' +
+        '</div>';
+      }
+
+      fb.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    window.lmsGoToNextModule = function() {
+      if (currentModuleIdx + 1 < LMS_MODULES.length) {
+        renderModuleLesson(currentModuleIdx + 1);
+      }
+    };
+
+    window.lmsOpenQuizAgain = function() {
+      openModuleQuiz(currentModuleIdx);
+    };
+
+    window.lmsBackToLesson = function() {
+      if ($('lmsLessonView')) $('lmsLessonView').style.display = 'block';
+      if ($('lmsQuizView')) $('lmsQuizView').style.display = 'none';
+      const acadCard = $('academia');
+      if (acadCard) acadCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
+    // Listeners do LMS
+    if ($('btnStartModuleQuiz')) {
+      $('btnStartModuleQuiz').addEventListener('click', () => openModuleQuiz(currentModuleIdx));
+    }
+    if ($('btnBackToLesson')) {
+      $('btnBackToLesson').addEventListener('click', window.lmsBackToLesson);
+    }
+    if ($('lmsQuizForm')) {
+      $('lmsQuizForm').addEventListener('submit', evaluateModuleQuiz);
+    }
+    if ($('lmsModuleSelect')) {
+      $('lmsModuleSelect').addEventListener('change', e => {
+        const chosen = parseInt(e.target.value, 10);
+        if (!isNaN(chosen) && chosen <= maxUnlockedModuleIdx) {
+          renderModuleLesson(chosen);
+        }
+      });
+    }
+
+
+    loadLmsProgress();
+    renderModuleLesson(currentModuleIdx);
     updateWhatsAppMessage('', 'REP000123');
     if (repToken) {
       refreshAuthenticatedWorkspace().then(ok => {

@@ -2614,3 +2614,31 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
        - Mensagens amigáveis de feedback em contas com aprovação pendente com link direto para demonstração.
 - **Qualidade & Testes:**
   - 100% de aprovação nas 5 suítes automatizadas de teste do projeto (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js`, `oficina.finance.test.js` e `representante.homologation.test.js`).
+
+
+---
+
+### Ciclo 120 — Sistema Educacional LMS com 1 Módulo por Vez, Quiz Interativo de 5 Perguntas e Trava de Progressão Pedagógica (08/11/2026)
+- **Objetivo:** Reformular integralmente o painel de treinamento do representante (`public/representante.html`) para apresentar **estritamente 1 módulo por vez na tela**, acompanhado de **quizzes práticos de 5 perguntas** entre cada módulo com trava de aprovação pedagógica, além de aprofundar as explicações reais das vantagens do ecossistema DNA AUTO e separar rigorosamente os ganhos financeiros no menu.
+  1. **Visualização Focada de 1 Módulo por Vez na Tela (`#lmsLessonView`):**
+     - Em vez de uma lista corrida de todos os módulos ao mesmo tempo, a tela agora exibe **exclusivamente a aula do módulo ativo** (`MÓDULO X DE 10`).
+     - Barra superior do LMS com pill de status, título dinâmico da aula e seletor rápido no topo para transitar entre módulos já desbloqueados (`✓ Concluído`, `🟢 Atual`, `🔒 Bloqueado`).
+     - Barra de progresso percentual oficial da capacitação (`10%`, `20%`, ..., `100% Concluído`).
+     - Rodapé da aula com aviso pedagógico e botão destacado: **`[ 📝 Responder as 5 Perguntas do Módulo → ]`**.
+  2. **Explicação Detalhada das Reais Vantagens do DNA AUTO:**
+     - **Para o Proprietário do Carro:** Dossiê digital permanente com registro de fotos reais das peças novas instaladas e das peças substituídas, discriminação centesimal do valor de cada serviço e peça, composição do histórico e relatório de gastos semestrais/anuais na palma da mão, e valorização brutal na hora da revenda com procedência comprovada.
+     - **Para a Oficina Mecânica:** Lucro limpo imediato de 50% (R$ 24,95 de R$ 49,90) no ato do cadastramento de cada cliente no app, fidelização ativa com monitoramento de quilometragem e envio de alertas no momento certo para que o motorista retorne exclusivamente àquela oficina, e eliminação de desconfianças através de comprovação fotográfica e notas fiscais.
+     - **Para o Representante Comercial:** R$ 5,90 de comissão por cliente pago pela oficina durante até 24 meses de vigência comercial, saindo estritamente da fatia da plataforma sem nunca onerar a oficina.
+  3. **Quiz Obrigatório de 5 Perguntas Interativas por Módulo (`#lmsQuizView`):**
+     - Exatamente 5 perguntas práticas de múltipla escolha (A, B, C, D) para cada um dos 10 módulos (total de 50 perguntas elaboradas).
+     - Interface touch-friendly com seleção visual de alternativas (`selected`), botões `← Voltar e Reler a Aula` e `✅ Enviar Respostas e Avaliar →`.
+     - **Trava de Progressão Pedagógica:** Avaliação instantânea. O representante só é aprovado e avança para o próximo módulo se acertar no mínimo 4 de 5 perguntas (80%+).
+     - **Feedback Educativo:**
+       - **Se Aprovado:** Exibe card de sucesso com a pontuação obtida, marca as alternativas corretas em verde e disponibiliza o botão **`[ 🚀 Avançar para o Módulo N+1 → ]`** (ou atalhos para comissões e link exclusivo ao concluir o Módulo 10).
+       - **Se Reprovado (< 4 acertos):** Exibe card de alerta com explicações didáticas em cada pergunta assinalando o motivo do acerto ou erro, e oferece os botões `🔄 Tentar o Teste Novamente` e `📖 Reler o Módulo`.
+     - Progresso salvo persistentemente no `localStorage` por código comercial do representante (`dna_rep_lms_unlocked_REP...`).
+  4. **Separação Rígida de Ganhos e Menu Comercial:**
+     - Os ganhos financeiros, métricas de comissão (R$ 5,90, repasse 50/50 R$ 24,95, comissões confirmadas, previstas e pagas) ficam estritamente organizados e separados dentro do menu do representante (`💰 Meus Ganhos & Comissões`), sem poluir a tela do módulo educacional.
+     - Botão de acesso rápido `💰 Ver Minhas Comissões` no topo do menu lateral e na topbar do painel.
+- **Qualidade & Testes:**
+  - 100% de aprovação nas 5 suítes automatizadas de teste do projeto (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js`, `oficina.finance.test.js` e `representante.homologation.test.js`).
