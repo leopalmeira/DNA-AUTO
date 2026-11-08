@@ -286,7 +286,7 @@ function requireApprovedRepresentative(req, res, next) {
 const repAuth = [authenticateToken, authorizeRoles('REPRESENTATIVE'), requireApprovedRepresentative];
 
 // 3. Dados do Representante Autenticado, Link Exclusivo, QR Code e Mensagem WhatsApp (Seções 2 e 10)
-router.get('/me', repAuth, (req, res) => {
+router.get(['/me', '/me/workspace'], repAuth, (req, res) => {
     try {
         const rep = getAuthenticatedRep(req);
         if (!rep) {

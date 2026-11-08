@@ -58,72 +58,120 @@
       position: sticky;
       top: 0;
       z-index: 90;
-      background: rgba(5, 11, 20, 0.95);
+      background: rgba(5, 11, 20, 0.96);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.16);
     }
     .landing-header-inner {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
-      gap: 12px;
+      height: 56px;
+      gap: 10px;
     }
     .landing-brand {
       display: flex;
       align-items: center;
-      gap: 10px;
+      flex-shrink: 0;
     }
     .landing-brand img {
-      height: 42px;
+      height: 32px;
       width: auto;
       display: block;
     }
     .landing-top-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
+      flex-shrink: 0;
     }
     .btn-top-login {
-      padding: 8px 16px;
-      border-radius: 999px;
+      padding: 7px 14px;
+      border-radius: 10px;
       border: 1px solid rgba(56, 189, 248, 0.35);
-      background: rgba(15, 34, 64, 0.7);
+      background: rgba(15, 34, 64, 0.85);
       color: #38bdf8;
       font-weight: 700;
       font-size: 13px;
       cursor: pointer;
-      transition: all 0.2s ease;
-      min-height: 40px;
+      transition: all 0.18s ease;
+      min-height: 36px;
+      height: 36px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      white-space: nowrap !important;
+      flex-shrink: 0;
+      box-sizing: border-box;
     }
     .btn-top-login:hover {
-      background: rgba(56, 189, 248, 0.15);
+      background: rgba(56, 189, 248, 0.18);
       border-color: #38bdf8;
       color: #ffffff;
     }
     .btn-top-register {
-      padding: 8px 18px;
-      border-radius: 999px;
-      border: 1px solid transparent;
+      padding: 7px 16px;
+      border-radius: 10px;
+      border: none;
       background: linear-gradient(135deg, #0066ff 0%, #00d4ff 100%);
       color: #ffffff;
       font-weight: 800;
       font-size: 13px;
       cursor: pointer;
-      box-shadow: 0 8px 22px rgba(0, 102, 255, 0.35);
-      transition: all 0.2s ease;
-      min-height: 40px;
+      box-shadow: 0 4px 14px rgba(0, 102, 255, 0.35);
+      transition: all 0.18s ease;
+      min-height: 36px;
+      height: 36px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      white-space: nowrap !important;
+      flex-shrink: 0;
+      box-sizing: border-box;
     }
     .btn-top-register:hover {
       transform: translateY(-1px);
-      box-shadow: 0 12px 28px rgba(0, 212, 255, 0.45);
+      box-shadow: 0 8px 22px rgba(0, 212, 255, 0.5);
+    }
+    @media (max-width: 480px) {
+      .landing-header-inner {
+        padding: 0 8px;
+        height: 52px;
+        gap: 6px;
+      }
+      .landing-brand img {
+        height: 28px;
+      }
+      .btn-top-login {
+        padding: 6px 11px;
+        font-size: 12px;
+        min-height: 34px;
+        height: 34px;
+      }
+      .btn-top-register {
+        padding: 6px 13px;
+        font-size: 12.5px;
+        min-height: 34px;
+        height: 34px;
+      }
+    }
+    @media (max-width: 360px) {
+      .landing-brand img {
+        height: 24px;
+      }
+      .btn-top-login {
+        padding: 5px 9px;
+        font-size: 11.5px;
+        min-height: 32px;
+        height: 32px;
+      }
+      .btn-top-register {
+        padding: 5px 10px;
+        font-size: 11.5px;
+        min-height: 32px;
+        height: 32px;
+      }
     }
 
     /* ========================================================================
@@ -1541,7 +1589,7 @@
           <img src="/img/rep-logo.png" alt="DNA AUTO"/>
         </a>
         <div class="landing-top-actions">
-          <button class="btn-top-login" type="button" onclick="window.openAuthModal('login')">Fazer Login</button>
+          <button class="btn-top-login" type="button" onclick="window.openAuthModal('login')">Entrar</button>
           <button class="btn-top-register" type="button" onclick="window.openAuthModal('register')">Cadastre-se</button>
         </div>
       </div>
@@ -1686,21 +1734,23 @@
       <!-- Formulário de Login -->
       <form id="repLoginForm" style="display:none">
         <h3 style="margin:0 0 6px;font-size:18px;color:#fff">Acesso do Representante</h3>
-        <p style="font-size:12.5px;color:#94a3b8;margin:0 0 16px;line-height:1.45">Informe seu e-mail e senha de representante autorizado pela DNA AUTO.</p>
+        <p style="font-size:12.5px;color:#94a3b8;margin:0 0 16px;line-height:1.45">Informe seu e-mail (ou código REP) e senha cadastrada.</p>
 
         <div class="form-group">
-          <label for="loginEmail">E-mail Cadastrado:</label>
-          <input type="email" id="loginEmail" required placeholder="seuemail@exemplo.com"/>
+          <label for="loginEmail">E-mail ou Código REP:</label>
+          <input type="text" id="loginEmail" required placeholder="seuemail@exemplo.com ou REP000123" autocomplete="username"/>
         </div>
         <div class="form-group">
           <label for="loginPassword">Senha:</label>
-          <input type="password" id="loginPassword" required placeholder="Sua senha"/>
+          <input type="password" id="loginPassword" required placeholder="Sua senha" autocomplete="current-password"/>
         </div>
 
         <button class="auth-submit-btn" type="submit" id="btnSubmitLogin">Entrar no Painel →</button>
         
-        <div style="margin-top:14px;text-align:center">
-          <button type="button" onclick="window.fillDemoCredentials()" style="background:transparent;border:none;color:#38bdf8;font-size:12px;cursor:pointer;text-decoration:underline">Preencher Representante de Demonstração (REP000123)</button>
+        <div style="margin-top:16px;text-align:center;border-top:1px solid rgba(148,163,184,0.14);padding-top:14px">
+          <button type="button" onclick="window.loginWithDemo()" class="btn-top-register" style="width:100%;min-height:42px;background:rgba(15,34,64,0.9);border:1px solid rgba(56,189,248,0.35);color:#38bdf8;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px">
+            <span>⚡</span><span>Entrar com Representante Demo (1 Clique)</span>
+          </button>
         </div>
         <div class="auth-status-msg" id="loginStatusMsg"></div>
       </form>
@@ -2484,35 +2534,7 @@
     if ($('btnRepLogout')) $('btnRepLogout').addEventListener('click', performLogout);
     if ($('btnRepLogoutTop')) $('btnRepLogoutTop').addEventListener('click', performLogout);
 
-    // Atualiza Workspace Autenticado
-    async function refreshAuthenticatedWorkspace() {
-      if (!repToken) return false;
-      const res = await apiRep('/api/v1/representatives/me/workspace');
-      if (!res.ok) {
-        if (res.status === 401 || res.status === 403) {
-          repToken = '';
-          localStorage.removeItem('dna_rep_token');
-        }
-        return false;
-      }
-      currentRep = res.representative || {};
-      const repCode = currentRep.commercial_code || 'REP000123';
-      const repName = currentRep.name || 'Representante Aprovado';
-      const repId = currentRep.id || 'rep_000123';
 
-      if ($('repDisplayName')) $('repDisplayName').textContent = repName;
-      if ($('repCommercialCode')) $('repCommercialCode').textContent = repCode;
-      if ($('repInternalId')) $('repInternalId').textContent = repId;
-
-      const origin = window.location.origin;
-      const referralUrl = origin + '/representante/indicacao/' + repCode;
-      if ($('repReferralLink')) $('repReferralLink').textContent = referralUrl;
-      if ($('btnPreviewLanding')) $('btnPreviewLanding').setAttribute('href', '/representante/indicacao/' + repCode);
-
-      updateWhatsAppMessage(referralUrl, repCode);
-      loadQrCode(repCode);
-      return true;
-    }
 
     function updateWhatsAppMessage(refUrl, repCode) {
       const url = refUrl || (window.location.origin + '/representante/indicacao/' + (repCode || 'REP000123'));
@@ -2682,6 +2704,42 @@
       });
     }
 
+    // Aplicação Reativa de Dados do Representante no Painel
+    function applyRepresentativeData(rep) {
+      if (!rep) return;
+      currentRep = rep;
+      const repCode = rep.rep_code || rep.commercial_code || 'REP000123';
+      const repName = rep.name || rep.full_name || 'Leonardo Palmeira';
+      const repId = rep.id || 'rep_000123';
+
+      if ($('repDisplayName')) $('repDisplayName').textContent = repName;
+      if ($('repCommercialCode')) $('repCommercialCode').textContent = repCode;
+      if ($('repInternalId')) $('repInternalId').textContent = repId;
+
+      const origin = window.location.origin;
+      const referralUrl = rep.referral_url || (origin + '/representante/indicacao/' + repCode);
+      if ($('repReferralLink')) $('repReferralLink').textContent = referralUrl;
+      if ($('btnPreviewLanding')) $('btnPreviewLanding').setAttribute('href', '/representante/indicacao/' + repCode);
+
+      updateWhatsAppMessage(referralUrl, repCode);
+      loadQrCode(repCode);
+    }
+
+    // Atualiza Workspace Autenticado via /me
+    async function refreshAuthenticatedWorkspace() {
+      if (!repToken) return false;
+      const res = await apiRep('/api/v1/representatives/me');
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          repToken = '';
+          localStorage.removeItem('dna_rep_token');
+        }
+        return false;
+      }
+      applyRepresentativeData(res.representative);
+      return true;
+    }
+
     // Submissão do Formulário de Login
     if ($('repLoginForm')) {
       $('repLoginForm').addEventListener('submit', async e => {
@@ -2690,6 +2748,7 @@
         const btn = $('btnSubmitLogin');
         btn.disabled = true;
         btn.textContent = 'Verificando...';
+        if (msgEl) { msgEl.style.display = 'none'; }
 
         const payload = {
           email: $('loginEmail').value.trim(),
@@ -2703,29 +2762,81 @@
         if (!res.ok) {
           if (res.code === 'REPRESENTATIVE_PENDING_APPROVAL' || res.status === 403) {
             msgEl.className = 'auth-status-msg pending';
-            msgEl.innerHTML = '⏳ <strong>Cadastro em Análise:</strong> ' + (res.message || 'Seu cadastro está aguardando aprovação da DNA AUTO.');
+            msgEl.style.display = 'block';
+            msgEl.innerHTML = '⏳ <strong>Cadastro em Análise:</strong> ' + (res.message || 'Seu cadastro está aguardando aprovação da DNA AUTO.') +
+              '<div style="margin-top:10px"><button type="button" onclick="window.loginWithDemo()" class="btn-top-register" style="width:100%;font-size:12px;padding:8px">⚡ Acessar Agora com Representante Demo (REP000123)</button></div>';
           } else {
             msgEl.className = 'auth-status-msg error';
-            msgEl.textContent = res.message || 'E-mail ou senha incorretos.';
+            msgEl.style.display = 'block';
+            msgEl.innerHTML = (res.error || res.message || 'E-mail ou senha incorretos.') +
+              '<div style="margin-top:10px"><button type="button" onclick="window.loginWithDemo()" class="btn-top-register" style="width:100%;font-size:12px;padding:8px">⚡ Acessar Agora com Representante Demo (REP000123)</button></div>';
           }
           return;
         }
 
         repToken = res.token || '';
         localStorage.setItem('dna_rep_token', repToken);
-        const ok = await refreshAuthenticatedWorkspace();
-        if (ok) {
-          enterAuthorizedPanel('academia');
-        } else {
-          msgEl.className = 'auth-status-msg error';
-          msgEl.textContent = 'Não foi possível carregar seu workspace de representante.';
+
+        // Aplica os dados já retornados pelo login
+        if (res.representative) {
+          applyRepresentativeData(res.representative);
         }
+
+        // Abre o painel instantaneamente
+        enterAuthorizedPanel('academia');
+
+        // Sincroniza em segundo plano
+        refreshAuthenticatedWorkspace();
       });
     }
 
-    window.fillDemoCredentials = function() {
+    // Login Instantâneo de Demonstração (1 Clique)
+    window.loginWithDemo = async function() {
+      window.openAuthModal('login');
       if ($('loginEmail')) $('loginEmail').value = 'representante@dnaauto.com.br';
       if ($('loginPassword')) $('loginPassword').value = 'rep123456';
+
+      const msgEl = $('loginStatusMsg');
+      const btn = $('btnSubmitLogin');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Conectando conta demo...';
+      }
+      if (msgEl) {
+        msgEl.className = 'auth-status-msg pending';
+        msgEl.style.display = 'block';
+        msgEl.textContent = 'Autenticando como Representante Demo (REP000123)...';
+      }
+
+      const res = await apiRep('/api/v1/representatives/login', 'POST', {
+        email: 'representante@dnaauto.com.br',
+        password: 'rep123456'
+      });
+
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'Entrar no Painel →';
+      }
+
+      if (!res.ok) {
+        if (msgEl) {
+          msgEl.className = 'auth-status-msg error';
+          msgEl.textContent = res.error || res.message || 'Erro ao conectar conta demo.';
+        }
+        return;
+      }
+
+      repToken = res.token || '';
+      localStorage.setItem('dna_rep_token', repToken);
+      if (res.representative) {
+        applyRepresentativeData(res.representative);
+      }
+      enterAuthorizedPanel('academia');
+      refreshAuthenticatedWorkspace();
+    };
+
+    window.fillDemoCredentials = function() {
+      window.loginWithDemo();
     };
 
     // Copiar Link

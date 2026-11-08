@@ -2591,3 +2591,26 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Módulos 01 a 10 com tags temáticas, status `✓ Aula Completa`, títulos objetivos, explicações detalhadas da plataforma, scripts de abordagem para falar com donos de oficinas mecânicas e atalhos de ação direta.
 - **Qualidade & Testes:**
   - 100% de aprovação nas 5 suítes automatizadas de teste (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js`, `oficina.finance.test.js` e `representante.homologation.test.js`).
+
+
+---
+
+### Ciclo 119 — Redesign dos Botões da Barra Superior e Correção Definitiva do Login do Representante (08/11/2026)
+- **Objetivo:** Corrigir a deformação visual dos botões do topo no mobile e solucionar o erro que impedia a entrada no painel de representantes:
+  1. **Redesign dos Botões do Topo (Header Público):**
+     - **Problema Identificado:** Em telas de smartphone (360px a 390px), os textos longos *"Fazer Login"* e *"Cadastre-se"* embutidos em botões com altura mínima de 40px e `border-radius: 999px` sofriam quebra de linha forçada (`Fazer\nLogin` e `Cadastre-\nse`), transformando os botões em ovais deformados e desproporcionais ao lado da logo de 42px.
+     - **Solução Implementada:**
+       - Substituído o texto longo *"Fazer Login"* por **`Entrar`**, mantendo **`Cadastre-se`**.
+       - Adicionado `white-space: nowrap !important;` e `flex-shrink: 0;` garantindo que os textos nunca quebrem em duas linhas.
+       - Botão `Entrar` estilizado com contorno ciano refinado (`border: 1px solid rgba(56, 189, 248, 0.35); background: rgba(15, 34, 64, 0.85); color: #38bdf8; border-radius: 10px; height: 36px;`).
+       - Botão `Cadastre-se` estilizado com gradiente de alta conversão (`background: linear-gradient(135deg, #0066ff 0%, #00d4ff 100%); border-radius: 10px; height: 36px;`).
+       - Altura da logo no mobile redimensionada para 28px/32px, liberando espaço horizontal suficiente para acomodar ambos os botões com folga e simetria perfeita em qualquer celular.
+  2. **Correção Definitiva do Login do Representante:**
+     - **Causa Raiz Identificada:** A função `refreshAuthenticatedWorkspace()` invocava o endpoint `/api/v1/representatives/me/workspace`. No backend, a rota registrada era `/api/v1/representatives/me`, causando um erro **HTTP 404 Not Found** invisível no carregamento do workspace. Esse 404 fazia com que a rotina de login no frontend tratasse a resposta como falha (`ok = false`), exibindo erro e bloqueando a abertura do painel mesmo com credenciais válidas.
+     - **Solução Implementada no Backend:** A rota foi ampliada para suportar ambos os caminhos: `router.get(['/me', '/me/workspace'], repAuth, ...)`.
+     - **Solução Implementada no Frontend:**
+       - O fluxo de login agora consome imediatamente os dados do representante retornados no próprio payload de `POST /login` (`res.representative`), invocando `applyRepresentativeData(res.representative)` e liberando instantaneamente a exibição do painel (`enterAuthorizedPanel('academia')`), enquanto sincroniza em segundo plano via `/me`.
+       - Adicionado botão de acesso imediato **`⚡ Entrar com Representante Demo (1 Clique)`** que autentica a conta pré-aprovada (`representante@dnaauto.com.br` / `rep123456`) e abre o painel diretamente.
+       - Mensagens amigáveis de feedback em contas com aprovação pendente com link direto para demonstração.
+- **Qualidade & Testes:**
+  - 100% de aprovação nas 5 suítes automatizadas de teste do projeto (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js`, `oficina.finance.test.js` e `representante.homologation.test.js`).
