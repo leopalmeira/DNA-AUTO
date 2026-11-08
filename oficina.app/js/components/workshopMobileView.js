@@ -1157,66 +1157,270 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 9: AVISOS WHATSAPP (CONFORME MODELO OFICIAL)
+    // TELA 9: AVISOS WHATSAPP (CONFORME MODELO OFICIAL - CARDS ORGANIZADOS)
     // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.currentWhatsAppTab = WorkshopView.currentWhatsAppTab || 'conversas';
+
     WorkshopView.renderMobileWhatsAppView = function() {
         const chats = [
-            { avatar: '👤', name: 'João Silva', plate: 'BRA2E19', time: '10:34', message: 'Oi, o carro já está pronto?', unread: 2 },
-            { avatar: '👩', name: 'Ana Costa', plate: 'KZX4D21', time: '09:15', message: 'Confirmação, estarei às 14h.', unread: 1 },
-            { avatar: '👨', name: 'Ricardo Lima', plate: 'LMH7A33', time: 'Ontem', message: 'Pode me enviar o orçamento?', unread: 0 },
-            { avatar: '🧔', name: 'Marcos Santos', plate: 'QWESF67', time: 'Ontem', message: 'Obrigado pelo serviço!', unread: 0 },
-            { avatar: '👩‍🦰', name: 'Fernanda Alves', plate: 'RST8I90', time: '18/11', message: 'Qual valor da revisão?', unread: 0 }
+            { 
+                avatar: '👤', 
+                name: 'João Silva', 
+                phone: '11998765432', 
+                plate: 'BRA2E19', 
+                model: 'Honda Civic Touring', 
+                service: 'Revisão 40.000 km', 
+                time: 'Hoje 10:34', 
+                message: 'Oi, o carro já está pronto para retirada?', 
+                unread: 2, 
+                status: 'Pronto',
+                statusColor: '#10b981'
+            },
+            { 
+                avatar: '👩', 
+                name: 'Ana Costa', 
+                phone: '11987654321', 
+                plate: 'KZX4D21', 
+                model: 'Toyota Corolla Altis', 
+                service: 'Troca de Óleo e Filtros', 
+                time: 'Hoje 09:15', 
+                message: 'Confirmo o agendamento, estarei aí às 14h.', 
+                unread: 1, 
+                status: 'Agendado',
+                statusColor: '#38bdf8'
+            },
+            { 
+                avatar: '👨', 
+                name: 'Ricardo Lima', 
+                phone: '11976543210', 
+                plate: 'LMH7A33', 
+                model: 'Jeep Compass Longitude', 
+                service: 'Pastilhas de Freio', 
+                time: 'Ontem 17:40', 
+                message: 'Pode me enviar o orçamento com a foto das peças novas?', 
+                unread: 0, 
+                status: 'Orçamento',
+                statusColor: '#f59e0b'
+            },
+            { 
+                avatar: '🧔', 
+                name: 'Marcos Santos', 
+                phone: '11965432109', 
+                plate: 'QWESF67', 
+                model: 'VW T-Cross Highline', 
+                service: 'Correia Dentada', 
+                time: 'Ontem 14:20', 
+                message: 'Obrigado pelo serviço, o carro ficou excelente!', 
+                unread: 0, 
+                status: 'Concluído',
+                statusColor: '#10b981'
+            },
+            { 
+                avatar: '👩‍🦰', 
+                name: 'Fernanda Alves', 
+                phone: '11954321098', 
+                plate: 'RST8I90', 
+                model: 'Hyundai Creta Prestige', 
+                service: 'Alinhamento & Balanceamento', 
+                time: '18/11 11:05', 
+                message: 'Qual o valor estimado para a revisão de 30.000 km?', 
+                unread: 0, 
+                status: 'Dúvida',
+                statusColor: '#a855f7'
+            }
         ];
+
+        const reminders = [
+            { name: 'Carlos Eduardo', phone: '11991234567', plate: 'RIO2E26', model: 'VW Polo 1.0 TSI', item: 'Troca de Óleo e Filtro (Atingiu 10.000 km)', km: '49.800 km', badge: 'Óleo Vencendo', color: '#ef4444' },
+            { name: 'Juliana Mendes', phone: '11982345678', plate: 'DNA4091', model: 'Fiat Pulse 1.3 Drive', item: 'Pastilhas de Freio (Desgaste preventivo)', km: '38.200 km', badge: 'Atenção Freios', color: '#f59e0b' },
+            { name: 'Lucas Ferreira', phone: '11973456789', plate: 'ABC1D23', model: 'Chevrolet Tracker 1.2 Turbo', item: 'Correia Dentada (Revisão 60.000 km)', km: '59.400 km', badge: 'Correia Crítica', color: '#ef4444' },
+            { name: 'Beatriz Rocha', phone: '11964567890', plate: 'XYZ9K88', model: 'Renault Duster Iconic', item: 'Fluidos de Freio e Arrefecimento', km: '42.000 km', badge: 'Fluidos Vencendo', color: '#f59e0b' }
+        ];
+
+        const templates = [
+            { 
+                id: 'pronto', 
+                title: '🚗 Veículo Pronto para Retirada', 
+                desc: 'Avisa o cliente que o carro foi finalizado com o Dossiê atualizado',
+                text: 'Olá {cliente}! Seu veículo {modelo} ({placa}) já está pronto na oficina credenciada DNA AUTO. Todos os serviços foram concluídos e o Dossiê Digital já foi atualizado com as fotos das peças trocadas.' 
+            },
+            { 
+                id: 'revisao', 
+                title: '🛠️ Lembrete de Revisão Preventiva', 
+                desc: 'Aviso baseado no odômetro preventivo para trazer o cliente de volta',
+                text: 'Olá {cliente}! Identificamos no sistema DNA AUTO que seu veículo {modelo} ({placa}) está próximo da revisão preventiva recomendada pelo fabricante. Podemos agendar o melhor horário para você?' 
+            },
+            { 
+                id: 'orcamento', 
+                title: '📋 Orçamento Disponível para Aprovação', 
+                desc: 'Transparência total com valores discriminados de peças e mão de obra',
+                text: 'Olá {cliente}! Realizamos o diagnóstico no seu {modelo} ({placa}). O orçamento detalhado de peças e mão de obra já está pronto para sua aprovação com total transparência.' 
+            },
+            { 
+                id: 'oleo', 
+                title: '🛢️ Alerta de Troca de Óleo e Filtros', 
+                desc: 'Aviso pontual para evitar danos severos no motor do cliente',
+                text: 'Olá {cliente}! Seu {modelo} ({placa}) atingiu o intervalo seguro para a troca de óleo e filtros do motor. Garanta a proteção do seu motor com agendamento rápido aqui na nossa oficina.' 
+            },
+            { 
+                id: 'satisfacao', 
+                title: '⭐ Avaliação & Dossiê Atualizado', 
+                desc: 'Pós-venda para fortalecer a fidelização com a oficina',
+                text: 'Olá {cliente}! Agradecemos pela preferência em nossa oficina. Seu Dossiê Digital DNA AUTO já foi atualizado com a comprovação das manutenções. Como foi sua experiência conosco?' 
+            }
+        ];
+
+        const tab = this.currentWhatsAppTab || 'conversas';
 
         return `
             <div style="padding-bottom: 80px;">
-                <!-- Abas WhatsApp -->
+                <!-- Abas Superiores de Navegação Organizada -->
                 <div class="ws-model-filter-pills" style="margin-top:4px;">
-                    <button type="button" class="ws-model-pill active" onclick="WorkshopView.setWhatsAppTab('conversas', this)">Conversas</button>
-                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setWhatsAppTab('lembretes', this)">Lembretes</button>
-                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setWhatsAppTab('modelos', this)">Modelos</button>
+                    <button type="button" class="ws-model-pill ${tab === 'conversas' ? 'active' : ''}" onclick="WorkshopView.setWhatsAppTab('conversas', this)">
+                        💬 Conversas (${chats.length})
+                    </button>
+                    <button type="button" class="ws-model-pill ${tab === 'lembretes' ? 'active' : ''}" onclick="WorkshopView.setWhatsAppTab('lembretes', this)">
+                        ⏰ Lembretes (${reminders.length})
+                    </button>
+                    <button type="button" class="ws-model-pill ${tab === 'modelos' ? 'active' : ''}" onclick="WorkshopView.setWhatsAppTab('modelos', this)">
+                        📑 Modelos (${templates.length})
+                    </button>
                 </div>
 
-                <!-- Busca de Cliente por Placa -->
-                <div class="ws-model-search-bar">
+                <!-- Barra de Busca Rápida -->
+                <div class="ws-model-search-bar" style="margin-bottom:14px;">
                     <span class="search-icon">🔍</span>
                     <input 
                         type="text" 
-                        placeholder="Buscar cliente por placa"
+                        placeholder="Buscar por cliente, placa ou assunto..."
+                        id="ws-whatsapp-search-input"
                         oninput="WorkshopView.filterWhatsAppChats(this.value)"
                     />
                 </div>
 
-                <!-- Lista de Conversas -->
-                <div class="ws-model-chat-list" id="ws-model-chat-container">
-                    ${chats.map(c => `
-                        <div class="ws-model-chat-item" onclick="WorkshopView.openWhatsAppChat('${c.name}', '${c.plate}')">
-                            <div class="chat-avatar">${c.avatar}</div>
-                            <div class="chat-body">
-                                <div class="chat-header-row">
-                                    <div class="chat-name-wrap">
-                                        <span class="chat-name">${c.name}</span>
-                                        <span class="chat-plate-badge">${c.plate}</span>
+                <!-- CONTEÚDO DA ABA 1: CONVERSAS ATIVAS (CARDS ORGANIZADOS) -->
+                <div id="ws-tab-content-conversas" style="display:${tab === 'conversas' ? 'block' : 'none'};">
+                    <div class="ws-model-chat-list" id="ws-model-chat-container">
+                        ${chats.map(c => `
+                            <div class="ws-msg-client-card" data-search="${(c.name + ' ' + c.plate + ' ' + c.model + ' ' + c.service + ' ' + c.message).toLowerCase()}">
+                                <!-- Cabeçalho do Card: Cliente, Placa e Horário -->
+                                <div class="ws-msg-card-header">
+                                    <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+                                        <div class="ws-msg-client-avatar">
+                                            ${c.name.charAt(0).toUpperCase()}
+                                            <div class="ws-msg-avatar-badge" title="WhatsApp Ativo"></div>
+                                        </div>
+                                        <div class="ws-msg-card-names">
+                                            <h4 class="ws-msg-client-title">
+                                                <span>${c.name}</span>
+                                                <span class="ws-msg-plate-pill">${c.plate}</span>
+                                            </h4>
+                                            <div class="ws-msg-vehicle-sub">
+                                                <span>${c.model}</span>
+                                                <span>•</span>
+                                                <span style="color:${c.statusColor}; font-weight:700;">${c.status}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <span class="chat-time">${c.time}</span>
+                                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0;">
+                                        <span class="ws-msg-time-badge">${c.time}</span>
+                                        ${c.unread > 0 ? `<span class="ws-msg-unread-pill">${c.unread} nova${c.unread > 1 ? 's' : ''}</span>` : `<span style="color:#25d366; font-size:11px; font-weight:700;">✓✓</span>`}
+                                    </div>
                                 </div>
-                                <div class="chat-message-row">
-                                    <span class="chat-message">${c.message}</span>
-                                    ${c.unread > 0 ? `
-                                        <span class="chat-unread-badge">${c.unread}</span>
-                                    ` : `
-                                        <span class="chat-wa-icon">💬</span>
-                                    `}
+
+                                <!-- Balão com a Última Mensagem Formatada -->
+                                <div class="ws-msg-preview-bubble">
+                                    <span class="ws-msg-bubble-icon">💬</span>
+                                    <span class="ws-msg-text-preview">${c.message}</span>
+                                </div>
+
+                                <!-- Barra de Ações Rápidas no Card -->
+                                <div class="ws-msg-card-actions">
+                                    <button type="button" class="ws-btn-chat-primary" onclick="WorkshopView.openMobileChatModal('${c.name}', '${c.phone}', '${c.plate}', '${c.model}', '${c.service}', '${encodeURIComponent(c.message)}')">
+                                        <span>💬</span> <span>Abrir Conversa</span>
+                                    </button>
+                                    <a class="ws-btn-chat-secondary" href="https://wa.me/55${c.phone}?text=${encodeURIComponent('Olá ' + c.name + ', aqui é da oficina credenciada DNA AUTO referente ao seu ' + c.model + ' (' + c.plate + ').')}" target="_blank" rel="noopener">
+                                        <span>📲</span> <span>WhatsApp Web</span>
+                                    </a>
                                 </div>
                             </div>
-                        </div>
-                    `).join('')}
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- CONTEÚDO DA ABA 2: LEMBRETES PREVENTIVOS -->
+                <div id="ws-tab-content-lembretes" style="display:${tab === 'lembretes' ? 'block' : 'none'};">
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        ${reminders.map(r => `
+                            <div class="ws-msg-client-card" style="border-left:4px solid ${r.color};">
+                                <div class="ws-msg-card-header">
+                                    <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+                                        <div class="ws-msg-client-avatar" style="background:${r.color};">
+                                            ${r.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div class="ws-msg-card-names">
+                                            <h4 class="ws-msg-client-title">
+                                                <span>${r.name}</span>
+                                                <span class="ws-msg-plate-pill">${r.plate}</span>
+                                            </h4>
+                                            <div class="ws-msg-vehicle-sub">
+                                                <span>${r.model}</span>
+                                                <span>•</span>
+                                                <span>${r.km}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span style="font-size:10.5px; font-weight:800; color:${r.color}; background:${r.color}22; padding:3px 8px; border-radius:6px; border:1px solid ${r.color}44;">
+                                        ${r.badge}
+                                    </span>
+                                </div>
+
+                                <div class="ws-msg-preview-bubble">
+                                    <span class="ws-msg-bubble-icon" style="color:${r.color};">⚠️</span>
+                                    <span class="ws-msg-text-preview" style="color:#ffffff; font-weight:600;">${r.item}</span>
+                                </div>
+
+                                <div class="ws-msg-card-actions">
+                                    <button type="button" class="ws-btn-chat-primary" onclick="WorkshopView.openClientMonitoringWhatsAppModal('${r.name}', '${r.phone}', '${r.plate}', '${r.model}', '${r.item}', 'PREVENTIVE', '${encodeURIComponent('Olá ' + r.name + ', notamos no sistema DNA AUTO que seu ' + r.model + ' (' + r.plate + ') está com ' + r.km + ' e precisa de atenção em ' + r.item + '. Podemos agendar sua revisão?')}')">
+                                        <span>📲</span> <span>Enviar Lembrete WhatsApp</span>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <!-- CONTEÚDO DA ABA 3: MODELOS PRONTOS DE MENSAGENS -->
+                <div id="ws-tab-content-modelos" style="display:${tab === 'modelos' ? 'block' : 'none'};">
+                    <div style="display:flex; flex-direction:column; gap:12px;">
+                        ${templates.map(t => `
+                            <div class="ws-msg-client-card">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                                    <div>
+                                        <h4 style="margin:0 0 4px; font-size:14px; font-weight:800; color:#ffffff;">${t.title}</h4>
+                                        <span style="font-size:11.5px; color:#94a3b8;">${t.desc}</span>
+                                    </div>
+                                    <span style="background:rgba(56,189,248,0.15); color:#38bdf8; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; text-transform:uppercase;">Modelo</span>
+                                </div>
+
+                                <div style="background:rgba(6,10,18,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 12px; font-size:12px; color:#e2e8f0; line-height:1.45;">
+                                    ${t.text}
+                                </div>
+
+                                <div class="ws-msg-card-actions">
+                                    <button type="button" class="ws-btn-chat-primary" onclick="WorkshopView.useTemplateForNewChat('${encodeURIComponent(t.text)}')">
+                                        <span>📋</span> <span>Usar este Modelo</span>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
 
                 <!-- Botão Flutuante Inferior Nova Mensagem -->
-                <div style="padding: 12px 16px;">
+                <div style="padding: 16px 0 0;">
                     <button type="button" class="ws-model-btn-primary" onclick="WorkshopView.promptNewWhatsAppMessage()">
-                        <span>💬 Nova Mensagem</span>
+                        <span>💬 Nova Mensagem para Cliente</span>
                     </button>
                 </div>
             </div>
@@ -1224,28 +1428,131 @@
     };
 
     WorkshopView.setWhatsAppTab = function(tab, btn) {
+        this.currentWhatsAppTab = tab;
         document.querySelectorAll('.ws-model-filter-pills .ws-model-pill').forEach(b => b.classList.remove('active'));
         if (btn) btn.classList.add('active');
-        this.showToast(`Aba WhatsApp: ${tab}`, 'info');
+
+        const tabConversas = document.getElementById('ws-tab-content-conversas');
+        const tabLembretes = document.getElementById('ws-tab-content-lembretes');
+        const tabModelos   = document.getElementById('ws-tab-content-modelos');
+
+        if (tabConversas) tabConversas.style.display = (tab === 'conversas') ? 'block' : 'none';
+        if (tabLembretes) tabLembretes.style.display = (tab === 'lembretes') ? 'block' : 'none';
+        if (tabModelos)   tabModelos.style.display   = (tab === 'modelos')   ? 'block' : 'none';
     };
 
     WorkshopView.filterWhatsAppChats = function(term) {
         const clean = (term || '').toLowerCase().trim();
-        const items = document.querySelectorAll('#ws-model-chat-container .ws-model-chat-item');
-        items.forEach(item => {
-            const text = item.textContent.toLowerCase();
-            item.style.display = text.includes(clean) ? 'flex' : 'none';
+        const cards = document.querySelectorAll('.ws-msg-client-card');
+        cards.forEach(card => {
+            const dataSearch = card.getAttribute('data-search') || card.textContent.toLowerCase();
+            card.style.display = dataSearch.includes(clean) ? 'flex' : 'none';
         });
     };
 
+    // Modal Interativo de Chat com o Cliente no Mobile
+    WorkshopView.openMobileChatModal = function(name, phone, plate, model, service, encodedMsg) {
+        let modal = document.getElementById('ws-mobile-chat-interact-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'ws-mobile-chat-interact-modal';
+            modal.className = 'modal-overlay active';
+            document.body.appendChild(modal);
+        } else {
+            modal.classList.add('active');
+        }
+
+        const cleanPhone = (phone || '11998765432').replace(/D/g, '');
+        const lastMsg = decodeURIComponent(encodedMsg || 'Olá, como posso ajudar?');
+
+        modal.innerHTML = `
+            <div class="modal-container" style="max-width:440px; background:#0B132B; border:1.5px solid #25D366; border-radius:18px; padding:0; overflow:hidden; box-shadow:0 12px 40px rgba(0,0,0,0.85); margin:18px auto;">
+                <div class="modal-header" style="background:#101B2E; border-bottom:1px solid rgba(37,211,102,0.25); padding:14px 18px; display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:36px; height:36px; border-radius:50%; background:#10b981; color:#000; font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center;">
+                            ${name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <h3 style="margin:0; font-size:14.5px; font-weight:800; color:#FFFFFF;">${name}</h3>
+                            <span style="font-size:11px; color:#00d4ff; font-family:monospace; font-weight:700;">${plate} • ${model}</span>
+                        </div>
+                    </div>
+                    <button class="modal-close-btn" style="color:#94A3B8; font-size:22px; cursor:pointer; background:none; border:none; padding:4px;" onclick="document.getElementById('ws-mobile-chat-interact-modal').classList.remove('active')">&times;</button>
+                </div>
+
+                <div class="modal-body" style="padding:16px; display:flex; flex-direction:column; gap:12px;">
+                    <!-- Histórico Recente de Mensagens -->
+                    <div style="background:#070C18; border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:12px; max-height:160px; overflow-y:auto; display:flex; flex-direction:column; gap:8px;">
+                        <div style="align-self:flex-start; background:rgba(255,255,255,0.08); border-radius:10px 10px 10px 2px; padding:8px 12px; max-width:85%; font-size:12.5px; color:#e2e8f0;">
+                            <span style="display:block; font-size:10px; color:#94a3b8; margin-bottom:2px;">${name}</span>
+                            ${lastMsg}
+                        </div>
+                        <div style="align-self:flex-end; background:#059669; border-radius:10px 10px 2px 10px; padding:8px 12px; max-width:85%; font-size:12.5px; color:#ffffff;">
+                            <span style="display:block; font-size:10px; color:#d1fae5; margin-bottom:2px;">Oficina</span>
+                            Olá ${name}! Estamos cuidando do seu veículo com total dedicação.
+                        </div>
+                    </div>
+
+                    <!-- Respostas Rápidas em Dropdown -->
+                    <div>
+                        <label style="font-size:10.5px; font-weight:800; color:#94A3B8; text-transform:uppercase; display:block; margin-bottom:4px;">Resposta Rápida:</label>
+                        <select id="ws-quick-reply-select" style="width:100%; background:#070C18; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:8px; font-size:12px; color:#38bdf8;" onchange="
+                            const val = this.value;
+                            if (val) document.getElementById('ws-mobile-chat-textarea').value = val;
+                        ">
+                            <option value="">-- Selecione uma resposta rápida --</option>
+                            <option value="Olá ${name}, seu carro já está pronto para retirada! Pode passar aqui na oficina quando preferir.">Carro pronto para retirada</option>
+                            <option value="Olá ${name}, seu orçamento está pronto com fotos das peças anexadas no sistema. Podemos aprovar?">Orçamento com peças</option>
+                            <option value="Olá ${name}, o serviço está em andamento e logo te avisamos assim que concluirmos o teste final.">Serviço em andamento</option>
+                            <option value="Olá ${name}, recebemos as peças novas genuínas e já estamos iniciando a montagem.">Peças recebidas</option>
+                        </select>
+                    </div>
+
+                    <!-- Caixa de Texto -->
+                    <div>
+                        <label style="font-size:10.5px; font-weight:800; color:#94A3B8; text-transform:uppercase; display:block; margin-bottom:4px;">Sua Mensagem:</label>
+                        <textarea id="ws-mobile-chat-textarea" style="width:100%; box-sizing:border-box; background:#070C18; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:10px; font-size:12.5px; color:#FFFFFF; resize:none; height:80px;" placeholder="Digite uma resposta para o cliente..."></textarea>
+                    </div>
+
+                    <!-- Botões de Envio -->
+                    <div style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+                        <button type="button" class="btn" style="background:#25D366; color:#0A101D; font-weight:800; font-size:13px; border:none; border-radius:10px; padding:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;" onclick="
+                            const text = (document.getElementById('ws-mobile-chat-textarea').value || '').trim() || 'Olá ${name}, seu veículo ${model} (${plate}) está sendo atendido em nossa oficina.';
+                            const wppUrl = 'https://wa.me/55${cleanPhone}?text=' + encodeURIComponent(text);
+                            window.open(wppUrl, '_blank');
+                            document.getElementById('ws-mobile-chat-interact-modal').classList.remove('active');
+                            if (typeof WorkshopView.showToast === 'function') WorkshopView.showToast('✅ Conversa aberta no WhatsApp oficial!', 'success');
+                        ">
+                            <span>📲</span> <span>Enviar pelo WhatsApp</span>
+                        </button>
+                        <button type="button" class="btn" style="background:rgba(255,255,255,0.08); color:#CBD5E1; font-weight:700; font-size:12px; border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:10px; cursor:pointer;" onclick="document.getElementById('ws-mobile-chat-interact-modal').classList.remove('active')">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
     WorkshopView.openWhatsAppChat = function(name, plate) {
-        this.showToast(`Abrindo conversa com ${name} (${plate})...`, 'info');
+        this.openMobileChatModal(name, '11998765432', plate, 'Veículo', 'Atendimento', '');
+    };
+
+    WorkshopView.useTemplateForNewChat = function(encodedText) {
+        const text = decodeURIComponent(encodedText || '');
+        const plate = prompt('Digite a placa do veículo do cliente:');
+        if (plate) {
+            const filled = text.replace('{cliente}', 'Cliente').replace('{modelo}', 'Veículo').replace('{placa}', plate.toUpperCase());
+            const wppUrl = 'https://wa.me/?text=' + encodeURIComponent(filled);
+            window.open(wppUrl, '_blank');
+            if (typeof this.showToast === 'function') this.showToast('✅ Modelo preparado para a placa ' + plate.toUpperCase(), 'success');
+        }
     };
 
     WorkshopView.promptNewWhatsAppMessage = function() {
-        const plate = prompt('Digite a placa do veículo para enviar aviso WhatsApp:');
+        const plate = prompt('Digite a placa do veículo para enviar mensagem no WhatsApp:');
         if (plate) {
-            this.showToast(`Mensagem preparada para a placa ${plate.toUpperCase()}.`, 'success');
+            this.openMobileChatModal('Cliente (' + plate.toUpperCase() + ')', '11998765432', plate.toUpperCase(), 'Veículo Cadastrado', 'Atendimento', '');
         }
     };
 

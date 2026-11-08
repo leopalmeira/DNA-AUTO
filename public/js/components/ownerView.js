@@ -2157,7 +2157,7 @@ const OwnerView = {
                         </svg>
                     </div>
                     <h5 class="dna-print-quick-name">Serviços & Peças</h5>
-                    <span class="dna-print-quick-sub">${timeline.length > 0 ? timeline.length + ' registros' : '12 registros'}</span>
+                    <span class="dna-print-quick-sub">${(timeline && timeline.length > 0) ? (timeline.length + (timeline.length === 1 ? ' registro' : ' registros')) : '0 registros'}</span>
                 </div>
 
                 <!-- Card 2: Revisões Preventivas -->
@@ -2169,7 +2169,7 @@ const OwnerView = {
                         </svg>
                     </div>
                     <h5 class="dna-print-quick-name">Revisões Preventivas</h5>
-                    <span class="dna-print-quick-sub">Próxima em 8.000 km</span>
+                    <span class="dna-print-quick-sub">${(timeline && timeline.length > 0) ? 'Próxima em 8.000 km' : 'Aguardando 1ª revisão'}</span>
                 </div>
 
                 <!-- Card 3: Alertas & Manutenções -->
@@ -2181,7 +2181,7 @@ const OwnerView = {
                         </svg>
                     </div>
                     <h5 class="dna-print-quick-name">Alertas & Manutenções</h5>
-                    <span class="dna-print-quick-sub" style="color:#D97706; font-weight:700;">2 pendentes</span>
+                    <span class="dna-print-quick-sub" style="${(timeline && timeline.length > 0) ? 'color:#D97706; font-weight:700;' : 'color:#10B981; font-weight:700;'}">${(timeline && timeline.length > 0) ? '2 pendentes' : '0 pendentes'}</span>
                 </div>
 
                 <!-- Card 4: Gastos com Carro -->
@@ -2193,7 +2193,7 @@ const OwnerView = {
                         </svg>
                     </div>
                     <h5 class="dna-print-quick-name">Gastos com Carro</h5>
-                    <span class="dna-print-quick-sub">R$ 2.430,00</span>
+                    <span class="dna-print-quick-sub">${expenses.hasExpenses ? ('R$ ' + (expenses.totalCents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : 'R$ 0,00'}</span>
                 </div>
 
                 <!-- Card 5: Mini OBD (Em Breve) -->
@@ -3473,70 +3473,72 @@ const OwnerView = {
     // ── 9. TELA: GASTOS COM CARRO — EXATAMENTE COMO NO PRINT OFICIAL (TELA 9) ──
     renderExpensesScreen() {
         const period = this.expensePeriod || 'semester';
+        const expenses = this.calculateVehicleExpenses();
+        const v = this.vehicleData || {};
+        const timeline = v.timeline || [];
+        const hasData = expenses.hasExpenses && timeline.length > 0;
+        const totalVal = hasData 
+            ? (period === 'year' ? expenses.totalCents : expenses.semesterCents) 
+            : 0;
+        const formattedTotal = 'R$ ' + (totalVal / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+        const periodLabel = period === 'year' ? 'no último ano' : (period === 'all' ? 'em todo o histórico' : 'nos últimos 6 meses');
 
         return `
             <div class="dna-print-screen-container">
                 <!-- 1. Card de Destaque com Valor Total e Badge Verde -->
                 <div class="dna-print-expense-hero-card">
-                    <span class="dna-print-expense-hero-label">Total investido nos últimos 6 meses</span>
+                    <span class="dna-print-expense-hero-label">Total investido ${periodLabel}</span>
                     <div class="dna-print-expense-hero-val-row">
-                        <h2 class="dna-print-expense-hero-val">R$ 2.430,00</h2>
-                        <span class="dna-print-expense-hero-badge">↓ -18%</span>
+                        <h2 class="dna-print-expense-hero-val">${formattedTotal}</h2>
+                        ${hasData ? `
+                            <span class="dna-print-expense-hero-badge">✓ Auditado</span>
+                        ` : `
+                            <span class="dna-print-expense-hero-badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3);">0 registros</span>
+                        `}
                     </div>
-                    <span class="dna-print-expense-hero-sub">Economia média de R$ 520 em relação à média da categoria</span>
+                    <span class="dna-print-expense-hero-sub">
+                        ${hasData 
+                            ? 'Valores comprovados com fotos e notas fiscais chanceladas por oficinas credenciadas.' 
+                            : 'Nenhum gasto ou serviço registrado ainda. Os dados aparecerão aqui automaticamente assim que sua oficina credenciada registrar as manutenções do carro.'}
+                    </span>
                 </div>
 
                 <!-- 2. Gráfico de Barras dos Últimos 6 Meses -->
                 <div class="dna-print-chart-card">
                     <div class="dna-print-chart-header">
                         <h5 class="dna-print-chart-title">Evolução Mensal</h5>
-                        <span class="dna-print-chart-period">Abr - Set 2024</span>
+                        <span class="dna-print-chart-period">${hasData ? 'Histórico Ativo' : '0 Lançamentos'}</span>
                     </div>
 
-                    <div class="dna-print-bars-row">
-                        <div class="dna-print-bar-col">
-                            <span class="dna-print-bar-val">R$ 220</span>
-                            <div class="dna-print-bar-track">
-                                <div class="dna-print-bar-fill" style="height: 28%;"></div>
-                            </div>
-                            <span class="dna-print-bar-month">Abr</span>
+                    ${hasData ? `
+                        <div class="dna-print-bars-row">
+                            ${(() => {
+                                const maxCost = Math.max(...timeline.map(t => (t.total_cost_cents || t.cost_cents || 100)), 100);
+                                return timeline.slice(0, 6).map((item, idx) => {
+                                    const cost = item.total_cost_cents || item.cost_cents || 0;
+                                    const pct = Math.max(15, Math.min(100, Math.round((cost / maxCost) * 100)));
+                                    const d = item.date ? new Date(item.date) : new Date();
+                                    const mName = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+                                    const isLast = idx === 0;
+                                    return `
+                                        <div class="dna-print-bar-col ${isLast ? 'highlight' : ''}">
+                                            <span class="dna-print-bar-val">R$ ${Math.round(cost / 100)}</span>
+                                            <div class="dna-print-bar-track">
+                                                <div class="dna-print-bar-fill ${isLast ? 'bar-primary' : ''}" style="height: ${pct}%;"></div>
+                                            </div>
+                                            <span class="dna-print-bar-month ${isLast ? 'highlight' : ''}">${mName}</span>
+                                        </div>
+                                    `;
+                                }).join('');
+                            })()}
                         </div>
-                        <div class="dna-print-bar-col">
-                            <span class="dna-print-bar-val">R$ 380</span>
-                            <div class="dna-print-bar-track">
-                                <div class="dna-print-bar-fill" style="height: 46%;"></div>
-                            </div>
-                            <span class="dna-print-bar-month">Mai</span>
+                    ` : `
+                        <div style="padding:24px 16px; text-align:center; color:#94a3b8; font-size:12.5px;">
+                            <span style="font-size:26px; display:block; margin-bottom:6px;">📊</span>
+                            <strong style="color:#ffffff; font-size:13.5px; display:block; margin-bottom:4px;">Gráfico de Gastos Zerado</strong>
+                            <span>Conforme as oficinas credenciadas lançarem serviços, revisões e troca de peças com fotos, a evolução financeira aparecerá aqui mês a mês.</span>
                         </div>
-                        <div class="dna-print-bar-col">
-                            <span class="dna-print-bar-val">R$ 160</span>
-                            <div class="dna-print-bar-track">
-                                <div class="dna-print-bar-fill" style="height: 20%;"></div>
-                            </div>
-                            <span class="dna-print-bar-month">Jun</span>
-                        </div>
-                        <div class="dna-print-bar-col">
-                            <span class="dna-print-bar-val">R$ 410</span>
-                            <div class="dna-print-bar-track">
-                                <div class="dna-print-bar-fill" style="height: 50%;"></div>
-                            </div>
-                            <span class="dna-print-bar-month">Jul</span>
-                        </div>
-                        <div class="dna-print-bar-col">
-                            <span class="dna-print-bar-val">R$ 450</span>
-                            <div class="dna-print-bar-track">
-                                <div class="dna-print-bar-fill" style="height: 56%;"></div>
-                            </div>
-                            <span class="dna-print-bar-month">Ago</span>
-                        </div>
-                        <div class="dna-print-bar-col highlight">
-                            <span class="dna-print-bar-val">R$ 810</span>
-                            <div class="dna-print-bar-track">
-                                <div class="dna-print-bar-fill bar-primary" style="height: 100%;"></div>
-                            </div>
-                            <span class="dna-print-bar-month highlight">Set</span>
-                        </div>
-                    </div>
+                    `}
                 </div>
 
                 <!-- 3. Abas de Filtros em Pills -->
@@ -3559,30 +3561,30 @@ const OwnerView = {
                         <div class="dna-print-cat-item">
                             <div class="dna-print-cat-row">
                                 <span class="dna-print-cat-name">🔧 Manutenções e Peças</span>
-                                <span class="dna-print-cat-val">65% • R$ 1.579,50</span>
+                                <span class="dna-print-cat-val">${hasData ? `100% • ${formattedTotal}` : '0% • R$ 0,00'}</span>
                             </div>
                             <div class="dna-print-cat-track">
-                                <div class="dna-print-cat-bar" style="width:65%; background:#0066FF;"></div>
+                                <div class="dna-print-cat-bar" style="width:${hasData ? '100%' : '0%'}; background:#0066FF;"></div>
                             </div>
                         </div>
 
                         <div class="dna-print-cat-item">
                             <div class="dna-print-cat-row">
                                 <span class="dna-print-cat-name">⛽ Combustível</span>
-                                <span class="dna-print-cat-val">25% • R$ 607,50</span>
+                                <span class="dna-print-cat-val">0% • R$ 0,00</span>
                             </div>
                             <div class="dna-print-cat-track">
-                                <div class="dna-print-cat-bar" style="width:25%; background:#16A34A;"></div>
+                                <div class="dna-print-cat-bar" style="width:0%; background:#16A34A;"></div>
                             </div>
                         </div>
 
                         <div class="dna-print-cat-item">
                             <div class="dna-print-cat-row">
                                 <span class="dna-print-cat-name">📄 Documentação e Seguro</span>
-                                <span class="dna-print-cat-val">10% • R$ 243,00</span>
+                                <span class="dna-print-cat-val">0% • R$ 0,00</span>
                             </div>
                             <div class="dna-print-cat-track">
-                                <div class="dna-print-cat-bar" style="width:10%; background:#D97706;"></div>
+                                <div class="dna-print-cat-bar" style="width:0%; background:#D97706;"></div>
                             </div>
                         </div>
                     </div>
@@ -3594,27 +3596,28 @@ const OwnerView = {
                 </div>
 
                 <div class="dna-print-receipts-list">
-                    <div class="dna-print-receipt-item" onclick="OwnerView.navigateTo('services')">
-                        <div class="dna-print-receipt-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+                    ${hasData ? timeline.map(item => {
+                        const cost = item.total_cost_cents || item.cost_cents || 0;
+                        const dateStr = item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'Data não informada';
+                        const wsName = item.workshop_name || 'Oficina Credenciada';
+                        const nfStr = item.invoice_number ? `NF-e #${item.invoice_number}` : 'Comprovante Digital';
+                        return `
+                            <div class="dna-print-receipt-item" onclick="OwnerView.navigateTo('services')">
+                                <div class="dna-print-receipt-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
+                                </div>
+                                <div class="dna-print-receipt-info">
+                                    <strong>${item.title || 'Serviço Realizado'}</strong>
+                                    <span>${dateStr} • ${nfStr} • ${wsName}</span>
+                                </div>
+                                <span class="dna-print-receipt-val">R$ ${(cost / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                        `;
+                    }).join('') : `
+                        <div style="padding:22px 16px; text-align:center; color:#94a3b8; font-size:12.5px; background:rgba(15,23,42,0.6); border-radius:12px; border:1px dashed rgba(255,255,255,0.12);">
+                            <span>Nenhum comprovante ou nota fiscal cadastrada até o momento.</span>
                         </div>
-                        <div class="dna-print-receipt-info">
-                            <strong>Troca de Óleo e Filtros</strong>
-                            <span>14/09/2024 • NF-e #48921 • Auto Mecânica Silva</span>
-                        </div>
-                        <span class="dna-print-receipt-val">R$ 380,00</span>
-                    </div>
-
-                    <div class="dna-print-receipt-item" onclick="OwnerView.navigateTo('services')">
-                        <div class="dna-print-receipt-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>
-                        </div>
-                        <div class="dna-print-receipt-info">
-                            <strong>Pastilhas de Freio Cerâmica</strong>
-                            <span>02/08/2024 • NF-e #31205 • Oficina Premium Car</span>
-                        </div>
-                        <span class="dna-print-receipt-val">R$ 450,00</span>
-                    </div>
+                    `}
                 </div>
 
                 <div style="height:14px;"></div>

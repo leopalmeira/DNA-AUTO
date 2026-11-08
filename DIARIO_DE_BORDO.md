@@ -2642,3 +2642,32 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Botão de acesso rápido `💰 Ver Minhas Comissões` no topo do menu lateral e na topbar do painel.
 - **Qualidade & Testes:**
   - 100% de aprovação nas 5 suítes automatizadas de teste do projeto (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js`, `oficina.finance.test.js` e `representante.homologation.test.js`).
+
+
+---
+
+### Ciclo 121 — Gastos e Relatórios Zerados para Novo Cliente Cadastrado & Reorganização dos Cards de Mensagens da Oficina (08/11/2026)
+- **Objetivo:** Atender a duas melhorias cruciais de usabilidade e consistência de dados reportadas pelo usuário:
+  1. **Dados de Relatório e Gastos do Carro Zerados no Cadastro do Cliente (`cliente.app` e `public`):**
+     - **Problema Identificado:** Quando um novo proprietário se cadastrava ou ativava seu veículo (sem nenhuma manutenção lançada por oficina ainda), o app exibia dados mockados herdados de protótipos antigos (`R$ 2.430,00`, `12 registros`, gráficos estáticos de 2024 e comprovantes fictícios).
+     - **Solução Implementada:**
+       - **Dashboard do Cliente:** Os cards de `Serviços & Peças` e `Gastos com Carro` agora refletem estritamente a realidade do veículo cadastrado: `0 registros` e `R$ 0,00` quando nenhuma oficina tiver lançado serviços ainda.
+       - **Tela Nativa de Gastos com Carro (`#gastos`):** Total investido inicializado em `R$ 0,00`, tendência zerada (`0 gastos registrados nos últimos 6 meses`), evolução mensal sem lançamentos fictícios e lista de despesas substituída por um empty-state informativo e amigável: *"Nenhum gasto ou serviço registrado ainda. Os valores, notas fiscais e relatórios aparecerão aqui automaticamente assim que sua oficina credenciada registrar as manutenções e peças do carro."*
+       - **Dossiê / `ownerView.js` (`renderExpensesScreen`):** Tela de relatório de gastos totalmente dinamizada. Quando não há despesas registradas (`!expenses.hasExpenses`), exibe `R$ 0,00`, badge `0 registros`, gráfico zerado explicativo e lista de comprovantes limpa com mensagem informativa. Quando houver manutenções lançadas por oficinas credenciadas, computa valores reais, porcentagens e links de comprovação.
+       - Sincronização 100% garantida entre `cliente.app/` e `public/`.
+  2. **Reorganização Completa dos Cards de Mensagens com o Cliente no App da Oficina (`oficina.app` e `public`):**
+     - **Problema Identificado:** Na seção de WhatsApp/Avisos do app da oficina, os cards de conversas com clientes estavam desorganizados, com inconsistência entre classes CSS e HTML, ausência de contexto veicular imediato e falta de ações rápidas.
+     - **Solução Implementada:**
+       - **Novo Design dos Cards de Mensagens (`.ws-msg-client-card`):**
+         - **Cabeçalho Estruturado:** Avatar com indicador pulsante de canal WhatsApp oficial, nome do cliente em destaque, badge Mercosul da placa em ciano de alto contraste (`BRA2E19`) e horário/data da mensagem.
+         - **Contexto do Veículo & Status:** Identificação do modelo (`Honda Civic Touring`) e status temático do serviço (`Pronto`, `Agendado`, `Orçamento`, `Concluído`).
+         - **Balão de Mensagem Formatado:** Prévia legível da mensagem em caixa com ícone de chat e contagem de mensagens não lidas ou indicador de leitura (`✓✓`).
+         - **Barra de Ações Rápidas Integrada:** Botão direto **`[ 💬 Abrir Conversa ]`** e botão **`[ 📲 WhatsApp Web ]`**.
+       - **Sistema de 3 Abas Funcionais no Topo:**
+         - `💬 Conversas`: Lista os cards de mensagens ativas com busca instantânea por cliente, placa ou assunto.
+         - `⏰ Lembretes`: Cards de alerta preventivo (troca de óleo, pastilhas, correia, fluidos) com botão de envio rápido de lembrete no WhatsApp.
+         - `📑 Modelos`: Catálogo de templates padronizados (Veículo Pronto, Revisão Preventiva, Orçamento, Troca de Óleo, Pesquisa de Satisfação) com botão de uso a 1 clique.
+       - **Modal Interativo de Chat Mobile (`openMobileChatModal`):** Permite visualizar o histórico recente, selecionar respostas rápidas prontas em dropdown e enviar respostas personalizadas pelo WhatsApp oficial com 1 toque.
+       - Sincronização 100% garantida entre `oficina.app/` e `public/`.
+- **Qualidade & Testes:**
+  - 100% de aprovação nas 5 suítes automatizadas de teste do projeto (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js`, `oficina.finance.test.js` e `representante.homologation.test.js`).
