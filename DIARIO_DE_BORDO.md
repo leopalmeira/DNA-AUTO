@@ -2615,6 +2615,33 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Qualidade & Testes:**
   - 100% de aprovação nas 5 suítes automatizadas de teste do projeto (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js`, `oficina.finance.test.js` e `representante.homologation.test.js`).
 
+---
+
+### Ciclo 122 — Restauração do Simulador de Ganhos Interativo & Refinamento Visual do Layout e CSS do Portal do Representante (08/11/2026)
+- **Objetivo:** Atender à solicitação direta do usuário sobre a restauração indispensável do **Simulador de Ganhos** na página do representante e refinamento completo do layout e CSS que haviam ficado desbalanceados no desktop:
+  1. **Restauração e Modernização do Simulador de Ganhos Interativo (`#simulador`):**
+     - O simulador interativo foi totalmente restaurado na landing page pública do representante (`public/representante.html`) e também integrado como aba própria no painel administrativo pós-login (`tab-simulador`).
+     - **Controles Deslizantes Fluidos (Sliders):**
+       - **Oficinas Conquistadas:** Faixa de 1 a 30 oficinas (padrão: 5).
+       - **Veículos Atendidos por Dia Útil por Oficina:** Faixa de 1 a 10 veículos (padrão: 2).
+       - **Dias Úteis no Mês:** Faixa de 18 a 26 dias úteis (padrão: 22).
+     - **Cálculos em Tempo Real com Glassmorphism:**
+       - **Comissão Mensal do Representante:** Computada a `R$ 5,90` por ativação paga (ex: 5 oficinas × 2 cadastros/dia × 22 dias = 220 cadastros = **R$ 1.298,00/mês**).
+       - **Volume de Novos Clientes Ativados:** Atualização instantânea do volume mensal.
+       - **Repasse Gerado para Oficinas Parceiras:** Cálculo do split de 50% (`R$ 24,95` por cliente pago, gerando **R$ 5.489,00/mês** para as oficinas da carteira no exemplo padrão), reforçando o argumento de atração para donos de oficina.
+       - **Projeção em 24 Meses:** Cálculo acumulado no período de vigência comercial oficial (**R$ 31.152,00** no exemplo de 5 oficinas).
+     - **Tabela Comparativa de Cenários Dinâmica:** Cenários padronizados para 5, 10, 15, 20 e 30 oficinas gerados com formatação em Real (`R$`).
+  2. **Refinamento do CSS e Harmonização Visual Desktop e Mobile:**
+     - **Hero Section Responsiva:**
+       - **Desktop (>= 992px):** Layout em 2 colunas perfeitamente balanceado — à esquerda: pill institucional, título grandioso, parágrafo explicativo, badges de benefícios com ícones, botões `Cadastre-se como Representante →`, `Fazer Login` e botão direto `🧮 Simular Ganhos ↗`; à direita: moldura elegante da foto do representante/mecânico sem cortes abruptos, cantos arredondados suaves (`border-radius: 20px`), glow ciano/azul perimetral e dois mini-cards flutuantes animados com destaques de comissão e repasse.
+       - **Mobile (< 992px):** Experiência vertical fluida, com imagem no topo com cantos arredondados, tipografia com `clamp()`, botões com altura ideal para o polegar (`min-height: 48px`) e ausência total de rolagem horizontal quebrada.
+     - **Topbar Pública Limpa:** Botões `Entrar` e `Cadastre-se` com espaçamento e padding simétricos, contraste ideal e transições suaves.
+     - **Simulador no Painel Autenticado:** Adicionado botão `🧮 Simulador de Ganhos` no menu lateral (desktop) e no drawer móvel (celular), além da aba `tab-simulador` para simulação direta de metas pelo representante credenciado.
+- **Qualidade & Testes:**
+  - 100% de aprovação na homologação oficial do representante (`test/representante.homologation.test.js` — 20 cenários aprovados).
+  - 100% de aprovação nas baterias de componentes, finanças e integração da oficina (`test/oficina.components.test.js`, `test/oficina.finance.test.js`, `test/oficina.integration.test.js`).
+
+
 
 ---
 
@@ -2642,6 +2669,33 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Botão de acesso rápido `💰 Ver Minhas Comissões` no topo do menu lateral e na topbar do painel.
 - **Qualidade & Testes:**
   - 100% de aprovação nas 5 suítes automatizadas de teste do projeto (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js`, `oficina.finance.test.js` e `representante.homologation.test.js`).
+
+---
+
+### Ciclo 122 — Restauração do Simulador de Ganhos Interativo & Refinamento Visual do Layout e CSS do Portal do Representante (08/11/2026)
+- **Objetivo:** Atender à solicitação direta do usuário sobre a restauração indispensável do **Simulador de Ganhos** na página do representante e refinamento completo do layout e CSS que haviam ficado desbalanceados no desktop:
+  1. **Restauração e Modernização do Simulador de Ganhos Interativo (`#simulador`):**
+     - O simulador interativo foi totalmente restaurado na landing page pública do representante (`public/representante.html`) e também integrado como aba própria no painel administrativo pós-login (`tab-simulador`).
+     - **Controles Deslizantes Fluidos (Sliders):**
+       - **Oficinas Conquistadas:** Faixa de 1 a 30 oficinas (padrão: 5).
+       - **Veículos Atendidos por Dia Útil por Oficina:** Faixa de 1 a 10 veículos (padrão: 2).
+       - **Dias Úteis no Mês:** Faixa de 18 a 26 dias úteis (padrão: 22).
+     - **Cálculos em Tempo Real com Glassmorphism:**
+       - **Comissão Mensal do Representante:** Computada a `R$ 5,90` por ativação paga (ex: 5 oficinas × 2 cadastros/dia × 22 dias = 220 cadastros = **R$ 1.298,00/mês**).
+       - **Volume de Novos Clientes Ativados:** Atualização instantânea do volume mensal.
+       - **Repasse Gerado para Oficinas Parceiras:** Cálculo do split de 50% (`R$ 24,95` por cliente pago, gerando **R$ 5.489,00/mês** para as oficinas da carteira no exemplo padrão), reforçando o argumento de atração para donos de oficina.
+       - **Projeção em 24 Meses:** Cálculo acumulado no período de vigência comercial oficial (**R$ 31.152,00** no exemplo de 5 oficinas).
+     - **Tabela Comparativa de Cenários Dinâmica:** Cenários padronizados para 5, 10, 15, 20 e 30 oficinas gerados com formatação em Real (`R$`).
+  2. **Refinamento do CSS e Harmonização Visual Desktop e Mobile:**
+     - **Hero Section Responsiva:**
+       - **Desktop (>= 992px):** Layout em 2 colunas perfeitamente balanceado — à esquerda: pill institucional, título grandioso, parágrafo explicativo, badges de benefícios com ícones, botões `Cadastre-se como Representante →`, `Fazer Login` e botão direto `🧮 Simular Ganhos ↗`; à direita: moldura elegante da foto do representante/mecânico sem cortes abruptos, cantos arredondados suaves (`border-radius: 20px`), glow ciano/azul perimetral e dois mini-cards flutuantes animados com destaques de comissão e repasse.
+       - **Mobile (< 992px):** Experiência vertical fluida, com imagem no topo com cantos arredondados, tipografia com `clamp()`, botões com altura ideal para o polegar (`min-height: 48px`) e ausência total de rolagem horizontal quebrada.
+     - **Topbar Pública Limpa:** Botões `Entrar` e `Cadastre-se` com espaçamento e padding simétricos, contraste ideal e transições suaves.
+     - **Simulador no Painel Autenticado:** Adicionado botão `🧮 Simulador de Ganhos` no menu lateral (desktop) e no drawer móvel (celular), além da aba `tab-simulador` para simulação direta de metas pelo representante credenciado.
+- **Qualidade & Testes:**
+  - 100% de aprovação na homologação oficial do representante (`test/representante.homologation.test.js` — 20 cenários aprovados).
+  - 100% de aprovação nas baterias de componentes, finanças e integração da oficina (`test/oficina.components.test.js`, `test/oficina.finance.test.js`, `test/oficina.integration.test.js`).
+
 
 
 ---
@@ -2671,3 +2725,30 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
        - Sincronização 100% garantida entre `oficina.app/` e `public/`.
 - **Qualidade & Testes:**
   - 100% de aprovação nas 5 suítes automatizadas de teste do projeto (`api.test.js`, `oficina.components.test.js`, `oficina.integration.test.js`, `oficina.finance.test.js` e `representante.homologation.test.js`).
+
+---
+
+### Ciclo 122 — Restauração do Simulador de Ganhos Interativo & Refinamento Visual do Layout e CSS do Portal do Representante (08/11/2026)
+- **Objetivo:** Atender à solicitação direta do usuário sobre a restauração indispensável do **Simulador de Ganhos** na página do representante e refinamento completo do layout e CSS que haviam ficado desbalanceados no desktop:
+  1. **Restauração e Modernização do Simulador de Ganhos Interativo (`#simulador`):**
+     - O simulador interativo foi totalmente restaurado na landing page pública do representante (`public/representante.html`) e também integrado como aba própria no painel administrativo pós-login (`tab-simulador`).
+     - **Controles Deslizantes Fluidos (Sliders):**
+       - **Oficinas Conquistadas:** Faixa de 1 a 30 oficinas (padrão: 5).
+       - **Veículos Atendidos por Dia Útil por Oficina:** Faixa de 1 a 10 veículos (padrão: 2).
+       - **Dias Úteis no Mês:** Faixa de 18 a 26 dias úteis (padrão: 22).
+     - **Cálculos em Tempo Real com Glassmorphism:**
+       - **Comissão Mensal do Representante:** Computada a `R$ 5,90` por ativação paga (ex: 5 oficinas × 2 cadastros/dia × 22 dias = 220 cadastros = **R$ 1.298,00/mês**).
+       - **Volume de Novos Clientes Ativados:** Atualização instantânea do volume mensal.
+       - **Repasse Gerado para Oficinas Parceiras:** Cálculo do split de 50% (`R$ 24,95` por cliente pago, gerando **R$ 5.489,00/mês** para as oficinas da carteira no exemplo padrão), reforçando o argumento de atração para donos de oficina.
+       - **Projeção em 24 Meses:** Cálculo acumulado no período de vigência comercial oficial (**R$ 31.152,00** no exemplo de 5 oficinas).
+     - **Tabela Comparativa de Cenários Dinâmica:** Cenários padronizados para 5, 10, 15, 20 e 30 oficinas gerados com formatação em Real (`R$`).
+  2. **Refinamento do CSS e Harmonização Visual Desktop e Mobile:**
+     - **Hero Section Responsiva:**
+       - **Desktop (>= 992px):** Layout em 2 colunas perfeitamente balanceado — à esquerda: pill institucional, título grandioso, parágrafo explicativo, badges de benefícios com ícones, botões `Cadastre-se como Representante →`, `Fazer Login` e botão direto `🧮 Simular Ganhos ↗`; à direita: moldura elegante da foto do representante/mecânico sem cortes abruptos, cantos arredondados suaves (`border-radius: 20px`), glow ciano/azul perimetral e dois mini-cards flutuantes animados com destaques de comissão e repasse.
+       - **Mobile (< 992px):** Experiência vertical fluida, com imagem no topo com cantos arredondados, tipografia com `clamp()`, botões com altura ideal para o polegar (`min-height: 48px`) e ausência total de rolagem horizontal quebrada.
+     - **Topbar Pública Limpa:** Botões `Entrar` e `Cadastre-se` com espaçamento e padding simétricos, contraste ideal e transições suaves.
+     - **Simulador no Painel Autenticado:** Adicionado botão `🧮 Simulador de Ganhos` no menu lateral (desktop) e no drawer móvel (celular), além da aba `tab-simulador` para simulação direta de metas pelo representante credenciado.
+- **Qualidade & Testes:**
+  - 100% de aprovação na homologação oficial do representante (`test/representante.homologation.test.js` — 20 cenários aprovados).
+  - 100% de aprovação nas baterias de componentes, finanças e integração da oficina (`test/oficina.components.test.js`, `test/oficina.finance.test.js`, `test/oficina.integration.test.js`).
+
