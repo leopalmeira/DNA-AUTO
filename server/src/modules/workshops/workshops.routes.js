@@ -1608,10 +1608,10 @@ router.post('/:id/clients/register-activation', async (req, res) => {
     try {
         const workshopId = req.params.id;
         const plate = (req.body.license_plate || req.body.plate || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-        const clientName = (req.body.client_name || req.body.name || req.body.full_name || '').trim();
-        const rawPhone = (req.body.whatsapp || req.body.phone || req.body.client_phone || '').trim();
-        const cleanEmail = (req.body.email || req.body.client_email || '').trim().toLowerCase();
-        const rawPassword = req.body.password || req.body.client_password || '';
+        const clientName = (req.body.client_name || req.body.owner_name || req.body.name || req.body.full_name || '').trim();
+        const rawPhone = (req.body.whatsapp || req.body.phone || req.body.client_phone || req.body.owner_phone || '').trim();
+        const cleanEmail = (req.body.email || req.body.client_email || req.body.owner_email || '').trim().toLowerCase();
+        const rawPassword = req.body.password || req.body.client_password || req.body.owner_password || '';
         const brand = (req.body.brand || '').trim();
         const model = (req.body.model || req.body.vehicle_model || '').trim();
 
@@ -1719,25 +1719,35 @@ router.post('/:id/clients/register-activation', async (req, res) => {
             }
         }
 
-        // 2. Provisiona Usuário e Proprietário caso e-mail tenha sido fornecido
+        // 2. Provisiona Usuário e Proprietário caso e-mail tenha sido fornecido (Senha inicial padrão 123456 com troca no 1º acesso)
+        try {
+            db.exec(`ALTER TABLE users ADD COLUMN must_change_password INTEGER DEFAULT 0`);
+        } catch (_) {}
+
         let userId = null;
         if (cleanEmail && cleanEmail.includes('@')) {
+            const initialPass = (rawPassword && String(rawPassword).trim().length >= 6) ? String(rawPassword).trim() : '123456';
+            const mustChange = (initialPass === '123456') ? 1 : 0;
             let existingUser = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanEmail);
             if (existingUser) {
                 userId = existingUser.id;
-                if (rawPassword && rawPassword.length >= 6) {
-                    const passHash = bcrypt.hashSync(rawPassword, 10);
-                    db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(passHash, userId);
-                }
-            } else {
-                userId = `usr_${Date.now()}`;
-                const cleanPhoneDigits = rawPhone.replace(/\D/g, '');
-                const initialPass = (rawPassword && rawPassword.length >= 6) ? rawPassword : (cleanPhoneDigits.length >= 6 ? cleanPhoneDigits.slice(-6) : '123456');
                 const passHash = bcrypt.hashSync(initialPass, 10);
                 db.prepare(`
-                    INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
-                    VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0)
-                `).run(userId, clientName, cleanEmail, passHash, rawPhone || null);
+                    UPDATE users
+                    SET password_hash = ?,
+                        name = COALESCE(NULLIF(?, ''), name),
+                        phone = COALESCE(NULLIF(?, ''), phone),
+                        must_change_password = ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                `).run(passHash, clientName, rawPhone || null, mustChange, userId);
+            } else {
+                userId = `usr_${Date.now()}`;
+                const passHash = bcrypt.hashSync(initialPass, 10);
+                db.prepare(`
+                    INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo, must_change_password)
+                    VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0, ?)
+                `).run(userId, clientName, cleanEmail, passHash, rawPhone || null, mustChange);
             }
         }
 
@@ -2129,6 +2139,330 @@ router.get('/:id/contact-log', async (req, res) => {
     } catch (err) {
         console.error('Erro ao listar histórico de contatos:', err);
         res.status(500).json({ error: 'Erro ao consultar contatos da oficina.' });
+    }
+});
+
+// ==============================================================================
+// GESTÃO DE REGISTRADORES TÉCNICOS DA OFICINA E RESUMO MENSAL DO MENU NO TOPO
+// ==============================================================================
+try {
+    db.exec(`ALTER TABLE workshop_users ADD COLUMN generated_password TEXT`);
+} catch (_) {}
+try {
+    db.exec(`ALTER TABLE workshop_users ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP`);
+} catch (_) {}
+try {
+    db.exec(`ALTER TABLE service_records ADD COLUMN registered_by_user_id TEXT`);
+} catch (_) {}
+try {
+    db.exec(`ALTER TABLE service_records ADD COLUMN part_photo_url TEXT`);
+} catch (_) {}
+try {
+    db.prepare(`
+        INSERT OR IGNORE INTO roles (id, code, name, description)
+        VALUES ('role_workshop_staff', 'WORKSHOP_STAFF', 'Registrador de Peças e Serviços', 'Profissional da oficina que fotografa peças e lança serviços vinculados à placa')
+    `).run();
+} catch (_) {}
+
+function generateRandomStaffPassword() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let pass = '';
+    for (let i = 0; i < 6; i++) {
+        pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return pass;
+}
+
+function buildWorkshopMenuSummary(workshopId) {
+    const targetWsId = workshopId || 'ws_veloce';
+    const AbacatePayService = require('../../services/abacatePay.service');
+    const balance = AbacatePayService.getOrCreateBalance(db, targetWsId);
+
+    // Quantidade de carros cadastrados no mês atual pela oficina
+    const monthActivationsRow = db.prepare(`
+        SELECT COUNT(DISTINCT license_plate) as count
+        FROM client_activations
+        WHERE workshop_id = ?
+          AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
+    `).get(targetWsId);
+
+    const monthDnaRow = db.prepare(`
+        SELECT COUNT(DISTINCT vehicle_id) as count
+        FROM vehicle_dna
+        WHERE activated_by_workshop_id = ?
+          AND strftime('%Y-%m', activated_at) = strftime('%Y-%m', 'now')
+    `).get(targetWsId);
+
+    const totalActivationsRow = db.prepare(`
+        SELECT COUNT(DISTINCT license_plate) as count
+        FROM client_activations
+        WHERE workshop_id = ?
+    `).get(targetWsId);
+
+    const carsRegisteredMonth = Math.max(
+        Number(monthActivationsRow?.count || 0),
+        Number(monthDnaRow?.count || 0)
+    );
+    const carsRegisteredTotal = Math.max(
+        Number(totalActivationsRow?.count || 0),
+        carsRegisteredMonth
+    );
+
+    // Repasse por veículo cadastrado para a plataforma: R$ 24,95 (50% da taxa de ativação R$ 49,90)
+    const transferPerCarCents = 2495;
+    const unbilledCarsCount = Number(balance?.unbilled_cars_count || 0);
+    const monthTransferCents = carsRegisteredMonth * transferPerCarCents;
+    const pendingTransferCents = unbilledCarsCount * transferPerCarCents;
+    const effectiveTransferCents = pendingTransferCents > 0 ? pendingTransferCents : monthTransferCents;
+
+    // Lista de registradores ativos da oficina
+    const registrarsRaw = db.prepare(`
+        SELECT wu.id as registrar_id,
+               wu.user_id,
+               wu.workshop_id,
+               wu.position_title,
+               wu.generated_password,
+               wu.created_at,
+               u.name,
+               u.email,
+               u.status
+        FROM workshop_users wu
+        JOIN users u ON wu.user_id = u.id
+        WHERE wu.workshop_id = ?
+          AND u.status = 'ACTIVE'
+          AND (u.role_id = 'role_workshop_staff' OR wu.position_title LIKE '%Registrador%' OR wu.generated_password IS NOT NULL)
+        ORDER BY wu.rowid DESC
+    `).all(targetWsId);
+
+    const registrars = registrarsRaw.map(r => {
+        const countRow = db.prepare(`
+            SELECT COUNT(*) as total
+            FROM service_records
+            WHERE (workshop_id = ? OR workshop_id IS NULL)
+              AND (registered_by_user_id = ? OR LOWER(responsible_technician_name) = LOWER(?))
+        `).get(targetWsId, r.user_id, r.name);
+
+        return {
+            id: r.registrar_id,
+            user_id: r.user_id,
+            workshop_id: r.workshop_id,
+            name: r.name,
+            email: r.email,
+            position_title: r.position_title || 'Registrador de Peças e Serviços',
+            generated_password: r.generated_password || '******',
+            created_at: r.created_at,
+            services_launched_count: Number(countRow?.total || 0)
+        };
+    });
+
+    // Últimos serviços lançados (para o dono da oficina ver foto da peça, valor, data, placa e quem lançou)
+    const recentLaunchesRaw = db.prepare(`
+        SELECT sr.id,
+               sr.vehicle_id,
+               sr.workshop_id,
+               sr.service_title,
+               sr.description,
+               sr.service_date,
+               sr.mileage,
+               sr.total_cost_cents,
+               sr.responsible_technician_name,
+               sr.registered_by_user_id,
+               sr.part_photo_url,
+               sr.created_at,
+               v.license_plate,
+               v.brand,
+               v.model,
+               (SELECT vp.file_path FROM vehicle_photos vp WHERE vp.service_record_id = sr.id ORDER BY vp.created_at DESC LIMIT 1) as photo_from_gallery
+        FROM service_records sr
+        JOIN vehicles v ON sr.vehicle_id = v.id
+        WHERE sr.workshop_id = ?
+           OR v.workshop_id = ?
+           OR v.id IN (SELECT vehicle_id FROM client_activations WHERE workshop_id = ?)
+        ORDER BY sr.created_at DESC, sr.service_date DESC
+        LIMIT 30
+    `).all(targetWsId, targetWsId, targetWsId);
+
+    const launchedServices = recentLaunchesRaw.map(s => {
+        const costCents = Number(s.total_cost_cents || 0);
+        const photoUrl = s.part_photo_url || s.photo_from_gallery || null;
+        return {
+            id: s.id,
+            vehicle_id: s.vehicle_id,
+            license_plate: s.license_plate,
+            vehicle_model: `${s.brand || ''} ${s.model || ''}`.trim() || 'Veículo',
+            service_title: s.service_title,
+            description: s.description || '',
+            service_date: s.service_date,
+            mileage: Number(s.mileage || 0),
+            total_cost_cents: costCents,
+            total_cost_formatted: `R$ ${(costCents / 100).toFixed(2).replace('.', ',')}`,
+            responsible_technician_name: s.responsible_technician_name || 'Profissional da Oficina',
+            launched_by_name: s.responsible_technician_name || 'Profissional da Oficina',
+            registered_by_user_id: s.registered_by_user_id || null,
+            part_photo_url: photoUrl
+        };
+    });
+
+    return {
+        workshop_id: targetWsId,
+        monthly_billing: {
+            cars_registered_month: carsRegisteredMonth,
+            cars_registered_total: carsRegisteredTotal,
+            unbilled_cars_count: unbilledCarsCount,
+            prepaid_cars_credits: Number(balance?.prepaid_cars_credits || 0),
+            transfer_per_car_cents: transferPerCarCents,
+            transfer_per_car_formatted: 'R$ 24,95',
+            month_transfer_amount_cents: monthTransferCents,
+            month_transfer_amount_formatted: `R$ ${(monthTransferCents / 100).toFixed(2).replace('.', ',')}`,
+            pending_transfer_amount_cents: pendingTransferCents,
+            pending_transfer_amount_formatted: `R$ ${(pendingTransferCents / 100).toFixed(2).replace('.', ',')}`,
+            amount_to_transfer_cents: effectiveTransferCents,
+            amount_to_transfer_formatted: `R$ ${(effectiveTransferCents / 100).toFixed(2).replace('.', ',')}`
+        },
+        registrars,
+        launched_services: launchedServices
+    };
+}
+
+// Obter registradores, auditoria de serviços lançados e resumo mensal de carros/repasse
+router.get('/:id/registrars', (req, res) => {
+    try {
+        const data = buildWorkshopMenuSummary(req.params.id);
+        res.json({ success: true, ...data });
+    } catch (err) {
+        console.error('Erro ao buscar registradores e resumo do menu:', err);
+        res.status(500).json({ error: 'Erro ao carregar dados de registradores e resumo mensal.' });
+    }
+});
+
+router.get('/:id/menu-summary', (req, res) => {
+    try {
+        const data = buildWorkshopMenuSummary(req.params.id);
+        res.json({ success: true, ...data });
+    } catch (err) {
+        console.error('Erro ao buscar resumo do menu:', err);
+        res.status(500).json({ error: 'Erro ao carregar resumo mensal da oficina.' });
+    }
+});
+
+// Cadastrar novo Registrador Técnico da Oficina (Nome + E-mail + Senha Aleatória Gerada)
+router.post('/:id/registrars', (req, res) => {
+    try {
+        const workshopId = req.params.id || 'ws_veloce';
+        const { name, email, password } = req.body;
+
+        const cleanName = (name || '').trim();
+        const cleanEmail = (email || '').trim().toLowerCase();
+
+        if (!cleanName || !cleanEmail || !cleanEmail.includes('@')) {
+            return res.status(400).json({ error: 'Informe o nome completo e um e-mail válido para o registrador.' });
+        }
+
+        // Garante que a oficina existe
+        let workshop = db.prepare('SELECT * FROM workshops WHERE id = ?').get(workshopId);
+        if (!workshop) {
+            workshop = db.prepare('SELECT * FROM workshops LIMIT 1').get();
+        }
+        const targetWsId = workshop ? workshop.id : workshopId;
+
+        const randomPassword = (password && String(password).trim().length >= 4)
+            ? String(password).trim()
+            : generateRandomStaffPassword();
+        const passwordHash = bcrypt.hashSync(randomPassword, 10);
+
+        let existingUser = db.prepare('SELECT * FROM users WHERE LOWER(email) = ?').get(cleanEmail);
+        let userId = null;
+
+        if (existingUser) {
+            if (existingUser.status === 'ACTIVE' && existingUser.role_id !== 'role_workshop_staff') {
+                return res.status(409).json({ error: 'Este e-mail já está em uso por outra conta ativa na plataforma.' });
+            }
+            userId = existingUser.id;
+            db.prepare(`
+                UPDATE users
+                SET name = ?,
+                    password_hash = ?,
+                    role_id = 'role_workshop_staff',
+                    status = 'ACTIVE',
+                    must_change_password = 0,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `).run(cleanName, passwordHash, userId);
+        } else {
+            userId = `usr_reg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+            db.prepare(`
+                INSERT INTO users (id, name, email, password_hash, role_id, status, is_demo, must_change_password)
+                VALUES (?, ?, ?, ?, 'role_workshop_staff', 'ACTIVE', 0, 0)
+            `).run(userId, cleanName, cleanEmail, passwordHash);
+        }
+
+        // Vincula em workshop_users
+        db.prepare('DELETE FROM workshop_users WHERE user_id = ?').run(userId);
+        const wuId = `wu_reg_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+        db.prepare(`
+            INSERT INTO workshop_users (id, workshop_id, user_id, position_title, can_activate_dna, can_prove_services, generated_password, created_at)
+            VALUES (?, ?, ?, 'Registrador de Peças e Serviços', 1, 1, ?, CURRENT_TIMESTAMP)
+        `).run(wuId, targetWsId, userId, randomPassword);
+
+        const summary = buildWorkshopMenuSummary(targetWsId);
+
+        res.status(201).json({
+            success: true,
+            message: `Registrador ${cleanName} cadastrado com sucesso!`,
+            registrar: {
+                id: wuId,
+                user_id: userId,
+                workshop_id: targetWsId,
+                name: cleanName,
+                email: cleanEmail,
+                position_title: 'Registrador de Peças e Serviços',
+                generated_password: randomPassword
+            },
+            ...summary
+        });
+    } catch (err) {
+        console.error('Erro ao cadastrar registrador:', err);
+        res.status(500).json({ error: 'Erro ao cadastrar registrador da oficina.' });
+    }
+});
+
+// Excluir Perfil de Registrador Cadastrado pela Conta da Oficina
+router.delete('/:id/registrars/:registrarId', (req, res) => {
+    try {
+        const workshopId = req.params.id || 'ws_veloce';
+        const registrarId = req.params.registrarId;
+
+        const record = db.prepare(`
+            SELECT * FROM workshop_users
+            WHERE (id = ? OR user_id = ?) AND workshop_id = ?
+        `).get(registrarId, registrarId, workshopId) || db.prepare(`
+            SELECT * FROM workshop_users
+            WHERE id = ? OR user_id = ?
+        `).get(registrarId, registrarId);
+
+        if (!record) {
+            return res.status(404).json({ error: 'Perfil de registrador não encontrado.' });
+        }
+
+        db.prepare('DELETE FROM workshop_users WHERE id = ?').run(record.id);
+        db.prepare(`
+            UPDATE users
+            SET status = 'INACTIVE',
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(record.user_id);
+
+        const summary = buildWorkshopMenuSummary(workshopId);
+        res.json({
+            success: true,
+            message: 'Perfil do registrador excluído com sucesso! O acesso deste profissional foi revogado.',
+            deleted_registrar_id: record.id,
+            deleted_user_id: record.user_id,
+            ...summary
+        });
+    } catch (err) {
+        console.error('Erro ao excluir registrador:', err);
+        res.status(500).json({ error: 'Erro ao excluir perfil do registrador.' });
     }
 });
 

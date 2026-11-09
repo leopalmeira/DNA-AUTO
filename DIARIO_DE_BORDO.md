@@ -2641,6 +2641,33 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - 100% de aprovação na homologação oficial do representante (`test/representante.homologation.test.js` — 20 cenários aprovados).
   - 100% de aprovação nas baterias de componentes, finanças e integração da oficina (`test/oficina.components.test.js`, `test/oficina.finance.test.js`, `test/oficina.integration.test.js`).
 
+---
+
+### Ciclo 123 — Simplificação do App da Oficina (6 Cards, Cadastro Unificado com Senha 123456, Remoção do Rodapé, Menu no Topo com Registradores e Repasse Mensal) & 1º Acesso do Cliente (09/11/2026)
+- **Objetivo:** Implementar a reformulação operacional completa do App da Oficina (`/oficina`) e do App do Cliente (`/cliente`) solicitada pelo usuário:
+  1. **Dashboard do App da Oficina (`/oficina`):**
+     - Removidos definitivamente os cards **`Entrada de Veículos`** e **`Notas Fiscais`**, mantendo uma grade enxuta de 6 cards operacionais.
+     - Transformado o card **`Buscar Veículos`** em **`Cadastrar Veículo`** (apenas essa função).
+     - Ao abrir **`Cadastrar Veículo`**, o fluxo segue: digitar a placa (`#mobile-reg-plate-input`) → o sistema puxa automaticamente os dados do carro (marca, modelo, ano, cor e Tabela FIPE) → mais abaixo preenche os dados do dono do carro (**Nome**, **E-mail**, **WhatsApp**) e a **senha inicial já fica gravada como `123456`** (`must_change_password = 1`).
+  2. **Remoção dos 5 Botões do Rodapé da Oficina:**
+     - Removida a barra inferior de 5 botões (`"Início, Veículos, Serviços, Agenda, Mais"`) em `renderMobileBottomNav()` e via CSS (`.ws-model-bottom-nav { display: none !important; }`).
+  3. **Botão de Menu no Topo do App da Oficina (`☰ Menu`), Cadastrar Registradores e Resumo Mensal:**
+     - Adicionado o botão **`☰ Menu`** (`#ws-top-menu-toggle-btn`) no topo do aplicativo da oficina, abrindo o drawer completo (`renderWorkshopTopMenuDrawerInner()`) e a tela dedicada (`renderMobileRegistrarsView()`) contendo:
+       - **Fechamento Mensal:** Quantos carros a oficina cadastrou no mês (`cars_registered_month`) e quanto tem que repassar para a plataforma (`amount_to_transfer_formatted`, `R$ 24,95` por carro).
+       - **Cadastrar Registradores:** Cadastro de profissionais que tiram foto das peças e lançam a vinculação da peça junto à placa do carro e o valor do serviço. Cadastra **Nome**, **E-mail** e **Senha Aleatória Gerada** automaticamente para o profissional fazer login.
+       - **Auditoria de Lançamentos para o Dono da Oficina:** Quando o registrador lança o serviço no cadastro do cliente, o sistema grava e exibe **quem lançou** (`responsible_technician_name`), a **foto da peça** (`part_photo_url`), a **placa**, o **custo do serviço** e a **data do serviço**.
+       - **Exclusão de Perfil:** A conta da oficina pode excluir o perfil do registrador cadastrado (`DELETE /api/v1/workshops/:id/registrars/:registrarId`) a qualquer momento.
+       - **Sair do App:** Botão de desconexão segura (`WorkshopView.logout()`).
+  4. **Primeiro Acesso com Senha `"123456"` e Edição de Dados Pessoais no App do Cliente (`/cliente`):**
+     - No primeiro acesso do cliente no app com seu e-mail e a senha `"123456"`, **antes de tudo** o sistema exibe o modal obrigatório `#first-access-password-modal` solicitando a troca de senha (`POST /api/v1/auth/change-initial-password`).
+     - Dentro do app do cliente (`Minha Conta` / `#profile-modal`), adicionado o formulário de edição de dados pessoais (**Nome Completo**, **E-mail**, **WhatsApp** e **Nova Senha**) integrado com `PUT /api/v1/auth/profile`.
+- **Qualidade & Testes:**
+  - `test/oficina.components.test.js`: 100% aprovado.
+  - `test/oficina.integration.test.js`: Expandido para **22 passos oficiais** (incluindo Passos 21 e 22 para validação de senha `123456`, troca no 1º acesso, edição de perfil do cliente, cadastro/login/exclusão de registradores, lançamento com foto/valor/autor e resumo mensal de repasse), 100% aprovado.
+  - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
+  - `test/api.test.js`: 58/58 testes aprovados.
+
+
 
 
 ---
@@ -2695,6 +2722,33 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Qualidade & Testes:**
   - 100% de aprovação na homologação oficial do representante (`test/representante.homologation.test.js` — 20 cenários aprovados).
   - 100% de aprovação nas baterias de componentes, finanças e integração da oficina (`test/oficina.components.test.js`, `test/oficina.finance.test.js`, `test/oficina.integration.test.js`).
+
+---
+
+### Ciclo 123 — Simplificação do App da Oficina (6 Cards, Cadastro Unificado com Senha 123456, Remoção do Rodapé, Menu no Topo com Registradores e Repasse Mensal) & 1º Acesso do Cliente (09/11/2026)
+- **Objetivo:** Implementar a reformulação operacional completa do App da Oficina (`/oficina`) e do App do Cliente (`/cliente`) solicitada pelo usuário:
+  1. **Dashboard do App da Oficina (`/oficina`):**
+     - Removidos definitivamente os cards **`Entrada de Veículos`** e **`Notas Fiscais`**, mantendo uma grade enxuta de 6 cards operacionais.
+     - Transformado o card **`Buscar Veículos`** em **`Cadastrar Veículo`** (apenas essa função).
+     - Ao abrir **`Cadastrar Veículo`**, o fluxo segue: digitar a placa (`#mobile-reg-plate-input`) → o sistema puxa automaticamente os dados do carro (marca, modelo, ano, cor e Tabela FIPE) → mais abaixo preenche os dados do dono do carro (**Nome**, **E-mail**, **WhatsApp**) e a **senha inicial já fica gravada como `123456`** (`must_change_password = 1`).
+  2. **Remoção dos 5 Botões do Rodapé da Oficina:**
+     - Removida a barra inferior de 5 botões (`"Início, Veículos, Serviços, Agenda, Mais"`) em `renderMobileBottomNav()` e via CSS (`.ws-model-bottom-nav { display: none !important; }`).
+  3. **Botão de Menu no Topo do App da Oficina (`☰ Menu`), Cadastrar Registradores e Resumo Mensal:**
+     - Adicionado o botão **`☰ Menu`** (`#ws-top-menu-toggle-btn`) no topo do aplicativo da oficina, abrindo o drawer completo (`renderWorkshopTopMenuDrawerInner()`) e a tela dedicada (`renderMobileRegistrarsView()`) contendo:
+       - **Fechamento Mensal:** Quantos carros a oficina cadastrou no mês (`cars_registered_month`) e quanto tem que repassar para a plataforma (`amount_to_transfer_formatted`, `R$ 24,95` por carro).
+       - **Cadastrar Registradores:** Cadastro de profissionais que tiram foto das peças e lançam a vinculação da peça junto à placa do carro e o valor do serviço. Cadastra **Nome**, **E-mail** e **Senha Aleatória Gerada** automaticamente para o profissional fazer login.
+       - **Auditoria de Lançamentos para o Dono da Oficina:** Quando o registrador lança o serviço no cadastro do cliente, o sistema grava e exibe **quem lançou** (`responsible_technician_name`), a **foto da peça** (`part_photo_url`), a **placa**, o **custo do serviço** e a **data do serviço**.
+       - **Exclusão de Perfil:** A conta da oficina pode excluir o perfil do registrador cadastrado (`DELETE /api/v1/workshops/:id/registrars/:registrarId`) a qualquer momento.
+       - **Sair do App:** Botão de desconexão segura (`WorkshopView.logout()`).
+  4. **Primeiro Acesso com Senha `"123456"` e Edição de Dados Pessoais no App do Cliente (`/cliente`):**
+     - No primeiro acesso do cliente no app com seu e-mail e a senha `"123456"`, **antes de tudo** o sistema exibe o modal obrigatório `#first-access-password-modal` solicitando a troca de senha (`POST /api/v1/auth/change-initial-password`).
+     - Dentro do app do cliente (`Minha Conta` / `#profile-modal`), adicionado o formulário de edição de dados pessoais (**Nome Completo**, **E-mail**, **WhatsApp** e **Nova Senha**) integrado com `PUT /api/v1/auth/profile`.
+- **Qualidade & Testes:**
+  - `test/oficina.components.test.js`: 100% aprovado.
+  - `test/oficina.integration.test.js`: Expandido para **22 passos oficiais** (incluindo Passos 21 e 22 para validação de senha `123456`, troca no 1º acesso, edição de perfil do cliente, cadastro/login/exclusão de registradores, lançamento com foto/valor/autor e resumo mensal de repasse), 100% aprovado.
+  - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
+  - `test/api.test.js`: 58/58 testes aprovados.
+
 
 
 
@@ -2751,4 +2805,31 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
 - **Qualidade & Testes:**
   - 100% de aprovação na homologação oficial do representante (`test/representante.homologation.test.js` — 20 cenários aprovados).
   - 100% de aprovação nas baterias de componentes, finanças e integração da oficina (`test/oficina.components.test.js`, `test/oficina.finance.test.js`, `test/oficina.integration.test.js`).
+
+---
+
+### Ciclo 123 — Simplificação do App da Oficina (6 Cards, Cadastro Unificado com Senha 123456, Remoção do Rodapé, Menu no Topo com Registradores e Repasse Mensal) & 1º Acesso do Cliente (09/11/2026)
+- **Objetivo:** Implementar a reformulação operacional completa do App da Oficina (`/oficina`) e do App do Cliente (`/cliente`) solicitada pelo usuário:
+  1. **Dashboard do App da Oficina (`/oficina`):**
+     - Removidos definitivamente os cards **`Entrada de Veículos`** e **`Notas Fiscais`**, mantendo uma grade enxuta de 6 cards operacionais.
+     - Transformado o card **`Buscar Veículos`** em **`Cadastrar Veículo`** (apenas essa função).
+     - Ao abrir **`Cadastrar Veículo`**, o fluxo segue: digitar a placa (`#mobile-reg-plate-input`) → o sistema puxa automaticamente os dados do carro (marca, modelo, ano, cor e Tabela FIPE) → mais abaixo preenche os dados do dono do carro (**Nome**, **E-mail**, **WhatsApp**) e a **senha inicial já fica gravada como `123456`** (`must_change_password = 1`).
+  2. **Remoção dos 5 Botões do Rodapé da Oficina:**
+     - Removida a barra inferior de 5 botões (`"Início, Veículos, Serviços, Agenda, Mais"`) em `renderMobileBottomNav()` e via CSS (`.ws-model-bottom-nav { display: none !important; }`).
+  3. **Botão de Menu no Topo do App da Oficina (`☰ Menu`), Cadastrar Registradores e Resumo Mensal:**
+     - Adicionado o botão **`☰ Menu`** (`#ws-top-menu-toggle-btn`) no topo do aplicativo da oficina, abrindo o drawer completo (`renderWorkshopTopMenuDrawerInner()`) e a tela dedicada (`renderMobileRegistrarsView()`) contendo:
+       - **Fechamento Mensal:** Quantos carros a oficina cadastrou no mês (`cars_registered_month`) e quanto tem que repassar para a plataforma (`amount_to_transfer_formatted`, `R$ 24,95` por carro).
+       - **Cadastrar Registradores:** Cadastro de profissionais que tiram foto das peças e lançam a vinculação da peça junto à placa do carro e o valor do serviço. Cadastra **Nome**, **E-mail** e **Senha Aleatória Gerada** automaticamente para o profissional fazer login.
+       - **Auditoria de Lançamentos para o Dono da Oficina:** Quando o registrador lança o serviço no cadastro do cliente, o sistema grava e exibe **quem lançou** (`responsible_technician_name`), a **foto da peça** (`part_photo_url`), a **placa**, o **custo do serviço** e a **data do serviço**.
+       - **Exclusão de Perfil:** A conta da oficina pode excluir o perfil do registrador cadastrado (`DELETE /api/v1/workshops/:id/registrars/:registrarId`) a qualquer momento.
+       - **Sair do App:** Botão de desconexão segura (`WorkshopView.logout()`).
+  4. **Primeiro Acesso com Senha `"123456"` e Edição de Dados Pessoais no App do Cliente (`/cliente`):**
+     - No primeiro acesso do cliente no app com seu e-mail e a senha `"123456"`, **antes de tudo** o sistema exibe o modal obrigatório `#first-access-password-modal` solicitando a troca de senha (`POST /api/v1/auth/change-initial-password`).
+     - Dentro do app do cliente (`Minha Conta` / `#profile-modal`), adicionado o formulário de edição de dados pessoais (**Nome Completo**, **E-mail**, **WhatsApp** e **Nova Senha**) integrado com `PUT /api/v1/auth/profile`.
+- **Qualidade & Testes:**
+  - `test/oficina.components.test.js`: 100% aprovado.
+  - `test/oficina.integration.test.js`: Expandido para **22 passos oficiais** (incluindo Passos 21 e 22 para validação de senha `123456`, troca no 1º acesso, edição de perfil do cliente, cadastro/login/exclusão de registradores, lançamento com foto/valor/autor e resumo mensal de repasse), 100% aprovado.
+  - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
+  - `test/api.test.js`: 58/58 testes aprovados.
+
 

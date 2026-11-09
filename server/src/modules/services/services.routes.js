@@ -39,20 +39,21 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             invoice_amount_cents
         } = req.body;
 
+        const vehicleLookupKey = vehicle_id || req.body.license_plate || req.body.plate;
         const titleVal = service_title || req.body.title || 'Revisão Periódica';
         const dateVal = service_date || new Date().toISOString().split('T')[0];
 
-        if (!vehicle_id || !titleVal || !mileage) {
-            return res.status(400).json({ error: 'Campos obrigatórios: veículo, título do serviço e quilometragem.' });
+        if (!vehicleLookupKey || !titleVal || !mileage) {
+            return res.status(400).json({ error: 'Campos obrigatórios: veículo (ou placa), título do serviço e quilometragem.' });
         }
 
         let vehicle = db.prepare(`
             SELECT v.*, vd.dna_code FROM vehicles v
             LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
             WHERE v.id = ? OR UPPER(REPLACE(v.license_plate, '-', '')) = UPPER(REPLACE(?, '-', ''))
-        `).get(vehicle_id, vehicle_id);
+        `).get(vehicleLookupKey, vehicleLookupKey);
 
-        if (!vehicle && vehicle_id && String(vehicle_id).toLowerCase().includes('civic')) {
+        if (!vehicle && vehicleLookupKey && String(vehicleLookupKey).toLowerCase().includes('civic')) {
             vehicle = db.prepare(`
                 SELECT v.*, vd.dna_code FROM vehicles v
                 LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
@@ -81,7 +82,43 @@ router.post('/workshop-register', authenticateToken, upload.fields([
         });
 
         const laborCost = Number(labor_cost_cents) || 0;
-        const totalCost = partsCostCents + laborCost;
+        const explicitTotalCost = Number(req.body.total_cost_cents || req.body.service_value_cents || 0);
+        const totalCost = (partsCostCents + laborCost) > 0 ? (partsCostCents + laborCost) : explicitTotalCost;
+
+        // Identificar exatamente qual profissional/registrador lançou o serviço
+        try {
+            db.exec(`ALTER TABLE service_records ADD COLUMN registered_by_user_id TEXT`);
+        } catch (_) {}
+        try {
+            db.exec(`ALTER TABLE service_records ADD COLUMN part_photo_url TEXT`);
+        } catch (_) {}
+
+        let dbUser = null;
+        let dbWorkshopUser = null;
+        if (req.user && req.user.id) {
+            try {
+                dbUser = db.prepare('SELECT id, name, email FROM users WHERE id = ?').get(req.user.id);
+                dbWorkshopUser = db.prepare('SELECT workshop_id, position_title FROM workshop_users WHERE user_id = ?').get(req.user.id);
+            } catch (_) {}
+        }
+
+        const effectiveWorkshopId = workshop_id
+            || (req.user && req.user.workshop ? req.user.workshop.workshop_id : null)
+            || (dbWorkshopUser ? dbWorkshopUser.workshop_id : null)
+            || vehicle.workshop_id
+            || null;
+
+        const effectiveLauncherName = (responsible_technician_name && String(responsible_technician_name).trim())
+            || (dbUser && dbUser.name)
+            || (req.user && req.user.name)
+            || 'Profissional da Oficina';
+
+        const effectiveLauncherId = (dbUser && dbUser.id) || (req.user && req.user.id) || null;
+
+        let primaryPhotoUrl = req.body.part_photo_url || req.body.photo_base64 || req.body.piece_photo_base64 || null;
+        if (req.files && req.files['photos'] && req.files['photos'].length > 0) {
+            primaryPhotoUrl = '/uploads/photos/' + req.files['photos'][0].filename;
+        }
 
         // Executa inserção em transação atômica
         db.transaction(() => {
@@ -89,11 +126,13 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             db.prepare(`
                 INSERT INTO service_records (
                     id, vehicle_id, workshop_id, declared_by_owner_id, responsible_technician_name,
+                    registered_by_user_id, part_photo_url,
                     service_date, mileage, category, service_title, description,
                     parts_cost_cents, labor_cost_cents, total_cost_cents, warranty_months,
                     proof_level, proof_status, workshop_confirmation_status, workshop_confirmation_date
                 ) VALUES (
                     @id, @vehicle_id, @workshop_id, NULL, @responsible_technician_name,
+                    @registered_by_user_id, @part_photo_url,
                     @service_date, @mileage, @category, @service_title, @description,
                     @parts_cost_cents, @labor_cost_cents, @total_cost_cents, @warranty_months,
                     4, 'WORKSHOP_PROVEN', 'CONFIRMED', CURRENT_TIMESTAMP
@@ -101,8 +140,10 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             `).run({
                 id: serviceId,
                 vehicle_id: targetVehicleId,
-                workshop_id: workshop_id || (req.user && req.user.workshop ? req.user.workshop.workshop_id : null),
-                responsible_technician_name: responsible_technician_name || req.user.name,
+                workshop_id: effectiveWorkshopId,
+                responsible_technician_name: effectiveLauncherName,
+                registered_by_user_id: effectiveLauncherId,
+                part_photo_url: primaryPhotoUrl,
                 service_date: dateVal,
                 mileage: Number(mileage),
                 category: category || 'Geral',
@@ -171,7 +212,7 @@ router.post('/workshop-register', authenticateToken, upload.fields([
                     Number(mileage),
                     dateVal,
                     'Ordem de Serviço Chancelada por Oficina Credenciada',
-                    req.user ? req.user.id : null
+                    effectiveLauncherId
                 );
             } catch (_) {}
 
@@ -195,8 +236,8 @@ router.post('/workshop-register', authenticateToken, upload.fields([
                 );
             }
 
-            // 5. Inserir Fotos se enviadas
-            if (req.files && req.files['photos']) {
+            // 5. Inserir Fotos se enviadas via multipart ou base64
+            if (req.files && req.files['photos'] && req.files['photos'].length > 0) {
                 req.files['photos'].forEach((f, idx) => {
                     db.prepare(`
                         INSERT INTO vehicle_photos (
@@ -207,13 +248,28 @@ router.post('/workshop-register', authenticateToken, upload.fields([
                         'pho_' + Date.now() + '_' + idx,
                         targetVehicleId,
                         serviceId,
-                        workshop_id || (req.user.workshop ? req.user.workshop.workshop_id : null),
+                        effectiveWorkshopId,
                         idx === 0 ? 'INSTALLED_PART' : 'SERVICE_DONE',
-                        `Registro Fotográfico do Serviço - ${titleVal}`,
+                        `Registro Fotográfico da Peça/Serviço - ${titleVal} (por ${effectiveLauncherName})`,
                         '/uploads/photos/' + f.filename,
-                        req.user.id
+                        effectiveLauncherId
                     );
                 });
+            } else if (primaryPhotoUrl) {
+                db.prepare(`
+                    INSERT INTO vehicle_photos (
+                        id, vehicle_id, service_record_id, workshop_id, photo_category,
+                        title, file_path, registered_by_user_id
+                    ) VALUES (?, ?, ?, ?, 'INSTALLED_PART', ?, ?, ?)
+                `).run(
+                    'pho_' + Date.now() + '_b64',
+                    targetVehicleId,
+                    serviceId,
+                    effectiveWorkshopId,
+                    `Foto da Peça Vinculada - ${titleVal} (por ${effectiveLauncherName})`,
+                    primaryPhotoUrl,
+                    effectiveLauncherId
+                );
             }
         })();
 
@@ -231,7 +287,7 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             entityId: serviceId,
             vehicleDnaCode: vehicle.dna_code,
             ipAddress: req.ip,
-            dataAfter: { service_title, mileage, totalCost, proof_level: 4 }
+            dataAfter: { service_title: titleVal, mileage, totalCost, proof_level: 4, launched_by: effectiveLauncherName }
         });
 
         res.status(201).json({
@@ -239,7 +295,13 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             serviceId,
             proof_level: 4,
             proof_status: 'WORKSHOP_PROVEN',
-            message: 'Serviço registrado e comprovado com sucesso no DNA AUTO!'
+            responsible_technician_name: effectiveLauncherName,
+            launched_by_name: effectiveLauncherName,
+            registered_by_user_id: effectiveLauncherId,
+            part_photo_url: primaryPhotoUrl,
+            total_cost_cents: totalCost,
+            service_date: dateVal,
+            message: `Serviço registrado com sucesso por ${effectiveLauncherName}!`
         });
     } catch (err) {
         console.error('Erro ao registrar serviço na oficina:', err);

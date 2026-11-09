@@ -329,18 +329,520 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // HEADER SUPERIOR DO APP (CONFORME MODELO OFICIAL)
+    // HELPERS DO USUÁRIO LOGADO E DO MENU SUPERIOR DA OFICINA
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.getLoggedWorkshopUser = function() {
+        try {
+            if (typeof localStorage !== 'undefined') {
+                const raw = localStorage.getItem('dna_logged_user');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && parsed.name) return parsed;
+                }
+            }
+        } catch (_) {}
+        return {
+            id: 'usr_ws_default',
+            name: 'Carlos',
+            role_code: 'WORKSHOP_OWNER',
+            workshop: {
+                workshop_id: this.currentWorkshopId || 'ws_veloce',
+                workshop_name: this.officialWorkshopName || 'Oficina Credenciada'
+            }
+        };
+    };
+
+    WorkshopView.getEffectiveWorkshopId = function() {
+        const logged = this.getLoggedWorkshopUser();
+        if (logged && logged.workshop && logged.workshop.workshop_id) {
+            return logged.workshop.workshop_id;
+        }
+        if (this.currentWorkshopId) return this.currentWorkshopId;
+        try {
+            if (typeof localStorage !== 'undefined') {
+                const saved = localStorage.getItem('dna_workshop_id');
+                if (saved) return saved;
+            }
+        } catch (_) {}
+        return 'ws_veloce';
+    };
+
+    WorkshopView._menuSummaryCache = {
+        monthly_billing: {
+            cars_registered_month: 0,
+            cars_registered_total: 0,
+            unbilled_cars_count: 0,
+            transfer_per_car_formatted: 'R$ 24,95',
+            month_transfer_amount_formatted: 'R$ 0,00',
+            amount_to_transfer_formatted: 'R$ 0,00'
+        },
+        registrars: [],
+        launched_services: []
+    };
+
+    WorkshopView.generateRandomPasswordString = function() {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let str = '';
+        for (let i = 0; i < 6; i++) {
+            str += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return str;
+    };
+
+    WorkshopView.refreshRandomStaffPasswordInput = function() {
+        const newPass = this.generateRandomPasswordString();
+        this._currentRandomStaffPassword = newPass;
+        const inp1 = document.getElementById('ws-menu-reg-password');
+        const inp2 = document.getElementById('ws-page-reg-password');
+        if (inp1) inp1.value = newPass;
+        if (inp2) inp2.value = newPass;
+        return newPass;
+    };
+
+    WorkshopView.loadWorkshopMenuSummary = async function() {
+        const wsId = this.getEffectiveWorkshopId();
+        try {
+            const token = typeof localStorage !== 'undefined' ? localStorage.getItem('dna_token') : null;
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+
+            const r = await fetch(`/api/v1/workshops/${encodeURIComponent(wsId)}/registrars`, { headers }).catch(() => null);
+            if (r && r.ok) {
+                const data = await r.json();
+                if (data && data.success) {
+                    this._menuSummaryCache = {
+                        monthly_billing: data.monthly_billing || this._menuSummaryCache.monthly_billing,
+                        registrars: Array.isArray(data.registrars) ? data.registrars : [],
+                        launched_services: Array.isArray(data.launched_services) ? data.launched_services : []
+                    };
+                    this.updateOpenMenuDrawerDOM();
+                    if (this.currentSection === 'registradores') {
+                        const viewport = document.getElementById('ws-mobile-active-viewport');
+                        if (viewport) viewport.innerHTML = this.renderMobileRegistrarsView();
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Falha ao carregar resumo do menu da oficina:', e);
+        }
+        return this._menuSummaryCache;
+    };
+
+    WorkshopView.updateOpenMenuDrawerDOM = function() {
+        const overlay = document.getElementById('ws-top-menu-drawer-overlay');
+        if (overlay && overlay.classList.contains('active')) {
+            overlay.innerHTML = this.renderWorkshopTopMenuDrawerInner();
+        }
+    };
+
+    WorkshopView.toggleWorkshopTopMenu = function() {
+        let overlay = document.getElementById('ws-top-menu-drawer-overlay');
+        if (overlay && overlay.classList.contains('active')) {
+            this.closeWorkshopTopMenu();
+            return;
+        }
+        if (!this._currentRandomStaffPassword) {
+            this._currentRandomStaffPassword = this.generateRandomPasswordString();
+        }
+        if (!overlay && typeof document !== 'undefined') {
+            overlay = document.createElement('div');
+            overlay.id = 'ws-top-menu-drawer-overlay';
+            overlay.className = 'ws-top-menu-drawer-overlay active';
+            document.body.appendChild(overlay);
+        } else if (overlay) {
+            overlay.classList.add('active');
+        }
+        if (overlay) {
+            overlay.innerHTML = this.renderWorkshopTopMenuDrawerInner();
+        }
+        this.loadWorkshopMenuSummary();
+    };
+
+    WorkshopView.closeWorkshopTopMenu = function() {
+        const overlay = document.getElementById('ws-top-menu-drawer-overlay');
+        if (overlay) {
+            overlay.classList.remove('active');
+        }
+    };
+
+    WorkshopView.handleLogoutFromTopMenu = function() {
+        this.closeWorkshopTopMenu();
+        this.showOficinaLoginScreen();
+    };
+
+    WorkshopView.handleCreateRegistrar = async function(prefix = 'ws-menu-reg') {
+        const nameEl = document.getElementById(`${prefix}-name`);
+        const emailEl = document.getElementById(`${prefix}-email`);
+        const passEl = document.getElementById(`${prefix}-password`);
+
+        const name = (nameEl?.value || '').trim();
+        const email = (emailEl?.value || '').trim().toLowerCase();
+        const password = (passEl?.value || this._currentRandomStaffPassword || this.generateRandomPasswordString()).trim();
+
+        if (!name || !email || !email.includes('@')) {
+            this.showToast('Informe o nome e o e-mail válido do registrador.', 'warning');
+            return;
+        }
+
+        const wsId = this.getEffectiveWorkshopId();
+        try {
+            const token = typeof localStorage !== 'undefined' ? localStorage.getItem('dna_token') : null;
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+
+            const r = await fetch(`/api/v1/workshops/${encodeURIComponent(wsId)}/registrars`, {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({ name, email, password })
+            });
+            const data = await r.json().catch(() => null);
+
+            if (!r.ok || !data || !data.success) {
+                throw new Error((data && data.error) || 'Não foi possível cadastrar o registrador.');
+            }
+
+            this._menuSummaryCache = {
+                monthly_billing: data.monthly_billing || this._menuSummaryCache.monthly_billing,
+                registrars: Array.isArray(data.registrars) ? data.registrars : this._menuSummaryCache.registrars,
+                launched_services: Array.isArray(data.launched_services) ? data.launched_services : this._menuSummaryCache.launched_services
+            };
+
+            this._currentRandomStaffPassword = this.generateRandomPasswordString();
+            if (nameEl) nameEl.value = '';
+            if (emailEl) emailEl.value = '';
+            if (passEl) passEl.value = this._currentRandomStaffPassword;
+
+            this.showToast(`✅ Registrador ${name} cadastrado!\nLogin: ${email} | Senha: ${data.registrar.generated_password}`, 'success', 5500);
+            this.updateOpenMenuDrawerDOM();
+            if (this.currentSection === 'registradores') {
+                const viewport = document.getElementById('ws-mobile-active-viewport');
+                if (viewport) viewport.innerHTML = this.renderMobileRegistrarsView();
+            }
+        } catch (err) {
+            this.showToast(err.message || 'Erro ao cadastrar registrador.', 'error');
+        }
+    };
+
+    WorkshopView.handleDeleteRegistrar = async function(registrarId, registrarName) {
+        if (!registrarId) return;
+        const wsId = this.getEffectiveWorkshopId();
+        try {
+            const token = typeof localStorage !== 'undefined' ? localStorage.getItem('dna_token') : null;
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+
+            const r = await fetch(`/api/v1/workshops/${encodeURIComponent(wsId)}/registrars/${encodeURIComponent(registrarId)}`, {
+                method: 'DELETE',
+                headers
+            });
+            const data = await r.json().catch(() => null);
+            if (!r.ok || !data || !data.success) {
+                throw new Error((data && data.error) || 'Erro ao excluir perfil do registrador.');
+            }
+
+            this._menuSummaryCache = {
+                monthly_billing: data.monthly_billing || this._menuSummaryCache.monthly_billing,
+                registrars: Array.isArray(data.registrars) ? data.registrars : [],
+                launched_services: Array.isArray(data.launched_services) ? data.launched_services : this._menuSummaryCache.launched_services
+            };
+
+            this.showToast(`🗑️ Perfil de ${registrarName || 'registrador'} excluído com sucesso!`, 'success');
+            this.updateOpenMenuDrawerDOM();
+            if (this.currentSection === 'registradores') {
+                const viewport = document.getElementById('ws-mobile-active-viewport');
+                if (viewport) viewport.innerHTML = this.renderMobileRegistrarsView();
+            }
+        } catch (err) {
+            this.showToast(err.message || 'Falha ao excluir registrador.', 'error');
+        }
+    };
+
+    WorkshopView.renderWorkshopTopMenuDrawerInner = function() {
+        const logged = this.getLoggedWorkshopUser();
+        const wsName = this.officialWorkshopName || (logged.workshop && logged.workshop.workshop_name) || 'Oficina Credenciada';
+        const cache = this._menuSummaryCache || {};
+        const billing = cache.monthly_billing || {
+            cars_registered_month: 0,
+            amount_to_transfer_formatted: 'R$ 0,00',
+            month_transfer_amount_formatted: 'R$ 0,00',
+            transfer_per_car_formatted: 'R$ 24,95'
+        };
+        const registrars = Array.isArray(cache.registrars) ? cache.registrars : [];
+        const launches = Array.isArray(cache.launched_services) ? cache.launched_services : [];
+        const randomPass = this._currentRandomStaffPassword || (this._currentRandomStaffPassword = this.generateRandomPasswordString());
+
+        return `
+            <div class="ws-top-menu-backdrop" onclick="WorkshopView.closeWorkshopTopMenu()"></div>
+            <aside class="ws-top-menu-sheet" role="dialog" aria-label="Menu da Oficina">
+                <!-- Cabeçalho do Menu -->
+                <div class="ws-top-menu-header">
+                    <div>
+                        <div style="font-size:11px; font-weight:800; color:#38BDF8; text-transform:uppercase; letter-spacing:0.7px;">Menu da Oficina</div>
+                        <h3 style="margin:2px 0 0; font-size:16px; font-weight:900; color:#FFFFFF;">${wsName}</h3>
+                        <span style="font-size:11.5px; color:#94A3B8;">Conectado como: <strong style="color:#E2E8F0;">${logged.name || 'Carlos'}</strong></span>
+                    </div>
+                    <button type="button" class="ws-top-menu-close-btn" onclick="WorkshopView.closeWorkshopTopMenu()" aria-label="Fechar Menu">✕</button>
+                </div>
+
+                <div class="ws-top-menu-body">
+                    <!-- 1. RESUMO DO MÊS: CARROS CADASTRADOS E REPASSE PARA A PLATAFORMA -->
+                    <div class="ws-menu-section-card billing">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                            <span style="font-size:11px; font-weight:800; color:#38BDF8; text-transform:uppercase; letter-spacing:0.6px;">📊 Fechamento Mensal da Oficina</span>
+                            <span style="font-size:10.5px; color:#94A3B8; font-weight:700;">Mês Atual</span>
+                        </div>
+                        <div class="ws-menu-billing-grid">
+                            <div class="ws-menu-billing-box">
+                                <span class="label">Carros Cadastrados no Mês</span>
+                                <strong class="value" id="ws-menu-cars-month">${billing.cars_registered_month || 0} carros</strong>
+                                <small>Ativações no mês</small>
+                            </div>
+                            <div class="ws-menu-billing-box highlight">
+                                <span class="label">Repassar para a Plataforma</span>
+                                <strong class="value green" id="ws-menu-transfer-amount">${billing.amount_to_transfer_formatted || billing.month_transfer_amount_formatted || 'R$ 0,00'}</strong>
+                                <small>${billing.transfer_per_car_formatted || 'R$ 24,95'} por carro</small>
+                            </div>
+                        </div>
+                        <button type="button" class="ws-menu-link-btn" onclick="WorkshopView.closeWorkshopTopMenu(); WorkshopView.switchMobileSection('financeiro');">
+                            <span>💵 Ver Detalhes e Quitar Repasse no Financeiro</span>
+                            <span>›</span>
+                        </button>
+                    </div>
+
+                    <!-- 2. CADASTRAR REGISTRADORES (FOTOGRAFAM PEÇAS E LANÇAM SERVIÇO + VALOR NA PLACA) -->
+                    <div class="ws-menu-section-card">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <span style="font-size:11.5px; font-weight:800; color:#FFFFFF; text-transform:uppercase; letter-spacing:0.5px;">👥 Cadastrar Registradores</span>
+                            <span style="font-size:10.5px; color:#10B981; font-weight:800;">${registrars.length} ativo(s)</span>
+                        </div>
+                        <p style="font-size:11.5px; color:#94A3B8; margin:0 0 10px; line-height:1.4;">
+                            Cadastre os profissionais que tiram foto das peças e lançam a vinculação junto à placa e o valor do serviço. Eles fazem login com a senha gerada abaixo e o sistema registra quem lançou cada serviço.
+                        </p>
+
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            <input type="text" id="ws-menu-reg-name" class="ws-menu-input" placeholder="Nome do profissional (ex: Marcos Mecânico)" />
+                            <input type="email" id="ws-menu-reg-email" class="ws-menu-input" placeholder="E-mail de login do profissional" />
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <div style="flex:1; position:relative;">
+                                    <input type="text" id="ws-menu-reg-password" class="ws-menu-input" value="${randomPass}" readonly style="font-weight:800; letter-spacing:1.5px; color:#38BDF8;" title="Senha aleatória gerada para o profissional" />
+                                </div>
+                                <button type="button" onclick="WorkshopView.refreshRandomStaffPasswordInput()" style="height:40px; padding:0 10px; border-radius:8px; border:1px solid rgba(56,189,248,0.35); background:rgba(56,189,248,0.12); color:#38BDF8; font-size:11.5px; font-weight:800; cursor:pointer; white-space:nowrap;">
+                                    🔄 Gerar Senha
+                                </button>
+                            </div>
+                            <button type="button" class="ws-menu-primary-btn" onclick="WorkshopView.handleCreateRegistrar('ws-menu-reg')">
+                                <span>+ Cadastrar Registrador</span>
+                            </button>
+                        </div>
+
+                        <!-- Lista de Registradores Cadastrados com botão de Excluir Perfil -->
+                        <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;" id="ws-menu-registrars-list">
+                            ${registrars.length === 0 ? `
+                                <div style="padding:10px; text-align:center; font-size:11.5px; color:#64748B; background:rgba(0,0,0,0.25); border-radius:8px;">
+                                    Nenhum registrador cadastrado ainda.
+                                </div>
+                            ` : registrars.map(r => `
+                                <div class="ws-menu-registrar-item">
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="font-size:13px; font-weight:800; color:#FFFFFF;">${r.name}</div>
+                                        <div style="font-size:11px; color:#94A3B8;">${r.email}</div>
+                                        <div style="font-size:11px; color:#38BDF8; margin-top:2px;">
+                                            🔑 Senha: <strong>${r.generated_password || '******'}</strong> • 🛠️ ${r.services_launched_count || 0} lançamento(s)
+                                        </div>
+                                    </div>
+                                    <button type="button" class="ws-menu-delete-reg-btn" onclick="WorkshopView.handleDeleteRegistrar('${r.id}', '${(r.name || '').replace(/'/g, '')}')" title="Excluir perfil deste registrador">
+                                        🗑️ Excluir
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <button type="button" class="ws-menu-link-btn" style="margin-top:10px;" onclick="WorkshopView.closeWorkshopTopMenu(); WorkshopView.switchMobileSection('registradores');">
+                            <span>📸 Ver Painel Completo de Registradores & Fotos de Peças</span>
+                            <span>›</span>
+                        </button>
+                    </div>
+
+                    <!-- 3. AUDITORIA RÁPIDA: SERVIÇOS LANÇADOS COM FOTO DA PEÇA, CUSTO, DATA E QUEM LANÇOU -->
+                    <div class="ws-menu-section-card">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                            <span style="font-size:11.5px; font-weight:800; color:#10B981; text-transform:uppercase; letter-spacing:0.5px;">🔍 Serviços Lançados (Quem Lançou, Foto e Valor)</span>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:8px;" id="ws-menu-launches-list">
+                            ${launches.length === 0 ? `
+                                <div style="padding:10px; text-align:center; font-size:11.5px; color:#64748B; background:rgba(0,0,0,0.25); border-radius:8px;">
+                                    Nenhum serviço lançado ainda. Quando um registrador fotografar a peça e lançar na placa do carro, aparecerá aqui com foto, valor, data e nome de quem lançou.
+                                </div>
+                            ` : launches.slice(0, 5).map(item => `
+                                <div class="ws-menu-launch-audit-card">
+                                    <div style="display:flex; gap:10px; align-items:center;">
+                                        <div class="ws-menu-launch-photo">
+                                            ${item.part_photo_url ? `<img src="${item.part_photo_url}" alt="Peça" onerror="this.onerror=null; this.parentElement.innerHTML='🔩';" />` : '🔩'}
+                                        </div>
+                                        <div style="flex:1; min-width:0;">
+                                            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+                                                <span style="font-family:monospace; font-weight:900; font-size:12.5px; color:#38BDF8;">🚗 ${item.license_plate}</span>
+                                                <span style="font-weight:900; font-size:12.5px; color:#10B981;">${item.total_cost_formatted}</span>
+                                            </div>
+                                            <div style="font-size:12.5px; font-weight:800; color:#FFFFFF; margin-top:2px;">${item.service_title}</div>
+                                            <div style="font-size:11px; color:#94A3B8; margin-top:2px;">
+                                                📅 Data: <strong>${item.service_date}</strong> • 👷 Lançado por: <strong style="color:#FBBF24;">${item.responsible_technician_name}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- 4. BOTÃO SAIR DO APP -->
+                    <button type="button" class="ws-menu-logout-btn" onclick="WorkshopView.handleLogoutFromTopMenu()">
+                        <span>🚪</span>
+                        <span>Sair do App</span>
+                    </button>
+                </div>
+            </aside>
+        `;
+    };
+
+    // Tela dedicada para gerenciar Registradores e auditar serviços lançados
+    WorkshopView.renderMobileRegistrarsView = function() {
+        const cache = this._menuSummaryCache || {};
+        const billing = cache.monthly_billing || {
+            cars_registered_month: 0,
+            amount_to_transfer_formatted: 'R$ 0,00',
+            transfer_per_car_formatted: 'R$ 24,95'
+        };
+        const registrars = Array.isArray(cache.registrars) ? cache.registrars : [];
+        const launches = Array.isArray(cache.launched_services) ? cache.launched_services : [];
+        const randomPass = this._currentRandomStaffPassword || (this._currentRandomStaffPassword = this.generateRandomPasswordString());
+
+        return `
+            <div class="dna-mobile-subpage">
+                <div class="dna-mobile-subpage-header">
+                    <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar</span>
+                    </button>
+                    <span class="dna-mobile-subpage-title">Registradores & Repasse</span>
+                </div>
+
+                <div class="dna-mobile-subpage-body">
+                    <!-- Resumo Mensal de Carros e Repasse -->
+                    <div class="ws-menu-section-card billing">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                            <span style="font-size:11.5px; font-weight:800; color:#38BDF8; text-transform:uppercase;">📊 Carros no Mês & Repasse para a Plataforma</span>
+                        </div>
+                        <div class="ws-menu-billing-grid">
+                            <div class="ws-menu-billing-box">
+                                <span class="label">Carros Cadastrados no Mês</span>
+                                <strong class="value">${billing.cars_registered_month || 0} carros</strong>
+                                <small>Total acumulado no mês</small>
+                            </div>
+                            <div class="ws-menu-billing-box highlight">
+                                <span class="label">Repassar para a Plataforma</span>
+                                <strong class="value green">${billing.amount_to_transfer_formatted || 'R$ 0,00'}</strong>
+                                <small>${billing.transfer_per_car_formatted || 'R$ 24,95'} por carro</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Formulário de Cadastro de Registrador -->
+                    <div class="ws-menu-section-card">
+                        <h3 style="margin:0 0 6px; font-size:14.5px; font-weight:800; color:#FFFFFF;">👥 Cadastrar Novo Registrador</h3>
+                        <p style="font-size:11.5px; color:#94A3B8; margin:0 0 12px; line-height:1.45;">
+                            O registrador é o profissional que tira foto das peças trocadas e lança a vinculação da peça junto à placa do carro e o valor do serviço.
+                        </p>
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            <input type="text" id="ws-page-reg-name" class="ws-menu-input" placeholder="Nome completo do profissional *" />
+                            <input type="email" id="ws-page-reg-email" class="ws-menu-input" placeholder="E-mail de login do profissional *" />
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" id="ws-page-reg-password" class="ws-menu-input" value="${randomPass}" readonly style="flex:1; font-weight:800; letter-spacing:1.5px; color:#38BDF8;" />
+                                <button type="button" onclick="WorkshopView.refreshRandomStaffPasswordInput()" style="height:42px; padding:0 12px; border-radius:8px; border:1px solid rgba(56,189,248,0.4); background:rgba(56,189,248,0.12); color:#38BDF8; font-size:12px; font-weight:800; cursor:pointer;">
+                                    🔄 Nova Senha
+                                </button>
+                            </div>
+                            <button type="button" class="ws-menu-primary-btn" onclick="WorkshopView.handleCreateRegistrar('ws-page-reg')">
+                                <span>+ Cadastrar Registrador</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lista de Registradores Cadastrados -->
+                    <div class="ws-menu-section-card">
+                        <h3 style="margin:0 0 10px; font-size:14px; font-weight:800; color:#FFFFFF;">Profissionais Cadastrados (${registrars.length})</h3>
+                        <div style="display:flex; flex-direction:column; gap:8px;">
+                            ${registrars.length === 0 ? `
+                                <div style="padding:14px; text-align:center; font-size:12px; color:#64748B;">Nenhum profissional registrador cadastrado ainda.</div>
+                            ` : registrars.map(r => `
+                                <div class="ws-menu-registrar-item">
+                                    <div style="flex:1; min-width:0;">
+                                        <div style="font-size:13.5px; font-weight:800; color:#FFFFFF;">${r.name}</div>
+                                        <div style="font-size:11.5px; color:#94A3B8;">${r.email}</div>
+                                        <div style="font-size:11.5px; color:#38BDF8; margin-top:2px;">
+                                            🔑 Senha gerada: <strong>${r.generated_password || '******'}</strong> • 🛠️ ${r.services_launched_count || 0} serviço(s)
+                                        </div>
+                                    </div>
+                                    <button type="button" class="ws-menu-delete-reg-btn" onclick="WorkshopView.handleDeleteRegistrar('${r.id}', '${(r.name || '').replace(/'/g, '')}')">
+                                        🗑️ Excluir Perfil
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Auditoria Completa de Serviços Lançados para o Dono da Oficina -->
+                    <div class="ws-menu-section-card">
+                        <h3 style="margin:0 0 6px; font-size:14px; font-weight:800; color:#10B981;">📸 Auditoria de Serviços e Peças Lançados</h3>
+                        <p style="font-size:11.5px; color:#94A3B8; margin:0 0 10px;">
+                            Veja a foto da peça, a placa do veículo, o custo do serviço, a data e qual profissional realizou o lançamento:
+                        </p>
+                        <div style="display:flex; flex-direction:column; gap:10px;">
+                            ${launches.length === 0 ? `
+                                <div style="padding:14px; text-align:center; font-size:12px; color:#64748B;">Nenhum serviço lançado ainda.</div>
+                            ` : launches.map(item => `
+                                <div class="ws-menu-launch-audit-card">
+                                    <div style="display:flex; gap:12px; align-items:center;">
+                                        <div class="ws-menu-launch-photo">
+                                            ${item.part_photo_url ? `<img src="${item.part_photo_url}" alt="Peça" onerror="this.onerror=null; this.parentElement.innerHTML='🔩';" />` : '🔩'}
+                                        </div>
+                                        <div style="flex:1; min-width:0;">
+                                            <div style="display:flex; align-items:center; justify-content:space-between;">
+                                                <span style="font-family:monospace; font-weight:900; font-size:13px; color:#38BDF8;">🚗 ${item.license_plate} (${item.vehicle_model})</span>
+                                                <span style="font-weight:900; font-size:13px; color:#10B981;">${item.total_cost_formatted}</span>
+                                            </div>
+                                            <div style="font-size:13px; font-weight:800; color:#FFFFFF; margin-top:2px;">${item.service_title}</div>
+                                            <div style="font-size:11.5px; color:#CBD5E1; margin-top:3px;">
+                                                📅 Data: <strong>${item.service_date}</strong> • 👷 Lançado por: <strong style="color:#FBBF24;">${item.responsible_technician_name}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // HEADER SUPERIOR DO APP (COM BOTÃO DE MENU NO TOPO)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileHeader = function() {
         const sec = this.currentSection || 'dashboard';
-        const wsName = this.officialWorkshopName || 'Auto Center Silva';
+        const logged = this.getLoggedWorkshopUser();
+        const userName = logged.name || 'Carlos';
+        const wsName = this.officialWorkshopName || (logged.workshop && logged.workshop.workshop_name) || 'Oficina Credenciada';
 
-        // TELA 3: HEADER DO DASHBOARD (COM SAUDAÇÃO & CARDS SOLICITADOS)
+        // TELA 3: HEADER DO DASHBOARD (COM BOTÃO DE MENU NO TOPO + SAUDAÇÃO)
         if (sec === 'dashboard') {
             return `
                 <header class="ws-model-header">
                     <div class="ws-model-header-top">
-                        <div style="width:36px;"></div>
+                        <button type="button" class="ws-model-menu-btn" id="ws-top-menu-toggle-btn" onclick="WorkshopView.toggleWorkshopTopMenu()" title="Abrir Menu da Oficina">
+                            <span class="menu-bars">☰</span>
+                            <span class="menu-label">Menu</span>
+                        </button>
 
                         <div class="ws-model-brand-center" onclick="WorkshopView.switchMobileSection('dashboard')">
                             <svg class="brand-logo-icon" viewBox="0 0 100 100" fill="none">
@@ -357,24 +859,27 @@
 
                     <div class="ws-model-greeting-row">
                         <div class="ws-model-greeting-text">
-                            <h2>Olá, Carlos</h2>
+                            <h2>Olá, ${userName}</h2>
                             <p>${wsName}</p>
                         </div>
-                        <div class="ws-model-ws-icon-btn" onclick="WorkshopView.showOficinaLoginScreen()" title="Trocar conta ou sair">
-                            <span>🏢</span>
+                        <div class="ws-model-ws-icon-btn" onclick="WorkshopView.toggleWorkshopTopMenu()" title="Menu da Oficina, Registradores e Sair">
+                            <span>☰</span>
                         </div>
                     </div>
                 </header>
             `;
         }
 
-        // TÍTULOS CONTEXTUAIS PARA AS DEMAIS TELAS (TELAS 4 A 13)
+        // TÍTULOS CONTEXTUAIS PARA AS DEMAIS TELAS
         const titles = {
             'entrada-veiculos': 'Recepção de Veículo',
             'lancar-servicos': 'Lançar Serviços',
             'nota-fiscal': 'Notas Fiscais',
             'notas-fiscais': 'Notas Fiscais',
-            'buscar-veiculos': 'Buscar Veículos',
+            'buscar-veiculos': 'Cadastrar Veículo',
+            'cadastrar-veiculo': 'Cadastrar Veículo',
+            'cadastrar-cliente': 'Cadastrar Veículo',
+            'registradores': 'Registradores & Repasse',
             'manutencao-veiculos': 'Manutenção Preventiva',
             'avisos-whatsapp': 'WhatsApp',
             'avisos-manutencao': 'WhatsApp',
@@ -384,8 +889,8 @@
         };
 
         const subpagesWithOwnHeader = [
-            'lancar-servicos', 'detalhe-servico', 'cadastrar-cliente',
-            'manutencao-veiculos', 'avisos-manutencao', 'enviar-fotos',
+            'lancar-servicos', 'detalhe-servico', 'cadastrar-cliente', 'cadastrar-veiculo',
+            'registradores', 'manutencao-veiculos', 'avisos-manutencao', 'enviar-fotos',
             'nota-fiscal', 'notas-fiscais', 'clientes', 'buscar-veiculos',
             'relatorios', 'financeiro', 'estoque', 'configuracoes', 'suporte'
         ];
@@ -409,56 +914,19 @@
                         <span class="brand-title" style="font-size:16px;">${currentTitle}</span>
                     </div>
 
-                    ${sec === 'financeiro' ? `
-                        <div style="font-size:12px; color:#94A3B8; font-weight:700; cursor:pointer;" onclick="WorkshopView.showToast('Período: Este mês', 'info')">
-                            Este mês ▾
-                        </div>
-                    ` : `
-                        <button type="button" class="ws-model-bell-btn" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')" title="Notificações">
-                            <span>🔔</span>
-                            <span class="ws-model-bell-dot"></span>
-                        </button>
-                    `}
+                    <button type="button" class="ws-model-menu-btn" onclick="WorkshopView.toggleWorkshopTopMenu()" title="Abrir Menu">
+                        <span class="menu-bars">☰</span>
+                    </button>
                 </div>
             </header>
         `;
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // BARRA DE NAVEGAÇÃO INFERIOR FIXA COM AS 5 ABAS OFICIAIS DO MODELO
+    // BARRA DE NAVEGAÇÃO INFERIOR REMOVIDA CONFORME SOLICITAÇÃO DO USUÁRIO
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileBottomNav = function() {
-        const sec = this.currentSection || 'dashboard';
-        const isInicio = (sec === 'dashboard');
-        const isVeiculos = (sec === 'buscar-veiculos' || sec === 'entrada-veiculos');
-        const isServicos = (sec === 'ordens-servico' || sec === 'lancar-servicos');
-        const isAgenda = (sec === 'manutencao-veiculos' || sec === 'avisos-whatsapp');
-        const isMais = (sec === 'suporte' || sec === 'financeiro' || sec === 'nota-fiscal');
-
-        return `
-            <nav class="ws-model-bottom-nav">
-                <button type="button" class="ws-model-nav-item ${isInicio ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('dashboard')">
-                    <span class="nav-icon">🏠</span>
-                    <span class="nav-label">Início</span>
-                </button>
-                <button type="button" class="ws-model-nav-item ${isVeiculos ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
-                    <span class="nav-icon">🚗</span>
-                    <span class="nav-label">Veículos</span>
-                </button>
-                <button type="button" class="ws-model-nav-item ${isServicos ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('ordens-servico')">
-                    <span class="nav-icon">🔧</span>
-                    <span class="nav-label">Serviços</span>
-                </button>
-                <button type="button" class="ws-model-nav-item ${isAgenda ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
-                    <span class="nav-icon">📅</span>
-                    <span class="nav-label">Agenda</span>
-                </button>
-                <button type="button" class="ws-model-nav-item ${isMais ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('suporte')">
-                    <span class="nav-icon">⋯</span>
-                    <span class="nav-label">Mais</span>
-                </button>
-            </nav>
-        `;
+        return '';
     };
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -473,8 +941,13 @@
                 return this.showOficinaLoginScreen();
             case 'entrada-veiculos':
                 return this.renderMobileVehicleEntryView();
+            case 'cadastrar-veiculo':
             case 'cadastrar-cliente':
-                return this.renderMobileClientRegisterView ? this.renderMobileClientRegisterView() : this.renderMobileVehicleEntryView();
+            case 'buscar-veiculos':
+                return this.renderMobileClientRegisterView ? this.renderMobileClientRegisterView() : this.renderMobileSearchVehiclesView();
+            case 'registradores':
+            case 'menu-oficina':
+                return this.renderMobileRegistrarsView();
             case 'lancar-servicos':
                 return this.renderMobileLaunchServicesView();
             case 'detalhe-servico':
@@ -491,9 +964,7 @@
             case 'notas-fiscais':
                 return this.renderMobileInvoiceView();
             case 'clientes':
-                return this.renderMobileClientsView ? this.renderMobileClientsView() : this.renderMobileSearchVehiclesView();
-            case 'buscar-veiculos':
-                return this.renderMobileSearchVehiclesView();
+                return this.renderMobileClientsView ? this.renderMobileClientsView() : this.renderMobileClientRegisterView();
             case 'ordens-servico':
                 return this.renderMobileOrdersView();
             case 'relatorios':
@@ -537,6 +1008,8 @@
                         WorkshopView.initVerticalCardCarousel();
                     }
                 }, 30);
+            } else if (sectionId === 'registradores' || sectionId === 'menu-oficina') {
+                this.loadWorkshopMenuSummary();
             }
         } else {
             this.render();
@@ -544,20 +1017,20 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 3: DASHBOARD DA OFICINA (SOMENTE OS 8 CARDS SOLICITADOS NO MODELO)
+    // TELA 3: DASHBOARD DA OFICINA (SOMENTE OS 6 CARDS ESSENCIAIS)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileDashboardView = function() {
         return `
             <div class="ws-model-dashboard-grid">
-                <!-- Card 1: Entrada de Veículos -->
-                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('entrada-veiculos')">
+                <!-- Card 1: Cadastrar Veículo -->
+                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
                     <div class="ws-model-card-top">
                         <div class="ws-model-card-icon-box">🚗</div>
                         <span class="ws-model-card-arrow">›</span>
                     </div>
                     <div class="ws-model-card-content">
-                        <h3>Entrada de Veículos</h3>
-                        <p>Cadastrar ou receber veículo na oficina</p>
+                        <h3>Cadastrar Veículo</h3>
+                        <p>Consultar placa e cadastrar proprietário</p>
                     </div>
                 </div>
 
@@ -573,31 +1046,7 @@
                     </div>
                 </div>
 
-                <!-- Card 3: Notas Fiscais -->
-                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('nota-fiscal')">
-                    <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box">📄</div>
-                        <span class="ws-model-card-arrow">›</span>
-                    </div>
-                    <div class="ws-model-card-content">
-                        <h3>Notas Fiscais</h3>
-                        <p>Emitir e gerenciar notas fiscais</p>
-                    </div>
-                </div>
-
-                <!-- Card 4: Buscar Veículos -->
-                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
-                    <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box">🔍</div>
-                        <span class="ws-model-card-arrow">›</span>
-                    </div>
-                    <div class="ws-model-card-content">
-                        <h3>Buscar Veículos</h3>
-                        <p>Pesquisar por placa, cliente ou chassi</p>
-                    </div>
-                </div>
-
-                <!-- Card 5: Manutenção dos Veículos -->
+                <!-- Card 3: Manutenção dos Veículos -->
                 <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
                     <div class="ws-model-card-top">
                         <div class="ws-model-card-icon-box">🔔</div>
@@ -609,7 +1058,7 @@
                     </div>
                 </div>
 
-                <!-- Card 6: Avisos WhatsApp -->
+                <!-- Card 4: Avisos WhatsApp -->
                 <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')">
                     <div class="ws-model-card-top">
                         <div class="ws-model-card-icon-box green">💬</div>
@@ -621,7 +1070,7 @@
                     </div>
                 </div>
 
-                <!-- Card 7: Financeiro -->
+                <!-- Card 5: Financeiro -->
                 <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('financeiro')">
                     <div class="ws-model-card-top">
                         <div class="ws-model-card-icon-box">💵</div>
@@ -633,7 +1082,7 @@
                     </div>
                 </div>
 
-                <!-- Card 8: Suporte -->
+                <!-- Card 6: Suporte -->
                 <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('suporte')">
                     <div class="ws-model-card-top">
                         <div class="ws-model-card-icon-box">🎧</div>
@@ -1036,56 +1485,10 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 7: BUSCAR VEÍCULOS (CONFORME MODELO OFICIAL)
+    // TELA 7: CADASTRAR VEÍCULO (DELEGA PARA A VIEW UNIFICADA DE CADASTRO)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileSearchVehiclesView = function() {
-        const vehicles = [
-            { img: './img/splash-car-front.jpg', plate: 'BRA2E19', model: 'Toyota Corolla', client: 'João Silva', status: 'Na oficina', statusClass: 'na-oficina' },
-            { img: './img/cl-hero-car-phone.jpg', plate: 'KZX4D21', model: 'Honda HR-V', client: 'Ana Costa', status: 'Aguardando', statusClass: 'aguardando' },
-            { img: './img/splash-car-hero.jpg', plate: 'LMH7A33', model: 'Jeep Compass', client: 'Ricardo Lima', status: 'Em execução', statusClass: 'em-execucao' },
-            { img: './img/splash-car-front.jpg', plate: 'QWESF67', model: 'Fiat Toro', client: 'Marcos Santos', status: 'Concluído', statusClass: 'concluido' },
-            { img: './img/cl-hero-car-phone.jpg', plate: 'RST8I90', model: 'Renault Duster', client: 'Fernanda Alves', status: 'Na oficina', statusClass: 'na-oficina' }
-        ];
-
-        return `
-            <div style="padding-bottom: 24px;">
-                <!-- Campo de Busca -->
-                <div class="ws-model-search-bar">
-                    <span class="search-icon">🔍</span>
-                    <input 
-                        type="text" 
-                        placeholder="Buscar por placa, cliente ou chassi"
-                        oninput="WorkshopView.filterVehiclesSearchList(this.value)"
-                    />
-                </div>
-
-                <!-- Pills de Filtro -->
-                <div class="ws-model-filter-pills">
-                    <button type="button" class="ws-model-pill active" onclick="WorkshopView.setVehiclesSearchFilter('recentes', this)">Recentes</button>
-                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setVehiclesSearchFilter('na-oficina', this)">Na oficina</button>
-                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setVehiclesSearchFilter('todos', this)">Todos</button>
-                </div>
-
-                <!-- Lista de Cards de Veículos -->
-                <div class="ws-model-list-container" id="ws-model-vehicles-list">
-                    ${vehicles.map(v => `
-                        <div class="ws-model-vehicle-search-card" onclick="WorkshopView.selectSearchedVehicle('${v.plate}')">
-                            <div class="vehicle-thumb">
-                                <img src="${v.img}" alt="${v.model}" onerror="this.src='/img/splash-car-hero.jpg'" />
-                            </div>
-                            <div class="vehicle-info">
-                                <div class="plate">${v.plate}</div>
-                                <div class="model">${v.model}</div>
-                                <div class="client">${v.client}</div>
-                            </div>
-                            <div class="ws-model-status-badge ${v.statusClass}">
-                                ${v.status}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
+        return this.renderMobileClientRegisterView();
     };
 
     WorkshopView.setVehiclesSearchFilter = function(filter, btn) {
@@ -2203,8 +2606,35 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 4: CADASTRAR CLIENTE (PLACA PRIMEIRO!)
+    // TELA 4: CADASTRAR VEÍCULO (PLACA PUXA DADOS DO CARRO + DADOS DO DONO COM SENHA 123456)
     // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.maskPhoneInput = function(input) {
+        if (!input) return;
+        let v = input.value.replace(/\D/g, '');
+        if (v.length > 11) v = v.substring(0, 11);
+        if (v.length > 10) {
+            input.value = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+        } else if (v.length > 6) {
+            input.value = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+        } else if (v.length > 2) {
+            input.value = v.replace(/^(\d{2})(\d{0,5})$/, '($1) $2');
+        } else {
+            input.value = v;
+        }
+    };
+
+    WorkshopView.handleAutoLookupPlateForRegister = function(input) {
+        if (!input) return;
+        const clean = (input.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
+        input.value = clean;
+        if (clean.length === 7) {
+            clearTimeout(this._regPlateTimer);
+            this._regPlateTimer = setTimeout(() => {
+                this.handleMobileSearchPlateForClientRegister();
+            }, 220);
+        }
+    };
+
     WorkshopView.renderMobileClientRegisterView = function() {
         const plate = this.mobileActivePlate || '';
         const v = plate ? (this.findVehicleByPlate(plate) || {
@@ -2213,8 +2643,14 @@
             license_plate: plate,
             year: '',
             color: '',
-            client_name: ''
-        }) : { brand: '', model: '', license_plate: '', year: '', color: '', client_name: '' };
+            fuel_type: '',
+            fipe_value: '',
+            client_name: '',
+            client_phone: '',
+            client_email: ''
+        }) : { brand: '', model: '', license_plate: '', year: '', color: '', fuel_type: '', fipe_value: '', client_name: '', client_phone: '', client_email: '' };
+
+        const hasVehicleData = Boolean(v && (v.brand || v.model));
 
         return `
             <div class="dna-mobile-subpage">
@@ -2222,14 +2658,13 @@
                     <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
                         <span>‹</span> <span>Voltar</span>
                     </button>
-                    <span class="dna-mobile-subpage-title">Cadastrar Cliente</span>
-                    
+                    <span class="dna-mobile-subpage-title">Cadastrar Veículo</span>
                 </div>
 
                 <div class="dna-mobile-subpage-body">
-                    <!-- ETAPA 1: PLACA DO VEÍCULO (PRIORIDADE ABSOLUTA) -->
+                    <!-- ETAPA 1: PLACA DO VEÍCULO (PUXA DADOS AUTOMATICAMENTE) -->
                     <div class="dna-input-group">
-                        <label class="dna-input-label">Placa do veículo *</label>
+                        <label class="dna-input-label">Placa do Veículo *</label>
                         <div class="dna-input-search-row">
                             <input 
                                 type="text" 
@@ -2237,52 +2672,58 @@
                                 class="dna-plate-input" 
                                 placeholder="ABC1D23" 
                                 value="${plate}"
-                                maxlength="8"
-                                oninput="this.value = this.value.toUpperCase()"
+                                maxlength="7"
+                                oninput="WorkshopView.handleAutoLookupPlateForRegister(this)"
                             />
-                            <button class="dna-search-action-btn" onclick="WorkshopView.handleMobileSearchPlateForClientRegister()" title="Buscar Dados do Veículo">
+                            <button type="button" class="dna-search-action-btn" onclick="WorkshopView.handleMobileSearchPlateForClientRegister()" title="Buscar Dados do Veículo">
                                 🔍
                             </button>
                         </div>
-                        <span style="font-size:11px; color:var(--dna-ws-text-dim);">Busque a placa para carregar os dados do veículo.</span>
+                        <span style="font-size:11.5px; color:var(--dna-ws-text-dim);">Digite os 7 dígitos da placa para puxar automaticamente os dados do carro.</span>
                     </div>
 
-                    <!-- CARD DE PRÉVIA DO VEÍCULO IDENTIFICADO -->
-                    <div class="dna-vehicle-preview-card">
-                        <div class="dna-vehicle-preview-thumb">🚗</div>
-                        <div class="dna-vehicle-preview-info">
-                            <div class="dna-vehicle-preview-title" id="mobile-reg-veh-model">${v.brand || ''} ${v.model || 'Veículo Localizado'}</div>
-                            <div class="dna-vehicle-preview-meta" id="mobile-reg-veh-meta">${v.license_plate} • ${v.year || '2020'} • ${v.color || 'Prata'}</div>
-                            <div class="dna-vehicle-preview-owner" id="mobile-reg-veh-owner">Cliente sugerido: ${v.client_name || 'Novo Proprietário'}</div>
+                    <!-- CARD DE DADOS DO CARRO PUXADOS PELO SISTEMA -->
+                    <div class="dna-vehicle-preview-card" id="mobile-reg-vehicle-card" style="flex-direction:column; align-items:stretch; gap:10px; border:1px solid ${hasVehicleData ? 'rgba(16,185,129,0.45)' : 'rgba(0,102,255,0.28)'};">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div class="dna-vehicle-preview-thumb" style="flex-shrink:0;">🚗</div>
+                            <div class="dna-vehicle-preview-info" style="flex:1;">
+                                <div class="dna-vehicle-preview-title" id="mobile-reg-veh-model">${hasVehicleData ? `${v.brand || ''} ${v.model || ''}`.trim() : 'Aguardando consulta da placa...'}</div>
+                                <div class="dna-vehicle-preview-meta" id="mobile-reg-veh-meta">${v.license_plate ? `${v.license_plate} • ${v.year || '2022'} • ${v.color || 'Prata'}` : 'Marca, modelo, ano, cor e Tabela FIPE aparecerão aqui'}</div>
+                                <div class="dna-vehicle-preview-owner" id="mobile-reg-veh-owner" style="color:#10B981; font-weight:700;">${v.fipe_value ? `Tabela FIPE: ${v.fipe_value}` : 'Passaporte Digital DNA AUTO pronto para ativação'}</div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- ETAPA 2: DADOS DO PROPRIETÁRIO -->
+                    <!-- ETAPA 2: DADOS DO DONO DO CARRO (MAIS ABAIXO) -->
                     <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:14px; display:flex; flex-direction:column; gap:12px;">
-                        <span class="dna-mobile-section-label">Dados do Proprietário</span>
+                        <span class="dna-mobile-section-label">Dados do Dono do Carro</span>
 
                         <div class="dna-input-group">
-                            <label class="dna-input-label">Nome completo *</label>
-                            <input type="text" id="mobile-reg-owner-name" class="form-control" placeholder="João da Silva" value="${v.client_name || 'João da Silva'}" style="height:48px; padding:0 14px; font-weight:700;" />
+                            <label class="dna-input-label">Nome completo do proprietário *</label>
+                            <input type="text" id="mobile-reg-owner-name" class="form-control" placeholder="Ex: João da Silva" value="${v.client_name && v.client_name !== 'Cliente da Oficina' ? v.client_name : ''}" style="height:48px; padding:0 14px; font-weight:700;" />
                         </div>
 
                         <div class="dna-input-group">
-                            <label class="dna-input-label">WhatsApp *</label>
-                            <input type="tel" id="mobile-reg-owner-wpp" class="form-control" placeholder="(21) 98765-4321" value="${v.client_phone || '(21) 98765-4321'}" style="height:48px; padding:0 14px; font-weight:700;" />
+                            <label class="dna-input-label">E-mail do proprietário *</label>
+                            <input type="email" id="mobile-reg-owner-email" class="form-control" placeholder="Ex: cliente@email.com" value="${v.client_email || ''}" style="height:48px; padding:0 14px; font-weight:700;" />
                         </div>
 
                         <div class="dna-input-group">
-                            <label class="dna-input-label">E-mail *</label>
-                            <input type="email" id="mobile-reg-owner-email" class="form-control" placeholder="joao@email.com" value="${v.client_email || 'joao@email.com'}" style="height:48px; padding:0 14px; font-weight:700;" />
+                            <label class="dna-input-label">WhatsApp do proprietário *</label>
+                            <input type="tel" id="mobile-reg-owner-wpp" class="form-control" placeholder="(11) 99999-9999" value="${v.client_phone && v.client_phone !== '(11) 99999-9999' ? v.client_phone : ''}" oninput="WorkshopView.maskPhoneInput(this)" style="height:48px; padding:0 14px; font-weight:700;" />
                         </div>
 
                         <div class="dna-input-group">
-                            <label class="dna-input-label">Senha de Acesso ao App *</label>
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                                <label class="dna-input-label" style="margin-bottom:0;">Senha Inicial de Acesso do Cliente *</label>
+                                <span style="font-size:10.5px; font-weight:800; color:#10B981; background:rgba(16,185,129,0.14); padding:2px 8px; border-radius:999px; border:1px solid rgba(16,185,129,0.35);">✓ Gravada: 123456</span>
+                            </div>
                             <div style="position:relative;">
-                                <input type="password" id="mobile-reg-owner-pass" class="form-control" placeholder="Crie uma senha" value="" style="height:48px; padding:0 40px 0 14px; font-weight:700;" />
-                                <button type="button" onclick="const p=document.getElementById('mobile-reg-owner-pass'); p.type = p.type==='password'?'text':'password';" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#64748B; cursor:pointer;">
-                                    👁️
-                                </button>
+                                <input type="text" id="mobile-reg-owner-pass" class="form-control" value="123456" readonly style="height:48px; padding:0 40px 0 14px; font-weight:800; letter-spacing:2px; color:#0066FF !important; background:#F8FAFC !important;" />
+                                <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:#10B981; font-size:16px;" title="Senha inicial padrão gravada">🔒</span>
+                            </div>
+                            <div style="margin-top:6px; background:rgba(0,102,255,0.1); border:1px solid rgba(0,102,255,0.28); border-radius:10px; padding:10px 12px; font-size:11.5px; color:#CBD5E1; line-height:1.45;">
+                                💡 <strong style="color:#FFFFFF;">Acesso Fácil para o Cliente:</strong> A senha inicial <strong style="color:#00D4FF;">123456</strong> já fica gravada. Basta pedir para o cliente baixar o app e entrar com o <strong>e-mail dele</strong> e a senha <strong>123456</strong>. No primeiro acesso será solicitada a troca de senha, e depois ele poderá alterar seus dados pessoais dentro do app.
                             </div>
                         </div>
                     </div>
@@ -2290,66 +2731,119 @@
 
                 <!-- Botão Fixo de Confirmação -->
                 <div class="dna-mobile-fixed-bottom-bar">
-                    <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSubmitClientRegister()">
-                        <span>✓</span> <span>Cadastrar Cliente</span>
+                    <button type="button" class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSubmitClientRegister()">
+                        <span>✓</span> <span>Cadastrar Veículo</span>
                     </button>
 
                     <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar para Todos os Cards</span>
+                        <span>‹</span> <span>Voltar para o Painel</span>
                     </button>
-</div>
+                </div>
             </div>
         `;
     };
 
     WorkshopView.handleMobileSearchPlateForClientRegister = async function() {
         const input = document.getElementById('mobile-reg-plate-input');
-        const plate = (input?.value || '').trim().toUpperCase();
-        if (!plate) {
-            alert('Digite a placa para consultar.');
+        const plate = (input?.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (!plate || plate.length < 3) {
+            this.showToast('Digite a placa do veículo para consultar.', 'warning');
             return;
         }
 
         this.mobileActivePlate = plate;
-        const v = this.findVehicleByPlate(plate);
-        if (v) {
-            document.getElementById('mobile-reg-veh-model').innerText = `${v.brand || ''} ${v.model || ''}`;
-            document.getElementById('mobile-reg-veh-meta').innerText = `${v.license_plate} • ${v.year || '2020'} • ${v.color || 'Prata'}`;
-            document.getElementById('mobile-reg-veh-owner').innerText = `Cliente sugerido: ${v.client_name || 'Novo Proprietário'}`;
-            if (v.client_name) document.getElementById('mobile-reg-owner-name').value = v.client_name;
-            if (v.client_phone) document.getElementById('mobile-reg-owner-wpp').value = v.client_phone;
-            if (v.client_email) document.getElementById('mobile-reg-owner-email').value = v.client_email;
+        const modelEl = document.getElementById('mobile-reg-veh-model');
+        const metaEl = document.getElementById('mobile-reg-veh-meta');
+        const ownerEl = document.getElementById('mobile-reg-veh-owner');
+        const cardEl = document.getElementById('mobile-reg-vehicle-card');
+
+        if (modelEl) modelEl.innerText = `Consultando placa ${plate}...`;
+        if (metaEl) metaEl.innerText = 'Buscando dados oficiais do veículo...';
+
+        // 1. Tenta localizar no cache local ou via fetchVehicleDataByPlate
+        let veh = this.findVehicleByPlate(plate);
+        if (!veh && typeof this.fetchVehicleDataByPlate === 'function') {
+            veh = await this.fetchVehicleDataByPlate(plate);
+        }
+
+        // 2. Consulta direta na rota de integração de placas para dados completos (FIPE, combustível, versão)
+        try {
+            let res = null;
+            if (typeof API !== 'undefined' && API.lookupPlate) {
+                res = await API.lookupPlate(plate).catch(() => null);
+            } else {
+                const r = await fetch('/api/v1/integrations/plate-lookup/' + encodeURIComponent(plate)).catch(() => null);
+                if (r && r.ok) res = await r.json();
+            }
+            if (res && res.vehicle) {
+                const pv = res.vehicle;
+                veh = {
+                    ...(veh || {}),
+                    license_plate: plate,
+                    brand: pv.brand || veh?.brand || 'Veículo',
+                    model: pv.version || pv.model || veh?.model || 'Localizado',
+                    year: pv.model_year || pv.manufacture_year || veh?.year || '2022',
+                    color: pv.color || veh?.color || 'Prata',
+                    fuel_type: pv.fuel_type || veh?.fuel_type || 'Flex',
+                    fipe_value: (pv.fipe && pv.fipe.market_value_formatted) || veh?.fipe_value || ''
+                };
+            }
+        } catch (_) {}
+
+        if (veh) {
+            this._lastLookedUpVehicle = veh;
+            if (modelEl) modelEl.innerText = `${veh.brand || ''} ${veh.model || 'Veículo Localizado'}`.trim();
+            if (metaEl) metaEl.innerText = `${plate} • ${veh.year || '2022'} • ${veh.color || 'Prata'}${veh.fuel_type ? ' • ' + veh.fuel_type : ''}`;
+            if (ownerEl) ownerEl.innerText = veh.fipe_value ? `Tabela FIPE: ${veh.fipe_value}` : `✓ Dados do veículo carregados para a placa ${plate}`;
+            if (cardEl) cardEl.style.borderColor = 'rgba(16,185,129,0.55)';
+
+            const nameInp = document.getElementById('mobile-reg-owner-name');
+            const wppInp = document.getElementById('mobile-reg-owner-wpp');
+            const emailInp = document.getElementById('mobile-reg-owner-email');
+            if (nameInp && !nameInp.value && veh.client_name && veh.client_name !== 'Cliente da Oficina') {
+                nameInp.value = veh.client_name;
+            }
+            if (wppInp && !wppInp.value && veh.client_phone && veh.client_phone !== '(11) 99999-9999') {
+                wppInp.value = veh.client_phone;
+            }
+            if (emailInp && !emailInp.value && veh.client_email) {
+                emailInp.value = veh.client_email;
+            }
         } else {
-            // Consulta dinâmica na API Placas caso disponível
-            try {
-                const res = await API.lookupPlate(plate);
-                if (res && res.vehicle) {
-                    const veh = res.vehicle;
-                    document.getElementById('mobile-reg-veh-model').innerText = `${veh.brand || ''} ${veh.model || ''}`;
-                    document.getElementById('mobile-reg-veh-meta').innerText = `${plate} • ${veh.model_year || '2022'} • ${veh.color || 'Preto'}`;
-                }
-            } catch (_) {}
+            if (modelEl) modelEl.innerText = `Veículo Placa ${plate}`;
+            if (metaEl) metaEl.innerText = `${plate} • Pronto para vínculo com o proprietário`;
+            if (ownerEl) ownerEl.innerText = 'Preencha os dados do proprietário abaixo para concluir';
         }
     };
 
     WorkshopView.handleMobileSubmitClientRegister = async function() {
-        const plate = document.getElementById('mobile-reg-plate-input')?.value?.trim()?.toUpperCase() || 'ABC1D23';
-        const name = document.getElementById('mobile-reg-owner-name')?.value?.trim() || 'Cliente';
-        const phone = document.getElementById('mobile-reg-owner-wpp')?.value?.trim() || '';
-        const email = document.getElementById('mobile-reg-owner-email')?.value?.trim() || '';
-        const password = document.getElementById('mobile-reg-owner-pass')?.value?.trim() || '';
+        const plate = (document.getElementById('mobile-reg-plate-input')?.value || this.mobileActivePlate || 'ABC1D23').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const name = (document.getElementById('mobile-reg-owner-name')?.value || '').trim() || 'Cliente';
+        const phone = (document.getElementById('mobile-reg-owner-wpp')?.value || '').trim() || '(11) 99999-9999';
+        const email = (document.getElementById('mobile-reg-owner-email')?.value || '').trim();
+        const password = (document.getElementById('mobile-reg-owner-pass')?.value || '').trim() || '123456';
+
+        const existingVeh = this._lastLookedUpVehicle || this.findVehicleByPlate(plate) || {};
 
         try {
-            // Registra cliente e ativa veículo no backend DNA AUTO
+            // Registra cliente e ativa veículo no backend DNA AUTO com senha inicial 123456 e flag de 1º acesso
             if (typeof API !== 'undefined') {
-                if (API.registerClient) {
+                if (API.registerClient && email) {
                     await API.registerClient({
                         name,
                         whatsapp: phone,
                         phone,
                         email,
                         password,
-                        license_plate: plate
+                        must_change_password: true,
+                        registered_by_workshop: true,
+                        license_plate: plate,
+                        plate: plate,
+                        brand: existingVeh.brand || undefined,
+                        model: existingVeh.model || undefined,
+                        year: existingVeh.year || undefined,
+                        color: existingVeh.color || undefined,
+                        fuel_type: existingVeh.fuel_type || undefined
                     }).catch(() => {});
                 }
                 const wsId = this.currentWorkshopId || (typeof localStorage !== 'undefined' ? localStorage.getItem('dna_workshop_id') : null) || 'ws_default';
@@ -2360,30 +2854,39 @@
                         client_phone: phone,
                         whatsapp: phone,
                         email,
-                        password
+                        password,
+                        brand: existingVeh.brand || undefined,
+                        model: existingVeh.model || undefined
                     }).catch(() => {});
                 }
             }
         } catch (_) {}
 
-        const successMsg = `🎉 Cliente ${name} cadastrado com sucesso e vinculado à placa ${plate}!\nO veículo já está disponível para o cliente acessar no App do Cliente com seu e-mail.`;
+        const successMsg = `🎉 Veículo ${plate} e proprietário ${name} cadastrados com sucesso!\nO cliente já pode acessar o App DNA AUTO com o e-mail ${email || 'cadastrado'} e a senha inicial 123456 (será solicitada a troca no 1º acesso).`;
         if (typeof this.showToast === 'function') {
-            this.showToast(successMsg, 'success', 5000);
+            this.showToast(successMsg, 'success', 5500);
         } else {
             alert(successMsg);
         }
-        const existingVeh = this.findVehicleByPlate(plate);
-        this.selectedMobileVehicle = {
+
+        const newVehObj = {
             license_plate: plate,
+            plate: plate,
             client_name: name,
             client_phone: phone,
             client_email: email,
             model: existingVeh?.model || 'Veículo Cadastrado',
             brand: existingVeh?.brand || '',
-            year: existingVeh?.year || '',
-            color: existingVeh?.color || '',
+            year: existingVeh?.year || '2022',
+            color: existingVeh?.color || 'Prata',
             mileage: existingVeh?.mileage || 0
         };
+        this.selectedMobileVehicle = newVehObj;
+        if (!Array.isArray(this.vehiclesList)) this.vehiclesList = [];
+        const idx = this.vehiclesList.findIndex(x => (x.license_plate || '').toUpperCase() === plate);
+        if (idx >= 0) this.vehiclesList[idx] = { ...this.vehiclesList[idx], ...newVehObj };
+        else this.vehiclesList.unshift(newVehObj);
+
         this.switchMobileSection('lancar-servicos');
     };
 
@@ -2937,6 +3440,14 @@
                     <!-- 1. IDENTIFICAÇÃO DO VEÍCULO PELA PLACA -->
                     ${this.renderUniversalVehiclePlateBar()}
 
+                    <!-- 1.1 BADGE DE QUEM ESTÁ LANÇANDO O SERVIÇO (REGISTRADOR / PROFISSIONAL) -->
+                    <div style="background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.35); border-radius:10px; padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                        <div style="font-size:12px; color:#E2E8F0;">
+                            👷 <span>Lançado por:</span> <strong style="color:#10B981;">${(this.getLoggedWorkshopUser && this.getLoggedWorkshopUser().name) || 'Profissional da Oficina'}</strong>
+                        </div>
+                        <span style="font-size:10px; font-weight:800; color:#38BDF8; background:rgba(56,189,248,0.14); padding:2px 8px; border-radius:999px;">Registro Auditado</span>
+                    </div>
+
                     <!-- 2. CAMPO DE QUILOMETRAGEM (KM) DO VEÍCULO & RECOMENDAÇÃO OEM -->
                     ${this.renderMileageAndIntervalSection(currentMileage, s.defaultKm || 10000, s.title)}
 
@@ -3201,6 +3712,15 @@
             }
 
             // 2. Montar FormData multipart para o endpoint /services/workshop-register
+            const loggedUser = this.getLoggedWorkshopUser ? this.getLoggedWorkshopUser() : { name: 'Profissional da Oficina' };
+            const launcherName = loggedUser.name || 'Profissional da Oficina';
+            const capturedPhoto = (this.mobileUploadedPhotos && this.mobileUploadedPhotos[0]) || this.entryPartPhotoPreview || null;
+            const activeWsId = this.getEffectiveWorkshopId ? this.getEffectiveWorkshopId() : (this.currentWorkshopId || 'ws_veloce');
+
+            let partsCostCents = 0;
+            parts.forEach(p => { partsCostCents += (Number(p.unit_price_cents) || 0) * (Number(p.quantity) || 1); });
+            const totalCostCents = laborCents + partsCostCents;
+
             if (typeof API !== 'undefined' && API.registerWorkshopService) {
                 const fd = new FormData();
                 fd.append('vehicle_id', targetVehId || v.license_plate);
@@ -3211,16 +3731,44 @@
                 fd.append('description', notes);
                 fd.append('service_date', srvDate);
                 fd.append('labor_cost_cents', String(laborCents));
+                fd.append('total_cost_cents', String(totalCostCents));
                 fd.append('parts_json', JSON.stringify(parts));
-
-                const activeWsId = this.currentWorkshopId || (typeof localStorage !== 'undefined' ? localStorage.getItem('dna_workshop_id') : null) || 'ws_veloce';
+                fd.append('responsible_technician_name', launcherName);
+                if (capturedPhoto) {
+                    fd.append('part_photo_url', capturedPhoto);
+                }
                 fd.append('workshop_id', activeWsId);
 
                 await API.registerWorkshopService(fd);
+            } else if (typeof fetch !== 'undefined') {
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = 'Bearer ' + token;
+                await fetch('/api/v1/services/workshop-register', {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify({
+                        vehicle_id: targetVehId || v.license_plate,
+                        workshop_id: activeWsId,
+                        service_title: s.title,
+                        category: 'Manutenção Preventiva',
+                        mileage: Number(lastKm),
+                        description: notes,
+                        service_date: srvDate,
+                        labor_cost_cents: laborCents,
+                        total_cost_cents: totalCostCents,
+                        parts_json: JSON.stringify(parts),
+                        responsible_technician_name: launcherName,
+                        part_photo_url: capturedPhoto
+                    })
+                }).catch(() => {});
             }
 
-            const successMsg = `✅ Serviço "${s.title}" registrado com sucesso no Dossiê do veículo ${v.license_plate}!
-Odômetro atual: ${lastKm} km | Próxima revisão: ${nextKm} km.`;
+            if (typeof this.loadWorkshopMenuSummary === 'function') {
+                this.loadWorkshopMenuSummary();
+            }
+
+            const successMsg = `✅ Serviço "${s.title}" registrado com sucesso no veículo ${v.license_plate} por ${launcherName}!
+Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).replace('.', ',')}.`;
             if (typeof this.showToast === 'function') {
                 this.showToast(successMsg, 'success', 5000);
             } else {
@@ -3871,79 +4419,10 @@ Odômetro atual: ${lastKm} km | Próxima revisão: ${nextKm} km.`;
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 12: BUSCAR VEÍCULOS (SEÇÃO 15 DO PROMPT)
+    // TELA 12: CADASTRAR VEÍCULO (DELEGA PARA A VIEW UNIFICADA DE CADASTRO)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileSearchVehiclesView = function() {
-        const vehicles = this.getEffectiveVehiclesList();
-        const searchType = this.mobileSearchType || 'placa';
-
-        return `
-            <div class="dna-mobile-subpage">
-                <div class="dna-mobile-subpage-header">
-                    <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
-                    </button>
-                    <span class="dna-mobile-subpage-title">Buscar Veículos</span>
-                    
-                </div>
-
-                <div class="dna-mobile-subpage-body">
-                    <!-- Segmented Filter Tabs -->
-                    <div class="dna-segmented-control">
-                        <button class="dna-segment-btn ${searchType === 'placa' ? 'active' : ''}" onclick="WorkshopView.setMobileSearchType('placa')">Por Placa</button>
-                        <button class="dna-segment-btn ${searchType === 'chassi' ? 'active' : ''}" onclick="WorkshopView.setMobileSearchType('chassi')">Por Chassi</button>
-                        <button class="dna-segment-btn ${searchType === 'cliente' ? 'active' : ''}" onclick="WorkshopView.setMobileSearchType('cliente')">Por Cliente</button>
-                    </div>
-
-                    <!-- Input de Busca -->
-                    <div class="dna-input-group">
-                        <label class="dna-input-label">
-                            ${searchType === 'placa' ? 'Digite a placa' : searchType === 'chassi' ? 'Digite o chassi' : 'Digite o nome do cliente'}
-                        </label>
-                        <div class="dna-input-search-row">
-                            <input 
-                                type="text" 
-                                id="mobile-veh-search-input" 
-                                class="dna-plate-input" 
-                                placeholder="${searchType === 'placa' ? 'Ex: ABC1D23' : searchType === 'chassi' ? 'Ex: 9BWCA...' : 'Ex: João'}"
-                                oninput="if('${searchType}'==='placa') this.value=this.value.toUpperCase(); WorkshopView.handleLiveVehicleSearch(this.value);"
-                            />
-                            <button class="dna-search-action-btn" onclick="WorkshopView.handleLiveVehicleSearch(document.getElementById('mobile-veh-search-input')?.value)">
-                                🔍
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Resultados -->
-                    <div>
-                        <span class="dna-mobile-section-label" style="display:block; margin-bottom:10px;">Resultados</span>
-                        
-                        <div style="display:flex; flex-direction:column; gap:10px;" id="mobile-search-results-container">
-                            ${vehicles.map(v => `
-                                <div class="dna-mobile-row-card" onclick="WorkshopView.handleMobileOpenDossier('${v.license_plate}')">
-                                    <div class="dna-mobile-row-icon dna-icon-blue">🚗</div>
-                                    <div class="dna-mobile-row-content">
-                                        <div style="display:flex; align-items:center; gap:8px;">
-                                            <span style="font-weight:800; font-family:monospace; color:#fff; font-size:14px;">${v.license_plate}</span>
-                                            <span style="font-size:12px; color:var(--dna-ws-text-muted);">${v.brand || ''} ${v.model || ''}</span>
-                                        </div>
-                                        <div style="font-size:11px; color:var(--dna-ws-text-dim); margin-top:2px;">
-                                            ${v.year || '2020'} • ${v.color || 'Prata'} • Cliente: ${v.client_name || 'Oficina'}
-                                        </div>
-                                    </div>
-                                    <span class="dna-mobile-row-chevron">›</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-
-                    <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar para Todos os Cards</span>
-                    </button>
-
-                </div>
-            </div>
-        `;
+        return this.renderMobileClientRegisterView();
     };
 
     WorkshopView.setMobileSearchType = function(type) {
@@ -6010,10 +6489,17 @@ Odômetro atual: ${lastKm} km | Próxima revisão: ${nextKm} km.`;
             localStorage.setItem('dna_token', res.token);
             if (res.user) localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
             if (res.user && res.user.workshop) {
-                this.officialWorkshopName = res.user.workshop.trade_name || 'Auto Center';
+                this.officialWorkshopName = res.user.workshop.trade_name || res.user.workshop.workshop_name || 'Auto Center';
+                if (res.user.workshop.workshop_id) {
+                    localStorage.setItem('dna_workshop_id', res.user.workshop.workshop_id);
+                    this.currentWorkshopId = res.user.workshop.workshop_id;
+                }
             }
             this.currentSection = 'dashboard';
             this.renderMobileShell();
+            if (typeof this.loadWorkshopMenuSummary === 'function') {
+                this.loadWorkshopMenuSummary();
+            }
 
         } catch (err) {
             // ❌ Login negado — mostra erro sem entrar no app

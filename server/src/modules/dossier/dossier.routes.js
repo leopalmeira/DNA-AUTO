@@ -135,9 +135,18 @@ router.get('/:identifier', (req, res) => {
             ORDER BY last_service_date DESC
         `).all(vehicleId);
 
-        // 4. Serviços com 4 Níveis de Comprovação
+        // 4. Serviços com 4 Níveis de Comprovação (incluindo quem lançou e foto da peça)
+        try {
+            db.exec(`ALTER TABLE service_records ADD COLUMN registered_by_user_id TEXT`);
+        } catch (_) {}
+        try {
+            db.exec(`ALTER TABLE service_records ADD COLUMN part_photo_url TEXT`);
+        } catch (_) {}
+
         const services = db.prepare(`
             SELECT sr.*,
+                   COALESCE(sr.responsible_technician_name, 'Profissional da Oficina') as launched_by_name,
+                   COALESCE(sr.part_photo_url, (SELECT vp.file_path FROM vehicle_photos vp WHERE vp.service_record_id = sr.id ORDER BY vp.rowid DESC LIMIT 1)) as part_photo_url,
                    w.trade_name as workshop_name, w.cnpj as workshop_cnpj, w.city as workshop_city,
                    o.name as declared_by_owner_name
             FROM service_records sr

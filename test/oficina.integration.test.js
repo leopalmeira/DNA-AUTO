@@ -502,7 +502,153 @@ async function run20StepIntegrationTest() {
         console.log(`   - Oficinas na rede: ${adminStatsData.network.totalWorkshops}`);
         console.log(`   - Serviços comprovados: ${adminStatsData.network.verifiedServices || 1}`);
 
-        console.log('\n🎉 SUCESSO TOTAL: TODOS OS 20 PASSOS DA OPERAÇÃO FORAM HOMOLOGADOS COM 100% DE ÊXITO!\n');
+        // -------------------------------------------------------------
+        // PASSO 21: Cadastro de Veículo/Cliente pela Oficina com Senha Inicial 123456, 1º Acesso e Edição de Dados Pessoais
+        // -------------------------------------------------------------
+        console.log('\n[Passo 21] Cadastro de veículo pela oficina com senha inicial 123456, troca obrigatória no 1º acesso e edição de dados pessoais...');
+        const newClientEmail = `cliente.123456.${Date.now()}@email.com`;
+        const newClientPlate = `CAD${Math.floor(1000 + Math.random() * 9000)}`;
+        const regActRes = await fetch(`${BASE_URL}/workshops/${wsId}/clients/register-activation`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${wsToken}`
+            },
+            body: JSON.stringify({
+                license_plate: newClientPlate,
+                brand: 'Honda',
+                model: 'Civic Touring 1.5 Turbo',
+                owner_name: 'Roberto Cliente Inicial',
+                owner_email: newClientEmail,
+                owner_phone: '11977776666'
+            })
+        });
+        const regActData = await regActRes.json();
+        assert.equal(regActRes.status, 201, `Cadastro do veículo pela oficina deve retornar 201: ${regActData.error || ''}`);
+
+        // 1º Acesso do cliente com email e senha "123456"
+        const clientFirstLoginRes = await fetch(`${BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: newClientEmail, password: '123456' })
+        });
+        const clientFirstLoginData = await clientFirstLoginRes.json();
+        assert.equal(clientFirstLoginRes.status, 200, 'Login do cliente com senha 123456 deve funcionar');
+        assert.equal(clientFirstLoginData.must_change_password, true, 'Primeiro acesso com 123456 deve solicitar troca de senha (must_change_password = true)');
+
+        // Troca de senha inicial no 1º acesso
+        const changePassRes = await fetch(`${BASE_URL}/auth/change-initial-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${clientFirstLoginData.token}`
+            },
+            body: JSON.stringify({
+                email: newClientEmail,
+                current_password: '123456',
+                new_password: 'novaSenhaCliente2026'
+            })
+        });
+        const changePassData = await changePassRes.json();
+        assert.equal(changePassRes.status, 200, 'Troca da senha inicial deve retornar 200');
+        assert.equal(changePassData.success, true);
+
+        // Atualização de dados pessoais pelo cliente no app
+        const updateProfileRes = await fetch(`${BASE_URL}/auth/profile`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${clientFirstLoginData.token}`
+            },
+            body: JSON.stringify({
+                user_id: clientFirstLoginData.user.id,
+                name: 'Roberto Silva Atualizado',
+                email: newClientEmail,
+                phone: '11955554444'
+            })
+        });
+        const updateProfileData = await updateProfileRes.json();
+        assert.equal(updateProfileRes.status, 200, 'Edição de dados pessoais do cliente deve retornar 200');
+        assert.equal(updateProfileData.user.name, 'Roberto Silva Atualizado');
+        console.log('✅ [Passo 21] Fluxo de cadastro com senha 123456, troca obrigatória no 1º acesso e edição de dados pessoais validado!');
+
+        // -------------------------------------------------------------
+        // PASSO 22: Cadastro de Registradores, Lançamento com Foto/Valor/Autor, Resumo Mensal e Exclusão de Perfil
+        // -------------------------------------------------------------
+        console.log('\n[Passo 22] Cadastro de Registrador, lançamento de peça/serviço com foto e valor, resumo mensal e exclusão...');
+        const regStaffEmail = `registrador.${Date.now()}@oficina.com.br`;
+        const createRegRes = await fetch(`${BASE_URL}/workshops/${wsId}/registrars`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${wsToken}`
+            },
+            body: JSON.stringify({
+                name: 'Marcos Registrador Técnico',
+                email: regStaffEmail
+            })
+        });
+        const createRegData = await createRegRes.json();
+        assert.equal(createRegRes.status, 201, `Cadastro de registrador deve retornar 201: ${createRegData.error || ''}`);
+        assert.ok(createRegData.registrar.generated_password, 'Senha aleatória gerada para o registrador');
+        const registrarId = createRegData.registrar.id;
+        const registrarPassword = createRegData.registrar.generated_password;
+
+        // Login do Registrador
+        const staffLoginRes = await fetch(`${BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: regStaffEmail, password: registrarPassword })
+        });
+        const staffLoginData = await staffLoginRes.json();
+        assert.equal(staffLoginRes.status, 200, 'Registrador deve conseguir fazer login com a senha aleatória gerada');
+        assert.ok(staffLoginData.token, 'Token JWT do registrador retornado');
+
+        // Registrador lança serviço com foto da peça e valor vinculado à placa
+        const staffSrvRes = await fetch(`${BASE_URL}/services/workshop-register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${staffLoginData.token}`
+            },
+            body: JSON.stringify({
+                license_plate: newClientPlate,
+                workshop_id: wsId,
+                service_title: 'Troca de Pastilhas de Freio Cerâmica',
+                category: 'FREIOS',
+                description: 'Substituição das pastilhas dianteiras com foto da peça',
+                service_date: new Date().toISOString().split('T')[0],
+                mileage: 32000,
+                labor_cost_cents: 12000,
+                parts_json: JSON.stringify([{ part_name: 'Jogo Pastilhas Cobreq', quantity: 1, unit_price_cents: 26000 }]),
+                part_photo_url: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA...fotoPecaFreio'
+            })
+        });
+        const staffSrvData = await staffSrvRes.json();
+        assert.ok(staffSrvRes.status === 201 || staffSrvRes.status === 200, 'Registrador lançou serviço com sucesso');
+        assert.equal(staffSrvData.responsible_technician_name, 'Marcos Registrador Técnico', 'Sistema registrou quem lançou o serviço');
+
+        // Consulta do resumo do Menu da Oficina (carros no mês, valor a repassar, registradores e serviços lançados)
+        const menuSumRes = await fetch(`${BASE_URL}/workshops/${wsId}/registrars`, {
+            headers: { 'Authorization': `Bearer ${wsToken}` }
+        });
+        const menuSumData = await menuSumRes.json();
+        assert.equal(menuSumRes.status, 200, 'Resumo do menu da oficina deve retornar 200');
+        assert.ok(menuSumData.monthly_billing.cars_registered_month >= 1, 'Contagem de carros cadastrados no mês >= 1');
+        assert.ok(menuSumData.monthly_billing.amount_to_transfer_cents >= 2495, 'Valor a repassar para a plataforma calculado');
+        assert.ok(menuSumData.launched_services.some(s => s.responsible_technician_name === 'Marcos Registrador Técnico' && s.part_photo_url), 'Auditoria mostra quem lançou, foto da peça, valor e data');
+
+        // Exclusão do perfil do Registrador pela conta da oficina
+        const delRegRes = await fetch(`${BASE_URL}/workshops/${wsId}/registrars/${registrarId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${wsToken}` }
+        });
+        const delRegData = await delRegRes.json();
+        assert.equal(delRegRes.status, 200, 'Conta da oficina deve conseguir excluir o perfil do registrador');
+        assert.equal(delRegData.success, true);
+        console.log('✅ [Passo 22] Cadastro de registrador, lançamento identificado com foto/valor/data, resumo mensal e exclusão validados!');
+
+        console.log('\n🎉 SUCESSO TOTAL: TODOS OS 22 PASSOS DA OPERAÇÃO FORAM HOMOLOGADOS COM 100% DE ÊXITO!\n');
 
     } finally {
         if (server) {

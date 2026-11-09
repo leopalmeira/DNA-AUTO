@@ -8,6 +8,10 @@ const { JWT_SECRET, authenticateToken } = require('../../middlewares/auth');
 const { logAudit } = require('../../middlewares/audit');
 const apiPlacasService = require('../../services/apiPlacas.service');
 
+try {
+    db.exec(`ALTER TABLE users ADD COLUMN must_change_password INTEGER DEFAULT 0`);
+} catch (_) {}
+
 // Login de Usuários
 router.post('/login', (req, res) => {
     try {
@@ -18,6 +22,7 @@ router.post('/login', (req, res) => {
 
         let user = db.prepare(`
             SELECT u.id, u.name, u.email, u.password_hash, u.phone, u.role_id, u.status,
+                   COALESCE(u.must_change_password, 0) as must_change_password,
                    r.code as role_code, r.name as role_name
             FROM users u
             JOIN roles r ON u.role_id = r.id
@@ -33,6 +38,7 @@ router.post('/login', (req, res) => {
                 runSeed(db);
                 user = db.prepare(`
                     SELECT u.id, u.name, u.email, u.password_hash, u.phone, u.role_id, u.status,
+                           COALESCE(u.must_change_password, 0) as must_change_password,
                            r.code as role_code, r.name as role_name
                     FROM users u
                     JOIN roles r ON u.role_id = r.id
@@ -129,8 +135,31 @@ router.post('/login', (req, res) => {
             }
         } catch (_) {}
 
+        const mustChangePassword = Boolean(
+            Number(user.must_change_password) === 1 ||
+            (user.role_code === 'OWNER' && String(password).trim() === '123456')
+        );
+
+        const serializedVehicle = primaryVehicle ? {
+            id: primaryVehicle.id,
+            license_plate: primaryVehicle.license_plate,
+            brand: primaryVehicle.brand,
+            model: primaryVehicle.model,
+            full_title: `${primaryVehicle.brand} ${primaryVehicle.model}`.trim(),
+            version_label: primaryVehicle.version_label,
+            manufacture_year: primaryVehicle.manufacture_year,
+            model_year: primaryVehicle.model_year,
+            color: primaryVehicle.color,
+            fuel_type: primaryVehicle.fuel_type,
+            photo_url: primaryVehicle.photo_url || '/img/splash-car-hero.png',
+            dna_code: primaryVehicle.dna_code || null,
+            fipe_price_cents: primaryVehicle.fipe_price_cents || null
+        } : null;
+
         res.json({
             token,
+            must_change_password: mustChangePassword,
+            primaryVehicle: serializedVehicle,
             user: {
                 id: user.id,
                 name: user.name,
@@ -138,22 +167,9 @@ router.post('/login', (req, res) => {
                 phone: user.phone,
                 role_code: user.role_code,
                 role_name: user.role_name,
+                must_change_password: mustChangePassword,
                 workshop: workshopUser || null,
-                vehicle: primaryVehicle ? {
-                    id: primaryVehicle.id,
-                    license_plate: primaryVehicle.license_plate,
-                    brand: primaryVehicle.brand,
-                    model: primaryVehicle.model,
-                    full_title: `${primaryVehicle.brand} ${primaryVehicle.model}`.trim(),
-                    version_label: primaryVehicle.version_label,
-                    manufacture_year: primaryVehicle.manufacture_year,
-                    model_year: primaryVehicle.model_year,
-                    color: primaryVehicle.color,
-                    fuel_type: primaryVehicle.fuel_type,
-                    photo_url: primaryVehicle.photo_url || '/img/splash-car-hero.png',
-                    dna_code: primaryVehicle.dna_code || null,
-                    fipe_price_cents: primaryVehicle.fipe_price_cents || null
-                } : null
+                vehicle: serializedVehicle
             }
         });
     } catch (err) {
@@ -265,9 +281,17 @@ router.post('/register-client', async (req, res) => {
             });
         }
         const { name, email, password, phone, cpf, plate, license_plate } = req.body;
-        if (!name || !email || !password) {
-            return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios.' });
+        const effectivePassword = (password && String(password).trim()) ? String(password).trim() : '123456';
+        if (!name || !email) {
+            return res.status(400).json({ error: 'Nome e e-mail são obrigatórios.' });
         }
+
+        const isInitialDefaultPassword = (
+            effectivePassword === '123456' ||
+            req.body.must_change_password === true ||
+            req.body.registered_by_workshop === true
+        );
+        const mustChangeFlag = isInitialDefaultPassword ? 1 : 0;
 
         const cleanEmail = email.trim().toLowerCase();
         const existing = db.prepare('SELECT id, name, phone, role_id FROM users WHERE LOWER(email) = ?').get(cleanEmail);
@@ -275,7 +299,7 @@ router.post('/register-client', async (req, res) => {
         let userId = existing ? existing.id : `usr_${Date.now()}`;
         let existingOwner = existing ? db.prepare('SELECT id FROM owners WHERE user_id = ? OR LOWER(email) = ?').get(userId, cleanEmail) : null;
         let ownerId = existingOwner ? existingOwner.id : `own_${Date.now()}`;
-        const passwordHash = bcrypt.hashSync(password, 10);
+        const passwordHash = bcrypt.hashSync(effectivePassword, 10);
         const rawPlate = plate || license_plate || '';
         const cleanPlate = rawPlate.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
 
@@ -383,10 +407,11 @@ router.post('/register-client', async (req, res) => {
                     SET password_hash = ?, 
                         name = COALESCE(NULLIF(?, ''), name), 
                         phone = COALESCE(NULLIF(?, ''), phone),
+                        must_change_password = ?,
                         status = 'ACTIVE',
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
-                `).run(passwordHash, name.trim(), phone ? phone.trim() : null, userId);
+                `).run(passwordHash, name.trim(), phone ? phone.trim() : null, mustChangeFlag, userId);
 
                 if (existingOwner) {
                     db.prepare(`
@@ -405,9 +430,9 @@ router.post('/register-client', async (req, res) => {
                 }
             } else {
                 db.prepare(`
-                    INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
-                    VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0)
-                `).run(userId, name.trim(), cleanEmail, passwordHash, phone ? phone.trim() : null);
+                    INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo, must_change_password)
+                    VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0, ?)
+                `).run(userId, name.trim(), cleanEmail, passwordHash, phone ? phone.trim() : null, mustChangeFlag);
 
                 db.prepare(`
                     INSERT INTO owners (id, user_id, name, document_cpf, email, phone, created_at)
@@ -451,6 +476,7 @@ router.post('/register-client', async (req, res) => {
 
         res.status(201).json({
             token,
+            must_change_password: Boolean(mustChangeFlag),
             user: {
                 id: userId,
                 name: name.trim(),
@@ -458,6 +484,7 @@ router.post('/register-client', async (req, res) => {
                 phone: phone || null,
                 role_code: 'OWNER',
                 role_name: 'Proprietário de Veículo',
+                must_change_password: Boolean(mustChangeFlag),
                 workshop: null,
                 vehicle: vehicle ? {
                     id: vehicle.id,
@@ -479,6 +506,168 @@ router.post('/register-client', async (req, res) => {
         res.status(500).json({ error: 'Erro interno ao cadastrar cliente.' });
     }
 });
+
+// Troca de Senha no Primeiro Acesso (ou alteração de senha pelo cliente logado)
+function handleChangeInitialPassword(req, res) {
+    try {
+        const userId = req.user && req.user.id;
+        if (!userId) {
+            return res.status(401).json({ error: 'Usuário não autenticado.' });
+        }
+
+        const newPassword = String(req.body.new_password || req.body.newPassword || req.body.password || '').trim();
+        const rawConfirm = req.body.confirm_password !== undefined ? req.body.confirm_password : req.body.confirmPassword;
+        const confirmPassword = rawConfirm !== undefined ? String(rawConfirm || '').trim() : newPassword;
+
+        if (!newPassword || newPassword.length < 6) {
+            return res.status(400).json({ error: 'A nova senha deve conter no mínimo 6 caracteres.' });
+        }
+
+        if (newPassword === '123456') {
+            return res.status(400).json({ error: 'Por segurança, escolha uma nova senha diferente da senha inicial 123456.' });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ error: 'As senhas informadas não coincidem.' });
+        }
+
+        const passwordHash = bcrypt.hashSync(newPassword, 10);
+        db.prepare(`
+            UPDATE users
+            SET password_hash = ?,
+                must_change_password = 0,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(passwordHash, userId);
+
+        logAudit({
+            user: { id: userId, name: req.user.name || 'Cliente', role_code: req.user.role_code || 'OWNER' },
+            action: 'CHANGE_INITIAL_PASSWORD',
+            entityType: 'USER',
+            entityId: userId,
+            ipAddress: req.ip || req.connection.remoteAddress,
+            userAgent: req.headers['user-agent']
+        });
+
+        return res.json({
+            success: true,
+            must_change_password: false,
+            message: 'Sua nova senha foi salva com sucesso!'
+        });
+    } catch (err) {
+        console.error('Erro ao trocar senha inicial:', err);
+        return res.status(500).json({ error: 'Erro interno ao atualizar a senha.' });
+    }
+}
+
+router.post('/change-initial-password', authenticateToken, handleChangeInitialPassword);
+router.post('/change-password', authenticateToken, handleChangeInitialPassword);
+
+// Atualização de Dados Pessoais do Cliente (Nome, E-mail, WhatsApp e Senha Opcional)
+function handleUpdateClientProfile(req, res) {
+    try {
+        const userId = req.user && req.user.id;
+        if (!userId) {
+            return res.status(401).json({ error: 'Usuário não autenticado.' });
+        }
+
+        const currentUser = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
+        if (!currentUser) {
+            return res.status(404).json({ error: 'Usuário não encontrado.' });
+        }
+
+        const newName = (req.body.name || req.body.client_name || currentUser.name || '').trim();
+        const newEmail = (req.body.email || currentUser.email || '').trim().toLowerCase();
+        const newPhone = (req.body.phone || req.body.whatsapp || currentUser.phone || '').trim();
+        const newCpf = (req.body.cpf || req.body.document_cpf || '').trim();
+        const newPassword = (req.body.new_password || req.body.newPassword || req.body.password || '').trim();
+
+        if (!newName || !newEmail) {
+            return res.status(400).json({ error: 'Nome e e-mail são obrigatórios.' });
+        }
+
+        if (newEmail !== currentUser.email.toLowerCase()) {
+            const emailConflict = db.prepare('SELECT id FROM users WHERE LOWER(email) = ? AND id != ?').get(newEmail, userId);
+            if (emailConflict) {
+                return res.status(409).json({ error: 'Este e-mail já está em uso por outra conta.' });
+            }
+        }
+
+        if (newPassword && newPassword.length > 0 && newPassword.length < 6) {
+            return res.status(400).json({ error: 'A nova senha deve ter pelo menos 6 caracteres.' });
+        }
+
+        db.transaction(() => {
+            if (newPassword && newPassword.length >= 6) {
+                const passHash = bcrypt.hashSync(newPassword, 10);
+                db.prepare(`
+                    UPDATE users
+                    SET name = ?,
+                        email = ?,
+                        phone = ?,
+                        password_hash = ?,
+                        must_change_password = 0,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                `).run(newName, newEmail, newPhone || null, passHash, userId);
+            } else {
+                db.prepare(`
+                    UPDATE users
+                    SET name = ?,
+                        email = ?,
+                        phone = ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                `).run(newName, newEmail, newPhone || null, userId);
+            }
+
+            const ownerRec = db.prepare('SELECT id FROM owners WHERE user_id = ? OR LOWER(email) = ?').get(userId, currentUser.email.toLowerCase());
+            if (ownerRec) {
+                if (newCpf) {
+                    db.prepare(`
+                        UPDATE owners
+                        SET name = ?, email = ?, phone = ?, document_cpf = ?
+                        WHERE id = ?
+                    `).run(newName, newEmail, newPhone || null, newCpf, ownerRec.id);
+                } else {
+                    db.prepare(`
+                        UPDATE owners
+                        SET name = ?, email = ?, phone = ?
+                        WHERE id = ?
+                    `).run(newName, newEmail, newPhone || null, ownerRec.id);
+                }
+            }
+        })();
+
+        const updatedUser = db.prepare(`
+            SELECT u.id, u.name, u.email, u.phone, COALESCE(u.must_change_password, 0) as must_change_password,
+                   r.code as role_code, r.name as role_name
+            FROM users u
+            JOIN roles r ON u.role_id = r.id
+            WHERE u.id = ?
+        `).get(userId);
+
+        return res.json({
+            success: true,
+            message: 'Dados pessoais atualizados com sucesso!',
+            user: {
+                id: updatedUser.id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                phone: updatedUser.phone,
+                role_code: updatedUser.role_code,
+                role_name: updatedUser.role_name,
+                must_change_password: Boolean(updatedUser.must_change_password)
+            }
+        });
+    } catch (err) {
+        console.error('Erro ao atualizar perfil do cliente:', err);
+        return res.status(500).json({ error: 'Erro interno ao atualizar dados pessoais.' });
+    }
+}
+
+router.put('/profile', authenticateToken, handleUpdateClientProfile);
+router.post('/profile', authenticateToken, handleUpdateClientProfile);
 
 // Cadastro Completo de Proprietário com Placa do Veículo e Código de Oficina (Fluxo Onboarding Mobile)
 router.post('/register-owner', async (req, res) => {

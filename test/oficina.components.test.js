@@ -90,26 +90,44 @@ eval(wmvCode);
 assert.ok(typeof WorkshopView !== 'undefined', 'WorkshopView deve estar definido');
 console.log('✅ WorkshopView inicializado no contexto de teste');
 
-// TESTE 1: Validação do Dashboard e dos 8 Cards Oficiais
-console.log('📌 Testando Tela 1: Dashboard (8 Cards)...');
+// TESTE 1: Validação do Dashboard (6 Cards Oficiais, sem Entrada de Veículos e sem Notas Fiscais), Topo com Menu e Rodapé Removido
+console.log('📌 Testando Tela 1: Dashboard (6 Cards), Botão de Menu no Topo e Remoção do Rodapé...');
 WorkshopView.currentSection = 'dashboard';
 const dashHtml = WorkshopView.renderMobileDashboardView();
 
-assert.ok(dashHtml.includes("switchMobileSection('entrada-veiculos')"), 'Card 1 (Entrada de Veículos) presente e interativo');
-assert.ok(dashHtml.includes("switchMobileSection('lancar-servicos')"), 'Card 2 (Lançar Serviços) presente e interativo');
-assert.ok(dashHtml.includes("switchMobileSection('nota-fiscal')"), 'Card 3 (Notas Fiscais) presente e interativo');
-assert.ok(dashHtml.includes("switchMobileSection('buscar-veiculos')"), 'Card 4 (Buscar Veículos) presente e interativo');
-assert.ok(dashHtml.includes("switchMobileSection('manutencao-veiculos')"), 'Card 5 (Manutenção dos Veículos) presente e interativo');
-assert.ok(dashHtml.includes("switchMobileSection('avisos-whatsapp')"), 'Card 6 (Avisos WhatsApp) presente e interativo');
-assert.ok(dashHtml.includes("switchMobileSection('financeiro')"), 'Card 7 (Financeiro) presente e interativo');
-assert.ok(dashHtml.includes("switchMobileSection('suporte')"), 'Card 8 (Suporte) presente e interativo');
-console.log('✅ Teste 1: Todos os 8 cards do Dashboard foram validados');
+assert.ok(!dashHtml.includes('Entrada de Veículos'), 'Card Entrada de Veículos não deve existir mais no dashboard');
+assert.ok(!dashHtml.includes('Notas Fiscais'), 'Card Notas Fiscais não deve existir mais no dashboard');
+assert.ok(dashHtml.includes("switchMobileSection('buscar-veiculos')") && dashHtml.includes('Cadastrar Veículo'), 'Card Cadastrar Veículo presente e interativo');
+assert.ok(dashHtml.includes("switchMobileSection('lancar-servicos')"), 'Card Lançar Serviços presente e interativo');
+assert.ok(dashHtml.includes("switchMobileSection('manutencao-veiculos')"), 'Card Manutenção dos Veículos presente e interativo');
+assert.ok(dashHtml.includes("switchMobileSection('avisos-whatsapp')"), 'Card Avisos WhatsApp presente e interativo');
+assert.ok(dashHtml.includes("switchMobileSection('financeiro')"), 'Card Financeiro presente e interativo');
+assert.ok(dashHtml.includes("switchMobileSection('suporte')"), 'Card Suporte presente e interativo');
 
-// TESTE 2: Roteamento de Sub-Telas em renderMobileActiveSection
+const bottomNavHtml = WorkshopView.renderMobileBottomNav();
+assert.equal(bottomNavHtml, '', 'Os 5 botões do rodapé (Início, Veículos, Serviços, Agenda, Mais) foram removidos');
+
+const headerHtml = WorkshopView.renderMobileHeader();
+assert.ok(headerHtml.includes('id="ws-top-menu-toggle-btn"'), 'Botão de Menu no topo presente');
+assert.ok(headerHtml.includes('WorkshopView.toggleWorkshopTopMenu()'), 'Ação de abrir o Menu do topo presente');
+
+const menuDrawerHtml = WorkshopView.renderWorkshopTopMenuDrawerInner();
+assert.ok(menuDrawerHtml.includes('id="ws-menu-cars-month"'), 'Resumo de carros cadastrados no mês presente no menu');
+assert.ok(menuDrawerHtml.includes('id="ws-menu-transfer-amount"'), 'Resumo de valor a repassar para a plataforma presente no menu');
+assert.ok(menuDrawerHtml.includes('Cadastrar Registradores'), 'Seção Cadastrar Registradores presente no menu');
+assert.ok(menuDrawerHtml.includes('id="ws-menu-reg-name"'), 'Campo de nome do registrador presente no menu');
+assert.ok(menuDrawerHtml.includes('id="ws-menu-reg-email"'), 'Campo de e-mail do registrador presente no menu');
+assert.ok(menuDrawerHtml.includes('id="ws-menu-reg-password"'), 'Campo de senha aleatória gerada presente no menu');
+assert.ok(menuDrawerHtml.includes('Sair do App'), 'Opção Sair do App presente no menu');
+console.log('✅ Teste 1: Dashboard (6 cards), Menu no Topo e remoção do rodapé validados');
+
+// TESTE 2: Roteamento de Sub-Telas em renderMobileActiveSection (incluindo Cadastrar Veículo com senha 123456 e Registradores)
 console.log('📌 Testando Roteamento de Sub-Telas...');
 const routeTests = [
     { section: 'entrada-veiculos', match: 'ws-entry-plate' },
-    { section: 'cadastrar-cliente', match: 'Cadastrar Cliente' },
+    { section: 'cadastrar-cliente', match: 'Cadastrar Veículo' },
+    { section: 'buscar-veiculos', match: 'Cadastrar Veículo' },
+    { section: 'registradores', match: 'Cadastrar Novo Registrador' },
     { section: 'lancar-servicos', match: 'dna-vertical-carousel' },
     { section: 'detalhe-servico', match: 'dna-mobile-subpage-title' },
     { section: 'manutencao-veiculos', match: 'Manuten' },
@@ -118,7 +136,6 @@ const routeTests = [
     { section: 'enviar-fotos', match: 'Foto' },
     { section: 'nota-fiscal', match: 'Nota' },
     { section: 'clientes', match: 'Clientes' },
-    { section: 'buscar-veiculos', match: 'Buscar' },
     { section: 'ordens-servico', match: 'Ordens de Servi' },
     { section: 'relatorios', match: 'Relat' },
     { section: 'financeiro', match: 'Financeiro' },
@@ -132,7 +149,24 @@ routeTests.forEach(({ section, match }) => {
     const html = WorkshopView.renderMobileActiveSection();
     assert.ok(html && html.includes(match), `Rota "${section}" deve renderizar conteúdo contendo "${match}"`);
 });
-console.log('✅ Teste 2: Todas as 17 rotas operacionais de sub-telas respondem com suas views exclusivas');
+
+// Validar Cadastrar Veículo (placa -> dados do carro -> dados do dono com senha gravada 123456)
+WorkshopView.currentSection = 'buscar-veiculos';
+const registerVehicleHtml = WorkshopView.renderMobileActiveSection();
+assert.ok(registerVehicleHtml.includes('id="mobile-reg-plate-input"'), 'Campo de placa presente em Cadastrar Veículo');
+assert.ok(registerVehicleHtml.includes('id="mobile-reg-owner-name"'), 'Campo de nome do dono presente');
+assert.ok(registerVehicleHtml.includes('id="mobile-reg-owner-email"'), 'Campo de e-mail do dono presente');
+assert.ok(registerVehicleHtml.includes('id="mobile-reg-owner-wpp"'), 'Campo de WhatsApp do dono presente');
+assert.ok(registerVehicleHtml.includes('value="123456"'), 'Senha inicial 123456 gravada automaticamente no cadastro');
+
+// Validar Cadastrar Registradores
+WorkshopView.currentSection = 'registradores';
+const registrarsHtml = WorkshopView.renderMobileActiveSection();
+assert.ok(registrarsHtml.includes('id="ws-page-reg-name"'), 'Campo de nome do registrador presente');
+assert.ok(registrarsHtml.includes('id="ws-page-reg-email"'), 'Campo de e-mail do registrador presente');
+assert.ok(registrarsHtml.includes('id="ws-page-reg-password"'), 'Campo de senha aleatória gerada presente');
+assert.ok(registrarsHtml.includes('Auditoria de Serviços e Peças Lançados'), 'Seção de auditoria de serviços lançados com foto, valor, data e quem lançou presente');
+console.log('✅ Teste 2: Todas as 18 rotas operacionais (incluindo Cadastrar Veículo e Cadastrar Registradores) validadas');
 
 // TESTE 3: Tela "Lançar Serviços" e Carrossel Vertical 3D
 console.log('📌 Testando Tela "Lançar Serviços" e Carrossel 3D...');

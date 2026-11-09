@@ -465,22 +465,23 @@ router.post('/register', authenticateToken, (req, res) => {
             const rawOwnerPassword = req.body.owner_password || req.body.password || '';
 
             if (cleanOwnerEmail && cleanOwnerEmail.includes('@')) {
+                try {
+                    db.exec(`ALTER TABLE users ADD COLUMN must_change_password INTEGER DEFAULT 0`);
+                } catch (_) {}
+                const initialPass = (rawOwnerPassword && rawOwnerPassword.length >= 6) ? rawOwnerPassword : '123456';
+                const mustChange = initialPass === '123456' ? 1 : 0;
                 const existingUser = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanOwnerEmail);
                 if (existingUser) {
                     userId = existingUser.id;
-                    if (rawOwnerPassword && rawOwnerPassword.length >= 6) {
-                        const passHash = bcrypt.hashSync(rawOwnerPassword, 10);
-                        db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(passHash, userId);
-                    }
+                    const passHash = bcrypt.hashSync(initialPass, 10);
+                    db.prepare('UPDATE users SET password_hash = ?, must_change_password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(passHash, mustChange, userId);
                 } else {
                     userId = 'usr_' + Date.now();
-                    const cleanPhoneDigits = cleanOwnerPhone.replace(/\D/g, '');
-                    const initialPass = (rawOwnerPassword && rawOwnerPassword.length >= 6) ? rawOwnerPassword : (cleanPhoneDigits.length >= 6 ? cleanPhoneDigits.slice(-6) : '123456');
                     const passHash = bcrypt.hashSync(initialPass, 10);
                     db.prepare(`
-                        INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
-                        VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0)
-                    `).run(userId, cleanOwnerName || 'Cliente', cleanOwnerEmail, passHash, cleanOwnerPhone || null);
+                        INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo, must_change_password)
+                        VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0, ?)
+                    `).run(userId, cleanOwnerName || 'Cliente', cleanOwnerEmail, passHash, cleanOwnerPhone || null, mustChange);
                 }
 
                 const existingOwner = db.prepare('SELECT id FROM owners WHERE user_id = ? OR LOWER(email) = ?').get(userId, cleanOwnerEmail);
@@ -774,22 +775,23 @@ router.post('/register-from-api', authenticateToken, async (req, res) => {
             const rawOwnerPassword = req.body.owner_password || req.body.password || '';
 
             if (cleanOwnerEmail && cleanOwnerEmail.includes('@')) {
+                try {
+                    db.exec(`ALTER TABLE users ADD COLUMN must_change_password INTEGER DEFAULT 0`);
+                } catch (_) {}
+                const initialPass = (rawOwnerPassword && rawOwnerPassword.length >= 6) ? rawOwnerPassword : '123456';
+                const mustChange = initialPass === '123456' ? 1 : 0;
                 const existingUser = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanOwnerEmail);
                 if (existingUser) {
                     userId = existingUser.id;
-                    if (rawOwnerPassword && rawOwnerPassword.length >= 6) {
-                        const passHash = bcrypt.hashSync(rawOwnerPassword, 10);
-                        db.prepare('UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(passHash, userId);
-                    }
+                    const passHash = bcrypt.hashSync(initialPass, 10);
+                    db.prepare('UPDATE users SET password_hash = ?, must_change_password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(passHash, mustChange, userId);
                 } else {
                     userId = 'usr_' + Date.now();
-                    const cleanPhoneDigits = cleanOwnerPhone.replace(/\D/g, '');
-                    const initialPass = (rawOwnerPassword && rawOwnerPassword.length >= 6) ? rawOwnerPassword : (cleanPhoneDigits.length >= 6 ? cleanPhoneDigits.slice(-6) : '123456');
                     const passHash = bcrypt.hashSync(initialPass, 10);
                     db.prepare(`
-                        INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
-                        VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0)
-                    `).run(userId, cleanOwnerName || 'Cliente', cleanOwnerEmail, passHash, cleanOwnerPhone || null);
+                        INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo, must_change_password)
+                        VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0, ?)
+                    `).run(userId, cleanOwnerName || 'Cliente', cleanOwnerEmail, passHash, cleanOwnerPhone || null, mustChange);
                 }
 
                 const existingOwner = db.prepare('SELECT id FROM owners WHERE user_id = ? OR LOWER(email) = ?').get(userId, cleanOwnerEmail);
