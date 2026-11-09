@@ -667,7 +667,7 @@
             if (emailEl) emailEl.value = '';
             if (passEl) passEl.value = this._currentRandomStaffPassword;
 
-            this.showToast(`✅ Registrador ${name} cadastrado!\nLogin: ${email} | Senha: ${data.registrar.generated_password}`, 'success', 5500);
+            this.showToast(`✅ Registrador ${name} cadastrado!\nLogin: ${email} | Senha: ${data.registrar.generated_password} (ou 123456)`, 'success', 6000);
             this.updateOpenMenuDrawerDOM();
             if (this.currentSection === 'registradores') {
                 const viewport = document.getElementById('ws-mobile-active-viewport');
@@ -779,12 +779,13 @@
                             <input type="email" id="ws-menu-reg-email" class="ws-menu-input" placeholder="E-mail de login do profissional" />
                             <div style="display:flex; gap:6px; align-items:center;">
                                 <div style="flex:1; position:relative;">
-                                    <input type="text" id="ws-menu-reg-password" class="ws-menu-input" value="${randomPass}" readonly style="font-weight:800; letter-spacing:1.5px; color:#38BDF8;" title="Senha aleatória gerada para o profissional" />
+                                    <input type="text" id="ws-menu-reg-password" class="ws-menu-input" value="${randomPass}" style="font-weight:800; letter-spacing:1.5px; color:#38BDF8;" title="Senha gerada ou personalizada para o profissional" placeholder="Senha do profissional" />
                                 </div>
                                 <button type="button" onclick="WorkshopView.refreshRandomStaffPasswordInput()" style="height:40px; padding:0 10px; border-radius:8px; border:1px solid rgba(56,189,248,0.35); background:rgba(56,189,248,0.12); color:#38BDF8; font-size:11.5px; font-weight:800; cursor:pointer; white-space:nowrap;">
                                     🔄 Gerar Senha
                                 </button>
                             </div>
+                            <small style="font-size:11px; color:#38BDF8; line-height:1.4;">💡 O profissional poderá entrar usando esta senha ou a senha inicial 123456.</small>
                             <button type="button" class="ws-menu-primary-btn" onclick="WorkshopView.handleCreateRegistrar('ws-menu-reg')">
                                 <span>+ Cadastrar Registrador</span>
                             </button>
@@ -911,11 +912,12 @@
                             <input type="text" id="ws-page-reg-name" class="ws-menu-input" placeholder="Nome completo do profissional *" />
                             <input type="email" id="ws-page-reg-email" class="ws-menu-input" placeholder="E-mail de login do profissional *" />
                             <div style="display:flex; gap:8px;">
-                                <input type="text" id="ws-page-reg-password" class="ws-menu-input" value="${randomPass}" readonly style="flex:1; font-weight:800; letter-spacing:1.5px; color:#38BDF8;" />
+                                <input type="text" id="ws-page-reg-password" class="ws-menu-input" value="${randomPass}" style="flex:1; font-weight:800; letter-spacing:1.5px; color:#38BDF8;" placeholder="Senha gerada ou digite uma senha" />
                                 <button type="button" onclick="WorkshopView.refreshRandomStaffPasswordInput()" style="height:42px; padding:0 12px; border-radius:8px; border:1px solid rgba(56,189,248,0.4); background:rgba(56,189,248,0.12); color:#38BDF8; font-size:12px; font-weight:800; cursor:pointer;">
                                     🔄 Nova Senha
                                 </button>
                             </div>
+                            <small style="font-size:11px; color:#38BDF8; line-height:1.4;">💡 O profissional poderá entrar usando esta senha ou a senha inicial 123456.</small>
                             <button type="button" class="ws-menu-primary-btn" onclick="WorkshopView.handleCreateRegistrar('ws-page-reg')">
                                 <span>+ Cadastrar Registrador</span>
                             </button>
@@ -6909,6 +6911,9 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                     localStorage.setItem('dna_workshop_id', res.user.workshop.workshop_id);
                     this.currentWorkshopId = res.user.workshop.workshop_id;
                 }
+            } else {
+                localStorage.setItem('dna_workshop_id', 'ws_veloce');
+                this.currentWorkshopId = 'ws_veloce';
             }
             this.currentSection = 'dashboard';
             this.renderMobileShell();

@@ -2469,9 +2469,6 @@ router.post('/:id/registrars', (req, res) => {
         let userId = null;
 
         if (existingUser) {
-            if (existingUser.status === 'ACTIVE' && existingUser.role_id !== 'role_workshop_staff') {
-                return res.status(409).json({ error: 'Este e-mail já está em uso por outra conta ativa na plataforma.' });
-            }
             userId = existingUser.id;
             db.prepare(`
                 UPDATE users

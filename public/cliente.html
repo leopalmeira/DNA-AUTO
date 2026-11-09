@@ -6202,33 +6202,66 @@ nav[aria-label="Navegação principal"] span,
   </div>
 </div>
 
-<!-- MODAL 03: PERFIL DO USUÁRIO & SAIR DA CONTA (LOGOUT) -->
+<!-- MODAL 03: PERFIL DO USUÁRIO, EDIÇÃO DE DADOS PESSOAIS & SAIR DA CONTA (LOGOUT) -->
 <div id="profile-modal" class="dna-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="profile-user-name">
-  <div class="dna-bottom-sheet">
+  <div class="dna-bottom-sheet" style="max-height:90vh; overflow-y:auto;">
     <div class="dna-modal-header">
       <button class="dna-modal-back-btn" onclick="closeProfileModal()" type="button" aria-label="Voltar para a tela anterior">
         <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
       </button>
-      <h2 class="dna-modal-header-title">Minha Conta</h2>
+      <h2 class="dna-modal-header-title">Minha Conta & Dados Pessoais</h2>
       <button class="dna-modal-close-btn" onclick="closeProfileModal()" type="button" aria-label="Fechar">✕</button>
     </div>
 
-    <div style="text-align:center; padding:10px 0 16px;">
-      <div style="width:68px; height:68px; border-radius:50%; background:linear-gradient(135deg, #0066FF, #00C6FF); color:#ffffff; font-size:28px; font-weight:800; display:grid; place-items:center; margin:0 auto 10px; box-shadow:0 6px 18px rgba(0,102,255,0.35);" id="profile-avatar-letter">
+    <div style="text-align:center; padding:8px 0 12px;">
+      <div style="width:60px; height:60px; border-radius:50%; background:linear-gradient(135deg, #0066FF, #00C6FF); color:#ffffff; font-size:24px; font-weight:800; display:grid; place-items:center; margin:0 auto 8px; box-shadow:0 6px 18px rgba(0,102,255,0.35);" id="profile-avatar-letter">
         C
       </div>
-      <h2 id="profile-user-name" style="font-family:Outfit,Inter,sans-serif; font-size:20px; font-weight:800; color:#071938; margin:0 0 2px;">Carlos Alberto Silva</h2>
+      <h2 id="profile-user-name" style="font-family:Outfit,Inter,sans-serif; font-size:19px; font-weight:800; color:#071938; margin:0 0 2px;">Carlos Alberto Silva</h2>
       <p id="profile-user-email" style="font-size:12.5px; color:#5c7494; margin:0;">carlos.silva@email.com</p>
       <div style="display:inline-block; margin-top:6px; background:#eef5ff; color:#0066FF; font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px; border:1px solid #cce1fb;">
         Proprietário Verificado DNA AUTO
       </div>
     </div>
 
-    <div class="vehicle-specs-table">
+    <div class="vehicle-specs-table" style="margin-bottom:14px;">
       <div class="spec-box"><span class="label">Veículo Principal</span><span class="val" id="profile-car-model">Toyota Corolla</span></div>
       <div class="spec-box"><span class="label">Placa do Veículo</span><span class="val" id="profile-car-plate">BRA2E19 🇧🇷</span></div>
       <div class="spec-box full"><span class="label">Passaporte DNA</span><span class="val" style="color:#0066FF;" id="profile-car-dna">DNA-BR-BRA2-E19-2026 (Ativo)</span></div>
       <div class="spec-box full"><span class="label">Telefone / WhatsApp</span><span class="val" id="profile-user-phone">(11) 99999-9999</span></div>
+    </div>
+
+    <!-- FORMULÁRIO DE ATUALIZAÇÃO DE DADOS PESSOAIS DO CLIENTE -->
+    <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:14px; padding:14px; margin-bottom:14px; text-align:left;">
+      <div style="font-size:12px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+        <span>✏️ Editar Meus Dados Pessoais</span>
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <label for="edit-profile-name" style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Nome Completo</label>
+        <input id="edit-profile-name" type="text" placeholder="Seu nome completo" style="width:100%; padding:10px 12px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:13.5px; color:#0f172a; background:#ffffff; box-sizing:border-box;" />
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <label for="edit-profile-email" style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">E-mail de Acesso</label>
+        <input id="edit-profile-email" type="email" placeholder="seuemail@exemplo.com" style="width:100%; padding:10px 12px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:13.5px; color:#0f172a; background:#ffffff; box-sizing:border-box;" />
+      </div>
+
+      <div style="margin-bottom:10px;">
+        <label for="edit-profile-phone" style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">WhatsApp / Telefone</label>
+        <input id="edit-profile-phone" type="tel" placeholder="(11) 99999-9999" style="width:100%; padding:10px 12px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:13.5px; color:#0f172a; background:#ffffff; box-sizing:border-box;" />
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label for="edit-profile-password" style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:4px;">Nova Senha (opcional)</label>
+        <input id="edit-profile-password" type="password" placeholder="Deixe em branco para manter a senha atual" style="width:100%; padding:10px 12px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:13.5px; color:#0f172a; background:#ffffff; box-sizing:border-box;" />
+      </div>
+
+      <div id="edit-profile-feedback" style="display:none; font-size:12px; font-weight:700; padding:8px 10px; border-radius:8px; margin-bottom:10px;"></div>
+
+      <button type="button" id="btn-save-client-profile" onclick="handleSaveClientProfile()" style="width:100%; padding:12px; border:none; border-radius:10px; background:linear-gradient(135deg, #0066FF, #0050d0); color:#ffffff; font-size:13.5px; font-weight:800; cursor:pointer; box-shadow:0 4px 12px rgba(0,102,255,0.25);">
+        💾 Salvar Dados Pessoais
+      </button>
     </div>
 
     <button type="button" class="btn-sheet-logout" onclick="fazerLogoutDoApp()">
@@ -6237,6 +6270,42 @@ nav[aria-label="Navegação principal"] span,
       </svg>
       <span>Sair da Minha Conta (Desconectar)</span>
     </button>
+  </div>
+</div>
+
+<!-- MODAL 03-B: SOLICITAÇÃO OBRIGATÓRIA DE TROCA DE SENHA NO PRIMEIRO ACESSO (SENHA INICIAL 123456) -->
+<div id="first-access-password-modal" class="dna-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="first-access-modal-title" style="z-index:9999;">
+  <div class="dna-bottom-sheet" style="max-height:92vh; overflow-y:auto;">
+    <div style="text-align:center; padding:8px 0 14px;">
+      <div style="width:58px; height:58px; border-radius:50%; background:linear-gradient(135deg, #0284c7, #0066FF); color:#ffffff; font-size:26px; display:grid; place-items:center; margin:0 auto 10px; box-shadow:0 6px 18px rgba(0,102,255,0.3);">
+        🔐
+      </div>
+      <span style="display:inline-block; background:#fef3c7; color:#b45309; font-size:11px; font-weight:800; padding:4px 10px; border-radius:999px; border:1px solid #fde68a; margin-bottom:6px;">
+        PRIMEIRO ACESSO · SEGURANÇA DA CONTA
+      </span>
+      <h2 id="first-access-modal-title" style="font-family:Outfit,Inter,sans-serif; font-size:20px; font-weight:800; color:#071938; margin:0 0 6px;">Troque sua Senha Inicial</h2>
+      <p style="font-size:13px; color:#475569; margin:0; line-height:1.45;">
+        Sua conta foi pré-cadastrada pela oficina com a senha padrão <strong>123456</strong>. Antes de acessar o aplicativo, escolha uma nova senha pessoal. Você também pode alterar seus dados pessoais no menu <strong>Minha Conta</strong> a qualquer momento.
+      </p>
+    </div>
+
+    <form id="first-access-password-form" onsubmit="return handleFirstAccessPasswordSubmit(event)" style="text-align:left; background:#f8fafc; border:1px solid #cbd5e1; border-radius:14px; padding:14px; margin-bottom:10px;">
+      <div style="margin-bottom:10px;">
+        <label for="first-access-new-password" style="display:block; font-size:11.5px; font-weight:800; color:#0f172a; margin-bottom:5px;">Nova Senha Pessoal *</label>
+        <input id="first-access-new-password" type="password" required minlength="6" placeholder="Digite sua nova senha (mín. 6 caracteres)" style="width:100%; padding:11px 12px; border:1.5px solid #94a3b8; border-radius:10px; font-size:14px; color:#0f172a; background:#ffffff; box-sizing:border-box;" />
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <label for="first-access-confirm-password" style="display:block; font-size:11.5px; font-weight:800; color:#0f172a; margin-bottom:5px;">Confirmar Nova Senha *</label>
+        <input id="first-access-confirm-password" type="password" required minlength="6" placeholder="Repita a nova senha" style="width:100%; padding:11px 12px; border:1.5px solid #94a3b8; border-radius:10px; font-size:14px; color:#0f172a; background:#ffffff; box-sizing:border-box;" />
+      </div>
+
+      <div id="first-access-error-box" style="display:none; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; font-size:12px; font-weight:700; padding:9px 11px; border-radius:8px; margin-bottom:10px;"></div>
+
+      <button type="submit" id="btn-first-access-submit" style="width:100%; padding:13px; border:none; border-radius:11px; background:linear-gradient(135deg, #0066FF, #00C6FF); color:#ffffff; font-size:14px; font-weight:800; cursor:pointer; box-shadow:0 6px 16px rgba(0,102,255,0.3);">
+        ✅ Confirmar Nova Senha e Acessar App
+      </button>
+    </form>
   </div>
 </div>
 
@@ -6514,8 +6583,29 @@ async function handleLoginSubmit(event) {
       window.currentRegisteredVehicle = data.primaryVehicle;
     }
 
-    toast('Login realizado com sucesso! Bem-vindo ao DNA AUTO.');
     carregarDadosUsuarioLogado();
+
+    // Se for primeiro acesso com senha padrão "123456" ou must_change_password = true,
+    // antes de tudo solicita que o cliente troque sua senha!
+    const mustChangePass = Boolean(
+      data.must_change_password ||
+      (data.user && data.user.must_change_password) ||
+      password === '123456'
+    );
+
+    if (mustChangePass) {
+      window._pendingFirstAccessEmail = email;
+      window._pendingFirstAccessCurrentPassword = password;
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Entrar</span> <span class="btn-arrow" aria-hidden="true">➜</span>';
+      }
+      openFirstAccessPasswordModal(email);
+      toast('Primeiro acesso identificado! Por favor, defina sua nova senha pessoal.');
+      return false;
+    }
+
+    toast('Login realizado com sucesso! Bem-vindo ao DNA AUTO.');
 
     setTimeout(() => {
       go('dashboard');
@@ -7630,38 +7720,27 @@ function openServiceDetailModal(title, fullDate, tipo, oficina, mecanico, odo, g
   const modal = document.getElementById('service-detail-modal');
   if (!modal) return;
 
-  const titleEl = document.getElementById('modal-serv-title');
-  if (titleEl) titleEl.textContent = title || 'Registro de Manutenção';
+  const setTxt = (ids, val) => {
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    });
+  };
 
-  const dateEl = document.getElementById('modal-serv-full-date');
-  if (dateEl) dateEl.textContent = fullDate || 'Data auditada no sistema';
+  setTxt(['modal-service-title', 'modal-serv-title'], title || 'Registro de Manutenção');
+  setTxt(['modal-service-date', 'modal-serv-full-date'], fullDate || 'Data auditada no sistema');
+  setTxt(['modal-service-tipo', 'modal-serv-badge'], (tipo || 'SERVIÇO').toUpperCase() + ' HOMOLOGADO');
+  setTxt(['modal-service-desc', 'modal-serv-desc'], desc || title || 'Serviço e peça registrados com foto e valor.');
+  setTxt(['modal-service-oficina', 'modal-serv-oficina'], oficina || 'Oficina Credenciada DNA AUTO');
+  setTxt(['modal-service-mecanico', 'modal-serv-mecanico'], mecanico || 'Profissional Registrador da Oficina');
+  setTxt(['modal-service-odo', 'modal-serv-odo'], odo || '88.500 km');
+  setTxt(['modal-service-garantia', 'modal-serv-garantia'], garantia || 'Garantia Ativa: 12 meses ou 10.000 km');
+  setTxt(['modal-service-price', 'modal-serv-valor', 'modal-serv-valor-tag'], valor || 'R$ 380,00');
 
-  const badgeEl = document.getElementById('modal-serv-badge');
-  if (badgeEl) badgeEl.textContent = (tipo || 'SERVIÇO').toUpperCase() + ' AUDITADO';
-
-  const descEl = document.getElementById('modal-serv-desc');
-  if (descEl) descEl.textContent = desc || title;
-
-  const oficinaEl = document.getElementById('modal-serv-oficina');
-  if (oficinaEl) oficinaEl.textContent = oficina || 'Oficina Credenciada DNA AUTO';
-
-  const mecanicoEl = document.getElementById('modal-serv-mecanico');
-  if (mecanicoEl) mecanicoEl.textContent = mecanico || 'Técnico Especialista Homologado';
-
-  const odoEl = document.getElementById('modal-serv-odo');
-  if (odoEl) odoEl.textContent = odo || '88.500 km';
-
-  const garantiaEl = document.getElementById('modal-serv-garantia');
-  if (garantiaEl) garantiaEl.textContent = garantia || '12 meses ou 10.000 km';
-
-  const valorEl = document.getElementById('modal-serv-valor');
-  if (valorEl) valorEl.textContent = valor || 'R$ 380,00';
-
-  const valorTagEl = document.getElementById('modal-serv-valor-tag');
-  if (valorTagEl) valorTagEl.textContent = valor || 'R$ 380,00';
-
-  const imgEl = document.getElementById('modal-serv-img');
-  if (imgEl && img) imgEl.src = img;
+  ['modal-service-img', 'modal-serv-img'].forEach(id => {
+    const imgEl = document.getElementById(id);
+    if (imgEl && img) imgEl.src = img;
+  });
 
   modal.classList.add('open');
 }
@@ -7874,7 +7953,7 @@ function closeCarModal() {
   if (modal) modal.classList.remove('open');
 }
 
-// ═══ MODAL DE PERFIL & SAIR DA CONTA (LOGOUT) ═══
+// ═══ MODAL DE PERFIL, EDIÇÃO DE DADOS PESSOAIS, 1º ACESSO & SAIR DA CONTA (LOGOUT) ═══
 function openProfileModal() {
   carregarDadosUsuarioLogado();
   const modal = document.getElementById('profile-modal');
@@ -7884,6 +7963,221 @@ function openProfileModal() {
 function closeProfileModal() {
   const modal = document.getElementById('profile-modal');
   if (modal) modal.classList.remove('open');
+}
+
+function openFirstAccessPasswordModal(email) {
+  const modal = document.getElementById('first-access-password-modal');
+  if (!modal) return;
+  const newPassInput = document.getElementById('first-access-new-password');
+  const confirmPassInput = document.getElementById('first-access-confirm-password');
+  const errorBox = document.getElementById('first-access-error-box');
+  if (newPassInput) newPassInput.value = '';
+  if (confirmPassInput) confirmPassInput.value = '';
+  if (errorBox) errorBox.style.display = 'none';
+  if (email) window._pendingFirstAccessEmail = email;
+  modal.classList.add('open');
+}
+
+function closeFirstAccessPasswordModal() {
+  const modal = document.getElementById('first-access-password-modal');
+  if (modal) modal.classList.remove('open');
+}
+
+async function handleFirstAccessPasswordSubmit(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const newPassInput = document.getElementById('first-access-new-password');
+  const confirmPassInput = document.getElementById('first-access-confirm-password');
+  const errorBox = document.getElementById('first-access-error-box');
+  const submitBtn = document.getElementById('btn-first-access-submit');
+
+  const newPassword = (newPassInput?.value || '').trim();
+  const confirmPassword = (confirmPassInput?.value || '').trim();
+
+  if (!newPassword || newPassword.length < 6) {
+    if (errorBox) {
+      errorBox.textContent = 'A nova senha deve ter pelo menos 6 caracteres.';
+      errorBox.style.display = 'block';
+    }
+    return false;
+  }
+
+  if (newPassword === '123456') {
+    if (errorBox) {
+      errorBox.textContent = 'Por segurança, escolha uma senha diferente da senha inicial "123456".';
+      errorBox.style.display = 'block';
+    }
+    return false;
+  }
+
+  if (newPassword !== confirmPassword) {
+    if (errorBox) {
+      errorBox.textContent = 'As senhas digitadas não conferem. Verifique e tente novamente.';
+      errorBox.style.display = 'block';
+    }
+    return false;
+  }
+
+  if (errorBox) errorBox.style.display = 'none';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Salvando nova senha...';
+  }
+
+  try {
+    let rawUser = null;
+    try { rawUser = JSON.parse(localStorage.getItem('dna_logged_user') || 'null'); } catch(e) {}
+    const email = window._pendingFirstAccessEmail || (rawUser && rawUser.email) || '';
+    const token = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token') || '';
+
+    const res = await fetch('/api/v1/auth/change-initial-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+      },
+      body: JSON.stringify({
+        user_id: rawUser?.id,
+        email,
+        current_password: window._pendingFirstAccessCurrentPassword || '123456',
+        new_password: newPassword
+      })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (errorBox) {
+        errorBox.textContent = data.error || 'Não foi possível atualizar a senha. Tente novamente.';
+        errorBox.style.display = 'block';
+      }
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '✅ Confirmar Nova Senha e Acessar App';
+      }
+      return false;
+    }
+
+    if (rawUser) {
+      rawUser.must_change_password = false;
+      localStorage.setItem('dna_logged_user', JSON.stringify(rawUser));
+    }
+
+    closeFirstAccessPasswordModal();
+    toast('Senha atualizada com sucesso! Bem-vindo ao DNA AUTO.');
+    go('dashboard');
+  } catch (err) {
+    if (errorBox) {
+      errorBox.textContent = 'Erro de conexão ao salvar sua nova senha. Tente novamente.';
+      errorBox.style.display = 'block';
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '✅ Confirmar Nova Senha e Acessar App';
+    }
+  }
+  return false;
+}
+
+async function handleSaveClientProfile() {
+  const nameInput = document.getElementById('edit-profile-name');
+  const emailInput = document.getElementById('edit-profile-email');
+  const phoneInput = document.getElementById('edit-profile-phone');
+  const passInput = document.getElementById('edit-profile-password');
+  const feedbackEl = document.getElementById('edit-profile-feedback');
+  const saveBtn = document.getElementById('btn-save-client-profile');
+
+  const name = (nameInput?.value || '').trim();
+  const email = (emailInput?.value || '').trim();
+  const phone = (phoneInput?.value || '').trim();
+  const newPassword = (passInput?.value || '').trim();
+
+  if (!name || !email) {
+    if (feedbackEl) {
+      feedbackEl.textContent = 'Informe pelo menos Nome Completo e E-mail.';
+      feedbackEl.style.background = '#fef2f2';
+      feedbackEl.style.color = '#b91c1c';
+      feedbackEl.style.border = '1px solid #fecaca';
+      feedbackEl.style.display = 'block';
+    }
+    return;
+  }
+
+  let rawUser = null;
+  try { rawUser = JSON.parse(localStorage.getItem('dna_logged_user') || 'null'); } catch(e) {}
+  const token = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token') || '';
+
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Salvando alterações...';
+  }
+
+  try {
+    const res = await fetch('/api/v1/auth/profile', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+      },
+      body: JSON.stringify({
+        user_id: rawUser?.id,
+        current_email: rawUser?.email || email,
+        name,
+        email,
+        phone,
+        whatsapp: phone,
+        ...(newPassword ? { new_password: newPassword } : {})
+      })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      if (feedbackEl) {
+        feedbackEl.textContent = data.error || 'Erro ao atualizar dados pessoais.';
+        feedbackEl.style.background = '#fef2f2';
+        feedbackEl.style.color = '#b91c1c';
+        feedbackEl.style.border = '1px solid #fecaca';
+        feedbackEl.style.display = 'block';
+      }
+      return;
+    }
+
+    const updatedUser = Object.assign({}, rawUser || {}, data.user || {}, {
+      name,
+      email,
+      phone,
+      must_change_password: false
+    });
+    localStorage.setItem('dna_logged_user', JSON.stringify(updatedUser));
+    localStorage.setItem('dna_user_name', name);
+    if (passInput) passInput.value = '';
+
+    await carregarDadosUsuarioLogado();
+
+    if (feedbackEl) {
+      feedbackEl.textContent = '✅ Dados pessoais atualizados com sucesso!';
+      feedbackEl.style.background = '#ecfdf5';
+      feedbackEl.style.color = '#047857';
+      feedbackEl.style.border = '1px solid #a7f3d0';
+      feedbackEl.style.display = 'block';
+    }
+    toast('Dados pessoais atualizados com sucesso!');
+  } catch (err) {
+    if (feedbackEl) {
+      feedbackEl.textContent = 'Falha ao conectar com o servidor.';
+      feedbackEl.style.background = '#fef2f2';
+      feedbackEl.style.color = '#b91c1c';
+      feedbackEl.style.border = '1px solid #fecaca';
+      feedbackEl.style.display = 'block';
+    }
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾 Salvar Dados Pessoais';
+    }
+  }
 }
 
 async function carregarDadosUsuarioLogado() {
@@ -7912,6 +8206,14 @@ async function carregarDadosUsuarioLogado() {
       if (pSideName && user.name) pSideName.textContent = user.name;
       const pSideAvatar = document.getElementById('menu-avatar-letter');
       if (pSideAvatar && user.name) pSideAvatar.textContent = user.name.charAt(0).toUpperCase();
+
+      // Preencher campos editáveis do perfil do cliente
+      const editName = document.getElementById('edit-profile-name');
+      const editEmail = document.getElementById('edit-profile-email');
+      const editPhone = document.getElementById('edit-profile-phone');
+      if (editName && user.name) editName.value = user.name;
+      if (editEmail && user.email) editEmail.value = user.email;
+      if (editPhone && user.phone) editPhone.value = user.phone;
 
       if (user.vehicle && !window.currentRegisteredVehicle) {
         window.currentRegisteredVehicle = user.vehicle;

@@ -10,7 +10,8 @@
     "test:oficina:components": "node test/oficina.components.test.js",
     "test:oficina:integration": "node test/oficina.integration.test.js",
     "test:oficina:finance": "node test/oficina.finance.test.js",
-    "test": "node test/api.test.js && node test/oficina.components.test.js && node test/oficina.integration.test.js && node test/oficina.finance.test.js"
+    "test:auth:credentials": "node test/credentials.auth.test.js",
+    "test": "node test/api.test.js && node test/oficina.components.test.js && node test/oficina.integration.test.js && node test/oficina.finance.test.js && node test/oficina.registrar_and_overflow.test.js && node test/credentials.auth.test.js"
   },
   "keywords": [],
   "author": "",
