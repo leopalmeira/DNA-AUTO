@@ -196,3 +196,4 @@ run().catch(err => {
     console.error('❌ Falha nos testes de credenciais:', err);
     process.exit(1);
 });
+

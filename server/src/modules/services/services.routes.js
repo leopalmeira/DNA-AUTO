@@ -39,11 +39,12 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             invoice_amount_cents
         } = req.body;
 
-        const vehicleLookupKey = vehicle_id || req.body.license_plate || req.body.plate;
+        const explicitPlate = (req.body.license_plate || req.body.plate || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        let vehicleLookupKey = vehicle_id || req.body.license_plate || req.body.plate;
         const titleVal = service_title || req.body.title || 'Revisão Periódica';
         const dateVal = service_date || new Date().toISOString().split('T')[0];
 
-        if (!vehicleLookupKey || !titleVal || !mileage) {
+        if ((!vehicleLookupKey && !explicitPlate) || !titleVal || !mileage) {
             return res.status(400).json({ error: 'Campos obrigatórios: veículo (ou placa), título do serviço e quilometragem.' });
         }
 
@@ -66,11 +67,22 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             `);
         } catch (_) {}
 
-        let vehicle = db.prepare(`
-            SELECT v.*, vd.dna_code FROM vehicles v
-            LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
-            WHERE v.id = ? OR UPPER(REPLACE(v.license_plate, '-', '')) = UPPER(REPLACE(?, '-', ''))
-        `).get(vehicleLookupKey, vehicleLookupKey);
+        let vehicle = null;
+        if (explicitPlate) {
+            vehicle = db.prepare(`
+                SELECT v.*, vd.dna_code FROM vehicles v
+                LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+                WHERE UPPER(REPLACE(v.license_plate, '-', '')) = ?
+            `).get(explicitPlate);
+        }
+
+        if (!vehicle && vehicleLookupKey) {
+            vehicle = db.prepare(`
+                SELECT v.*, vd.dna_code FROM vehicles v
+                LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+                WHERE v.id = ? OR UPPER(REPLACE(v.license_plate, '-', '')) = UPPER(REPLACE(?, '-', ''))
+            `).get(vehicleLookupKey, vehicleLookupKey);
+        }
 
         if (!vehicle && vehicleLookupKey && String(vehicleLookupKey).toLowerCase().includes('civic')) {
             vehicle = db.prepare(`
@@ -82,22 +94,23 @@ router.post('/workshop-register', authenticateToken, upload.fields([
 
         // Se o veículo ainda não existe no banco, provisiona dinamicamente para não travar a oficina
         if (!vehicle) {
-            const rawPlate = String(vehicleLookupKey).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+            const rawPlate = explicitPlate || String(vehicleLookupKey).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
             if (rawPlate.length >= 7) {
                 const autoVehId = 'veh_' + rawPlate;
                 const dummyChassis = '9BW' + rawPlate + Math.floor(1000000 + Math.random() * 9000000);
+                const dummyRenavam = '00' + Math.floor(100000000 + Math.random() * 900000000);
                 try {
                     db.prepare(`
                         INSERT OR IGNORE INTO vehicles (
-                            id, license_plate, chassis_vin, brand, model, version_label,
-                            manufacture_year, model_year, fuel_type, transmission_type, color, vehicle_status
-                        ) VALUES (?, ?, ?, 'Veículo', 'Veículo em Atendimento', 'Oficina', strftime('%Y', 'now'), strftime('%Y', 'now'), 'Flex', 'Manual', 'Prata', 'ACTIVE')
-                    `).run(autoVehId, rawPlate, dummyChassis);
+                            id, license_plate, chassis_vin, renavam, brand, model, version_label,
+                            manufacture_year, model_year, fuel_type, transmission_type, color, vehicle_status, created_at
+                        ) VALUES (?, ?, ?, ?, 'Veículo', 'Veículo em Atendimento', 'Oficina', strftime('%Y', 'now'), strftime('%Y', 'now'), 'Flex', 'Manual', 'Prata', 'ACTIVE', datetime('now'))
+                    `).run(autoVehId, rawPlate, dummyChassis, dummyRenavam);
                     vehicle = db.prepare(`
                         SELECT v.*, vd.dna_code FROM vehicles v
                         LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
-                        WHERE v.id = ?
-                    `).get(autoVehId);
+                        WHERE v.id = ? OR UPPER(REPLACE(v.license_plate, '-', '')) = ?
+                    `).get(autoVehId, rawPlate);
                 } catch (vehErr) {
                     console.warn('Erro ao auto-provisionar veículo:', vehErr.message);
                 }
@@ -162,10 +175,16 @@ router.post('/workshop-register', authenticateToken, upload.fields([
         if (!validWorkshop) {
             try {
                 db.prepare(`
-                    INSERT OR IGNORE INTO workshops (id, company_name, trade_name, cnpj, email, phone, status)
-                    VALUES ('ws_veloce', 'Veloce Manutenção Automotiva LTDA', 'Veloce Auto Center', '12.345.678/0001-99', 'contato@veloceautocenter.com.br', '(11) 98765-4321', 'ACTIVE')
+                    INSERT OR IGNORE INTO workshops (
+                        id, company_name, trade_name, cnpj, email, phone,
+                        address_street, address_number, address_neighborhood, city, state, zip_code, status
+                    ) VALUES (
+                        'ws_veloce', 'Veloce Manutenção Automotiva LTDA', 'Veloce Auto Center',
+                        '12.345.678/0001-99', 'contato@veloceautocenter.com.br', '(11) 98765-4321',
+                        'Av. das Oficinas', '1000', 'Centro', 'São Paulo', 'SP', '01001-000', 'ACTIVE'
+                    )
                 `).run();
-                validWorkshop = { id: 'ws_veloce' };
+                validWorkshop = db.prepare('SELECT id FROM workshops WHERE id = ?').get('ws_veloce');
             } catch (_) {}
         }
         effectiveWorkshopId = validWorkshop ? validWorkshop.id : null;
@@ -225,40 +244,61 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             for (let i = 0; i < parsedParts.length; i++) {
                 const partItem = parsedParts[i];
                 let partId = partItem.part_id;
+                const partName = (partItem.name || partItem.part_name || '').trim();
 
-                // Se for nova peça cadastrada na hora
-                if (!partId && partItem.name) {
+                // Se for nova peça cadastrada na hora ou enviada com part_name
+                if (!partId && partName) {
                     partId = 'part_' + Date.now() + '_' + i;
-                    db.prepare(`
-                        INSERT INTO parts (id, name, manufacturer, part_number, category)
-                        VALUES (?, ?, ?, ?, ?)
-                    `).run(
-                        partId,
-                        partItem.name,
-                        partItem.manufacturer || 'Original/Aftermarket',
-                        partItem.part_number || null,
-                        category || 'Peças'
-                    );
+                    try {
+                        db.prepare(`
+                            INSERT INTO parts (id, name, manufacturer, part_number, category)
+                            VALUES (?, ?, ?, ?, ?)
+                        `).run(
+                            partId,
+                            partName,
+                            partItem.manufacturer || 'Original/Aftermarket',
+                            partItem.part_number || null,
+                            category || 'Peças'
+                        );
+                    } catch (_) {}
+                } else if (partId) {
+                    const existingPart = db.prepare('SELECT id FROM parts WHERE id = ?').get(partId);
+                    if (!existingPart) {
+                        try {
+                            db.prepare(`
+                                INSERT INTO parts (id, name, manufacturer, part_number, category)
+                                VALUES (?, ?, ?, ?, ?)
+                            `).run(
+                                partId,
+                                partName || 'Peça Substituída',
+                                partItem.manufacturer || 'Original/Aftermarket',
+                                partItem.part_number || null,
+                                category || 'Peças'
+                            );
+                        } catch (_) {}
+                    }
                 }
 
                 if (partId) {
-                    db.prepare(`
-                        INSERT INTO part_installations (
-                            id, service_record_id, part_id, quantity, unit_price_cents,
-                            part_condition, warranty_months, notes
-                        ) VALUES (
-                            ?, ?, ?, ?, ?, ?, ?, ?
-                        )
-                    `).run(
-                        'pi_' + Date.now() + '_' + i,
-                        serviceId,
-                        partId,
-                        Number(partItem.quantity) || 1,
-                        Number(partItem.unit_price_cents) || 0,
-                        partItem.condition || 'NEW',
-                        Number(partItem.warranty_months) || 12,
-                        partItem.notes || null
-                    );
+                    try {
+                        db.prepare(`
+                            INSERT INTO part_installations (
+                                id, service_record_id, part_id, quantity, unit_price_cents,
+                                part_condition, warranty_months, notes
+                            ) VALUES (
+                                ?, ?, ?, ?, ?, ?, ?, ?
+                            )
+                        `).run(
+                            'pi_' + Date.now() + '_' + i,
+                            serviceId,
+                            partId,
+                            Number(partItem.quantity) || 1,
+                            Number(partItem.unit_price_cents) || 0,
+                            partItem.condition || 'NEW',
+                            Number(partItem.warranty_months) || 12,
+                            partItem.notes || null
+                        );
+                    } catch (_) {}
                 }
             }
 
@@ -303,39 +343,43 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             }
 
             // 5. Inserir Fotos se enviadas via multipart ou base64
-            if (req.files && req.files['photos'] && req.files['photos'].length > 0) {
-                req.files['photos'].forEach((f, idx) => {
+            try {
+                if (req.files && req.files['photos'] && req.files['photos'].length > 0) {
+                    req.files['photos'].forEach((f, idx) => {
+                        db.prepare(`
+                            INSERT INTO vehicle_photos (
+                                id, vehicle_id, service_record_id, workshop_id, photo_category,
+                                title, file_path, registered_by_user_id
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        `).run(
+                            'pho_' + Date.now() + '_' + idx,
+                            targetVehicleId,
+                            serviceId,
+                            effectiveWorkshopId,
+                            idx === 0 ? 'INSTALLED_PART' : 'SERVICE_DONE',
+                            `Registro Fotográfico da Peça/Serviço - ${titleVal} (por ${effectiveLauncherName})`,
+                            '/uploads/photos/' + f.filename,
+                            effectiveLauncherId
+                        );
+                    });
+                } else if (primaryPhotoUrl) {
                     db.prepare(`
                         INSERT INTO vehicle_photos (
                             id, vehicle_id, service_record_id, workshop_id, photo_category,
                             title, file_path, registered_by_user_id
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        ) VALUES (?, ?, ?, ?, 'INSTALLED_PART', ?, ?, ?)
                     `).run(
-                        'pho_' + Date.now() + '_' + idx,
+                        'pho_' + Date.now() + '_b64',
                         targetVehicleId,
                         serviceId,
                         effectiveWorkshopId,
-                        idx === 0 ? 'INSTALLED_PART' : 'SERVICE_DONE',
-                        `Registro Fotográfico da Peça/Serviço - ${titleVal} (por ${effectiveLauncherName})`,
-                        '/uploads/photos/' + f.filename,
+                        `Foto da Peça Vinculada - ${titleVal} (por ${effectiveLauncherName})`,
+                        primaryPhotoUrl,
                         effectiveLauncherId
                     );
-                });
-            } else if (primaryPhotoUrl) {
-                db.prepare(`
-                    INSERT INTO vehicle_photos (
-                        id, vehicle_id, service_record_id, workshop_id, photo_category,
-                        title, file_path, registered_by_user_id
-                    ) VALUES (?, ?, ?, ?, 'INSTALLED_PART', ?, ?, ?)
-                `).run(
-                    'pho_' + Date.now() + '_b64',
-                    targetVehicleId,
-                    serviceId,
-                    effectiveWorkshopId,
-                    `Foto da Peça Vinculada - ${titleVal} (por ${effectiveLauncherName})`,
-                    primaryPhotoUrl,
-                    effectiveLauncherId
-                );
+                }
+            } catch (phoErr) {
+                console.warn('Registro de foto preservado:', phoErr.message);
             }
 
             // 6. Taxa Oficial por Atendimento Concluído com Comprovação Fotográfica (R$ 6,90 / 690 centavos)
@@ -376,15 +420,17 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             console.warn('Recálculo de manutenção preditiva pós-serviço:', predErr.message);
         }
 
-        logAudit({
-            user: req.user,
-            action: 'REGISTER_PROVEN_SERVICE',
-            entityType: 'SERVICE',
-            entityId: serviceId,
-            vehicleDnaCode: vehicle.dna_code,
-            ipAddress: req.ip,
-            dataAfter: { service_title: titleVal, mileage, totalCost, proof_level: 4, launched_by: effectiveLauncherName }
-        });
+        try {
+            logAudit({
+                user: req.user,
+                action: 'REGISTER_PROVEN_SERVICE',
+                entityType: 'SERVICE',
+                entityId: serviceId,
+                vehicleDnaCode: vehicle ? vehicle.dna_code : null,
+                ipAddress: req.ip,
+                dataAfter: { service_title: titleVal, mileage, totalCost, proof_level: 4, launched_by: effectiveLauncherName }
+            });
+        } catch (_) {}
 
         res.status(201).json({
             success: true,

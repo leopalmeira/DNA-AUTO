@@ -1899,7 +1899,7 @@ input.dna-plate-input {
 }
 
 /* ==============================================================================
-   11. TEXTO PRETO NOS CAMPOS DE DIGITAÇÃO (LEGIBILIDADE MÁXIMA)
+   11. TEXTO BRANCO EM TODOS OS CAMPOS DE DIGITAÇÃO (REGRA GLOBAL DO PROJETO)
    ============================================================================== */
 .dna-mobile-shell input[type="text"],
 .dna-mobile-shell input[type="number"],
@@ -1907,27 +1907,34 @@ input.dna-plate-input {
 .dna-mobile-shell input[type="email"],
 .dna-mobile-shell input[type="date"],
 .dna-mobile-shell input[type="password"],
+.dna-mobile-shell input[type="search"],
 .dna-mobile-shell textarea,
 .dna-mobile-shell select,
-.dna-mobile-shell .dna-plate-input,
 .dna-mobile-shell .dna-input-field {
-    color: #000000 !important;
-    background: rgba(255, 255, 255, 0.92) !important;
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    color-scheme: dark !important;
+    background: rgba(11, 22, 44, 0.95) !important;
     border: 1.5px solid rgba(0, 102, 255, 0.4) !important;
-    caret-color: #0066FF !important;
+    caret-color: #00D4FF !important;
 }
 
 .dna-mobile-shell input::placeholder,
 .dna-mobile-shell textarea::placeholder {
-    color: #6B7280 !important;
+    color: rgba(255, 255, 255, 0.55) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.55) !important;
     opacity: 1 !important;
 }
 
 .dna-mobile-shell input:focus,
 .dna-mobile-shell textarea:focus,
 .dna-mobile-shell select:focus {
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    background: rgba(15, 28, 55, 0.98) !important;
     border-color: #00D4FF !important;
-    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2) !important;
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.25) !important;
+}
     outline: none !important;
 }
 
@@ -3367,6 +3374,9 @@ input.dna-plate-input {
 .dna-plate-input,
 .dna-oficina-login-input,
 .form-control,
+/* ──────────────────────────────────────────────────────────────────────────
+   REGRA UNIVERSAL: TEXTO 100% BRANCO EM TODAS AS CAIXAS DE DIGITAÇÃO DO PROJETO
+   ────────────────────────────────────────────────────────────────────────── */
 input.form-control,
 textarea.form-control,
 input[type="text"],
@@ -3374,14 +3384,18 @@ input[type="password"],
 input[type="email"],
 input[type="number"],
 input[type="tel"],
+input[type="date"],
 input[type="search"],
+select.form-control,
+select,
 textarea {
-    color: #000000 !important;
-    -webkit-text-fill-color: #000000 !important;
-    background-color: #FFFFFF !important;
-    border: 1.5px solid #CBD5E1 !important;
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    color-scheme: dark !important;
+    background-color: rgba(11, 22, 44, 0.95) !important;
+    border: 1.5px solid rgba(0, 102, 255, 0.4) !important;
     font-weight: 700 !important;
-    caret-color: #000000 !important;
+    caret-color: #00D4FF !important;
     box-sizing: border-box;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -3392,9 +3406,10 @@ textarea {
 .dna-oficina-login-input::placeholder,
 input::placeholder,
 textarea::placeholder {
-    color: #64748B !important;
-    -webkit-text-fill-color: #64748B !important;
+    color: rgba(255, 255, 255, 0.55) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.55) !important;
     font-weight: 500 !important;
+    opacity: 1 !important;
 }
 
 .dna-mobile-shell input:focus,
@@ -3403,12 +3418,37 @@ textarea::placeholder {
 .dna-oficina-login-input:focus,
 input:focus,
 textarea:focus {
-    color: #000000 !important;
-    -webkit-text-fill-color: #000000 !important;
-    background-color: #FFFFFF !important;
-    border-color: #0066FF !important;
-    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.25) !important;
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    background-color: rgba(15, 28, 55, 0.98) !important;
+    border-color: #00D4FF !important;
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.25) !important;
     outline: none !important;
+}
+
+/* Ícone de data e calendário em branco de alta visibilidade */
+::-webkit-calendar-picker-indicator {
+    filter: invert(1) brightness(1.2) !important;
+    cursor: pointer;
+}
+
+/* Autofill do navegador mantendo texto branco e fundo navy escuro */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+    -webkit-text-fill-color: #FFFFFF !important;
+    -webkit-box-shadow: 0 0 0px 1000px rgba(11, 22, 44, 0.98) inset !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+    color: #FFFFFF !important;
+}
+    filter: invert(1) brightness(1.2) !important;
+    cursor: pointer;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────

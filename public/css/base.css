@@ -35,11 +35,34 @@ button {
     -webkit-tap-highlight-color: transparent;
 }
 
+/* REGRA GLOBAL ABSOLUTA: TEXTO 100% BRANCO EM QUALQUER CAIXA DE DIGITAÇÃO DO PROJETO */
 input, select, textarea {
     font-family: inherit;
     font-size: inherit;
-    color: inherit;
+    color: #FFFFFF !important;
+    -webkit-text-fill-color: #FFFFFF !important;
+    color-scheme: dark !important;
     outline: none;
+}
+
+input::placeholder, select::placeholder, textarea::placeholder {
+    color: rgba(255, 255, 255, 0.55) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.55) !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+    -webkit-text-fill-color: #FFFFFF !important;
+    -webkit-box-shadow: 0 0 0px 1000px rgba(11, 22, 44, 0.98) inset !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+    color: #FFFFFF !important;
 }
 
 
