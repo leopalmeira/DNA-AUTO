@@ -1667,14 +1667,74 @@ const OwnerView = {
 
     // Buscar Documentos, OBD2, Manutenção Preditiva e Monitoramento para o Veículo Ativo
     async fetchVehicleExtras(plate) {
+        if (!plate || plate === '---') return;
         try {
-            const [rInsp, rObd, rPred, rOdom, rMon] = await Promise.all([
-                fetch(`/api/v1/vehicles/${plate}/inspection`).catch(() => null),
-                fetch(`/api/v1/vehicles/${plate}/obd`).catch(() => null),
-                fetch(`/api/v1/vehicles/${plate}/predictive-maintenance`).catch(() => null),
-                fetch(`/api/v1/vehicles/${plate}/odometer`).catch(() => null),
-                fetch(`/api/v1/vehicles/${plate}/monitoring`).catch(() => null)
+            const [rDossier, rInsp, rObd, rPred, rOdom, rMon] = await Promise.all([
+                fetch(`/api/v1/dossier/${encodeURIComponent(plate)}`).catch(() => null),
+                fetch(`/api/v1/vehicles/${encodeURIComponent(plate)}/inspection`).catch(() => null),
+                fetch(`/api/v1/vehicles/${encodeURIComponent(plate)}/obd`).catch(() => null),
+                fetch(`/api/v1/vehicles/${encodeURIComponent(plate)}/predictive-maintenance`).catch(() => null),
+                fetch(`/api/v1/vehicles/${encodeURIComponent(plate)}/odometer`).catch(() => null),
+                fetch(`/api/v1/vehicles/${encodeURIComponent(plate)}/monitoring`).catch(() => null)
             ]);
+
+            if (rDossier && rDossier.ok) {
+                const dData = await rDossier.json();
+                if (dData && dData.found) {
+                    if (dData.vehicle) {
+                        if (dData.vehicle.dna_code) this.vehicleData.dna_code = dData.vehicle.dna_code;
+                        if (dData.currentMileage) this.vehicleData.current_mileage = dData.currentMileage;
+                        if (dData.vehicle.photo_url && !dData.vehicle.photo_url.includes('unsplash.com')) {
+                            this.vehicleData.photo_url = dData.vehicle.photo_url;
+                        }
+                    }
+                    if (Array.isArray(dData.services) && dData.services.length > 0) {
+                        const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+                        this.vehicleData.timeline = dData.services.map(s => {
+                            const dateStr = s.service_date || '';
+                            let dateFormatted = dateStr;
+                            let dateBadge = dateStr;
+                            if (dateStr && dateStr.includes('-')) {
+                                const parts = dateStr.split('-');
+                                if (parts.length === 3) {
+                                    const mIdx = parseInt(parts[1], 10) - 1;
+                                    dateBadge = `${parts[2]} ${months[mIdx] || ''} ${parts[0]}`.trim();
+                                    dateFormatted = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                                }
+                            }
+                            const costCents = Number(s.total_cost_cents) || 0;
+                            const priceFormatted = 'R$ ' + (costCents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                            const kmVal = Number(s.mileage) || 0;
+                            const kmBadge = kmVal ? `${kmVal.toLocaleString('pt-BR')} km` : '';
+                            const isPart = Boolean(s.category && s.category.toLowerCase().includes('peça'));
+
+                            return {
+                                id: s.id,
+                                title: s.service_title || 'Serviço Realizado',
+                                service_title: s.service_title || 'Serviço Realizado',
+                                date: dateFormatted,
+                                dateBadge: dateBadge,
+                                mileage: kmVal,
+                                km: kmBadge,
+                                kmBadge: kmBadge,
+                                workshop: s.workshop_name || 'Oficina Credenciada',
+                                workshop_name: s.workshop_name || 'Oficina Credenciada',
+                                price: priceFormatted,
+                                total_cost_cents: costCents,
+                                cost_cents: costCents,
+                                partName: s.description || s.service_title,
+                                thumbUrl: s.part_photo_url || '/img/part-oil.jpg',
+                                type: isPart ? 'part' : 'service',
+                                part_photo_url: s.part_photo_url,
+                                responsible_technician_name: s.responsible_technician_name || s.launched_by_name
+                            };
+                        });
+                    } else {
+                        this.vehicleData.timeline = [];
+                    }
+                }
+            }
+
             if (rInsp && rInsp.ok) {
                 const data = await rInsp.json();
                 if (data.success && data.inspection) {
@@ -1709,6 +1769,19 @@ const OwnerView = {
             // Inicializar motor de rastreamento com respeito à privacidade LGPD
             if (typeof window.DnaTrackingEngine !== 'undefined') {
                 window.DnaTrackingEngine.init(plate);
+            }
+
+            // Atualiza a visualização caso não esteja no onboarding
+            if (!this.authScreen) {
+                const currentContainer = document.getElementById('view-content');
+                if (currentContainer && !this._isRenderingExtras) {
+                    this._isRenderingExtras = true;
+                    try {
+                        this.render();
+                    } finally {
+                        this._isRenderingExtras = false;
+                    }
+                }
             }
         } catch (_) {}
     },
@@ -2111,11 +2184,11 @@ const OwnerView = {
         const expenses = this.calculateVehicleExpenses();
         const alertsCount = Array.isArray(this.vehicleAlerts) ? this.vehicleAlerts.length : 2;
 
-        const carTitle = (v.full_title && v.full_title !== 'Nenhum veículo selecionado') ? v.full_title : 'Toyota Corolla XEi 2.0';
-        const carPlate = (v.license_plate && v.license_plate !== '---') ? v.license_plate : 'BRA2E19';
-        const carYear = (v.manufacture_year && v.model_year) ? `${v.manufacture_year}/${v.model_year}` : '2023/2024';
-        const carMileage = v.current_mileage ? `${Number(v.current_mileage).toLocaleString('pt-BR')} km` : '54.210 km';
-        const displayName = (v.user_name && v.user_name !== 'Proprietário') ? v.user_name.split(' ')[0] : 'Leandro';
+        const carTitle = (v.full_title && v.full_title !== 'Nenhum veículo selecionado') ? v.full_title : (v.brand ? `${v.brand} ${v.model}`.trim() : 'Meu Veículo');
+        const carPlate = (v.license_plate && v.license_plate !== '---') ? v.license_plate : '';
+        const carYear = (v.manufacture_year && v.model_year) ? `${v.manufacture_year}/${v.model_year}` : (v.manufacture_year || '');
+        const carMileage = v.current_mileage ? `${Number(v.current_mileage).toLocaleString('pt-BR')} km` : '0 km';
+        const displayName = (v.user_name && v.user_name !== 'Proprietário') ? v.user_name.split(' ')[0] : 'Motorista';
 
         return `
             <!-- 1. Saudação do Usuário Oficial do Print -->
@@ -2124,11 +2197,11 @@ const OwnerView = {
                 <p class="dna-print-welcome-sub">Aqui está o resumo do seu veículo</p>
             </div>
 
-            <!-- 2. Card Branco de Destaque do Carro (Toyota Corolla Sedã) -->
+            <!-- 2. Card Branco de Destaque do Carro -->
             <div class="dna-print-car-card" onclick="OwnerView.navigateTo('vehicle')">
                 <div class="dna-print-car-card-body">
                     <div class="dna-print-car-media">
-                        <img src="/img/corolla-card.jpg" alt="${carTitle}" class="dna-print-car-img" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
+                        <img src="${v.photo_url || '/img/splash-car-hero.png'}" alt="${carTitle}" class="dna-print-car-img" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
                     </div>
                     <div class="dna-print-car-info">
                         <div class="dna-print-car-top-row">
@@ -2136,7 +2209,7 @@ const OwnerView = {
                             <span class="dna-print-badge-em-dia">● Em dia</span>
                         </div>
                         <p class="dna-print-car-meta">
-                            <span class="dna-print-plate-mono">${carPlate}</span> • ${carYear} • ${carMileage}
+                            ${carPlate ? `<span class="dna-print-plate-mono">${carPlate}</span> • ` : ''}${carYear ? `${carYear} • ` : ''}${carMileage}
                         </p>
                     </div>
                 </div>
@@ -2169,7 +2242,7 @@ const OwnerView = {
                         </svg>
                     </div>
                     <h5 class="dna-print-quick-name">Revisões Preventivas</h5>
-                    <span class="dna-print-quick-sub">${(timeline && timeline.length > 0) ? 'Próxima em 8.000 km' : 'Aguardando 1ª revisão'}</span>
+                    <span class="dna-print-quick-sub">${(timeline && timeline.length > 0) ? 'Próxima em 10.000 km' : 'Aguardando 1ª revisão'}</span>
                 </div>
 
                 <!-- Card 3: Alertas & Manutenções -->
@@ -2181,7 +2254,7 @@ const OwnerView = {
                         </svg>
                     </div>
                     <h5 class="dna-print-quick-name">Alertas & Manutenções</h5>
-                    <span class="dna-print-quick-sub" style="${(timeline && timeline.length > 0) ? 'color:#D97706; font-weight:700;' : 'color:#10B981; font-weight:700;'}">${(timeline && timeline.length > 0) ? '2 pendentes' : '0 pendentes'}</span>
+                    <span class="dna-print-quick-sub" style="${(alertsCount > 0 && timeline.length > 0) ? 'color:#D97706; font-weight:700;' : 'color:#10B981; font-weight:700;'}">${(alertsCount > 0 && timeline.length > 0) ? alertsCount + ' pendentes' : '0 pendentes'}</span>
                 </div>
 
                 <!-- Card 4: Gastos com Carro -->
@@ -2219,7 +2292,7 @@ const OwnerView = {
                         </svg>
                     </div>
                     <h5 class="dna-print-quick-name">Oficinas da Rede</h5>
-                    <span class="dna-print-quick-sub">3 oficinas</span>
+                    <span class="dna-print-quick-sub">${this.workshopsList && this.workshopsList.length > 0 ? this.workshopsList.length + ' oficinas' : 'Rede credenciada'}</span>
                 </div>
             </div>
 
@@ -2230,27 +2303,22 @@ const OwnerView = {
             </div>
 
             <div class="dna-print-records-list">
-                <div class="dna-print-record-item" onclick="OwnerView.navigateTo('services')">
-                    <div class="dna-print-record-dot dot-green">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                ${timeline.length === 0 ? `
+                    <div style="text-align:center; padding:22px 16px; background:#FFFFFF; border-radius:14px; border:1px dashed #CBD5E1; color:#64748B; font-size:12.5px;">
+                        Nenhum serviço registrado ainda. Os lançamentos da oficina aparecerão aqui.
                     </div>
-                    <div class="dna-print-record-content">
-                        <strong class="dna-print-record-title">Troca de Óleo e Filtros</strong>
-                        <span class="dna-print-record-meta">Auto Mecânica Silva • 54.210 km • 14 Set 2024</span>
+                ` : timeline.slice(0, 3).map(item => `
+                    <div class="dna-print-record-item" onclick="OwnerView.navigateTo('services')">
+                        <div class="dna-print-record-dot ${item.type === 'part' ? 'dot-blue' : 'dot-green'}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
+                        <div class="dna-print-record-content">
+                            <strong class="dna-print-record-title">${item.title}</strong>
+                            <span class="dna-print-record-meta">${item.workshop || item.workshop_name || 'Oficina Credenciada'} • ${item.kmBadge || (item.mileage ? item.mileage + ' km' : '')} • ${item.dateBadge || item.date || ''}</span>
+                        </div>
+                        <span class="dna-print-record-price">${item.price || ('R$ ' + ((item.total_cost_cents || 0)/100).toFixed(2).replace('.', ','))}</span>
                     </div>
-                    <span class="dna-print-record-price">R$ 380,00</span>
-                </div>
-
-                <div class="dna-print-record-item" onclick="OwnerView.navigateTo('services')">
-                    <div class="dna-print-record-dot dot-blue">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                    </div>
-                    <div class="dna-print-record-content">
-                        <strong class="dna-print-record-title">Pastilhas de Freio Dianteiras</strong>
-                        <span class="dna-print-record-meta">Oficina Premium Car • 51.100 km • 02 Ago 2024</span>
-                    </div>
-                    <span class="dna-print-record-price">R$ 450,00</span>
-                </div>
+                `).join('')}
             </div>
 
             <div style="height:12px;"></div>
@@ -2636,30 +2704,27 @@ const OwnerView = {
                 <!-- Peças Trocadas com Nota Fiscal -->
                 <div style="display:flex; flex-direction:column; gap:8px;">
                     <span style="font-size:12px; font-weight:800; color:#CBD5E1; text-transform:uppercase; letter-spacing:0.5px;">Peças trocadas</span>
-                    <div class="dna-service-done-card">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div style="flex:1;">
-                                <span style="font-size:12.5px; font-weight:700; color:#FFFFFF;">Correia Dentada Continental</span>
-                                <span style="font-size:11px; color:#94A3B8; display:block;">Ref: CT1192 • Instalada em 10/10/2024</span>
+                    ${(() => {
+                        const partsList = timeline.filter(t => t.type === 'part');
+                        if (partsList.length === 0) {
+                            return `<div style="padding:14px; text-align:center; color:#94A3B8; font-size:12px; background:rgba(0,0,0,0.25); border-radius:10px;">Nenhuma peça registrada neste veículo ainda.</div>`;
+                        }
+                        return partsList.map(p => `
+                            <div class="dna-service-done-card">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <div style="flex:1;">
+                                        <span style="font-size:12.5px; font-weight:700; color:#FFFFFF;">${p.title || p.partName}</span>
+                                        <span style="font-size:11px; color:#94A3B8; display:block;">Instalada em ${p.date || '---'} • ${p.workshop || ''}</span>
+                                    </div>
+                                    <div style="display:flex; gap:8px; align-items:center;">
+                                        ${p.thumbUrl ? `<span style="font-size:10px; color:#FFD21C; font-weight:700; background:rgba(255,210,28,0.1); padding:2px 6px; border-radius:4px;">📷 Foto</span>` : ''}
+                                        <span style="font-size:10px; color:#00D4FF; font-weight:700; background:rgba(0,212,255,0.1); padding:2px 6px; border-radius:4px;">🧾 Comprovado</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div style="display:flex; gap:8px; align-items:center;">
-                                <span style="font-size:10px; color:#FFD21C; font-weight:700; background:rgba(255,210,28,0.1); padding:2px 6px; border-radius:4px;">📷 Foto</span>
-                                <span style="font-size:10px; color:#00D4FF; font-weight:700; background:rgba(0,212,255,0.1); padding:2px 6px; border-radius:4px;">🧾 NF</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="dna-service-done-card">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <div style="flex:1;">
-                                <span style="font-size:12.5px; font-weight:700; color:#FFFFFF;">Pastilhas de Freio Bosch</span>
-                                <span style="font-size:11px; color:#94A3B8; display:block;">Ref: BP1234 • Instalada em 12/04/2025</span>
-                            </div>
-                            <div style="display:flex; gap:8px; align-items:center;">
-                                <span style="font-size:10px; color:#FFD21C; font-weight:700; background:rgba(255,210,28,0.1); padding:2px 6px; border-radius:4px;">📷 Foto</span>
-                                <span style="font-size:10px; color:#00D4FF; font-weight:700; background:rgba(0,212,255,0.1); padding:2px 6px; border-radius:4px;">🧾 NF</span>
-                            </div>
-                        </div>
-                    </div>
+                        `).join('');
+                    })()}
+                </div>
                     <div class="dna-service-done-card">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div style="flex:1;">
@@ -2859,49 +2924,32 @@ const OwnerView = {
         `;
     },
 
-    // ── 7. TELA: REVISÕES PREVENTIVAS — EXATAMENTE COMO NO PRINT OFICIAL (TELA 7) ──
+    // ── 7. TELA: REVISÕES PREVENTIVAS — CRONOGRAMA DINÂMICO CONFORME O VEÍCULO (TELA 7) ──
     renderRevisionsScreen() {
         const v = this.vehicleData || {};
-        const carTitle = (v.full_title && v.full_title !== 'Nenhum veículo selecionado') ? v.full_title : 'Toyota Corolla XEi 2.0';
-        const carMileage = v.current_mileage ? `${Number(v.current_mileage).toLocaleString('pt-BR')} km` : '54.210 km';
+        const carTitle = (v.full_title && v.full_title !== 'Nenhum veículo selecionado') ? v.full_title : (v.brand ? `${v.brand} ${v.model}`.trim() : 'Meu Veículo');
+        const currentKm = Number(v.current_mileage || 0);
+        const carMileage = currentKm > 0 ? `${currentKm.toLocaleString('pt-BR')} km` : '0 km';
 
-        const revisionsList = [
-            {
-                title: 'Revisão de 60.000 km',
-                progress: 90,
-                badgeText: 'Faltam 5.790 km',
-                badgeType: 'amber',
-                items: 'Óleo sintético 5W30, todos os filtros, velas de ignição e fluido de freio DOT 4'
-            },
-            {
-                title: 'Revisão de 70.000 km',
-                progress: 65,
-                badgeText: 'Faltam 15.790 km',
-                badgeType: 'blue',
-                items: 'Óleo do motor, filtro de óleo e inspeção geral de suspensão e freios'
-            },
-            {
-                title: 'Revisão de 80.000 km',
-                progress: 40,
-                badgeText: 'Faltam 25.790 km',
-                badgeType: 'gray',
-                items: 'Correia de acessórios, fluido de arrefecimento e discos de freio'
-            },
-            {
-                title: 'Revisão de 90.000 km',
-                progress: 20,
-                badgeText: 'Faltam 35.790 km',
-                badgeType: 'gray',
-                items: 'Revisão programada do sistema de injeção e suspensão traseira'
-            },
-            {
-                title: 'Revisão de 100.000 km',
-                progress: 10,
-                badgeText: 'Faltam 45.790 km',
-                badgeType: 'gray',
-                items: 'Grande revisão de 100 mil km: amortecedores, buchas, fluidos e velas'
-            }
-        ];
+        // Gera as próximas 5 revisões de 10 em 10 mil km a partir da km atual
+        const step = 10000;
+        const nextBase = Math.max(step, Math.ceil((currentKm + 1) / step) * step);
+        const revisionsList = [0, 1, 2, 3, 4].map(idx => {
+            const targetKm = nextBase + (idx * step);
+            const remaining = Math.max(0, targetKm - currentKm);
+            const progress = Math.max(5, Math.min(95, Math.round((currentKm / targetKm) * 100)));
+            return {
+                title: `Revisão de ${targetKm.toLocaleString('pt-BR')} km`,
+                progress: progress,
+                badgeText: remaining > 0 ? `Faltam ${remaining.toLocaleString('pt-BR')} km` : 'Em dia',
+                badgeType: idx === 0 ? 'amber' : (idx === 1 ? 'blue' : 'gray'),
+                items: idx === 0 
+                    ? 'Óleo do motor, filtro de óleo, filtro de ar e inspeção preventiva de freios' 
+                    : (idx === 1 
+                        ? 'Óleo sintético, todos os filtros, fluido de freio e alinhamento' 
+                        : 'Revisão programada do sistema de injeção, suspensão e fluidos')
+            };
+        });
 
         return `
             <div class="dna-print-screen-container">
@@ -3229,60 +3277,22 @@ const OwnerView = {
             </div>
         `;
     },
-    // ── 6. TELA: SERVIÇOS & PEÇAS — EXATAMENTE COMO NO PRINT OFICIAL (TELA 6) ──
+    // ── 6. TELA: SERVIÇOS & PEÇAS — DADOS REAIS DO HISTÓRICO DO VEÍCULO (TELA 6) ──
     renderServicesScreen() {
         const v = this.vehicleData || {};
         const filter = this.servicesFilter || 'all';
+        const timeline = Array.isArray(v.timeline) ? v.timeline : [];
 
-        const defaultRecords = [
-            {
-                dateBadge: '14 SET 2024',
-                kmBadge: '54.210 km',
-                title: 'Troca de Óleo e Filtros',
-                workshop: 'Auto Mecânica Silva',
-                price: 'R$ 380,00',
-                partName: 'Óleo Sintético 5W30 Motul + Filtro Mann',
-                thumbUrl: '/img/part-oil.jpg',
-                type: 'service'
-            },
-            {
-                dateBadge: '02 AGO 2024',
-                kmBadge: '51.100 km',
-                title: 'Pastilhas de Freio Dianteiras',
-                workshop: 'Oficina Premium Car',
-                price: 'R$ 450,00',
-                partName: 'Pastilhas Cerâmica Brembo',
-                thumbUrl: '/img/ws-workshop-thumb1.jpg',
-                type: 'part'
-            },
-            {
-                dateBadge: '15 JUN 2024',
-                kmBadge: '47.800 km',
-                title: 'Alinhamento e Balanceamento 3D',
-                workshop: 'Pneus & Cia Morumbi',
-                price: 'R$ 160,00',
-                partName: 'Serviço de geometria computadorizada',
-                thumbUrl: '/img/ws-workshop-thumb3.jpg',
-                type: 'service'
-            },
-            {
-                dateBadge: '10 MAI 2024',
-                kmBadge: '44.500 km',
-                title: 'Filtro de Ar e Higienização',
-                workshop: 'Auto Center Especializado',
-                price: 'R$ 220,00',
-                partName: 'Filtro de cabine carvão ativado',
-                thumbUrl: '/img/part-oil.jpg',
-                type: 'part'
-            }
-        ];
-
-        let displayList = defaultRecords;
+        let displayList = timeline;
         if (filter === 'services') {
-            displayList = defaultRecords.filter(r => r.type === 'service');
+            displayList = timeline.filter(r => r.type !== 'part');
         } else if (filter === 'parts') {
-            displayList = defaultRecords.filter(r => r.type === 'part');
+            displayList = timeline.filter(r => r.type === 'part');
         }
+
+        const totalCount = timeline.length;
+        const servicesCount = timeline.filter(r => r.type !== 'part').length;
+        const partsCount = timeline.filter(r => r.type === 'part').length;
 
         return `
             <div class="dna-print-screen-container">
@@ -3290,7 +3300,7 @@ const OwnerView = {
                 <div class="dna-print-action-bar">
                     <div class="dna-print-action-info">
                         <span class="dna-print-action-label">Histórico Oficial</span>
-                        <strong class="dna-print-action-count">12 registros comprovados</strong>
+                        <strong class="dna-print-action-count">${totalCount} ${totalCount === 1 ? 'registro comprovado' : 'registros comprovados'}</strong>
                     </div>
                     <button class="dna-print-btn-add" onclick="OwnerView.openDeclareModal()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -3301,39 +3311,47 @@ const OwnerView = {
                 <!-- 2. Abas de Filtros em Pills -->
                 <div class="dna-print-pill-tabs">
                     <button class="dna-print-pill-tab ${filter === 'all' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('all')">
-                        Todos (12)
+                        Todos (${totalCount})
                     </button>
                     <button class="dna-print-pill-tab ${filter === 'services' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('services')">
-                        Serviços (8)
+                        Serviços (${servicesCount})
                     </button>
                     <button class="dna-print-pill-tab ${filter === 'parts' ? 'active' : ''}" onclick="OwnerView.setServicesFilter('parts')">
-                        Peças (4)
+                        Peças (${partsCount})
                     </button>
                 </div>
 
                 <!-- 3. Lista de Registros no Estilo Clean do Print -->
                 <div class="dna-print-services-list">
-                    ${displayList.map(item => `
-                        <div class="dna-print-service-card" onclick="OwnerView.openPhotoZoom('${item.thumbUrl}', '${item.title}')">
+                    ${displayList.length === 0 ? `
+                        <div style="text-align:center; padding:38px 20px; background:#FFFFFF; border-radius:16px; border:1px dashed #CBD5E1; margin-top:8px;">
+                            <span style="font-size:32px; display:block; margin-bottom:8px;">🔧</span>
+                            <h4 style="font-size:15px; font-weight:800; color:#0F172A; margin:0 0 6px;">Nenhum serviço ou peça registrado</h4>
+                            <p style="font-size:12.5px; color:#64748B; margin:0; line-height:1.5;">
+                                Quando sua oficina credenciada registrar um serviço ou troca de peças, os dados, fotos e garantias aparecerão aqui automaticamente.
+                            </p>
+                        </div>
+                    ` : displayList.map(item => `
+                        <div class="dna-print-service-card" onclick="OwnerView.openPhotoZoom('${item.thumbUrl || item.part_photo_url || '/img/part-oil.jpg'}', '${item.title}')">
                             <div class="dna-print-srv-top">
                                 <div class="dna-print-srv-badges">
-                                    <span class="dna-print-date-badge">${item.dateBadge}</span>
-                                    <span class="dna-print-km-badge">${item.kmBadge}</span>
+                                    <span class="dna-print-date-badge">${item.dateBadge || item.date || '---'}</span>
+                                    <span class="dna-print-km-badge">${item.kmBadge || (item.mileage ? item.mileage + ' km' : '')}</span>
                                 </div>
-                                <span class="dna-print-srv-price">${item.price}</span>
+                                <span class="dna-print-srv-price">${item.price || ('R$ ' + ((item.total_cost_cents || 0)/100).toFixed(2).replace('.', ','))}</span>
                             </div>
 
                             <div class="dna-print-srv-middle">
                                 <div class="dna-print-srv-text">
                                     <h4 class="dna-print-srv-title">${item.title}</h4>
-                                    <p class="dna-print-srv-workshop">${item.workshop}</p>
+                                    <p class="dna-print-srv-workshop">${item.workshop || item.workshop_name || 'Oficina Credenciada'}</p>
                                     <div class="dna-print-srv-part-row">
                                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.3"><circle cx="12" cy="12" r="9"/><polyline points="12 6 12 12 14 14"/></svg>
-                                        <span>${item.partName}</span>
+                                        <span>${item.partName || item.title}</span>
                                     </div>
                                 </div>
                                 <div class="dna-print-srv-thumb-wrap">
-                                    <img src="${item.thumbUrl}" alt="${item.title}" class="dna-print-srv-thumb" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
+                                    <img src="${item.thumbUrl || item.part_photo_url || '/img/part-oil.jpg'}" alt="${item.title}" class="dna-print-srv-thumb" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
                                 </div>
                             </div>
 
@@ -3360,108 +3378,76 @@ const OwnerView = {
         return this.renderServicesScreen();
     },
 
-    // ── 8. TELA: ALERTAS & MANUTENÇÃO (PREVENTIVA E CORRETIVA) ──
-    // ── 8. TELA: ALERTAS & MANUTENÇÕES — EXATAMENTE COMO NO PRINT OFICIAL (TELA 8) ──
+    // ── 8. TELA: ALERTAS & MANUTENÇÕES — DADOS REAIS DO VEÍCULO (TELA 8) ──
     renderRemindersScreen() {
         const tab = this.selectedReminderTab || 'pending';
+        const v = this.vehicleData || {};
+        const timeline = Array.isArray(v.timeline) ? v.timeline : [];
+        const predAlerts = (this.predictiveData && Array.isArray(this.predictiveData.alerts)) ? this.predictiveData.alerts : [];
+        const pendingCount = predAlerts.length;
+        const completedCount = timeline.length;
 
         return `
             <div class="dna-print-screen-container">
-                <!-- 1. Abas Segmentadas: Pendentes (2) / Concluídos (5) -->
+                <!-- 1. Abas Segmentadas: Pendentes (${pendingCount}) / Concluídos (${completedCount}) -->
                 <div class="dna-print-segmented-control">
                     <button class="dna-print-seg-btn ${tab === 'pending' || tab === 'preventiva' ? 'active' : ''}" onclick="OwnerView.setReminderTab('pending')">
-                        Pendentes (2)
+                        Pendentes (${pendingCount})
                     </button>
                     <button class="dna-print-seg-btn ${tab === 'completed' || tab === 'corretiva' ? 'active' : ''}" onclick="OwnerView.setReminderTab('completed')">
-                        Concluídos (5)
+                        Concluídos (${completedCount})
                     </button>
                 </div>
 
                 ${(tab === 'completed' || tab === 'corretiva') ? `
                     <!-- Lista de Concluídos -->
                     <div class="dna-print-alerts-list">
-                        <div class="dna-print-alert-card card-completed">
-                            <div class="dna-print-alert-header">
-                                <div class="dna-print-alert-icon icon-green">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                </div>
-                                <div class="dna-print-alert-title-wrap">
-                                    <h5 class="dna-print-alert-title">Troca de Óleo e Filtros</h5>
-                                    <span class="dna-print-alert-badge badge-green">Concluído</span>
-                                </div>
+                        ${timeline.length === 0 ? `
+                            <div style="text-align:center; padding:32px 18px; background:#FFFFFF; border-radius:14px; border:1px dashed #CBD5E1; color:#64748B; font-size:12.5px; margin-top:8px;">
+                                <span>Nenhum serviço ou revisão concluída ainda.</span>
                             </div>
-                            <p class="dna-print-alert-msg">Realizado em 14/09/2024 aos 54.210 km na Auto Mecânica Silva.</p>
-                        </div>
-
-                        <div class="dna-print-alert-card card-completed">
-                            <div class="dna-print-alert-header">
-                                <div class="dna-print-alert-icon icon-green">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        ` : timeline.map(t => `
+                            <div class="dna-print-alert-card card-completed">
+                                <div class="dna-print-alert-header">
+                                    <div class="dna-print-alert-icon icon-green">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </div>
+                                    <div class="dna-print-alert-title-wrap">
+                                        <h5 class="dna-print-alert-title">${t.title}</h5>
+                                        <span class="dna-print-alert-badge badge-green">Concluído</span>
+                                    </div>
                                 </div>
-                                <div class="dna-print-alert-title-wrap">
-                                    <h5 class="dna-print-alert-title">Pastilhas de Freio Dianteiras</h5>
-                                    <span class="dna-print-alert-badge badge-green">Concluído</span>
-                                </div>
+                                <p class="dna-print-alert-msg">Realizado em ${t.date || ''} ${t.kmBadge ? 'aos ' + t.kmBadge : ''} na ${t.workshop || 'Oficina Credenciada'}.</p>
                             </div>
-                            <p class="dna-print-alert-msg">Realizado em 02/08/2024 aos 51.100 km na Oficina Premium Car.</p>
-                        </div>
+                        `).join('')}
                     </div>
                 ` : `
-                    <!-- Lista de Pendentes (3 Cards Coloridos do Print) -->
+                    <!-- Lista de Pendentes -->
                     <div class="dna-print-alerts-list">
-                        <!-- Card 1: Vermelho / Urgente -->
-                        <div class="dna-print-alert-card card-urgent">
-                            <div class="dna-print-alert-header">
-                                <div class="dna-print-alert-icon icon-red">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                                </div>
-                                <div class="dna-print-alert-title-wrap">
-                                    <h5 class="dna-print-alert-title">Fluido de Freio Vencendo</h5>
-                                    <span class="dna-print-alert-badge badge-red">Urgente</span>
-                                </div>
+                        ${predAlerts.length === 0 ? `
+                            <div style="text-align:center; padding:32px 18px; background:#FFFFFF; border-radius:14px; border:1px dashed #CBD5E1; color:#64748B; font-size:12.5px; margin-top:8px;">
+                                <span style="font-size:26px; display:block; margin-bottom:6px;">✅</span>
+                                <strong style="color:#0F172A; font-size:14px; display:block; margin-bottom:4px;">Nenhum alerta pendente</strong>
+                                <span>Seu veículo está com as revisões e manutenções preventivas em dia.</span>
                             </div>
-                            <p class="dna-print-alert-msg">Prazo recomendado para substituição expirando em 15 dias ou 800 km.</p>
-                            <a href="javascript:void(0)" onclick="OwnerView.navigateTo('workshops')" class="dna-print-alert-link link-red">
-                                <span>Ver detalhes e oficinas</span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                            </a>
-                        </div>
-
-                        <!-- Card 2: Amarelo / Atenção -->
-                        <div class="dna-print-alert-card card-warning">
-                            <div class="dna-print-alert-header">
-                                <div class="dna-print-alert-icon icon-amber">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        ` : predAlerts.map(a => `
+                            <div class="dna-print-alert-card card-${a.severity === 'critical' ? 'urgent' : (a.severity === 'warning' ? 'warning' : 'info')}">
+                                <div class="dna-print-alert-header">
+                                    <div class="dna-print-alert-icon icon-${a.severity === 'critical' ? 'red' : (a.severity === 'warning' ? 'amber' : 'blue')}">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    </div>
+                                    <div class="dna-print-alert-title-wrap">
+                                        <h5 class="dna-print-alert-title">${a.component_name || a.title || 'Alerta de Manutenção'}</h5>
+                                        <span class="dna-print-alert-badge badge-${a.severity === 'critical' ? 'red' : (a.severity === 'warning' ? 'amber' : 'blue')}">${a.severity === 'critical' ? 'Urgente' : 'Atenção'}</span>
+                                    </div>
                                 </div>
-                                <div class="dna-print-alert-title-wrap">
-                                    <h5 class="dna-print-alert-title">Rodízio de Pneus Recomendado</h5>
-                                    <span class="dna-print-alert-badge badge-amber">Atenção</span>
-                                </div>
+                                <p class="dna-print-alert-msg">${a.description || a.message || 'Manutenção preventiva recomendada para o componente.'}</p>
+                                <a href="javascript:void(0)" onclick="OwnerView.navigateTo('workshops')" class="dna-print-alert-link link-${a.severity === 'critical' ? 'red' : 'amber'}">
+                                    <span>Ver oficinas</span>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                                </a>
                             </div>
-                            <p class="dna-print-alert-msg">Último rodízio realizado há 9.800 km. Realize para manter o desgaste uniforme.</p>
-                            <a href="javascript:void(0)" onclick="OwnerView.navigateTo('workshops')" class="dna-print-alert-link link-amber">
-                                <span>Ver detalhes</span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                            </a>
-                        </div>
-
-                        <!-- Card 3: Azul / Programado -->
-                        <div class="dna-print-alert-card card-info">
-                            <div class="dna-print-alert-header">
-                                <div class="dna-print-alert-icon icon-blue">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                </div>
-                                <div class="dna-print-alert-title-wrap">
-                                    <h5 class="dna-print-alert-title">IPVA e Licenciamento 2025</h5>
-                                    <span class="dna-print-alert-badge badge-blue">Programado</span>
-                                </div>
-                            </div>
-                            <p class="dna-print-alert-msg">Final de placa 9 - Vencimento da 1ª parcela em Outubro.</p>
-                            <a href="javascript:void(0)" onclick="OwnerView.navigateTo('expenses')" class="dna-print-alert-link link-blue">
-                                <span>Ver calendário</span>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-                            </a>
-                        </div>
+                        `).join('')}
                     </div>
                 `}
 

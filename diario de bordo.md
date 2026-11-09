@@ -77,3 +77,21 @@
      - Paridade total e rigorosa entre `oficina.app/` e `public/`.
      - Criada nova suíte unitária e de integração dedicada: `test/oficina.staff_financial_block.test.js`, validando 100% dos bloqueios de card, barra inferior, menu gaveta, roteador e backend.
      - Homologação completa com 100% de sucesso em toda a bateria de testes (`npm test`).
+
+### Ciclo 131 — Redirecionamento Direto para Dashboard, Eliminação Total de Mocks no App do Cliente e Blindagem Anti-500 (v2.4.5)
+- **Data:** 09/11/2026
+- **Responsáveis:** `@[backend-specialist]` + `@[frontend-specialist]`
+- **Contexto & Demandas Atendidas:**
+  1. **Redirecionamento Pós-Lançamento no App da Oficina (`WorkshopView`):**
+     - Após salvar serviço ou confirmar recepção de veículo, o fluxo foi corrigido para retornar diretamente à Dashboard oficial (`switchMobileSection('dashboard')`), eliminando qualquer redirecionamento para telas indesejadas de Ordens de Serviço vazias ou quebradas.
+     - A tela de Ordens de Serviço (`renderMobileOrdersView`) teve seus 5 veículos mockados estáticos removidos e foi ligada dinamicamente à lista real de veículos, exibindo empty-state elegante caso ainda não existam ordens.
+  2. **Eliminação Integral de Dados Mock no App do Cliente (`ownerView.js`):**
+     - O app do cliente não possui mais nenhum dado mockado: clientes recém-cadastrados iniciam com histórico 100% zerado e limpo.
+     - Removido array estático `defaultRecords` (óleo Motul, freio Brembo, etc.) e contagens falsas estáticas "Todos (12)".
+     - Conectado carregamento assíncrono com `/api/v1/dossier/:identifier` para refletir imediatamente serviços lançados pela oficina credenciada.
+     - Tratamento dinâmico em telas complementares (Revisões calculadas pela km real e Lembretes reais).
+  3. **Blindagem Backend contra Erro HTTP 500 no Salvamento de Serviços (`upload.js` & `services.routes.js`):**
+     - Configurado `limits.fieldSize: 25MB` no Multer para impedir que fotos de alta resolução ou base64 enviadas como texto estourem o limite padrão de 1MB (`LIMIT_FIELD_VALUE`).
+     - Envolvimento defensivo do middleware de upload para evitar erros não tratados e garantir persistência correta.
+     - Auto-geração de DNA e retorno de serviços em `dossier.routes.js` mesmo para veículos recém-atendidos na oficina.
+  4. **Homologação:** 100% dos testes aprovados na suíte automatizada.

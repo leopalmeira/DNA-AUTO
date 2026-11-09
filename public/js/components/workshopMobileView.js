@@ -1671,7 +1671,7 @@
         const plate = (document.getElementById('ws-entry-plate')?.value || 'BRA2E19').toUpperCase();
         const client = document.getElementById('ws-entry-client')?.value || 'João Silva';
         this.showToast(`✅ Veículo ${plate} (${client}) recebido na oficina com sucesso!`, 'success');
-        setTimeout(() => this.switchMobileSection('ordens-servico'), 700);
+        setTimeout(() => this.switchMobileSection('dashboard'), 700);
     };
 
     WorkshopView.handleMobileVehicleEntrySearch = async function(plate) {
@@ -1833,7 +1833,7 @@
 
     WorkshopView.handleConfirmLaunchService = function() {
         this.showToast('✅ Serviço lançado com sucesso na OS do veículo!', 'success');
-        setTimeout(() => this.switchMobileSection('ordens-servico'), 700);
+        setTimeout(() => this.switchMobileSection('dashboard'), 700);
     };
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -2470,24 +2470,28 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 11: ORDENS DE SERVIÇO (CONFORME MODELO OFICIAL)
+    // TELA 11: ORDENS DE SERVIÇO (DADOS DINÂMICOS DA OFICINA)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileOrdersView = function() {
-        const orders = [
-            { img: './img/splash-car-front.jpg', plate: 'BRA2E19', model: 'Toyota Corolla', service: 'Troca de óleo e filtro', status: 'Em execução', statusClass: 'em-execucao' },
-            { img: './img/cl-hero-car-phone.jpg', plate: 'KZX4D21', model: 'Honda HR-V', service: 'Pastilha de freio', status: 'Aguardando peças', statusClass: 'aguardando-pecas' },
-            { img: './img/splash-car-hero.jpg', plate: 'LMH7A33', model: 'Jeep Compass', service: 'Revisão completa', status: 'Orçamento', statusClass: 'orcamento' },
-            { img: './img/splash-car-front.jpg', plate: 'QWESF67', model: 'Fiat Toro', service: 'Correia dentada', status: 'Concluída', statusClass: 'concluida' },
-            { img: './img/cl-hero-car-phone.jpg', plate: 'RST8I90', model: 'Renault Duster', service: 'Ar condicionado', status: 'Aguardando', statusClass: 'aguardando' }
-        ];
+        const vehicles = Array.isArray(this.vehiclesList) ? this.vehiclesList : [];
+        const orders = vehicles.map(veh => ({
+            img: veh.photo_url || './img/splash-car-hero.png',
+            plate: veh.license_plate,
+            model: `${veh.brand || ''} ${veh.model || ''}`.trim() || 'Veículo Cadastrado',
+            service: veh.last_service_title || 'Revisão e Manutenção',
+            status: 'Concluída',
+            statusClass: 'concluida'
+        }));
+
+        const totalOrders = orders.length;
 
         return `
             <div style="padding-bottom: 24px;">
                 <!-- Pills de Filtro -->
                 <div class="ws-model-filter-pills" style="margin-top:4px;">
-                    <button type="button" class="ws-model-pill active" onclick="WorkshopView.setOrdersFilter('todas', this)">Todas (12)</button>
-                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setOrdersFilter('em-execucao', this)">Em execução (5)</button>
-                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setOrdersFilter('concluidas', this)">Concluídas</button>
+                    <button type="button" class="ws-model-pill active" onclick="WorkshopView.setOrdersFilter('todas', this)">Todas (${totalOrders})</button>
+                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setOrdersFilter('em-execucao', this)">Em execução (0)</button>
+                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setOrdersFilter('concluidas', this)">Concluídas (${totalOrders})</button>
                 </div>
 
                 <!-- Campo de Busca -->
@@ -2502,10 +2506,18 @@
 
                 <!-- Lista de Cards de Ordens de Serviço -->
                 <div class="ws-model-list-container" id="ws-model-orders-list">
-                    ${orders.map(os => `
+                    ${orders.length === 0 ? `
+                        <div style="text-align:center; padding:38px 20px; background:#FFFFFF; border-radius:16px; border:1px dashed #CBD5E1; margin:14px 16px;">
+                            <span style="font-size:32px; display:block; margin-bottom:8px;">📋</span>
+                            <h4 style="font-size:15px; font-weight:800; color:#0F172A; margin:0 0 6px;">Nenhuma Ordem de Serviço</h4>
+                            <p style="font-size:12.5px; color:#64748B; margin:0; line-height:1.5;">
+                                Quando lançar um serviço ou receber um veículo na oficina, as ordens de serviço aparecerão aqui.
+                            </p>
+                        </div>
+                    ` : orders.map(os => `
                         <div class="ws-model-os-card" onclick="WorkshopView.showToast('OS do veículo ${os.plate} (${os.service})', 'info')">
                             <div class="os-thumb">
-                                <img src="${os.img}" alt="${os.model}" onerror="this.src='/img/splash-car-hero.jpg'" />
+                                <img src="${os.img}" alt="${os.model}" onerror="this.src='/img/splash-car-hero.png'" />
                             </div>
                             <div class="os-info">
                                 <div class="plate">${os.plate}</div>
@@ -4454,9 +4466,9 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
             this.mobileInvoicePhoto = null;
             v.mileage = Number(lastKm);
 
-            // Redireciona para ordens de serviço / dashboard
+            // Redireciona de volta para a dashboard oficial
             setTimeout(() => {
-                WorkshopView.switchMobileSection('ordens-servico');
+                WorkshopView.switchMobileSection('dashboard');
             }, 500);
 
         } catch (err) {

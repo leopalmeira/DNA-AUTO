@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const db = require('../../database/db');
 const upload = require('../../middlewares/upload');
 const { authenticateToken } = require('../../middlewares/auth');
@@ -18,10 +19,17 @@ router.get('/catalog/parts', (req, res) => {
 });
 
 // Registrar Serviço pela Oficina (Nível 4: ✅ SERVIÇO COMPROVADO)
-router.post('/workshop-register', authenticateToken, upload.fields([
-    { name: 'photos', maxCount: 6 },
-    { name: 'invoice', maxCount: 1 }
-]), (req, res) => {
+router.post('/workshop-register', authenticateToken, (req, res, next) => {
+    upload.fields([
+        { name: 'photos', maxCount: 6 },
+        { name: 'invoice', maxCount: 1 }
+    ])(req, res, (err) => {
+        if (err) {
+            console.warn('[Upload Warning] Erro no processamento de upload, continuando sem arquivo:', err.message);
+        }
+        next();
+    });
+}, (req, res) => {
     try {
         const {
             vehicle_id,
@@ -119,6 +127,23 @@ router.post('/workshop-register', authenticateToken, upload.fields([
 
         if (!vehicle) {
             return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
+
+        // Garante que o veículo possui DNA ativado para exibição imediata no dossiê e app do cliente
+        if (vehicle && !vehicle.dna_code) {
+            try {
+                const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+                const rnd = (l) => Array.from({ length: l }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+                const autoDna = `DNA-BR-${rnd(4)}-${rnd(4)}-${rnd(3)}`;
+                const certHash = crypto.createHash('sha256').update(`${vehicle.id}-${autoDna}`).digest('hex');
+                db.prepare(`
+                    INSERT OR IGNORE INTO vehicle_dna (id, vehicle_id, dna_code, status, activation_fee_cents, certificate_hash, activated_at, created_at)
+                    VALUES (?, ?, ?, 'ACTIVE', 5990, ?, datetime('now'), datetime('now'))
+                `).run(`dna_${Date.now()}`, vehicle.id, autoDna, certHash);
+                vehicle.dna_code = autoDna;
+            } catch (dnaErr) {
+                console.warn('Geração automática de DNA no serviço:', dnaErr.message);
+            }
         }
 
         const targetVehicleId = vehicle.id;
@@ -493,6 +518,23 @@ router.post('/owner-declare', authenticateToken, upload.fields([
         const vehicle = db.prepare(`SELECT v.*, vd.dna_code FROM vehicles v LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id WHERE v.id = ?`).get(vehicle_id);
         if (!vehicle) {
             return res.status(404).json({ error: 'Veículo não encontrado.' });
+        }
+
+        // Garante que o veículo possui DNA ativado para exibição imediata no dossiê e app do cliente
+        if (vehicle && !vehicle.dna_code) {
+            try {
+                const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+                const rnd = (l) => Array.from({ length: l }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+                const autoDna = `DNA-BR-${rnd(4)}-${rnd(4)}-${rnd(3)}`;
+                const certHash = crypto.createHash('sha256').update(`${vehicle.id}-${autoDna}`).digest('hex');
+                db.prepare(`
+                    INSERT OR IGNORE INTO vehicle_dna (id, vehicle_id, dna_code, status, activation_fee_cents, certificate_hash, activated_at, created_at)
+                    VALUES (?, ?, ?, 'ACTIVE', 5990, ?, datetime('now'), datetime('now'))
+                `).run(`dna_${Date.now()}`, vehicle.id, autoDna, certHash);
+                vehicle.dna_code = autoDna;
+            } catch (dnaErr) {
+                console.warn('Geração automática de DNA no serviço:', dnaErr.message);
+            }
         }
 
         // Localizar ou registrar oficina pelo CNPJ

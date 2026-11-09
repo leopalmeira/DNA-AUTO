@@ -79,26 +79,29 @@ router.get('/:identifier', (req, res) => {
 
         const vehicleId = vehicle.id;
 
-        // Se o veículo não possui DNA ativado ainda (Ex: caso da Fiat Strada)
+        // Se o veículo não possui DNA ativado ainda (Ex: caso da Fiat Strada sem serviços)
         if (!vehicle.dna_code) {
-            return res.json({
-                found: true,
-                hasDna: false,
-                vehicle: {
-                    id: vehicle.id,
-                    license_plate: vehicle.license_plate,
-                    chassis_vin: vehicle.chassis_vin,
-                    brand: vehicle.brand,
-                    model: vehicle.model,
-                    version_label: vehicle.version_label,
-                    manufacture_year: vehicle.manufacture_year,
-                    model_year: vehicle.model_year,
-                    fuel_type: vehicle.fuel_type,
-                    color: vehicle.color,
-                    photo_url: vehicle.photo_url
-                },
-                message: 'Este veículo ainda não possui DNA AUTO.'
-            });
+            const hasServices = db.prepare(`SELECT COUNT(*) as cnt FROM service_records WHERE vehicle_id = ?`).get(vehicleId);
+            if (!hasServices || hasServices.cnt === 0) {
+                return res.json({
+                    found: true,
+                    hasDna: false,
+                    vehicle: {
+                        id: vehicle.id,
+                        license_plate: vehicle.license_plate,
+                        chassis_vin: vehicle.chassis_vin,
+                        brand: vehicle.brand,
+                        model: vehicle.model,
+                        version_label: vehicle.version_label,
+                        manufacture_year: vehicle.manufacture_year,
+                        model_year: vehicle.model_year,
+                        fuel_type: vehicle.fuel_type,
+                        color: vehicle.color,
+                        photo_url: vehicle.photo_url
+                    },
+                    message: 'Este veículo ainda não possui DNA AUTO.'
+                });
+            }
         }
 
         // 2. Proprietário Atual e Histórico de Donos
