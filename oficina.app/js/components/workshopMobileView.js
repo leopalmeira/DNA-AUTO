@@ -1079,36 +1079,6 @@
                             <h2>Olá, ${userName}</h2>
                             <p>${wsName}</p>
                         </div>
-                        <div class="ws-model-car-glow-hero" title="DNA AUTO Smart Mobility">
-                            <svg viewBox="0 0 240 100" fill="none" class="ws-car-neon-silhouette">
-                                <defs>
-                                    <linearGradient id="neonCyanGlow" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="0%" stop-color="#00D4FF" stop-opacity="0.95"/>
-                                        <stop offset="60%" stop-color="#0084FF" stop-opacity="1"/>
-                                        <stop offset="100%" stop-color="#00D4FF" stop-opacity="0.4"/>
-                                    </linearGradient>
-                                    <filter id="neonCarFilter" x="-30%" y="-30%" width="160%" height="160%">
-                                        <feGaussianBlur stdDeviation="3" result="glow"/>
-                                        <feMerge>
-                                            <feMergeNode in="glow"/>
-                                            <feMergeNode in="SourceGraphic"/>
-                                        </feMerge>
-                                    </filter>
-                                </defs>
-                                <path d="M10 82 C60 82, 130 82, 235 82" stroke="url(#neonCyanGlow)" stroke-width="2" opacity="0.6"/>
-                                <path d="M25 78 C45 78, 60 70, 85 54 C110 40, 138 24, 175 24 C205 24, 218 36, 232 58 C238 65, 238 72, 234 78" 
-                                      stroke="url(#neonCyanGlow)" stroke-width="3" stroke-linecap="round" filter="url(#neonCarFilter)"/>
-                                <path d="M65 78 C80 78, 92 68, 108 60 C130 50, 155 48, 192 50 C210 52, 222 62, 232 74" 
-                                      stroke="#00D4FF" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>
-                                <path d="M115 54 C132 34, 155 30, 180 30 C198 30, 204 38, 212 52 Z" 
-                                      fill="rgba(0, 212, 255, 0.15)" stroke="#38BDF8" stroke-width="1.4"/>
-                                <circle cx="72" cy="78" r="15" stroke="#00D4FF" stroke-width="2.2" fill="#030A18" filter="url(#neonCarFilter)"/>
-                                <circle cx="198" cy="78" r="15" stroke="#00D4FF" stroke-width="2.2" fill="#030A18" filter="url(#neonCarFilter)"/>
-                                <circle cx="72" cy="78" r="6" fill="#00D4FF" opacity="0.9"/>
-                                <circle cx="198" cy="78" r="6" fill="#00D4FF" opacity="0.9"/>
-                                <ellipse cx="232" cy="62" rx="4.5" ry="2.5" fill="#00FFFF" filter="url(#neonCarFilter)"/>
-                            </svg>
-                        </div>
                     </div>
                 </header>
             `;

@@ -3667,11 +3667,11 @@ select:-webkit-autofill:focus {
     box-shadow: 0 0 8px #EF4444;
 }
 
-/* Saudação no Topo do Dashboard com a Silhueta Neon do Carro */
+/* Saudação no Topo do Dashboard */
 .ws-model-greeting-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     margin-top: 14px;
     padding: 0 4px;
     position: relative;
@@ -3691,26 +3691,6 @@ select:-webkit-autofill:focus {
     margin: 4px 0 0;
     font-weight: 500;
     letter-spacing: -0.2px;
-}
-
-/* Silhueta Neon do Carro Esportivo (Lado Direito da Saudação) */
-.ws-model-car-glow-hero {
-    width: 140px;
-    height: 54px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    position: relative;
-}
-.ws-model-car-glow-hero svg {
-    width: 100%;
-    height: 100%;
-    filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.75));
-    transition: transform 0.3s ease;
-}
-.ws-model-car-glow-hero:hover svg {
-    transform: scale(1.04);
 }
 
 /* Grade dos 6 Cards Essenciais do Dashboard */
