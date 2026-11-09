@@ -23,9 +23,10 @@ router.post('/login', (req, res) => {
         let user = db.prepare(`
             SELECT u.id, u.name, u.email, u.password_hash, u.phone, u.role_id, u.status,
                    COALESCE(u.must_change_password, 0) as must_change_password,
-                   r.code as role_code, r.name as role_name
+                   COALESCE(r.code, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'WORKSHOP_STAFF' ELSE 'OWNER' END) as role_code,
+                   COALESCE(r.name, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'Registrador da Oficina' ELSE 'Usuário' END) as role_name
             FROM users u
-            JOIN roles r ON u.role_id = r.id
+            LEFT JOIN roles r ON u.role_id = r.id
             WHERE LOWER(u.email) = LOWER(?)
         `).get(email);
 
@@ -39,9 +40,10 @@ router.post('/login', (req, res) => {
                 user = db.prepare(`
                     SELECT u.id, u.name, u.email, u.password_hash, u.phone, u.role_id, u.status,
                            COALESCE(u.must_change_password, 0) as must_change_password,
-                           r.code as role_code, r.name as role_name
+                           COALESCE(r.code, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'WORKSHOP_STAFF' ELSE 'OWNER' END) as role_code,
+                           COALESCE(r.name, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'Registrador da Oficina' ELSE 'Usuário' END) as role_name
                     FROM users u
-                    JOIN roles r ON u.role_id = r.id
+                    LEFT JOIN roles r ON u.role_id = r.id
                     WHERE LOWER(u.email) = LOWER(?)
                 `).get(email);
             }
@@ -156,6 +158,11 @@ router.post('/login', (req, res) => {
             fipe_price_cents: primaryVehicle.fipe_price_cents || null
         } : null;
 
+        const isRegistrar = Boolean(
+            user.role_code === 'WORKSHOP_STAFF' ||
+            (workshopUser && workshopUser.position_title && workshopUser.position_title.toLowerCase().includes('registrador'))
+        );
+
         res.json({
             token,
             must_change_password: mustChangePassword,
@@ -167,8 +174,14 @@ router.post('/login', (req, res) => {
                 phone: user.phone,
                 role_code: user.role_code,
                 role_name: user.role_name,
+                is_registrar: isRegistrar,
+                can_access_billing: !isRegistrar,
                 must_change_password: mustChangePassword,
-                workshop: workshopUser || null,
+                workshop: workshopUser ? {
+                    ...workshopUser,
+                    is_registrar: isRegistrar,
+                    can_access_billing: !isRegistrar
+                } : null,
                 vehicle: serializedVehicle
             }
         });

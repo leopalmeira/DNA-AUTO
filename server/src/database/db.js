@@ -61,6 +61,23 @@ try {
     }
 } catch (_) {}
 
+// Garantir oficina credenciada base no banco de dados para evitar falhas de Foreign Key
+try {
+    const hasWorkshop = db.prepare(`SELECT id FROM workshops LIMIT 1`).get();
+    if (!hasWorkshop) {
+        db.prepare(`
+            INSERT OR IGNORE INTO workshops (
+                id, company_name, trade_name, cnpj, email, phone,
+                address_street, address_number, address_neighborhood, city, state, zip_code, status
+            ) VALUES (
+                'ws_veloce', 'Veloce Manutenção Automotiva LTDA', 'Veloce Auto Center',
+                '12.345.678/0001-99', 'contato@veloceautocenter.com.br', '(11) 98765-4321',
+                'Av. das Oficinas', '1000', 'Centro', 'São Paulo', 'SP', '01001-000', 'ACTIVE'
+            )
+        `).run();
+    }
+} catch (_) {}
+
 // Garantir presença da tabela client_activations
 try {
     db.exec(`
@@ -391,6 +408,9 @@ try {
 
         INSERT OR IGNORE INTO roles (id, code, name, description)
         VALUES ('role_representative', 'REPRESENTATIVE', 'Representante Comercial', 'Indicação comercial de oficinas e acompanhamento de comissões (sem acesso operacional)');
+
+        INSERT OR IGNORE INTO roles (id, code, name, description)
+        VALUES ('role_workshop_staff', 'WORKSHOP_STAFF', 'Registrador da Oficina', 'Registrador técnico de fotos de peças e serviços executados na oficina');
 
         INSERT OR IGNORE INTO pricing_plans (id, code, title, description, price_cents, workshop_price_cents, discount_percentage, is_courtesy, commission_percentage, is_active)
         VALUES ('plan_rep_program', 'PLAN_REP_PROGRAM', 'Passaporte Digital DNA AUTO — Programa Representantes (R$ 49,90)', 'Cadastro R$ 49,90 com 50% Oficina (R$ 24,95), 50% Plataforma (R$ 24,95) e comissão comercial R$ 5,90 custeada pela plataforma', 4990, 2495, 0, 0, 50, 1);

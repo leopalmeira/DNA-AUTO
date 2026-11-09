@@ -271,6 +271,32 @@ router.post('/workshop-register', authenticateToken, upload.fields([
                     effectiveLauncherId
                 );
             }
+
+            // 6. Taxa Oficial por Atendimento Concluído com Comprovação Fotográfica (R$ 6,90 / 690 centavos)
+            // Regra de Negócio: O lançamento de fotos na placa é a confirmação material de que o serviço foi
+            // realizado no veículo e constitui o fato gerador da cobrança única de R$ 6,90 da oficina.
+            let feeRegistered = false;
+            let feeId = null;
+            if (effectiveWorkshopId) {
+                const idempotencyKey = `att_srv_${serviceId}_690`;
+                const existingFee = db.prepare('SELECT id FROM workshop_attendance_fees WHERE idempotency_key = ?').get(idempotencyKey);
+                if (!existingFee) {
+                    feeId = 'att_fee_' + Date.now();
+                    db.prepare(`
+                        INSERT INTO workshop_attendance_fees (
+                            id, workshop_id, service_record_id, vehicle_id, amount_cents, status, idempotency_key, notes
+                        ) VALUES (?, ?, ?, ?, 690, 'CONFIRMED', ?, ?)
+                    `).run(
+                        feeId,
+                        effectiveWorkshopId,
+                        serviceId,
+                        targetVehicleId,
+                        idempotencyKey,
+                        `Taxa de atendimento comprovado com foto de peça/serviço - ${titleVal}`
+                    );
+                    feeRegistered = true;
+                }
+            }
         })();
 
         // Recalcular previsões e alertas de manutenção preditiva com base no novo serviço
@@ -301,6 +327,12 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             part_photo_url: primaryPhotoUrl,
             total_cost_cents: totalCost,
             service_date: dateVal,
+            attendance_fee: {
+                amount_cents: 690,
+                formatted: 'R$ 6,90',
+                status: 'CONFIRMED',
+                message: 'Taxa única de R$ 6,90 faturada por atendimento comprovado com foto.'
+            },
             message: `Serviço registrado com sucesso por ${effectiveLauncherName}!`
         });
     } catch (err) {

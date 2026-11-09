@@ -5091,6 +5091,192 @@ textarea:focus {
     gap: 8px;
 }
 
+/* ==========================================================================
+   REGRAS UNIVERSAIS ANTI-OVERFLOW: NADA FOGE DA TELA EM SMARTPHONES
+   ========================================================================== */
+*, *::before, *::after {
+    box-sizing: border-box !important;
+}
+
+#dna-mobile-shell,
+.ws-model-body,
+#ws-mobile-active-viewport,
+.dna-mobile-subpage,
+.dna-mobile-subpage-body,
+.ws-mobile-content {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.dna-mobile-subpage-body {
+    padding: 12px 14px 32px !important;
+}
+
+/* Grids e boxes de formulários estritamente contidos */
+.dna-launch-plate-box,
+.dna-vehicle-preview-card,
+.dna-km-interval-card,
+.dna-proofs-side-by-side,
+.dna-proof-box,
+.dna-input-group,
+.dna-input-search-row,
+.ws-model-dash-card,
+.ws-model-form-card,
+.ws-model-card,
+.form-control,
+.dna-input-field,
+input, select, textarea {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Formulários em duas colunas responsivos sem quebra de largura */
+.dna-proofs-side-by-side,
+.dna-launch-two-cols {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.dna-proof-box {
+    min-width: 0 !important;
+    width: 100% !important;
+    overflow: hidden !important;
+}
+
+.carousel,
+.viewport,
+.cards,
+.card,
+.dna-dual-upload-grid,
+.dna-service-detail-modal,
+.modal-container,
+.modal-body,
+.ws-top-menu-sheet,
+.ws-model-header,
+.ws-model-dashboard-grid {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* ==========================================================================
+   AURA ANIMADA & CONFIRMAÇÃO DE VEÍCULO (LANÇAR SERVIÇOS & CADASTRAR CARRO)
+   ========================================================================== */
+.dna-vehicle-preview-card {
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Aura Pulsante com Luz Contínua Passando sobre o Carro */
+.dna-vehicle-preview-card.ws-vehicle-aura-active {
+    cursor: pointer !important;
+    border: 2px solid #00D4FF !important;
+    animation: carAuraPulseSweep 2.2s infinite ease-in-out !important;
+    box-shadow: 0 0 16px rgba(0, 212, 255, 0.45), inset 0 0 12px rgba(0, 212, 255, 0.18) !important;
+}
+
+@keyframes carAuraPulseSweep {
+    0% {
+        box-shadow: 0 0 8px 1px rgba(0, 212, 255, 0.4), inset 0 0 8px rgba(0, 212, 255, 0.12);
+        border-color: rgba(0, 212, 255, 0.65);
+    }
+    50% {
+        box-shadow: 0 0 24px 5px rgba(0, 212, 255, 0.8), inset 0 0 18px rgba(0, 212, 255, 0.3);
+        border-color: #38BDF8;
+    }
+    100% {
+        box-shadow: 0 0 8px 1px rgba(0, 212, 255, 0.4), inset 0 0 8px rgba(0, 212, 255, 0.12);
+        border-color: rgba(0, 212, 255, 0.65);
+    }
+}
+
+/* Onda de Luz / Shimmer passando suavemente sobre o card */
+.dna-vehicle-preview-card.ws-vehicle-aura-active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -160%;
+    width: 80%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.22), rgba(255, 255, 255, 0.35), rgba(0, 212, 255, 0.22), transparent);
+    transform: skewX(-22deg);
+    animation: carShimmerSweep 2.6s infinite ease-in-out;
+    pointer-events: none;
+    z-index: 2;
+}
+
+@keyframes carShimmerSweep {
+    0% { left: -160%; }
+    50% { left: 160%; }
+    100% { left: 160%; }
+}
+
+/* Banner de Toque Interativo para Confirmar */
+.ws-card-touch-prompt {
+    margin-top: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(0, 212, 255, 0.12);
+    border: 1px dashed rgba(0, 212, 255, 0.4);
+    color: #38BDF8;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    animation: touchPromptPulse 1.8s infinite ease-in-out;
+}
+
+@keyframes touchPromptPulse {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.02); }
+}
+
+/* Estado Confirmado: Borda Verde, Aura Verde Esmeralda e Selo com Check */
+.dna-vehicle-preview-card.ws-vehicle-confirmed {
+    cursor: default !important;
+    border: 2px solid #10B981 !important;
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.14), rgba(6, 24, 18, 0.98)) !important;
+    box-shadow: 0 0 22px rgba(16, 185, 129, 0.45), inset 0 0 14px rgba(16, 185, 129, 0.2) !important;
+    animation: none !important;
+}
+
+.dna-vehicle-preview-card.ws-vehicle-confirmed::before {
+    display: none !important;
+}
+
+/* Selo com Check Verde na Quina Superior Direita */
+.ws-card-check-corner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: #FFFFFF;
+    font-size: 10.5px;
+    font-weight: 900;
+    padding: 3px 12px 4px 14px;
+    border-bottom-left-radius: 12px;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.45);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.3px;
+    z-index: 10;
+}
+
+.ws-card-check-corner .check-icon {
+    font-size: 12px;
+    font-weight: 900;
+}
+
+
 
 
 

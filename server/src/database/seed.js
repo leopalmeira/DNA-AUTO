@@ -60,6 +60,7 @@ function seedBase(dbInstance) {
             { id: 'role_workshop_manager', code: 'WORKSHOP_MANAGER', name: 'Gerente da Oficina', description: 'Operação e confirmação de serviços' },
             { id: 'role_workshop_mechanic', code: 'WORKSHOP_MECHANIC', name: 'Mecânico Chefe', description: 'Registro técnico de serviços e peças' },
             { id: 'role_owner', code: 'OWNER', name: 'Proprietário de Veículo', description: 'Acompanhamento do DNA e transferências' },
+            { id: 'role_workshop_staff', code: 'WORKSHOP_STAFF', name: 'Registrador da Oficina', description: 'Registrador técnico de fotos de peças e serviços da oficina' },
             { id: 'role_representative', code: 'REPRESENTATIVE', name: 'Representante Comercial', description: 'Indicação comercial de oficinas e acompanhamento de comissões (sem acesso operacional)' }
         ];
         for (const r of roles) insertRole.run(r);

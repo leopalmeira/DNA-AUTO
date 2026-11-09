@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="/css/components.css">
     <link rel="stylesheet" href="/css/dossier.css">
     <link rel="stylesheet" href="/css/print.css">
-    <link rel="stylesheet" href="/css/workshop-mobile.css">
+    <link rel="stylesheet" href="/css/workshop-mobile.css?v=2.2.0">
 
     <style>
         body.is-workshop-erp {
@@ -323,8 +323,8 @@
     <script src="/js/components/posterGenerator.js"></script>
     <script src="/js/components/saleReportModal.js"></script>
     <script src="/js/components/pwaInstall.js"></script>
-    <script src="/js/components/workshopView.js"></script>
-    <script src="/js/components/workshopMobileView.js"></script>
+    <script src="/js/components/workshopView.js?v=2.2.0"></script>
+    <script src="/js/components/workshopMobileView.js?v=2.2.0"></script>
 
     <!-- Inicializador Autônomo do ERP da Oficina -->
     <script>
@@ -396,7 +396,7 @@
                 if (raw) savedUser = JSON.parse(raw);
             } catch (_) {}
 
-            if (savedUser && (savedUser.role_code === 'WORKSHOP' || savedUser.role === 'WORKSHOP')) {
+            if (savedUser && (savedUser.role_code === 'WORKSHOP' || savedUser.role === 'WORKSHOP' || savedUser.role_code === 'WORKSHOP_STAFF' || savedUser.is_registrar)) {
                 window.App.currentUser = savedUser;
             } else {
                 window.App.currentUser = null;

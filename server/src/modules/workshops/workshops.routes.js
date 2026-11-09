@@ -2215,6 +2215,22 @@ function buildWorkshopMenuSummary(workshopId) {
     const pendingTransferCents = unbilledCarsCount * transferPerCarCents;
     const effectiveTransferCents = pendingTransferCents > 0 ? pendingTransferCents : monthTransferCents;
 
+    // Atendimentos com fotos lançados na placa no mês (taxa de R$ 6,90 por atendimento)
+    let attendanceFeesMonth = 0;
+    let attendanceFeesCents = 0;
+    try {
+        const feesRow = db.prepare(`
+            SELECT COUNT(*) as count, COALESCE(SUM(fee_amount_cents), 0) as total_cents
+            FROM workshop_attendance_fees
+            WHERE workshop_id = ?
+              AND strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
+        `).get(targetWsId);
+        attendanceFeesMonth = Number(feesRow?.count || 0);
+        attendanceFeesCents = Number(feesRow?.total_cents || 0);
+    } catch (_) {}
+
+    const totalToTransferCents = effectiveTransferCents + attendanceFeesCents;
+
     // Lista de registradores ativos da oficina
     const registrarsRaw = db.prepare(`
         SELECT wu.id as registrar_id,
@@ -2312,12 +2328,15 @@ function buildWorkshopMenuSummary(workshopId) {
             prepaid_cars_credits: Number(balance?.prepaid_cars_credits || 0),
             transfer_per_car_cents: transferPerCarCents,
             transfer_per_car_formatted: 'R$ 24,95',
-            month_transfer_amount_cents: monthTransferCents,
-            month_transfer_amount_formatted: `R$ ${(monthTransferCents / 100).toFixed(2).replace('.', ',')}`,
+            attendance_fees_count: attendanceFeesMonth,
+            attendance_fees_cents: attendanceFeesCents,
+            attendance_fees_formatted: `R$ ${(attendanceFeesCents / 100).toFixed(2).replace('.', ',')}`,
+            month_transfer_amount_cents: monthTransferCents + attendanceFeesCents,
+            month_transfer_amount_formatted: `R$ ${((monthTransferCents + attendanceFeesCents) / 100).toFixed(2).replace('.', ',')}`,
             pending_transfer_amount_cents: pendingTransferCents,
             pending_transfer_amount_formatted: `R$ ${(pendingTransferCents / 100).toFixed(2).replace('.', ',')}`,
-            amount_to_transfer_cents: effectiveTransferCents,
-            amount_to_transfer_formatted: `R$ ${(effectiveTransferCents / 100).toFixed(2).replace('.', ',')}`
+            amount_to_transfer_cents: totalToTransferCents,
+            amount_to_transfer_formatted: `R$ ${(totalToTransferCents / 100).toFixed(2).replace('.', ',')}`
         },
         registrars,
         launched_services: launchedServices
@@ -2358,12 +2377,37 @@ router.post('/:id/registrars', (req, res) => {
             return res.status(400).json({ error: 'Informe o nome completo e um e-mail válido para o registrador.' });
         }
 
-        // Garante que a oficina existe
+        // Garante a existência da role do registrador e das colunas necessárias
+        try {
+            db.prepare(`
+                INSERT OR IGNORE INTO roles (id, code, name, description)
+                VALUES ('role_workshop_staff', 'WORKSHOP_STAFF', 'Registrador da Oficina', 'Registrador técnico de fotos de peças e serviços da oficina')
+            `).run();
+        } catch (_) {}
+        try {
+            db.exec('ALTER TABLE workshop_users ADD COLUMN generated_password TEXT');
+        } catch (_) {}
+
+        // Garante que a oficina existe no banco (cria se ainda não existir)
         let workshop = db.prepare('SELECT * FROM workshops WHERE id = ?').get(workshopId);
         if (!workshop) {
             workshop = db.prepare('SELECT * FROM workshops LIMIT 1').get();
         }
-        const targetWsId = workshop ? workshop.id : workshopId;
+        if (!workshop) {
+            const defaultWsId = workshopId || 'ws_veloce';
+            db.prepare(`
+                INSERT OR IGNORE INTO workshops (
+                    id, company_name, trade_name, cnpj, email, phone,
+                    address_street, address_number, address_neighborhood, city, state, zip_code, status
+                ) VALUES (
+                    ?, 'Veloce Manutenção Automotiva LTDA', 'Veloce Auto Center',
+                    '12.345.678/0001-99', 'contato@veloceautocenter.com.br', '(11) 98765-4321',
+                    'Av. das Oficinas', '1000', 'Centro', 'São Paulo', 'SP', '01001-000', 'ACTIVE'
+                )
+            `).run(defaultWsId);
+            workshop = db.prepare('SELECT * FROM workshops WHERE id = ?').get(defaultWsId);
+        }
+        const targetWsId = workshop ? workshop.id : (workshopId || 'ws_veloce');
 
         const randomPassword = (password && String(password).trim().length >= 4)
             ? String(password).trim()

@@ -310,6 +310,7 @@ async function run20StepIntegrationTest() {
         // -------------------------------------------------------------
         console.log('\n[Passo 9] Transição para formulário detalhado do serviço...');
         WorkshopView.selectedMobileVehicle = { ...checkVeh, mileage: entryKm };
+        WorkshopView.confirmLaunchVehicleCard();
         WorkshopView.openCurrentCarouselService();
         assert.equal(WorkshopView.currentSection, 'detalhe-servico', 'Rota alterada com sucesso para detalhe-servico');
         

@@ -2667,6 +2667,35 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
   - `test/api.test.js`: 58/58 testes aprovados.
 
+---
+
+### Ciclo 124 — Fato Gerador R$ 6,90 com Foto, Aura Neon e Check Verde, Campos Limpos no Cadastro, Bloqueio Financeiro para Registrador e Cache Busting v2.2.0
+- **Data:** 09/11/2026
+- **Responsáveis:** `@backend-specialist` + `@frontend-specialist`
+- **Contexto & Demandas Atendidas:**
+  1. **Fato Gerador da Cobrança de R$ 6,90 na Inclusão de Fotos na Placa:**
+     - Ao enviar fotos reais das peças e serviços vinculados à placa do veículo em `POST /api/v1/services/workshop-register`, o sistema confirma a materialização do serviço e registra automaticamente a taxa única de R$ 6,90 faturada da oficina em `workshop_attendance_fees`.
+  2. **Aura Animada Neon e Confirmação com Check Verde na Quina do Card:**
+     - Tanto em "Lançar Serviços" quanto em "Cadastrar Veículo", ao localizar o veículo ele é exibido com aura luminosa pulsante contínua (`.ws-vehicle-aura-active` com shimmer de luz passando sobre o card).
+     - Ao tocar no card para confirmar, as bordas e a aura ficam verdes (`.ws-vehicle-confirmed`, `border: 2px solid #10B981`) com selo check esmeralda na quina superior (`.ws-card-check-corner`), liberando a rolagem suave para o carrossel ou dados do proprietário.
+     - Proteção no carrossel de serviços: impede a seleção ou abertura de qualquer serviço se o veículo não foi confirmado por toque.
+  3. **Campos do Proprietário Sempre em Branco no Cadastro de Veículo:**
+     - Ao consultar a placa, os campos de Nome completo, E-mail e WhatsApp permanecem rigorosamente em branco (`value=""`), sem trazer dados mock ou pré-existentes como "Leo Souza".
+     - Senha inicial travada em `123456` para primeiro acesso no app do cliente.
+  4. **Correção de Login do Cliente e Registrador:**
+     - Corrigido `LEFT JOIN roles r ON u.role_id = r.id` na rota de login e inserções seguras da role `role_workshop_staff` e oficina padrão no banco.
+     - Card de Financeiro do Dashboard bloqueado com cadeado 🔒 para usuários com perfil de Registrador (`isRegistrarUser()`).
+  5. **CSS Anti-Overflow Universal e Cache Busting v2.2.0:**
+     - Aplicação de regras anti-overflow (`max-width: 100%`, `overflow-x: hidden`, `box-sizing: border-box`) em todos os cards, formulários e modais para eliminar escape de caixas da tela de smartphones.
+     - Versão dos assets atualizada para `?v=2.2.0` em `oficina.app/index.html` e `public/oficina.html`.
+     - Sincronização idêntica entre `oficina.app/` e `public/`.
+- **Qualidade & Testes:**
+  - `test/oficina.components.test.js`: 100% aprovado.
+  - `test/oficina.integration.test.js`: 22/22 passos aprovados.
+  - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
+  - `test/representante.homologation.test.js`: 20/20 cenários aprovados.
+
+
 
 
 
@@ -2748,6 +2777,35 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - `test/oficina.integration.test.js`: Expandido para **22 passos oficiais** (incluindo Passos 21 e 22 para validação de senha `123456`, troca no 1º acesso, edição de perfil do cliente, cadastro/login/exclusão de registradores, lançamento com foto/valor/autor e resumo mensal de repasse), 100% aprovado.
   - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
   - `test/api.test.js`: 58/58 testes aprovados.
+
+---
+
+### Ciclo 124 — Fato Gerador R$ 6,90 com Foto, Aura Neon e Check Verde, Campos Limpos no Cadastro, Bloqueio Financeiro para Registrador e Cache Busting v2.2.0
+- **Data:** 09/11/2026
+- **Responsáveis:** `@backend-specialist` + `@frontend-specialist`
+- **Contexto & Demandas Atendidas:**
+  1. **Fato Gerador da Cobrança de R$ 6,90 na Inclusão de Fotos na Placa:**
+     - Ao enviar fotos reais das peças e serviços vinculados à placa do veículo em `POST /api/v1/services/workshop-register`, o sistema confirma a materialização do serviço e registra automaticamente a taxa única de R$ 6,90 faturada da oficina em `workshop_attendance_fees`.
+  2. **Aura Animada Neon e Confirmação com Check Verde na Quina do Card:**
+     - Tanto em "Lançar Serviços" quanto em "Cadastrar Veículo", ao localizar o veículo ele é exibido com aura luminosa pulsante contínua (`.ws-vehicle-aura-active` com shimmer de luz passando sobre o card).
+     - Ao tocar no card para confirmar, as bordas e a aura ficam verdes (`.ws-vehicle-confirmed`, `border: 2px solid #10B981`) com selo check esmeralda na quina superior (`.ws-card-check-corner`), liberando a rolagem suave para o carrossel ou dados do proprietário.
+     - Proteção no carrossel de serviços: impede a seleção ou abertura de qualquer serviço se o veículo não foi confirmado por toque.
+  3. **Campos do Proprietário Sempre em Branco no Cadastro de Veículo:**
+     - Ao consultar a placa, os campos de Nome completo, E-mail e WhatsApp permanecem rigorosamente em branco (`value=""`), sem trazer dados mock ou pré-existentes como "Leo Souza".
+     - Senha inicial travada em `123456` para primeiro acesso no app do cliente.
+  4. **Correção de Login do Cliente e Registrador:**
+     - Corrigido `LEFT JOIN roles r ON u.role_id = r.id` na rota de login e inserções seguras da role `role_workshop_staff` e oficina padrão no banco.
+     - Card de Financeiro do Dashboard bloqueado com cadeado 🔒 para usuários com perfil de Registrador (`isRegistrarUser()`).
+  5. **CSS Anti-Overflow Universal e Cache Busting v2.2.0:**
+     - Aplicação de regras anti-overflow (`max-width: 100%`, `overflow-x: hidden`, `box-sizing: border-box`) em todos os cards, formulários e modais para eliminar escape de caixas da tela de smartphones.
+     - Versão dos assets atualizada para `?v=2.2.0` em `oficina.app/index.html` e `public/oficina.html`.
+     - Sincronização idêntica entre `oficina.app/` e `public/`.
+- **Qualidade & Testes:**
+  - `test/oficina.components.test.js`: 100% aprovado.
+  - `test/oficina.integration.test.js`: 22/22 passos aprovados.
+  - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
+  - `test/representante.homologation.test.js`: 20/20 cenários aprovados.
+
 
 
 
@@ -2831,5 +2889,34 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - `test/oficina.integration.test.js`: Expandido para **22 passos oficiais** (incluindo Passos 21 e 22 para validação de senha `123456`, troca no 1º acesso, edição de perfil do cliente, cadastro/login/exclusão de registradores, lançamento com foto/valor/autor e resumo mensal de repasse), 100% aprovado.
   - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
   - `test/api.test.js`: 58/58 testes aprovados.
+
+---
+
+### Ciclo 124 — Fato Gerador R$ 6,90 com Foto, Aura Neon e Check Verde, Campos Limpos no Cadastro, Bloqueio Financeiro para Registrador e Cache Busting v2.2.0
+- **Data:** 09/11/2026
+- **Responsáveis:** `@backend-specialist` + `@frontend-specialist`
+- **Contexto & Demandas Atendidas:**
+  1. **Fato Gerador da Cobrança de R$ 6,90 na Inclusão de Fotos na Placa:**
+     - Ao enviar fotos reais das peças e serviços vinculados à placa do veículo em `POST /api/v1/services/workshop-register`, o sistema confirma a materialização do serviço e registra automaticamente a taxa única de R$ 6,90 faturada da oficina em `workshop_attendance_fees`.
+  2. **Aura Animada Neon e Confirmação com Check Verde na Quina do Card:**
+     - Tanto em "Lançar Serviços" quanto em "Cadastrar Veículo", ao localizar o veículo ele é exibido com aura luminosa pulsante contínua (`.ws-vehicle-aura-active` com shimmer de luz passando sobre o card).
+     - Ao tocar no card para confirmar, as bordas e a aura ficam verdes (`.ws-vehicle-confirmed`, `border: 2px solid #10B981`) com selo check esmeralda na quina superior (`.ws-card-check-corner`), liberando a rolagem suave para o carrossel ou dados do proprietário.
+     - Proteção no carrossel de serviços: impede a seleção ou abertura de qualquer serviço se o veículo não foi confirmado por toque.
+  3. **Campos do Proprietário Sempre em Branco no Cadastro de Veículo:**
+     - Ao consultar a placa, os campos de Nome completo, E-mail e WhatsApp permanecem rigorosamente em branco (`value=""`), sem trazer dados mock ou pré-existentes como "Leo Souza".
+     - Senha inicial travada em `123456` para primeiro acesso no app do cliente.
+  4. **Correção de Login do Cliente e Registrador:**
+     - Corrigido `LEFT JOIN roles r ON u.role_id = r.id` na rota de login e inserções seguras da role `role_workshop_staff` e oficina padrão no banco.
+     - Card de Financeiro do Dashboard bloqueado com cadeado 🔒 para usuários com perfil de Registrador (`isRegistrarUser()`).
+  5. **CSS Anti-Overflow Universal e Cache Busting v2.2.0:**
+     - Aplicação de regras anti-overflow (`max-width: 100%`, `overflow-x: hidden`, `box-sizing: border-box`) em todos os cards, formulários e modais para eliminar escape de caixas da tela de smartphones.
+     - Versão dos assets atualizada para `?v=2.2.0` em `oficina.app/index.html` e `public/oficina.html`.
+     - Sincronização idêntica entre `oficina.app/` e `public/`.
+- **Qualidade & Testes:**
+  - `test/oficina.components.test.js`: 100% aprovado.
+  - `test/oficina.integration.test.js`: 22/22 passos aprovados.
+  - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
+  - `test/representante.homologation.test.js`: 20/20 cenários aprovados.
+
 
 

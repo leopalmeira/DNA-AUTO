@@ -367,6 +367,30 @@
         return 'ws_veloce';
     };
 
+    // Identifica se o usuário logado é Registrador Técnico (Acesso operacional total, sem acesso a financeiro)
+    WorkshopView.isRegistrarUser = function() {
+        let savedUser = null;
+        try {
+            if (typeof localStorage !== 'undefined') {
+                const raw = localStorage.getItem('dna_logged_user');
+                if (raw) savedUser = JSON.parse(raw);
+            }
+        } catch (_) {}
+        const logged = (typeof this.getLoggedWorkshopUser === 'function') ? this.getLoggedWorkshopUser() : {};
+        const u = savedUser || logged || {};
+        return Boolean(
+            u.is_registrar === true ||
+            u.role_code === 'WORKSHOP_STAFF' ||
+            u.role_id === 'role_workshop_staff' ||
+            (u.position_title && String(u.position_title).toLowerCase().includes('registrador')) ||
+            (u.workshop && (u.workshop.is_registrar === true || (u.workshop.position_title && String(u.workshop.position_title).toLowerCase().includes('registrador'))))
+        );
+    };
+
+    WorkshopView.handleRegistrarFinanceClick = function() {
+        this.showToast('🔒 Acesso Restrito ao Gestor:\nA área financeira e de faturamento da oficina é exclusiva para o administrador. Seu perfil de registrador tem acesso operacional total para cadastrar veículos, lançar serviços, fotos, peças e revisões.', 'warning', 6500);
+    };
+
     WorkshopView._menuSummaryCache = {
         monthly_billing: {
             cars_registered_month: 0,
@@ -985,6 +1009,12 @@
 
     // Alternar de Seção no Modo Mobile
     WorkshopView.switchMobileSection = function(sectionId) {
+        // Bloqueio estrito de acesso financeiro/faturamento para Registradores
+        if ((sectionId === 'financeiro' || sectionId === 'relatorios') && typeof this.isRegistrarUser === 'function' && this.isRegistrarUser()) {
+            this.handleRegistrarFinanceClick();
+            return;
+        }
+
         this.currentSection = sectionId;
         const viewport = document.getElementById('ws-mobile-active-viewport');
         const shell = document.getElementById('dna-mobile-shell');
@@ -1020,6 +1050,35 @@
     // TELA 3: DASHBOARD DA OFICINA (SOMENTE OS 6 CARDS ESSENCIAIS)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileDashboardView = function() {
+        const isRegistrar = typeof this.isRegistrarUser === 'function' && this.isRegistrarUser();
+
+        // Card 5: Financeiro (Acesso total para gestores, Bloqueado com Cadeado para Registradores)
+        const financeCardHtml = isRegistrar ? `
+            <!-- Card 5: Financeiro (BLOQUEADO PARA REGISTRADOR) -->
+            <div class="ws-model-dash-card" onclick="WorkshopView.handleRegistrarFinanceClick()" style="opacity:0.78; border:1px solid rgba(239,68,68,0.4); background:linear-gradient(145deg, rgba(239,68,68,0.08), rgba(15,23,42,0.96));">
+                <div class="ws-model-card-top">
+                    <div class="ws-model-card-icon-box" style="background:rgba(239,68,68,0.18); border:1px solid rgba(239,68,68,0.45); font-size:18px;">🔒</div>
+                    <span style="font-size:10px; font-weight:800; color:#FCA5A5; background:rgba(239,68,68,0.18); padding:3px 8px; border-radius:6px; border:1px solid rgba(239,68,68,0.35);">Restrito</span>
+                </div>
+                <div class="ws-model-card-content">
+                    <h3 style="color:#CBD5E1;">Financeiro</h3>
+                    <p style="color:#F87171; font-weight:700;">Acesso restrito ao gestor</p>
+                </div>
+            </div>
+        ` : `
+            <!-- Card 5: Financeiro -->
+            <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('financeiro')">
+                <div class="ws-model-card-top">
+                    <div class="ws-model-card-icon-box">💵</div>
+                    <span class="ws-model-card-arrow">›</span>
+                </div>
+                <div class="ws-model-card-content">
+                    <h3>Financeiro</h3>
+                    <p>Receitas, despesas e faturamento</p>
+                </div>
+            </div>
+        `;
+
         return `
             <div class="ws-model-dashboard-grid">
                 <!-- Card 1: Cadastrar Veículo -->
@@ -1070,17 +1129,7 @@
                     </div>
                 </div>
 
-                <!-- Card 5: Financeiro -->
-                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('financeiro')">
-                    <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box">💵</div>
-                        <span class="ws-model-card-arrow">›</span>
-                    </div>
-                    <div class="ws-model-card-content">
-                        <h3>Financeiro</h3>
-                        <p>Receitas, despesas e faturamento</p>
-                    </div>
-                </div>
+                ${financeCardHtml}
 
                 <!-- Card 6: Suporte -->
                 <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('suporte')">
@@ -2635,6 +2684,43 @@
         }
     };
 
+    WorkshopView.confirmRegisterVehicleCard = function() {
+        this._isRegisterVehicleConfirmed = true;
+        const card = document.getElementById('mobile-reg-vehicle-card');
+        if (card) {
+            card.classList.remove('ws-vehicle-aura-active');
+            card.classList.add('ws-vehicle-confirmed');
+            if (!card.querySelector('.ws-card-check-corner')) {
+                const corner = document.createElement('div');
+                corner.className = 'ws-card-check-corner';
+                corner.innerHTML = '<span class="check-icon">✓</span> <span>Confirmado</span>';
+                if (typeof card.prepend === 'function') {
+                    card.prepend(corner);
+                } else if (card.firstChild) {
+                    card.insertBefore(corner, card.firstChild);
+                } else {
+                    card.appendChild(corner);
+                }
+            }
+            const prompt = card.querySelector('.ws-card-touch-prompt');
+            if (prompt) {
+                prompt.style.background = 'rgba(16,185,129,0.18)';
+                prompt.style.borderColor = 'rgba(16,185,129,0.4)';
+                prompt.style.color = '#34D399';
+                prompt.innerHTML = '✓ Veículo confirmado. Preencha os dados do proprietário abaixo ⬇';
+            }
+        }
+        if (typeof this.showToast === 'function') {
+            this.showToast('✓ Veículo confirmado! Preencha os dados do proprietário abaixo.', 'success', 2500);
+        }
+        setTimeout(() => {
+            const ownerSec = document.getElementById('mobile-reg-owner-section');
+            if (ownerSec && typeof ownerSec.scrollIntoView === 'function') {
+                ownerSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 150);
+    };
+
     WorkshopView.renderMobileClientRegisterView = function() {
         const plate = this.mobileActivePlate || '';
         const v = plate ? (this.findVehicleByPlate(plate) || {
@@ -2644,13 +2730,12 @@
             year: '',
             color: '',
             fuel_type: '',
-            fipe_value: '',
-            client_name: '',
-            client_phone: '',
-            client_email: ''
-        }) : { brand: '', model: '', license_plate: '', year: '', color: '', fuel_type: '', fipe_value: '', client_name: '', client_phone: '', client_email: '' };
+            fipe_value: ''
+        }) : { brand: '', model: '', license_plate: '', year: '', color: '', fuel_type: '', fipe_value: '' };
 
-        const hasVehicleData = Boolean(v && (v.brand || v.model));
+        const hasVehicleData = Boolean(v && (v.brand || v.model || v.license_plate));
+        const isConfirmed = this._isRegisterVehicleConfirmed === true;
+        const auraClass = isConfirmed ? 'ws-vehicle-confirmed' : (hasVehicleData ? 'ws-vehicle-aura-active' : '');
 
         return `
             <div class="dna-mobile-subpage">
@@ -2682,35 +2767,60 @@
                         <span style="font-size:11.5px; color:var(--dna-ws-text-dim);">Digite os 7 dígitos da placa para puxar automaticamente os dados do carro.</span>
                     </div>
 
-                    <!-- CARD DE DADOS DO CARRO PUXADOS PELO SISTEMA -->
-                    <div class="dna-vehicle-preview-card" id="mobile-reg-vehicle-card" style="flex-direction:column; align-items:stretch; gap:10px; border:1px solid ${hasVehicleData ? 'rgba(16,185,129,0.45)' : 'rgba(0,102,255,0.28)'};">
+                    <!-- CARD DE DADOS DO CARRO PUXADOS PELO SISTEMA COM AURA E CHECK VERDE -->
+                    <div 
+                        class="dna-vehicle-preview-card ${auraClass}" 
+                        id="mobile-reg-vehicle-card" 
+                        onclick="WorkshopView.confirmRegisterVehicleCard()"
+                        style="position:relative; cursor:pointer; flex-direction:column; align-items:stretch; gap:10px; overflow:hidden;"
+                    >
+                        ${isConfirmed ? `
+                            <div class="ws-card-check-corner">
+                                <span class="check-icon">✓</span> <span>Confirmado</span>
+                            </div>
+                        ` : ''}
+
                         <div style="display:flex; align-items:center; gap:12px;">
                             <div class="dna-vehicle-preview-thumb" style="flex-shrink:0;">🚗</div>
                             <div class="dna-vehicle-preview-info" style="flex:1;">
                                 <div class="dna-vehicle-preview-title" id="mobile-reg-veh-model">${hasVehicleData ? `${v.brand || ''} ${v.model || ''}`.trim() : 'Aguardando consulta da placa...'}</div>
-                                <div class="dna-vehicle-preview-meta" id="mobile-reg-veh-meta">${v.license_plate ? `${v.license_plate} • ${v.year || '2022'} • ${v.color || 'Prata'}` : 'Marca, modelo, ano, cor e Tabela FIPE aparecerão aqui'}</div>
-                                <div class="dna-vehicle-preview-owner" id="mobile-reg-veh-owner" style="color:#10B981; font-weight:700;">${v.fipe_value ? `Tabela FIPE: ${v.fipe_value}` : 'Passaporte Digital DNA AUTO pronto para ativação'}</div>
+                                <div class="dna-vehicle-preview-meta" id="mobile-reg-veh-meta">${v.license_plate ? `${v.license_plate} • ${v.year || '2022'} • ${v.color || 'Prata'}${v.fuel_type ? ' • ' + v.fuel_type : ''}` : 'Marca, modelo, ano, cor e Tabela FIPE aparecerão aqui'}</div>
+                                <div class="dna-vehicle-preview-owner" id="mobile-reg-veh-owner" style="color:#10B981; font-weight:700;">${v.fipe_value ? `Tabela FIPE: ${v.fipe_value}` : (hasVehicleData ? `✓ Veículo identificado para a placa ${plate}` : 'Passaporte Digital DNA AUTO pronto para ativação')}</div>
                             </div>
                         </div>
+
+                        ${isConfirmed ? `
+                            <div class="ws-card-touch-prompt" style="background:rgba(16,185,129,0.18); border-color:rgba(16,185,129,0.4); color:#34D399;">
+                                ✓ Veículo confirmado. Preencha os dados do proprietário abaixo ⬇
+                            </div>
+                        ` : (hasVehicleData ? `
+                            <div class="ws-card-touch-prompt">
+                                👆 Toque no card para confirmar este veículo
+                            </div>
+                        ` : `
+                            <div class="ws-card-touch-prompt" style="background:rgba(0,102,255,0.1); border-color:rgba(0,102,255,0.3); color:#94A3B8;">
+                                👆 Digite a placa de 7 caracteres para carregar o veículo
+                            </div>
+                        `)}
                     </div>
 
-                    <!-- ETAPA 2: DADOS DO DONO DO CARRO (MAIS ABAIXO) -->
-                    <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:14px; display:flex; flex-direction:column; gap:12px;">
+                    <!-- ETAPA 2: DADOS DO DONO DO CARRO (MAIS ABAIXO - SEMPRE EM BRANCO) -->
+                    <div id="mobile-reg-owner-section" style="border-top:1px solid rgba(255,255,255,0.08); padding-top:14px; display:flex; flex-direction:column; gap:12px;">
                         <span class="dna-mobile-section-label">Dados do Dono do Carro</span>
 
                         <div class="dna-input-group">
                             <label class="dna-input-label">Nome completo do proprietário *</label>
-                            <input type="text" id="mobile-reg-owner-name" class="form-control" placeholder="Ex: João da Silva" value="${v.client_name && v.client_name !== 'Cliente da Oficina' ? v.client_name : ''}" style="height:48px; padding:0 14px; font-weight:700;" />
+                            <input type="text" id="mobile-reg-owner-name" class="form-control" placeholder="Ex: Carlos Silva" value="" style="height:48px; padding:0 14px; font-weight:700;" />
                         </div>
 
                         <div class="dna-input-group">
                             <label class="dna-input-label">E-mail do proprietário *</label>
-                            <input type="email" id="mobile-reg-owner-email" class="form-control" placeholder="Ex: cliente@email.com" value="${v.client_email || ''}" style="height:48px; padding:0 14px; font-weight:700;" />
+                            <input type="email" id="mobile-reg-owner-email" class="form-control" placeholder="Ex: carlos@email.com" value="" style="height:48px; padding:0 14px; font-weight:700;" />
                         </div>
 
                         <div class="dna-input-group">
                             <label class="dna-input-label">WhatsApp do proprietário *</label>
-                            <input type="tel" id="mobile-reg-owner-wpp" class="form-control" placeholder="(11) 99999-9999" value="${v.client_phone && v.client_phone !== '(11) 99999-9999' ? v.client_phone : ''}" oninput="WorkshopView.maskPhoneInput(this)" style="height:48px; padding:0 14px; font-weight:700;" />
+                            <input type="tel" id="mobile-reg-owner-wpp" class="form-control" placeholder="(11) 99999-9999" value="" oninput="WorkshopView.maskPhoneInput(this)" style="height:48px; padding:0 14px; font-weight:700;" />
                         </div>
 
                         <div class="dna-input-group">
@@ -2752,6 +2862,7 @@
         }
 
         this.mobileActivePlate = plate;
+        this._isRegisterVehicleConfirmed = false;
         const modelEl = document.getElementById('mobile-reg-veh-model');
         const metaEl = document.getElementById('mobile-reg-veh-meta');
         const ownerEl = document.getElementById('mobile-reg-veh-owner');
@@ -2795,99 +2906,165 @@
             if (modelEl) modelEl.innerText = `${veh.brand || ''} ${veh.model || 'Veículo Localizado'}`.trim();
             if (metaEl) metaEl.innerText = `${plate} • ${veh.year || '2022'} • ${veh.color || 'Prata'}${veh.fuel_type ? ' • ' + veh.fuel_type : ''}`;
             if (ownerEl) ownerEl.innerText = veh.fipe_value ? `Tabela FIPE: ${veh.fipe_value}` : `✓ Dados do veículo carregados para a placa ${plate}`;
-            if (cardEl) cardEl.style.borderColor = 'rgba(16,185,129,0.55)';
 
+            // Ativa aura animada e banner de confirmação por toque
+            if (cardEl) {
+                cardEl.classList.remove('ws-vehicle-confirmed');
+                cardEl.classList.add('ws-vehicle-aura-active');
+                const existingCorner = cardEl.querySelector('.ws-card-check-corner');
+                if (existingCorner) existingCorner.remove();
+                let prompt = cardEl.querySelector('.ws-card-touch-prompt');
+                if (prompt) {
+                    prompt.style.background = '';
+                    prompt.style.borderColor = '';
+                    prompt.style.color = '';
+                    prompt.innerHTML = '👆 Toque no card para confirmar este veículo';
+                }
+            }
+
+            // Garante que os campos do proprietário fiquem SEMPRE EM BRANCO para o novo cadastro (sem Leo Souza)
             const nameInp = document.getElementById('mobile-reg-owner-name');
             const wppInp = document.getElementById('mobile-reg-owner-wpp');
             const emailInp = document.getElementById('mobile-reg-owner-email');
-            if (nameInp && !nameInp.value && veh.client_name && veh.client_name !== 'Cliente da Oficina') {
-                nameInp.value = veh.client_name;
-            }
-            if (wppInp && !wppInp.value && veh.client_phone && veh.client_phone !== '(11) 99999-9999') {
-                wppInp.value = veh.client_phone;
-            }
-            if (emailInp && !emailInp.value && veh.client_email) {
-                emailInp.value = veh.client_email;
-            }
+            if (nameInp) nameInp.value = '';
+            if (wppInp) wppInp.value = '';
+            if (emailInp) emailInp.value = '';
         } else {
             if (modelEl) modelEl.innerText = `Veículo Placa ${plate}`;
             if (metaEl) metaEl.innerText = `${plate} • Pronto para vínculo com o proprietário`;
             if (ownerEl) ownerEl.innerText = 'Preencha os dados do proprietário abaixo para concluir';
+            if (cardEl) {
+                cardEl.classList.remove('ws-vehicle-confirmed');
+                cardEl.classList.add('ws-vehicle-aura-active');
+                let prompt = cardEl.querySelector('.ws-card-touch-prompt');
+                if (prompt) prompt.innerHTML = '👆 Toque no card para confirmar este veículo';
+            }
         }
     };
 
     WorkshopView.handleMobileSubmitClientRegister = async function() {
-        const plate = (document.getElementById('mobile-reg-plate-input')?.value || this.mobileActivePlate || 'ABC1D23').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-        const name = (document.getElementById('mobile-reg-owner-name')?.value || '').trim() || 'Cliente';
-        const phone = (document.getElementById('mobile-reg-owner-wpp')?.value || '').trim() || '(11) 99999-9999';
-        const email = (document.getElementById('mobile-reg-owner-email')?.value || '').trim();
+        const plate = (document.getElementById('mobile-reg-plate-input')?.value || this.mobileActivePlate || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const name = (document.getElementById('mobile-reg-owner-name')?.value || '').trim();
+        const phone = (document.getElementById('mobile-reg-owner-wpp')?.value || '').trim();
+        const email = (document.getElementById('mobile-reg-owner-email')?.value || '').trim().toLowerCase();
         const password = (document.getElementById('mobile-reg-owner-pass')?.value || '').trim() || '123456';
+
+        if (!plate || plate.length < 7) {
+            this.showToast('Digite a placa completa do veículo (7 caracteres).', 'warning');
+            document.getElementById('mobile-reg-plate-input')?.focus();
+            return;
+        }
+
+        if (!this._isRegisterVehicleConfirmed) {
+            this.showToast('👆 Toque no card do veículo acima para confirmar antes de cadastrar!', 'warning');
+            const regCard = document.getElementById('mobile-reg-vehicle-card');
+            if (regCard && typeof regCard.scrollIntoView === 'function') {
+                regCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+
+        if (!name) {
+            this.showToast('Informe o nome completo do proprietário.', 'warning');
+            document.getElementById('mobile-reg-owner-name')?.focus();
+            return;
+        }
+
+        if (!email || !email.includes('@')) {
+            this.showToast('Informe um e-mail válido para o primeiro acesso do cliente.', 'warning');
+            document.getElementById('mobile-reg-owner-email')?.focus();
+            return;
+        }
+
+        if (!phone || phone.length < 10) {
+            this.showToast('Informe o WhatsApp com DDD do proprietário.', 'warning');
+            document.getElementById('mobile-reg-owner-wpp')?.focus();
+            return;
+        }
 
         const existingVeh = this._lastLookedUpVehicle || this.findVehicleByPlate(plate) || {};
 
         try {
-            // Registra cliente e ativa veículo no backend DNA AUTO com senha inicial 123456 e flag de 1º acesso
-            if (typeof API !== 'undefined') {
-                if (API.registerClient && email) {
-                    await API.registerClient({
-                        name,
-                        whatsapp: phone,
-                        phone,
-                        email,
-                        password,
-                        must_change_password: true,
-                        registered_by_workshop: true,
-                        license_plate: plate,
-                        plate: plate,
-                        brand: existingVeh.brand || undefined,
-                        model: existingVeh.model || undefined,
-                        year: existingVeh.year || undefined,
-                        color: existingVeh.color || undefined,
-                        fuel_type: existingVeh.fuel_type || undefined
-                    }).catch(() => {});
+            const regPayload = {
+                name,
+                whatsapp: phone,
+                phone,
+                email,
+                password,
+                must_change_password: true,
+                registered_by_workshop: true,
+                license_plate: plate,
+                plate: plate,
+                brand: existingVeh.brand || undefined,
+                model: existingVeh.model || undefined,
+                year: existingVeh.year || undefined,
+                color: existingVeh.color || undefined,
+                fuel_type: existingVeh.fuel_type || undefined
+            };
+
+            let regResult = null;
+            if (typeof API !== 'undefined' && API.registerClient) {
+                regResult = await API.registerClient(regPayload);
+            } else {
+                const resp = await fetch('/api/v1/auth/register-client', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(regPayload)
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    throw new Error(data.error || 'Erro ao registrar cliente.');
                 }
-                const wsId = this.currentWorkshopId || (typeof localStorage !== 'undefined' ? localStorage.getItem('dna_workshop_id') : null) || 'ws_default';
-                if (API.registerClientActivation) {
-                    await API.registerClientActivation(wsId, {
-                        license_plate: plate,
-                        client_name: name,
-                        client_phone: phone,
-                        whatsapp: phone,
-                        email,
-                        password,
-                        brand: existingVeh.brand || undefined,
-                        model: existingVeh.model || undefined
-                    }).catch(() => {});
-                }
+                regResult = data;
             }
-        } catch (_) {}
 
-        const successMsg = `🎉 Veículo ${plate} e proprietário ${name} cadastrados com sucesso!\nO cliente já pode acessar o App DNA AUTO com o e-mail ${email || 'cadastrado'} e a senha inicial 123456 (será solicitada a troca no 1º acesso).`;
-        if (typeof this.showToast === 'function') {
-            this.showToast(successMsg, 'success', 5500);
-        } else {
-            alert(successMsg);
+            // Sincroniza ativação na oficina
+            const wsId = this.getEffectiveWorkshopId ? this.getEffectiveWorkshopId() : 'ws_veloce';
+            if (typeof API !== 'undefined' && API.registerClientActivation) {
+                await API.registerClientActivation(wsId, {
+                    license_plate: plate,
+                    client_name: name,
+                    client_phone: phone,
+                    whatsapp: phone,
+                    email,
+                    password,
+                    brand: existingVeh.brand || undefined,
+                    model: existingVeh.model || undefined
+                }).catch(() => {});
+            }
+
+            const successMsg = `🎉 Veículo ${plate} e cliente ${name} cadastrados com sucesso!\nO cliente já pode acessar o App DNA AUTO com o e-mail ${email} e a senha inicial 123456 (com solicitação para cadastrar sua nova senha pessoal).`;
+            this.showToast(successMsg, 'success', 6000);
+
+            const newVehObj = {
+                license_plate: plate,
+                plate: plate,
+                client_name: name,
+                client_phone: phone,
+                client_email: email,
+                model: existingVeh?.model || 'Veículo Cadastrado',
+                brand: existingVeh?.brand || '',
+                year: existingVeh?.year || '2022',
+                color: existingVeh?.color || 'Prata',
+                mileage: existingVeh?.mileage || 0
+            };
+            this.selectedMobileVehicle = newVehObj;
+            this.mobileActivePlate = plate;
+            this._isLaunchVehicleConfirmed = true; // Já vem confirmado para lançar serviços
+
+            if (!Array.isArray(this.vehiclesList)) this.vehiclesList = [];
+            const idx = this.vehiclesList.findIndex(x => (x.license_plate || '').toUpperCase() === plate);
+            if (idx >= 0) this.vehiclesList[idx] = { ...this.vehiclesList[idx], ...newVehObj };
+            else this.vehiclesList.unshift(newVehObj);
+
+            setTimeout(() => {
+                this.switchMobileSection('lancar-servicos');
+            }, 600);
+
+        } catch (err) {
+            console.error('Falha ao cadastrar cliente e veículo:', err);
+            this.showToast(err.message || 'Falha ao cadastrar veículo e cliente.', 'error', 5500);
         }
-
-        const newVehObj = {
-            license_plate: plate,
-            plate: plate,
-            client_name: name,
-            client_phone: phone,
-            client_email: email,
-            model: existingVeh?.model || 'Veículo Cadastrado',
-            brand: existingVeh?.brand || '',
-            year: existingVeh?.year || '2022',
-            color: existingVeh?.color || 'Prata',
-            mileage: existingVeh?.mileage || 0
-        };
-        this.selectedMobileVehicle = newVehObj;
-        if (!Array.isArray(this.vehiclesList)) this.vehiclesList = [];
-        const idx = this.vehiclesList.findIndex(x => (x.license_plate || '').toUpperCase() === plate);
-        if (idx >= 0) this.vehiclesList[idx] = { ...this.vehiclesList[idx], ...newVehObj };
-        else this.vehiclesList.unshift(newVehObj);
-
-        this.switchMobileSection('lancar-servicos');
     };
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -3028,24 +3205,83 @@
     };
 
     // Renderiza o badge de identificação do veículo encontrado
+    WorkshopView.confirmLaunchVehicleCard = function() {
+        this._isLaunchVehicleConfirmed = true;
+        const card = document.getElementById('mobile-launch-vehicle-card');
+        if (card) {
+            card.classList.remove('ws-vehicle-aura-active');
+            card.classList.add('ws-vehicle-confirmed');
+            if (!card.querySelector('.ws-card-check-corner')) {
+                const corner = document.createElement('div');
+                corner.className = 'ws-card-check-corner';
+                corner.innerHTML = '<span class="check-icon">✓</span> <span>Confirmado</span>';
+                if (typeof card.prepend === 'function') {
+                    card.prepend(corner);
+                } else if (card.firstChild) {
+                    card.insertBefore(corner, card.firstChild);
+                } else {
+                    card.appendChild(corner);
+                }
+            }
+            const prompt = card.querySelector('.ws-card-touch-prompt');
+            if (prompt) {
+                prompt.style.background = 'rgba(16,185,129,0.18)';
+                prompt.style.borderColor = 'rgba(16,185,129,0.4)';
+                prompt.style.color = '#34D399';
+                prompt.innerHTML = '✓ Veículo confirmado. Escolha o serviço no carrossel abaixo ⬇';
+            }
+        }
+        if (typeof this.showToast === 'function') {
+            this.showToast('✓ Veículo confirmado! Deslize o carrossel abaixo para selecionar o serviço.', 'success', 2500);
+        }
+        setTimeout(() => {
+            const carousel = document.getElementById('dna-vertical-carousel');
+            if (carousel && typeof carousel.scrollIntoView === 'function') {
+                carousel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 150);
+    };
+
     WorkshopView.renderLaunchVehicleBadgeHtml = function(v) {
+        const isConfirmed = this._isLaunchVehicleConfirmed === true;
+        const auraClass = isConfirmed ? 'ws-vehicle-confirmed' : 'ws-vehicle-aura-active';
         return `
-            <div class="dna-vehicle-preview-card" style="padding:10px 14px; background:linear-gradient(145deg, rgba(14,24,42,0.95), rgba(8,14,25,0.98)); border:1.5px solid rgba(0,212,255,0.35); border-radius:14px; display:flex; align-items:center; gap:12px; box-shadow:0 4px 16px rgba(0,212,255,0.12);">
-                <div style="width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, #0052cc, #00d4ff); display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">🚗</div>
-                <div style="flex:1; min-width:0;">
-                    <div style="font-size:14px; font-weight:800; color:#FFFFFF; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                        ${v.brand || ''} ${v.model || 'Veículo Localizado'}
+            <div 
+                class="dna-vehicle-preview-card ${auraClass}" 
+                id="mobile-launch-vehicle-card" 
+                onclick="WorkshopView.confirmLaunchVehicleCard()"
+                style="position:relative; cursor:pointer; padding:12px 14px; background:linear-gradient(145deg, rgba(14,24,42,0.95), rgba(8,14,25,0.98)); border-radius:14px; display:flex; flex-direction:column; gap:8px; box-shadow:0 4px 16px rgba(0,212,255,0.12); overflow:hidden;"
+            >
+                ${isConfirmed ? `
+                    <div class="ws-card-check-corner">
+                        <span class="check-icon">✓</span> <span>Confirmado</span>
                     </div>
-                    <div style="font-size:11.5px; color:#00D4FF; font-weight:700;">
-                        Placa: ${v.license_plate} • Odômetro: ${(v.mileage || 10000).toLocaleString('pt-BR')} km
-                    </div>
-                    <div style="font-size:11px; color:#94A3B8;">
-                        Cliente: ${v.client_name || 'Cliente da Oficina'}
+                ` : ''}
+
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="width:42px; height:42px; border-radius:10px; background:linear-gradient(135deg, #0052cc, #00d4ff); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">🚗</div>
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-size:15px; font-weight:800; color:#FFFFFF; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                            ${v.brand || ''} ${v.model || 'Veículo Localizado'}
+                        </div>
+                        <div style="font-size:12px; color:#00D4FF; font-weight:700;">
+                            Placa: ${v.license_plate} • Odômetro: ${(v.mileage || 10000).toLocaleString('pt-BR')} km
+                        </div>
+                        <div style="font-size:11px; color:#94A3B8;">
+                            ${v.year ? v.year + ' • ' : ''}${v.color || 'Prata'}${v.fuel_type ? ' • ' + v.fuel_type : ''}
+                        </div>
                     </div>
                 </div>
-                <span style="font-size:10.5px; font-weight:800; color:#10B981; background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.3); padding:3px 8px; border-radius:6px; white-space:nowrap;">
-                    ✓ Identificado
-                </span>
+
+                ${isConfirmed ? `
+                    <div class="ws-card-touch-prompt" style="background:rgba(16,185,129,0.18); border-color:rgba(16,185,129,0.4); color:#34D399;">
+                        ✓ Veículo confirmado. Escolha o serviço no carrossel abaixo ⬇
+                    </div>
+                ` : `
+                    <div class="ws-card-touch-prompt">
+                        👆 Toque neste card para confirmar que o serviço será lançado neste veículo
+                    </div>
+                `}
             </div>
         `;
     };
@@ -3076,6 +3312,7 @@
 
         const badgeContainer = document.getElementById('mobile-launch-vehicle-badge');
         if (clean.length < 7) {
+            this._isLaunchVehicleConfirmed = false;
             if (badgeContainer) {
                 badgeContainer.innerHTML = `
                     <div class="dna-launch-plate-status waiting">
@@ -3086,6 +3323,7 @@
             return;
         }
 
+        this._isLaunchVehicleConfirmed = false;
         if (badgeContainer) {
             badgeContainer.innerHTML = `
                 <div class="dna-launch-plate-status loading">
@@ -3102,7 +3340,6 @@
                 badgeContainer.innerHTML = this.renderLaunchVehicleBadgeHtml(vehicle);
             }
         } else {
-            // Cria registro dinâmico imediato para a oficina poder lançar o serviço sem travar
             const newVeh = {
                 id: 'veh_' + clean,
                 license_plate: clean,
@@ -3233,6 +3470,20 @@
         cards.forEach((card, index) => {
             card.onclick = () => {
                 if (index === current) {
+                    if (!WorkshopView._isLaunchVehicleConfirmed) {
+                        const vCard = document.getElementById('mobile-launch-vehicle-card') || document.getElementById('mobile-launch-vehicle-badge');
+                        if (!vCard && WorkshopView.selectedMobileVehicle) {
+                            WorkshopView._isLaunchVehicleConfirmed = true;
+                        } else {
+                            if (typeof WorkshopView.showToast === 'function') {
+                                WorkshopView.showToast('👆 Toque no card do veículo acima para confirmar antes de selecionar o serviço!', 'warning');
+                            }
+                            if (vCard && typeof vCard.scrollIntoView === 'function') {
+                                vCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                            return;
+                        }
+                    }
                     const serviceId = card.getAttribute("data-service-id");
                     WorkshopView.handleMobileSelectServiceToDetail(serviceId);
                 } else {
@@ -3277,6 +3528,20 @@
 
     // Abre o serviço selecionado no carrossel
     WorkshopView.openCurrentCarouselService = function() {
+        if (!this._isLaunchVehicleConfirmed) {
+            const vCard = document.getElementById('mobile-launch-vehicle-card') || document.getElementById('mobile-launch-vehicle-badge');
+            if (!vCard && this.selectedMobileVehicle) {
+                this._isLaunchVehicleConfirmed = true;
+            } else {
+                if (typeof this.showToast === 'function') {
+                    this.showToast('👆 Toque no card do veículo acima para confirmar antes de selecionar o serviço!', 'warning');
+                }
+                if (vCard && typeof vCard.scrollIntoView === 'function') {
+                    vCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+        }
         const current = this._carouselCurrentIndex || 0;
         const s = this.launchCarouselServices[current] || this.launchCarouselServices[0];
         this.handleMobileSelectServiceToDetail(s.id);
@@ -3353,6 +3618,21 @@
     };
 
     WorkshopView.handleMobileSelectServiceToDetail = function(serviceId) {
+        if (!this._isLaunchVehicleConfirmed) {
+            const vCard = document.getElementById('mobile-launch-vehicle-card') || document.getElementById('mobile-launch-vehicle-badge');
+            if (!vCard && this.selectedMobileVehicle) {
+                this._isLaunchVehicleConfirmed = true;
+            } else {
+                if (typeof this.showToast === 'function') {
+                    this.showToast('👆 Toque no card do veículo acima para confirmar antes de selecionar o serviço!', 'warning');
+                }
+                if (vCard && typeof vCard.scrollIntoView === 'function') {
+                    vCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                return;
+            }
+        }
+
         // Encontra o serviço no catálogo geral ou de carrossel
         const s = this.monitoredServicesCatalog.find(item => item.id === serviceId) || 
                   this.launchCarouselServices.find(item => item.id === serviceId) || 
