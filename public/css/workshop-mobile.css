@@ -5276,6 +5276,86 @@ input, select, textarea {
     font-weight: 900;
 }
 
+/* ============================================================
+   ANTI-OVERFLOW E INTEGRAÇÃO DARK PARA CARDS E INPUTS MOBILE
+   ============================================================ */
+.dna-mobile-subpage,
+.dna-mobile-subpage-body,
+.dna-input-group,
+.ws-model-dash-card,
+.ws-model-service-detail-card,
+.dna-mobile-service-detail-card,
+.dna-vehicle-preview-card {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.dna-input-group input,
+.dna-input-group select,
+.dna-input-group textarea,
+#mobile-srv-last-date,
+#mobile-srv-last-km,
+#mobile-srv-next-date,
+#mobile-srv-next-km,
+#mobile-srv-labor-cost,
+#mobile-srv-total-cost,
+#mobile-srv-interval-km,
+#mobile-srv-interval-months {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    background: rgba(11, 22, 44, 0.95) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(0, 102, 255, 0.4) !important;
+    border-radius: 8px !important;
+}
+
+#mobile-srv-last-date::-webkit-calendar-picker-indicator,
+#mobile-srv-next-date::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+/* Modal de Desbloqueio de Acesso Financeiro por Senha */
+.ws-unlock-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.ws-unlock-modal-card {
+    background: linear-gradient(145deg, #0d1b33, #070e1c);
+    border: 1.5px solid rgba(0, 102, 255, 0.5);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 102, 255, 0.25);
+    border-radius: 16px;
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 380px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    animation: wsModalPopIn 0.22s ease-out;
+}
+
+@keyframes wsModalPopIn {
+    from { opacity: 0; transform: scale(0.92) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
 
 
 

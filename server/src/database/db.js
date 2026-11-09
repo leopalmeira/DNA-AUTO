@@ -412,6 +412,21 @@ try {
         INSERT OR IGNORE INTO roles (id, code, name, description)
         VALUES ('role_workshop_staff', 'WORKSHOP_STAFF', 'Registrador da Oficina', 'Registrador técnico de fotos de peças e serviços executados na oficina');
 
+        CREATE TABLE IF NOT EXISTS workshop_attendance_fees (
+            id TEXT PRIMARY KEY,
+            workshop_id TEXT NOT NULL,
+            appointment_id TEXT,
+            service_record_id TEXT,
+            vehicle_id TEXT,
+            amount_cents INTEGER NOT NULL DEFAULT 690,
+            status TEXT NOT NULL DEFAULT 'CONFIRMED',
+            idempotency_key TEXT UNIQUE,
+            notes TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX IF NOT EXISTS idx_att_fees_ws ON workshop_attendance_fees(workshop_id);
+        CREATE INDEX IF NOT EXISTS idx_att_fees_idem ON workshop_attendance_fees(idempotency_key);
+
         INSERT OR IGNORE INTO pricing_plans (id, code, title, description, price_cents, workshop_price_cents, discount_percentage, is_courtesy, commission_percentage, is_active)
         VALUES ('plan_rep_program', 'PLAN_REP_PROGRAM', 'Passaporte Digital DNA AUTO — Programa Representantes (R$ 49,90)', 'Cadastro R$ 49,90 com 50% Oficina (R$ 24,95), 50% Plataforma (R$ 24,95) e comissão comercial R$ 5,90 custeada pela plataforma', 4990, 2495, 0, 0, 50, 1);
     `);

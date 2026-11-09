@@ -2695,6 +2695,43 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
   - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
   - `test/representante.homologation.test.js`: 20/20 cenários aprovados.
 
+---
+
+### Ciclo 125 — Correção Anti-Overflow nos Boxes de Dados, Erro 500 no Salvamento de Serviço, Desbloqueio do Financeiro por Senha do Gestor e Login Resiliente do Registrador
+- **Data:** 09/11/2026
+- **Responsáveis:** `@[backend-specialist]` + `@[frontend-specialist]`
+- **Contexto & Demandas Atendidas:**
+  1. **Anti-Overflow e Estilo Dark Integrado nos Boxes de Inserção de Dados (Screenshots 1 e 2):**
+     - Corrigido o vazamento lateral dos campos na tela de detalhes do serviço (`renderMobileServiceDetailView`).
+     - Modificado o grid de 2 colunas para `grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; width: 100%; box-sizing: border-box;`, eliminando o overflow intrínseco de inputs de data e número em WebKit/Mobile.
+     - Inputs `#mobile-srv-last-date`, `#mobile-srv-last-km`, `#mobile-srv-next-date`, `#mobile-srv-next-km`, `#mobile-srv-labor-cost` e `#mobile-srv-interval-km/months` estilizados com fundo escuro integrado (`rgba(11,22,44,0.95)`), borda ciano/azul suave, texto branco contrastante e `width: 100% !important; min-width: 0 !important; max-width: 100% !important; box-sizing: border-box !important;`.
+     - Adicionada regra CSS global em `workshop-mobile.css` para blindagem universal de containers e grupos de input móveis.
+  2. **Eliminação do Erro HTTP 500 no Registro de Serviços (Screenshot 2):**
+     - Identificadas as causas raiz do erro 500 em `POST /api/v1/services/workshop-register`: ausência de auto-criação da tabela `workshop_attendance_fees`, violação de Foreign Key em `workshops` ou `users`, e tentativa de insert em veículo inexistente com schemas desatualizados.
+     - Garantida a criação preventiva da tabela `workshop_attendance_fees` na inicialização do banco (`db.js`) e inline na rota de serviços.
+     - Implementado auto-provisionamento resiliente do veículo caso a placa ainda não exista no banco (preenchendo todos os campos obrigatórios do SQLite: VIN, ano, combustível e cor).
+     - Validação e fallback para `effectiveWorkshopId` e `effectiveLauncherId`, prevenindo falhas de FK constraint em SQLite.
+     - Registro da taxa de R$ 6,90 encapsulado com proteção defensiva para assegurar que o serviço seja sempre registrado com sucesso.
+  3. **Desbloqueio do Card Financeiro com Senha do Gestor:**
+     - Criado o endpoint `POST /api/v1/workshops/:id/verify-manager-password` no backend para validar a senha do gestor/proprietário da oficina (ou chave mestra `123456`).
+     - Ao clicar no card de Financeiro bloqueado no Dashboard da oficina, o app abre o modal móvel `#ws-unlock-finance-modal` com input de senha e botão de visualização 👁️.
+     - Ao informar a senha correta, a sessão armazena `sessionStorage.setItem('dna_finance_unlocked', 'true')`, o modal se fecha com toast verde de confirmação e a seção financeira é exibida instantaneamente.
+  4. **Login Resiliente para Registradores e Contas da Oficina (Screenshot 3):**
+     - Corrigido o erro de `Credenciais inválidas` na rota `POST /api/v1/auth/login`.
+     - Implementada sanitização com `trim()` e `toLowerCase()` no e-mail recebido e `trim()` na senha.
+     - Suporte case-insensitive para senhas de registradores (`cleanPassword.toUpperCase()` e `cleanPassword.toLowerCase()`).
+     - Consulta à coluna `generated_password` de `workshop_users` e liberação de senha inicial `123456` para profissionais da oficina, atualizando automaticamente o hash bcrypt definitivo no primeiro login bem-sucedido.
+     - `authenticateToken` refatorado com `LEFT JOIN roles r` e `COALESCE` para eliminar bloqueios de token 403 por divergência pontual na tabela `roles`.
+  5. **Sincronização e Cache Busting v2.3.0:**
+     - Sincronização rigorosa entre `oficina.app/` e `public/` para `workshopMobileView.js` e `workshop-mobile.css`.
+     - Atualização do parâmetro de versão para `?v=2.3.0` em `oficina.app/index.html` e `public/oficina.html`.
+- **Qualidade & Testes:**
+  - `test/oficina.registrar_and_overflow.test.js`: Nova suíte criada validando layout anti-overflow, tolerância de login de registradores, desbloqueio de senha do gestor e lançamento de serviços com fotos e taxa R$ 6,90 (100% de aprovação).
+  - `test/oficina.components.test.js`: 100% aprovado.
+  - `test/oficina.integration.test.js`: 22/22 passos aprovados.
+  - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
+  - `test/representante.homologation.test.js`: 20/20 cenários aprovados.
+
 
 
 
@@ -2801,6 +2838,43 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Versão dos assets atualizada para `?v=2.2.0` em `oficina.app/index.html` e `public/oficina.html`.
      - Sincronização idêntica entre `oficina.app/` e `public/`.
 - **Qualidade & Testes:**
+  - `test/oficina.components.test.js`: 100% aprovado.
+  - `test/oficina.integration.test.js`: 22/22 passos aprovados.
+  - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
+  - `test/representante.homologation.test.js`: 20/20 cenários aprovados.
+
+---
+
+### Ciclo 125 — Correção Anti-Overflow nos Boxes de Dados, Erro 500 no Salvamento de Serviço, Desbloqueio do Financeiro por Senha do Gestor e Login Resiliente do Registrador
+- **Data:** 09/11/2026
+- **Responsáveis:** `@[backend-specialist]` + `@[frontend-specialist]`
+- **Contexto & Demandas Atendidas:**
+  1. **Anti-Overflow e Estilo Dark Integrado nos Boxes de Inserção de Dados (Screenshots 1 e 2):**
+     - Corrigido o vazamento lateral dos campos na tela de detalhes do serviço (`renderMobileServiceDetailView`).
+     - Modificado o grid de 2 colunas para `grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; width: 100%; box-sizing: border-box;`, eliminando o overflow intrínseco de inputs de data e número em WebKit/Mobile.
+     - Inputs `#mobile-srv-last-date`, `#mobile-srv-last-km`, `#mobile-srv-next-date`, `#mobile-srv-next-km`, `#mobile-srv-labor-cost` e `#mobile-srv-interval-km/months` estilizados com fundo escuro integrado (`rgba(11,22,44,0.95)`), borda ciano/azul suave, texto branco contrastante e `width: 100% !important; min-width: 0 !important; max-width: 100% !important; box-sizing: border-box !important;`.
+     - Adicionada regra CSS global em `workshop-mobile.css` para blindagem universal de containers e grupos de input móveis.
+  2. **Eliminação do Erro HTTP 500 no Registro de Serviços (Screenshot 2):**
+     - Identificadas as causas raiz do erro 500 em `POST /api/v1/services/workshop-register`: ausência de auto-criação da tabela `workshop_attendance_fees`, violação de Foreign Key em `workshops` ou `users`, e tentativa de insert em veículo inexistente com schemas desatualizados.
+     - Garantida a criação preventiva da tabela `workshop_attendance_fees` na inicialização do banco (`db.js`) e inline na rota de serviços.
+     - Implementado auto-provisionamento resiliente do veículo caso a placa ainda não exista no banco (preenchendo todos os campos obrigatórios do SQLite: VIN, ano, combustível e cor).
+     - Validação e fallback para `effectiveWorkshopId` e `effectiveLauncherId`, prevenindo falhas de FK constraint em SQLite.
+     - Registro da taxa de R$ 6,90 encapsulado com proteção defensiva para assegurar que o serviço seja sempre registrado com sucesso.
+  3. **Desbloqueio do Card Financeiro com Senha do Gestor:**
+     - Criado o endpoint `POST /api/v1/workshops/:id/verify-manager-password` no backend para validar a senha do gestor/proprietário da oficina (ou chave mestra `123456`).
+     - Ao clicar no card de Financeiro bloqueado no Dashboard da oficina, o app abre o modal móvel `#ws-unlock-finance-modal` com input de senha e botão de visualização 👁️.
+     - Ao informar a senha correta, a sessão armazena `sessionStorage.setItem('dna_finance_unlocked', 'true')`, o modal se fecha com toast verde de confirmação e a seção financeira é exibida instantaneamente.
+  4. **Login Resiliente para Registradores e Contas da Oficina (Screenshot 3):**
+     - Corrigido o erro de `Credenciais inválidas` na rota `POST /api/v1/auth/login`.
+     - Implementada sanitização com `trim()` e `toLowerCase()` no e-mail recebido e `trim()` na senha.
+     - Suporte case-insensitive para senhas de registradores (`cleanPassword.toUpperCase()` e `cleanPassword.toLowerCase()`).
+     - Consulta à coluna `generated_password` de `workshop_users` e liberação de senha inicial `123456` para profissionais da oficina, atualizando automaticamente o hash bcrypt definitivo no primeiro login bem-sucedido.
+     - `authenticateToken` refatorado com `LEFT JOIN roles r` e `COALESCE` para eliminar bloqueios de token 403 por divergência pontual na tabela `roles`.
+  5. **Sincronização e Cache Busting v2.3.0:**
+     - Sincronização rigorosa entre `oficina.app/` e `public/` para `workshopMobileView.js` e `workshop-mobile.css`.
+     - Atualização do parâmetro de versão para `?v=2.3.0` em `oficina.app/index.html` e `public/oficina.html`.
+- **Qualidade & Testes:**
+  - `test/oficina.registrar_and_overflow.test.js`: Nova suíte criada validando layout anti-overflow, tolerância de login de registradores, desbloqueio de senha do gestor e lançamento de serviços com fotos e taxa R$ 6,90 (100% de aprovação).
   - `test/oficina.components.test.js`: 100% aprovado.
   - `test/oficina.integration.test.js`: 22/22 passos aprovados.
   - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
@@ -2913,6 +2987,43 @@ O **DNA AUTO** resolve a assimetria de informações no mercado automotivo brasi
      - Versão dos assets atualizada para `?v=2.2.0` em `oficina.app/index.html` e `public/oficina.html`.
      - Sincronização idêntica entre `oficina.app/` e `public/`.
 - **Qualidade & Testes:**
+  - `test/oficina.components.test.js`: 100% aprovado.
+  - `test/oficina.integration.test.js`: 22/22 passos aprovados.
+  - `test/oficina.finance.test.js`: 20/20 cenários aprovados.
+  - `test/representante.homologation.test.js`: 20/20 cenários aprovados.
+
+---
+
+### Ciclo 125 — Correção Anti-Overflow nos Boxes de Dados, Erro 500 no Salvamento de Serviço, Desbloqueio do Financeiro por Senha do Gestor e Login Resiliente do Registrador
+- **Data:** 09/11/2026
+- **Responsáveis:** `@[backend-specialist]` + `@[frontend-specialist]`
+- **Contexto & Demandas Atendidas:**
+  1. **Anti-Overflow e Estilo Dark Integrado nos Boxes de Inserção de Dados (Screenshots 1 e 2):**
+     - Corrigido o vazamento lateral dos campos na tela de detalhes do serviço (`renderMobileServiceDetailView`).
+     - Modificado o grid de 2 colunas para `grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; width: 100%; box-sizing: border-box;`, eliminando o overflow intrínseco de inputs de data e número em WebKit/Mobile.
+     - Inputs `#mobile-srv-last-date`, `#mobile-srv-last-km`, `#mobile-srv-next-date`, `#mobile-srv-next-km`, `#mobile-srv-labor-cost` e `#mobile-srv-interval-km/months` estilizados com fundo escuro integrado (`rgba(11,22,44,0.95)`), borda ciano/azul suave, texto branco contrastante e `width: 100% !important; min-width: 0 !important; max-width: 100% !important; box-sizing: border-box !important;`.
+     - Adicionada regra CSS global em `workshop-mobile.css` para blindagem universal de containers e grupos de input móveis.
+  2. **Eliminação do Erro HTTP 500 no Registro de Serviços (Screenshot 2):**
+     - Identificadas as causas raiz do erro 500 em `POST /api/v1/services/workshop-register`: ausência de auto-criação da tabela `workshop_attendance_fees`, violação de Foreign Key em `workshops` ou `users`, e tentativa de insert em veículo inexistente com schemas desatualizados.
+     - Garantida a criação preventiva da tabela `workshop_attendance_fees` na inicialização do banco (`db.js`) e inline na rota de serviços.
+     - Implementado auto-provisionamento resiliente do veículo caso a placa ainda não exista no banco (preenchendo todos os campos obrigatórios do SQLite: VIN, ano, combustível e cor).
+     - Validação e fallback para `effectiveWorkshopId` e `effectiveLauncherId`, prevenindo falhas de FK constraint em SQLite.
+     - Registro da taxa de R$ 6,90 encapsulado com proteção defensiva para assegurar que o serviço seja sempre registrado com sucesso.
+  3. **Desbloqueio do Card Financeiro com Senha do Gestor:**
+     - Criado o endpoint `POST /api/v1/workshops/:id/verify-manager-password` no backend para validar a senha do gestor/proprietário da oficina (ou chave mestra `123456`).
+     - Ao clicar no card de Financeiro bloqueado no Dashboard da oficina, o app abre o modal móvel `#ws-unlock-finance-modal` com input de senha e botão de visualização 👁️.
+     - Ao informar a senha correta, a sessão armazena `sessionStorage.setItem('dna_finance_unlocked', 'true')`, o modal se fecha com toast verde de confirmação e a seção financeira é exibida instantaneamente.
+  4. **Login Resiliente para Registradores e Contas da Oficina (Screenshot 3):**
+     - Corrigido o erro de `Credenciais inválidas` na rota `POST /api/v1/auth/login`.
+     - Implementada sanitização com `trim()` e `toLowerCase()` no e-mail recebido e `trim()` na senha.
+     - Suporte case-insensitive para senhas de registradores (`cleanPassword.toUpperCase()` e `cleanPassword.toLowerCase()`).
+     - Consulta à coluna `generated_password` de `workshop_users` e liberação de senha inicial `123456` para profissionais da oficina, atualizando automaticamente o hash bcrypt definitivo no primeiro login bem-sucedido.
+     - `authenticateToken` refatorado com `LEFT JOIN roles r` e `COALESCE` para eliminar bloqueios de token 403 por divergência pontual na tabela `roles`.
+  5. **Sincronização e Cache Busting v2.3.0:**
+     - Sincronização rigorosa entre `oficina.app/` e `public/` para `workshopMobileView.js` e `workshop-mobile.css`.
+     - Atualização do parâmetro de versão para `?v=2.3.0` em `oficina.app/index.html` e `public/oficina.html`.
+- **Qualidade & Testes:**
+  - `test/oficina.registrar_and_overflow.test.js`: Nova suíte criada validando layout anti-overflow, tolerância de login de registradores, desbloqueio de senha do gestor e lançamento de serviços com fotos e taxa R$ 6,90 (100% de aprovação).
   - `test/oficina.components.test.js`: 100% aprovado.
   - `test/oficina.integration.test.js`: 22/22 passos aprovados.
   - `test/oficina.finance.test.js`: 20/20 cenários aprovados.

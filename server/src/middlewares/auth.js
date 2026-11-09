@@ -35,9 +35,11 @@ function authenticateToken(req, res, next) {
         const demoUserId = req.headers['x-demo-user-id'];
         if (demoUserId) {
             const user = db.prepare(`
-                SELECT u.id, u.name, u.email, u.phone, u.role_id, r.code as role_code, r.name as role_name
+                SELECT u.id, u.name, u.email, u.phone, u.role_id,
+                       COALESCE(r.code, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'WORKSHOP_STAFF' WHEN u.role_id = 'role_workshop_owner' THEN 'WORKSHOP_OWNER' ELSE 'CUSTOMER' END) as role_code,
+                       COALESCE(r.name, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'Registrador da Oficina' ELSE 'Usuário' END) as role_name
                 FROM users u
-                JOIN roles r ON u.role_id = r.id
+                LEFT JOIN roles r ON u.role_id = r.id
                 WHERE u.id = ?
             `).get(demoUserId);
             if (user) {
@@ -59,9 +61,11 @@ function authenticateToken(req, res, next) {
             }
             if (demoUserId) {
                 const fallbackUser = db.prepare(`
-                    SELECT u.id, u.name, u.email, u.phone, u.role_id, r.code as role_code, r.name as role_name
+                    SELECT u.id, u.name, u.email, u.phone, u.role_id,
+                           COALESCE(r.code, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'WORKSHOP_STAFF' WHEN u.role_id = 'role_workshop_owner' THEN 'WORKSHOP_OWNER' ELSE 'CUSTOMER' END) as role_code,
+                           COALESCE(r.name, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'Registrador da Oficina' ELSE 'Usuário' END) as role_name
                     FROM users u
-                    JOIN roles r ON u.role_id = r.id
+                    LEFT JOIN roles r ON u.role_id = r.id
                     WHERE u.id = ? AND u.status = 'ACTIVE'
                 `).get(demoUserId);
                 if (fallbackUser) {
@@ -74,9 +78,11 @@ function authenticateToken(req, res, next) {
         }
 
         const user = db.prepare(`
-            SELECT u.id, u.name, u.email, u.phone, u.role_id, r.code as role_code, r.name as role_name
+            SELECT u.id, u.name, u.email, u.phone, u.role_id,
+                   COALESCE(r.code, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'WORKSHOP_STAFF' WHEN u.role_id = 'role_workshop_owner' THEN 'WORKSHOP_OWNER' ELSE 'CUSTOMER' END) as role_code,
+                   COALESCE(r.name, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'Registrador da Oficina' ELSE 'Usuário' END) as role_name
             FROM users u
-            JOIN roles r ON u.role_id = r.id
+            LEFT JOIN roles r ON u.role_id = r.id
             WHERE u.id = ? AND u.status = 'ACTIVE'
         `).get(decodedUser.id);
 
