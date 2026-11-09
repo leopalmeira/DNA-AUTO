@@ -1048,28 +1048,67 @@
         const userName = logged.name || 'Carlos';
         const wsName = this.officialWorkshopName || (logged.workshop && logged.workshop.workshop_name) || 'Oficina Credenciada';
 
-        // TELA 3: HEADER DO DASHBOARD (ESTRUTURA DNA_AUTO_dashboard_fundo_contraste.html)
+        // TELA 3: HEADER DO DASHBOARD (COM BOTÃO DE MENU NO TOPO + SAUDAÇÃO + SILHUETA DO CARRO)
         if (sec === 'dashboard') {
             return `
-                <header class="header ws-model-header">
-                    <div class="topbar ws-model-header-top">
-                        <button class="icon-btn ws-model-menu-btn" type="button" id="ws-top-menu-toggle-btn" aria-label="Abrir menu" onclick="WorkshopView.toggleWorkshopTopMenu()" title="Abrir Menu da Oficina">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+                <header class="ws-model-header">
+                    <div class="ws-model-header-top">
+                        <button type="button" class="ws-model-menu-btn" id="ws-top-menu-toggle-btn" onclick="WorkshopView.toggleWorkshopTopMenu()" title="Abrir Menu da Oficina">
+                            <span class="menu-bars" style="font-size:16px;">☰</span>
+                            <span class="menu-label">Menu</span>
                         </button>
 
-                        <div class="logo ws-model-brand-center" onclick="WorkshopView.switchMobileSection('dashboard')" style="cursor:pointer;" title="DNA AUTO">
-                            <img alt="DNA AUTO" src="img/dna_auto_dashboard_logo.png" onerror="this.onerror=null; this.src='img/splash-d-logo.png';" />
+                        <div class="ws-model-brand-center" onclick="WorkshopView.switchMobileSection('dashboard')">
+                            <svg class="brand-logo-icon" viewBox="0 0 100 100" fill="none">
+                                <path d="M20 15 H55 C78 15 90 28 90 50 C90 72 78 85 55 85 H20 L35 62 H52 C63 62 68 56 68 50 C68 44 63 38 52 38 H35 L20 15Z" fill="#0084FF"/>
+                            </svg>
+                            <span class="brand-title">DNA <span>AUTO</span></span>
                         </div>
 
-                        <button class="icon-btn bell ws-model-bell-btn" type="button" aria-label="Notificações" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')" title="Notificações e Avisos">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+                        <button type="button" class="ws-model-bell-btn" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')" title="Notificações">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            <span class="ws-model-bell-dot"></span>
                         </button>
                     </div>
 
-                    <div class="welcome ws-model-greeting-row">
-                        <div class="eyebrow">PAINEL DA OFICINA</div>
-                        <h1>Olá, ${userName}</h1>
-                        <p>${wsName} <span aria-hidden="true">·</span> Bem-vindo de volta</p>
+                    <div class="ws-model-greeting-row">
+                        <div class="ws-model-greeting-text">
+                            <h2>Olá, ${userName}</h2>
+                            <p>${wsName}</p>
+                        </div>
+                        <div class="ws-model-car-glow-hero" title="DNA AUTO Smart Mobility">
+                            <svg viewBox="0 0 240 100" fill="none" class="ws-car-neon-silhouette">
+                                <defs>
+                                    <linearGradient id="neonCyanGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#00D4FF" stop-opacity="0.95"/>
+                                        <stop offset="60%" stop-color="#0084FF" stop-opacity="1"/>
+                                        <stop offset="100%" stop-color="#00D4FF" stop-opacity="0.4"/>
+                                    </linearGradient>
+                                    <filter id="neonCarFilter" x="-30%" y="-30%" width="160%" height="160%">
+                                        <feGaussianBlur stdDeviation="3" result="glow"/>
+                                        <feMerge>
+                                            <feMergeNode in="glow"/>
+                                            <feMergeNode in="SourceGraphic"/>
+                                        </feMerge>
+                                    </filter>
+                                </defs>
+                                <path d="M10 82 C60 82, 130 82, 235 82" stroke="url(#neonCyanGlow)" stroke-width="2" opacity="0.6"/>
+                                <path d="M25 78 C45 78, 60 70, 85 54 C110 40, 138 24, 175 24 C205 24, 218 36, 232 58 C238 65, 238 72, 234 78" 
+                                      stroke="url(#neonCyanGlow)" stroke-width="3" stroke-linecap="round" filter="url(#neonCarFilter)"/>
+                                <path d="M65 78 C80 78, 92 68, 108 60 C130 50, 155 48, 192 50 C210 52, 222 62, 232 74" 
+                                      stroke="#00D4FF" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>
+                                <path d="M115 54 C132 34, 155 30, 180 30 C198 30, 204 38, 212 52 Z" 
+                                      fill="rgba(0, 212, 255, 0.15)" stroke="#38BDF8" stroke-width="1.4"/>
+                                <circle cx="72" cy="78" r="15" stroke="#00D4FF" stroke-width="2.2" fill="#030A18" filter="url(#neonCarFilter)"/>
+                                <circle cx="198" cy="78" r="15" stroke="#00D4FF" stroke-width="2.2" fill="#030A18" filter="url(#neonCarFilter)"/>
+                                <circle cx="72" cy="78" r="6" fill="#00D4FF" opacity="0.9"/>
+                                <circle cx="198" cy="78" r="6" fill="#00D4FF" opacity="0.9"/>
+                                <ellipse cx="232" cy="62" rx="4.5" ry="2.5" fill="#00FFFF" filter="url(#neonCarFilter)"/>
+                            </svg>
+                        </div>
                     </div>
                 </header>
             `;
@@ -1369,7 +1408,7 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 3: DASHBOARD DA OFICINA (ESTRUTURA DNA_AUTO_dashboard_fundo_contraste.html)
+    // TELA 3: DASHBOARD DA OFICINA (DESIGN OFICIAL COM SILHUETA NEON DO CARRO)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileDashboardView = function() {
         const isStaff = typeof this.isStaffUser === 'function' ? this.isStaffUser() : this.isRegistrarUser();
@@ -1377,143 +1416,134 @@
         // Card 5: Financeiro para Gestor / Ordens de Serviço para Funcionário (O CARD FINANCEIRO NÃO APARECE PARA FUNCIONÁRIO EM NENHUM MOMENTO)
         const fifthCardHtml = isStaff ? `
             <!-- Card 5 (Funcionário): Ordens de Serviço (Operacional) -->
-            <button type="button" class="card purple ws-model-dash-card" id="ordens-servico" data-action="Ordens de Serviço" onclick="WorkshopView.switchMobileSection('ordens-servico')">
-                <span class="card-top ws-model-card-top">
-                    <span class="glyph ws-model-card-icon-box ws-icon-ordens">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="ws-model-dash-card" id="ordens-servico" onclick="WorkshopView.switchMobileSection('ordens-servico')">
+                <div class="ws-model-card-top">
+                    <div class="ws-model-card-icon-box ws-icon-ordens">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                             <polyline points="14 2 14 8 20 8"/>
                             <line x1="16" y1="13" x2="8" y2="13"/>
                             <line x1="16" y1="17" x2="8" y2="17"/>
                             <polyline points="10 9 9 9 8 9"/>
                         </svg>
-                    </span>
-                    <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m9 5 7 7-7 7"/>
-                    </svg>
-                </span>
-                <strong>Ordens de Serviço</strong>
-                <small>Consultar serviços lançados e histórico</small>
-            </button>
+                    </div>
+                    <span class="ws-model-card-arrow">›</span>
+                </div>
+                <div class="ws-model-card-content">
+                    <h3>Ordens de Serviço</h3>
+                    <p>Consultar serviços lançados e histórico</p>
+                </div>
+            </div>
         ` : `
             <!-- Card 5 (Gestor/Dono): Financeiro Oficial -->
-            <button type="button" class="card purple ws-model-dash-card" id="financeiro" data-action="Financeiro" onclick="WorkshopView.switchMobileSection('financeiro')">
-                <span class="card-top ws-model-card-top">
-                    <span class="glyph ws-model-card-icon-box ws-icon-financeiro">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <rect x="3" y="14" width="4" height="7" rx=".6"/>
-                            <rect x="10" y="9" width="4" height="12" rx=".6"/>
-                            <rect x="17" y="3" width="4" height="18" rx=".6"/>
+            <div class="ws-model-dash-card" id="financeiro" onclick="WorkshopView.switchMobileSection('financeiro')">
+                <div class="ws-model-card-top">
+                    <div class="ws-model-card-icon-box ws-icon-financeiro">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                            <path d="M4 8l6-4 4 4 6-5"></path>
                         </svg>
-                    </span>
-                    <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="m9 5 7 7-7 7"/>
-                    </svg>
-                </span>
-                <strong>Financeiro</strong>
-                <small>Receitas, despesas e faturamento</small>
-            </button>
+                    </div>
+                    <span class="ws-model-card-arrow">›</span>
+                </div>
+                <div class="ws-model-card-content">
+                    <h3>Financeiro</h3>
+                    <p>Receitas, despesas e faturamento</p>
+                </div>
+            </div>
         `;
 
         return `
-            <div class="main ws-model-main">
-                <div class="section-head">
-                    <h2>O que deseja fazer?</h2>
-                    <span>6 funcionalidades</span>
+            <div class="ws-model-dashboard-grid">
+                <!-- Card 1: Cadastrar Veículo -->
+                <div class="ws-model-dash-card" id="cadastrar" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box ws-icon-cadastrar">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="7" rx="2"></rect>
+                                <path d="M5 11l2-5h10l2 5"></path>
+                                <circle cx="7.5" cy="18.5" r="1.5" fill="#FFFFFF"></circle>
+                                <circle cx="16.5" cy="18.5" r="1.5" fill="#FFFFFF"></circle>
+                            </svg>
+                        </div>
+                        <span class="ws-model-card-arrow">›</span>
+                    </div>
+                    <div class="ws-model-card-content">
+                        <h3>Cadastrar Veículo</h3>
+                        <p>Consultar placa e cadastrar proprietário</p>
+                    </div>
                 </div>
 
-                <div class="cards ws-model-dashboard-grid" aria-label="Funções da oficina">
-                    <!-- Card 1: Cadastrar Veículo -->
-                    <button type="button" class="card blue ws-model-dash-card" id="cadastrar" data-action="Cadastrar Veículo" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
-                        <span class="card-top ws-model-card-top">
-                            <span class="glyph ws-model-card-icon-box ws-icon-cadastrar">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="m5 11 2-5h10l2 5M5 11h14l2 3v5h-3v-2H6v2H3v-5z"/>
-                                    <circle cx="7.5" cy="14" r="1"/>
-                                    <circle cx="16.5" cy="14" r="1"/>
-                                </svg>
-                            </span>
-                            <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="m9 5 7 7-7 7"/>
+                <!-- Card 2: Lançar Serviços -->
+                <div class="ws-model-dash-card" id="servicos" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box ws-icon-lancar">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
                             </svg>
-                        </span>
-                        <strong>Cadastrar Veículo</strong>
-                        <small>Consultar placa e cadastrar proprietário</small>
-                    </button>
-
-                    <!-- Card 2: Lançar Serviços -->
-                    <button type="button" class="card orange ws-model-dash-card" id="servicos" data-action="Lançar Serviços" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
-                        <span class="card-top ws-model-card-top">
-                            <span class="glyph ws-model-card-icon-box ws-icon-lancar">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M14.5 6.3a5 5 0 0 0-6.2 6.2L3 17.8 6.2 21l5.3-5.3a5 5 0 0 0 6.2-6.2l-3.2 3.2-3.2-3.2z"/>
-                                </svg>
-                            </span>
-                            <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="m9 5 7 7-7 7"/>
-                            </svg>
-                        </span>
-                        <strong>Lançar Serviços</strong>
-                        <small>Registrar serviços, peças e fotos</small>
-                    </button>
-
-                    <!-- Card 3: Manutenção dos Veículos -->
-                    <button type="button" class="card green ws-model-dash-card" id="manutencao" data-action="Manutenção" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
-                        <span class="card-top ws-model-card-top">
-                            <span class="glyph ws-model-card-icon-box ws-icon-manutencao">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="4" y="5" width="16" height="16" rx="2"/>
-                                    <path d="M9 5V3h6v2M8 13l3 3 5-6"/>
-                                </svg>
-                            </span>
-                            <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="m9 5 7 7-7 7"/>
-                            </svg>
-                        </span>
-                        <strong>Manutenção dos Veículos</strong>
-                        <small>Alertas e revisões preventivas</small>
-                    </button>
-
-                    <!-- Card 4: Avisos WhatsApp -->
-                    <button type="button" class="card whatsapp ws-model-dash-card" id="avisos" data-action="Avisos WhatsApp" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')">
-                        <span class="card-top ws-model-card-top">
-                            <span class="glyph ws-model-card-icon-box ws-icon-whatsapp">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M20 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20l1.2-4.3A8.5 8.5 0 1 1 20 11.5z"/>
-                                    <path d="M8.3 8.5c.5 2.6 2.4 4.6 5.2 5.4l1.5-1.2 1.8 1.2c-.8 2.4-3.2 2.4-5.7 1-2.4-1.4-4.6-4.3-4-6.1z"/>
-                                </svg>
-                            </span>
-                            <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="m9 5 7 7-7 7"/>
-                            </svg>
-                        </span>
-                        <strong>Avisos WhatsApp</strong>
-                        <small>Lembretes e comunicações</small>
-                    </button>
-
-                    <!-- Card 5: Financeiro (Gestor) OU Ordens de Serviço (Funcionário) -->
-                    ${fifthCardHtml}
-
-                    <!-- Card 6: Suporte -->
-                    <button type="button" class="card cyan ws-model-dash-card" id="suporte" data-action="Suporte" onclick="WorkshopView.switchMobileSection('suporte')">
-                        <span class="card-top ws-model-card-top">
-                            <span class="glyph ws-model-card-icon-box ws-icon-suporte">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M4 13v-2a8 8 0 0 1 16 0v2M4 13H2v5h4v-5zM20 13h2v5h-4v-5zM20 18c0 3-3 4-7 4h-2"/>
-                                </svg>
-                            </span>
-                            <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="m9 5 7 7-7 7"/>
-                            </svg>
-                        </span>
-                        <strong>Suporte</strong>
-                        <small>Ajuda e suporte técnico</small>
-                    </button>
+                        </div>
+                        <span class="ws-model-card-arrow">›</span>
+                    </div>
+                    <div class="ws-model-card-content">
+                        <h3>Lançar Serviços</h3>
+                        <p>Registrar serviços, peças e fotos</p>
+                    </div>
                 </div>
 
-                <footer class="footer ws-model-footer">
-                    © 2026 <strong>DNA AUTO</strong> · Tecnologia para oficinas
-                </footer>
+                <!-- Card 3: Manutenção dos Veículos -->
+                <div class="ws-model-dash-card" id="manutencao" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box ws-icon-manutencao">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                <polyline points="9 14 11 16 15 11"></polyline>
+                            </svg>
+                        </div>
+                        <span class="ws-model-card-arrow">›</span>
+                    </div>
+                    <div class="ws-model-card-content">
+                        <h3>Manutenção</h3>
+                        <p>Alertas e revisões preventivas</p>
+                    </div>
+                </div>
+
+                <!-- Card 4: Avisos WhatsApp -->
+                <div class="ws-model-dash-card" id="avisos" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box ws-icon-whatsapp">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                            </svg>
+                        </div>
+                        <span class="ws-model-card-arrow">›</span>
+                    </div>
+                    <div class="ws-model-card-content">
+                        <h3>Avisos WhatsApp</h3>
+                        <p>Lembretes e comunicações</p>
+                    </div>
+                </div>
+
+                ${fifthCardHtml}
+
+                <!-- Card 6: Suporte -->
+                <div class="ws-model-dash-card" id="suporte" onclick="WorkshopView.switchMobileSection('suporte')">
+                    <div class="ws-model-card-top">
+                        <div class="ws-model-card-icon-box ws-icon-suporte">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                            </svg>
+                        </div>
+                        <span class="ws-model-card-arrow">›</span>
+                    </div>
+                    <div class="ws-model-card-content">
+                        <h3>Suporte</h3>
+                        <p>Ajuda e suporte técnico</p>
+                    </div>
+                </div>
             </div>
         `;
     };
