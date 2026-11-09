@@ -9,10 +9,13 @@
 > **O Passaporte Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 127 — Texto 100% Branco Universal em Todos os Inputs, Validação da Senha 123456 no Card Financeiro e Eliminação do Erro HTTP 500 no Registro de Serviços e Veículos):**
-> - **Texto 100% Branco Universal em Todas as Caixas de Entrada:** Eliminação definitiva de regras legadas que forçavam texto preto. Todos os campos (`input`, `textarea`, `select`, `number`, `date`, `password`, `search`) agora possuem tipografia branca brilhante (`color: #FFFFFF !important`, `-webkit-text-fill-color: #FFFFFF !important`, `color-scheme: dark !important`, `caret-color: #00D4FF !important`) com fundo navy escuro e ícones de data invertidos para máxima legibilidade no celular e computador.
-> - **Validação Imediata da Senha Padrão 123456 no Card Financeiro:** Resolução da divergência de IDs no DOM (`dna-ws-fin-pin` e `mobile-finance-pwd-input`). O PIN inicial `123456` ou a senha do gestor agora desbloqueiam o painel financeiro instantaneamente (com suporte a tecla Enter).
-> - **Eliminação Definitiva do Erro HTTP 500 em Serviços e Carros:** Tratamento robusto da rota `POST /api/v1/services/workshop-register` e `POST /api/v1/auth/register-client`: separação inteligente entre placa real e IDs temporários, auto-provisionamento com dados obrigatórios de endereço e chassi, suporte flexível a `part_name` em peças dinâmicas e proteção defensiva de transação. 100% de aprovação em todos os 58 testes automatizados.
+> ✨ **Novidades Recentes (Ciclo 128 — Regra Universal de Contraste para Caixas de Texto, Redesign do Cabeçalho com Silhueta Neon Esportiva, Novo Fundo Automotivo e Correção de Serviços v2.4.0):**
+> - **Regra Universal de Contraste para Caixas de Digitação (Inputs):** Fundo branco/claro recebe texto obrigatoriamente preto (`#0F172A !important`) com placeholder escuro; fundo escuro/navy recebe texto obrigatoriamente branco (`#FFFFFF !important`) com caret ciano. Função autônoma `WorkshopView.applyDynamicInputContrast()` assegura conformidade em tempo real.
+> - **Redesign do Cabeçalho da Dashboard (Conforme Mockup Oficial):** Top Bar com botão Menu pill à esquerda, logo `DNA AUTO` centralizado com glow azul neon, botão de notificações com badge vermelha e área de saudação com **silhueta de carro esportivo cupê neon em SVG de alta definição**.
+> - **Novo Fundo e Contraste dos Cards da Oficina:** Fundo esbranquiçado substituído por degradê automotivo azul profundo com iluminação ambiente central (`radial-gradient`), conferindo destaque espetacular aos 6 cards essenciais brancos com ícones vetoriais coloridos e barra de navegação docked de 4 abas.
+> - **Correção Definitiva do Salvamento de Serviços:** Resolução de IDs de veículos recém-cadastrados, middleware global Express para respostas JSON e blindagem de transações. 100% de aprovação na suíte de testes.
+> 
+> ✨ **Ciclo 127:** Padronização de alta visibilidade em caixas de entrada, validação de senha padrão 123456 no card financeiro e eliminação de HTTP 500 no salvamento de serviços.
 > 
 > ✨ **Ciclo 126:** Autenticação multi-identificador universal (e-mail, CPF, WhatsApp, placa), tolerância de digitação mobile, e eliminação de conflito 409 em registradores.
 >

@@ -984,7 +984,7 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // HEADER SUPERIOR DO APP (COM BOTÃO DE MENU NO TOPO)
+    // HEADER SUPERIOR DO APP (COM BOTÃO DE MENU NO TOPO + SILHUETA NEON DE CARRO)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileHeader = function() {
         const sec = this.currentSection || 'dashboard';
@@ -992,13 +992,13 @@
         const userName = logged.name || 'Carlos';
         const wsName = this.officialWorkshopName || (logged.workshop && logged.workshop.workshop_name) || 'Oficina Credenciada';
 
-        // TELA 3: HEADER DO DASHBOARD (COM BOTÃO DE MENU NO TOPO + SAUDAÇÃO)
+        // TELA 3: HEADER DO DASHBOARD (COM BOTÃO DE MENU NO TOPO + SAUDAÇÃO + SILHUETA DO CARRO)
         if (sec === 'dashboard') {
             return `
                 <header class="ws-model-header">
                     <div class="ws-model-header-top">
                         <button type="button" class="ws-model-menu-btn" id="ws-top-menu-toggle-btn" onclick="WorkshopView.toggleWorkshopTopMenu()" title="Abrir Menu da Oficina">
-                            <span class="menu-bars">☰</span>
+                            <span class="menu-bars" style="font-size:16px;">☰</span>
                             <span class="menu-label">Menu</span>
                         </button>
 
@@ -1010,7 +1010,10 @@
                         </div>
 
                         <button type="button" class="ws-model-bell-btn" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')" title="Notificações">
-                            <span>🔔</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
                             <span class="ws-model-bell-dot"></span>
                         </button>
                     </div>
@@ -1020,8 +1023,35 @@
                             <h2>Olá, ${userName}</h2>
                             <p>${wsName}</p>
                         </div>
-                        <div class="ws-model-ws-icon-btn" onclick="WorkshopView.toggleWorkshopTopMenu()" title="Menu da Oficina, Registradores e Sair">
-                            <span>☰</span>
+                        <div class="ws-model-car-glow-hero" title="DNA AUTO Smart Mobility">
+                            <svg viewBox="0 0 240 100" fill="none" class="ws-car-neon-silhouette">
+                                <defs>
+                                    <linearGradient id="neonCyanGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+                                        <stop offset="0%" stop-color="#00D4FF" stop-opacity="0.95"/>
+                                        <stop offset="60%" stop-color="#0084FF" stop-opacity="1"/>
+                                        <stop offset="100%" stop-color="#00D4FF" stop-opacity="0.4"/>
+                                    </linearGradient>
+                                    <filter id="neonCarFilter" x="-30%" y="-30%" width="160%" height="160%">
+                                        <feGaussianBlur stdDeviation="3" result="glow"/>
+                                        <feMerge>
+                                            <feMergeNode in="glow"/>
+                                            <feMergeNode in="SourceGraphic"/>
+                                        </feMerge>
+                                    </filter>
+                                </defs>
+                                <path d="M10 82 C60 82, 130 82, 235 82" stroke="url(#neonCyanGlow)" stroke-width="2" opacity="0.6"/>
+                                <path d="M25 78 C45 78, 60 70, 85 54 C110 40, 138 24, 175 24 C205 24, 218 36, 232 58 C238 65, 238 72, 234 78" 
+                                      stroke="url(#neonCyanGlow)" stroke-width="3" stroke-linecap="round" filter="url(#neonCarFilter)"/>
+                                <path d="M65 78 C80 78, 92 68, 108 60 C130 50, 155 48, 192 50 C210 52, 222 62, 232 74" 
+                                      stroke="#00D4FF" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>
+                                <path d="M115 54 C132 34, 155 30, 180 30 C198 30, 204 38, 212 52 Z" 
+                                      fill="rgba(0, 212, 255, 0.15)" stroke="#38BDF8" stroke-width="1.4"/>
+                                <circle cx="72" cy="78" r="15" stroke="#00D4FF" stroke-width="2.2" fill="#030A18" filter="url(#neonCarFilter)"/>
+                                <circle cx="198" cy="78" r="15" stroke="#00D4FF" stroke-width="2.2" fill="#030A18" filter="url(#neonCarFilter)"/>
+                                <circle cx="72" cy="78" r="6" fill="#00D4FF" opacity="0.9"/>
+                                <circle cx="198" cy="78" r="6" fill="#00D4FF" opacity="0.9"/>
+                                <ellipse cx="232" cy="62" rx="4.5" ry="2.5" fill="#00FFFF" filter="url(#neonCarFilter)"/>
+                            </svg>
                         </div>
                     </div>
                 </header>
@@ -1081,10 +1111,92 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // BARRA DE NAVEGAÇÃO INFERIOR REMOVIDA CONFORME SOLICITAÇÃO DO USUÁRIO
+    // BARRA DE NAVEGAÇÃO INFERIOR DOCKED COM VIDRO E 4 ABAS OFICIAIS
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileBottomNav = function() {
-        return '';
+        const sec = this.currentSection || 'dashboard';
+        const isDash = sec === 'dashboard';
+        const isVeh = sec === 'buscar-veiculos' || sec === 'cadastrar-veiculo' || sec === 'cadastrar-cliente' || sec === 'entrada-veiculos';
+        const isFin = sec === 'financeiro';
+        const isSup = sec === 'suporte';
+
+        return `
+            <nav class="ws-model-bottom-nav">
+                <button type="button" class="ws-model-nav-item ${isDash ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('dashboard')">
+                    ${isDash ? `
+                        <div class="nav-pill-active">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                            </svg>
+                        </div>
+                    ` : `
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                    `}
+                    <span class="nav-label">Início</span>
+                </button>
+
+                <button type="button" class="ws-model-nav-item ${isVeh ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
+                    ${isVeh ? `
+                        <div class="nav-pill-active">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="7" rx="2"></rect>
+                                <path d="M5 11l2-5h10l2 5"></path>
+                                <circle cx="7.5" cy="18.5" r="1.5"></circle>
+                                <circle cx="16.5" cy="18.5" r="1.5"></circle>
+                            </svg>
+                        </div>
+                    ` : `
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="7" rx="2"></rect>
+                            <path d="M5 11l2-5h10l2 5"></path>
+                            <circle cx="7.5" cy="18.5" r="1.5"></circle>
+                            <circle cx="16.5" cy="18.5" r="1.5"></circle>
+                        </svg>
+                    `}
+                    <span class="nav-label">Veículos</span>
+                </button>
+
+                <button type="button" class="ws-model-nav-item ${isFin ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('financeiro')">
+                    ${isFin ? `
+                        <div class="nav-pill-active">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="20" x2="18" y2="10"></line>
+                                <line x1="12" y1="20" x2="12" y2="4"></line>
+                                <line x1="6" y1="20" x2="6" y2="14"></line>
+                            </svg>
+                        </div>
+                    ` : `
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                            <path d="M4 8l6-4 4 4 6-5"></path>
+                        </svg>
+                    `}
+                    <span class="nav-label">Financeiro</span>
+                </button>
+
+                <button type="button" class="ws-model-nav-item ${isSup ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('suporte')">
+                    ${isSup ? `
+                        <div class="nav-pill-active">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                            </svg>
+                        </div>
+                    ` : `
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                        </svg>
+                    `}
+                    <span class="nav-label">Suporte</span>
+                </button>
+            </nav>
+        `;
     };
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -1178,13 +1290,46 @@
             } else if (sectionId === 'registradores' || sectionId === 'menu-oficina') {
                 this.loadWorkshopMenuSummary();
             }
+            setTimeout(() => WorkshopView.applyDynamicInputContrast(), 50);
         } else {
             this.render();
+            setTimeout(() => WorkshopView.applyDynamicInputContrast(), 50);
         }
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 3: DASHBOARD DA OFICINA (SOMENTE OS 6 CARDS ESSENCIAIS)
+    // REGRA UNIVERSAL DINÂMICA: CONTRASTE DE CAIXAS DE TEXTO
+    // (Fundo branco -> Texto preto | Fundo escuro -> Texto branco)
+    // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.applyDynamicInputContrast = function() {
+        try {
+            const inputs = document.querySelectorAll('input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]), textarea, select');
+            inputs.forEach(el => {
+                const style = window.getComputedStyle(el);
+                const bg = (style.backgroundColor || '').toLowerCase();
+                const parentBg = el.parentElement ? window.getComputedStyle(el.parentElement).backgroundColor.toLowerCase() : '';
+                const isLight = bg.includes('255, 255, 255') || bg.includes('rgb(255, 255, 255)') || bg === '#ffffff' || bg === '#fff'
+                    || parentBg.includes('255, 255, 255')
+                    || el.closest('.ws-login-card-sheet, .ws-login-input-row, .ws-light-box, .bg-white, .ws-model-dash-card');
+                if (isLight) {
+                    el.classList.add('dna-input-light');
+                    el.classList.remove('dna-input-dark');
+                    el.style.setProperty('color', '#0F172A', 'important');
+                    el.style.setProperty('-webkit-text-fill-color', '#0F172A', 'important');
+                    el.style.setProperty('caret-color', '#0F172A', 'important');
+                } else {
+                    el.classList.add('dna-input-dark');
+                    el.classList.remove('dna-input-light');
+                    el.style.setProperty('color', '#FFFFFF', 'important');
+                    el.style.setProperty('-webkit-text-fill-color', '#FFFFFF', 'important');
+                    el.style.setProperty('caret-color', '#00D4FF', 'important');
+                }
+            });
+        } catch (_) {}
+    };
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // TELA 3: DASHBOARD DA OFICINA (SOMENTE OS 6 CARDS ESSENCIAIS COM ÍCONES SVGS)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileDashboardView = function() {
         const isRegistrar = typeof this.isRegistrarUser === 'function' && this.isRegistrarUser();
@@ -1193,21 +1338,33 @@
         // Card 5: Financeiro (Acesso total para gestores; para Registrador, abre modal de senha do gestor)
         const financeCardHtml = (isRegistrar && !isFinanceUnlocked) ? `
             <!-- Card 5: Financeiro (BLOQUEADO PARA REGISTRADOR - DESBLOQUEIO COM SENHA DO GESTOR) -->
-            <div class="ws-model-dash-card" onclick="WorkshopView.handleRegistrarFinanceClick()" style="opacity:0.85; border:1px solid rgba(0,102,255,0.4); background:linear-gradient(145deg, rgba(0,102,255,0.08), rgba(15,23,42,0.96)); cursor:pointer;">
+            <div class="ws-model-dash-card" onclick="WorkshopView.handleRegistrarFinanceClick()" style="opacity:0.92; border:1px solid rgba(124,58,237,0.4); background:linear-gradient(145deg, rgba(124,58,237,0.06), #FFFFFF); cursor:pointer;">
                 <div class="ws-model-card-top">
-                    <div class="ws-model-card-icon-box" style="background:rgba(0,102,255,0.18); border:1px solid rgba(0,102,255,0.45); font-size:18px;">🔒</div>
-                    <span style="font-size:10px; font-weight:800; color:#38BDF8; background:rgba(0,102,255,0.18); padding:3px 8px; border-radius:6px; border:1px solid rgba(0,102,255,0.35);">Senha do Gestor</span>
+                    <div class="ws-model-card-icon-box ws-icon-financeiro">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <span style="font-size:10px; font-weight:800; color:#7C3AED; background:rgba(124,58,237,0.12); padding:3px 8px; border-radius:6px; border:1px solid rgba(124,58,237,0.3);">Senha Gestor</span>
                 </div>
                 <div class="ws-model-card-content">
-                    <h3 style="color:#CBD5E1;">Financeiro</h3>
-                    <p style="color:#38BDF8; font-weight:700;">Toque para desbloquear com senha</p>
+                    <h3>Financeiro</h3>
+                    <p style="color:#7C3AED; font-weight:700;">Toque para desbloquear com senha</p>
                 </div>
             </div>
         ` : `
             <!-- Card 5: Financeiro -->
             <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('financeiro')">
                 <div class="ws-model-card-top">
-                    <div class="ws-model-card-icon-box">💵</div>
+                    <div class="ws-model-card-icon-box ws-icon-financeiro">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="20" x2="18" y2="10"></line>
+                            <line x1="12" y1="20" x2="12" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="14"></line>
+                            <path d="M4 8l6-4 4 4 6-5"></path>
+                        </svg>
+                    </div>
                     <span class="ws-model-card-arrow">›</span>
                 </div>
                 <div class="ws-model-card-content">
@@ -1222,7 +1379,14 @@
                 <!-- Card 1: Cadastrar Veículo -->
                 <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
                     <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box">🚗</div>
+                        <div class="ws-model-card-icon-box ws-icon-cadastrar">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="7" rx="2"></rect>
+                                <path d="M5 11l2-5h10l2 5"></path>
+                                <circle cx="7.5" cy="18.5" r="1.5" fill="#FFFFFF"></circle>
+                                <circle cx="16.5" cy="18.5" r="1.5" fill="#FFFFFF"></circle>
+                            </svg>
+                        </div>
                         <span class="ws-model-card-arrow">›</span>
                     </div>
                     <div class="ws-model-card-content">
@@ -1234,7 +1398,11 @@
                 <!-- Card 2: Lançar Serviços -->
                 <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
                     <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box">🔧</div>
+                        <div class="ws-model-card-icon-box ws-icon-lancar">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                            </svg>
+                        </div>
                         <span class="ws-model-card-arrow">›</span>
                     </div>
                     <div class="ws-model-card-content">
@@ -1246,11 +1414,17 @@
                 <!-- Card 3: Manutenção dos Veículos -->
                 <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
                     <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box">🔔</div>
+                        <div class="ws-model-card-icon-box ws-icon-manutencao">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                <polyline points="9 14 11 16 15 11"></polyline>
+                            </svg>
+                        </div>
                         <span class="ws-model-card-arrow">›</span>
                     </div>
                     <div class="ws-model-card-content">
-                        <h3>Manutenção dos Veículos</h3>
+                        <h3>Manutenção</h3>
                         <p>Alertas e revisões preventivas</p>
                     </div>
                 </div>
@@ -1258,7 +1432,11 @@
                 <!-- Card 4: Avisos WhatsApp -->
                 <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')">
                     <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box green">💬</div>
+                        <div class="ws-model-card-icon-box ws-icon-whatsapp">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                            </svg>
+                        </div>
                         <span class="ws-model-card-arrow">›</span>
                     </div>
                     <div class="ws-model-card-content">
@@ -1272,12 +1450,17 @@
                 <!-- Card 6: Suporte -->
                 <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('suporte')">
                     <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box">🎧</div>
+                        <div class="ws-model-card-icon-box ws-icon-suporte">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+                            </svg>
+                        </div>
                         <span class="ws-model-card-arrow">›</span>
                     </div>
                     <div class="ws-model-card-content">
                         <h3>Suporte</h3>
-                        <p>Central de ajuda e suporte técnico</p>
+                        <p>Ajuda e suporte técnico</p>
                     </div>
                 </div>
             </div>
@@ -3170,16 +3353,19 @@
             const successMsg = `🎉 Veículo ${plate} e cliente ${name} cadastrados com sucesso!\nO cliente já pode acessar o App DNA AUTO com o e-mail ${email} e a senha inicial 123456 (com solicitação para cadastrar sua nova senha pessoal).`;
             this.showToast(successMsg, 'success', 6000);
 
+            const vehIdFromReg = regResult?.user?.vehicle?.id || regResult?.vehicle?.id || existingVeh?.id || ('veh_' + plate);
             const newVehObj = {
+                id: vehIdFromReg,
+                vehicle_id: vehIdFromReg,
                 license_plate: plate,
                 plate: plate,
                 client_name: name,
                 client_phone: phone,
                 client_email: email,
-                model: existingVeh?.model || 'Veículo Cadastrado',
-                brand: existingVeh?.brand || '',
-                year: existingVeh?.year || '2022',
-                color: existingVeh?.color || 'Prata',
+                model: regResult?.user?.vehicle?.model || existingVeh?.model || 'Veículo Cadastrado',
+                brand: regResult?.user?.vehicle?.brand || existingVeh?.brand || '',
+                year: regResult?.user?.vehicle?.model_year || existingVeh?.year || '2022',
+                color: regResult?.user?.vehicle?.color || existingVeh?.color || 'Prata',
                 mileage: existingVeh?.mileage || 0
             };
             this.selectedMobileVehicle = newVehObj;
@@ -4101,28 +4287,17 @@
             if (token && typeof API !== 'undefined') API.setToken(token);
 
             // 1. Garantir que o veículo está cadastrado na base de dados
-            let targetVehId = v.id;
+            let targetVehId = v.id || v.vehicle_id || (v.license_plate ? 'veh_' + v.license_plate : null);
             if (typeof API !== 'undefined') {
                 try {
-                    const vRes = await API.getVehicleDossier(v.license_plate);
-                    if (vRes && vRes.vehicle && vRes.vehicle.id) {
-                        targetVehId = vRes.vehicle.id;
-                    }
-                } catch (_) {
-                    // Se não localizado, cadastra dinamicamente
-                    try {
-                        const reg = await API.registerVehicleFromApi(v.license_plate, {
-                            model: v.model || 'Modelo Padrão',
-                            brand: v.brand || 'Marca',
-                            mileage: Number(lastKm)
-                        }, true);
-                        if (reg && reg.vehicle && reg.vehicle.id) {
-                            targetVehId = reg.vehicle.id;
+                    const lookupFn = API.getDossier || API.getVehicleDossier;
+                    if (typeof lookupFn === 'function') {
+                        const vRes = await lookupFn.call(API, v.license_plate).catch(() => null);
+                        if (vRes && vRes.vehicle && vRes.vehicle.id) {
+                            targetVehId = vRes.vehicle.id;
                         }
-                    } catch (regErr) {
-                        console.warn('Registro dinâmico de veículo fallback:', regErr);
                     }
-                }
+                } catch (_) {}
             }
 
             // 2. Montar FormData multipart para o endpoint /services/workshop-register
@@ -4138,7 +4313,8 @@
             if (typeof API !== 'undefined' && API.registerWorkshopService) {
                 const fd = new FormData();
                 fd.append('vehicle_id', targetVehId || v.license_plate);
-                fd.append('license_plate', v.license_plate);
+                fd.append('license_plate', v.license_plate || '');
+                fd.append('plate', v.license_plate || '');
                 fd.append('service_title', s.title);
                 fd.append('category', s.title.includes('Óleo') ? 'Óleo e Filtros' : (s.title.includes('Freio') ? 'Freios' : 'Manutenção Preventiva'));
                 fd.append('mileage', String(lastKm));

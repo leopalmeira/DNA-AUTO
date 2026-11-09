@@ -389,6 +389,19 @@ app.use((req, res) => {
     }
 });
 
+// Middleware Global de Tratamento de Erros (Garante resposta JSON limpa para APIs)
+app.use((err, req, res, next) => {
+    console.error('❌ Erro não tratado interceptado na API:', err);
+    if (res.headersSent) {
+        return next(err);
+    }
+    const statusCode = err.status || err.statusCode || 500;
+    res.status(statusCode).json({
+        error: err.message || 'Erro interno no servidor ao processar requisição.',
+        code: err.code || 'INTERNAL_SERVER_ERROR'
+    });
+});
+
 // Função para iniciar o servidor
 function startServer() {
     const server = app.listen(PORT, '0.0.0.0', () => {

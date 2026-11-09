@@ -35,21 +35,46 @@ button {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* REGRA GLOBAL ABSOLUTA: TEXTO 100% BRANCO EM QUALQUER CAIXA DE DIGITAÇÃO DO PROJETO */
+/* ==========================================================================
+   REGRA UNIVERSAL DE CONTRASTE PARA CAIXAS DE TEXTO / INPUTS / BOXES:
+   - Fundo escuro -> Letra branca (#FFFFFF)
+   - Fundo claro/branco -> Letra preta (#0F172A)
+   ========================================================================== */
+
+/* 1. Base para campos de digitação */
 input, select, textarea {
     font-family: inherit;
     font-size: inherit;
-    color: #FFFFFF !important;
-    -webkit-text-fill-color: #FFFFFF !important;
-    color-scheme: dark !important;
     outline: none;
+    box-sizing: border-box;
 }
 
-input::placeholder, select::placeholder, textarea::placeholder {
-    color: rgba(255, 255, 255, 0.55) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.55) !important;
+/* 2. Padrão Dark (Fundo Escuro / Padrão Geral do Sistema) */
+input, select, textarea,
+.ws-dark-box input,
+.ws-dark-box textarea,
+.ws-dark-box select,
+.input-dark,
+input.dark-input,
+textarea.dark-input,
+select.dark-input,
+[data-bg="dark"] input,
+[data-bg="dark"] textarea {
+    color: #FFFFFF;
+    -webkit-text-fill-color: #FFFFFF;
+    color-scheme: dark;
+    caret-color: #00D4FF;
 }
 
+input::placeholder, select::placeholder, textarea::placeholder,
+.ws-dark-box input::placeholder,
+.ws-dark-box textarea::placeholder,
+.input-dark::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Autofill em fundo escuro */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus,
@@ -63,6 +88,61 @@ select:-webkit-autofill:focus {
     -webkit-box-shadow: 0 0 0px 1000px rgba(11, 22, 44, 0.98) inset !important;
     transition: background-color 5000s ease-in-out 0s !important;
     color: #FFFFFF !important;
+}
+
+/* 3. REGRA ABSOLUTA PARA CAIXAS DE FUNDO BRANCO OU CLARO: LETRA PRETA OBRIGATÓRIA */
+.ws-light-box input,
+.ws-light-box textarea,
+.ws-light-box select,
+.ws-login-card-sheet input,
+.ws-login-card-sheet textarea,
+.ws-login-input-row input,
+.ws-model-dash-card input,
+.card-white input,
+.bg-white input,
+.input-light,
+input.light-input,
+input.bg-white,
+input[style*="background: rgb(255, 255, 255)"],
+input[style*="background: #fff"],
+input[style*="background: #FFF"],
+input[style*="background:#fff"],
+input[style*="background:#FFF"],
+input[style*="background: white"],
+input[style*="background-color: rgb(255, 255, 255)"],
+input[style*="background-color: #fff"],
+input[style*="background-color: #FFF"],
+input[style*="background-color:#fff"],
+input[style*="background-color: white"],
+textarea[style*="background: #fff"],
+textarea[style*="background: white"],
+select[style*="background: #fff"],
+select[style*="background: white"],
+.dna-input-light {
+    color: #0F172A !important;
+    -webkit-text-fill-color: #0F172A !important;
+    caret-color: #0F172A !important;
+    color-scheme: light !important;
+}
+
+.ws-light-box input::placeholder,
+.ws-login-input-row input::placeholder,
+.input-light::placeholder,
+input.light-input::placeholder,
+.dna-input-light::placeholder {
+    color: #64748B !important;
+    -webkit-text-fill-color: #64748B !important;
+}
+
+/* Autofill em fundo claro/branco */
+.ws-light-box input:-webkit-autofill,
+.ws-login-card-sheet input:-webkit-autofill,
+.ws-login-input-row input:-webkit-autofill,
+.input-light:-webkit-autofill,
+.dna-input-light:-webkit-autofill {
+    -webkit-text-fill-color: #0F172A !important;
+    -webkit-box-shadow: 0 0 0px 1000px #FFFFFF inset !important;
+    color: #0F172A !important;
 }
 
 

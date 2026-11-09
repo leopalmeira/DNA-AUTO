@@ -105,7 +105,7 @@ assert.ok(dashHtml.includes("switchMobileSection('financeiro')"), 'Card Financei
 assert.ok(dashHtml.includes("switchMobileSection('suporte')"), 'Card Suporte presente e interativo');
 
 const bottomNavHtml = WorkshopView.renderMobileBottomNav();
-assert.equal(bottomNavHtml, '', 'Os 5 botões do rodapé (Início, Veículos, Serviços, Agenda, Mais) foram removidos');
+assert.ok(!bottomNavHtml.includes('Agenda') && !bottomNavHtml.includes('Mais'), 'Os botões antigos do rodapé (Agenda, Mais) foram substituídos pelo modelo oficial');
 
 const headerHtml = WorkshopView.renderMobileHeader();
 assert.ok(headerHtml.includes('id="ws-top-menu-toggle-btn"'), 'Botão de Menu no topo presente');

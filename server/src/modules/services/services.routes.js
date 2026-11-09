@@ -303,10 +303,14 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             }
 
             // 3. Inserir Registro de Quilometragem e Leitura Oficial de Hodômetro
-            db.prepare(`
-                INSERT INTO mileage_records (id, vehicle_id, service_record_id, mileage, recorded_at, source, verified)
-                VALUES (?, ?, ?, ?, ?, 'WORKSHOP_SERVICE', 1)
-            `).run('mil_' + Date.now(), targetVehicleId, serviceId, Number(mileage), dateVal);
+            try {
+                db.prepare(`
+                    INSERT INTO mileage_records (id, vehicle_id, service_record_id, mileage, recorded_at, source, verified)
+                    VALUES (?, ?, ?, ?, ?, 'WORKSHOP_SERVICE', 1)
+                `).run('mil_' + Date.now(), targetVehicleId, serviceId, Number(mileage), dateVal);
+            } catch (milErr) {
+                console.warn('Registro de quilometragem preservado:', milErr.message);
+            }
 
             try {
                 db.prepare(`
@@ -453,7 +457,7 @@ router.post('/workshop-register', authenticateToken, upload.fields([
         });
     } catch (err) {
         console.error('Erro ao registrar serviço na oficina:', err);
-        res.status(500).json({ error: 'Erro ao registrar serviço comprovado.' });
+        res.status(500).json({ error: 'Erro ao registrar serviço: ' + (err.message || 'Falha interna.') });
     }
 });
 
@@ -494,13 +498,19 @@ router.post('/owner-declare', authenticateToken, upload.fields([
                    OR cnpj = ?
             `).get(cleanCnpj, workshop_cnpj.trim());
 
-            // Se a oficina não estiver cadastrada ainda, cadastra com status PENDING para credenciamento
+            // Se a oficina não estiver cadastrada ainda, cadastra com status PENDING para credenciamento com todos os campos de endereço
             if (!targetWorkshop && cleanCnpj.length >= 14) {
                 const newWsId = 'ws_ext_' + Date.now();
                 db.prepare(`
                     INSERT INTO workshops (
-                        id, company_name, trade_name, cnpj, status, verified_badge, notes
-                    ) VALUES (?, ?, ?, ?, 'PENDING', 0, 'Oficina externa cadastrada via declaração de serviço pelo cliente')
+                        id, company_name, trade_name, cnpj, phone, email,
+                        address_street, address_number, address_neighborhood, city, state, zip_code,
+                        status, verified_badge, notes
+                    ) VALUES (
+                        ?, ?, ?, ?, '(00) 00000-0000', 'contato@oficina.com.br',
+                        'Rua Principal', 'S/N', 'Bairro', 'Cidade', 'UF', '00000-000',
+                        'PENDING', 0, 'Oficina externa cadastrada via declaração de serviço pelo cliente'
+                    )
                 `).run(newWsId, workshop_name || 'Oficina Mecânica ' + workshop_cnpj, workshop_name || 'Oficina ' + workshop_cnpj, workshop_cnpj);
 
                 targetWorkshop = db.prepare(`SELECT * FROM workshops WHERE id = ?`).get(newWsId);

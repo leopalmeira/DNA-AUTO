@@ -3375,7 +3375,9 @@ input.dna-plate-input {
 .dna-oficina-login-input,
 .form-control,
 /* ──────────────────────────────────────────────────────────────────────────
-   REGRA UNIVERSAL: TEXTO 100% BRANCO EM TODAS AS CAIXAS DE DIGITAÇÃO DO PROJETO
+   REGRA UNIVERSAL: CONTRASTE DINÂMICO PARA TODAS AS CAIXAS DE TEXTO
+   - Fundo escuro -> Letra branca (#FFFFFF)
+   - Fundo claro/branco -> Letra preta (#0F172A)
    ────────────────────────────────────────────────────────────────────────── */
 input.form-control,
 textarea.form-control,
@@ -3389,15 +3391,45 @@ input[type="search"],
 select.form-control,
 select,
 textarea {
-    color: #FFFFFF !important;
-    -webkit-text-fill-color: #FFFFFF !important;
-    color-scheme: dark !important;
-    background-color: rgba(11, 22, 44, 0.95) !important;
-    border: 1.5px solid rgba(0, 102, 255, 0.4) !important;
-    font-weight: 700 !important;
-    caret-color: #00D4FF !important;
+    color: #FFFFFF;
+    -webkit-text-fill-color: #FFFFFF;
+    color-scheme: dark;
+    background-color: rgba(11, 22, 44, 0.95);
+    border: 1.5px solid rgba(0, 102, 255, 0.4);
+    font-weight: 700;
+    caret-color: #00D4FF;
     box-sizing: border-box;
     transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* CAIXAS COM FUNDO BRANCO OU CLARO (EX: LOGIN, CARDS BRANCOS, BUSCA CLARA) */
+.ws-light-box input,
+.ws-login-card-sheet input,
+.ws-login-input-row input,
+.ws-model-dash-card input,
+.bg-white input,
+input.bg-white,
+input.light-input,
+input[style*="background: #fff"],
+input[style*="background: #FFF"],
+input[style*="background: white"],
+input[style*="background-color: #fff"],
+input[style*="background-color: white"],
+.dna-input-light {
+    color: #0F172A !important;
+    -webkit-text-fill-color: #0F172A !important;
+    color-scheme: light !important;
+    background-color: #FFFFFF !important;
+    caret-color: #0F172A !important;
+}
+
+.ws-login-input-row input::placeholder,
+.bg-white input::placeholder,
+input.light-input::placeholder,
+.dna-input-light::placeholder {
+    color: #64748B !important;
+    -webkit-text-fill-color: #64748B !important;
+    font-weight: 500 !important;
 }
 
 .dna-mobile-shell input::placeholder,
@@ -3406,8 +3438,8 @@ textarea {
 .dna-oficina-login-input::placeholder,
 input::placeholder,
 textarea::placeholder {
-    color: rgba(255, 255, 255, 0.55) !important;
-    -webkit-text-fill-color: rgba(255, 255, 255, 0.55) !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 0.6) !important;
     font-weight: 500 !important;
     opacity: 1 !important;
 }
@@ -3418,6 +3450,10 @@ textarea::placeholder {
 .dna-oficina-login-input:focus,
 input:focus,
 textarea:focus {
+    border-color: #00D4FF !important;
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.25) !important;
+    outline: none !important;
+}
     color: #FFFFFF !important;
     -webkit-text-fill-color: #FFFFFF !important;
     background-color: rgba(15, 28, 55, 0.98) !important;
@@ -3493,43 +3529,70 @@ select:-webkit-autofill:focus {
    16.0 MOCKUPS OFICIAIS DO APP DA OFICINA (DESIGN 1:1 CONFORME MODELO)
    ============================================================================== */
 
-/* Viewport Global das Telas da Oficina */
+/* ==============================================================================
+   16.0 MOCKUPS OFICIAIS DO APP DA OFICINA (DESIGN 1:1 CONFORME MODELO)
+   ============================================================================== */
+
+/* Viewport Global das Telas da Oficina com Fundo Gradiente Automotivo Profundo */
 .ws-model-body {
-    background: #F1F5F9;
+    background: radial-gradient(circle at 50% 28%, #1a3e75 0%, #0d264f 45%, #040e20 85%, #020814 100%) !important;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    padding-bottom: 74px;
+    padding-bottom: 84px;
     box-sizing: border-box;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: #0F172A;
+    color: #FFFFFF;
 }
 
-/* Header Dark Navy Oficial das Telas Internas */
+/* Header Dark Navy Oficial do Dashboard com Top Bar e Silhueta Neon de Carro */
 .ws-model-header {
-    background: #060F1E;
+    background: transparent;
     color: #FFFFFF;
-    padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 14px;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 10px;
     position: sticky;
     top: 0;
     z-index: 40;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(0, 140, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .ws-model-header-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 40px;
+    height: 42px;
     position: relative;
 }
 
+/* Botão Menu Estilizado tipo Pill */
+.ws-model-menu-btn {
+    background: rgba(8, 22, 46, 0.85);
+    border: 1.5px solid rgba(0, 140, 255, 0.45);
+    border-radius: 12px;
+    padding: 7px 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #FFFFFF;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: all 0.2s ease;
+}
+.ws-model-menu-btn:hover {
+    background: rgba(0, 102, 255, 0.25);
+    border-color: #00D4FF;
+}
+
 .ws-model-back-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: rgba(8, 22, 46, 0.85);
+    border: 1.5px solid rgba(0, 140, 255, 0.4);
     color: #FFFFFF;
     display: flex;
     align-items: center;
@@ -3541,117 +3604,142 @@ select:-webkit-autofill:focus {
     text-decoration: none;
 }
 .ws-model-back-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 102, 255, 0.25);
+    border-color: #00D4FF;
 }
 
+/* Logo DNA AUTO Centralizado */
 .ws-model-brand-center {
     display: flex;
     align-items: center;
     gap: 8px;
     margin: 0 auto;
+    cursor: pointer;
 }
 
 .ws-model-brand-center .brand-logo-icon {
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
+    filter: drop-shadow(0 0 8px rgba(0, 132, 255, 0.6));
 }
 
 .ws-model-brand-center .brand-title {
-    font-size: 17px;
-    font-weight: 800;
+    font-size: 19px;
+    font-weight: 900;
     letter-spacing: -0.5px;
     color: #FFFFFF;
     font-family: 'Outfit', sans-serif;
 }
 .ws-model-brand-center .brand-title span {
-    color: #0084FF;
+    color: #00A3FF;
+    text-shadow: 0 0 12px rgba(0, 163, 255, 0.6);
 }
 
+/* Botão Notificações / Sino */
 .ws-model-bell-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(8, 22, 46, 0.85);
+    border: 1.5px solid rgba(0, 140, 255, 0.45);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #FFFFFF;
     position: relative;
     cursor: pointer;
-    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    transition: all 0.2s ease;
+}
+.ws-model-bell-btn:hover {
+    border-color: #00D4FF;
+    background: rgba(0, 102, 255, 0.25);
 }
 .ws-model-bell-dot {
     position: absolute;
-    top: 6px;
-    right: 7px;
+    top: 7px;
+    right: 8px;
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: #EF4444;
-    border: 1.5px solid #060F1E;
+    border: 1.5px solid #08162E;
+    box-shadow: 0 0 8px #EF4444;
 }
 
-/* Saudação no Topo do Dashboard (Tela 3) */
+/* Saudação no Topo do Dashboard com a Silhueta Neon do Carro */
 .ws-model-greeting-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 10px;
-    padding-top: 4px;
+    margin-top: 14px;
+    padding: 0 4px;
+    position: relative;
+    overflow: visible;
 }
 .ws-model-greeting-text h2 {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 800;
     color: #FFFFFF;
     margin: 0;
     line-height: 1.2;
+    letter-spacing: -0.5px;
 }
 .ws-model-greeting-text p {
-    font-size: 13px;
-    color: #94A3B8;
-    margin: 2px 0 0;
-}
-.ws-model-ws-icon-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: rgba(0, 102, 255, 0.15);
-    border: 1px solid rgba(0, 102, 255, 0.35);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #00D4FF;
-    font-size: 20px;
-    cursor: pointer;
+    font-size: 14px;
+    color: #7DD3FC;
+    margin: 4px 0 0;
+    font-weight: 500;
+    letter-spacing: -0.2px;
 }
 
-/* Grade de 8 Cards do Dashboard (Tela 3) */
+/* Silhueta Neon do Carro Esportivo (Lado Direito da Saudação) */
+.ws-model-car-glow-hero {
+    width: 140px;
+    height: 54px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    position: relative;
+}
+.ws-model-car-glow-hero svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.75));
+    transition: transform 0.3s ease;
+}
+.ws-model-car-glow-hero:hover svg {
+    transform: scale(1.04);
+}
+
+/* Grade dos 6 Cards Essenciais do Dashboard */
 .ws-model-dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 14px 16px 20px;
+    gap: 14px;
+    padding: 14px 16px 28px;
 }
 
 .ws-model-dash-card {
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
-    border-radius: 16px;
-    padding: 14px 12px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    background: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    border-radius: 20px !important;
+    padding: 16px 14px !important;
+    box-shadow: 0 10px 24px -4px rgba(2, 6, 23, 0.25), 0 4px 10px -2px rgba(2, 6, 23, 0.15) !important;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 125px;
+    min-height: 130px;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease !important;
     box-sizing: border-box;
     text-align: left;
 }
 .ws-model-dash-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0, 102, 255, 0.12);
-    border-color: #0066FF;
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 14px 28px -4px rgba(0, 102, 255, 0.35), 0 6px 12px -2px rgba(0, 102, 255, 0.2) !important;
+    border-color: #0066FF !important;
 }
 .ws-model-dash-card:active {
     transform: scale(0.98);
@@ -3661,55 +3749,79 @@ select:-webkit-autofill:focus {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
+/* Caixas de Ícones Vibrantes Coloridas */
 .ws-model-card-icon-box {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: #EFF6FF;
-    color: #0066FF;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 19px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
 }
-.ws-model-card-icon-box.green {
-    background: #ECFDF5;
-    color: #10B981;
+.ws-model-card-icon-box svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* Gradientes específicos dos 6 cards */
+.ws-icon-cadastrar {
+    background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%) !important;
+}
+.ws-icon-lancar {
+    background: linear-gradient(135deg, #EA580C 0%, #F97316 100%) !important;
+}
+.ws-icon-manutencao {
+    background: linear-gradient(135deg, #15803D 0%, #16A34A 100%) !important;
+}
+.ws-icon-whatsapp {
+    background: linear-gradient(135deg, #16A34A 0%, #22C55E 100%) !important;
+}
+.ws-icon-financeiro {
+    background: linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%) !important;
+}
+.ws-icon-suporte {
+    background: linear-gradient(135deg, #0284C7 0%, #0EA5E9 100%) !important;
 }
 
 .ws-model-card-arrow {
-    color: #94A3B8;
-    font-size: 18px;
-    font-weight: 700;
+    color: #0F172A !important;
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1;
 }
 
 .ws-model-card-content h3 {
-    font-size: 13.5px;
-    font-weight: 800;
-    color: #0F172A;
-    margin: 0 0 3px;
-    line-height: 1.25;
+    font-size: 14.5px !important;
+    font-weight: 800 !important;
+    color: #0F172A !important;
+    margin: 0 0 3px !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.2px;
 }
 .ws-model-card-content p {
-    font-size: 11px;
-    color: #64748B;
-    margin: 0;
-    line-height: 1.35;
+    font-size: 11.5px !important;
+    color: #475569 !important;
+    margin: 0 !important;
+    line-height: 1.35 !important;
+    font-weight: 500 !important;
 }
 
-/* Barra de Navegação Inferior Fixa com 5 Abas */
+/* Barra de Navegação Inferior Fixa com Efeito Glassmorphism e Abas Oficiais */
 .ws-model-bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 60px;
-    background: #FFFFFF;
-    border-top: 1px solid #E2E8F0;
-    box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.05);
+    height: 66px;
+    background: rgba(3, 10, 24, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(0, 140, 255, 0.25);
     display: flex;
     align-items: center;
     justify-content: space-around;
@@ -3718,6 +3830,7 @@ select:-webkit-autofill:focus {
     max-width: 480px;
     margin: 0 auto;
     box-sizing: border-box;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
 }
 
 .ws-model-nav-item {
@@ -3727,16 +3840,33 @@ select:-webkit-autofill:focus {
     align-items: center;
     justify-content: center;
     gap: 3px;
-    color: #64748B;
+    color: #94A3B8;
     text-decoration: none;
     cursor: pointer;
     background: none;
     border: none;
-    padding: 6px 0;
+    padding: 6px 4px;
     font-family: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+.ws-model-nav-item:hover {
+    color: #38BDF8;
 }
 .ws-model-nav-item.active {
-    color: #0066FF;
+    color: #FFFFFF;
+    font-weight: 800;
+}
+.ws-model-nav-item .nav-pill-active {
+    background: linear-gradient(135deg, #0066FF 0%, #00A3FF 100%);
+    box-shadow: 0 0 16px rgba(0, 140, 255, 0.5);
+    border-radius: 14px;
+    padding: 5px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
 }
 .ws-model-nav-item .nav-icon {
     font-size: 20px;
