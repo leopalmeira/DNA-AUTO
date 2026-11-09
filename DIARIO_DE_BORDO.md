@@ -41,35 +41,39 @@
      - 100% de aprovação na suíte financeira da oficina (`test/oficina.finance.test.js`, 20/20 cenários).
      - 100% de aprovação nos testes de componentes da oficina (`test/oficina.components.test.js` e `test/oficina.registrar_and_overflow.test.js`).
 
-### Ciclo 128 — Regra Universal de Contraste para Caixas de Texto (Fundo Branco Letra Preta / Fundo Escuro Letra Branca), Redesign Premium do Cabeçalho com Silhueta Neon Esportiva e Novo Fundo dos Cards Automotivo (v2.4.0)
+### Ciclo 129 — Layout da Dashboard de Alto Contraste (DNA_AUTO_dashboard_fundo_contraste.html) e Blindagem Total de Salvamento de Serviços (v2.4.1)
 - **Data:** 09/11/2026
 - **Responsáveis:** `@[frontend-specialist]` + `@[backend-specialist]`
 - **Contexto & Demandas Atendidas:**
-  1. **Regra Universal de Contraste para Caixas de Digitação (Inputs):**
-     - O usuário especificou a regra absoluta de legibilidade:
-       - Fundo branco ou claro: a letra **obrigatoriamente deve ser preta** (`#0F172A !important`), com caret preto e placeholder cinza escuro (`#64748B`).
-       - Fundo escuro ou navy: a letra **obrigatoriamente deve ser branca** (`#FFFFFF !important`), com caret ciano (`#00D4FF`) e placeholder cinza claro (`rgba(255,255,255,0.6)`).
-     - Aplicadas regras estritas em `base.css` e `workshop-mobile.css`, além de implementar o helper inteligente `WorkshopView.applyDynamicInputContrast()` que inspeciona em tempo real a cor computada dos campos e do container pai para garantir conformidade em qualquer navegador Webkit/Blink/Gecko.
-  2. **Redesign do Cabeçalho do Dashboard Conforme Modelo de Referência:**
-     - Eliminado botão duplicado de menu próximo ao nome da oficina.
-     - Top Bar alinhada com botão `[☰ Menu]` escuro translúcido com borda azul à esquerda, logotipo `DNA AUTO` com brilho neon ciano centralizado e botão de sino com indicador vermelho no topo direito.
-     - Adicionada área de saudação com tipografia moderna (`Olá, {Nome}` e `{Oficina Credenciada}`) acompanhada pela **silhueta de carro esportivo cupê neon em SVG de alta definição** no lado direito, exatamente como no modelo de referência.
-  3. **Novo Fundo e Contraste dos Cards do Dashboard:**
-     - Substituído o fundo esbranquiçado `#F1F5F9` por um **degradê automotivo azul profundo com iluminação ambiente central** (`radial-gradient`), permitindo que os 6 cards brancos se destaquem com nitidez e contraste absoluto.
-     - Cards remodelados com `border-radius: 20px`, sombras multidirecionais e ícones em caixas arredondadas coloridas vibrantes:
-       1. *Cadastrar Veículo:* Caixa azul cobalto com ícone de carro branco.
-       2. *Lançar Serviços:* Caixa laranja com ferramenta/chave branca.
-       3. *Manutenção:* Caixa verde com prancheta de check branca.
-       4. *Avisos WhatsApp:* Caixa verde WhatsApp com balão branco.
-       5. *Financeiro:* Caixa roxa com gráfico ascendente branco (e suporte ao modal de senha do gestor).
-       6. *Suporte:* Caixa azul ciano com headset branco.
-  4. **Barra de Navegação Inferior Docked:**
-     - Implementada a barra inferior translúcida com efeito blur e 4 abas modernas: *Início* (ativo com pílula neon azul), *Veículos*, *Financeiro* e *Suporte*.
-  5. **Correção do Lançamento de Serviços (Backend & Frontend):**
-     - Vinculação correta de `id` e `vehicle_id` no objeto do veículo recém-cadastrado na transição para a tela de serviços.
-     - Middleware global de erros Express garantindo respostas em JSON formatado (`code` e `error`).
-     - Try/catch defensivo em `mileage_records` e resolução robusta de oficinas parceiras.
-  6. **Sincronização & Versionamento v2.4.0:**
-     - Paridade total (100% idêntico) entre `oficina.app/` e `public/`.
-     - Tags de versionamento atualizadas para `?v=2.4.0` em todos os scripts e CSS.
-     - 100% de aprovação na bateria completa de testes automatizados (`npm test`).
+  1. **Aplicação do Layout da Dashboard Conforme Modelo do Usuário:**
+     - Integrada a estrutura de código de `DNA_AUTO_dashboard_fundo_contraste.html` / `(1).html`:
+     - Fundo com degradê de alto contraste e iluminação suave: `#e9eff6` no topo transicionando para `#d8e3ef` e `#cddbe9`.
+     - Logotipo oficial de alta definição `dna_auto_dashboard_logo.png` extraído e centralizado.
+     - Topbar com botão menu à esquerda, logotipo e sino de notificações com indicador vermelho `#fb654a` à direita.
+     - Grid de 2 colunas com cards brancos de cantos arredondados (17px a 20px), sombras dinâmicas, glifos coloridos temáticos e setas chevrons em cinza escuro.
+  2. **Blindagem Definitiva do Salvamento de Serviços (Eliminação do Erro HTTP 500 no Render):**
+     - Schema base e migrações automáticas atualizados com colunas `registered_by_user_id` e `part_photo_url` na tabela `service_records`.
+     - Inserção dinâmica em `services.routes.js` inspecionando `PRAGMA table_info(service_records)` para prevenção absoluta de erros de colunas faltantes no SQLite.
+     - Suporte estendido a fotos tiradas em dispositivos Apple/iOS (`image/heic`, `image/heif`, `image/avif`) no middleware de upload.
+     - Fallback defensivo JSON caso chamadas multipart falhem.
+
+### Ciclo 130 — Bloqueio Total e Irrestrito do Módulo Financeiro para Funcionários e Registradores da Oficina (v2.4.2)
+- **Data:** 09/11/2026
+- **Responsáveis:** `@[backend-specialist]` + `@[frontend-specialist]`
+- **Contexto & Demandas Atendidas:**
+  1. **Regra Absoluta: Funcionário NÃO Tem Acesso ao Card Financeiro em Nenhum Momento ou Lugar:**
+     - O usuário ordenou: *"todo cadastro de profissional que é cadastrado pelo app da oficina no caso do funcionário ele não deve ter acesso ao card de financeiro não. implemente isso o card não aparece para ele em nenhum momento e lugar do app de funcionário"*.
+     - **Dashboard:** Para o funcionário/registrador, o card de Financeiro foi **completamente removido** da visualização. No seu lugar, o 5º card exibe a funcionalidade operacional **Ordens de Serviço** (`ws-icon-ordens`), permitindo ao profissional consultar ordens de serviço executadas e histórico sem nenhum acesso a faturamento ou receitas.
+     - **Barra de Navegação Inferior (Bottom Nav):** Para o funcionário, a aba Financeiro foi **removida**. Em seu lugar, é exibida a aba operacional **Serviços** (`switchMobileSection('lancar-servicos')`), mantendo a navegação equilibrada com 4 abas sem nenhuma menção a finanças.
+     - **Menu Superior (Drawer):** Para o funcionário, o bloco "Fechamento Mensal / Repasse para a Plataforma" e a opção "Cadastrar Registradores" foram **completamente omitidos**. O menu exibe estritamente o "Painel do Profissional" com atalhos operacionais e opção de sair.
+     - **Bloqueio de Rota / Navegação Forçada:** Em `WorkshopView.switchMobileSection`, qualquer tentativa de acionar as seções `'financeiro'` ou `'relatorios'` por um usuário identificado como funcionário (`isStaffUser() === true`) é interceptada e bloqueada, disparando alerta e redirecionando instantaneamente para a `'dashboard'`.
+  2. **Bloqueio no Backend (HTTP 403 Forbidden):**
+     - Rota `GET /api/v1/workshops/:id/financial-summary`: Usuários com `role_code === 'WORKSHOP_STAFF'`, `role_id === 'role_workshop_staff'` ou `can_access_billing === false` recebem imediatamente resposta HTTP 403 com código `STAFF_FINANCIAL_ACCESS_DENIED`.
+     - Rota `GET /api/v1/workshops/:id/menu-summary`: Quando requisitada com token de funcionário, o objeto `monthly_billing` é omitido do payload JSON.
+  3. **Identificação Abrangente de Funcionários (`WorkshopView.isStaffUser`):**
+     - Cobertura total de papéis: `role_code === 'WORKSHOP_STAFF'`, `role_id === 'role_workshop_staff'`, `is_registrar === true`, `can_access_billing === false`, e cargos operacionais (`registrador`, `mecânico`, `técnico`, `funcionário`, `colaborador`).
+     - Acesso financeiro preservado exclusivamente para Gestores (`ADMIN`, `WORKSHOP_OWNER`, `WORKSHOP_ADMIN`).
+  4. **Sincronização & Testes Automatizados:**
+     - Paridade total e rigorosa entre `oficina.app/` e `public/`.
+     - Criada nova suíte unitária e de integração dedicada: `test/oficina.staff_financial_block.test.js`, validando 100% dos bloqueios de card, barra inferior, menu gaveta, roteador e backend.
+     - Homologação completa com 100% de sucesso em toda a bateria de testes (`npm test`).

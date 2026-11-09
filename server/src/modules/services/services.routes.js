@@ -205,40 +205,47 @@ router.post('/workshop-register', authenticateToken, upload.fields([
             primaryPhotoUrl = '/uploads/photos/' + req.files['photos'][0].filename;
         }
 
+        // Inspeciona dinamicamente colunas existentes em service_records para blindagem total
+        const existingCols = db.prepare('PRAGMA table_info(service_records)').all().map(c => c.name);
+        const colList = [
+            'id', 'vehicle_id', 'workshop_id', 'declared_by_owner_id', 'responsible_technician_name',
+            'service_date', 'mileage', 'category', 'service_title', 'description',
+            'parts_cost_cents', 'labor_cost_cents', 'total_cost_cents', 'warranty_months',
+            'proof_level', 'proof_status', 'workshop_confirmation_status', 'workshop_confirmation_date'
+        ];
+        if (existingCols.includes('registered_by_user_id')) colList.push('registered_by_user_id');
+        if (existingCols.includes('part_photo_url')) colList.push('part_photo_url');
+
+        const placeholders = colList.map(c => '@' + c).join(', ');
+        const srvInsertSql = `INSERT INTO service_records (${colList.join(', ')}) VALUES (${placeholders})`;
+
+        const srvParams = {
+            id: serviceId,
+            vehicle_id: targetVehicleId,
+            workshop_id: effectiveWorkshopId,
+            declared_by_owner_id: null,
+            responsible_technician_name: effectiveLauncherName,
+            service_date: dateVal,
+            mileage: Number(mileage),
+            category: category || 'Geral',
+            service_title: titleVal,
+            description: description || 'Serviço executado e inspecionado conforme especificações técnicas.',
+            parts_cost_cents: partsCostCents,
+            labor_cost_cents: laborCost,
+            total_cost_cents: totalCost,
+            warranty_months: Number(warranty_months) || 6,
+            proof_level: 4,
+            proof_status: 'WORKSHOP_PROVEN',
+            workshop_confirmation_status: 'CONFIRMED',
+            workshop_confirmation_date: new Date().toISOString()
+        };
+        if (existingCols.includes('registered_by_user_id')) srvParams.registered_by_user_id = effectiveLauncherId;
+        if (existingCols.includes('part_photo_url')) srvParams.part_photo_url = primaryPhotoUrl;
+
         // Executa inserção em transação atômica
         db.transaction(() => {
             // 1. Inserir Registro de Serviço como Nível 4 (COMPROVADO PELA OFICINA)
-            db.prepare(`
-                INSERT INTO service_records (
-                    id, vehicle_id, workshop_id, declared_by_owner_id, responsible_technician_name,
-                    registered_by_user_id, part_photo_url,
-                    service_date, mileage, category, service_title, description,
-                    parts_cost_cents, labor_cost_cents, total_cost_cents, warranty_months,
-                    proof_level, proof_status, workshop_confirmation_status, workshop_confirmation_date
-                ) VALUES (
-                    @id, @vehicle_id, @workshop_id, NULL, @responsible_technician_name,
-                    @registered_by_user_id, @part_photo_url,
-                    @service_date, @mileage, @category, @service_title, @description,
-                    @parts_cost_cents, @labor_cost_cents, @total_cost_cents, @warranty_months,
-                    4, 'WORKSHOP_PROVEN', 'CONFIRMED', CURRENT_TIMESTAMP
-                )
-            `).run({
-                id: serviceId,
-                vehicle_id: targetVehicleId,
-                workshop_id: effectiveWorkshopId,
-                responsible_technician_name: effectiveLauncherName,
-                registered_by_user_id: effectiveLauncherId,
-                part_photo_url: primaryPhotoUrl,
-                service_date: dateVal,
-                mileage: Number(mileage),
-                category: category || 'Geral',
-                service_title: titleVal,
-                description: description || 'Serviço executado e inspecionado conforme especificações técnicas.',
-                parts_cost_cents: partsCostCents,
-                labor_cost_cents: laborCost,
-                total_cost_cents: totalCost,
-                warranty_months: Number(warranty_months) || 6
-            });
+            db.prepare(srvInsertSql).run(srvParams);
 
             // 2. Inserir Peças Vinculadas
             for (let i = 0; i < parsedParts.length; i++) {
@@ -339,7 +346,7 @@ router.post('/workshop-register', authenticateToken, upload.fields([
                     targetVehicleId,
                     serviceId,
                     invoice_number || 'NF-e ' + Math.floor(1000 + Math.random() * 9000),
-                    req.user.workshop ? req.user.workshop.workshop_name : 'Oficina Credenciada',
+                    (req.user && req.user.workshop) ? req.user.workshop.workshop_name : 'Oficina Credenciada',
                     dateVal,
                     Number(invoice_amount_cents) || totalCost,
                     '/uploads/invoices/' + invFile.filename

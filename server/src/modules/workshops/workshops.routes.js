@@ -290,6 +290,19 @@ router.get('/:id/financial-summary', authenticateToken, (req, res) => {
             return res.status(403).json({ error: 'Acesso negado: dados financeiros restritos à própria oficina.' });
         }
 
+        // REGRA ABSOLUTA: Funcionários e Registradores NÃO possuem acesso ao módulo financeiro
+        if (req.user && (
+            req.user.role_code === 'WORKSHOP_STAFF' ||
+            req.user.role_id === 'role_workshop_staff' ||
+            req.user.is_registrar === true ||
+            (req.user.workshop && (req.user.workshop.can_access_billing === false || req.user.workshop.is_registrar === true))
+        )) {
+            return res.status(403).json({
+                error: 'Acesso negado: colaboradores e funcionários da oficina não possuem acesso a dados ou relatórios financeiros.',
+                code: 'STAFF_FINANCIAL_ACCESS_DENIED'
+            });
+        }
+
         const meta = getMonthMetadata(req.query.month);
         const targetMonth = meta.month;
 
@@ -2375,6 +2388,20 @@ router.get('/:id/registrars', (req, res) => {
 router.get('/:id/menu-summary', (req, res) => {
     try {
         const data = buildWorkshopMenuSummary(req.params.id);
+        
+        // Se a requisição contiver token de funcionário, omite os dados de faturamento e repasse
+        try {
+            const authHeader = req.headers['authorization'];
+            if (authHeader && authHeader.startsWith('Bearer ')) {
+                const jwt = require('jsonwebtoken');
+                const JWT_SECRET = process.env.JWT_SECRET || 'dna_auto_secret_jwt_dev_key_2026';
+                const decoded = jwt.verify(authHeader.split(' ')[1], JWT_SECRET);
+                if (decoded && (decoded.role_code === 'WORKSHOP_STAFF' || decoded.role === 'WORKSHOP_STAFF')) {
+                    delete data.monthly_billing;
+                }
+            }
+        } catch (_) {}
+
         res.json({ success: true, ...data });
     } catch (err) {
         console.error('Erro ao buscar resumo do menu:', err);

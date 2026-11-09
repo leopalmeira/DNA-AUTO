@@ -31,11 +31,19 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-    if (allowedMimes.includes(file.mimetype)) {
+    const allowedMimes = [
+        'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif',
+        'image/heic-sequence', 'image/heif-sequence', 'image/avif', 'image/bmp',
+        'application/pdf', 'application/octet-stream'
+    ];
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif', '.avif', '.bmp', '.pdf'];
+
+    if (allowedMimes.includes(file.mimetype) || allowedExts.includes(ext)) {
         cb(null, true);
     } else {
-        cb(new Error('Tipo de arquivo não permitido. Apenas JPEG, PNG, WEBP e PDF são aceitos.'), false);
+        console.warn(`[Upload] Arquivo ignorado por tipo não suportado (${file.mimetype}, ext: ${ext})`);
+        cb(null, false);
     }
 };
 

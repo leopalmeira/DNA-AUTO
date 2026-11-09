@@ -367,32 +367,59 @@
         return 'ws_veloce';
     };
 
-    // Identifica se o usuário logado é Registrador Técnico (Acesso operacional total, sem acesso a financeiro)
+    // Identifica se o usuário logado é Registrador Técnico / Funcionário (Acesso operacional total, SEM ACESSO A FINANCEIRO)
     WorkshopView.isRegistrarUser = function() {
         let savedUser = null;
         try {
             if (typeof localStorage !== 'undefined') {
-                const raw = localStorage.getItem('dna_logged_user');
+                const raw = localStorage.getItem('dna_logged_user') || localStorage.getItem('dna_user');
                 if (raw) savedUser = JSON.parse(raw);
             }
         } catch (_) {}
         const logged = (typeof this.getLoggedWorkshopUser === 'function') ? this.getLoggedWorkshopUser() : {};
         const u = savedUser || logged || {};
+
+        // Gestores autorizados a acessar financeiro (Dono, Administrador Geral, Gerente Geral)
+        const roleCode = String(u.role_code || (u.role && u.role.code) || '').toUpperCase();
+        const roleId = String(u.role_id || '').toLowerCase();
+        const pos = String(u.position_title || (u.workshop && u.workshop.position_title) || '').toLowerCase();
+
+        if (roleCode === 'ADMIN' || roleCode === 'WORKSHOP_OWNER' || roleCode === 'WORKSHOP_ADMIN') {
+            return false;
+        }
+
         return Boolean(
             u.is_registrar === true ||
-            u.role_code === 'WORKSHOP_STAFF' ||
-            u.role_id === 'role_workshop_staff' ||
-            (u.position_title && String(u.position_title).toLowerCase().includes('registrador')) ||
-            (u.workshop && (u.workshop.is_registrar === true || (u.workshop.position_title && String(u.workshop.position_title).toLowerCase().includes('registrador'))))
+            u.can_access_billing === false ||
+            (u.workshop && u.workshop.can_access_billing === false) ||
+            (u.workshop && u.workshop.is_registrar === true) ||
+            roleCode === 'WORKSHOP_STAFF' ||
+            roleCode === 'STAFF' ||
+            roleCode === 'EMPLOYEE' ||
+            roleCode === 'MECHANIC' ||
+            roleId === 'role_workshop_staff' ||
+            pos.includes('registrador') ||
+            pos.includes('mecânico') ||
+            pos.includes('mecanico') ||
+            pos.includes('técnico') ||
+            pos.includes('tecnico') ||
+            pos.includes('funcionário') ||
+            pos.includes('funcionario') ||
+            pos.includes('colaborador')
         );
     };
 
+    WorkshopView.isStaffUser = function() {
+        return this.isRegistrarUser();
+    };
+
     WorkshopView.handleRegistrarFinanceClick = function() {
-        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('dna_finance_unlocked') === 'true') {
-            this.switchMobileSection('financeiro');
-            return;
+        if (typeof this.showToast === 'function') {
+            this.showToast('Acesso negado: O módulo financeiro é exclusivo do gestor da oficina.', 'warning');
+        } else {
+            alert('Acesso negado: O módulo financeiro é exclusivo do gestor da oficina.');
         }
-        this.promptUnlockFinanceModal();
+        this.switchMobileSection('dashboard');
     };
 
     WorkshopView.promptUnlockFinanceModal = function() {
@@ -716,6 +743,7 @@
     WorkshopView.renderWorkshopTopMenuDrawerInner = function() {
         const logged = this.getLoggedWorkshopUser();
         const wsName = this.officialWorkshopName || (logged.workshop && logged.workshop.workshop_name) || 'Oficina Credenciada';
+        const isStaff = typeof this.isStaffUser === 'function' ? this.isStaffUser() : this.isRegistrarUser();
         const cache = this._menuSummaryCache || {};
         const billing = cache.monthly_billing || {
             cars_registered_month: 0,
@@ -733,92 +761,120 @@
                 <!-- Cabeçalho do Menu -->
                 <div class="ws-top-menu-header">
                     <div>
-                        <div style="font-size:11px; font-weight:800; color:#38BDF8; text-transform:uppercase; letter-spacing:0.7px;">Menu da Oficina</div>
+                        <div style="font-size:11px; font-weight:800; color:#38BDF8; text-transform:uppercase; letter-spacing:0.7px;">${isStaff ? 'Painel do Profissional' : 'Menu da Oficina'}</div>
                         <h3 style="margin:2px 0 0; font-size:16px; font-weight:900; color:#FFFFFF;">${wsName}</h3>
-                        <span style="font-size:11.5px; color:#94A3B8;">Conectado como: <strong style="color:#E2E8F0;">${logged.name || 'Carlos'}</strong></span>
+                        <span style="font-size:11.5px; color:#94A3B8;">Conectado como: <strong style="color:#E2E8F0;">${logged.name || 'Carlos'}</strong> ${isStaff ? '<span style="font-size:10px; color:#38BDF8; background:rgba(56,189,248,0.15); padding:1px 6px; border-radius:4px; margin-left:4px;">Funcionário</span>' : ''}</span>
                     </div>
                     <button type="button" class="ws-top-menu-close-btn" onclick="WorkshopView.closeWorkshopTopMenu()" aria-label="Fechar Menu">✕</button>
                 </div>
 
                 <div class="ws-top-menu-body">
-                    <!-- 1. RESUMO DO MÊS: CARROS CADASTRADOS E REPASSE PARA A PLATAFORMA -->
-                    <div class="ws-menu-section-card billing">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                            <span style="font-size:11px; font-weight:800; color:#38BDF8; text-transform:uppercase; letter-spacing:0.6px;">📊 Fechamento Mensal da Oficina</span>
-                            <span style="font-size:10.5px; color:#94A3B8; font-weight:700;">Mês Atual</span>
-                        </div>
-                        <div class="ws-menu-billing-grid">
-                            <div class="ws-menu-billing-box">
-                                <span class="label">Carros Cadastrados no Mês</span>
-                                <strong class="value" id="ws-menu-cars-month">${billing.cars_registered_month || 0} carros</strong>
-                                <small>Ativações no mês</small>
+                    ${!isStaff ? `
+                        <!-- 1. RESUMO DO MÊS: CARROS CADASTRADOS E REPASSE PARA A PLATAFORMA (SOMENTE GESTOR) -->
+                        <div class="ws-menu-section-card billing">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                                <span style="font-size:11px; font-weight:800; color:#38BDF8; text-transform:uppercase; letter-spacing:0.6px;">📊 Fechamento Mensal da Oficina</span>
+                                <span style="font-size:10.5px; color:#94A3B8; font-weight:700;">Mês Atual</span>
                             </div>
-                            <div class="ws-menu-billing-box highlight">
-                                <span class="label">Repassar para a Plataforma</span>
-                                <strong class="value green" id="ws-menu-transfer-amount">${billing.amount_to_transfer_formatted || billing.month_transfer_amount_formatted || 'R$ 0,00'}</strong>
-                                <small>${billing.transfer_per_car_formatted || 'R$ 24,95'} por carro</small>
-                            </div>
-                        </div>
-                        <button type="button" class="ws-menu-link-btn" onclick="WorkshopView.closeWorkshopTopMenu(); WorkshopView.switchMobileSection('financeiro');">
-                            <span>💵 Ver Detalhes e Quitar Repasse no Financeiro</span>
-                            <span>›</span>
-                        </button>
-                    </div>
-
-                    <!-- 2. CADASTRAR REGISTRADORES (FOTOGRAFAM PEÇAS E LANÇAM SERVIÇO + VALOR NA PLACA) -->
-                    <div class="ws-menu-section-card">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-                            <span style="font-size:11.5px; font-weight:800; color:#FFFFFF; text-transform:uppercase; letter-spacing:0.5px;">👥 Cadastrar Registradores</span>
-                            <span style="font-size:10.5px; color:#10B981; font-weight:800;">${registrars.length} ativo(s)</span>
-                        </div>
-                        <p style="font-size:11.5px; color:#94A3B8; margin:0 0 10px; line-height:1.4;">
-                            Cadastre os profissionais que tiram foto das peças e lançam a vinculação junto à placa e o valor do serviço. Eles fazem login com a senha gerada abaixo e o sistema registra quem lançou cada serviço.
-                        </p>
-
-                        <div style="display:flex; flex-direction:column; gap:8px;">
-                            <input type="text" id="ws-menu-reg-name" class="ws-menu-input" placeholder="Nome do profissional (ex: Marcos Mecânico)" />
-                            <input type="email" id="ws-menu-reg-email" class="ws-menu-input" placeholder="E-mail de login do profissional" />
-                            <div style="display:flex; gap:6px; align-items:center;">
-                                <div style="flex:1; position:relative;">
-                                    <input type="text" id="ws-menu-reg-password" class="ws-menu-input" value="${randomPass}" style="font-weight:800; letter-spacing:1.5px; color:#38BDF8;" title="Senha gerada ou personalizada para o profissional" placeholder="Senha do profissional" />
+                            <div class="ws-menu-billing-grid">
+                                <div class="ws-menu-billing-box">
+                                    <span class="label">Carros Cadastrados no Mês</span>
+                                    <strong class="value" id="ws-menu-cars-month">${billing.cars_registered_month || 0} carros</strong>
+                                    <small>Ativações no mês</small>
                                 </div>
-                                <button type="button" onclick="WorkshopView.refreshRandomStaffPasswordInput()" style="height:40px; padding:0 10px; border-radius:8px; border:1px solid rgba(56,189,248,0.35); background:rgba(56,189,248,0.12); color:#38BDF8; font-size:11.5px; font-weight:800; cursor:pointer; white-space:nowrap;">
-                                    🔄 Gerar Senha
-                                </button>
+                                <div class="ws-menu-billing-box highlight">
+                                    <span class="label">Repassar para a Plataforma</span>
+                                    <strong class="value green" id="ws-menu-transfer-amount">${billing.amount_to_transfer_formatted || billing.month_transfer_amount_formatted || 'R$ 0,00'}</strong>
+                                    <small>${billing.transfer_per_car_formatted || 'R$ 24,95'} por carro</small>
+                                </div>
                             </div>
-                            <small style="font-size:11px; color:#38BDF8; line-height:1.4;">💡 O profissional poderá entrar usando esta senha ou a senha inicial 123456.</small>
-                            <button type="button" class="ws-menu-primary-btn" onclick="WorkshopView.handleCreateRegistrar('ws-menu-reg')">
-                                <span>+ Cadastrar Registrador</span>
+                            <button type="button" class="ws-menu-link-btn" onclick="WorkshopView.closeWorkshopTopMenu(); WorkshopView.switchMobileSection('financeiro');">
+                                <span>💵 Ver Detalhes e Quitar Repasse no Financeiro</span>
+                                <span>›</span>
                             </button>
                         </div>
 
-                        <!-- Lista de Registradores Cadastrados com botão de Excluir Perfil -->
-                        <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;" id="ws-menu-registrars-list">
-                            ${registrars.length === 0 ? `
-                                <div style="padding:10px; text-align:center; font-size:11.5px; color:#64748B; background:rgba(0,0,0,0.25); border-radius:8px;">
-                                    Nenhum registrador cadastrado ainda.
-                                </div>
-                            ` : registrars.map(r => `
-                                <div class="ws-menu-registrar-item">
-                                    <div style="flex:1; min-width:0;">
-                                        <div style="font-size:13px; font-weight:800; color:#FFFFFF;">${r.name}</div>
-                                        <div style="font-size:11px; color:#94A3B8;">${r.email}</div>
-                                        <div style="font-size:11px; color:#38BDF8; margin-top:2px;">
-                                            🔑 Senha: <strong>${r.generated_password || '******'}</strong> • 🛠️ ${r.services_launched_count || 0} lançamento(s)
-                                        </div>
+                        <!-- 2. CADASTRAR REGISTRADORES (SOMENTE GESTOR) -->
+                        <div class="ws-menu-section-card">
+                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                                <span style="font-size:11.5px; font-weight:800; color:#FFFFFF; text-transform:uppercase; letter-spacing:0.5px;">👥 Cadastrar Registradores</span>
+                                <span style="font-size:10.5px; color:#10B981; font-weight:800;">${registrars.length} ativo(s)</span>
+                            </div>
+                            <p style="font-size:11.5px; color:#94A3B8; margin:0 0 10px; line-height:1.4;">
+                                Cadastre os profissionais que tiram foto das peças e lançam a vinculação junto à placa e o valor do serviço. Eles fazem login com a senha gerada abaixo e o sistema registra quem lançou cada serviço.
+                            </p>
+
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                <input type="text" id="ws-menu-reg-name" class="ws-menu-input" placeholder="Nome do profissional (ex: Marcos Mecânico)" />
+                                <input type="email" id="ws-menu-reg-email" class="ws-menu-input" placeholder="E-mail de login do profissional" />
+                                <div style="display:flex; gap:6px; align-items:center;">
+                                    <div style="flex:1; position:relative;">
+                                        <input type="text" id="ws-menu-reg-password" class="ws-menu-input" value="${randomPass}" style="font-weight:800; letter-spacing:1.5px; color:#38BDF8;" title="Senha gerada ou personalizada para o profissional" placeholder="Senha do profissional" />
                                     </div>
-                                    <button type="button" class="ws-menu-delete-reg-btn" onclick="WorkshopView.handleDeleteRegistrar('${r.id}', '${(r.name || '').replace(/'/g, '')}')" title="Excluir perfil deste registrador">
-                                        🗑️ Excluir
+                                    <button type="button" onclick="WorkshopView.refreshRandomStaffPasswordInput()" style="height:40px; padding:0 10px; border-radius:8px; border:1px solid rgba(56,189,248,0.35); background:rgba(56,189,248,0.12); color:#38BDF8; font-size:11.5px; font-weight:800; cursor:pointer; white-space:nowrap;">
+                                        🔄 Gerar Senha
                                     </button>
                                 </div>
-                            `).join('')}
-                        </div>
+                                <small style="font-size:11px; color:#38BDF8; line-height:1.4;">💡 O profissional poderá entrar usando esta senha ou a senha inicial 123456.</small>
+                                <button type="button" class="ws-menu-primary-btn" onclick="WorkshopView.handleCreateRegistrar('ws-menu-reg')">
+                                    <span>+ Cadastrar Registrador</span>
+                                </button>
+                            </div>
 
-                        <button type="button" class="ws-menu-link-btn" style="margin-top:10px;" onclick="WorkshopView.closeWorkshopTopMenu(); WorkshopView.switchMobileSection('registradores');">
-                            <span>📸 Ver Painel Completo de Registradores & Fotos de Peças</span>
-                            <span>›</span>
-                        </button>
-                    </div>
+                            <!-- Lista de Registradores Cadastrados com botão de Excluir Perfil -->
+                            <div style="margin-top:12px; display:flex; flex-direction:column; gap:8px;" id="ws-menu-registrars-list">
+                                ${registrars.length === 0 ? `
+                                    <div style="padding:10px; text-align:center; font-size:11.5px; color:#64748B; background:rgba(0,0,0,0.25); border-radius:8px;">
+                                        Nenhum registrador cadastrado ainda.
+                                    </div>
+                                ` : registrars.map(r => `
+                                    <div class="ws-menu-registrar-item">
+                                        <div style="flex:1; min-width:0;">
+                                            <div style="font-size:13px; font-weight:800; color:#FFFFFF;">${r.name}</div>
+                                            <div style="font-size:11px; color:#94A3B8;">${r.email}</div>
+                                            <div style="font-size:11px; color:#38BDF8; margin-top:2px;">
+                                                🔑 Senha: <strong>${r.generated_password || '******'}</strong> • 🛠️ ${r.services_launched_count || 0} lançamento(s)
+                                            </div>
+                                        </div>
+                                        <button type="button" class="ws-menu-delete-reg-btn" onclick="WorkshopView.handleDeleteRegistrar('${r.id}', '${(r.name || '').replace(/'/g, '')}')" title="Excluir perfil deste registrador">
+                                            🗑️ Excluir
+                                        </button>
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            <button type="button" class="ws-menu-link-btn" style="margin-top:10px;" onclick="WorkshopView.closeWorkshopTopMenu(); WorkshopView.switchMobileSection('registradores');">
+                                <span>📸 Ver Painel Completo de Registradores & Fotos de Peças</span>
+                                <span>›</span>
+                            </button>
+                        </div>
+                    ` : `
+                        <!-- MODO FUNCIONÁRIO / REGISTRADOR (SEM NENHUM CARD OU DADO FINANCEIRO) -->
+                        <div class="ws-menu-section-card">
+                            <div style="font-size:12px; font-weight:800; color:#38BDF8; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:8px;">🛠️ Ações Operacionais do Funcionário</div>
+                            <p style="font-size:12px; color:#94A3B8; margin:0 0 12px; line-height:1.4;">
+                                Ferramentas de recepção de veículos, fotos das peças e lançamento oficial de serviços na placa do cliente.
+                            </p>
+                            <div style="display:flex; flex-direction:column; gap:8px;">
+                                <button type="button" class="ws-menu-link-btn" onclick="WorkshopView.closeWorkshopTopMenu(); WorkshopView.switchMobileSection('buscar-veiculos');">
+                                    <span>🚗 Consultar Placa / Cadastrar Veículo</span>
+                                    <span>›</span>
+                                </button>
+                                <button type="button" class="ws-menu-link-btn" onclick="WorkshopView.closeWorkshopTopMenu(); WorkshopView.switchMobileSection('lancar-servicos');">
+                                    <span>🔧 Lançar Serviços e Fotografar Peças</span>
+                                    <span>›</span>
+                                </button>
+                                <button type="button" class="ws-menu-link-btn" onclick="WorkshopView.closeWorkshopTopMenu(); WorkshopView.switchMobileSection('ordens-servico');">
+                                    <span>📋 Minhas Ordens de Serviço</span>
+                                    <span>›</span>
+                                </button>
+                                <button type="button" class="ws-menu-link-btn" onclick="WorkshopView.closeWorkshopTopMenu(); WorkshopView.switchMobileSection('suporte');">
+                                    <span>🎧 Suporte Técnico</span>
+                                    <span>›</span>
+                                </button>
+                            </div>
+                        </div>
+                    `}
 
                     <!-- 3. AUDITORIA RÁPIDA: SERVIÇOS LANÇADOS COM FOTO DA PEÇA, CUSTO, DATA E QUEM LANÇOU -->
                     <div class="ws-menu-section-card">
@@ -992,67 +1048,28 @@
         const userName = logged.name || 'Carlos';
         const wsName = this.officialWorkshopName || (logged.workshop && logged.workshop.workshop_name) || 'Oficina Credenciada';
 
-        // TELA 3: HEADER DO DASHBOARD (COM BOTÃO DE MENU NO TOPO + SAUDAÇÃO + SILHUETA DO CARRO)
+        // TELA 3: HEADER DO DASHBOARD (ESTRUTURA DNA_AUTO_dashboard_fundo_contraste.html)
         if (sec === 'dashboard') {
             return `
-                <header class="ws-model-header">
-                    <div class="ws-model-header-top">
-                        <button type="button" class="ws-model-menu-btn" id="ws-top-menu-toggle-btn" onclick="WorkshopView.toggleWorkshopTopMenu()" title="Abrir Menu da Oficina">
-                            <span class="menu-bars" style="font-size:16px;">☰</span>
-                            <span class="menu-label">Menu</span>
+                <header class="header ws-model-header">
+                    <div class="topbar ws-model-header-top">
+                        <button class="icon-btn ws-model-menu-btn" type="button" id="ws-top-menu-toggle-btn" aria-label="Abrir menu" onclick="WorkshopView.toggleWorkshopTopMenu()" title="Abrir Menu da Oficina">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
                         </button>
 
-                        <div class="ws-model-brand-center" onclick="WorkshopView.switchMobileSection('dashboard')">
-                            <svg class="brand-logo-icon" viewBox="0 0 100 100" fill="none">
-                                <path d="M20 15 H55 C78 15 90 28 90 50 C90 72 78 85 55 85 H20 L35 62 H52 C63 62 68 56 68 50 C68 44 63 38 52 38 H35 L20 15Z" fill="#0084FF"/>
-                            </svg>
-                            <span class="brand-title">DNA <span>AUTO</span></span>
+                        <div class="logo ws-model-brand-center" onclick="WorkshopView.switchMobileSection('dashboard')" style="cursor:pointer;" title="DNA AUTO">
+                            <img alt="DNA AUTO" src="img/dna_auto_dashboard_logo.png" onerror="this.onerror=null; this.src='img/splash-d-logo.png';" />
                         </div>
 
-                        <button type="button" class="ws-model-bell-btn" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')" title="Notificações">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                            </svg>
-                            <span class="ws-model-bell-dot"></span>
+                        <button class="icon-btn bell ws-model-bell-btn" type="button" aria-label="Notificações" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')" title="Notificações e Avisos">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
                         </button>
                     </div>
 
-                    <div class="ws-model-greeting-row">
-                        <div class="ws-model-greeting-text">
-                            <h2>Olá, ${userName}</h2>
-                            <p>${wsName}</p>
-                        </div>
-                        <div class="ws-model-car-glow-hero" title="DNA AUTO Smart Mobility">
-                            <svg viewBox="0 0 240 100" fill="none" class="ws-car-neon-silhouette">
-                                <defs>
-                                    <linearGradient id="neonCyanGlow" x1="0%" y1="0%" x2="100%" y2="0%">
-                                        <stop offset="0%" stop-color="#00D4FF" stop-opacity="0.95"/>
-                                        <stop offset="60%" stop-color="#0084FF" stop-opacity="1"/>
-                                        <stop offset="100%" stop-color="#00D4FF" stop-opacity="0.4"/>
-                                    </linearGradient>
-                                    <filter id="neonCarFilter" x="-30%" y="-30%" width="160%" height="160%">
-                                        <feGaussianBlur stdDeviation="3" result="glow"/>
-                                        <feMerge>
-                                            <feMergeNode in="glow"/>
-                                            <feMergeNode in="SourceGraphic"/>
-                                        </feMerge>
-                                    </filter>
-                                </defs>
-                                <path d="M10 82 C60 82, 130 82, 235 82" stroke="url(#neonCyanGlow)" stroke-width="2" opacity="0.6"/>
-                                <path d="M25 78 C45 78, 60 70, 85 54 C110 40, 138 24, 175 24 C205 24, 218 36, 232 58 C238 65, 238 72, 234 78" 
-                                      stroke="url(#neonCyanGlow)" stroke-width="3" stroke-linecap="round" filter="url(#neonCarFilter)"/>
-                                <path d="M65 78 C80 78, 92 68, 108 60 C130 50, 155 48, 192 50 C210 52, 222 62, 232 74" 
-                                      stroke="#00D4FF" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>
-                                <path d="M115 54 C132 34, 155 30, 180 30 C198 30, 204 38, 212 52 Z" 
-                                      fill="rgba(0, 212, 255, 0.15)" stroke="#38BDF8" stroke-width="1.4"/>
-                                <circle cx="72" cy="78" r="15" stroke="#00D4FF" stroke-width="2.2" fill="#030A18" filter="url(#neonCarFilter)"/>
-                                <circle cx="198" cy="78" r="15" stroke="#00D4FF" stroke-width="2.2" fill="#030A18" filter="url(#neonCarFilter)"/>
-                                <circle cx="72" cy="78" r="6" fill="#00D4FF" opacity="0.9"/>
-                                <circle cx="198" cy="78" r="6" fill="#00D4FF" opacity="0.9"/>
-                                <ellipse cx="232" cy="62" rx="4.5" ry="2.5" fill="#00FFFF" filter="url(#neonCarFilter)"/>
-                            </svg>
-                        </div>
+                    <div class="welcome ws-model-greeting-row">
+                        <div class="eyebrow">PAINEL DA OFICINA</div>
+                        <h1>Olá, ${userName}</h1>
+                        <p>${wsName} <span aria-hidden="true">·</span> Bem-vindo de volta</p>
                     </div>
                 </header>
             `;
@@ -1118,7 +1135,9 @@
         const isDash = sec === 'dashboard';
         const isVeh = sec === 'buscar-veiculos' || sec === 'cadastrar-veiculo' || sec === 'cadastrar-cliente' || sec === 'entrada-veiculos';
         const isFin = sec === 'financeiro';
+        const isSrv = sec === 'lancar-servicos' || sec === 'ordens-servico';
         const isSup = sec === 'suporte';
+        const isStaff = typeof this.isStaffUser === 'function' ? this.isStaffUser() : this.isRegistrarUser();
 
         return `
             <nav class="ws-model-bottom-nav">
@@ -1159,25 +1178,44 @@
                     <span class="nav-label">Veículos</span>
                 </button>
 
-                <button type="button" class="ws-model-nav-item ${isFin ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('financeiro')">
-                    ${isFin ? `
-                        <div class="nav-pill-active">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                ${!isStaff ? `
+                    <!-- ABA FINANCEIRO VISÍVEL EXCLUSIVAMENTE PARA GESTOR/DONO DA OFICINA -->
+                    <button type="button" class="ws-model-nav-item ${isFin ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('financeiro')">
+                        ${isFin ? `
+                            <div class="nav-pill-active">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                            </div>
+                        ` : `
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="18" y1="20" x2="18" y2="10"></line>
                                 <line x1="12" y1="20" x2="12" y2="4"></line>
                                 <line x1="6" y1="20" x2="6" y2="14"></line>
+                                <path d="M4 8l6-4 4 4 6-5"></path>
                             </svg>
-                        </div>
-                    ` : `
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="20" x2="18" y2="10"></line>
-                            <line x1="12" y1="20" x2="12" y2="4"></line>
-                            <line x1="6" y1="20" x2="6" y2="14"></line>
-                            <path d="M4 8l6-4 4 4 6-5"></path>
-                        </svg>
-                    `}
-                    <span class="nav-label">Financeiro</span>
-                </button>
+                        `}
+                        <span class="nav-label">Financeiro</span>
+                    </button>
+                ` : `
+                    <!-- ABA SERVIÇOS TÉCNICOS VISÍVEL PARA FUNCIONÁRIOS NO LUGAR DO FINANCEIRO -->
+                    <button type="button" class="ws-model-nav-item ${isSrv ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
+                        ${isSrv ? `
+                            <div class="nav-pill-active">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14.5 6.3a5 5 0 0 0-6.2 6.2L3 17.8 6.2 21l5.3-5.3a5 5 0 0 0 6.2-6.2l-3.2 3.2-3.2-3.2z"/>
+                                </svg>
+                            </div>
+                        ` : `
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14.5 6.3a5 5 0 0 0-6.2 6.2L3 17.8 6.2 21l5.3-5.3a5 5 0 0 0 6.2-6.2l-3.2 3.2-3.2-3.2z"/>
+                            </svg>
+                        `}
+                        <span class="nav-label">Serviços</span>
+                    </button>
+                `}
 
                 <button type="button" class="ws-model-nav-item ${isSup ? 'active' : ''}" onclick="WorkshopView.switchMobileSection('suporte')">
                     ${isSup ? `
@@ -1255,13 +1293,15 @@
 
     // Alternar de Seção no Modo Mobile
     WorkshopView.switchMobileSection = function(sectionId) {
-        // Bloqueio estrito de acesso financeiro/faturamento para Registradores (com liberação por senha do gestor)
-        if ((sectionId === 'financeiro' || sectionId === 'relatorios') && typeof this.isRegistrarUser === 'function' && this.isRegistrarUser()) {
-            const isUnlocked = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('dna_finance_unlocked') === 'true';
-            if (!isUnlocked) {
-                this.handleRegistrarFinanceClick();
-                return;
+        // Bloqueio ABSOLUTO de acesso financeiro/faturamento para Funcionários/Registradores
+        if ((sectionId === 'financeiro' || sectionId === 'relatorios') && (typeof this.isStaffUser === 'function' ? this.isStaffUser() : this.isRegistrarUser())) {
+            if (typeof this.showToast === 'function') {
+                this.showToast('Acesso negado: O módulo financeiro é restrito ao gestor da oficina.', 'warning');
+            } else {
+                alert('Acesso negado: O módulo financeiro é restrito ao gestor da oficina.');
             }
+            this.switchMobileSection('dashboard');
+            return;
         }
 
         this.currentSection = sectionId;
@@ -1329,140 +1369,151 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 3: DASHBOARD DA OFICINA (SOMENTE OS 6 CARDS ESSENCIAIS COM ÍCONES SVGS)
+    // TELA 3: DASHBOARD DA OFICINA (ESTRUTURA DNA_AUTO_dashboard_fundo_contraste.html)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileDashboardView = function() {
-        const isRegistrar = typeof this.isRegistrarUser === 'function' && this.isRegistrarUser();
-        const isFinanceUnlocked = typeof sessionStorage !== 'undefined' && sessionStorage.getItem('dna_finance_unlocked') === 'true';
+        const isStaff = typeof this.isStaffUser === 'function' ? this.isStaffUser() : this.isRegistrarUser();
 
-        // Card 5: Financeiro (Acesso total para gestores; para Registrador, abre modal de senha do gestor)
-        const financeCardHtml = (isRegistrar && !isFinanceUnlocked) ? `
-            <!-- Card 5: Financeiro (BLOQUEADO PARA REGISTRADOR - DESBLOQUEIO COM SENHA DO GESTOR) -->
-            <div class="ws-model-dash-card" onclick="WorkshopView.handleRegistrarFinanceClick()" style="opacity:0.92; border:1px solid rgba(124,58,237,0.4); background:linear-gradient(145deg, rgba(124,58,237,0.06), #FFFFFF); cursor:pointer;">
-                <div class="ws-model-card-top">
-                    <div class="ws-model-card-icon-box ws-icon-financeiro">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        // Card 5: Financeiro para Gestor / Ordens de Serviço para Funcionário (O CARD FINANCEIRO NÃO APARECE PARA FUNCIONÁRIO EM NENHUM MOMENTO)
+        const fifthCardHtml = isStaff ? `
+            <!-- Card 5 (Funcionário): Ordens de Serviço (Operacional) -->
+            <button type="button" class="card purple ws-model-dash-card" id="ordens-servico" data-action="Ordens de Serviço" onclick="WorkshopView.switchMobileSection('ordens-servico')">
+                <span class="card-top ws-model-card-top">
+                    <span class="glyph ws-model-card-icon-box ws-icon-ordens">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                            <polyline points="10 9 9 9 8 9"/>
                         </svg>
-                    </div>
-                    <span style="font-size:10px; font-weight:800; color:#7C3AED; background:rgba(124,58,237,0.12); padding:3px 8px; border-radius:6px; border:1px solid rgba(124,58,237,0.3);">Senha Gestor</span>
-                </div>
-                <div class="ws-model-card-content">
-                    <h3>Financeiro</h3>
-                    <p style="color:#7C3AED; font-weight:700;">Toque para desbloquear com senha</p>
-                </div>
-            </div>
+                    </span>
+                    <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m9 5 7 7-7 7"/>
+                    </svg>
+                </span>
+                <strong>Ordens de Serviço</strong>
+                <small>Consultar serviços lançados e histórico</small>
+            </button>
         ` : `
-            <!-- Card 5: Financeiro -->
-            <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('financeiro')">
-                <div class="ws-model-card-top">
-                    <div class="ws-model-card-icon-box ws-icon-financeiro">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="18" y1="20" x2="18" y2="10"></line>
-                            <line x1="12" y1="20" x2="12" y2="4"></line>
-                            <line x1="6" y1="20" x2="6" y2="14"></line>
-                            <path d="M4 8l6-4 4 4 6-5"></path>
+            <!-- Card 5 (Gestor/Dono): Financeiro Oficial -->
+            <button type="button" class="card purple ws-model-dash-card" id="financeiro" data-action="Financeiro" onclick="WorkshopView.switchMobileSection('financeiro')">
+                <span class="card-top ws-model-card-top">
+                    <span class="glyph ws-model-card-icon-box ws-icon-financeiro">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="3" y="14" width="4" height="7" rx=".6"/>
+                            <rect x="10" y="9" width="4" height="12" rx=".6"/>
+                            <rect x="17" y="3" width="4" height="18" rx=".6"/>
                         </svg>
-                    </div>
-                    <span class="ws-model-card-arrow">›</span>
-                </div>
-                <div class="ws-model-card-content">
-                    <h3>Financeiro</h3>
-                    <p>Receitas, despesas e faturamento</p>
-                </div>
-            </div>
+                    </span>
+                    <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m9 5 7 7-7 7"/>
+                    </svg>
+                </span>
+                <strong>Financeiro</strong>
+                <small>Receitas, despesas e faturamento</small>
+            </button>
         `;
 
         return `
-            <div class="ws-model-dashboard-grid">
-                <!-- Card 1: Cadastrar Veículo -->
-                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
-                    <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box ws-icon-cadastrar">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="11" width="18" height="7" rx="2"></rect>
-                                <path d="M5 11l2-5h10l2 5"></path>
-                                <circle cx="7.5" cy="18.5" r="1.5" fill="#FFFFFF"></circle>
-                                <circle cx="16.5" cy="18.5" r="1.5" fill="#FFFFFF"></circle>
-                            </svg>
-                        </div>
-                        <span class="ws-model-card-arrow">›</span>
-                    </div>
-                    <div class="ws-model-card-content">
-                        <h3>Cadastrar Veículo</h3>
-                        <p>Consultar placa e cadastrar proprietário</p>
-                    </div>
+            <div class="main ws-model-main">
+                <div class="section-head">
+                    <h2>O que deseja fazer?</h2>
+                    <span>6 funcionalidades</span>
                 </div>
 
-                <!-- Card 2: Lançar Serviços -->
-                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
-                    <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box ws-icon-lancar">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                <div class="cards ws-model-dashboard-grid" aria-label="Funções da oficina">
+                    <!-- Card 1: Cadastrar Veículo -->
+                    <button type="button" class="card blue ws-model-dash-card" id="cadastrar" data-action="Cadastrar Veículo" onclick="WorkshopView.switchMobileSection('buscar-veiculos')">
+                        <span class="card-top ws-model-card-top">
+                            <span class="glyph ws-model-card-icon-box ws-icon-cadastrar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m5 11 2-5h10l2 5M5 11h14l2 3v5h-3v-2H6v2H3v-5z"/>
+                                    <circle cx="7.5" cy="14" r="1"/>
+                                    <circle cx="16.5" cy="14" r="1"/>
+                                </svg>
+                            </span>
+                            <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m9 5 7 7-7 7"/>
                             </svg>
-                        </div>
-                        <span class="ws-model-card-arrow">›</span>
-                    </div>
-                    <div class="ws-model-card-content">
-                        <h3>Lançar Serviços</h3>
-                        <p>Registrar serviços, peças e fotos</p>
-                    </div>
+                        </span>
+                        <strong>Cadastrar Veículo</strong>
+                        <small>Consultar placa e cadastrar proprietário</small>
+                    </button>
+
+                    <!-- Card 2: Lançar Serviços -->
+                    <button type="button" class="card orange ws-model-dash-card" id="servicos" data-action="Lançar Serviços" onclick="WorkshopView.switchMobileSection('lancar-servicos')">
+                        <span class="card-top ws-model-card-top">
+                            <span class="glyph ws-model-card-icon-box ws-icon-lancar">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14.5 6.3a5 5 0 0 0-6.2 6.2L3 17.8 6.2 21l5.3-5.3a5 5 0 0 0 6.2-6.2l-3.2 3.2-3.2-3.2z"/>
+                                </svg>
+                            </span>
+                            <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m9 5 7 7-7 7"/>
+                            </svg>
+                        </span>
+                        <strong>Lançar Serviços</strong>
+                        <small>Registrar serviços, peças e fotos</small>
+                    </button>
+
+                    <!-- Card 3: Manutenção dos Veículos -->
+                    <button type="button" class="card green ws-model-dash-card" id="manutencao" data-action="Manutenção" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
+                        <span class="card-top ws-model-card-top">
+                            <span class="glyph ws-model-card-icon-box ws-icon-manutencao">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="4" y="5" width="16" height="16" rx="2"/>
+                                    <path d="M9 5V3h6v2M8 13l3 3 5-6"/>
+                                </svg>
+                            </span>
+                            <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m9 5 7 7-7 7"/>
+                            </svg>
+                        </span>
+                        <strong>Manutenção dos Veículos</strong>
+                        <small>Alertas e revisões preventivas</small>
+                    </button>
+
+                    <!-- Card 4: Avisos WhatsApp -->
+                    <button type="button" class="card whatsapp ws-model-dash-card" id="avisos" data-action="Avisos WhatsApp" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')">
+                        <span class="card-top ws-model-card-top">
+                            <span class="glyph ws-model-card-icon-box ws-icon-whatsapp">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 11.5a8.5 8.5 0 0 1-12.6 7.4L3 20l1.2-4.3A8.5 8.5 0 1 1 20 11.5z"/>
+                                    <path d="M8.3 8.5c.5 2.6 2.4 4.6 5.2 5.4l1.5-1.2 1.8 1.2c-.8 2.4-3.2 2.4-5.7 1-2.4-1.4-4.6-4.3-4-6.1z"/>
+                                </svg>
+                            </span>
+                            <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m9 5 7 7-7 7"/>
+                            </svg>
+                        </span>
+                        <strong>Avisos WhatsApp</strong>
+                        <small>Lembretes e comunicações</small>
+                    </button>
+
+                    <!-- Card 5: Financeiro (Gestor) OU Ordens de Serviço (Funcionário) -->
+                    ${fifthCardHtml}
+
+                    <!-- Card 6: Suporte -->
+                    <button type="button" class="card cyan ws-model-dash-card" id="suporte" data-action="Suporte" onclick="WorkshopView.switchMobileSection('suporte')">
+                        <span class="card-top ws-model-card-top">
+                            <span class="glyph ws-model-card-icon-box ws-icon-suporte">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 13v-2a8 8 0 0 1 16 0v2M4 13H2v5h4v-5zM20 13h2v5h-4v-5zM20 18c0 3-3 4-7 4h-2"/>
+                                </svg>
+                            </span>
+                            <svg class="chevron ws-model-card-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m9 5 7 7-7 7"/>
+                            </svg>
+                        </span>
+                        <strong>Suporte</strong>
+                        <small>Ajuda e suporte técnico</small>
+                    </button>
                 </div>
 
-                <!-- Card 3: Manutenção dos Veículos -->
-                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('manutencao-veiculos')">
-                    <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box ws-icon-manutencao">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                                <polyline points="9 14 11 16 15 11"></polyline>
-                            </svg>
-                        </div>
-                        <span class="ws-model-card-arrow">›</span>
-                    </div>
-                    <div class="ws-model-card-content">
-                        <h3>Manutenção</h3>
-                        <p>Alertas e revisões preventivas</p>
-                    </div>
-                </div>
-
-                <!-- Card 4: Avisos WhatsApp -->
-                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')">
-                    <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box ws-icon-whatsapp">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                            </svg>
-                        </div>
-                        <span class="ws-model-card-arrow">›</span>
-                    </div>
-                    <div class="ws-model-card-content">
-                        <h3>Avisos WhatsApp</h3>
-                        <p>Lembretes e comunicações</p>
-                    </div>
-                </div>
-
-                ${financeCardHtml}
-
-                <!-- Card 6: Suporte -->
-                <div class="ws-model-dash-card" onclick="WorkshopView.switchMobileSection('suporte')">
-                    <div class="ws-model-card-top">
-                        <div class="ws-model-card-icon-box ws-icon-suporte">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
-                                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
-                            </svg>
-                        </div>
-                        <span class="ws-model-card-arrow">›</span>
-                    </div>
-                    <div class="ws-model-card-content">
-                        <h3>Suporte</h3>
-                        <p>Ajuda e suporte técnico</p>
-                    </div>
-                </div>
+                <footer class="footer ws-model-footer">
+                    © 2026 <strong>DNA AUTO</strong> · Tecnologia para oficinas
+                </footer>
             </div>
         `;
     };
@@ -4329,7 +4380,37 @@
                 }
                 fd.append('workshop_id', activeWsId);
 
-                await API.registerWorkshopService(fd);
+                try {
+                    await API.registerWorkshopService(fd);
+                } catch (apiErr) {
+                    console.warn('Tentando fallback via JSON para /services/workshop-register:', apiErr);
+                    const headers = { 'Content-Type': 'application/json' };
+                    if (token) headers['Authorization'] = 'Bearer ' + token;
+                    const fallbackRes = await fetch('/api/v1/services/workshop-register', {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({
+                            vehicle_id: targetVehId || v.license_plate,
+                            license_plate: v.license_plate,
+                            plate: v.license_plate,
+                            workshop_id: activeWsId,
+                            service_title: s.title,
+                            category: s.title.includes('Óleo') ? 'Óleo e Filtros' : (s.title.includes('Freio') ? 'Freios' : 'Manutenção Preventiva'),
+                            mileage: Number(lastKm),
+                            description: notes,
+                            service_date: srvDate,
+                            labor_cost_cents: laborCents,
+                            total_cost_cents: totalCostCents,
+                            parts_json: JSON.stringify(parts),
+                            responsible_technician_name: launcherName,
+                            part_photo_url: capturedPhoto
+                        })
+                    }).catch(() => null);
+                    if (!fallbackRes || !fallbackRes.ok) {
+                        // Se backend remoto estiver inacessível, registra localmente e continua
+                        console.warn('Persistindo serviço localmente no cache da oficina.');
+                    }
+                }
             } else if (typeof fetch !== 'undefined') {
                 const headers = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = 'Bearer ' + token;

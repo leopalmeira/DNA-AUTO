@@ -3533,79 +3533,295 @@ select:-webkit-autofill:focus {
    16.0 MOCKUPS OFICIAIS DO APP DA OFICINA (DESIGN 1:1 CONFORME MODELO)
    ============================================================================== */
 
-/* Viewport Global das Telas da Oficina com Fundo Gradiente Automotivo Profundo */
+/* ==============================================================================
+   16.0 MOCKUPS OFICIAIS DO APP DA OFICINA (DESIGN 1:1 DNA_AUTO_dashboard_fundo_contraste.html)
+   ============================================================================== */
+:root {
+    --navy: #0c2449;
+    --blue: #0879ea;
+    --ink: #132743;
+    --muted: #6b7d91;
+    --bg: #dce5ee;
+    --border: #d7e0eb;
+}
+
+/* Viewport Global das Telas da Oficina com Fundo Gradiente e Alto Contraste */
 .ws-model-body {
-    background: radial-gradient(circle at 50% 28%, #1a3e75 0%, #0d264f 45%, #040e20 85%, #020814 100%) !important;
-    min-height: 100vh;
+    max-width: 520px !important;
+    min-height: 100vh !important;
+    min-height: 100svh !important;
+    margin: 0 auto !important;
+    background: linear-gradient(180deg, #e9eff6 0px, #e9eff6 227px, #d8e3ef 227px, #cddbe9 100%) !important;
+    box-shadow: 0 6px 42px rgba(23, 53, 89, 0.12) !important;
+    color: var(--ink, #132743) !important;
     display: flex;
     flex-direction: column;
     padding-bottom: 84px;
     box-sizing: border-box;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    color: #FFFFFF;
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
-/* Header Dark Navy Oficial do Dashboard com Top Bar e Silhueta Neon de Carro */
-.ws-model-header {
-    background: transparent;
-    color: #FFFFFF;
-    padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 10px;
-    position: sticky;
-    top: 0;
-    z-index: 40;
-    border-bottom: 1px solid rgba(0, 140, 255, 0.15);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+/* Header Limpo e de Alto Contraste do Dashboard */
+.header, .ws-model-header {
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 22px 25px !important;
+    background: #e9eff6 !important;
+    position: relative !important;
+    border-bottom: 1px solid #d7e0eb !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
-.ws-model-header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 42px;
-    position: relative;
+.topbar, .ws-model-header-top {
+    display: grid !important;
+    grid-template-columns: 42px minmax(0, 1fr) 42px !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-height: 60px !important;
 }
 
-/* Botão Menu Estilizado tipo Pill */
-.ws-model-menu-btn {
-    background: rgba(8, 22, 46, 0.85);
-    border: 1.5px solid rgba(0, 140, 255, 0.45);
-    border-radius: 12px;
-    padding: 7px 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    color: #FFFFFF;
-    font-size: 13.5px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    transition: all 0.2s ease;
+/* Botões de Ação do Topo (Menu e Notificações) */
+.icon-btn, .ws-model-menu-btn, .ws-model-back-btn {
+    height: 42px !important;
+    width: 42px !important;
+    border: 1px solid #c8d6e6 !important;
+    border-radius: 13px !important;
+    background: #f7fafc !important;
+    display: grid !important;
+    place-items: center !important;
+    color: #1c426d !important;
+    position: relative !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    box-shadow: 0 2px 8px rgba(24, 55, 89, 0.08) !important;
+    transition: all 0.15s ease !important;
+    text-decoration: none !important;
 }
-.ws-model-menu-btn:hover {
-    background: rgba(0, 102, 255, 0.25);
-    border-color: #00D4FF;
+.icon-btn:hover, .ws-model-menu-btn:hover, .ws-model-back-btn:hover {
+    background: #edf5ff !important;
+    border-color: #76baff !important;
+}
+.icon-btn svg, .ws-model-menu-btn svg, .ws-model-back-btn svg {
+    width: 20px !important;
+    height: 20px !important;
+    stroke: #1c426d !important;
+}
+.icon-btn.bell:after, .ws-model-bell-btn .ws-model-bell-dot {
+    content: "" !important;
+    position: absolute !important;
+    right: 9px !important;
+    top: 8px !important;
+    width: 7px !important;
+    height: 7px !important;
+    background: #fb654a !important;
+    border: 2px solid white !important;
+    border-radius: 50% !important;
+    display: block !important;
 }
 
-.ws-model-back-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    background: rgba(8, 22, 46, 0.85);
-    border: 1.5px solid rgba(0, 140, 255, 0.4);
-    color: #FFFFFF;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 20px;
-    font-weight: 700;
-    transition: background 0.2s;
+/* Logo DNA AUTO Centralizado */
+.logo, .ws-model-brand-center {
+    justify-self: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: min(100%, 210px) !important;
+    height: 68px !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+}
+.logo img, .ws-model-brand-center img {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    filter: none !important;
+}
+
+/* Saudação */
+.welcome, .ws-model-greeting-row {
+    padding-top: 17px !important;
+    text-align: left !important;
+}
+.eyebrow {
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    letter-spacing: 1.4px !important;
+    color: #0879ea !important;
+    text-transform: uppercase !important;
+    margin-bottom: 8px !important;
+}
+.welcome h1, .ws-model-greeting-text h2 {
+    font-size: 25px !important;
+    line-height: 1.16 !important;
+    margin: 0 0 6px !important;
+    letter-spacing: -0.8px !important;
+    font-weight: 800 !important;
+    color: #132743 !important;
+}
+.welcome p, .ws-model-greeting-text p {
+    margin: 0 !important;
+    font-size: 14px !important;
+    color: #728399 !important;
+}
+
+/* Seção Principal */
+.main, .ws-model-main {
+    padding: 22px 18px 26px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+.section-head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 0 4px !important;
+    margin-bottom: 15px !important;
+}
+.section-head h2 {
+    font-size: 15px !important;
+    font-weight: 800 !important;
+    margin: 0 !important;
+    letter-spacing: -0.25px !important;
+    color: #132743 !important;
+}
+.section-head span {
+    font-size: 11px !important;
+    color: #8393a6 !important;
+}
+
+/* Grade de Cards de Alto Contraste */
+.cards, .ws-model-dashboard-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+.card, .ws-model-dash-card {
+    min-width: 0 !important;
+    min-height: 155px !important;
+    padding: 16px 14px !important;
+    text-align: left !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    background: #ffffff !important;
+    color: #132743 !important;
+    border: 1px solid #f8fafc !important;
+    border-radius: 17px !important;
+    box-shadow: 0 5px 17px rgba(24, 55, 89, 0.12) !important;
+    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
+    position: relative !important;
+}
+.card:hover, .ws-model-dash-card:hover {
+    transform: translateY(-2px) !important;
+    border-color: #b9d7f8 !important;
+    box-shadow: 0 9px 20px rgba(24, 55, 89, 0.15) !important;
+}
+.card:active, .ws-model-dash-card:active {
+    transform: translateY(0) !important;
+}
+.card-top, .ws-model-card-top {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    margin-bottom: 21px !important;
+}
+.glyph, .ws-model-card-icon-box {
+    width: 43px !important;
+    height: 43px !important;
+    border-radius: 13px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: var(--soft, #eaf4ff) !important;
+    color: var(--tone, #0879ea) !important;
+    flex-shrink: 0 !important;
+}
+.glyph svg, .ws-model-card-icon-box svg {
+    width: 23px !important;
+    height: 23px !important;
+    stroke-width: 2 !important;
+}
+.chevron, .ws-model-card-arrow {
+    width: 16px !important;
+    height: 16px !important;
+    color: #9aa9bb !important;
+    font-size: 16px !important;
+}
+.card strong, .ws-model-card-content h3 {
+    display: block !important;
+    font-size: 14px !important;
+    line-height: 1.23 !important;
+    letter-spacing: -0.3px !important;
+    font-weight: 750 !important;
+    margin-bottom: 6px !important;
+    color: #132743 !important;
+}
+.card small, .ws-model-card-content p {
+    font-size: 11px !important;
+    line-height: 1.46 !important;
+    color: #6b7d91 !important;
+    margin: 0 !important;
+}
+
+.blue { --tone: #0879ea; --soft: #eaf4ff; }
+.orange { --tone: #e9911a; --soft: #fff3e5; }
+.green { --tone: #20a56d; --soft: #e7f8f0; }
+.whatsapp { --tone: #18a56b; --soft: #e7f8ee; }
+.purple { --tone: #7853cd; --soft: #f1ecfc; }
+.cyan { --tone: #2682be; --soft: #e9f5fc; }
+
+.footer, .ws-model-footer {
+    border-top: 1px solid #bacddd !important;
+    margin: 20px 22px 0 !important;
+    padding: 18px 0 30px !important;
+    text-align: center !important;
+    font-size: 11px !important;
+    color: #8a9aac !important;
+    background: transparent !important;
+}
+.footer strong, .ws-model-footer strong {
+    font-weight: 700 !important;
+    color: #536e8b !important;
+}
+
+/* Painel de Menu Flutuante */
+.menu-panel {
+    display: none;
+    position: absolute;
+    z-index: 100;
+    top: 79px;
+    left: max(16px, calc((100vw - 520px)/2 + 18px));
+    padding: 8px;
+    width: min(265px, calc(100vw - 32px));
+    border: 1px solid #e1eaf5;
+    border-radius: 15px;
+    background: #fff;
+    box-shadow: 0 15px 38px rgba(25, 60, 98, 0.17);
+}
+.menu-panel.open {
+    display: block !important;
+}
+.menu-panel a {
+    display: block;
     text-decoration: none;
+    color: #132743;
+    font-size: 14px;
+    padding: 12px;
+    border-radius: 9px;
+    font-weight: 600;
 }
-.ws-model-back-btn:hover {
-    background: rgba(0, 102, 255, 0.25);
-    border-color: #00D4FF;
+.menu-panel a:hover {
+    background: #edf5ff;
 }
 
 /* Logo DNA AUTO Centralizado */

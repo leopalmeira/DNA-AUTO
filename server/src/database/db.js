@@ -154,6 +154,18 @@ for (const col of fipeColumns) {
     } catch (_) {}
 }
 
+const serviceRecordColumns = [
+    { name: 'registered_by_user_id', type: 'TEXT' },
+    { name: 'part_photo_url', type: 'TEXT' },
+    { name: 'workshop_id', type: 'TEXT' }
+];
+
+for (const col of serviceRecordColumns) {
+    try {
+        db.exec(`ALTER TABLE service_records ADD COLUMN ${col.name} ${col.type}`);
+    } catch (_) {}
+}
+
 // Inicialização segura de tabelas de monitoramento e manutenção preventiva
 try {
     db.exec(`

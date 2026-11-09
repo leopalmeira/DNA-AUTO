@@ -180,6 +180,8 @@ CREATE TABLE IF NOT EXISTS service_records (
     workshop_id TEXT REFERENCES workshops(id),
     declared_by_owner_id TEXT REFERENCES owners(id),
     responsible_technician_name TEXT,
+    registered_by_user_id TEXT,
+    part_photo_url TEXT,
     service_date DATE NOT NULL,
     mileage INTEGER NOT NULL,
     category TEXT NOT NULL,
