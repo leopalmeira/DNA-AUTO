@@ -171,21 +171,13 @@ const DossierView = {
                     <form id="dossier-main-search-form" onsubmit="DossierView.handleSearchSubmit(event)">
                         <div class="search-input-plate-group">
                             <input type="text" id="landing-search-plate" required
-                                   placeholder="DIGITE A PLACA (EX: BRA2E19) OU DNA..."
+                                   placeholder="DIGITE A PLACA OU CÓDIGO DNA..."
                                    autocomplete="off" />
                             <button type="submit" class="btn btn-primary" style="padding:0 24px; font-weight:700;">
                                 🔍 CONSULTAR HISTÓRICO
                             </button>
                         </div>
                     </form>
-
-                    <!-- Veículos de Demonstração para Teste Rápido -->
-                    <div class="search-sample-pills">
-                        <span style="font-size:11px; color:var(--text-dim); display:flex; align-items:center; margin-right:4px;">Testar veículos homologados:</span>
-                        <button class="search-sample-btn" onclick="DossierView.render('BRA2E19')">🚗 Honda Civic (BRA2E19)</button>
-                        <button class="search-sample-btn" onclick="DossierView.render('ABC1D23')">🚗 Toyota Corolla (ABC1D23)</button>
-                        <button class="search-sample-btn" onclick="DossierView.render('KXZ9012')">🚗 VW Gol (KXZ9012)</button>
-                    </div>
 
                     <!-- Pilares do DNA AUTO -->
                     <div class="search-pillars-grid">

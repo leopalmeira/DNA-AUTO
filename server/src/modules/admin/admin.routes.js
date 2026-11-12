@@ -408,4 +408,74 @@ router.get('/audit-logs', (req, res) => {
     }
 });
 
+// Gestão de Chamados / Tickets de Suporte das Oficinas
+router.get('/support-tickets', (req, res) => {
+    try {
+        const { status } = req.query;
+        let query = `
+            SELECT st.*,
+                   w.trade_name AS workshop_name,
+                   w.city AS workshop_city,
+                   w.state AS workshop_state,
+                   w.phone AS workshop_phone
+            FROM support_tickets st
+            LEFT JOIN workshops w ON st.workshop_id = w.id
+            WHERE 1=1
+        `;
+        const params = [];
+        if (status && status !== 'ALL') {
+            query += ` AND st.status = ?`;
+            params.push(String(status).toUpperCase());
+        }
+        query += ` ORDER BY CASE st.status WHEN 'OPEN' THEN 1 WHEN 'IN_PROGRESS' THEN 2 WHEN 'RESOLVED' THEN 3 ELSE 4 END ASC, st.created_at DESC LIMIT 200`;
+
+        const tickets = db.prepare(query).all(...params);
+        res.json({ success: true, count: tickets.length, tickets });
+    } catch (err) {
+        console.error('Erro ao listar tickets no admin:', err);
+        res.status(500).json({ error: 'Erro ao listar chamados de suporte.' });
+    }
+});
+
+router.patch('/support-tickets/:ticketId', (req, res) => {
+    try {
+        const ticketId = req.params.ticketId;
+        const existing = db.prepare(`SELECT * FROM support_tickets WHERE id = ?`).get(ticketId);
+        if (!existing) {
+            return res.status(404).json({ error: 'Chamado não encontrado.' });
+        }
+
+        const { status, admin_reply, replied_by = 'Administrador DNA AUTO' } = req.body || {};
+        const allowedStatuses = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'];
+        const nextStatus = status ? String(status).toUpperCase() : existing.status;
+
+        if (!allowedStatuses.includes(nextStatus)) {
+            return res.status(400).json({ error: 'Status inválido. Use OPEN, IN_PROGRESS, RESOLVED ou CLOSED.' });
+        }
+
+        const nextReply = admin_reply !== undefined ? String(admin_reply).trim() : existing.admin_reply;
+        db.prepare(`
+            UPDATE support_tickets
+            SET status = ?,
+                admin_reply = ?,
+                replied_by = ?,
+                replied_at = CASE WHEN ? IS NOT NULL AND ? != '' THEN CURRENT_TIMESTAMP ELSE replied_at END,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(nextStatus, nextReply || null, replied_by, nextReply || '', nextReply || '', ticketId);
+
+        const updated = db.prepare(`
+            SELECT st.*, w.trade_name AS workshop_name
+            FROM support_tickets st
+            LEFT JOIN workshops w ON st.workshop_id = w.id
+            WHERE st.id = ?
+        `).get(ticketId);
+
+        res.json({ success: true, ticket: updated });
+    } catch (err) {
+        console.error('Erro ao atualizar ticket no admin:', err);
+        res.status(500).json({ error: 'Erro ao atualizar chamado de suporte.' });
+    }
+});
+
 module.exports = router;

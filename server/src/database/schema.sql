@@ -831,5 +831,91 @@ CREATE INDEX IF NOT EXISTS idx_rep_comm_rep ON representative_commissions(repres
 CREATE INDEX IF NOT EXISTS idx_rep_comm_ws ON representative_commissions(workshop_id);
 CREATE INDEX IF NOT EXISTS idx_rep_comm_status ON representative_commissions(status);
 
+-- Agendamentos das Oficinas (Confirmados Manualmente ou via Bot WhatsApp)
+CREATE TABLE IF NOT EXISTS workshop_appointments (
+    id TEXT PRIMARY KEY,
+    workshop_id TEXT NOT NULL,
+    vehicle_id TEXT,
+    license_plate TEXT NOT NULL,
+    vehicle_model TEXT NOT NULL DEFAULT 'Veículo Cadastrado',
+    owner_name TEXT,
+    owner_phone TEXT,
+    service_title TEXT NOT NULL,
+    appointment_date DATE NOT NULL,
+    appointment_time TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'SCHEDULED',
+    notes TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ws_app_ws_date ON workshop_appointments(workshop_id, appointment_date);
+CREATE INDEX IF NOT EXISTS idx_ws_app_plate ON workshop_appointments(license_plate);
+
+-- Campanhas do Bot de Manutenção Preventiva (Disparos 10h + Conversa + Confirmação 3 Datas)
+CREATE TABLE IF NOT EXISTS maintenance_bot_campaigns (
+    id TEXT PRIMARY KEY,
+    workshop_id TEXT NOT NULL REFERENCES workshops(id) ON DELETE CASCADE,
+    vehicle_id TEXT REFERENCES vehicles(id) ON DELETE CASCADE,
+    license_plate TEXT NOT NULL,
+    vehicle_model TEXT,
+    owner_name TEXT,
+    owner_phone TEXT NOT NULL,
+    item_code TEXT NOT NULL,
+    item_name TEXT NOT NULL,
+    current_km INTEGER DEFAULT 0,
+    offered_dates_json TEXT NOT NULL,
+    chosen_date DATE,
+    chosen_time TEXT,
+    appointment_id TEXT,
+    status TEXT NOT NULL DEFAULT 'SENT', -- 'SENT', 'IN_CONVERSATION', 'CONFIRMED', 'DECLINED', 'EXPIRED'
+    last_message TEXT,
+    ai_notes TEXT,
+    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    confirmed_at DATETIME,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_bot_camp_ws ON maintenance_bot_campaigns(workshop_id, status);
+CREATE INDEX IF NOT EXISTS idx_bot_camp_phone ON maintenance_bot_campaigns(owner_phone, status);
+CREATE INDEX IF NOT EXISTS idx_bot_camp_veh_item ON maintenance_bot_campaigns(workshop_id, vehicle_id, item_code);
+
+-- Controle Idempotente de Envio Diário de PDF às 17h para a Oficina
+CREATE TABLE IF NOT EXISTS daily_agenda_dispatches (
+    id TEXT PRIMARY KEY,
+    workshop_id TEXT NOT NULL REFERENCES workshops(id) ON DELETE CASCADE,
+    target_date DATE NOT NULL,
+    appointments_count INTEGER NOT NULL DEFAULT 0,
+    pdf_path TEXT,
+    recipient_phone TEXT,
+    status TEXT NOT NULL DEFAULT 'SENT',
+    error TEXT,
+    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(workshop_id, target_date)
+);
+
+-- Sistema de Tickets / Chamados de Suporte das Oficinas com a Plataforma
+CREATE TABLE IF NOT EXISTS support_tickets (
+    id TEXT PRIMARY KEY,
+    protocol TEXT NOT NULL UNIQUE,
+    workshop_id TEXT NOT NULL REFERENCES workshops(id) ON DELETE CASCADE,
+    user_id TEXT,
+    requester_name TEXT,
+    category TEXT NOT NULL DEFAULT 'SUPORTE_TECNICO',
+    priority TEXT NOT NULL DEFAULT 'NORMAL',
+    subject TEXT NOT NULL,
+    description TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'OPEN', -- 'OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED'
+    admin_reply TEXT,
+    replied_by TEXT,
+    replied_at DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_support_tickets_ws ON support_tickets(workshop_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status);
+
+
 
 

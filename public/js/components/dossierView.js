@@ -142,7 +142,7 @@ const DossierView = {
                     <p style="color:var(--text-muted); margin-bottom:20px;">Não encontramos nenhum veículo correspondente a "<strong>${identifier}</strong>".</p>
                     <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
                         <button class="btn btn-secondary" onclick="DossierView.render(null)">Voltar para Busca</button>
-                        
+                        <button class="btn btn-cyan" onclick="DossierView.render('DNA-BR-8F72-29A4-X91')">Carregar Honda Civic Demo</button>
                     </div>
                 </div>
             `;
@@ -171,15 +171,13 @@ const DossierView = {
                     <form id="dossier-main-search-form" onsubmit="DossierView.handleSearchSubmit(event)">
                         <div class="search-input-plate-group">
                             <input type="text" id="landing-search-plate" required
-                                   placeholder="DIGITE A PLACA (EX: BRA2E19) OU DNA..."
+                                   placeholder="DIGITE A PLACA OU CÓDIGO DNA..."
                                    autocomplete="off" />
                             <button type="submit" class="btn btn-primary" style="padding:0 24px; font-weight:700;">
                                 🔍 CONSULTAR HISTÓRICO
                             </button>
                         </div>
                     </form>
-
-                    
 
                     <!-- Pilares do DNA AUTO -->
                     <div class="search-pillars-grid">

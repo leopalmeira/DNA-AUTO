@@ -1640,6 +1640,11 @@ const OwnerView = {
         if (realVeh.dna_code) this.vehicleData.dna_code = realVeh.dna_code;
         if (realVeh.current_mileage) this.vehicleData.current_mileage = realVeh.current_mileage;
 
+        // Zera dados extras do veículo anterior antes de carregar do servidor
+        this.vehicleAppointments = [];
+        this.vehicleAlerts = [];
+        this.predictiveData = null;
+
         // Priorizar sempre o nome do usuário logado na sessão ativa
         const loggedUserStr = typeof localStorage !== 'undefined' ? localStorage.getItem('dna_logged_user') : null;
         if (loggedUserStr) {
@@ -1732,6 +1737,7 @@ const OwnerView = {
                     } else {
                         this.vehicleData.timeline = [];
                     }
+                    this.vehicleAppointments = Array.isArray(dData.appointments) ? dData.appointments : [];
                 }
             }
 
@@ -1751,6 +1757,7 @@ const OwnerView = {
                 const data = await rPred.json();
                 if (data.success) {
                     this.predictiveData = data;
+                    this.vehicleAlerts = Array.isArray(data.alerts) ? data.alerts : [];
                 }
             }
             if (rOdom && rOdom.ok) {
@@ -2182,7 +2189,18 @@ const OwnerView = {
         const isApproved = Boolean(isInspected && Number(insp.score || 0) >= 70);
         const timeline = Array.isArray(v.timeline) ? v.timeline : [];
         const expenses = this.calculateVehicleExpenses();
-        const alertsCount = Array.isArray(this.vehicleAlerts) ? this.vehicleAlerts.length : 2;
+        const appointments = Array.isArray(this.vehicleAppointments) ? this.vehicleAppointments : [];
+        const upcomingAppointments = appointments.filter(a => a.status === 'CONFIRMED' || a.status === 'SCHEDULED');
+        const alertsCount = Array.isArray(this.vehicleAlerts)
+            ? this.vehicleAlerts.length
+            : ((this.predictiveData && Array.isArray(this.predictiveData.alerts)) ? this.predictiveData.alerts.length : 0);
+        const totalPendingAlerts = alertsCount + upcomingAppointments.length;
+        const firstPred = (this.predictiveData && Array.isArray(this.predictiveData.predictions))
+            ? this.predictiveData.predictions[0]
+            : null;
+        const revSubtext = firstPred && Number(firstPred.next_due_km || 0) > 0
+            ? `Próx.: ${Number(firstPred.next_due_km).toLocaleString('pt-BR')} km`
+            : (timeline.length > 0 ? 'Histórico atualizado' : 'Sem revisões registradas');
 
         const carTitle = (v.full_title && v.full_title !== 'Nenhum veículo selecionado') ? v.full_title : (v.brand ? `${v.brand} ${v.model}`.trim() : 'Meu Veículo');
         const carPlate = (v.license_plate && v.license_plate !== '---') ? v.license_plate : '';
@@ -2242,7 +2260,7 @@ const OwnerView = {
                         </svg>
                     </div>
                     <h5 class="dna-print-quick-name">Revisões Preventivas</h5>
-                    <span class="dna-print-quick-sub">${(timeline && timeline.length > 0) ? 'Próxima em 10.000 km' : 'Aguardando 1ª revisão'}</span>
+                    <span class="dna-print-quick-sub">${revSubtext}</span>
                 </div>
 
                 <!-- Card 3: Alertas & Manutenções -->
@@ -2254,7 +2272,7 @@ const OwnerView = {
                         </svg>
                     </div>
                     <h5 class="dna-print-quick-name">Alertas & Manutenções</h5>
-                    <span class="dna-print-quick-sub" style="${(alertsCount > 0 && timeline.length > 0) ? 'color:#D97706; font-weight:700;' : 'color:#10B981; font-weight:700;'}">${(alertsCount > 0 && timeline.length > 0) ? alertsCount + ' pendentes' : '0 pendentes'}</span>
+                    <span class="dna-print-quick-sub" style="${totalPendingAlerts > 0 ? 'color:#D97706; font-weight:700;' : 'color:#10B981; font-weight:700;'}">${upcomingAppointments.length > 0 ? upcomingAppointments.length + ' agendada(s)' : (alertsCount > 0 ? alertsCount + ' pendente(s)' : '0 pendentes')}</span>
                 </div>
 
                 <!-- Card 4: Gastos com Carro -->
@@ -2924,32 +2942,29 @@ const OwnerView = {
         `;
     },
 
-    // ── 7. TELA: REVISÕES PREVENTIVAS — CRONOGRAMA DINÂMICO CONFORME O VEÍCULO (TELA 7) ──
+    // ── 7. TELA: REVISÕES PREVENTIVAS — DADOS REAIS DO VEÍCULO ──
     renderRevisionsScreen() {
         const v = this.vehicleData || {};
         const carTitle = (v.full_title && v.full_title !== 'Nenhum veículo selecionado') ? v.full_title : (v.brand ? `${v.brand} ${v.model}`.trim() : 'Meu Veículo');
         const currentKm = Number(v.current_mileage || 0);
         const carMileage = currentKm > 0 ? `${currentKm.toLocaleString('pt-BR')} km` : '0 km';
+        const realPredictions = (this.predictiveData && Array.isArray(this.predictiveData.predictions))
+            ? this.predictiveData.predictions
+            : [];
 
-        // Gera as próximas 5 revisões de 10 em 10 mil km a partir da km atual
-        const step = 10000;
-        const nextBase = Math.max(step, Math.ceil((currentKm + 1) / step) * step);
-        const revisionsList = [0, 1, 2, 3, 4].map(idx => {
-            const targetKm = nextBase + (idx * step);
-            const remaining = Math.max(0, targetKm - currentKm);
-            const progress = Math.max(5, Math.min(95, Math.round((currentKm / targetKm) * 100)));
-            return {
-                title: `Revisão de ${targetKm.toLocaleString('pt-BR')} km`,
-                progress: progress,
-                badgeText: remaining > 0 ? `Faltam ${remaining.toLocaleString('pt-BR')} km` : 'Em dia',
-                badgeType: idx === 0 ? 'amber' : (idx === 1 ? 'blue' : 'gray'),
-                items: idx === 0 
-                    ? 'Óleo do motor, filtro de óleo, filtro de ar e inspeção preventiva de freios' 
-                    : (idx === 1 
-                        ? 'Óleo sintético, todos os filtros, fluido de freio e alinhamento' 
-                        : 'Revisão programada do sistema de injeção, suspensão e fluidos')
-            };
-        });
+        const revisionsList = realPredictions.length > 0
+            ? realPredictions.map(p => {
+                const rem = Number(p.remaining_km || 0);
+                const statusUpper = String(p.status || 'EM_DIA').toUpperCase();
+                return {
+                    title: p.item_name || p.item_code,
+                    progress: Math.max(5, Math.min(100, Number(p.progress_percent || 20))),
+                    badgeText: rem <= 0 ? `Vencida (${Math.abs(rem).toLocaleString('pt-BR')} km)` : `Faltam ${rem.toLocaleString('pt-BR')} km`,
+                    badgeType: (statusUpper === 'VENCIDA' || statusUpper === 'RECOMENDADA') ? 'amber' : (statusUpper === 'APROXIMANDO' ? 'blue' : 'gray'),
+                    items: p.next_due_km ? `Meta recomendada: ${Number(p.next_due_km).toLocaleString('pt-BR')} km` : 'Acompanhamento preventivo contínuo'
+                };
+            })
+            : [];
 
         return `
             <div class="dna-print-screen-container">
@@ -2959,7 +2974,7 @@ const OwnerView = {
                         <strong class="dna-print-summary-car">${carTitle}</strong>
                         <span class="dna-print-summary-meta">Km atual: <b>${carMileage}</b></span>
                     </div>
-                    <span class="dna-print-summary-tag">Plano Oficial</span>
+                    <span class="dna-print-summary-tag">Dados Reais</span>
                 </div>
 
                 <!-- 2. Título de Seção -->
@@ -2967,9 +2982,14 @@ const OwnerView = {
                     <h4 class="dna-print-section-title">Cronograma de Revisões</h4>
                 </div>
 
-                <!-- 3. Lista de 5 Revisões Progressivas -->
+                <!-- 3. Lista Real de Revisões Preditivas -->
                 <div class="dna-print-revisions-list">
-                    ${revisionsList.map(rev => `
+                    ${revisionsList.length === 0 ? `
+                        <div style="text-align:center; padding:34px 18px; background:#FFFFFF; border-radius:16px; border:1px dashed #CBD5E1; color:#64748B;">
+                            <strong style="color:#0F172A; font-size:14px; display:block; margin-bottom:6px;">Nenhuma previsão preventiva calculada</strong>
+                            <span style="font-size:12.5px; line-height:1.45;">Assim que uma oficina credenciada registrar a quilometragem e o primeiro serviço do veículo, o cronograma preventivo aparecerá aqui.</span>
+                        </div>
+                    ` : revisionsList.map(rev => `
                         <div class="dna-print-rev-card">
                             <div class="dna-print-rev-top">
                                 <h5 class="dna-print-rev-title">${rev.title}</h5>
@@ -3383,8 +3403,12 @@ const OwnerView = {
         const tab = this.selectedReminderTab || 'pending';
         const v = this.vehicleData || {};
         const timeline = Array.isArray(v.timeline) ? v.timeline : [];
-        const predAlerts = (this.predictiveData && Array.isArray(this.predictiveData.alerts)) ? this.predictiveData.alerts : [];
-        const pendingCount = predAlerts.length;
+        const predAlerts = Array.isArray(this.vehicleAlerts)
+            ? this.vehicleAlerts
+            : ((this.predictiveData && Array.isArray(this.predictiveData.alerts)) ? this.predictiveData.alerts : []);
+        const appointments = Array.isArray(this.vehicleAppointments) ? this.vehicleAppointments : [];
+        const upcomingAppointments = appointments.filter(a => a.status === 'CONFIRMED' || a.status === 'SCHEDULED');
+        const pendingCount = predAlerts.length + upcomingAppointments.length;
         const completedCount = timeline.length;
 
         return `
@@ -3422,9 +3446,24 @@ const OwnerView = {
                         `).join('')}
                     </div>
                 ` : `
-                    <!-- Lista de Pendentes -->
+                    <!-- Lista de Pendentes e Agendamentos Confirmados -->
                     <div class="dna-print-alerts-list">
-                        ${predAlerts.length === 0 ? `
+                        ${upcomingAppointments.map(app => `
+                            <div class="dna-print-alert-card card-info" style="border-left:4px solid #0066FF;">
+                                <div class="dna-print-alert-header">
+                                    <div class="dna-print-alert-icon icon-blue">📅</div>
+                                    <div class="dna-print-alert-title-wrap">
+                                        <h5 class="dna-print-alert-title">Agendado: ${app.service_title}</h5>
+                                        <span class="dna-print-alert-badge badge-blue">${app.status === 'CONFIRMED' ? 'Confirmado' : 'Agendado'}</span>
+                                    </div>
+                                </div>
+                                <p class="dna-print-alert-msg">
+                                    Oficina: <strong>${app.workshop_name || 'Oficina Credenciada DNA AUTO'}</strong><br/>
+                                    Data: <strong>${app.appointment_date}</strong> às <strong>${app.appointment_time || '09:00'}</strong>
+                                </p>
+                            </div>
+                        `).join('')}
+                        ${(predAlerts.length === 0 && upcomingAppointments.length === 0) ? `
                             <div style="text-align:center; padding:32px 18px; background:#FFFFFF; border-radius:14px; border:1px dashed #CBD5E1; color:#64748B; font-size:12.5px; margin-top:8px;">
                                 <span style="font-size:26px; display:block; margin-bottom:6px;">✅</span>
                                 <strong style="color:#0F172A; font-size:14px; display:block; margin-bottom:4px;">Nenhum alerta pendente</strong>
@@ -3611,165 +3650,91 @@ const OwnerView = {
         `;
     },
 
-    // ── 10. TELA: OFICINAS DA REDE — EXATAMENTE COMO NO PRINT OFICIAL (TELA 10) ──
+    // ── 10. TELA: OFICINAS DA REDE — DADOS REAIS DO SERVIDOR ──
     renderWorkshopsScreen() {
+        if (!this._workshopsLoaded) {
+            this.fetchWorkshopsNetwork().then(() => {
+                if (this.currentTab === 'workshops') this.render();
+            });
+        }
+
         const q = (this.workshopSearchQuery || '').toLowerCase();
+        const serverWorkshops = Array.isArray(this.workshopsList) ? this.workshopsList : [];
 
-        const defaultNetwork = [
-            {
-                name: 'DNA Auto Rio Barra',
-                rating: '5.0',
-                reviews: '71',
-                distance: '1,5 km',
-                uf: 'RJ',
-                city: 'Rio de Janeiro',
-                specialties: 'Revisão Preventiva Padrão OEM & Câmbio Automático',
-                photoUrl: '/img/oficina-premium.jpg',
-                phone: '21987651234'
-            },
-            {
-                name: 'Carioca Prime Auto Center',
-                rating: '4.9',
-                reviews: '58',
-                distance: '3,2 km',
-                uf: 'RJ',
-                city: 'Rio de Janeiro',
-                specialties: 'Injeção Eletrônica, Freios ABS & Diagnóstico OBD2',
-                photoUrl: '/img/ws-workshop-thumb1.jpg',
-                phone: '21976544321'
-            },
-            {
-                name: 'Veloce Auto Center',
-                rating: '4.9',
-                reviews: '58',
-                distance: '1,2 km',
-                uf: 'SP',
-                city: 'São Paulo',
-                specialties: 'Mecânica Geral, Injeção Eletrônica & Diagnóstico OBD2',
-                photoUrl: '/img/ws-workshop-thumb1.jpg',
-                phone: '11998765432'
-            },
-            {
-                name: 'Auto Center Silva',
-                rating: '4.8',
-                reviews: '42',
-                distance: '2,8 km',
-                uf: 'SP',
-                city: 'São Paulo',
-                specialties: 'Suspensão Laser 3D, Freios & Alinhamento',
-                photoUrl: '/img/autocenter-silva.jpg',
-                phone: '11987654321'
-            },
-            {
-                name: 'Oficina Premium Jardins',
-                rating: '5.0',
-                reviews: '64',
-                distance: '4,1 km',
-                uf: 'SP',
-                city: 'São Paulo',
-                specialties: 'Revisão Preventiva Padrão OEM & Câmbio Automático',
-                photoUrl: '/img/oficina-premium.jpg',
-                phone: '11976543210',
-                featured: true
-            }
-        ];
+        let list = serverWorkshops.map(w => ({
+            id: w.id,
+            name: w.name || w.trade_name || 'Oficina Credenciada',
+            rating: w.rating || '5.0',
+            reviews: w.reviews || '1',
+            distance: w.distance || '',
+            uf: w.state || '',
+            city: w.city || '',
+            specialties: w.specialties || w.type || 'Oficina Credenciada DNA AUTO',
+            photoUrl: w.photoUrl || '/img/oficina-premium.jpg',
+            phone: String(w.phone || '').replace(/\D/g, ''),
+            address: w.address || `${w.city || ''} ${w.state || ''}`.trim()
+        }));
 
-        let list = defaultNetwork;
         if (q) {
-            list = list.filter(w => w.name.toLowerCase().includes(q) || w.specialties.toLowerCase().includes(q));
+            list = list.filter(w =>
+                w.name.toLowerCase().includes(q) ||
+                w.city.toLowerCase().includes(q) ||
+                w.specialties.toLowerCase().includes(q)
+            );
         }
 
         return `
             <div class="dna-print-screen-container">
-                <!-- 1. Banner Interativo de Mapa com Pins e Tooltip Flutuante -->
-                <div class="dna-print-map-card">
-                    <img src="/img/map-texture-bg.jpg" alt="Mapa da Rede DNA AUTO" class="dna-print-map-img" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
-                    
-                    <!-- Pins no Mapa -->
-                    <div class="dna-print-map-pin pin-1">
-                        <div class="dna-print-pin-dot"></div>
-                    </div>
-                    <div class="dna-print-map-pin pin-2">
-                        <div class="dna-print-pin-dot pulse"></div>
-                    </div>
-                    <div class="dna-print-map-pin pin-3">
-                        <div class="dna-print-pin-dot"></div>
-                    </div>
-
-                    <!-- Balão Flutuante de Oficina em Destaque no Mapa -->
-                    <div class="dna-print-map-tooltip">
-                        <div class="dna-print-map-tooltip-header">
-                            <strong>Oficina Premium Car</strong>
-                            <span class="dna-print-map-star">⭐ 4.9</span>
-                        </div>
-                        <span class="dna-print-map-tooltip-sub">A 2,3 km de você • Aberto agora</span>
-                    </div>
-                </div>
-
-                <!-- Cards de Estado: RJ (Cinza/Breve 30 dias) e SP (Azul Ativo) -->
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0 6px 0;">
-                    <div style="background:#f1f5f9; border:1.5px dashed #94a3b8; border-radius:14px; padding:10px 12px; cursor:pointer;" onclick="alert('Rede Rio de Janeiro em fase final de homologação. Inauguração oficial em 30 dias!');">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <strong style="font-size:16px; color:#475569; font-weight:900;">RJ</strong>
-                            <span style="font-size:9.5px; font-weight:800; background:#e2e8f0; color:#334155; padding:2px 6px; border-radius:8px; border:1px solid #cbd5e1;">⏳ 30 dias</span>
-                        </div>
-                        <span style="font-size:10.5px; color:#64748b; font-weight:600; display:block; margin:2px 0 4px;">Rio de Janeiro</span>
-                        <span style="font-size:9.5px; font-weight:800; color:#b45309; background:#fef3c7; border:1px solid #fde68a; padding:1px 5px; border-radius:4px;">● Breve (30d)</span>
-                    </div>
-
-                    <div style="background:linear-gradient(145deg, #0066FF, #0050d0); border:1.5px solid #0066FF; border-radius:14px; padding:10px 12px; cursor:pointer; box-shadow:0 4px 14px rgba(0,102,255,0.28);">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <strong style="font-size:16px; color:#ffffff; font-weight:900;">SP</strong>
-                            <span style="font-size:9.5px; font-weight:800; background:rgba(255,255,255,0.25); color:#ffffff; padding:2px 6px; border-radius:8px; border:1px solid rgba(255,255,255,0.35);">3 ativas</span>
-                        </div>
-                        <span style="font-size:10.5px; color:rgba(255,255,255,0.9); font-weight:600; display:block; margin:2px 0 4px;">São Paulo</span>
-                        <span style="font-size:9.5px; font-weight:800; color:#ffffff; background:rgba(0,0,0,0.18); padding:1px 5px; border-radius:4px;">✓ Ativo</span>
-                    </div>
-                </div>
-
-                <!-- 2. Barra de Busca de Oficinas -->
+                <!-- Barra de Busca de Oficinas -->
                 <div class="dna-print-search-box">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.3"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <input
                         type="text"
                         class="dna-print-search-input"
-                        placeholder="Buscar oficina por nome ou bairro..."
+                        placeholder="Buscar oficina por nome ou cidade..."
                         value="${this.workshopSearchQuery || ''}"
                         oninput="OwnerView.workshopSearchQuery = this.value; OwnerView.render();"
                     />
                 </div>
 
-                <!-- 3. Título de Seção -->
+                <!-- Título de Seção -->
                 <div class="dna-print-section-header" style="margin-top:14px;">
-                    <h4 class="dna-print-section-title">Oficinas Mais Próximas</h4>
+                    <h4 class="dna-print-section-title">Oficinas Credenciadas</h4>
                     <span class="dna-print-section-meta">${list.length} homologadas</span>
                 </div>
 
-                <!-- 4. Lista das 3 Oficinas Credenciadas -->
+                <!-- Lista Real de Oficinas Credenciadas -->
                 <div class="dna-print-workshops-list">
-                    ${list.map(w => `
+                    ${list.length === 0 ? `
+                        <div style="text-align:center; padding:32px 18px; background:#FFFFFF; border-radius:16px; border:1px dashed #CBD5E1; color:#64748B;">
+                            <strong style="color:#0F172A; font-size:14px; display:block; margin-bottom:4px;">${this._workshopsLoaded ? 'Nenhuma oficina localizada' : 'Carregando oficinas credenciadas...'}</strong>
+                            <span style="font-size:12px;">As oficinas homologadas na sua região aparecerão aqui automaticamente.</span>
+                        </div>
+                    ` : list.map(w => `
                         <div class="dna-print-workshop-card">
                             <div class="dna-print-ws-media">
                                 <img src="${w.photoUrl}" alt="${w.name}" class="dna-print-ws-img" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
-                                <span class="dna-print-ws-dist-badge">${w.distance}</span>
+                                ${w.city ? `<span class="dna-print-ws-dist-badge">${w.city}${w.uf ? '/' + w.uf : ''}</span>` : ''}
                             </div>
 
                             <div class="dna-print-ws-content">
                                 <div class="dna-print-ws-title-row">
                                     <h5 class="dna-print-ws-title">${w.name}</h5>
-                                    <span class="dna-print-ws-rating">⭐ ${w.rating} <small>(${w.reviews})</small></span>
+                                    <span class="dna-print-ws-rating">⭐ ${w.rating}</span>
                                 </div>
 
-                                <p class="dna-print-ws-specs"><b>Especialidades:</b> ${w.specialties}</p>
+                                <p class="dna-print-ws-specs"><b>Atuação:</b> ${w.specialties}</p>
 
                                 <div class="dna-print-ws-actions">
-                                    <button class="dna-print-btn-ws-details" onclick="alert('Oficina homologada DNA AUTO.\\nTelefone: ${w.phone}\\nEndereço: Próximo à sua localização.');">
+                                    <button class="dna-print-btn-ws-details" onclick="alert('Oficina homologada DNA AUTO.\\nEndereço: ${w.address || w.city}\\nTelefone: ${w.phone || 'Não informado'}');">
                                         Ver detalhes
                                     </button>
-                                    <a href="https://wa.me/55${w.phone}?text=${encodeURIComponent('Olá! Encontrei sua oficina no aplicativo DNA AUTO e gostaria de agendar uma revisão.')}" target="_blank" class="dna-print-btn-ws-route">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-                                        <span>Como Chegar</span>
-                                    </a>
+                                    ${w.phone ? `
+                                        <a href="https://wa.me/${w.phone.startsWith('55') ? w.phone : '55' + w.phone}?text=${encodeURIComponent('Olá! Encontrei sua oficina no aplicativo DNA AUTO e gostaria de agendar uma revisão.')}" target="_blank" class="dna-print-btn-ws-route">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                                            <span>WhatsApp</span>
+                                        </a>
+                                    ` : ''}
                                 </div>
                             </div>
                         </div>
@@ -5190,9 +5155,9 @@ const OwnerView = {
                         <input
                             id="placa"
                             type="text"
-                            placeholder="BRA2E19"
+                            placeholder="DIGITE A PLACA (EX: ABC1D23)"
                             maxlength="7"
-                            value="BRA2E19"
+                            value=""
                             autocomplete="off"
                             oninput="OwnerView.handlePlateSearchInput(this)"
                             onblur="OwnerView.handlePlateSearchInput(this, true)"

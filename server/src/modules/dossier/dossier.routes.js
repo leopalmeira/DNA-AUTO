@@ -288,6 +288,22 @@ router.get('/:identifier', (req, res) => {
             LIMIT 50
         `).all(vehicle.dna_code, vehicleId);
 
+        // 14. Agendamentos na Rede de Oficinas (sincronizado com Bot WhatsApp e Oficina App)
+        const cleanPlateDossier = String(vehicle.license_plate || '').replace('-', '').toUpperCase();
+        const appointments = db.prepare(`
+            SELECT wa.*,
+                   w.trade_name AS workshop_name,
+                   w.phone AS workshop_phone,
+                   w.city AS workshop_city,
+                   w.state AS workshop_state
+            FROM workshop_appointments wa
+            LEFT JOIN workshops w ON wa.workshop_id = w.id
+            WHERE wa.vehicle_id = ?
+               OR UPPER(REPLACE(wa.license_plate, '-', '')) = ?
+            ORDER BY wa.appointment_date DESC, wa.appointment_time DESC
+            LIMIT 20
+        `).all(vehicleId, cleanPlateDossier);
+
         res.json({
             found: true,
             hasDna: true,
@@ -321,7 +337,8 @@ router.get('/:identifier', (req, res) => {
             fipe,
             market,
             timeline,
-            auditLogs
+            auditLogs,
+            appointments
         });
     } catch (err) {
         console.error('Erro ao obter Dossiê:', err);

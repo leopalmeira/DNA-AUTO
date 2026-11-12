@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const db = require('../../database/db');
 const QRCode = require('qrcode');
+const whatsappBotAgent = require('../../services/whatsappBotAgent.service');
 let pino;
 try {
     pino = require('pino');
@@ -695,6 +696,17 @@ class BaileysWorkshopService {
                             });
 
                             console.log(`📥 [Baileys] Mensagem ${mediaType} recebida de ${senderPhone} (${contactInfo.clientName})`);
+
+                            if (mediaType === 'TEXT' || text.trim()) {
+                                whatsappBotAgent.handleIncomingMessage({
+                                    workshopId,
+                                    senderPhone,
+                                    messageText: text.trim(),
+                                    enqueueReplyFn: this.enqueueMessage.bind(this)
+                                }).catch(botErr => {
+                                    console.warn('⚠️ [BotAgent] Erro ao processar resposta:', botErr.message);
+                                });
+                            }
                         }
                     } catch (upsertErr) {
                         console.warn('Erro ao processar messages.upsert no Baileys:', upsertErr.message);
@@ -990,7 +1002,7 @@ class BaileysWorkshopService {
     // ──────────────────────────────────────────────────────────────────────────
     // 6. FILA DE ENVIO E DESPACHO DE MENSAGENS
     // ──────────────────────────────────────────────────────────────────────────
-    async enqueueMessage({ workshopId, recipientPhone, recipientName, message, vehicleId, clientId, serviceType, licensePlate, mediaType = 'TEXT', mediaUrl = null, mediaCaption = null }) {
+    async enqueueMessage({ workshopId, recipientPhone, recipientName, message, vehicleId, clientId, serviceType, licensePlate, mediaType = 'TEXT', mediaUrl = null, mediaCaption = null, fileName = null }) {
         if (!recipientPhone || (!message && !mediaUrl)) {
             throw new Error('Telefone do destinatário e mensagem ou arquivo de mídia são obrigatórios.');
         }
@@ -1032,6 +1044,7 @@ class BaileysWorkshopService {
             mediaType: mediaType || 'TEXT',
             mediaUrl: mediaUrl || null,
             mediaCaption: mediaCaption || message || null,
+            fileName: fileName || null,
             vehicleId,
             clientId,
             serviceType,
@@ -1118,6 +1131,17 @@ class BaileysWorkshopService {
                                     audio: fs.readFileSync(filePath),
                                     mimetype: 'audio/mp4',
                                     ptt: true
+                                });
+                            } else {
+                                await session.sock.sendMessage(jid, { text: item.message });
+                            }
+                        } else if (item.mediaType === 'DOCUMENT' && item.mediaUrl) {
+                            if (fs.existsSync(filePath)) {
+                                await session.sock.sendMessage(jid, {
+                                    document: fs.readFileSync(filePath),
+                                    mimetype: 'application/pdf',
+                                    fileName: item.fileName || path.basename(filePath),
+                                    caption: item.message || ''
                                 });
                             } else {
                                 await session.sock.sendMessage(jid, { text: item.message });

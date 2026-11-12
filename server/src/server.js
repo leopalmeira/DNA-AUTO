@@ -7,9 +7,13 @@ require('./database/db');
 
 // Serviço Anti-Sleep / Keep-Alive (Render Free Tier)
 const { startKeepAlive } = require('./services/keepAlive.service');
+const { startMaintenanceScheduler } = require('./services/maintenanceMonitor.service');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const APP_VERSION = '2.5.0';
+const DEPLOYED_AT = new Date().toISOString();
+const GIT_COMMIT = (process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || '').slice(0, 7) || null;
 
 // Middlewares Globais
 app.use(cors());
@@ -68,7 +72,10 @@ app.get('/api/v1/health', (req, res) => {
     res.json({
         status: 'ONLINE',
         system: 'DNA AUTO Platform',
-        version: '1.0.0',
+        version: APP_VERSION,
+        commit: GIT_COMMIT,
+        deployedAt: DEPLOYED_AT,
+        features: ['maintenance-bot-10h-17h', 'agenda-pdf-d1', 'support-tickets', 'real-client-dossier'],
         timestamp: new Date().toISOString()
     });
 });
@@ -408,6 +415,7 @@ function startServer() {
         console.log(`🚀 DNA AUTO Server rodando na porta ${PORT}`);
         console.log(`🌐 Frontend disponível em http://0.0.0.0:${PORT}`);
         startKeepAlive();
+        startMaintenanceScheduler();
     });
     return server;
 }

@@ -296,10 +296,8 @@
         const container = document.getElementById('view-content');
         if (!container) return;
 
-        if (!this.selectedMobileVehicle) {
-            const list = this.getEffectiveVehiclesList();
-            this.selectedMobileVehicle = list[0] || null;
-        }
+        // Nunca pré-seleciona veículo ao entrar no app da oficina;
+        // Lançar Serviços exige digitação explícita da placa.
 
         container.innerHTML = `
             <div class="ws-model-body" id="dna-mobile-shell">
@@ -1301,7 +1299,7 @@
     };
 
     // Alternar de Seção no Modo Mobile
-    WorkshopView.switchMobileSection = function(sectionId) {
+    WorkshopView.switchMobileSection = function(sectionId, options = {}) {
         // Bloqueio ABSOLUTO de acesso financeiro/faturamento para Funcionários/Registradores
         if ((sectionId === 'financeiro' || sectionId === 'relatorios') && (typeof this.isStaffUser === 'function' ? this.isStaffUser() : this.isRegistrarUser())) {
             if (typeof this.showToast === 'function') {
@@ -1311,6 +1309,12 @@
             }
             this.switchMobileSection('dashboard');
             return;
+        }
+
+        if (sectionId === 'lancar-servicos' && !(options && options.keepSelectedVehicle)) {
+            this.selectedMobileVehicle = null;
+            this.mobileActivePlate = '';
+            this._isLaunchVehicleConfirmed = false;
         }
 
         this.currentSection = sectionId;
@@ -1338,6 +1342,14 @@
                 }, 30);
             } else if (sectionId === 'registradores' || sectionId === 'menu-oficina') {
                 this.loadWorkshopMenuSummary();
+            } else if (sectionId === 'avisos-whatsapp') {
+                if (typeof this.loadMobileWhatsAppBotData === 'function') {
+                    this.loadMobileWhatsAppBotData();
+                }
+            } else if (sectionId === 'suporte') {
+                if (typeof this.loadMobileSupportTickets === 'function') {
+                    this.loadMobileSupportTickets();
+                }
             }
             setTimeout(() => WorkshopView.applyDynamicInputContrast(), 50);
         } else {
@@ -1983,131 +1995,141 @@
     // ──────────────────────────────────────────────────────────────────────────
     // TELA 9: AVISOS WHATSAPP (CONFORME MODELO OFICIAL - CARDS ORGANIZADOS)
     // ──────────────────────────────────────────────────────────────────────────
-    WorkshopView.currentWhatsAppTab = WorkshopView.currentWhatsAppTab || 'conversas';
+    WorkshopView.currentWhatsAppTab = WorkshopView.currentWhatsAppTab || 'campanhas';
+    WorkshopView.botCampaigns = WorkshopView.botCampaigns || [];
+    WorkshopView.botAppointments = WorkshopView.botAppointments || [];
+    WorkshopView.botDispatches = WorkshopView.botDispatches || [];
+    WorkshopView.whatsappConversations = WorkshopView.whatsappConversations || [];
+    WorkshopView._loadingWhatsAppBotData = false;
+
+    WorkshopView.loadMobileWhatsAppBotData = async function() {
+        const wsId = this.workshopId || 'ws_veloce';
+        if (this._loadingWhatsAppBotData) return;
+        this._loadingWhatsAppBotData = true;
+        try {
+            const [botRes, convRes] = await Promise.allSettled([
+                API.getMaintenanceBotCampaigns(wsId),
+                typeof API.getWhatsAppChatConversations === 'function' ? API.getWhatsAppChatConversations(wsId) : Promise.resolve({ conversations: [] })
+            ]);
+            if (botRes.status === 'fulfilled' && botRes.value) {
+                this.botCampaigns = botRes.value.campaigns || [];
+                this.botAppointments = botRes.value.appointments || [];
+                this.botDispatches = botRes.value.dispatches || [];
+            }
+            if (convRes.status === 'fulfilled' && convRes.value) {
+                this.whatsappConversations = convRes.value.conversations || [];
+            }
+        } catch (err) {
+            console.warn('Falha ao carregar dados do Bot WhatsApp:', err);
+        } finally {
+            this._loadingWhatsAppBotData = false;
+            if (this.currentSection === 'avisos-whatsapp') {
+                const viewport = document.getElementById('ws-mobile-active-viewport');
+                if (viewport) viewport.innerHTML = this.renderMobileWhatsAppView();
+            }
+        }
+    };
+
+    WorkshopView.triggerBotOutreachNow = async function() {
+        const wsId = this.workshopId || 'ws_veloce';
+        try {
+            if (typeof this.showToast === 'function') this.showToast('🤖 Executando agente preventivo...', 'info');
+            const res = await API.runMaintenanceBotOutreach(wsId, { force: true });
+            await this.loadMobileWhatsAppBotData();
+            if (typeof this.showToast === 'function') {
+                this.showToast(`✅ Bot executado: ${res.sentCount || 0} notificação(ões) enfileirada(s).`, 'success');
+            }
+        } catch (err) {
+            if (typeof this.showToast === 'function') this.showToast(err.message || 'Erro ao executar bot.', 'error');
+        }
+    };
+
+    WorkshopView.triggerDailyAgendaPdfNow = async function() {
+        const wsId = this.workshopId || 'ws_veloce';
+        try {
+            if (typeof this.showToast === 'function') this.showToast('📄 Gerando PDF da agenda para o WhatsApp da oficina...', 'info');
+            const res = await API.sendMaintenanceBotDailyPdf(wsId, { force: true });
+            await this.loadMobileWhatsAppBotData();
+            const first = (res.dispatches && res.dispatches[0]) || {};
+            if (typeof this.showToast === 'function') {
+                this.showToast(`📄 PDF gerado (${first.appointmentsCount || 0} agendamento(s))!`, 'success');
+            }
+        } catch (err) {
+            if (typeof this.showToast === 'function') this.showToast(err.message || 'Erro ao gerar PDF.', 'error');
+        }
+    };
+
+    WorkshopView.simulateBotReplyPrompt = async function(phone, plate) {
+        const reply = prompt(`Simular resposta do cliente (${plate}) para testar o Bot:\nEx: "1 às 10h" ou "Sábado 10h"`, '1 às 10h');
+        if (!reply || !reply.trim()) return;
+        const wsId = this.workshopId || 'ws_veloce';
+        try {
+            const res = await API.simulateIncomingWhatsApp(wsId, phone, reply.trim());
+            await this.loadMobileWhatsAppBotData();
+            const statusMsg = res?.botResult?.status === 'CONFIRMED'
+                ? `✅ Confirmado para ${res.botResult.chosenDate} às ${res.botResult.chosenTime}!`
+                : `🤖 Resposta do Bot enviada (${res?.botResult?.status || 'PROCESSADO'}).`;
+            if (typeof this.showToast === 'function') this.showToast(statusMsg, 'success');
+        } catch (err) {
+            if (typeof this.showToast === 'function') this.showToast(err.message || 'Erro ao simular resposta.', 'error');
+        }
+    };
+
+    WorkshopView.formatCampaignStatusBadge = function(status) {
+        const map = {
+            SENT: { label: 'Aguardando Cliente', color: '#38bdf8' },
+            IN_CONVERSATION: { label: 'Em Conversa (Bot)', color: '#f59e0b' },
+            CONFIRMED: { label: 'Agendamento Confirmado', color: '#10b981' },
+            DECLINED: { label: 'Recusado', color: '#ef4444' },
+            EXPIRED: { label: 'Expirado', color: '#64748b' }
+        };
+        return map[status] || { label: status || 'Ativo', color: '#94a3b8' };
+    };
 
     WorkshopView.renderMobileWhatsAppView = function() {
-        const chats = [
-            { 
-                avatar: '👤', 
-                name: 'João Silva', 
-                phone: '11998765432', 
-                plate: 'BRA2E19', 
-                model: 'Honda Civic Touring', 
-                service: 'Revisão 40.000 km', 
-                time: 'Hoje 10:34', 
-                message: 'Oi, o carro já está pronto para retirada?', 
-                unread: 2, 
-                status: 'Pronto',
-                statusColor: '#10b981'
-            },
-            { 
-                avatar: '👩', 
-                name: 'Ana Costa', 
-                phone: '11987654321', 
-                plate: 'KZX4D21', 
-                model: 'Toyota Corolla Altis', 
-                service: 'Troca de Óleo e Filtros', 
-                time: 'Hoje 09:15', 
-                message: 'Confirmo o agendamento, estarei aí às 14h.', 
-                unread: 1, 
-                status: 'Agendado',
-                statusColor: '#38bdf8'
-            },
-            { 
-                avatar: '👨', 
-                name: 'Ricardo Lima', 
-                phone: '11976543210', 
-                plate: 'LMH7A33', 
-                model: 'Jeep Compass Longitude', 
-                service: 'Pastilhas de Freio', 
-                time: 'Ontem 17:40', 
-                message: 'Pode me enviar o orçamento com a foto das peças novas?', 
-                unread: 0, 
-                status: 'Orçamento',
-                statusColor: '#f59e0b'
-            },
-            { 
-                avatar: '🧔', 
-                name: 'Marcos Santos', 
-                phone: '11965432109', 
-                plate: 'QWESF67', 
-                model: 'VW T-Cross Highline', 
-                service: 'Correia Dentada', 
-                time: 'Ontem 14:20', 
-                message: 'Obrigado pelo serviço, o carro ficou excelente!', 
-                unread: 0, 
-                status: 'Concluído',
-                statusColor: '#10b981'
-            },
-            { 
-                avatar: '👩‍🦰', 
-                name: 'Fernanda Alves', 
-                phone: '11954321098', 
-                plate: 'RST8I90', 
-                model: 'Hyundai Creta Prestige', 
-                service: 'Alinhamento & Balanceamento', 
-                time: '18/11 11:05', 
-                message: 'Qual o valor estimado para a revisão de 30.000 km?', 
-                unread: 0, 
-                status: 'Dúvida',
-                statusColor: '#a855f7'
-            }
-        ];
+        const wsId = this.workshopId || 'ws_veloce';
+        const campaigns = Array.isArray(this.botCampaigns) ? this.botCampaigns : [];
+        const appointments = Array.isArray(this.botAppointments) ? this.botAppointments : [];
+        const chats = Array.isArray(this.whatsappConversations) ? this.whatsappConversations : [];
+        const tab = (this.currentWhatsAppTab === 'lembretes' || this.currentWhatsAppTab === 'modelos')
+            ? 'campanhas'
+            : (this.currentWhatsAppTab || 'campanhas');
 
-        const reminders = [
-            { name: 'Carlos Eduardo', phone: '11991234567', plate: 'RIO2E26', model: 'VW Polo 1.0 TSI', item: 'Troca de Óleo e Filtro (Atingiu 10.000 km)', km: '49.800 km', badge: 'Óleo Vencendo', color: '#ef4444' },
-            { name: 'Juliana Mendes', phone: '11982345678', plate: 'DNA4091', model: 'Fiat Pulse 1.3 Drive', item: 'Pastilhas de Freio (Desgaste preventivo)', km: '38.200 km', badge: 'Atenção Freios', color: '#f59e0b' },
-            { name: 'Lucas Ferreira', phone: '11973456789', plate: 'ABC1D23', model: 'Chevrolet Tracker 1.2 Turbo', item: 'Correia Dentada (Revisão 60.000 km)', km: '59.400 km', badge: 'Correia Crítica', color: '#ef4444' },
-            { name: 'Beatriz Rocha', phone: '11964567890', plate: 'XYZ9K88', model: 'Renault Duster Iconic', item: 'Fluidos de Freio e Arrefecimento', km: '42.000 km', badge: 'Fluidos Vencendo', color: '#f59e0b' }
-        ];
-
-        const templates = [
-            { 
-                id: 'pronto', 
-                title: '🚗 Veículo Pronto para Retirada', 
-                desc: 'Avisa o cliente que o carro foi finalizado com o Dossiê atualizado',
-                text: 'Olá {cliente}! Seu veículo {modelo} ({placa}) já está pronto na oficina credenciada DNA AUTO. Todos os serviços foram concluídos e o Dossiê Digital já foi atualizado com as fotos das peças trocadas.' 
-            },
-            { 
-                id: 'revisao', 
-                title: '🛠️ Lembrete de Revisão Preventiva', 
-                desc: 'Aviso baseado no odômetro preventivo para trazer o cliente de volta',
-                text: 'Olá {cliente}! Identificamos no sistema DNA AUTO que seu veículo {modelo} ({placa}) está próximo da revisão preventiva recomendada pelo fabricante. Podemos agendar o melhor horário para você?' 
-            },
-            { 
-                id: 'orcamento', 
-                title: '📋 Orçamento Disponível para Aprovação', 
-                desc: 'Transparência total com valores discriminados de peças e mão de obra',
-                text: 'Olá {cliente}! Realizamos o diagnóstico no seu {modelo} ({placa}). O orçamento detalhado de peças e mão de obra já está pronto para sua aprovação com total transparência.' 
-            },
-            { 
-                id: 'oleo', 
-                title: '🛢️ Alerta de Troca de Óleo e Filtros', 
-                desc: 'Aviso pontual para evitar danos severos no motor do cliente',
-                text: 'Olá {cliente}! Seu {modelo} ({placa}) atingiu o intervalo seguro para a troca de óleo e filtros do motor. Garanta a proteção do seu motor com agendamento rápido aqui na nossa oficina.' 
-            },
-            { 
-                id: 'satisfacao', 
-                title: '⭐ Avaliação & Dossiê Atualizado', 
-                desc: 'Pós-venda para fortalecer a fidelização com a oficina',
-                text: 'Olá {cliente}! Agradecemos pela preferência em nossa oficina. Seu Dossiê Digital DNA AUTO já foi atualizado com a comprovação das manutenções. Como foi sua experiência conosco?' 
-            }
-        ];
-
-        const tab = this.currentWhatsAppTab || 'conversas';
+        const apiBase = (typeof API !== 'undefined' && API.baseUrl) ? API.baseUrl : '/api/v1';
 
         return `
             <div style="padding-bottom: 80px;">
-                <!-- Abas Superiores de Navegação Organizada -->
+                <!-- Resumo do Fluxo Automático 10h -> Confirmação -> PDF 17h -->
+                <div style="background:linear-gradient(135deg, rgba(0,82,204,0.22), rgba(16,185,129,0.12)); border:1px solid rgba(56,189,248,0.3); border-radius:14px; padding:12px; margin-bottom:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
+                        <div>
+                            <strong style="color:#ffffff; font-size:13.5px; display:block;">🤖 Agente Automático WhatsApp</strong>
+                            <span style="font-size:11px; color:#94a3b8;">10h dispara avisos (Seg–Sáb até 11h) • 17h envia PDF p/ oficina</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                        <button type="button" class="ws-btn-chat-primary" style="flex:1; min-width:130px; font-size:11.5px;" onclick="WorkshopView.triggerBotOutreachNow()">
+                            <span>🚀 Disparar Avisos 10h</span>
+                        </button>
+                        <button type="button" class="ws-btn-chat-secondary" style="flex:1; min-width:130px; font-size:11.5px;" onclick="WorkshopView.triggerDailyAgendaPdfNow()">
+                            <span>📄 Enviar PDF 17h</span>
+                        </button>
+                        <a class="ws-btn-chat-secondary" style="font-size:11.5px;" href="${apiBase}/workshops/${encodeURIComponent(wsId)}/appointments/daily-pdf" target="_blank" rel="noopener">
+                            <span>📥 Ver PDF</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Abas Superiores -->
                 <div class="ws-model-filter-pills" style="margin-top:4px;">
+                    <button type="button" class="ws-model-pill ${tab === 'campanhas' ? 'active' : ''}" onclick="WorkshopView.setWhatsAppTab('campanhas', this)">
+                        🤖 Avisos Enviados (${campaigns.length})
+                    </button>
+                    <button type="button" class="ws-model-pill ${tab === 'agendados' ? 'active' : ''}" onclick="WorkshopView.setWhatsAppTab('agendados', this)">
+                        📅 Agendados (${appointments.length})
+                    </button>
                     <button type="button" class="ws-model-pill ${tab === 'conversas' ? 'active' : ''}" onclick="WorkshopView.setWhatsAppTab('conversas', this)">
                         💬 Conversas (${chats.length})
-                    </button>
-                    <button type="button" class="ws-model-pill ${tab === 'lembretes' ? 'active' : ''}" onclick="WorkshopView.setWhatsAppTab('lembretes', this)">
-                        ⏰ Lembretes (${reminders.length})
-                    </button>
-                    <button type="button" class="ws-model-pill ${tab === 'modelos' ? 'active' : ''}" onclick="WorkshopView.setWhatsAppTab('modelos', this)">
-                        📑 Modelos (${templates.length})
                     </button>
                 </div>
 
@@ -2116,136 +2138,136 @@
                     <span class="search-icon">🔍</span>
                     <input 
                         type="text" 
-                        placeholder="Buscar por cliente, placa ou assunto..."
+                        placeholder="Buscar por placa, cliente ou serviço..."
                         id="ws-whatsapp-search-input"
                         oninput="WorkshopView.filterWhatsAppChats(this.value)"
                     />
                 </div>
 
-                <!-- CONTEÚDO DA ABA 1: CONVERSAS ATIVAS (CARDS ORGANIZADOS) -->
-                <div id="ws-tab-content-conversas" style="display:${tab === 'conversas' ? 'block' : 'none'};">
+                <!-- ABA 1: VEÍCULOS NOTIFICADOS PELO BOT -->
+                <div id="ws-tab-content-campanhas" style="display:${tab === 'campanhas' ? 'block' : 'none'};">
                     <div class="ws-model-chat-list" id="ws-model-chat-container">
-                        ${chats.map(c => `
-                            <div class="ws-msg-client-card" data-search="${(c.name + ' ' + c.plate + ' ' + c.model + ' ' + c.service + ' ' + c.message).toLowerCase()}">
-                                <!-- Cabeçalho do Card: Cliente, Placa e Horário -->
-                                <div class="ws-msg-card-header">
-                                    <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
-                                        <div class="ws-msg-client-avatar">
-                                            ${c.name.charAt(0).toUpperCase()}
-                                            <div class="ws-msg-avatar-badge" title="WhatsApp Ativo"></div>
-                                        </div>
-                                        <div class="ws-msg-card-names">
-                                            <h4 class="ws-msg-client-title">
-                                                <span>${c.name}</span>
-                                                <span class="ws-msg-plate-pill">${c.plate}</span>
-                                            </h4>
-                                            <div class="ws-msg-vehicle-sub">
-                                                <span>${c.model}</span>
-                                                <span>•</span>
-                                                <span style="color:${c.statusColor}; font-weight:700;">${c.status}</span>
+                        ${campaigns.length === 0 ? `
+                            <div style="background:rgba(15,23,42,0.75); border:1px dashed rgba(56,189,248,0.3); border-radius:14px; padding:22px 14px; text-align:center; color:#94a3b8;">
+                                <div style="font-size:26px; margin-bottom:6px;">🤖</div>
+                                <strong style="color:#fff; font-size:13.5px; display:block; margin-bottom:4px;">Nenhum veículo notificado ainda</strong>
+                                <span style="font-size:12px;">Às 10h00 o agente verifica automaticamente veículos com óleo, correia ou revisão vencendo e envia as 3 datas úteis. Você também pode clicar em "Disparar Avisos 10h".</span>
+                            </div>
+                        ` : campaigns.map(c => {
+                            const st = this.formatCampaignStatusBadge(c.status);
+                            const datesText = Array.isArray(c.offered_dates)
+                                ? c.offered_dates.map((d, idx) => `${idx + 1}) ${d.dateBr} (${d.weekday.split('-')[0]})`).join(' • ')
+                                : '';
+                            return `
+                                <div class="ws-msg-client-card" data-search="${((c.owner_name || '') + ' ' + (c.license_plate || '') + ' ' + (c.vehicle_model || '') + ' ' + (c.item_name || '')).toLowerCase()}" style="border-left:4px solid ${st.color};">
+                                    <div class="ws-msg-card-header">
+                                        <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+                                            <div class="ws-msg-client-avatar" style="background:${st.color};">
+                                                ${(c.owner_name || 'C').charAt(0).toUpperCase()}
+                                            </div>
+                                            <div class="ws-msg-card-names">
+                                                <h4 class="ws-msg-client-title">
+                                                    <span>${c.owner_name || 'Cliente'}</span>
+                                                    <span class="ws-msg-plate-pill">${c.license_plate}</span>
+                                                </h4>
+                                                <div class="ws-msg-vehicle-sub">
+                                                    <span>${c.vehicle_model || 'Veículo'}</span>
+                                                    <span>•</span>
+                                                    <span>${Number(c.current_km || 0).toLocaleString('pt-BR')} km</span>
+                                                </div>
                                             </div>
                                         </div>
+                                        <span style="font-size:10.5px; font-weight:800; color:${st.color}; background:${st.color}22; padding:3px 8px; border-radius:6px; border:1px solid ${st.color}44;">
+                                            ${st.label}
+                                        </span>
                                     </div>
-                                    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0;">
-                                        <span class="ws-msg-time-badge">${c.time}</span>
-                                        ${c.unread > 0 ? `<span class="ws-msg-unread-pill">${c.unread} nova${c.unread > 1 ? 's' : ''}</span>` : `<span style="color:#25d366; font-size:11px; font-weight:700;">✓✓</span>`}
+
+                                    <div class="ws-msg-preview-bubble">
+                                        <span class="ws-msg-bubble-icon">🛠️</span>
+                                        <span class="ws-msg-text-preview" style="color:#ffffff; font-weight:600;">
+                                            ${c.item_name}
+                                            ${c.chosen_date ? `<br/><span style="color:#10b981;">✅ Confirmado: ${c.chosen_date} às ${c.chosen_time || '09:00'}</span>` : (datesText ? `<br/><span style="color:#94a3b8; font-weight:400;">Datas oferecidas: ${datesText}</span>` : '')}
+                                        </span>
+                                    </div>
+
+                                    <div class="ws-msg-card-actions">
+                                        ${c.status !== 'CONFIRMED' ? `
+                                            <button type="button" class="ws-btn-chat-primary" onclick="WorkshopView.simulateBotReplyPrompt('${c.owner_phone}', '${c.license_plate}')">
+                                                <span>🤖 Simular Confirmação</span>
+                                            </button>
+                                        ` : ''}
+                                        <a class="ws-btn-chat-secondary" href="https://wa.me/${String(c.owner_phone || '').replace(/\D/g, '')}" target="_blank" rel="noopener">
+                                            <span>📲 WhatsApp</span>
+                                        </a>
                                     </div>
                                 </div>
-
-                                <!-- Balão com a Última Mensagem Formatada -->
-                                <div class="ws-msg-preview-bubble">
-                                    <span class="ws-msg-bubble-icon">💬</span>
-                                    <span class="ws-msg-text-preview">${c.message}</span>
-                                </div>
-
-                                <!-- Barra de Ações Rápidas no Card -->
-                                <div class="ws-msg-card-actions">
-                                    <button type="button" class="ws-btn-chat-primary" onclick="WorkshopView.openMobileChatModal('${c.name}', '${c.phone}', '${c.plate}', '${c.model}', '${c.service}', '${encodeURIComponent(c.message)}')">
-                                        <span>💬</span> <span>Abrir Conversa</span>
-                                    </button>
-                                    <a class="ws-btn-chat-secondary" href="https://wa.me/55${c.phone}?text=${encodeURIComponent('Olá ' + c.name + ', aqui é da oficina credenciada DNA AUTO referente ao seu ' + c.model + ' (' + c.plate + ').')}" target="_blank" rel="noopener">
-                                        <span>📲</span> <span>WhatsApp Web</span>
-                                    </a>
-                                </div>
-                            </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
                 </div>
 
-                <!-- CONTEÚDO DA ABA 2: LEMBRETES PREVENTIVOS -->
-                <div id="ws-tab-content-lembretes" style="display:${tab === 'lembretes' ? 'block' : 'none'};">
+                <!-- ABA 2: AGENDAMENTOS CONFIRMADOS -->
+                <div id="ws-tab-content-agendados" style="display:${tab === 'agendados' ? 'block' : 'none'};">
                     <div style="display:flex; flex-direction:column; gap:12px;">
-                        ${reminders.map(r => `
-                            <div class="ws-msg-client-card" style="border-left:4px solid ${r.color};">
+                        ${appointments.length === 0 ? `
+                            <div style="background:rgba(15,23,42,0.75); border:1px dashed rgba(16,185,129,0.3); border-radius:14px; padding:22px 14px; text-align:center; color:#94a3b8;">
+                                <strong style="color:#fff; font-size:13.5px; display:block; margin-bottom:4px;">Nenhum veículo agendado ainda</strong>
+                                <span style="font-size:12px;">Assim que o cliente confirmar uma das 3 datas no WhatsApp, o agendamento aparece aqui e entra no PDF das 17h.</span>
+                            </div>
+                        ` : appointments.map(a => `
+                            <div class="ws-msg-client-card" data-search="${((a.owner_name || '') + ' ' + (a.license_plate || '') + ' ' + (a.service_title || '')).toLowerCase()}" style="border-left:4px solid #10b981;">
                                 <div class="ws-msg-card-header">
-                                    <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
-                                        <div class="ws-msg-client-avatar" style="background:${r.color};">
-                                            ${r.name.charAt(0).toUpperCase()}
-                                        </div>
-                                        <div class="ws-msg-card-names">
-                                            <h4 class="ws-msg-client-title">
-                                                <span>${r.name}</span>
-                                                <span class="ws-msg-plate-pill">${r.plate}</span>
-                                            </h4>
-                                            <div class="ws-msg-vehicle-sub">
-                                                <span>${r.model}</span>
-                                                <span>•</span>
-                                                <span>${r.km}</span>
-                                            </div>
+                                    <div>
+                                        <h4 class="ws-msg-client-title">
+                                            <span>${a.owner_name || 'Cliente'}</span>
+                                            <span class="ws-msg-plate-pill">${a.license_plate}</span>
+                                        </h4>
+                                        <div class="ws-msg-vehicle-sub">
+                                            <span>📅 ${a.appointment_date}</span>
+                                            <span>•</span>
+                                            <span>⏰ ${a.appointment_time || '09:00'}</span>
                                         </div>
                                     </div>
-                                    <span style="font-size:10.5px; font-weight:800; color:${r.color}; background:${r.color}22; padding:3px 8px; border-radius:6px; border:1px solid ${r.color}44;">
-                                        ${r.badge}
+                                    <span style="font-size:10.5px; font-weight:800; color:#10b981; background:rgba(16,185,129,0.18); padding:3px 8px; border-radius:6px;">
+                                        ${a.status}
                                     </span>
                                 </div>
-
                                 <div class="ws-msg-preview-bubble">
-                                    <span class="ws-msg-bubble-icon" style="color:${r.color};">⚠️</span>
-                                    <span class="ws-msg-text-preview" style="color:#ffffff; font-weight:600;">${r.item}</span>
-                                </div>
-
-                                <div class="ws-msg-card-actions">
-                                    <button type="button" class="ws-btn-chat-primary" onclick="WorkshopView.openClientMonitoringWhatsAppModal('${r.name}', '${r.phone}', '${r.plate}', '${r.model}', '${r.item}', 'PREVENTIVE', '${encodeURIComponent('Olá ' + r.name + ', notamos no sistema DNA AUTO que seu ' + r.model + ' (' + r.plate + ') está com ' + r.km + ' e precisa de atenção em ' + r.item + '. Podemos agendar sua revisão?')}')">
-                                        <span>📲</span> <span>Enviar Lembrete WhatsApp</span>
-                                    </button>
+                                    <span class="ws-msg-bubble-icon">🔧</span>
+                                    <span class="ws-msg-text-preview" style="color:#fff;">${a.service_title}</span>
                                 </div>
                             </div>
                         `).join('')}
                     </div>
                 </div>
 
-                <!-- CONTEÚDO DA ABA 3: MODELOS PRONTOS DE MENSAGENS -->
-                <div id="ws-tab-content-modelos" style="display:${tab === 'modelos' ? 'block' : 'none'};">
-                    <div style="display:flex; flex-direction:column; gap:12px;">
-                        ${templates.map(t => `
-                            <div class="ws-msg-client-card">
-                                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
-                                    <div>
-                                        <h4 style="margin:0 0 4px; font-size:14px; font-weight:800; color:#ffffff;">${t.title}</h4>
-                                        <span style="font-size:11.5px; color:#94a3b8;">${t.desc}</span>
+                <!-- ABA 3: CONVERSAS REAIS DO WHATSAPP -->
+                <div id="ws-tab-content-conversas" style="display:${tab === 'conversas' ? 'block' : 'none'};">
+                    <div class="ws-model-chat-list">
+                        ${chats.length === 0 ? `
+                            <div style="background:rgba(15,23,42,0.75); border:1px dashed rgba(148,163,184,0.3); border-radius:14px; padding:22px 14px; text-align:center; color:#94a3b8;">
+                                <strong style="color:#fff; font-size:13.5px; display:block; margin-bottom:4px;">Sem conversas recentes</strong>
+                                <span style="font-size:12px;">As mensagens enviadas e recebidas pelo WhatsApp conectado da oficina aparecem aqui em tempo real.</span>
+                            </div>
+                        ` : chats.map(c => `
+                            <div class="ws-msg-client-card" data-search="${((c.client_name || '') + ' ' + (c.vehicle_plate || '') + ' ' + (c.last_message || '')).toLowerCase()}">
+                                <div class="ws-msg-card-header">
+                                    <div class="ws-msg-card-names">
+                                        <h4 class="ws-msg-client-title">
+                                            <span>${c.client_name || c.phone_number}</span>
+                                            ${c.vehicle_plate ? `<span class="ws-msg-plate-pill">${c.vehicle_plate}</span>` : ''}
+                                        </h4>
+                                        <div class="ws-msg-vehicle-sub">${c.vehicle_model || c.phone_number}</div>
                                     </div>
-                                    <span style="background:rgba(56,189,248,0.15); color:#38bdf8; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; text-transform:uppercase;">Modelo</span>
+                                    <span class="ws-msg-time-badge">${c.last_timestamp ? String(c.last_timestamp).slice(11, 16) : ''}</span>
                                 </div>
-
-                                <div style="background:rgba(6,10,18,0.85); border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:10px 12px; font-size:12px; color:#e2e8f0; line-height:1.45;">
-                                    ${t.text}
-                                </div>
-
-                                <div class="ws-msg-card-actions">
-                                    <button type="button" class="ws-btn-chat-primary" onclick="WorkshopView.useTemplateForNewChat('${encodeURIComponent(t.text)}')">
-                                        <span>📋</span> <span>Usar este Modelo</span>
-                                    </button>
+                                <div class="ws-msg-preview-bubble">
+                                    <span class="ws-msg-bubble-icon">💬</span>
+                                    <span class="ws-msg-text-preview">${c.last_message || ''}</span>
                                 </div>
                             </div>
                         `).join('')}
                     </div>
-                </div>
-
-                <!-- Botão Flutuante Inferior Nova Mensagem -->
-                <div style="padding: 16px 0 0;">
-                    <button type="button" class="ws-model-btn-primary" onclick="WorkshopView.promptNewWhatsAppMessage()">
-                        <span>💬 Nova Mensagem para Cliente</span>
-                    </button>
                 </div>
             </div>
         `;
@@ -2256,13 +2278,13 @@
         document.querySelectorAll('.ws-model-filter-pills .ws-model-pill').forEach(b => b.classList.remove('active'));
         if (btn) btn.classList.add('active');
 
+        const tabCampanhas = document.getElementById('ws-tab-content-campanhas');
+        const tabAgendados = document.getElementById('ws-tab-content-agendados');
         const tabConversas = document.getElementById('ws-tab-content-conversas');
-        const tabLembretes = document.getElementById('ws-tab-content-lembretes');
-        const tabModelos   = document.getElementById('ws-tab-content-modelos');
 
+        if (tabCampanhas) tabCampanhas.style.display = (tab === 'campanhas') ? 'block' : 'none';
+        if (tabAgendados) tabAgendados.style.display = (tab === 'agendados') ? 'block' : 'none';
         if (tabConversas) tabConversas.style.display = (tab === 'conversas') ? 'block' : 'none';
-        if (tabLembretes) tabLembretes.style.display = (tab === 'lembretes') ? 'block' : 'none';
-        if (tabModelos)   tabModelos.style.display   = (tab === 'modelos')   ? 'block' : 'none';
     };
 
     WorkshopView.filterWhatsAppChats = function(term) {
@@ -2550,48 +2572,162 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 13: SUPORTE (CONFORME MODELO OFICIAL)
+    // TELA 13: SUPORTE (EXCLUSIVO PARA CHAMADOS COM A PLATAFORMA DNA AUTO)
     // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.supportTickets = WorkshopView.supportTickets || [];
+    WorkshopView._loadingSupportTickets = false;
+
+    WorkshopView.loadMobileSupportTickets = async function() {
+        const wsId = this.workshopId || 'ws_veloce';
+        if (this._loadingSupportTickets) return;
+        this._loadingSupportTickets = true;
+        try {
+            const res = await API.getWorkshopSupportTickets(wsId);
+            this.supportTickets = res.tickets || [];
+        } catch (err) {
+            console.warn('Erro ao carregar tickets da oficina:', err);
+        } finally {
+            this._loadingSupportTickets = false;
+            if (this.currentSection === 'suporte') {
+                const viewport = document.getElementById('ws-mobile-active-viewport');
+                if (viewport) viewport.innerHTML = this.renderMobileSupportView();
+            }
+        }
+    };
+
+    WorkshopView.submitMobileSupportTicket = async function() {
+        const wsId = this.workshopId || 'ws_veloce';
+        const category = document.getElementById('support-ticket-category')?.value || 'SUPORTE_TECNICO';
+        const priority = document.getElementById('support-ticket-priority')?.value || 'NORMAL';
+        const subject = document.getElementById('support-ticket-subject')?.value?.trim() || '';
+        const description = document.getElementById('support-ticket-description')?.value?.trim() || '';
+
+        if (!subject || !description) {
+            if (typeof this.showToast === 'function') {
+                this.showToast('Preencha o assunto e a descrição do chamado.', 'warning');
+            }
+            return;
+        }
+
+        try {
+            const res = await API.createWorkshopSupportTicket(wsId, {
+                category,
+                priority,
+                subject,
+                description,
+                requester_name: (this.currentUser && this.currentUser.name) || 'Oficina Credenciada',
+                user_id: (this.currentUser && this.currentUser.id) || null
+            });
+            await this.loadMobileSupportTickets();
+            if (typeof this.showToast === 'function') {
+                this.showToast(`🎫 Chamado ${res?.ticket?.protocol || ''} aberto com a plataforma!`, 'success');
+            }
+        } catch (err) {
+            if (typeof this.showToast === 'function') {
+                this.showToast(err.message || 'Erro ao abrir chamado de suporte.', 'error');
+            }
+        }
+    };
+
     WorkshopView.renderMobileSupportView = function() {
-        const items = [
-            { icon: '📖', title: 'Central de Ajuda', desc: 'Dúvidas frequentes e tutoriais', action: 'ajuda' },
-            { icon: '🎧', title: 'Falar com o Suporte', desc: 'Abertura de chamado', action: 'chamado' },
-            { icon: '🟢', title: 'Status do Sistema', desc: 'Verificar o funcionamento', action: 'status' },
-            { icon: '💡', title: 'Solicitar Melhoria', desc: 'Envie sugestões para o app', action: 'melhoria' },
-            { icon: 'ℹ️', title: 'Sobre o DNA Auto', desc: 'Versão 1.0.0', action: 'sobre' }
-        ];
+        const tickets = Array.isArray(this.supportTickets) ? this.supportTickets : [];
+        const statusMap = {
+            OPEN: { label: 'Aberto', color: '#38bdf8' },
+            IN_PROGRESS: { label: 'Em Atendimento', color: '#f59e0b' },
+            RESOLVED: { label: 'Resolvido', color: '#10b981' },
+            CLOSED: { label: 'Encerrado', color: '#64748b' }
+        };
 
         return `
-            <div style="padding-bottom: 24px;">
-                <div class="ws-model-support-list">
-                    ${items.map(it => `
-                        <div class="ws-model-support-item" onclick="WorkshopView.handleSupportAction('${it.action}', '${it.title}')">
-                            <div class="support-icon-box">
-                                ${it.icon}
+            <div class="dna-mobile-subpage" style="padding-bottom:80px;">
+                <div class="dna-mobile-subpage-header">
+                    <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar</span>
+                    </button>
+                    <span class="dna-mobile-subpage-title">Suporte</span>
+                </div>
+                <div class="dna-mobile-subpage-body">
+                    <div style="background:rgba(8,16,32,0.9); border:1px solid rgba(56,189,248,0.3); border-radius:14px; padding:16px; margin-bottom:14px;">
+                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+                            <span style="font-size:24px;">🎫</span>
+                            <div>
+                                <strong style="color:#ffffff; font-size:14.5px; display:block;">Abrir Chamado com a Plataforma</strong>
+                                <span style="font-size:11.5px; color:#94a3b8;">Canal oficial de tickets entre a oficina e a administração DNA AUTO</span>
                             </div>
-                            <div class="support-info">
-                                <h4>${it.title}</h4>
-                                <p>${it.desc}</p>
-                            </div>
-                            <div class="support-arrow">›</div>
                         </div>
-                    `).join('')}
+
+                        <div class="dna-input-group" style="margin-bottom:10px;">
+                            <label class="dna-input-label">Categoria</label>
+                            <select id="support-ticket-category" style="width:100%; height:44px; background:rgba(6,11,20,0.9); border:1px solid rgba(0,102,255,0.35); border-radius:10px; color:#fff; padding:0 12px; font-size:13px; font-weight:700;">
+                                <option value="SUPORTE_TECNICO">Suporte Técnico do Sistema</option>
+                                <option value="WHATSAPP_BOT">Conexão WhatsApp & Bot Preventivo</option>
+                                <option value="FINANCEIRO_FATURAMENTO">Financeiro & Repasses</option>
+                                <option value="DUVIDAS_USO">Dúvidas Operacionais</option>
+                            </select>
+                        </div>
+
+                        <div class="dna-input-group" style="margin-bottom:10px;">
+                            <label class="dna-input-label">Prioridade</label>
+                            <select id="support-ticket-priority" style="width:100%; height:44px; background:rgba(6,11,20,0.9); border:1px solid rgba(0,102,255,0.35); border-radius:10px; color:#fff; padding:0 12px; font-size:13px; font-weight:700;">
+                                <option value="NORMAL">Normal</option>
+                                <option value="ALTA">Alta</option>
+                                <option value="URGENTE">Urgente</option>
+                            </select>
+                        </div>
+
+                        <div class="dna-input-group" style="margin-bottom:10px;">
+                            <label class="dna-input-label">Assunto *</label>
+                            <input type="text" id="support-ticket-subject" placeholder="Ex: Dúvida na confirmação de serviço ou WhatsApp" style="width:100%; height:44px; background:rgba(6,11,20,0.9); border:1px solid rgba(0,102,255,0.35); border-radius:10px; color:#fff; padding:0 12px; font-size:13px;" />
+                        </div>
+
+                        <div class="dna-input-group" style="margin-bottom:14px;">
+                            <label class="dna-input-label">Descrição do Chamado *</label>
+                            <textarea id="support-ticket-description" rows="3" placeholder="Descreva com detalhes como a equipe da plataforma pode ajudar..." style="width:100%; resize:none; padding:10px; background:rgba(6,11,20,0.9); border:1px solid rgba(0,102,255,0.35); border-radius:10px; color:#fff; font-size:12.5px;"></textarea>
+                        </div>
+
+                        <button type="button" class="dna-primary-btn-lg" onclick="WorkshopView.submitMobileSupportTicket()">
+                            <span>🎫 Enviar Ticket para a Plataforma</span>
+                        </button>
+                    </div>
+
+                    <div style="background:rgba(8,16,32,0.75); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px;">
+                        <strong style="color:#ffffff; font-size:13.5px; display:block; margin-bottom:10px;">📋 Meus Chamados (${tickets.length})</strong>
+                        ${tickets.length === 0 ? `
+                            <div style="text-align:center; padding:16px 8px; color:#94a3b8; font-size:12px;">
+                                Nenhum chamado aberto até o momento.
+                            </div>
+                        ` : `
+                            <div style="display:flex; flex-direction:column; gap:10px;">
+                                ${tickets.map(t => {
+                                    const st = statusMap[t.status] || { label: t.status, color: '#94a3b8' };
+                                    return `
+                                        <div style="background:rgba(6,11,20,0.85); border:1px solid rgba(255,255,255,0.08); border-left:4px solid ${st.color}; border-radius:10px; padding:10px 12px;">
+                                            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:4px;">
+                                                <span style="font-family:monospace; font-size:11px; color:#38bdf8; font-weight:800;">${t.protocol}</span>
+                                                <span style="font-size:10.5px; font-weight:800; color:${st.color}; background:${st.color}22; padding:2px 7px; border-radius:6px;">${st.label}</span>
+                                            </div>
+                                            <strong style="color:#fff; font-size:13px; display:block; margin-bottom:3px;">${t.subject}</strong>
+                                            <p style="margin:0; font-size:12px; color:#cbd5e1; line-height:1.4;">${t.description}</p>
+                                            ${t.admin_reply ? `
+                                                <div style="margin-top:8px; padding:8px; border-radius:8px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.28); font-size:11.5px; color:#d1fae5;">
+                                                    <strong>Resposta da Plataforma:</strong> ${t.admin_reply}
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `}
+                    </div>
+
+                    <div style="margin-top:12px; text-align:center;">
+                        <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                            <span>‹</span> <span>Voltar para Todos os Cards</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
-    };
-
-    WorkshopView.handleSupportAction = function(action, title) {
-        if (action === 'chamado') {
-            const tel = '5511999999999';
-            window.open(`https://wa.me/${tel}?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20no%20app%20DNA%20AUTO%20Oficina`, '_blank');
-        } else if (action === 'status') {
-            this.showToast('🟢 Todos os sistemas operacionais e servidores ativos!', 'success');
-        } else if (action === 'sobre') {
-            this.showToast('DNA AUTO Oficina v1.0.0 • Gestão e RAG Integrados.', 'info');
-        } else {
-            this.showToast(`${title} selecionado.`, 'info');
-        }
     };
 
     // Renderiza o conteúdo da busca no card de entrada
@@ -3441,7 +3577,7 @@
             else this.vehiclesList.unshift(newVehObj);
 
             setTimeout(() => {
-                this.switchMobileSection('lancar-servicos');
+                this.switchMobileSection('lancar-servicos', { keepSelectedVehicle: true });
             }, 600);
 
         } catch (err) {
@@ -3474,7 +3610,6 @@
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.renderMobileLaunchServicesView = function() {
         const v = this.selectedMobileVehicle;
-        const recents = this.getEffectiveVehiclesList().slice(0, 4);
         const services = this.launchCarouselServices;
 
         // O campo sempre inicia vazio para o profissional digitar, conforme solicitado
@@ -3509,16 +3644,6 @@
                             <button type="button" onclick="WorkshopView.triggerLaunchPlateSearch()" title="Localizar Veículo">
                                 🔍
                             </button>
-                        </div>
-
-                        <!-- Atalhos Rápidos com Veículos Recentes -->
-                        <div class="dna-launch-plate-recents">
-                            <span class="recents-label">Recentes:</span>
-                            ${recents.map(r => `
-                                <button type="button" class="recent-plate-chip" onclick="WorkshopView.fillAndSearchPlate('${r.license_plate}')">
-                                    ${r.license_plate}
-                                </button>
-                            `).join('')}
                         </div>
 
                         <!-- Card de Identificação Automática do Veículo -->
@@ -5098,8 +5223,9 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
         const v = this.findVehicleByPlate(plate);
         if (v) {
             this.selectedMobileVehicle = v;
+            this._isLaunchVehicleConfirmed = true;
             alert(`👤 Cliente ${v.client_name}\nTelefone: ${v.client_phone}\nVeículo Vinculado: ${v.model} (${v.license_plate})\nRedirecionando para lançar serviços.`);
-            this.switchMobileSection('lancar-servicos');
+            this.switchMobileSection('lancar-servicos', { keepSelectedVehicle: true });
         }
     };
 
@@ -5167,7 +5293,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                 </div>
 
                 <div style="display:flex; gap:8px;">
-                    <button class="dna-small-action-btn cyan" style="flex:1;" onclick="WorkshopView.selectVehicleByPlate('${v.license_plate}'); WorkshopView.switchMobileSection('lancar-servicos');">
+                    <button class="dna-small-action-btn cyan" style="flex:1;" onclick="WorkshopView.selectVehicleByPlate('${v.license_plate}'); WorkshopView.switchMobileSection('lancar-servicos', { keepSelectedVehicle: true });">
                         <span>🔧 Lançar Serviços</span>
                     </button>
                     <button class="dna-small-action-btn" style="flex:1;" onclick="WorkshopView.handleMobileOpenDossier('${v.license_plate}')">
@@ -5930,98 +6056,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
         `;
     };
 
-    WorkshopView.renderMobileSupportView = function() {
-        return `
-            <div class="dna-mobile-subpage">
-                <div class="dna-mobile-subpage-header">
-                    <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
-                    </button>
-                    <span class="dna-mobile-subpage-title">Suporte & Equipamentos</span>
-                </div>
-                <div class="dna-mobile-subpage-body">
-                    <!-- 1. ACESSO À PLATAFORMA DO ADMINISTRADOR -->
-                    <div style="background:linear-gradient(145deg, rgba(0,102,255,0.22), rgba(0,212,255,0.12)); border:1.5px solid rgba(0,212,255,0.4); border-radius:14px; padding:16px;">
-                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-                            <div style="width:42px; height:42px; border-radius:10px; background:linear-gradient(135deg, #0052cc, #00d4ff); display:flex; align-items:center; justify-content:center; font-size:22px;">🏛️</div>
-                            <div>
-                                <h3 style="margin:0; font-size:15px; font-weight:800; color:#FFFFFF;">Central Matriz DNA AUTO</h3>
-                                <span style="font-size:11.5px; color:var(--dna-ws-cyan); font-weight:700;">Plataforma Oficial do Administrador</span>
-                            </div>
-                        </div>
-                        <p style="font-size:12px; color:var(--dna-ws-text-muted); margin:0 0 12px; line-height:1.4;">
-                            Acesso direto à central corporativa para gestão da rede, auditoria de laudos e suporte operacional.
-                        </p>
-                        <div style="display:flex; flex-direction:column; gap:8px;">
-                            <button type="button" class="dna-primary-btn-lg cyan" style="height:44px; font-size:13px;" onclick="window.open('/admin', '_blank')">
-                                <span>🖥️ Abrir Painel do Administrador</span>
-                            </button>
-                            <button type="button" class="dna-whatsapp-btn" style="height:44px; font-size:13px;" onclick="window.open('https://wa.me/5511999999999?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20para%20a%20minha%20oficina%20credenciada%20DNA%20AUTO', '_blank')">
-                                <span>💬 Suporte Matriz via WhatsApp</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 2. SOLICITAR MAIS EQUIPAMENTOS -->
-                    <div style="background:rgba(8,16,32,0.9); border:1px solid rgba(0,102,255,0.28); border-radius:14px; padding:16px;">
-                        <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-                            <span style="font-size:24px;">📦</span>
-                            <div>
-                                <strong style="color:#ffffff; font-size:14.5px; display:block;">Solicitar Mais Equipamentos</strong>
-                                <span style="font-size:11px; color:var(--dna-ws-text-dim);">Peça novos dispositivos e materiais para a oficina</span>
-                            </div>
-                        </div>
-
-                        <!-- Seleção do Equipamento -->
-                        <div class="dna-input-group" style="margin-bottom:10px;">
-                            <label class="dna-input-label">Tipo de Equipamento Desejado *</label>
-                            <select id="equip-type-select" style="width:100%; height:44px; background:rgba(6,11,20,0.9); border:1px solid rgba(0,102,255,0.35); border-radius:10px; color:#fff; padding:0 12px; font-size:13px; font-weight:700;">
-                                <option value="obd2">🔌 Dongles Mini OBD2 ELM327 BLE (AutoLink)</option>
-                                <option value="tags">🏷️ Tags / Adesivos QR Code DNA Permanente</option>
-                                <option value="posters">📜 Cartazes Oficiais de Parede / Balcão</option>
-                                <option value="kit">📦 Kit Completo de Boas-Vindas da Oficina</option>
-                            </select>
-                        </div>
-
-                        <!-- Quantidade -->
-                        <div class="dna-input-group" style="margin-bottom:10px;">
-                            <label class="dna-input-label">Quantidade de Unidades *</label>
-                            <input type="number" id="equip-qty-input" value="5" min="1" max="100" style="width:100%; height:44px; background:rgba(6,11,20,0.9); border:1px solid rgba(0,102,255,0.35); border-radius:10px; color:#fff; padding:0 12px; font-size:14px; font-weight:800;" />
-                        </div>
-
-                        <!-- Observações e Ponto de Entrega -->
-                        <div class="dna-input-group" style="margin-bottom:14px;">
-                            <label class="dna-input-label">Endereço de Entrega / Observações</label>
-                            <textarea id="equip-notes-input" rows="2" placeholder="Informe o endereço ou ponto de referência da oficina..." style="width:100%; resize:none; padding:10px; background:rgba(6,11,20,0.9); border:1px solid rgba(0,102,255,0.35); border-radius:10px; color:#fff; font-size:12.5px;"></textarea>
-                        </div>
-
-                        <button type="button" class="dna-primary-btn-lg" onclick="WorkshopView.handleRequestEquipment()">
-                            <span>✓ Enviar Solicitação à Matriz</span>
-                        </button>
-                    </div>
-
-                    <div style="margin-top:10px; text-align:center;">
-                        <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                            <span>‹</span> <span>Voltar para Todos os Cards</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    };
-
-    WorkshopView.handleRequestEquipment = function() {
-        const typeSelect = document.getElementById('equip-type-select');
-        const qtyInput = document.getElementById('equip-qty-input');
-        const notesInput = document.getElementById('equip-notes-input');
-
-        const typeName = typeSelect ? typeSelect.options[typeSelect.selectedIndex].text : 'Equipamentos';
-        const qty = qtyInput ? qtyInput.value : '5';
-        const protocol = 'PED-EQP-' + Math.floor(100000 + Math.random() * 900000);
-
-        alert(`✅ Solicitação de equipamentos enviada com sucesso à Matriz!\n\nEquipamento: ${typeName}\nQuantidade: ${qty} unidades\nProtocolo: ${protocol}\n\nSeu pedido será despachado em até 48 horas úteis.`);
-        this.switchMobileSection('dashboard');
-    };
+    // Mantém apenas o portal exclusivo de tickets de suporte com a plataforma (definido acima em renderMobileSupportView)
 
     // ──────────────────────────────────────────────────────────────────────────
     // MODAL DE DETECÇÃO DE DISPOSITIVO / MODO WEB (TELA 12 DO PRINT)

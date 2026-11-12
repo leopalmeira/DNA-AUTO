@@ -1,5 +1,23 @@
--NoNewline
-
+### Ciclo 131 — Bot Autônomo de Manutenção Preventiva (10h/17h), PDF Diário (`pdfkit`), Portal de Tickets, Correção de `Lançar Serviços` sem Carro Pré-selecionado e Healthcheck com Versão/Commit (`v2.5.0`)
+- **Data:** 12/11/2026
+- **Responsáveis:** `@[backend-specialist]` + `@[frontend-specialist]` + `@[test-engineer]`
+- **Contexto & Demandas Atendidas:**
+  1. **Bot Autônomo de Manutenção Preventiva (`maintenanceMonitor.service.js` & `whatsappBotAgent.service.js`):**
+     - **10h00 (`America/Sao_Paulo`):** Monitora veículos vinculados à oficina com manutenção preventiva (`VENCIDA`, `RECOMENDADA`, `APROXIMANDO`) consultando `vehicle_maintenance_predictions` e fallback de Óleo/Correia, respeitando cooldown de 14 dias e enviando convite via WhatsApp com **3 datas úteis** (Seg–Sex 08h–18h e Sábado até 11h00, pulando domingo).
+     - **Atendimento Bidirecional (`messages.upsert` no `baileys.service.js` e `/whatsapp/simulate-incoming`):** Interpreta respostas do cliente (Gemini API quando `GEMINI_API_KEY` configurada + parser determinístico PT-BR com opt-out, validação de horário de sábado até 11h e escolha de data), grava agendamento `CONFIRMED` automaticamente em `workshop_appointments` (com `vehicle_model` garantido por schema e migração segura) e enfileira resposta automática de confirmação no WhatsApp.
+     - **17h00 (`America/Sao_Paulo`):** Consolida os veículos confirmados para o próximo dia útil em PDF formatado (`agendaPdf.service.js` com `pdfkit`) e envia como `DOCUMENT` no WhatsApp oficial da oficina com trava idempotente em `daily_agenda_dispatches`.
+  2. **App da Oficina (`/oficina/` — `workshopMobileView.js` sincronizado com `public/`):**
+     - **Card Avisos WhatsApp:** Substituição de dados fixos por campanhas reais (`maintenance_bot_campaigns`), agendamentos confirmados pelo bot e conversas reais, com botões de disparo controlado e visualização/download do PDF diário.
+     - **Card Suporte:** Portal exclusivo de Tickets de Chamado (`support_tickets`) com protocolo `TKT-...`, categoria, prioridade e acompanhamento de status (sem links `/admin`, `wa.me` ou equipamentos duplicados), integrado à nova aba **Tickets Suporte** do Painel Admin (`adminView.js` + `admin.routes.js`).
+     - **Card Lançar Serviços:** Ao acessar `lancar-servicos` pelo dashboard/menu, limpa `selectedMobileVehicle`, `mobileActivePlate` e `_isLaunchVehicleConfirmed`, garantindo que **nenhum carro apareça pré-selecionado** antes da digitação da placa.
+  3. **App do Cliente (`cliente.app/` e `public/`):**
+     - Remoção de dados simulados/pills de demonstração em `dossierView.js` e `ownerView.js`, conectando revisões, alertas e agendamentos reais do servidor.
+  4. **Visibilidade de Deploy no Render & Cache-Busting (`v2.5.0`):**
+     - Endpoint `/api/v1/health` atualizado em `server.js` para expor `version: '2.5.0'`, `commit` (`RENDER_GIT_COMMIT`), `deployedAt` e lista de `features`.
+     - Service Workers (`sw.js`) e tags `?v=2.5.0` incrementados em `oficina.app/index.html`, `public/oficina.html`, `cliente.app/index.html` e `public/index.html` para evitar cache antigo no navegador.
+  5. **Testes Automatizados (`npm test` — 8/8 Suítes Aprovadas):**
+     - Criada nova suíte `test/maintenance_bot_and_cards.test.js` cobrindo schema T1, PDF diário T2, agente conversacional WhatsApp T3, monitor 10h/17h e idempotência T4, e rotas REST + cards mobile da oficina T5.
+     - Bateria completa (`npm test`) executada com 100% de aprovação (exit code `0`).
 
 ### Ciclo 127 — Padronização de Texto 100% Branco em Todos os Inputs do Projeto, Validação da Senha Padrão 123456 no Card Financeiro e Eliminação do Erro HTTP 500 no Salvamento de Serviços e Cadastro de Veículos
 - **Data:** 09/11/2026

@@ -11,6 +11,9 @@ const { logAudit } = require('../../middlewares/audit');
 const baileysService = require('./baileys.service');
 const evolutionService = require('./evolution.service');
 const authRoutes = require('../auth/auth.routes');
+const maintenanceMonitor = require('../../services/maintenanceMonitor.service');
+const whatsappBotAgent = require('../../services/whatsappBotAgent.service');
+const { generateDailyAgendaPdf } = require('../../services/agendaPdf.service');
 
 // Diretório para upload de fotos, áudios e vídeos do WhatsApp da Central de Atendimento
 const WHATSAPP_UPLOADS_DIR = path.resolve(__dirname, '../../..', 'uploads', 'whatsapp');
@@ -2600,6 +2603,221 @@ router.delete('/:id/registrars/:registrarId', (req, res) => {
     } catch (err) {
         console.error('Erro ao excluir registrador:', err);
         res.status(500).json({ error: 'Erro ao excluir perfil do registrador.' });
+    }
+});
+
+// ==============================================================================
+// BOT AUTÔNOMO DE MANUTENÇÃO PREVENTIVA (10h/17h), AGENDA PDF E TICKETS DE SUPORTE
+// ==============================================================================
+
+// Listar campanhas do bot de manutenção, agendamentos confirmados e dispatches de PDF
+router.get('/:id/maintenance-bot/campaigns', (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const campaigns = db.prepare(`
+            SELECT * FROM maintenance_bot_campaigns
+            WHERE workshop_id = ?
+            ORDER BY updated_at DESC, sent_at DESC
+            LIMIT 80
+        `).all(workshopId);
+
+        const appointments = db.prepare(`
+            SELECT * FROM workshop_appointments
+            WHERE workshop_id = ?
+            ORDER BY appointment_date ASC, appointment_time ASC
+            LIMIT 80
+        `).all(workshopId);
+
+        const dispatches = db.prepare(`
+            SELECT * FROM daily_agenda_dispatches
+            WHERE workshop_id = ?
+            ORDER BY target_date DESC
+            LIMIT 20
+        `).all(workshopId);
+
+        res.json({
+            success: true,
+            campaigns: campaigns.map(c => {
+                let offeredDates = [];
+                try { offeredDates = JSON.parse(c.offered_dates_json || '[]'); } catch (_) {}
+                return { ...c, offered_dates: offeredDates };
+            }),
+            appointments,
+            dispatches
+        });
+    } catch (err) {
+        console.error('Erro ao listar campanhas do bot:', err);
+        res.status(500).json({ error: 'Erro ao listar campanhas do bot de manutenção.' });
+    }
+});
+
+// Disparar ciclo de convites das 10h manualmente para esta oficina
+router.post('/:id/maintenance-bot/run-outreach', async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const { force = true, baseDate = null } = req.body || {};
+        const result = await maintenanceMonitor.runMorningOutreach({
+            workshopId,
+            force: Boolean(force),
+            baseDate: baseDate || null
+        });
+        res.json({ success: true, ...result });
+    } catch (err) {
+        console.error('Erro ao disparar outreach preventivo:', err);
+        res.status(500).json({ error: 'Erro ao executar disparo preventivo do bot.' });
+    }
+});
+
+// Compilar e enviar PDF da agenda das 17h manualmente para o WhatsApp da oficina
+router.post('/:id/maintenance-bot/send-daily-pdf', async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const { targetDate = null, force = true } = req.body || {};
+        const result = await maintenanceMonitor.runEveningAgendaPdf({
+            workshopId,
+            targetDate: targetDate || null,
+            force: Boolean(force)
+        });
+        res.json({ success: true, ...result });
+    } catch (err) {
+        console.error('Erro ao enviar PDF diário:', err);
+        res.status(500).json({ error: 'Erro ao gerar e enviar PDF da agenda.' });
+    }
+});
+
+// Baixar/Visualizar o PDF da agenda de agendamentos para uma data (padrão próximo dia útil)
+router.get('/:id/appointments/daily-pdf', async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const ws = db.prepare(`SELECT * FROM workshops WHERE id = ?`).get(workshopId);
+        if (!ws) {
+            return res.status(404).json({ error: 'Oficina não encontrada.' });
+        }
+        const now = whatsappBotAgent.getSaoPauloNow();
+        const targetDate = req.query.date || whatsappBotAgent.getNextWorkingDates(now.isoDate, 1)[0]?.date || now.isoDate;
+
+        const appointments = db.prepare(`
+            SELECT wa.*, v.brand AS vehicle_brand, v.model AS vehicle_model
+            FROM workshop_appointments wa
+            LEFT JOIN vehicles v ON v.license_plate = wa.license_plate
+            WHERE wa.workshop_id = ?
+              AND wa.appointment_date = ?
+              AND wa.status IN ('CONFIRMED', 'SCHEDULED')
+            ORDER BY wa.appointment_time ASC, wa.created_at ASC
+        `).all(workshopId, targetDate);
+
+        const pdfResult = await generateDailyAgendaPdf({ workshop: ws, targetDate, appointments });
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${pdfResult.fileName}"`);
+        res.sendFile(pdfResult.filePath);
+    } catch (err) {
+        console.error('Erro ao gerar download de PDF da agenda:', err);
+        res.status(500).json({ error: 'Erro ao gerar PDF da agenda.' });
+    }
+});
+
+// Simular ou processar mensagem recebida do cliente pelo agente WhatsApp
+router.post('/:id/whatsapp/simulate-incoming', async (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const { phone, message } = req.body || {};
+        if (!phone || !message) {
+            return res.status(400).json({ error: 'Informe phone e message.' });
+        }
+
+        const cleanPhone = whatsappBotAgent.normalizePhoneDigits(phone);
+        const contactInfo = baileysService.identifyContactByPhone(cleanPhone, workshopId);
+
+        baileysService.saveChatMessage({
+            workshopId,
+            phoneNumber: cleanPhone,
+            clientName: contactInfo.clientName,
+            vehiclePlate: contactInfo.vehiclePlate,
+            vehicleModel: contactInfo.vehicleModel,
+            direction: 'INCOMING',
+            message: String(message).trim(),
+            mediaType: 'TEXT',
+            isRead: 0
+        });
+
+        const botResult = await whatsappBotAgent.handleIncomingMessage({
+            workshopId,
+            senderPhone: cleanPhone,
+            messageText: String(message).trim(),
+            enqueueReplyFn: baileysService.enqueueMessage.bind(baileysService)
+        });
+
+        res.json({ success: true, botResult });
+    } catch (err) {
+        console.error('Erro ao processar mensagem recebida no bot:', err);
+        res.status(500).json({ error: 'Erro ao processar resposta do cliente no bot.' });
+    }
+});
+
+// Tickets / Chamados de Suporte com a Plataforma (exclusivo para a oficina)
+router.get('/:id/support-tickets', (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const tickets = db.prepare(`
+            SELECT * FROM support_tickets
+            WHERE workshop_id = ?
+            ORDER BY created_at DESC
+            LIMIT 100
+        `).all(workshopId);
+        res.json({ success: true, tickets });
+    } catch (err) {
+        console.error('Erro ao listar tickets da oficina:', err);
+        res.status(500).json({ error: 'Erro ao listar chamados de suporte.' });
+    }
+});
+
+router.post('/:id/support-tickets', (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const ws = db.prepare(`SELECT id, trade_name FROM workshops WHERE id = ?`).get(workshopId);
+        if (!ws) {
+            return res.status(404).json({ error: 'Oficina não encontrada.' });
+        }
+
+        const {
+            subject,
+            description,
+            category = 'SUPORTE_TECNICO',
+            priority = 'NORMAL',
+            requester_name = 'Equipe Oficina',
+            user_id = null
+        } = req.body || {};
+
+        if (!subject || !String(subject).trim() || !description || !String(description).trim()) {
+            return res.status(400).json({ error: 'Assunto e descrição do chamado são obrigatórios.' });
+        }
+
+        const id = `tkt_${crypto.randomBytes(6).toString('hex')}`;
+        const dateTag = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const protocol = `TKT-${dateTag}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+
+        db.prepare(`
+            INSERT INTO support_tickets (
+                id, protocol, workshop_id, user_id, requester_name,
+                category, priority, subject, description, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN')
+        `).run(
+            id,
+            protocol,
+            workshopId,
+            user_id,
+            String(requester_name || ws.trade_name).trim(),
+            String(category || 'SUPORTE_TECNICO').trim().toUpperCase(),
+            String(priority || 'NORMAL').trim().toUpperCase(),
+            String(subject).trim(),
+            String(description).trim()
+        );
+
+        const ticket = db.prepare(`SELECT * FROM support_tickets WHERE id = ?`).get(id);
+        res.status(201).json({ success: true, ticket });
+    } catch (err) {
+        console.error('Erro ao abrir chamado de suporte:', err);
+        res.status(500).json({ error: 'Erro ao abrir chamado de suporte com a plataforma.' });
     }
 });
 

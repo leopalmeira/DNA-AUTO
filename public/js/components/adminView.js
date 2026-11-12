@@ -24,14 +24,17 @@ const AdminView = {
         `;
 
         try {
-            const [statsData, rankingData, plansData, alertsData, fleetData, clientsData, repsData] = await Promise.all([
+            const [statsData, rankingData, plansData, alertsData, fleetData, clientsData, repsData, ticketsData] = await Promise.all([
                 API.getNetworkStats(),
                 API.getWorkshopRanking(),
                 API.getPricingPlans(),
                 API.getMaintenanceAlerts().catch(() => ({ totalAlerts: 0, alerts: [] })),
                 API.getFleet().catch(() => ({ count: 0, vehicles: [] })),
                 API.getAllClients().catch(() => ({ count: 0, clients: [] })),
-                API.getAdminRepresentatives().catch(() => ({ count: 0, pending_count: 0, items: [] }))
+                API.getAdminRepresentatives().catch(() => ({ count: 0, pending_count: 0, items: [] })),
+                typeof API.getAdminSupportTickets === 'function'
+                    ? API.getAdminSupportTickets().catch(() => ({ count: 0, tickets: [] }))
+                    : Promise.resolve({ count: 0, tickets: [] })
             ]);
 
             this.cacheData = {
@@ -42,7 +45,8 @@ const AdminView = {
                 fleet: fleetData.vehicles || [],
                 clients: clientsData.clients || [],
                 representatives: repsData.items || [],
-                pendingRepsCount: repsData.pending_count || 0
+                pendingRepsCount: repsData.pending_count || 0,
+                supportTickets: ticketsData.tickets || []
             };
 
             this.renderLayout();
@@ -161,6 +165,11 @@ const AdminView = {
                     <span>Representantes</span>
                     <span class="admin-tab-count">${(this.cacheData.representatives || []).length}${this.cacheData.pendingRepsCount ? ` • ${this.cacheData.pendingRepsCount} pendente(s)` : ''}</span>
                 </button>
+                <button class="admin-tab-btn ${this.currentTab === 'tickets' ? 'active' : ''}" data-tab="tickets" onclick="AdminView.switchTab('tickets')">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    <span>Tickets Suporte</span>
+                    <span class="admin-tab-count">${(this.cacheData.supportTickets || []).filter(t => t.status === 'OPEN' || t.status === 'IN_PROGRESS').length} aberto(s)</span>
+                </button>
                 <button class="admin-tab-btn ${this.currentTab === 'audit' ? 'active' : ''}" data-tab="audit" onclick="AdminView.switchTab('audit')">
                     <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
                     <span>Auditoria</span>
@@ -187,6 +196,8 @@ const AdminView = {
                 return this.renderWhatsAppTab();
             case 'representatives':
                 return this.renderRepresentativesTab();
+            case 'tickets':
+                return this.renderTicketsTab();
             case 'audit':
                 return this.renderAuditTab();
             case 'dashboard':
@@ -1023,6 +1034,81 @@ const AdminView = {
             this.render('representatives');
         } catch (err) {
             alert('Erro ao recusar representante: ' + err.message);
+        }
+    },
+
+    renderTicketsTab() {
+        const tickets = (this.cacheData && this.cacheData.supportTickets) || [];
+        const statusColor = {
+            OPEN: '#38bdf8',
+            IN_PROGRESS: '#f59e0b',
+            RESOLVED: '#10b981',
+            CLOSED: '#64748b'
+        };
+
+        return `
+            <div class="panel-box">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
+                    <div>
+                        <h3 style="margin:0; font-size:16px; color:#fff;">🎫 Chamados de Suporte das Oficinas</h3>
+                        <p style="margin:4px 0 0; font-size:12px; color:#94a3b8;">Acompanhe e responda os tickets abertos diretamente pelo app das oficinas credenciadas.</p>
+                    </div>
+                    <button class="btn btn-sm btn-secondary" onclick="AdminView.render('tickets')">↻ Atualizar Tickets</button>
+                </div>
+
+                ${tickets.length === 0 ? `
+                    <div style="padding:36px; text-align:center; color:#94a3b8; border:1px dashed rgba(255,255,255,0.12); border-radius:12px;">
+                        Nenhum ticket de suporte aberto pelas oficinas até o momento.
+                    </div>
+                ` : `
+                    <div style="display:flex; flex-direction:column; gap:14px;">
+                        ${tickets.map(t => {
+                            const color = statusColor[t.status] || '#94a3b8';
+                            return `
+                                <div style="background:rgba(15,23,42,0.75); border:1px solid rgba(255,255,255,0.08); border-left:4px solid ${color}; border-radius:12px; padding:16px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:8px;">
+                                        <div>
+                                            <span style="font-family:monospace; color:#38bdf8; font-weight:800; font-size:12px;">${t.protocol}</span>
+                                            <span style="margin-left:8px; font-size:12px; color:#e2e8f0; font-weight:700;">${t.workshop_name || t.workshop_id}</span>
+                                            ${t.workshop_city ? `<span style="font-size:11px; color:#94a3b8;"> (${t.workshop_city}/${t.workshop_state || ''})</span>` : ''}
+                                        </div>
+                                        <div style="display:flex; gap:8px; align-items:center;">
+                                            <span style="font-size:11px; color:#94a3b8; background:rgba(255,255,255,0.06); padding:3px 8px; border-radius:6px;">${t.category} • ${t.priority}</span>
+                                            <select id="admin-tkt-status-${t.id}" style="background:#0f172a; color:${color}; border:1px solid ${color}55; border-radius:6px; padding:4px 8px; font-size:12px; font-weight:700;">
+                                                <option value="OPEN" ${t.status === 'OPEN' ? 'selected' : ''}>OPEN (Aberto)</option>
+                                                <option value="IN_PROGRESS" ${t.status === 'IN_PROGRESS' ? 'selected' : ''}>IN_PROGRESS (Em Atendimento)</option>
+                                                <option value="RESOLVED" ${t.status === 'RESOLVED' ? 'selected' : ''}>RESOLVED (Resolvido)</option>
+                                                <option value="CLOSED" ${t.status === 'CLOSED' ? 'selected' : ''}>CLOSED (Encerrado)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <h4 style="margin:0 0 6px; font-size:14.5px; color:#fff;">${t.subject}</h4>
+                                    <p style="margin:0 0 12px; font-size:13px; color:#cbd5e1; line-height:1.45;">${t.description}</p>
+                                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                                        <input type="text" id="admin-tkt-reply-${t.id}" value="${(t.admin_reply || '').replace(/"/g, '&quot;')}" placeholder="Escreva a resposta oficial para a oficina..." style="flex:1; min-width:240px; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.14); background:#020617; color:#fff; font-size:13px;" />
+                                        <button class="btn btn-sm btn-primary" onclick="AdminView.saveTicketResponse('${t.id}')">Salvar Resposta / Status</button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `}
+            </div>
+        `;
+    },
+
+    async saveTicketResponse(ticketId) {
+        const statusEl = document.getElementById(`admin-tkt-status-${ticketId}`);
+        const replyEl = document.getElementById(`admin-tkt-reply-${ticketId}`);
+        try {
+            await API.replyAdminSupportTicket(ticketId, {
+                status: statusEl ? statusEl.value : 'IN_PROGRESS',
+                admin_reply: replyEl ? replyEl.value : ''
+            });
+            alert('✅ Ticket atualizado e resposta visível para a oficina!');
+            this.render('tickets');
+        } catch (err) {
+            alert('Erro ao atualizar ticket: ' + err.message);
         }
     }
 };

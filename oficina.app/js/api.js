@@ -433,6 +433,38 @@ const API = {
     // Oficinas da Rede Credenciadas
     getWorkshopsNetwork() {
         return this.request('/workshops/network');
+    },
+
+    // Bot de Manutenção Preventiva (10h/17h), PDF Diário e Tickets de Suporte
+    getMaintenanceBotCampaigns(workshopId) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/maintenance-bot/campaigns`);
+    },
+    runMaintenanceBotOutreach(workshopId, payload = { force: true }) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/maintenance-bot/run-outreach`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+    sendMaintenanceBotDailyPdf(workshopId, payload = { force: true }) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/maintenance-bot/send-daily-pdf`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+    simulateIncomingWhatsApp(workshopId, phone, message) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/whatsapp/simulate-incoming`, {
+            method: 'POST',
+            body: JSON.stringify({ phone, message })
+        });
+    },
+    getWorkshopSupportTickets(workshopId) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/support-tickets`);
+    },
+    createWorkshopSupportTicket(workshopId, payload) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/support-tickets`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
     }
 };
 

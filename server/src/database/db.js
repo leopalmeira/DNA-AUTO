@@ -441,7 +441,87 @@ try {
 
         INSERT OR IGNORE INTO pricing_plans (id, code, title, description, price_cents, workshop_price_cents, discount_percentage, is_courtesy, commission_percentage, is_active)
         VALUES ('plan_rep_program', 'PLAN_REP_PROGRAM', 'Passaporte Digital DNA AUTO — Programa Representantes (R$ 49,90)', 'Cadastro R$ 49,90 com 50% Oficina (R$ 24,95), 50% Plataforma (R$ 24,95) e comissão comercial R$ 5,90 custeada pela plataforma', 4990, 2495, 0, 0, 50, 1);
+
+        CREATE TABLE IF NOT EXISTS workshop_appointments (
+            id TEXT PRIMARY KEY,
+            workshop_id TEXT NOT NULL,
+            vehicle_id TEXT,
+            license_plate TEXT NOT NULL,
+            vehicle_model TEXT NOT NULL DEFAULT 'Veículo Cadastrado',
+            owner_name TEXT,
+            owner_phone TEXT,
+            service_title TEXT NOT NULL,
+            appointment_date DATE NOT NULL,
+            appointment_time TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'SCHEDULED',
+            notes TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX IF NOT EXISTS idx_ws_app_ws_date ON workshop_appointments(workshop_id, appointment_date);
+        CREATE INDEX IF NOT EXISTS idx_ws_app_plate ON workshop_appointments(license_plate);
+
+        CREATE TABLE IF NOT EXISTS maintenance_bot_campaigns (
+            id TEXT PRIMARY KEY,
+            workshop_id TEXT NOT NULL REFERENCES workshops(id) ON DELETE CASCADE,
+            vehicle_id TEXT REFERENCES vehicles(id) ON DELETE CASCADE,
+            license_plate TEXT NOT NULL,
+            vehicle_model TEXT,
+            owner_name TEXT,
+            owner_phone TEXT NOT NULL,
+            item_code TEXT NOT NULL,
+            item_name TEXT NOT NULL,
+            current_km INTEGER DEFAULT 0,
+            offered_dates_json TEXT NOT NULL,
+            chosen_date DATE,
+            chosen_time TEXT,
+            appointment_id TEXT,
+            status TEXT NOT NULL DEFAULT 'SENT',
+            last_message TEXT,
+            ai_notes TEXT,
+            sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            confirmed_at DATETIME,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX IF NOT EXISTS idx_bot_camp_ws ON maintenance_bot_campaigns(workshop_id, status);
+        CREATE INDEX IF NOT EXISTS idx_bot_camp_phone ON maintenance_bot_campaigns(owner_phone, status);
+        CREATE INDEX IF NOT EXISTS idx_bot_camp_veh_item ON maintenance_bot_campaigns(workshop_id, vehicle_id, item_code);
+
+        CREATE TABLE IF NOT EXISTS daily_agenda_dispatches (
+            id TEXT PRIMARY KEY,
+            workshop_id TEXT NOT NULL REFERENCES workshops(id) ON DELETE CASCADE,
+            target_date DATE NOT NULL,
+            appointments_count INTEGER NOT NULL DEFAULT 0,
+            pdf_path TEXT,
+            recipient_phone TEXT,
+            status TEXT NOT NULL DEFAULT 'SENT',
+            error TEXT,
+            sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(workshop_id, target_date)
+        );
+
+        CREATE TABLE IF NOT EXISTS support_tickets (
+            id TEXT PRIMARY KEY,
+            protocol TEXT NOT NULL UNIQUE,
+            workshop_id TEXT NOT NULL REFERENCES workshops(id) ON DELETE CASCADE,
+            user_id TEXT,
+            requester_name TEXT,
+            category TEXT NOT NULL DEFAULT 'SUPORTE_TECNICO',
+            priority TEXT NOT NULL DEFAULT 'NORMAL',
+            subject TEXT NOT NULL,
+            description TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'OPEN',
+            admin_reply TEXT,
+            replied_by TEXT,
+            replied_at DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX IF NOT EXISTS idx_support_tickets_ws ON support_tickets(workshop_id, created_at);
+        CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status);
     `);
+
+    try { db.exec(`ALTER TABLE workshop_appointments ADD COLUMN vehicle_model TEXT NOT NULL DEFAULT 'Veículo Cadastrado'`); } catch (_) {}
 
     const bcrypt = require('bcryptjs');
     const existingDemoRep = db.prepare("SELECT id FROM representatives WHERE rep_code = 'REP000123'").get();
