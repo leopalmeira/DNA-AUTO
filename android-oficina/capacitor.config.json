@@ -1,0 +1,19 @@
+{
+  "appId": "br.com.dnaauto.oficina",
+  "appName": "DNA Oficina",
+  "webDir": "www",
+  "server": {
+    "url": "https://dna-auto-byin.onrender.com/oficina?apk_version=2.5.3&apk_code=253",
+    "cleartext": false,
+    "allowNavigation": [
+      "dna-auto-byin.onrender.com",
+      "dna-auto-vua4.onrender.com",
+      "*.onrender.com"
+    ]
+  },
+  "android": {
+    "backgroundColor": "#010712",
+    "allowMixedContent": false,
+    "appendUserAgent": "DNAOficinaAPK/2.5.3"
+  }
+}

@@ -2,10 +2,18 @@
   "name": "DNA AUTO - ERP da Oficina",
   "short_name": "DNA Oficina",
   "start_url": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#010712",
   "theme_color": "#010712",
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "id": "br.com.dnaauto.oficina",
+      "url": "/downloads/dna-auto-oficina.apk"
+    }
+  ],
   "description": "Painel de controle e cockpit operacional da oficina mecânica: recepção por placa, ordens de serviço nível 4, WhatsApp oficial e agenda.",
   "icons": [
     {

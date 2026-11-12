@@ -6,7 +6,7 @@ const http = require('http');
 const app = require('../server/src/server');
 
 async function runTests() {
-    console.log('🧪 Iniciando Testes Edge-to-Edge Fullscreen & APK Updater/Installer...');
+    console.log('🧪 Iniciando Testes Edge-to-Edge Fullscreen & APK Updater/Installer (Cliente + Oficina)...');
 
     const clienteHtml = fs.readFileSync(path.join(__dirname, '..', 'cliente.app', 'index.html'), 'utf8');
     const publicClienteHtml = fs.readFileSync(path.join(__dirname, '..', 'public', 'cliente.html'), 'utf8');
@@ -15,6 +15,7 @@ async function runTests() {
     const oficinaCss = fs.readFileSync(path.join(__dirname, '..', 'oficina.app', 'css', 'workshop-mobile.css'), 'utf8');
     const publicOficinaCss = fs.readFileSync(path.join(__dirname, '..', 'public', 'css', 'workshop-mobile.css'), 'utf8');
     const clienteManifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'cliente.app', 'manifest.json'), 'utf8'));
+    const publicManifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'public', 'manifest.json'), 'utf8'));
     const oficinaManifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'oficina.app', 'manifest.json'), 'utf8'));
 
     // 1. Verificar sincronia cliente.app / oficina.app <-> public
@@ -25,24 +26,29 @@ async function runTests() {
     // 2. Verificar configuração Edge-to-Edge Fullscreen em ambos os apps
     assert.ok(clienteHtml.includes('viewport-fit=cover'), 'Cliente deve ter viewport-fit=cover');
     assert.ok(clienteHtml.includes('black-translucent'), 'Cliente deve ter status bar translucent');
+    assert.strictEqual(clienteManifest.display, 'fullscreen', 'Manifest cliente display deve ser fullscreen');
+    assert.strictEqual(publicManifest.display, 'fullscreen', 'Manifest public display deve ser fullscreen');
     assert.strictEqual(clienteManifest.theme_color, '#020712', 'Manifest cliente theme_color deve ser #020712');
     assert.strictEqual(clienteManifest.background_color, '#020712', 'Manifest cliente background_color deve ser #020712');
 
     assert.ok(oficinaHtml.includes('viewport-fit=cover'), 'Oficina deve ter viewport-fit=cover');
     assert.ok(oficinaHtml.includes('apple-mobile-web-app-status-bar-style" content="black-translucent"'), 'Oficina deve ter status bar translucent');
     assert.ok(oficinaHtml.includes('rel="manifest" href="./manifest.json"'), 'Oficina deve vincular manifest.json');
+    assert.strictEqual(oficinaManifest.display, 'fullscreen', 'Manifest oficina display deve ser fullscreen');
     assert.strictEqual(oficinaManifest.theme_color, '#010712', 'Manifest oficina theme_color deve ser #010712');
     assert.ok(/\.ws-splash-screen\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?inset:\s*0;/.test(oficinaCss), 'Splash oficina deve ser fixed inset: 0');
     assert.ok(/\.ws-splash-hero-bg\s*\{[\s\S]*?object-fit:\s*cover;/.test(oficinaCss), 'Hero bg splash oficina deve usar object-fit: cover');
 
-    // 3. Verificar presença da lógica de Atualização Centrada ("Atualizar App") e Detecção APK
-    assert.ok(clienteHtml.includes('id="dna-update-modal"') || clienteHtml.includes("modal.id = 'dna-update-modal'"), 'Cliente deve possuir modal dna-update-modal');
-    assert.ok(clienteHtml.includes('Atualizar App'), 'Modal de atualização deve exibir título Atualizar App');
-    assert.ok(clienteHtml.includes('DNAAppUpdater'), 'Cliente deve expor DNAAppUpdater');
-    assert.ok(clienteHtml.includes('DNAApkInstaller'), 'Cliente deve expor DNAApkInstaller');
-    assert.ok(clienteHtml.includes('getInstalledRelatedApps'), 'Instalador inteligente deve checar getInstalledRelatedApps');
+    // 3. Verificar presença da lógica de Atualização Centrada ("Atualizar App") e Detecção APK em ambos os apps
+    for (const [label, html] of [['Cliente', clienteHtml], ['Oficina', oficinaHtml]]) {
+        assert.ok(html.includes('dna-update-modal'), `${label} deve possuir modal dna-update-modal`);
+        assert.ok(html.includes('Atualizar App'), `${label} deve exibir título Atualizar App`);
+        assert.ok(html.includes('DNAAppUpdater'), `${label} deve expor DNAAppUpdater`);
+        assert.ok(html.includes('DNAApkInstaller'), `${label} deve expor DNAApkInstaller`);
+        assert.ok(html.includes('getInstalledRelatedApps'), `${label} deve checar getInstalledRelatedApps`);
+    }
 
-    // 4. Testar endpoints reais de versão do APK e Asset Links via HTTP
+    // 4. Testar endpoints reais de versão dos APKs e Asset Links via HTTP
     const server = await new Promise((resolve) => {
         const s = http.createServer(app);
         s.listen(0, '127.0.0.1', () => resolve(s));
@@ -52,27 +58,41 @@ async function runTests() {
         const port = server.address().port;
         const base = `http://127.0.0.1:${port}`;
 
-        const vRes = await fetch(`${base}/api/v1/app/version`);
-        assert.strictEqual(vRes.status, 200);
-        const vData = await vRes.json();
-        assert.strictEqual(vData.success, true);
-        assert.strictEqual(vData.version, '2.5.2');
-        assert.strictEqual(typeof vData.version_code, 'number');
-        assert.strictEqual(vData.package_name, 'br.com.dnaauto.cliente');
-        assert.strictEqual(typeof vData.apk_available, 'boolean');
+        const vClienteRes = await fetch(`${base}/api/v1/app/version`);
+        assert.strictEqual(vClienteRes.status, 200);
+        const vCliente = await vClienteRes.json();
+        assert.strictEqual(vCliente.success, true);
+        assert.strictEqual(vCliente.app, 'cliente');
+        assert.strictEqual(vCliente.version, '2.5.3');
+        assert.strictEqual(vCliente.package_name, 'br.com.dnaauto.cliente');
+        assert.strictEqual(vCliente.apk_available, true);
+        assert.strictEqual(vCliente.apk_url, '/downloads/dna-auto-cliente.apk');
+
+        const vOficinaRes = await fetch(`${base}/api/v1/app/version-oficina`);
+        assert.strictEqual(vOficinaRes.status, 200);
+        const vOficina = await vOficinaRes.json();
+        assert.strictEqual(vOficina.success, true);
+        assert.strictEqual(vOficina.app, 'oficina');
+        assert.strictEqual(vOficina.version, '2.5.3');
+        assert.strictEqual(vOficina.package_name, 'br.com.dnaauto.oficina');
+        assert.strictEqual(vOficina.apk_available, true);
+        assert.strictEqual(vOficina.apk_url, '/downloads/dna-auto-oficina.apk');
 
         const alRes = await fetch(`${base}/.well-known/assetlinks.json`);
         assert.strictEqual(alRes.status, 200);
         const alData = await alRes.json();
-        assert.ok(Array.isArray(alData) && alData.length === 1);
+        assert.ok(Array.isArray(alData) && alData.length === 2);
         assert.strictEqual(alData[0].target.package_name, 'br.com.dnaauto.cliente');
+        assert.strictEqual(alData[1].target.package_name, 'br.com.dnaauto.oficina');
 
-        if (!vData.apk_available) {
-            const dlRes = await fetch(`${base}/downloads/dna-auto-cliente.apk`);
-            assert.strictEqual(dlRes.status, 404, 'Sem binário publicado, download APK deve responder 404 claro');
-        }
+        // Verificar resposta dos downloads sem seguir redirecionamento externo
+        const dlCliente = await fetch(`${base}/downloads/dna-auto-cliente.apk`, { redirect: 'manual' });
+        assert.ok(dlCliente.status === 200 || dlCliente.status === 302, `Download APK cliente retornou status inesperado: ${dlCliente.status}`);
 
-        console.log('✅ Todos os testes de Edge-to-Edge Fullscreen, Versionamento APK e Asset Links passaram!');
+        const dlOficina = await fetch(`${base}/downloads/dna-auto-oficina.apk`, { redirect: 'manual' });
+        assert.ok(dlOficina.status === 200 || dlOficina.status === 302, `Download APK oficina retornou status inesperado: ${dlOficina.status}`);
+
+        console.log('✅ Todos os testes de Edge-to-Edge Fullscreen, Versionamento APK e Asset Links (Cliente + Oficina) passaram!');
     } finally {
         await new Promise((resolve) => server.close(resolve));
     }

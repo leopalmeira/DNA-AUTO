@@ -2509,6 +2509,13 @@ body.screen-light {
 .app {
   background: #020712 !important;
 }
+@media (max-width: 600px) {
+  .app {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}
 body.screen-light .app {
   background: linear-gradient(160deg, #edf5ff, #dce8f6) !important;
 }
@@ -6929,7 +6936,7 @@ async function handleRegisterSubmit(event) {
   }
   return false;
 }
-</script><script src="/js/components/ownerView.js?v=2.5.2"></script>
+</script><script src="/js/components/ownerView.js?v=2.5.3"></script>
 <script>
 // --- SCRIPTS DO GRÁFICO INTERATIVO DE GASTOS COM O CARRO ---
 const gastosMonths = [
@@ -8558,7 +8565,9 @@ async function checkClientApkUpdate(customInstalled) {
 function isAndroidMobileBrowser() {
   const ua = navigator.userAgent || '';
   const isAndroid = /Android/i.test(ua);
-  const isStandalone = window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const isStandalone = window.matchMedia?.('(display-mode: standalone)').matches ||
+                       window.matchMedia?.('(display-mode: fullscreen)').matches ||
+                       window.navigator.standalone === true;
   const ctx = getInstalledApkContext();
   return Boolean(isAndroid && !isStandalone && !ctx.isNativeShell);
 }

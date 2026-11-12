@@ -1,6 +1,6 @@
 {
   "name": "dna-auto-cliente-android",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "private": true,
   "description": "Empacotador Android APK nativo do App do Cliente DNA AUTO com suporte a GPS em segundo plano e atualização automática.",
   "scripts": {

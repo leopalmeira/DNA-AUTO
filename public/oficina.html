@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="./css/components.css">
     <link rel="stylesheet" href="./css/dossier.css">
     <link rel="stylesheet" href="./css/print.css">
-    <link rel="stylesheet" href="./css/workshop-mobile.css?v=2.5.2">
+    <link rel="stylesheet" href="./css/workshop-mobile.css?v=2.5.3">
 
     <style>
         html, body.is-workshop-erp {
@@ -43,6 +43,9 @@
             min-height: 100dvh;
             min-height: -webkit-fill-available;
             overscroll-behavior-y: none;
+        }
+        @media (max-width: 768px) {
+            .standalone-ws-top-banner { display: none !important; }
         }
         #app-container {
             min-height: 100vh;
@@ -332,13 +335,13 @@
 
     <!-- Scripts do ERP da Oficina -->
     <script src="./js/components/qrcode.js"></script>
-    <script src="./js/api.js?v=2.5.2"></script>
+    <script src="./js/api.js?v=2.5.3"></script>
     <script src="./js/components/dossierView.js?v=2.4.0"></script>
     <script src="./js/components/posterGenerator.js"></script>
     <script src="./js/components/saleReportModal.js"></script>
     <script src="./js/components/pwaInstall.js"></script>
     <script src="./js/components/workshopView.js?v=2.4.0"></script>
-    <script src="./js/components/workshopMobileView.js?v=2.5.2"></script>
+    <script src="./js/components/workshopMobileView.js?v=2.5.3"></script>
 
     <!-- Inicializador Autônomo do ERP da Oficina -->
     <script>
@@ -423,7 +426,161 @@
 
             // Renderizar ERP da Oficina
             await WorkshopView.render();
+
+            // Ciclo de vida APK Android da Oficina (Download automático & Atualização)
+            initOficinaApkLifecycle();
         });
+
+        function compareSemver(a, b) {
+            const pa = String(a || '0').replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
+            const pb = String(b || '0').replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
+            const len = Math.max(pa.length, pb.length);
+            for (let i = 0; i < len; i++) {
+                const x = pa[i] || 0;
+                const y = pb[i] || 0;
+                if (x < y) return -1;
+                if (x > y) return 1;
+            }
+            return 0;
+        }
+
+        function getInstalledApkContext() {
+            const params = new URLSearchParams(window.location.search);
+            const urlVer = params.get('apk_version') || params.get('native_version');
+            const urlCode = params.get('apk_code');
+            if (urlVer) localStorage.setItem('dna_oficina_apk_version', urlVer);
+            if (urlCode) localStorage.setItem('dna_oficina_apk_version_code', urlCode);
+
+            const ua = navigator.userAgent || '';
+            const isCapacitor = Boolean(window.Capacitor && (window.Capacitor.isNativePlatform?.() || window.Capacitor.platform === 'android'));
+            const isWebView = ua.includes('DNAOficinaAPK') || /; wv\)/i.test(ua);
+            const isNativeShell = Boolean(isCapacitor || isWebView || urlVer || urlCode);
+            return {
+                isNativeShell,
+                version: urlVer || localStorage.getItem('dna_oficina_apk_version') || null,
+                versionCode: Number(urlCode || localStorage.getItem('dna_oficina_apk_version_code') || 0) || null
+            };
+        }
+
+        function showApkUpdateModal(serverInfo, installedCtx) {
+            let modal = document.getElementById('dna-update-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'dna-update-modal';
+                modal.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(1,7,18,0.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);';
+                modal.innerHTML = `
+                    <div style="width:100%;max-width:340px;background:linear-gradient(160deg,#081529,#040b18);border:1.5px solid rgba(56,189,248,0.5);border-radius:22px;padding:24px 20px;text-align:center;color:#ffffff;box-shadow:0 20px 50px rgba(0,0,0,0.7);">
+                        <div style="width:54px;height:54px;margin:0 auto 14px;border-radius:16px;background:linear-gradient(135deg,#0084ff,#00d4ff);display:flex;align-items:center;justify-content:center;font-size:26px;">🚀</div>
+                        <h3 style="margin:0 0 8px;font-size:19px;font-weight:800;font-family:Outfit,Inter,sans-serif;">Atualizar App</h3>
+                        <p id="dna-update-desc" style="margin:0 0 18px;font-size:13px;line-height:1.45;color:#cbd5e1;"></p>
+                        <a id="dna-update-cta" href="${serverInfo.apk_url}" download="dna-auto-oficina.apk" style="display:flex;align-items:center;justify-content:center;width:100%;height:46px;border-radius:9999px;background:linear-gradient(110deg,#03b1fb,#0053f6);color:#ffffff;font-weight:800;font-size:14.5px;text-decoration:none;box-shadow:0 8px 20px rgba(0,99,249,0.45);">Atualizar App Agora</a>
+                        <button id="dna-update-later" type="button" style="margin-top:10px;width:100%;height:38px;border:0;background:transparent;color:#94a3b8;font-size:12.5px;font-weight:600;cursor:pointer;">Depois</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            const descEl = document.getElementById('dna-update-desc');
+            const ctaEl = document.getElementById('dna-update-cta');
+            const laterBtn = document.getElementById('dna-update-later');
+            if (descEl) {
+                const cur = installedCtx?.version ? `v${installedCtx.version}` : 'desatualizada';
+                descEl.textContent = `Uma nova versão (v${serverInfo.version}) do DNA Oficina está disponível (sua versão atual: ${cur}).`;
+            }
+            if (ctaEl) ctaEl.href = serverInfo.apk_url || '/downloads/dna-auto-oficina.apk';
+            if (laterBtn) {
+                laterBtn.style.display = serverInfo.force_update ? 'none' : 'block';
+                laterBtn.onclick = () => { modal.style.display = 'none'; };
+            }
+            modal.style.display = 'flex';
+        }
+
+        async function checkOficinaApkUpdate(customInstalled) {
+            const ctx = customInstalled || getInstalledApkContext();
+            if (!ctx.isNativeShell && !ctx.version && !ctx.versionCode) return { updateNeeded: false, reason: 'browser' };
+            const res = await fetch('/api/v1/app/version-oficina?_t=' + Date.now(), { cache: 'no-store' });
+            if (!res.ok) return { updateNeeded: false, reason: 'http_error' };
+            const info = await res.json();
+            const byCode = ctx.versionCode && info.version_code && ctx.versionCode < Number(info.version_code);
+            const bySemver = ctx.version && info.version && compareSemver(ctx.version, info.version) < 0;
+            const updateNeeded = Boolean((byCode || bySemver) && info.apk_available);
+            if (updateNeeded) showApkUpdateModal(info, ctx);
+            return { updateNeeded, server: info, installed: ctx };
+        }
+
+        function isAndroidMobileBrowser() {
+            const ua = navigator.userAgent || '';
+            const isAndroid = /Android/i.test(ua);
+            const isStandalone = window.matchMedia?.('(display-mode: standalone)').matches ||
+                                 window.matchMedia?.('(display-mode: fullscreen)').matches ||
+                                 window.navigator.standalone === true;
+            const ctx = getInstalledApkContext();
+            return Boolean(isAndroid && !isStandalone && !ctx.isNativeShell);
+        }
+
+        async function isOficinaApkAlreadyInstalled() {
+            try {
+                if (typeof navigator.getInstalledRelatedApps === 'function') {
+                    const apps = await navigator.getInstalledRelatedApps();
+                    if (Array.isArray(apps) && apps.some(a => a.id === 'br.com.dnaauto.oficina' || apps.length > 0)) return true;
+                }
+            } catch (_) {}
+            return false;
+        }
+
+        function triggerApkAutoDownload(apkUrl) {
+            if (!apkUrl || sessionStorage.getItem('dna_oficina_apk_auto_dl_started') === '1') return false;
+            sessionStorage.setItem('dna_oficina_apk_auto_dl_started', '1');
+            const link = document.createElement('a');
+            link.href = apkUrl;
+            link.setAttribute('download', 'dna-auto-oficina.apk');
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => link.remove(), 500);
+
+            if (!document.getElementById('dna-apk-banner')) {
+                const banner = document.createElement('div');
+                banner.id = 'dna-apk-banner';
+                banner.style.cssText = 'position:fixed;left:12px;right:12px;bottom:14px;z-index:99990;max-width:410px;margin:0 auto;background:#07152b;border:1px solid rgba(56,189,248,0.45);border-radius:16px;padding:12px 14px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 12px 30px rgba(0,0,0,0.55);font-size:12px;';
+                banner.innerHTML = `
+                    <div><strong style="display:block;color:#38bdf8;">Baixando App DNA Oficina (.apk)</strong><span>Se não iniciar sozinho, toque em Baixar.</span></div>
+                    <div style="display:flex;gap:6px;flex-shrink:0;">
+                        <a href="${apkUrl}" download="dna-auto-oficina.apk" style="background:#0066ff;color:#fff;text-decoration:none;font-weight:700;padding:7px 11px;border-radius:10px;">Baixar</a>
+                        <button type="button" onclick="this.closest('#dna-apk-banner').remove()" style="background:rgba(255,255,255,0.1);color:#cbd5e1;border:0;border-radius:10px;padding:7px 9px;font-weight:700;">✕</button>
+                    </div>
+                `;
+                document.body.appendChild(banner);
+            }
+            return true;
+        }
+
+        async function initOficinaApkLifecycle() {
+            try {
+                const updateStatus = await checkOficinaApkUpdate();
+                if (updateStatus.updateNeeded) return;
+                if (!isAndroidMobileBrowser()) return;
+                const alreadyInstalled = await isOficinaApkAlreadyInstalled();
+                if (alreadyInstalled) return;
+                const res = await fetch('/api/v1/app/version-oficina?_t=' + Date.now(), { cache: 'no-store' });
+                if (!res.ok) return;
+                const info = await res.json();
+                if (info.apk_available && info.apk_url) {
+                    triggerApkAutoDownload(info.apk_url);
+                }
+            } catch (_) {}
+        }
+
+        window.DNAAppUpdater = {
+            compareSemver,
+            check: checkOficinaApkUpdate,
+            showModal: showApkUpdateModal
+        };
+        window.DNAApkInstaller = {
+            isAndroidMobileBrowser,
+            isOficinaApkAlreadyInstalled,
+            triggerApkAutoDownload,
+            init: initOficinaApkLifecycle
+        };
     </script>
 </body>
 </html>

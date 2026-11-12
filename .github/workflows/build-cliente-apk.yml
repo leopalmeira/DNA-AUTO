@@ -1,24 +1,34 @@
-name: Build Android APK (Cliente DNA AUTO)
+name: Build Android APKs (Cliente & Oficina)
 
 on:
   workflow_dispatch:
     inputs:
       server_url:
-        description: 'URL base do App do Cliente'
+        description: 'URL base da plataforma'
         required: true
         default: 'https://dna-auto-byin.onrender.com'
       version_name:
-        description: 'Versão do APK (ex: 2.5.2)'
+        description: 'Versão dos APKs (ex: 2.5.3)'
         required: true
-        default: '2.5.2'
+        default: '2.5.3'
       version_code:
-        description: 'Código inteiro da versão (ex: 252)'
+        description: 'Código inteiro da versão (ex: 253)'
         required: true
-        default: '252'
+        default: '253'
+  push:
+    branches:
+      - master
+    paths:
+      - 'android-client/**'
+      - 'android-oficina/**'
+      - 'scripts/patch-android.js'
+      - '.github/workflows/build-cliente-apk.yml'
 
 jobs:
-  build-apk:
+  build-apks:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -31,54 +41,64 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Instalar Capacitor e gerar projeto Android
+      - name: Compilar APK do Cliente (dna-auto-cliente.apk)
         working-directory: android-client
+        env:
+          INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.3' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '253' }}
         run: |
           npm install
           npx cap add android
-          node -e "
-            const fs = require('fs');
-            const cfg = JSON.parse(fs.readFileSync('capacitor.config.json', 'utf8'));
-            const base = ('${{ github.event.inputs.server_url }}' || 'https://dna-auto-byin.onrender.com').replace(/\/$/, '');
-            const vName = '${{ github.event.inputs.version_name }}' || '2.5.2';
-            const vCode = '${{ github.event.inputs.version_code }}' || '252';
-            cfg.server.url = base + '/cliente?apk_version=' + vName + '&apk_code=' + vCode;
-            cfg.android.appendUserAgent = 'DNAAutoAPK/' + vName;
-            fs.writeFileSync('capacitor.config.json', JSON.stringify(cfg, null, 2));
-          "
           npx cap sync android
-
-      - name: Configurar permissões GPS background, edge-to-edge e App Links
-        working-directory: android-client
-        run: |
-          node -e "
-            const fs = require('fs');
-            const manifestPath = 'android/app/src/main/AndroidManifest.xml';
-            let xml = fs.readFileSync(manifestPath, 'utf8');
-            const perms = [
-              '<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\" />',
-              '<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\" />',
-              '<uses-permission android:name=\"android.permission.ACCESS_BACKGROUND_LOCATION\" />',
-              '<uses-permission android:name=\"android.permission.FOREGROUND_SERVICE\" />',
-              '<uses-permission android:name=\"android.permission.FOREGROUND_SERVICE_LOCATION\" />',
-              '<uses-permission android:name=\"android.permission.REQUEST_INSTALL_PACKAGES\" />'
-            ].filter(p => !xml.includes(p)).join('\n    ');
-            xml = xml.replace('<application', perms + '\n    <application');
-            const host = new URL('${{ github.event.inputs.server_url }}' || 'https://dna-auto-byin.onrender.com').hostname;
-            const deepLinks = '<intent-filter android:autoVerify=\"true\"><action android:name=\"android.intent.action.VIEW\"/><category android:name=\"android.intent.category.DEFAULT\"/><category android:name=\"android.intent.category.BROWSABLE\"/><data android:scheme=\"https\" android:host=\"' + host + '\" android:pathPrefix=\"/cliente\"/></intent-filter><intent-filter><action android:name=\"android.intent.action.VIEW\"/><category android:name=\"android.intent.category.DEFAULT\"/><category android:name=\"android.intent.category.BROWSABLE\"/><data android:scheme=\"dnaauto\" android:host=\"open\"/></intent-filter>';
-            xml = xml.replace('</activity>', deepLinks + '\n        </activity>');
-            fs.writeFileSync(manifestPath, xml);
-          "
-
-      - name: Compilar APK Android
-        working-directory: android-client/android
-        run: |
+          node ../scripts/patch-android.js cliente
+          cd android
           chmod +x gradlew
           ./gradlew assembleDebug
           cp app/build/outputs/apk/debug/app-debug.apk ../../dna-auto-cliente.apk
 
-      - name: Publicar artifact dna-auto-cliente.apk
+      - name: Compilar APK da Oficina (dna-auto-oficina.apk)
+        working-directory: android-oficina
+        env:
+          INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.3' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '253' }}
+        run: |
+          npm install
+          npx cap add android
+          npx cap sync android
+          node ../scripts/patch-android.js oficina
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk ../../dna-auto-oficina.apk
+
+      - name: Extrair SHA-256 dos Certificados
+        id: cert
+        run: |
+          SHA_CLIENTE=$(keytool -printcert -jarfile dna-auto-cliente.apk | grep "SHA256:" | head -n1 | sed 's/.*SHA256: *//')
+          SHA_OFICINA=$(keytool -printcert -jarfile dna-auto-oficina.apk | grep "SHA256:" | head -n1 | sed 's/.*SHA256: *//')
+          echo "SHA256 Cliente: $SHA_CLIENTE"
+          echo "SHA256 Oficina: $SHA_OFICINA"
+          echo "sha256_cliente=$SHA_CLIENTE" >> $GITHUB_OUTPUT
+          echo "sha256_oficina=$SHA_OFICINA" >> $GITHUB_OUTPUT
+
+      - name: Publicar Artifacts dna-auto-apks
         uses: actions/upload-artifact@v4
         with:
-          name: dna-auto-cliente-apk
-          path: dna-auto-cliente.apk
+          name: dna-auto-apks
+          path: |
+            dna-auto-cliente.apk
+            dna-auto-oficina.apk
+
+      - name: Publicar Release Pública 'apk-latest'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VNAME="${{ github.event.inputs.version_name }}"
+          if [ -z "$VNAME" ]; then VNAME="2.5.3"; fi
+          gh release delete apk-latest --yes || true
+          git push origin :refs/tags/apk-latest || true
+          gh release create apk-latest dna-auto-cliente.apk dna-auto-oficina.apk \
+            --title "DNA AUTO APKs v${VNAME}" \
+            --notes "Binários APK Android compilados para App do Cliente e App da Oficina. Suporte a tela cheia edge-to-edge, GPS background e download automático direto da URL."

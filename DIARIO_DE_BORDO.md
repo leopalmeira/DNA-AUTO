@@ -1,3 +1,18 @@
+### Ciclo 134 — Geração & Download Automático de APK Android Nativo para Cliente (`/cliente/`) e Oficina (`/oficina/`), Tela Cheia Edge-to-Edge e CI/CD (`v2.5.3`)
+- **Data:** 12/11/2026
+- **Responsáveis:** `@[mobile-developer]` + `@[frontend-specialist]` + `@[devops-engineer]` + `@[test-engineer]`
+- **Contexto & Demandas Atendidas:**
+  1. **Download Automático Direto dos APKs pelas URLs:**
+     - `cliente.app/index.html` (sincronizado com `public/cliente.html`) e `oficina.app/index.html` (sincronizado com `public/oficina.html`): quando acessados via navegador Android sem o app nativo instalado, disparam o download automático do respectivo APK (`/downloads/dna-auto-cliente.apk` e `/downloads/dna-auto-oficina.apk`) e exibem card flutuante de download direto. Quando abertos dentro do aplicativo nativo, consultam os endpoints de versão e exibem o modal central **"Atualizar App"** caso haja nova versão.
+  2. **Tela Cheia Edge-to-Edge Completa:**
+     - `display: fullscreen` nos manifests (`cliente.app/manifest.json`, `oficina.app/manifest.json` e `public/manifest.json`).
+     - `.app` configurado para 100% da largura no mobile (`@media (max-width: 600px)`), `.standalone-ws-top-banner` oculto no mobile da oficina, e `WindowCompat.setDecorFitsSystemWindows(getWindow(), false)` + `LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES` no Android nativo para o fundo passar por trás da barra de status e câmera/notch.
+  3. **Compilação & Release Automatizada das Duas APKs:**
+     - Criado projeto Capacitor `android-oficina/` paralelo ao `android-client/`, com utilitário `scripts/patch-android.js` e workflow `.github/workflows/build-cliente-apk.yml` gerando ambos os binários (`dna-auto-cliente.apk` e `dna-auto-oficina.apk`) e publicando na GitHub Release `apk-latest`.
+  4. **Endpoints & Testes (`v2.5.3`):**
+     - `server.js`: rotas `/downloads/dna-auto-cliente.apk`, `/downloads/dna-auto-oficina.apk`, `/api/v1/app/version`, `/api/v1/app/version-oficina` e `/.well-known/assetlinks.json` para os dois pacotes.
+     - Todos os 9 conjuntos de testes (`npm test`) atualizados e aprovados 100%.
+
 ### Ciclo 133 — Fullscreen Edge-to-Edge (Cliente & Oficina), Prompt Central "Atualizar App" e Pipeline APK Android (`v2.5.2`)
 - **Data:** 12/11/2026
 - **Responsáveis:** `@[frontend-specialist]` + `@[mobile-developer]` + `@[backend-specialist]` + `@[test-engineer]`

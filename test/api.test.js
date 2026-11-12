@@ -518,7 +518,7 @@ async function runTests() {
         const dataManifest = await resManifest.json();
         console.assert(dataManifest.name.includes('DNA AUTO'), 'Nome do PWA incorreto');
         console.assert(dataManifest.short_name === 'DNA AUTO', 'Nome curto do PWA deve ser DNA AUTO');
-        console.assert(dataManifest.display === 'standalone', 'Display do PWA deve ser standalone');
+        console.assert(dataManifest.display === 'fullscreen', 'Display do PWA deve ser fullscreen');
         console.assert(Array.isArray(dataManifest.icons) && dataManifest.icons.length >= 4, 'PWA deve conter múltiplos ícones');
         const has192 = dataManifest.icons.some(i => i.sizes === '192x192');
         const has512 = dataManifest.icons.some(i => i.sizes === '512x512');
@@ -529,7 +529,7 @@ async function runTests() {
         const swContent = await resSw.text();
         console.assert(swContent.includes('self.addEventListener'), 'Service Worker deve conter listeners');
 
-        console.log(`✅ 36. PWA Oficial Google Play Store: Manifesto [${dataManifest.short_name}] com display standalone, Service Worker e ${dataManifest.icons.length} ícones nativos validado com sucesso.`);
+        console.log(`✅ 36. PWA Oficial: Manifesto [${dataManifest.short_name}] com display ${dataManifest.display}, Service Worker e ${dataManifest.icons.length} ícones nativos validado com sucesso.`);
 
         // Teste 37: Upload Real de Foto do Veículo (Multipart/Form-Data) com Persistência
         const photoFormData = new FormData();

@@ -12,26 +12,36 @@ const { startMaintenanceScheduler } = require('./services/maintenanceMonitor.ser
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const APP_VERSION = '2.5.2';
-const APK_VERSION_CODE = Number(process.env.DNA_APK_VERSION_CODE || 252);
+const APP_VERSION = '2.5.3';
+const APK_VERSION_CODE = Number(process.env.DNA_APK_VERSION_CODE || 253);
 const ANDROID_PACKAGE_NAME = process.env.ANDROID_PACKAGE_NAME || 'br.com.dnaauto.cliente';
+const ANDROID_OFICINA_PACKAGE_NAME = process.env.ANDROID_OFICINA_PACKAGE_NAME || 'br.com.dnaauto.oficina';
+const GITHUB_APK_RELEASE_BASE = (process.env.DNA_APK_RELEASE_BASE || 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest').replace(/\/$/, '');
 
-function resolveClientApkInfo() {
+function resolveApkInfo(appType = 'cliente') {
+    const isOficina = appType === 'oficina';
+    const fileName = isOficina ? 'dna-auto-oficina.apk' : 'dna-auto-cliente.apk';
+    const packageName = isOficina ? ANDROID_OFICINA_PACKAGE_NAME : ANDROID_PACKAGE_NAME;
     const candidates = [
-        path.join(__dirname, '..', 'uploads', 'apk', 'dna-auto-cliente.apk'),
-        path.join(__dirname, '..', '..', 'public', 'downloads', 'dna-auto-cliente.apk')
+        path.join(__dirname, '..', 'uploads', 'apk', fileName),
+        path.join(__dirname, '..', '..', 'public', 'downloads', fileName)
     ];
     const localApkPath = candidates.find((p) => fs.existsSync(p)) || null;
-    const externalApkUrl = (process.env.DNA_APK_DOWNLOAD_URL || '').trim() || null;
+    const envUrl = isOficina
+        ? (process.env.DNA_OFICINA_APK_DOWNLOAD_URL || '').trim()
+        : (process.env.DNA_APK_DOWNLOAD_URL || '').trim();
+    const externalApkUrl = envUrl || `${GITHUB_APK_RELEASE_BASE}/${fileName}`;
     return {
+        app: isOficina ? 'oficina' : 'cliente',
         version: (process.env.DNA_APK_LATEST_VERSION || APP_VERSION).trim(),
         version_code: APK_VERSION_CODE,
         min_version_code: Number(process.env.DNA_APK_MIN_VERSION_CODE || APK_VERSION_CODE),
         force_update: process.env.DNA_APK_FORCE_UPDATE === 'true',
-        apk_available: Boolean(localApkPath || externalApkUrl),
+        apk_available: true,
         local_apk_path: localApkPath,
-        apk_url: externalApkUrl || '/downloads/dna-auto-cliente.apk',
-        package_name: ANDROID_PACKAGE_NAME,
+        apk_url: `/downloads/${fileName}`,
+        redirect_url: externalApkUrl,
+        package_name: packageName,
         release_notes: process.env.DNA_APK_RELEASE_NOTES || 'Melhorias de desempenho, tela full-screen edge-to-edge e monitoramento contínuo.'
     };
 }
@@ -103,12 +113,13 @@ app.get('/api/v1/health', (req, res) => {
     });
 });
 
-// Controle de Versão & Distribuição do APK Android (Cliente)
-app.get('/api/v1/app/version', (req, res) => {
+// Controle de Versão & Distribuição dos APKs Android (Cliente e Oficina)
+function sendApkVersionResponse(req, res, appType) {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
-    const info = resolveClientApkInfo();
+    const info = resolveApkInfo(appType);
     res.json({
         success: true,
+        app: info.app,
         version: info.version,
         version_code: info.version_code,
         min_version_code: info.min_version_code,
@@ -119,22 +130,40 @@ app.get('/api/v1/app/version', (req, res) => {
         release_notes: info.release_notes,
         updated_at: DEPLOYED_AT
     });
-});
+}
 
-app.get('/downloads/dna-auto-cliente.apk', (req, res) => {
-    const info = resolveClientApkInfo();
+function sendApkDownloadResponse(req, res, appType) {
+    const info = resolveApkInfo(appType);
+    const fileName = appType === 'oficina' ? 'dna-auto-oficina.apk' : 'dna-auto-cliente.apk';
     if (info.local_apk_path) {
         res.setHeader('Content-Type', 'application/vnd.android.package-archive');
-        res.setHeader('Content-Disposition', 'attachment; filename="dna-auto-cliente.apk"');
-        return res.download(info.local_apk_path, 'dna-auto-cliente.apk');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+        return res.download(info.local_apk_path, fileName);
     }
-    if (process.env.DNA_APK_DOWNLOAD_URL) {
-        return res.redirect(302, process.env.DNA_APK_DOWNLOAD_URL.trim());
+    if (info.redirect_url) {
+        return res.redirect(302, info.redirect_url);
     }
     return res.status(404).json({
         error: 'O binário APK ainda não foi compilado/publicado no servidor.',
         apk_available: false
     });
+}
+
+app.get('/api/v1/app/version', (req, res) => {
+    const requestedApp = (req.query.app || '').toString().trim().toLowerCase() === 'oficina' ? 'oficina' : 'cliente';
+    sendApkVersionResponse(req, res, requestedApp);
+});
+
+app.get('/api/v1/app/version-oficina', (req, res) => {
+    sendApkVersionResponse(req, res, 'oficina');
+});
+
+app.get('/downloads/dna-auto-cliente.apk', (req, res) => {
+    sendApkDownloadResponse(req, res, 'cliente');
+});
+
+app.get('/downloads/dna-auto-oficina.apk', (req, res) => {
+    sendApkDownloadResponse(req, res, 'oficina');
 });
 
 // Digital Asset Links (Android App Links + getInstalledRelatedApps)
@@ -147,6 +176,14 @@ app.get('/.well-known/assetlinks.json', (req, res) => {
             target: {
                 namespace: 'android_app',
                 package_name: ANDROID_PACKAGE_NAME,
+                sha256_cert_fingerprints: rawFingerprints
+            }
+        },
+        {
+            relation: ['delegate_permission/common.handle_all_urls'],
+            target: {
+                namespace: 'android_app',
+                package_name: ANDROID_OFICINA_PACKAGE_NAME,
                 sha256_cert_fingerprints: rawFingerprints
             }
         }
