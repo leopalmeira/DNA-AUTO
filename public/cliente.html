@@ -564,7 +564,7 @@
 
 .splash-actions {
   position: absolute;
-  bottom: calc(28px + env(safe-area-inset-bottom, 18px));
+  bottom: calc(36px + env(safe-area-inset-bottom, 22px));
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 48px);
@@ -2681,14 +2681,12 @@ body.keyboard-open #login.screen {
   -webkit-overflow-scrolling: touch !important;
 }
 body.keyboard-open .login-hero-container {
-  min-height: 0 !important;
-  max-height: 70px !important;
-  flex: 0 0 auto !important;
-  opacity: 0.25 !important;
+  display: none !important;
 }
 body.keyboard-open .login-sheet-card {
-  margin-top: 0 !important;
-  padding-bottom: calc(180px + env(safe-area-inset-bottom, 20px)) !important;
+  margin-top: calc(16px + env(safe-area-inset-top, 0px)) !important;
+  border-radius: 24px !important;
+  padding-bottom: calc(220px + env(safe-area-inset-bottom, 20px)) !important;
 }
 .login-native-form {
   display: flex !important;
@@ -6981,7 +6979,7 @@ async function handleRegisterSubmit(event) {
   }
   return false;
 }
-</script><script src="/js/components/ownerView.js?v=2.5.3"></script>
+</script><script src="/js/components/ownerView.js?v=2.5.4"></script>
 <script>
 // --- SCRIPTS DO GRÁFICO INTERATIVO DE GASTOS COM O CARRO ---
 const gastosMonths = [

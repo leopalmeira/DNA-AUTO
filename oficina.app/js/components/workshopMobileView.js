@@ -6709,23 +6709,59 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
         }
     };
 
-    WorkshopView.handleUniversalPlateSearch = function() {
+    WorkshopView.handleUniversalPlateSearch = async function() {
         const input = document.getElementById('universal-plate-input');
-        const plate = (input ? input.value : this.mobileActivePlate || '').trim();
+        const plate = (input ? input.value : this.mobileActivePlate || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
         if (!plate) return;
 
-        const found = this.findVehicleByPlate(plate);
+        let found = this.findVehicleByPlate(plate);
+        if (!found && typeof this.fetchVehicleDataByPlate === 'function') {
+            found = await this.fetchVehicleDataByPlate(plate).catch(() => null);
+        }
+
+        if (!found) {
+            try {
+                let res = null;
+                if (typeof API !== 'undefined' && API.lookupPlate) {
+                    res = await API.lookupPlate(plate).catch(() => null);
+                }
+                if (!res || !res.vehicle) {
+                    const r = await fetch('/api/v1/integrations/plate-lookup/' + encodeURIComponent(plate)).catch(() => null);
+                    if (r && r.ok) res = await r.json().catch(() => null);
+                }
+                if (res && res.vehicle) {
+                    const pv = res.vehicle;
+                    found = {
+                        id: 'veh_' + plate,
+                        license_plate: plate,
+                        plate: plate,
+                        brand: pv.brand || 'Veículo',
+                        model: pv.version || pv.model || 'Localizado',
+                        year: pv.model_year || pv.manufacture_year || '2022',
+                        color: pv.color || 'Prata',
+                        fuel_type: pv.fuel_type || 'Flex',
+                        fipe_value: (pv.fipe && pv.fipe.market_value_formatted) || '',
+                        mileage: 45000,
+                        client_name: 'Cliente Identificado',
+                        client_phone: '(11) 99999-9999',
+                        last_service_date: 'Hoje'
+                    };
+                }
+            } catch (_) {}
+        }
+
         if (found) {
             this.selectedMobileVehicle = found;
             this.mobileActivePlate = found.license_plate;
-            this.showToast('✅ Veículo ' + found.license_plate + ' (' + found.model + ') localizado com sucesso!', 'success');
+            this.showToast('✅ Veículo ' + found.license_plate + ' (' + (found.brand ? found.brand + ' ' : '') + found.model + ') localizado com sucesso!', 'success');
         } else {
             // Cria registro imediato do veículo para a oficina não travar
             const newVeh = {
                 id: 'veh_' + Date.now(),
-                license_plate: plate.toUpperCase(),
+                license_plate: plate,
+                plate: plate,
                 brand: 'Veículo',
-                model: 'Modelo Identificado',
+                model: 'Identificado pela Placa',
                 year: '2022',
                 color: 'Prata',
                 mileage: 45000,

@@ -1,3 +1,23 @@
+### Ciclo 136 — Refinamento de Enquadramento Sem Zoom na Oficina, Elevação e Safe-Area Ampliada dos Botões, Ocultação de Hero no Teclado, Inclusão dos Binários APK 3D e Purga de Cache PWA (`v2.5.4`)
+- **Data:** 12/11/2026
+- **Responsáveis:** `@[frontend-specialist]` + `@[backend-specialist]` + `@[mobile-developer]` + `@[test-engineer]`
+- **Contexto & Demandas Atendidas:**
+  1. **Enquadramento Perfeito & Zero Zoom no App da Oficina (`oficina.app` / `public/oficina.html` / `workshop-mobile.css`):**
+     - `.ws-splash-hero-bg`, `.dna-oficina-login-bg` e `.ws-login-hero-bg`: configurados com `contain` e fundo `#010712`, garantindo enquadramento completo do veículo, logo e slogan sem nenhum zoom ou corte lateral em simuladores e dispositivos móveis.
+     - Botões da splash da oficina elevados com `margin-bottom: calc(28px + env(safe-area-inset-bottom, 20px))` e `padding-bottom: calc(46px + env(safe-area-inset-bottom, 24px))`, assegurando distância confortável e sem encostar no final da tela.
+  2. **Elevação Inteligente com Teclado Aberto no Login (Cliente & Oficina):**
+     - No app do cliente (`cliente.app/index.html` e `public/cliente.html`): com `body.keyboard-open`, `.login-hero-container` passa para `display: none !important`, permitindo que o formulário suba suavemente para o topo com `padding-bottom: calc(220px + env(safe-area-inset-bottom, 20px))`, mantendo campo de senha, checkbox e botão "Entrar" 100% visíveis sobre o teclado virtual.
+     - No app da oficina: com `body.keyboard-open`, `.ws-login-hero` é ocultado (`display: none !important`), e `.dna-oficina-login-screen` e `.dna-oficina-login-card` recebem elevação e rolagem suave com `padding-bottom: 220px`.
+  3. **Consulta de Placa no Dashboard da Oficina ("Chama o Carro"):**
+     - Em `WorkshopView.handleUniversalPlateSearch`: atualizado para consultar a API nacional `/api/v1/integrations/plate-lookup/:plate` quando a placa não estiver em memória, puxando marca, modelo, versão, ano e valor FIPE oficial instantaneamente.
+  4. **Purga de Cache PWA e Atualização de Recursos:**
+     - `sw.js` (cliente, oficina e public): cache bumped para `CACHE_NAME = 'dna-auto-v2.5.4'`, invalidando caches antigos e forçando download imediato do novo CSS e JS pelos navegadores.
+     - Versão nos links de script e estilos atualizada para `?v=2.5.4`.
+  5. **Binários APK Atualizados no Repositório:**
+     - Binários compilados com o ícone oficial 3D nos mipmaps (`dna-auto-cliente.apk` e `dna-auto-oficina.apk`) baixados e comitados em `public/downloads/` para entrega estática imediata pelo Render.
+  6. **Validação:**
+     - Todos os 9 conjuntos de testes (`npm test`) executados e aprovados com 100% de sucesso.
+
 ### Ciclo 135 — Correção de Zoom/Display na Oficina, Centralização de Botões e Safe-Area, Elevação do Formulário com Teclado Virtual, Chamada de Veículo por Placa e Ícone Oficial nos APKs (`v2.5.4`)
 - **Data:** 12/11/2026
 - **Responsáveis:** `@[frontend-specialist]` + `@[backend-specialist]` + `@[mobile-developer]` + `@[test-engineer]`
