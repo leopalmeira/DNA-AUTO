@@ -11,7 +11,7 @@ const { startMaintenanceScheduler } = require('./services/maintenanceMonitor.ser
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const APP_VERSION = '2.5.0';
+const APP_VERSION = '2.5.1';
 const DEPLOYED_AT = new Date().toISOString();
 const GIT_COMMIT = (process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || '').slice(0, 7) || null;
 

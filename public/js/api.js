@@ -56,9 +56,10 @@ const API = {
 
     // Auth
     login(email, password) {
+        const payload = (typeof email === 'object' && email !== null) ? email : { email, password };
         return this.request('/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ email, password })
+            body: JSON.stringify(payload)
         });
     },
     registerClient(data) {
@@ -73,15 +74,11 @@ const API = {
             body: JSON.stringify(data)
         });
     },
-    activateClientCode(payload) {
-        const body = typeof payload === 'string' ? { code: payload } : payload;
+    activateClientCode(code) {
         return this.request('/clients/activate', {
             method: 'POST',
-            body: JSON.stringify(body)
+            body: JSON.stringify({ code })
         });
-    },
-    checkClientCode(code) {
-        return this.request(`/clients/activation-code/${encodeURIComponent(code)}`);
     },
     getWorkshopsNetwork() {
         return this.request('/workshops');
@@ -231,22 +228,6 @@ const API = {
         return this.request(`/admin/workshops/${encodeURIComponent(workshopId)}/status`, {
             method: 'POST',
             body: JSON.stringify({ status })
-        });
-    },
-    getAdminRepresentatives(status = '') {
-        const qs = status ? `?status=${encodeURIComponent(status)}` : '';
-        return this.request(`/representatives/admin/representatives${qs}`);
-    },
-    approveRepresentative(repId, justification = 'Cadastro aprovado pela DNA AUTO') {
-        return this.request(`/representatives/admin/representatives/${encodeURIComponent(repId)}/approve`, {
-            method: 'POST',
-            body: JSON.stringify({ justification })
-        });
-    },
-    rejectRepresentative(repId, justification = 'Solicitação recusada pela administração DNA AUTO') {
-        return this.request(`/representatives/admin/representatives/${encodeURIComponent(repId)}/reject`, {
-            method: 'POST',
-            body: JSON.stringify({ justification })
         });
     },
     getMaintenanceAlerts() {
@@ -454,47 +435,7 @@ const API = {
         return this.request('/workshops/network');
     },
 
-    // Monitoramento Inteligente, Hodômetro e Manutenção Preditiva (Ciclo 22)
-    getVehicleMonitoring(identifier) {
-        return this.request(`/vehicles/${encodeURIComponent(identifier)}/monitoring`);
-    },
-    saveVehicleMonitoringPreferences(identifier, prefs) {
-        return this.request(`/vehicles/${encodeURIComponent(identifier)}/monitoring/preferences`, {
-            method: 'POST',
-            body: JSON.stringify(prefs)
-        });
-    },
-    syncVehicleTrips(identifier, trips) {
-        return this.request(`/vehicles/${encodeURIComponent(identifier)}/monitoring/sync-trips`, {
-            method: 'POST',
-            body: JSON.stringify({ trips })
-        });
-    },
-    sendVehicleTripFeedback(identifier, payload) {
-        return this.request(`/vehicles/${encodeURIComponent(identifier)}/monitoring/trip-feedback`, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-    },
-    getVehicleOdometer(identifier) {
-        return this.request(`/vehicles/${encodeURIComponent(identifier)}/odometer`);
-    },
-    registerVehicleOdometer(identifier, data) {
-        return this.request(`/vehicles/${encodeURIComponent(identifier)}/odometer`, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    },
-    getVehiclePredictiveMaintenance(identifier) {
-        return this.request(`/vehicles/${encodeURIComponent(identifier)}/predictive-maintenance`);
-    },
-    recalculateVehiclePredictiveMaintenance(identifier) {
-        return this.request(`/vehicles/${encodeURIComponent(identifier)}/predictive-maintenance/recalculate`, {
-            method: 'POST'
-        });
-    },
-
-    // Bot de Manutenção Preventiva (10h/17h), PDF Diário e Tickets de Suporte (Oficina)
+    // Bot de Manutenção Preventiva (10h/17h), PDF Diário e Tickets de Suporte
     getMaintenanceBotCampaigns(workshopId) {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/maintenance-bot/campaigns`);
     },
@@ -516,24 +457,24 @@ const API = {
             body: JSON.stringify({ phone, message })
         });
     },
+    confirmWorkshopAppointment(workshopId, appointmentId) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/appointments/${encodeURIComponent(appointmentId)}/confirm`, {
+            method: 'PATCH',
+            body: JSON.stringify({})
+        });
+    },
+    confirmMaintenanceCampaign(workshopId, campaignId, payload = {}) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/maintenance-bot/confirm-campaign`, {
+            method: 'POST',
+            body: JSON.stringify({ campaign_id: campaignId, ...payload })
+        });
+    },
     getWorkshopSupportTickets(workshopId) {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/support-tickets`);
     },
     createWorkshopSupportTicket(workshopId, payload) {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/support-tickets`, {
             method: 'POST',
-            body: JSON.stringify(payload)
-        });
-    },
-
-    // Tickets de Suporte das Oficinas no Painel Admin
-    getAdminSupportTickets(status = '') {
-        const qs = status ? `?status=${encodeURIComponent(status)}` : '';
-        return this.request(`/admin/support-tickets${qs}`);
-    },
-    replyAdminSupportTicket(ticketId, payload) {
-        return this.request(`/admin/support-tickets/${encodeURIComponent(ticketId)}`, {
-            method: 'PATCH',
             body: JSON.stringify(payload)
         });
     }

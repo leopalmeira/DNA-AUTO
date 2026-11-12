@@ -92,10 +92,10 @@ function seedBase(dbInstance) {
         insertPlan.run({
             id: 'plan_normal',
             code: 'PLAN_NORMAL',
-            title: 'Passaporte Digital DNA AUTO (Vitalício)',
-            description: 'Histórico completo oficial DNA AUTO com divisão R$ 29,95 plataforma e R$ 29,95 oficina',
-            price_cents: 5990,
-            workshop_price_cents: 2995,
+            title: 'Ativação de Veículo DNA AUTO (R$ 49,90)',
+            description: 'Histórico completo oficial DNA AUTO com 50% Oficina (R$ 24,95) e 50% Plataforma (R$ 24,95)',
+            price_cents: 4990,
+            workshop_price_cents: 2495,
             discount_percentage: 0,
             is_courtesy: 0,
             commission_percentage: 50
@@ -104,10 +104,10 @@ function seedBase(dbInstance) {
         insertPlan.run({
             id: 'plan_workshop_promo',
             code: 'PLAN_WORKSHOP_PROMO',
-            title: 'Campanha Oficina Credenciada',
-            description: 'Passaporte Digital DNA AUTO Oficial com divisão 50/50 (R$ 29,95 DNA AUTO / R$ 29,95 Oficina)',
-            price_cents: 5990,
-            workshop_price_cents: 2995,
+            title: 'Campanha Oficina Credenciada (R$ 49,90)',
+            description: 'Ativação oficial na plataforma com divisão 50/50 (R$ 24,95 DNA AUTO / R$ 24,95 Oficina)',
+            price_cents: 4990,
+            workshop_price_cents: 2495,
             discount_percentage: 0,
             is_courtesy: 0,
             commission_percentage: 50

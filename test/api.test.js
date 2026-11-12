@@ -1070,11 +1070,11 @@ async function runTests() {
         const resWsBillingStatus = await fetch(`${BASE_URL}/billing/workshop/ws_veloce/status`);
         const dataWsBillingStatus = await resWsBillingStatus.json();
         console.assert(dataWsBillingStatus.success === true, 'Falha ao consultar status de faturamento da oficina');
-        console.assert(dataWsBillingStatus.plans.single.cost === 'R$ 29,95', 'Participação DNA AUTO deve ser R$ 29,95');
-        console.assert(dataWsBillingStatus.plans.single.customer_price === 'R$ 59,90', 'Preço ao cliente deve ser R$ 59,90');
-        console.assert(dataWsBillingStatus.plans.single.profit === 'R$ 29,95', 'Participação da oficina deve ser R$ 29,95');
+        console.assert(dataWsBillingStatus.plans.single.cost === 'R$ 24,95', 'Participação DNA AUTO deve ser R$ 24,95');
+        console.assert(dataWsBillingStatus.plans.single.customer_price === 'R$ 49,90', 'Preço ao cliente deve ser R$ 49,90');
+        console.assert(dataWsBillingStatus.plans.single.profit === 'R$ 24,95', 'Participação da oficina deve ser R$ 24,95');
         console.assert(dataWsBillingStatus.plans.attendance_fee.cost === 'R$ 6,90', 'Taxa por atendimento deve ser R$ 6,90');
-        console.log(`✅ 56. Webhook AbacatePay & Modelo Financeiro: Webhook validado. Modelo oficial confirmado: DNA AUTO R$ 29,95 / Oficina R$ 29,95 / Passaporte R$ 59,90 / Atendimento R$ 6,90.`);
+        console.log(`✅ 56. Webhook AbacatePay & Modelo Financeiro: Webhook validado. Modelo oficial confirmado: DNA AUTO R$ 24,95 / Oficina R$ 24,95 / Ativação R$ 49,90 / Retorno R$ 6,90.`);
 
         // Teste 57: Agendamento Inteligente do Cliente na Oficina Credenciada (/workshops/:id/appointments)
         const resCreateApp = await fetch(`${BASE_URL}/workshops/ws_veloce/appointments`, {
@@ -1174,15 +1174,15 @@ async function runTests() {
         console.assert(passportCode && passportCode.startsWith('DNA-BR-'), 'Passo 4: Código DNA inválido');
         console.log(`   [Passo 4] Passaporte DNA ativado: ${passportCode}`);
 
-        // Passos 5 e 6: Cobrança simulada de R$ 59,90 e divisão exata de R$ 29,95 para cada parte
+        // Passos 5 e 6: Cobrança simulada de R$ 49,90 e divisão exata de R$ 24,95 para cada parte (50%)
         const dnaAct = dbCheck.prepare('SELECT * FROM dna_activations WHERE vehicle_dna_id = ?').get(dataStep4.dna_id || dataStep4.id || passportCode) 
             || dbCheck.prepare('SELECT da.* FROM dna_activations da JOIN vehicle_dna vd ON da.vehicle_dna_id = vd.id WHERE vd.dna_code = ?').get(passportCode);
         console.assert(!!dnaAct, 'Passos 5/6: Registro de ativação comercial não encontrado');
-        console.assert(dnaAct.amount_paid_cents === 5990, 'Passo 5: Cobrança simulada deve ser exatamente R$ 59,90 (5990 centavos)');
-        console.assert(dnaAct.commission_amount_cents === 2995, 'Passo 6: Repasse para a oficina credenciada deve ser exatamente R$ 29,95 (2995 centavos)');
+        console.assert(dnaAct.amount_paid_cents === 4990, 'Passo 5: Cobrança simulada deve ser exatamente R$ 49,90 (4990 centavos)');
+        console.assert(dnaAct.commission_amount_cents === 2495, 'Passo 6: Repasse para a oficina credenciada deve ser exatamente R$ 24,95 (2495 centavos)');
         const dnaAutoSplit = dnaAct.amount_paid_cents - dnaAct.commission_amount_cents;
-        console.assert(dnaAutoSplit === 2995, 'Passo 6: Participação retida da DNA AUTO deve ser exatamente R$ 29,95 (2995 centavos)');
-        console.log(`   [Passos 5 & 6] Cobrança de R$ 59,90 confirmada com Split Exato: R$ 29,95 DNA AUTO e R$ 29,95 Oficina`);
+        console.assert(dnaAutoSplit === 2495, 'Passo 6: Participação retida da DNA AUTO deve ser exatamente R$ 24,95 (2495 centavos)');
+        console.log(`   [Passos 5 & 6] Cobrança de R$ 49,90 confirmada com Split Exato 50/50: R$ 24,95 DNA AUTO e R$ 24,95 Oficina`);
 
         // Passo 7: A oficina registra uma manutenção com peças, fotos e valores
         const resStep7 = await fetch(`${BASE_URL}/services/workshop-register`, {

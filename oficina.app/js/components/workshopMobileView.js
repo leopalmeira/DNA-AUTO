@@ -1092,9 +1092,9 @@
             'cadastrar-veiculo': 'Cadastrar Veículo',
             'cadastrar-cliente': 'Cadastrar Veículo',
             'registradores': 'Registradores & Repasse',
-            'manutencao-veiculos': 'Manutenção Preventiva',
-            'avisos-whatsapp': 'WhatsApp',
-            'avisos-manutencao': 'WhatsApp',
+            'manutencao-veiculos': 'Manutenção',
+            'avisos-whatsapp': 'Agendamentos Automáticos',
+            'avisos-manutencao': 'Agendamentos Automáticos',
             'financeiro': 'Financeiro',
             'ordens-servico': 'Ordens de Serviço',
             'suporte': 'Suporte'
@@ -1342,7 +1342,7 @@
                 }, 30);
             } else if (sectionId === 'registradores' || sectionId === 'menu-oficina') {
                 this.loadWorkshopMenuSummary();
-            } else if (sectionId === 'avisos-whatsapp') {
+            } else if (sectionId === 'avisos-whatsapp' || sectionId === 'manutencao-veiculos') {
                 if (typeof this.loadMobileWhatsAppBotData === 'function') {
                     this.loadMobileWhatsAppBotData();
                 }
@@ -1488,11 +1488,11 @@
                     </div>
                     <div class="ws-model-card-content">
                         <h3>Manutenção</h3>
-                        <p>Alertas e revisões preventivas</p>
+                        <p>Próximos de agendar e vencidos</p>
                     </div>
                 </div>
 
-                <!-- Card 4: Avisos WhatsApp -->
+                <!-- Card 4: Agendamentos Automáticos -->
                 <div class="ws-model-dash-card" id="avisos" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')">
                     <div class="ws-model-card-top">
                         <div class="ws-model-card-icon-box ws-icon-whatsapp">
@@ -1503,8 +1503,8 @@
                         <span class="ws-model-card-arrow">›</span>
                     </div>
                     <div class="ws-model-card-content">
-                        <h3>Avisos WhatsApp</h3>
-                        <p>Lembretes e comunicações</p>
+                        <h3>Agendamentos Automáticos</h3>
+                        <p>Avisos WhatsApp, confirmações e PDF 17h</p>
                     </div>
                 </div>
 
@@ -1946,54 +1946,107 @@
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 8: MANUTENÇÃO DOS VEÍCULOS (MANUTENÇÃO PREVENTIVA CONFORME MODELO)
+    // TELA 8: MANUTENÇÃO DOS VEÍCULOS (PRÓXIMOS DO AGENDAMENTO E VENCIDOS S/ CONFIRMAÇÃO)
     // ──────────────────────────────────────────────────────────────────────────
+    WorkshopView.botDueQueue = WorkshopView.botDueQueue || [];
+    WorkshopView.maintQueueFilter = WorkshopView.maintQueueFilter || 'todos';
+
     WorkshopView.renderMobileMaintenanceVehiclesView = function() {
-        const alerts = [
-            { icon: '⚠️', title: 'Troca de óleo', vehicle: 'BRA2E19 - Toyota Corolla', km: 'Faltam 3.000 km', styleClass: 'red' },
-            { icon: '⚠️', title: 'Pastilha de freio', vehicle: 'KZX4D21 - Honda HR-V', km: 'Faltam 20.000 km', styleClass: 'yellow' },
-            { icon: '🎯', title: 'Correia dentada', vehicle: 'LMH7A33 - Jeep Compass', km: 'Faltam 40.000 km', styleClass: 'blue' },
-            { icon: '📄', title: 'Filtro de ar', vehicle: 'QWESF67 - Fiat Toro', km: 'Faltam 8.000 km', styleClass: 'gray' },
-            { icon: '🛢️', title: 'Revisão periódica', vehicle: 'RST8I90 - Renault Duster', km: 'Faltam 7.000 km', styleClass: 'purple' }
-        ];
+        const queue = Array.isArray(this.botDueQueue) ? this.botDueQueue : [];
+        const filter = this.maintQueueFilter || 'todos';
+        const proximos = queue.filter(q => q.queue_group === 'proximos' || !q.is_overdue);
+        const vencidos = queue.filter(q => q.queue_group === 'vencidos' || q.is_overdue);
+
+        const visibleItems = filter === 'proximos'
+            ? proximos
+            : (filter === 'vencidos' ? vencidos : queue);
 
         return `
-            <div style="padding-bottom: 24px;">
-                <!-- Pills de Filtro -->
-                <div class="ws-model-filter-pills" style="margin-top:4px;">
-                    <button type="button" class="ws-model-pill active" onclick="WorkshopView.setMaintFilter('pendentes', this)">Pendentes (8)</button>
-                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setMaintFilter('vencidos', this)">Vencidos (2)</button>
-                    <button type="button" class="ws-model-pill" onclick="WorkshopView.setMaintFilter('concluidos', this)">Concluídos</button>
+            <div class="dna-mobile-subpage" style="padding-bottom: 90px;">
+                <div class="dna-mobile-subpage-header">
+                    <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
+                        <span>‹</span> <span>Voltar</span>
+                    </button>
+                    <span class="dna-mobile-subpage-title">Manutenção</span>
                 </div>
 
-                <!-- Lista de Cards de Alerta -->
-                <div class="ws-model-list-container">
-                    ${alerts.map(a => `
-                        <div class="ws-model-maint-card ${a.styleClass}" onclick="WorkshopView.showToast('Alerta selecionado: ${a.title} (${a.vehicle})', 'info')">
-                            <div class="maint-icon-circle ${a.styleClass}">
-                                ${a.icon}
+                <div class="dna-mobile-subpage-body">
+                    <div style="background:linear-gradient(135deg, rgba(245,158,11,0.16), rgba(239,68,68,0.10)); border:1px solid rgba(245,158,11,0.32); border-radius:14px; padding:12px 14px; margin-bottom:12px;">
+                        <strong style="color:#ffffff; font-size:13.5px; display:block; margin-bottom:4px;">🔧 Fila de Manutenção Preventiva</strong>
+                        <span style="font-size:11.5px; color:#cbd5e1; line-height:1.45; display:block;">
+                            Exibe os carros cadastrados que estão <strong>próximos de agendar</strong> ou <strong>vencidos sem confirmação</strong>. Assim que o cliente confirmar no WhatsApp ou no app, ele passa para <strong>Agendamentos Automáticos</strong>.
+                        </span>
+                    </div>
+
+                    <!-- Pills de Filtro -->
+                    <div class="ws-model-filter-pills" style="margin-top:4px; margin-bottom:12px;">
+                        <button type="button" class="ws-model-pill ${filter === 'todos' ? 'active' : ''}" onclick="WorkshopView.setMaintFilter('todos', this)">
+                            Todos (${queue.length})
+                        </button>
+                        <button type="button" class="ws-model-pill ${filter === 'proximos' ? 'active' : ''}" onclick="WorkshopView.setMaintFilter('proximos', this)">
+                            🟡 Próximos (${proximos.length})
+                        </button>
+                        <button type="button" class="ws-model-pill ${filter === 'vencidos' ? 'active' : ''}" onclick="WorkshopView.setMaintFilter('vencidos', this)">
+                            🔴 Vencidos s/ Confirmação (${vencidos.length})
+                        </button>
+                    </div>
+
+                    <!-- Lista de Veículos Pendentes de Agendamento -->
+                    <div class="ws-model-list-container">
+                        ${visibleItems.length === 0 ? `
+                            <div style="background:rgba(15,23,42,0.75); border:1px dashed rgba(16,185,129,0.35); border-radius:14px; padding:22px 14px; text-align:center; color:#94a3b8;">
+                                <div style="font-size:24px; margin-bottom:6px;">✅</div>
+                                <strong style="color:#fff; font-size:13.5px; display:block; margin-bottom:4px;">Nenhum veículo pendente nesta fila</strong>
+                                <span style="font-size:12px;">Os veículos vencidos ou próximos que já confirmaram retorno aparecem em Agendamentos Automáticos.</span>
                             </div>
-                            <div class="maint-info">
-                                <h4>${a.title}</h4>
-                                <div class="vehicle">${a.vehicle}</div>
-                                <div class="km-alert">${a.km}</div>
-                            </div>
-                            <div class="maint-arrow">›</div>
-                        </div>
-                    `).join('')}
+                        ` : visibleItems.map(item => {
+                            const isOverdue = Boolean(item.is_overdue);
+                            const styleClass = isOverdue ? 'red' : 'yellow';
+                            const kmLabel = isOverdue
+                                ? `Vencida há ${Math.abs(Number(item.remaining_km || 0)).toLocaleString('pt-BR')} km (atual: ${Number(item.current_km || 0).toLocaleString('pt-BR')} km)`
+                                : `Faltam ${Math.max(0, Number(item.remaining_km || 0)).toLocaleString('pt-BR')} km para agendar (atual: ${Number(item.current_km || 0).toLocaleString('pt-BR')} km)`;
+                            const campBadge = item.campaign_status === 'SENT' || item.campaign_status === 'IN_CONVERSATION'
+                                ? 'Convite enviado (aguardando cliente)'
+                                : 'Sem confirmação de agendamento';
+                            return `
+                                <div class="ws-model-maint-card ${styleClass}" style="flex-direction:column; align-items:stretch; gap:8px;">
+                                    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                                        <div style="display:flex; align-items:center; gap:10px;">
+                                            <div class="maint-icon-circle ${styleClass}">
+                                                ${isOverdue ? '🚨' : '⏳'}
+                                            </div>
+                                            <div class="maint-info">
+                                                <h4 style="margin:0;">${item.item_name || 'Revisão Preventiva'}</h4>
+                                                <div class="vehicle"><strong>${item.license_plate}</strong> • ${item.vehicle_model} • ${item.owner_name}</div>
+                                                <div class="km-alert">${kmLabel}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; padding-top:6px; border-top:1px solid rgba(15,23,42,0.12);">
+                                        <span style="font-size:11px; font-weight:700; color:${isOverdue ? '#b91c1c' : '#92400e'};">${campBadge}</span>
+                                        <button type="button" class="ws-btn-chat-primary" style="flex:0 0 auto; font-size:11px; padding:6px 10px;" onclick="WorkshopView.switchMobileSection('avisos-whatsapp')">
+                                            📅 Ir p/ Agendamentos
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
                 </div>
             </div>
         `;
     };
 
-    WorkshopView.setMaintFilter = function(filter, btn) {
-        document.querySelectorAll('.ws-model-filter-pills .ws-model-pill').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
-        this.showToast(`Filtro de manutenções: ${filter}`, 'info');
+    WorkshopView.setMaintFilter = function(filter) {
+        this.maintQueueFilter = filter || 'todos';
+        const viewport = document.getElementById('ws-mobile-active-viewport');
+        if (viewport && this.currentSection === 'manutencao-veiculos') {
+            viewport.innerHTML = this.renderMobileMaintenanceVehiclesView();
+        }
     };
 
     // ──────────────────────────────────────────────────────────────────────────
-    // TELA 9: AVISOS WHATSAPP (CONFORME MODELO OFICIAL - CARDS ORGANIZADOS)
+    // TELA 9: AGENDAMENTOS AUTOMÁTICOS (MONITORAMENTO 10h -> CONFIRMAÇÃO -> PDF 17h)
     // ──────────────────────────────────────────────────────────────────────────
     WorkshopView.currentWhatsAppTab = WorkshopView.currentWhatsAppTab || 'campanhas';
     WorkshopView.botCampaigns = WorkshopView.botCampaigns || [];
@@ -2015,18 +2068,49 @@
                 this.botCampaigns = botRes.value.campaigns || [];
                 this.botAppointments = botRes.value.appointments || [];
                 this.botDispatches = botRes.value.dispatches || [];
+                if (Array.isArray(botRes.value.dueQueue)) {
+                    this.botDueQueue = botRes.value.dueQueue;
+                }
             }
             if (convRes.status === 'fulfilled' && convRes.value) {
                 this.whatsappConversations = convRes.value.conversations || [];
             }
         } catch (err) {
-            console.warn('Falha ao carregar dados do Bot WhatsApp:', err);
+            console.warn('Falha ao carregar dados de Agendamentos Automáticos:', err);
         } finally {
             this._loadingWhatsAppBotData = false;
-            if (this.currentSection === 'avisos-whatsapp') {
-                const viewport = document.getElementById('ws-mobile-active-viewport');
-                if (viewport) viewport.innerHTML = this.renderMobileWhatsAppView();
+            const viewport = document.getElementById('ws-mobile-active-viewport');
+            if (viewport && this.currentSection === 'avisos-whatsapp') {
+                viewport.innerHTML = this.renderMobileWhatsAppView();
+            } else if (viewport && this.currentSection === 'manutencao-veiculos') {
+                viewport.innerHTML = this.renderMobileMaintenanceVehiclesView();
             }
+        }
+    };
+
+    WorkshopView.preConfirmAppointment = async function(appointmentId) {
+        const wsId = this.workshopId || 'ws_veloce';
+        try {
+            await API.confirmWorkshopAppointment(wsId, appointmentId);
+            await this.loadMobileWhatsAppBotData();
+            if (typeof this.showToast === 'function') {
+                this.showToast('✅ Agendamento confirmado previamente e incluído no PDF das 17h!', 'success');
+            }
+        } catch (err) {
+            if (typeof this.showToast === 'function') this.showToast(err.message || 'Erro ao confirmar agendamento.', 'error');
+        }
+    };
+
+    WorkshopView.preConfirmCampaign = async function(campaignId) {
+        const wsId = this.workshopId || 'ws_veloce';
+        try {
+            const res = await API.confirmMaintenanceCampaign(wsId, campaignId);
+            await this.loadMobileWhatsAppBotData();
+            if (typeof this.showToast === 'function') {
+                this.showToast(`✅ Veículo confirmado para ${res.chosenDate || 'o próximo dia útil'} às ${res.chosenTime || '09:00'}!`, 'success');
+            }
+        } catch (err) {
+            if (typeof this.showToast === 'function') this.showToast(err.message || 'Erro ao pré-confirmar aviso.', 'error');
         }
     };
 
@@ -2097,15 +2181,86 @@
 
         const apiBase = (typeof API !== 'undefined' && API.baseUrl) ? API.baseUrl : '/api/v1';
 
+        const plateByPhoneSuffix = new Map();
+        [...appointments, ...campaigns].forEach(entry => {
+            const digits = String(entry.owner_phone || '').replace(/\D/g, '');
+            const suffix = digits.slice(-8);
+            if (suffix.length >= 8 && entry.license_plate) {
+                plateByPhoneSuffix.set(suffix, {
+                    plate: entry.license_plate,
+                    model: entry.vehicle_model || '',
+                    name: entry.owner_name || ''
+                });
+            }
+        });
+
+        const confirmedPlates = new Set(
+            appointments
+                .filter(a => ['CONFIRMED', 'SCHEDULED'].includes(String(a.status || '').toUpperCase()))
+                .map(a => String(a.license_plate || '').toUpperCase())
+        );
+
+        const renderConfirmedAppointmentCard = (a) => {
+            const isConfirmed = String(a.status || '').toUpperCase() === 'CONFIRMED';
+            return `
+                <div class="ws-msg-client-card" data-search="${((a.owner_name || '') + ' ' + (a.license_plate || '') + ' ' + (a.service_title || '')).toLowerCase()}" style="border-left:4px solid #10b981;">
+                    <div class="ws-msg-card-header">
+                        <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+                            <div class="ws-msg-client-avatar" style="background:#10b981;">
+                                ${(a.owner_name || 'C').charAt(0).toUpperCase()}
+                            </div>
+                            <div class="ws-msg-card-names">
+                                <h4 class="ws-msg-client-title">
+                                    <span>${a.owner_name || 'Cliente'}</span>
+                                    <span class="ws-msg-plate-pill">${a.license_plate || 'SEM PLACA'}</span>
+                                </h4>
+                                <div class="ws-msg-vehicle-sub">
+                                    <span>${a.vehicle_model || 'Veículo'}</span>
+                                    <span>•</span>
+                                    <span>📅 ${a.appointment_date}</span>
+                                    <span>•</span>
+                                    <span>⏰ ${a.appointment_time || '09:00'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span style="font-size:10.5px; font-weight:800; color:#10b981; background:rgba(16,185,129,0.18); padding:3px 8px; border-radius:6px; white-space:nowrap;">
+                            ${isConfirmed ? '✅ CONFIRMADO' : (a.status || 'AGENDADO')}
+                        </span>
+                    </div>
+                    <div class="ws-msg-preview-bubble">
+                        <span class="ws-msg-bubble-icon">🔧</span>
+                        <span class="ws-msg-text-preview" style="color:#fff;">${a.service_title || 'Revisão Preventiva'}</span>
+                    </div>
+                    <div class="ws-msg-card-actions">
+                        ${!isConfirmed ? `
+                            <button type="button" class="ws-btn-chat-primary" onclick="WorkshopView.preConfirmAppointment('${a.id}')">
+                                <span>✅ Pré-confirmar p/ PDF 17h</span>
+                            </button>
+                        ` : `
+                            <span style="font-size:11px; color:#34d399; font-weight:700;">📄 Incluído no PDF das 17h</span>
+                        `}
+                        ${a.owner_phone ? `
+                            <a class="ws-btn-chat-secondary" href="https://wa.me/${String(a.owner_phone).replace(/\D/g, '')}" target="_blank" rel="noopener">
+                                <span>📲 WhatsApp</span>
+                            </a>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        };
+
         return `
             <div style="padding-bottom: 80px;">
-                <!-- Resumo do Fluxo Automático 10h -> Confirmação -> PDF 17h -->
+                <!-- Resumo do Fluxo Automático: Monitoramento Contínuo -> 10h WhatsApp -> Pré-confirmação -> PDF 17h -->
                 <div style="background:linear-gradient(135deg, rgba(0,82,204,0.22), rgba(16,185,129,0.12)); border:1px solid rgba(56,189,248,0.3); border-radius:14px; padding:12px; margin-bottom:12px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px;">
-                        <div>
-                            <strong style="color:#ffffff; font-size:13.5px; display:block;">🤖 Agente Automático WhatsApp</strong>
-                            <span style="font-size:11px; color:#94a3b8;">10h dispara avisos (Seg–Sáb até 11h) • 17h envia PDF p/ oficina</span>
-                        </div>
+                    <div style="margin-bottom:8px;">
+                        <strong style="color:#ffffff; font-size:13.5px; display:block; margin-bottom:4px;">🤖 Agendamentos Automáticos (Monitoramento Contínuo)</strong>
+                        <span style="font-size:11.5px; color:#cbd5e1; line-height:1.45; display:block;">
+                            • O sistema monitora sozinho todos os carros cadastrados da oficina.<br/>
+                            • Às <strong>10h00</strong> (Seg–Sáb até 11h), dispara aviso automático no WhatsApp com 3 datas úteis.<br/>
+                            • Assim que o cliente responde, o veículo confirmado aparece aqui e você também pode pré-confirmar antes das 17h.<br/>
+                            • Todos os dias às <strong>17h00</strong>, enviamos o <strong>PDF dos agendados do próximo dia</strong> (placa, proprietário e horário) direto para o WhatsApp da oficina.
+                        </span>
                     </div>
                     <div style="display:flex; flex-wrap:wrap; gap:8px;">
                         <button type="button" class="ws-btn-chat-primary" style="flex:1; min-width:130px; font-size:11.5px;" onclick="WorkshopView.triggerBotOutreachNow()">
@@ -2123,7 +2278,7 @@
                 <!-- Abas Superiores -->
                 <div class="ws-model-filter-pills" style="margin-top:4px;">
                     <button type="button" class="ws-model-pill ${tab === 'campanhas' ? 'active' : ''}" onclick="WorkshopView.setWhatsAppTab('campanhas', this)">
-                        🤖 Avisos Enviados (${campaigns.length})
+                        ✅ Confirmados & Avisos (${appointments.length + campaigns.length})
                     </button>
                     <button type="button" class="ws-model-pill ${tab === 'agendados' ? 'active' : ''}" onclick="WorkshopView.setWhatsAppTab('agendados', this)">
                         📅 Agendados (${appointments.length})
@@ -2144,65 +2299,82 @@
                     />
                 </div>
 
-                <!-- ABA 1: VEÍCULOS NOTIFICADOS PELO BOT -->
+                <!-- ABA 1: VEÍCULOS CONFIRMADOS E AVISOS ENVIADOS PELO BOT -->
                 <div id="ws-tab-content-campanhas" style="display:${tab === 'campanhas' ? 'block' : 'none'};">
                     <div class="ws-model-chat-list" id="ws-model-chat-container">
-                        ${campaigns.length === 0 ? `
+                        ${(appointments.length === 0 && campaigns.length === 0) ? `
                             <div style="background:rgba(15,23,42,0.75); border:1px dashed rgba(56,189,248,0.3); border-radius:14px; padding:22px 14px; text-align:center; color:#94a3b8;">
                                 <div style="font-size:26px; margin-bottom:6px;">🤖</div>
-                                <strong style="color:#fff; font-size:13.5px; display:block; margin-bottom:4px;">Nenhum veículo notificado ainda</strong>
-                                <span style="font-size:12px;">Às 10h00 o agente verifica automaticamente veículos com óleo, correia ou revisão vencendo e envia as 3 datas úteis. Você também pode clicar em "Disparar Avisos 10h".</span>
+                                <strong style="color:#fff; font-size:13.5px; display:block; margin-bottom:4px;">Nenhum veículo notificado ou confirmado ainda</strong>
+                                <span style="font-size:12px;">Quando o agente das 10h enviar os avisos ou o cliente confirmar o agendamento, os veículos confirmados aparecerão aqui antes do PDF das 17h.</span>
                             </div>
-                        ` : campaigns.map(c => {
-                            const st = this.formatCampaignStatusBadge(c.status);
-                            const datesText = Array.isArray(c.offered_dates)
-                                ? c.offered_dates.map((d, idx) => `${idx + 1}) ${d.dateBr} (${d.weekday.split('-')[0]})`).join(' • ')
-                                : '';
-                            return `
-                                <div class="ws-msg-client-card" data-search="${((c.owner_name || '') + ' ' + (c.license_plate || '') + ' ' + (c.vehicle_model || '') + ' ' + (c.item_name || '')).toLowerCase()}" style="border-left:4px solid ${st.color};">
-                                    <div class="ws-msg-card-header">
-                                        <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
-                                            <div class="ws-msg-client-avatar" style="background:${st.color};">
-                                                ${(c.owner_name || 'C').charAt(0).toUpperCase()}
-                                            </div>
-                                            <div class="ws-msg-card-names">
-                                                <h4 class="ws-msg-client-title">
-                                                    <span>${c.owner_name || 'Cliente'}</span>
-                                                    <span class="ws-msg-plate-pill">${c.license_plate}</span>
-                                                </h4>
-                                                <div class="ws-msg-vehicle-sub">
-                                                    <span>${c.vehicle_model || 'Veículo'}</span>
-                                                    <span>•</span>
-                                                    <span>${Number(c.current_km || 0).toLocaleString('pt-BR')} km</span>
+                        ` : `
+                            ${appointments.length > 0 ? `
+                                <div style="font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:#10b981; margin:4px 0 8px;">
+                                    ✅ Veículos Confirmados para Atendimento (${appointments.length})
+                                </div>
+                                ${appointments.map(a => renderConfirmedAppointmentCard(a)).join('')}
+                            ` : ''}
+                            ${campaigns.length > 0 ? `
+                                <div style="font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:0.06em; color:#38bdf8; margin:${appointments.length > 0 ? '14px' : '4px'} 0 8px;">
+                                    🤖 Avisos de Revisão Disparados (${campaigns.length})
+                                </div>
+                                ${campaigns.map(c => {
+                                    const st = this.formatCampaignStatusBadge(c.status);
+                                    const datesText = Array.isArray(c.offered_dates)
+                                        ? c.offered_dates.map((d, idx) => `${idx + 1}) ${d.dateBr} (${d.weekday.split('-')[0]})`).join(' • ')
+                                        : '';
+                                    const isConfirmed = c.status === 'CONFIRMED' || confirmedPlates.has(String(c.license_plate || '').toUpperCase());
+                                    return `
+                                        <div class="ws-msg-client-card" data-search="${((c.owner_name || '') + ' ' + (c.license_plate || '') + ' ' + (c.vehicle_model || '') + ' ' + (c.item_name || '')).toLowerCase()}" style="border-left:4px solid ${st.color};">
+                                            <div class="ws-msg-card-header">
+                                                <div style="display:flex; align-items:center; gap:10px; min-width:0; flex:1;">
+                                                    <div class="ws-msg-client-avatar" style="background:${st.color};">
+                                                        ${(c.owner_name || 'C').charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div class="ws-msg-card-names">
+                                                        <h4 class="ws-msg-client-title">
+                                                            <span>${c.owner_name || 'Cliente'}</span>
+                                                            <span class="ws-msg-plate-pill">${c.license_plate}</span>
+                                                        </h4>
+                                                        <div class="ws-msg-vehicle-sub">
+                                                            <span>${c.vehicle_model || 'Veículo'}</span>
+                                                            <span>•</span>
+                                                            <span>${Number(c.current_km || 0).toLocaleString('pt-BR')} km</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
+                                                <span style="font-size:10.5px; font-weight:800; color:${st.color}; background:${st.color}22; padding:3px 8px; border-radius:6px; border:1px solid ${st.color}44;">
+                                                    ${st.label}
+                                                </span>
+                                            </div>
+
+                                            <div class="ws-msg-preview-bubble">
+                                                <span class="ws-msg-bubble-icon">🛠️</span>
+                                                <span class="ws-msg-text-preview" style="color:#ffffff; font-weight:600;">
+                                                    ${c.item_name}
+                                                    ${c.chosen_date ? `<br/><span style="color:#10b981;">✅ Confirmado: ${c.chosen_date} às ${c.chosen_time || '09:00'}</span>` : (datesText ? `<br/><span style="color:#94a3b8; font-weight:400;">Datas oferecidas: ${datesText}</span>` : '')}
+                                                </span>
+                                            </div>
+
+                                            <div class="ws-msg-card-actions">
+                                                ${!isConfirmed ? `
+                                                    <button type="button" class="ws-btn-chat-primary" onclick="WorkshopView.preConfirmCampaign('${c.id}')">
+                                                        <span>✅ Pré-confirmar</span>
+                                                    </button>
+                                                    <button type="button" class="ws-btn-chat-secondary" onclick="WorkshopView.simulateBotReplyPrompt('${c.owner_phone}', '${c.license_plate}')">
+                                                        <span>🤖 Simular</span>
+                                                    </button>
+                                                ` : ''}
+                                                <a class="ws-btn-chat-secondary" href="https://wa.me/${String(c.owner_phone || '').replace(/\D/g, '')}" target="_blank" rel="noopener">
+                                                    <span>📲 WhatsApp</span>
+                                                </a>
                                             </div>
                                         </div>
-                                        <span style="font-size:10.5px; font-weight:800; color:${st.color}; background:${st.color}22; padding:3px 8px; border-radius:6px; border:1px solid ${st.color}44;">
-                                            ${st.label}
-                                        </span>
-                                    </div>
-
-                                    <div class="ws-msg-preview-bubble">
-                                        <span class="ws-msg-bubble-icon">🛠️</span>
-                                        <span class="ws-msg-text-preview" style="color:#ffffff; font-weight:600;">
-                                            ${c.item_name}
-                                            ${c.chosen_date ? `<br/><span style="color:#10b981;">✅ Confirmado: ${c.chosen_date} às ${c.chosen_time || '09:00'}</span>` : (datesText ? `<br/><span style="color:#94a3b8; font-weight:400;">Datas oferecidas: ${datesText}</span>` : '')}
-                                        </span>
-                                    </div>
-
-                                    <div class="ws-msg-card-actions">
-                                        ${c.status !== 'CONFIRMED' ? `
-                                            <button type="button" class="ws-btn-chat-primary" onclick="WorkshopView.simulateBotReplyPrompt('${c.owner_phone}', '${c.license_plate}')">
-                                                <span>🤖 Simular Confirmação</span>
-                                            </button>
-                                        ` : ''}
-                                        <a class="ws-btn-chat-secondary" href="https://wa.me/${String(c.owner_phone || '').replace(/\D/g, '')}" target="_blank" rel="noopener">
-                                            <span>📲 WhatsApp</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            `;
-                        }).join('')}
+                                    `;
+                                }).join('')}
+                            ` : ''}
+                        `}
                     </div>
                 </div>
 
@@ -2212,61 +2384,51 @@
                         ${appointments.length === 0 ? `
                             <div style="background:rgba(15,23,42,0.75); border:1px dashed rgba(16,185,129,0.3); border-radius:14px; padding:22px 14px; text-align:center; color:#94a3b8;">
                                 <strong style="color:#fff; font-size:13.5px; display:block; margin-bottom:4px;">Nenhum veículo agendado ainda</strong>
-                                <span style="font-size:12px;">Assim que o cliente confirmar uma das 3 datas no WhatsApp, o agendamento aparece aqui e entra no PDF das 17h.</span>
+                                <span style="font-size:12px;">Assim que o cliente confirmar uma das 3 datas no WhatsApp ou a oficina pré-confirmar no app, o agendamento aparece aqui e entra no PDF das 17h.</span>
                             </div>
-                        ` : appointments.map(a => `
-                            <div class="ws-msg-client-card" data-search="${((a.owner_name || '') + ' ' + (a.license_plate || '') + ' ' + (a.service_title || '')).toLowerCase()}" style="border-left:4px solid #10b981;">
-                                <div class="ws-msg-card-header">
-                                    <div>
-                                        <h4 class="ws-msg-client-title">
-                                            <span>${a.owner_name || 'Cliente'}</span>
-                                            <span class="ws-msg-plate-pill">${a.license_plate}</span>
-                                        </h4>
-                                        <div class="ws-msg-vehicle-sub">
-                                            <span>📅 ${a.appointment_date}</span>
-                                            <span>•</span>
-                                            <span>⏰ ${a.appointment_time || '09:00'}</span>
-                                        </div>
-                                    </div>
-                                    <span style="font-size:10.5px; font-weight:800; color:#10b981; background:rgba(16,185,129,0.18); padding:3px 8px; border-radius:6px;">
-                                        ${a.status}
-                                    </span>
-                                </div>
-                                <div class="ws-msg-preview-bubble">
-                                    <span class="ws-msg-bubble-icon">🔧</span>
-                                    <span class="ws-msg-text-preview" style="color:#fff;">${a.service_title}</span>
-                                </div>
-                            </div>
-                        `).join('')}
+                        ` : appointments.map(a => renderConfirmedAppointmentCard(a)).join('')}
                     </div>
                 </div>
 
-                <!-- ABA 3: CONVERSAS REAIS DO WHATSAPP -->
+                <!-- ABA 3: CONVERSAS REAIS DO WHATSAPP (SEMPRE COM PLACA) -->
                 <div id="ws-tab-content-conversas" style="display:${tab === 'conversas' ? 'block' : 'none'};">
                     <div class="ws-model-chat-list">
                         ${chats.length === 0 ? `
                             <div style="background:rgba(15,23,42,0.75); border:1px dashed rgba(148,163,184,0.3); border-radius:14px; padding:22px 14px; text-align:center; color:#94a3b8;">
                                 <strong style="color:#fff; font-size:13.5px; display:block; margin-bottom:4px;">Sem conversas recentes</strong>
-                                <span style="font-size:12px;">As mensagens enviadas e recebidas pelo WhatsApp conectado da oficina aparecem aqui em tempo real.</span>
+                                <span style="font-size:12px;">As mensagens enviadas e recebidas pelo WhatsApp conectado da oficina aparecem aqui com a placa do veículo.</span>
                             </div>
-                        ` : chats.map(c => `
-                            <div class="ws-msg-client-card" data-search="${((c.client_name || '') + ' ' + (c.vehicle_plate || '') + ' ' + (c.last_message || '')).toLowerCase()}">
-                                <div class="ws-msg-card-header">
-                                    <div class="ws-msg-card-names">
-                                        <h4 class="ws-msg-client-title">
-                                            <span>${c.client_name || c.phone_number}</span>
-                                            ${c.vehicle_plate ? `<span class="ws-msg-plate-pill">${c.vehicle_plate}</span>` : ''}
-                                        </h4>
-                                        <div class="ws-msg-vehicle-sub">${c.vehicle_model || c.phone_number}</div>
+                        ` : chats.map(c => {
+                            const digits = String(c.phone_number || '').replace(/\D/g, '');
+                            const fallback = plateByPhoneSuffix.get(digits.slice(-8)) || {};
+                            const plate = c.vehicle_plate || fallback.plate || '';
+                            const model = c.vehicle_model || fallback.model || c.display_phone || c.phone_number;
+                            const clientName = c.client_name || fallback.name || c.display_phone || c.phone_number;
+                            const safeName = String(clientName).replace(/'/g, "\\'");
+                            const safePhone = String(c.phone_number || '').replace(/'/g, "\\'");
+                            const safePlate = String(plate || 'SEM PLACA').replace(/'/g, "\\'");
+                            const safeModel = String(model || 'Veículo').replace(/'/g, "\\'");
+                            const encodedMsg = encodeURIComponent(c.last_message || 'Olá, como posso ajudar?');
+                            const timeLabel = c.last_message_at || c.last_timestamp ? String(c.last_message_at || c.last_timestamp).slice(11, 16) : '';
+                            return `
+                                <div class="ws-msg-client-card" style="cursor:pointer;" data-search="${(clientName + ' ' + plate + ' ' + model + ' ' + (c.last_message || '')).toLowerCase()}" onclick="WorkshopView.openMobileChatModal('${safeName}', '${safePhone}', '${safePlate}', '${safeModel}', 'Agendamento', '${encodedMsg}')">
+                                    <div class="ws-msg-card-header">
+                                        <div class="ws-msg-card-names">
+                                            <h4 class="ws-msg-client-title">
+                                                <span>${clientName}</span>
+                                                <span class="ws-msg-plate-pill">${plate || 'SEM PLACA'}</span>
+                                            </h4>
+                                            <div class="ws-msg-vehicle-sub">${model}</div>
+                                        </div>
+                                        <span class="ws-msg-time-badge">${timeLabel}</span>
                                     </div>
-                                    <span class="ws-msg-time-badge">${c.last_timestamp ? String(c.last_timestamp).slice(11, 16) : ''}</span>
+                                    <div class="ws-msg-preview-bubble">
+                                        <span class="ws-msg-bubble-icon">💬</span>
+                                        <span class="ws-msg-text-preview">${c.last_message || ''}</span>
+                                    </div>
                                 </div>
-                                <div class="ws-msg-preview-bubble">
-                                    <span class="ws-msg-bubble-icon">💬</span>
-                                    <span class="ws-msg-text-preview">${c.last_message || ''}</span>
-                                </div>
-                            </div>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             </div>
@@ -2308,7 +2470,7 @@
             modal.classList.add('active');
         }
 
-        const cleanPhone = (phone || '11998765432').replace(/D/g, '');
+        const cleanPhone = (phone || '11998765432').replace(/\D/g, '');
         const lastMsg = decodeURIComponent(encodedMsg || 'Olá, como posso ajudar?');
 
         modal.innerHTML = `
@@ -3305,7 +3467,7 @@
                             <div class="dna-vehicle-preview-info" style="flex:1;">
                                 <div class="dna-vehicle-preview-title" id="mobile-reg-veh-model">${hasVehicleData ? `${v.brand || ''} ${v.model || ''}`.trim() : 'Aguardando consulta da placa...'}</div>
                                 <div class="dna-vehicle-preview-meta" id="mobile-reg-veh-meta">${v.license_plate ? `${v.license_plate} • ${v.year || '2022'} • ${v.color || 'Prata'}${v.fuel_type ? ' • ' + v.fuel_type : ''}` : 'Marca, modelo, ano, cor e Tabela FIPE aparecerão aqui'}</div>
-                                <div class="dna-vehicle-preview-owner" id="mobile-reg-veh-owner" style="color:#10B981; font-weight:700;">${v.fipe_value ? `Tabela FIPE: ${v.fipe_value}` : (hasVehicleData ? `✓ Veículo identificado para a placa ${plate}` : 'Passaporte Digital DNA AUTO pronto para ativação')}</div>
+                                <div class="dna-vehicle-preview-owner" id="mobile-reg-veh-owner" style="color:#10B981; font-weight:700;">${v.fipe_value ? `Tabela FIPE: ${v.fipe_value}` : (hasVehicleData ? `✓ Veículo identificado para a placa ${plate}` : 'Pronto para ativação na plataforma DNA AUTO')}</div>
                             </div>
                         </div>
 
@@ -4604,122 +4766,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
         }
     };
 
-    // TELA 7: MANUTENÇÃO DOS VEÍCULOS (SEÇÃO 10 DO PROMPT)
-    // ──────────────────────────────────────────────────────────────────────────
-    WorkshopView.renderMobileMaintenanceVehiclesView = function() {
-        const filter = this.mobileMaintFilter || 'problemas';
-        let savedContacts = [];
-        try {
-            const raw = localStorage.getItem('dna_monitoring_contacts');
-            if (raw) savedContacts = JSON.parse(raw);
-        } catch (_) {}
-        const contactMap = {};
-        savedContacts.forEach(c => {
-            if (!contactMap[c.vehicle_plate]) contactMap[c.vehicle_plate] = c;
-        }); // 'problemas' | 'preventiva' | 'normais' | 'todos'
-
-        // Lista de veículos monitorados com alertas OBD e preventivos
-        const vehicles = [];
-
-        const filtered = vehicles.filter(v => {
-            if (filter === 'problemas') return v.status_type === 'PROBLEM';
-            if (filter === 'preventiva') return v.status_type === 'UPCOMING';
-            if (filter === 'normais') return v.status_type === 'NORMAL';
-            return true;
-        });
-
-        const probCount = vehicles.filter(v => v.status_type === 'PROBLEM').length;
-        const upcCount = vehicles.filter(v => v.status_type === 'UPCOMING').length;
-        const normCount = vehicles.filter(v => v.status_type === 'NORMAL').length;
-
-        return `
-            <div class="dna-mobile-subpage">
-                <div class="dna-mobile-subpage-header">
-                    <button class="dna-mobile-back-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                        <span>‹</span> <span>Voltar</span>
-                    </button>
-                    <span class="dna-mobile-subpage-title">Alerta de Manutenção</span>
-                </div>
-
-                <div class="dna-mobile-subpage-body">
-                    <!-- Banner Informativo -->
-                    <div style="background:linear-gradient(135deg, rgba(239,68,68,0.12), rgba(245,158,11,0.08)); border:1px solid rgba(239,68,68,0.3); border-radius:12px; padding:12px 14px; margin-bottom:12px;">
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="font-size:20px;">🛠️</span>
-                            <div>
-                                <strong style="color:#FFFFFF; font-size:13.5px; display:block;">Alerta de Manutenção dos Veículos</strong>
-                                <span style="font-size:11px; color:#94A3B8;">Comunique clientes leigos diretamente pelo WhatsApp com mensagem pré-preenchida</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Abas de Segmentação -->
-                    <div class="dna-segmented-control" style="margin-bottom:12px; display:grid; grid-template-columns:repeat(3, 1fr); gap:4px;">
-                        <button class="dna-segment-btn ${filter === 'problemas' ? 'active' : ''}" onclick="WorkshopView.setMobileMaintFilter('problemas')" style="${filter === 'problemas' ? 'background:#EF4444; color:#fff;' : ''}">
-                            🔴 Problemas (${probCount})
-                        </button>
-                        <button class="dna-segment-btn ${filter === 'preventiva' ? 'active' : ''}" onclick="WorkshopView.setMobileMaintFilter('preventiva')" style="${filter === 'preventiva' ? 'background:#F59E0B; color:#000;' : ''}">
-                            🟡 Preventiva (${upcCount})
-                        </button>
-                        <button class="dna-segment-btn ${filter === 'normais' ? 'active' : ''}" onclick="WorkshopView.setMobileMaintFilter('normais')" style="${filter === 'normais' ? 'background:#10B981; color:#fff;' : ''}">
-                            🟢 Normais (${normCount})
-                        </button>
-                    </div>
-
-                    <!-- Lista de Cards de Veículos -->
-                    <div style="display:flex; flex-direction:column; gap:12px;">
-                        ${filtered.map(item => `
-                            <div class="dna-mobile-row-card" style="flex-direction:column; align-items:stretch; gap:10px; border-left:4px solid ${item.status_color}; background:#0B132B;">
-                                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:8px;">
-                                    <div>
-                                        <div style="font-size:15px; font-weight:800; color:#FFFFFF;">${item.client_name}</div>
-                                        <div style="font-size:12px; color:#94A3B8; margin-top:2px;">
-                                            ${item.vehicle_model} • <strong style="color:#00D4FF; font-family:monospace;">${item.license_plate}</strong>
-                                        </div>
-                                        <div style="font-size:11.5px; color:#64748B; margin-top:2px;">
-                                            Quilometragem: <strong style="color:#F1F5F9;">${item.current_km}</strong>
-                                        </div>
-                                    </div>
-                                    <span class="dna-status-pill" style="background:${item.status_color}22; color:${item.status_color}; border:1px solid ${item.status_color}55; font-size:10.5px; font-weight:800; white-space:nowrap;">
-                                        ${item.status_badge}
-                                    </span>
-                                </div>
-
-                                <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:10px 12px; font-size:12px;">
-                                    <strong style="color:${item.status_color}; display:block; margin-bottom:2px;">${item.issue_title}</strong>
-                                    <div style="color:#CBD5E1; line-height:1.35;">${item.issue_desc}</div>
-                                    <div style="margin-top:6px; font-size:10.5px; color:#64748B; font-family:monospace;">
-                                        Detalhe técnico: ${item.tech_code}
-                                    </div>
-                                </div>
-
-                                <div id="contact-badge-mobile-${item.license_plate}" style="${contactMap[item.license_plate] ? 'display:block;' : 'display:none;'} font-size:11px; color:#10B981; font-weight:700; padding:6px 10px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.25); border-radius:6px;">
-                                    ✅ Cliente comunicado via WhatsApp ${contactMap[item.license_plate] ? 'em ' + contactMap[item.license_plate].contact_timestamp : ''}
-                                </div>
-
-                                <div style="display:flex; gap:8px; margin-top:2px;">
-                                    <button class="dna-whatsapp-btn" style="flex:1; justify-content:center; padding:10px; font-size:12.5px;" onclick="WorkshopView.openClientMonitoringWhatsAppModal('${item.client_name}', '${item.client_phone}', '${item.license_plate}', '${item.vehicle_model}', '${item.issue_title}', '${item.status_type}', '${encodeURIComponent(item.default_msg)}')">
-                                        <span>💬</span> <span>Enviar WhatsApp</span>
-                                    </button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <div style="margin-top:16px; text-align:center;">
-                        <button type="button" class="dna-mobile-back-to-cards-btn" onclick="WorkshopView.switchMobileSection('dashboard')">
-                            <span>‹</span> <span>Voltar para Todos os Cards</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    };
-
-    WorkshopView.setMobileMaintFilter = function(filter) {
-        this.mobileMaintFilter = filter;
-        this.switchMobileSection('manutencao-veiculos');
-    };
+    // (A definição oficial de renderMobileMaintenanceVehiclesView está na TELA 8 acima, conectada ao dueQueue real)
 
     WorkshopView.handleMobileDirectServiceLaunch = function(plate, serviceName) {
         const v = this.findVehicleByPlate(plate);
@@ -5472,9 +5519,11 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
             return 'R$ ' + num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         };
 
+        const registeredVehicles = Array.isArray(data.registered_vehicles) ? data.registered_vehicles : [];
         const totalActivations = fin.passports_activated_count !== undefined ? fin.passports_activated_count : (fin.total_activations || 0);
-        const grossParticipation = fin.commission_generated_cents !== undefined ? (fin.commission_generated_cents / 100) : (fin.workshop_gross_brl || (totalActivations * 29.95));
-        const dnaSplitTotal = fin.platform_share_cents !== undefined ? (fin.platform_share_cents / 100) : (fin.dna_auto_fee_brl || (totalActivations * 29.95));
+        const registeredCount = fin.registered_vehicles_count !== undefined ? fin.registered_vehicles_count : Math.max(registeredVehicles.length, totalActivations);
+        const grossParticipation = fin.commission_generated_cents !== undefined ? (fin.commission_generated_cents / 100) : (fin.workshop_gross_brl || (totalActivations * 24.95));
+        const dnaSplitTotal = fin.platform_share_cents !== undefined ? (fin.platform_share_cents / 100) : (fin.dna_auto_fee_brl || (totalActivations * 24.95));
         const serviceRev = fin.mechanical_total_revenue_cents !== undefined ? (fin.mechanical_total_revenue_cents / 100) : (fin.service_revenue_brl || 0);
         const pendingDebt = fin.pending_obligation_to_dna_cents !== undefined ? (fin.pending_obligation_to_dna_cents / 100) : (fin.pending_obligations_brl || 0);
         const paidDebt = fin.commissions_received_cents !== undefined ? (fin.commissions_received_cents / 100) : (fin.paid_obligations_brl || 0);
@@ -5518,15 +5567,24 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                             </div>
                         </div>
 
-                        <!-- 3 CARDS GRANDES DE RESUMO -->
-                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:14px;">
+                        <!-- 4 CARDS DE RESUMO -->
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap:10px; margin-top:14px;">
+                            <!-- Card 0: Carros Já Cadastrados -->
+                            <div style="background:rgba(2,6,23,0.6); border:1px solid rgba(16,185,129,0.28); border-radius:12px; padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
+                                <div>
+                                    <span style="font-size:11px; font-weight:700; color:#94A3B8; display:block; margin-bottom:4px;">Carros Cadastrados</span>
+                                    <div style="font-size:19px; font-weight:900; color:#34D399; letter-spacing:-0.5px;">${registeredCount} veículo(s)</div>
+                                </div>
+                                <span style="font-size:10.5px; color:#64748B; margin-top:6px;">Monitorados pelo sistema</span>
+                            </div>
+
                             <!-- Card 1: Ganhos com Ativações -->
                             <div style="background:rgba(2,6,23,0.6); border:1px solid rgba(0,212,255,0.2); border-radius:12px; padding:12px; display:flex; flex-direction:column; justify-content:space-between;">
                                 <div>
                                     <span style="font-size:11px; font-weight:700; color:#94A3B8; display:block; margin-bottom:4px;">Ganhos Ativações</span>
                                     <div style="font-size:19px; font-weight:900; color:#38BDF8; letter-spacing:-0.5px;">${formatBRL(grossParticipation)}</div>
                                 </div>
-                                <span style="font-size:10.5px; color:#64748B; margin-top:6px;">R$ 29,95 por passaporte</span>
+                                <span style="font-size:10.5px; color:#64748B; margin-top:6px;">50% de R$ 49,90 (R$ 24,95/carro)</span>
                             </div>
 
                             <!-- Card 2: Serviços Mecânicos -->
@@ -5549,36 +5607,54 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                         </div>
                     </div>
 
-                    <!-- BLOCO 2: PARTICIPAÇÃO EM ATIVAÇÕES DE PASSAPORTES (COMISSÃO R$ 29,95) -->
+                    <!-- BLOCO 2: CARROS CADASTRADOS E GANHO POR ATIVAÇÃO (50% DE R$ 49,90 = R$ 24,95) -->
                     <div style="background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 18px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
                         <span style="font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:#38BDF8;">BLOCO 2: PARTICIPAÇÃO EM ATIVAÇÕES</span>
-                        <h4 style="font-size:16px; font-weight:800; color:#fff; margin:4px 0 12px 0;">Passaporte Digital DNA AUTO</h4>
+                        <h4 style="font-size:16px; font-weight:800; color:#fff; margin:4px 0 12px 0;">Carros Cadastrados & Ganho por Ativação</h4>
 
                         <div style="background:rgba(2,6,23,0.5); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:14px; margin-bottom:12px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
-                                <span style="color:#94A3B8;">Passaportes ativados no período:</span>
-                                <strong style="color:#fff; font-size:15px;">${totalActivations} veículos</strong>
+                                <span style="color:#94A3B8;">Carros já cadastrados pela oficina:</span>
+                                <strong style="color:#34D399; font-size:15px;">${registeredCount} veículo(s)</strong>
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
-                                <span style="color:#94A3B8;">Preço oficial ao motorista:</span>
-                                <strong style="color:#E2E8F0;">R$ 59,90 cada</strong>
+                                <span style="color:#94A3B8;">Veículos ativados no período:</span>
+                                <strong style="color:#fff; font-size:15px;">${totalActivations} veículo(s)</strong>
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
-                                <span style="color:#94A3B8;">Sua comissão por ativação:</span>
-                                <strong style="color:#38BDF8;">R$ 29,95 (50%)</strong>
+                                <span style="color:#94A3B8;">Valor cheio de ativação na plataforma:</span>
+                                <strong style="color:#E2E8F0;">R$ 49,90 cada</strong>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
+                                <span style="color:#94A3B8;">Ganho da oficina por carro ativado (50%):</span>
+                                <strong style="color:#38BDF8;">R$ 24,95 (50% de R$ 49,90)</strong>
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:13px;">
-                                <span style="color:#94A3B8;">Participação DNA AUTO:</span>
-                                <span style="color:#64748B;">R$ 29,95 (retido no checkout)</span>
+                                <span style="color:#94A3B8;">Participação DNA AUTO (50%):</span>
+                                <span style="color:#64748B;">R$ 24,95 (retido automaticamente)</span>
                             </div>
                             <div style="border-top:1px dashed rgba(255,255,255,0.1); padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
-                                <span style="font-weight:700; color:#F8FAFC; font-size:13.5px;">Total Bruto de Participação:</span>
+                                <span style="font-weight:700; color:#F8FAFC; font-size:13.5px;">Total de Ganho nas Ativações:</span>
                                 <span style="font-size:18px; font-weight:900; color:#38BDF8;">${formatBRL(grossParticipation)}</span>
                             </div>
                         </div>
 
-                        <div style="background:rgba(56,189,248,0.06); border-left:3px solid #38BDF8; border-radius:4px 8px 8px 4px; padding:8px 12px; font-size:11px; color:#94A3B8; line-height:1.4;">
-                            * A taxa da DNA AUTO de R$ 29,95 é retida automaticamente no processamento do pagamento. O valor exibido acima é sua participação bruta antes de tributos.
+                        ${registeredVehicles.length > 0 ? `
+                            <div style="background:rgba(2,6,23,0.45); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:10px 12px; margin-bottom:10px;">
+                                <div style="font-size:11px; font-weight:800; color:#94A3B8; text-transform:uppercase; margin-bottom:6px;">Últimos Veículos Cadastrados (${registeredVehicles.length})</div>
+                                <div style="display:flex; flex-direction:column; gap:5px;">
+                                    ${registeredVehicles.slice(0, 5).map(rv => `
+                                        <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; color:#e2e8f0;">
+                                            <span><strong style="color:#38BDF8; font-family:monospace;">${rv.license_plate}</strong> • ${rv.brand || ''} ${rv.model || 'Veículo'}</span>
+                                            <span style="color:#34D399; font-weight:700;">Ativado (R$ 24,95)</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div style="background:rgba(56,189,248,0.06); border-left:3px solid #38BDF8; border-radius:4px 8px 8px 4px; padding:8px 12px; font-size:11px; color:#94A3B8; line-height:1.45;">
+                            * Para cada veículo ativado na plataforma DNA AUTO (valor cheio de R$ 49,90), a oficina recebe 50% (R$ 24,95) de ganho de ativação.
                         </div>
                     </div>
 
@@ -5615,12 +5691,15 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                                 ${pendingDebt > 0 ? 'PENDENTE' : 'EM DIA'}
                             </span>
                         </div>
-                        <h4 style="font-size:16px; font-weight:800; color:#fff; margin:0 0 12px 0;">Taxas de Atendimento Concluído</h4>
+                        <h4 style="font-size:16px; font-weight:800; color:#fff; margin:0 0 12px 0;">Taxa Fixa por Retorno Confirmado (R$ 6,90)</h4>
 
                         <div style="background:rgba(2,6,23,0.5); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:14px; margin-bottom:12px;">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
-                                <span style="color:#94A3B8;">Taxa por atendimento concluído:</span>
-                                <strong style="color:#E2E8F0;">R$ 6,90 / atendimento</strong>
+                                <span style="color:#94A3B8;">Taxa fixa por volta confirmada:</span>
+                                <strong style="color:#E2E8F0;">R$ 6,90 / retorno de veículo</strong>
+                            </div>
+                            <div style="background:rgba(56,189,248,0.08); border-left:3px solid #38BDF8; border-radius:6px; padding:8px 10px; font-size:11.5px; color:#cbd5e1; line-height:1.45; margin-bottom:10px;">
+                                📌 <strong>Regra transparente:</strong> Quando o proprietário de um carro cadastrado é convidado a retornar à oficina e <strong>confirma o retorno</strong>, é cobrada apenas <strong>R$ 6,90</strong> pelo retorno daquele veículo — <strong>independente do valor do serviço</strong>. Ex: se o serviço for de <strong>R$ 1.000,00</strong>, a taxa continua sendo apenas <strong>R$ 6,90</strong>.
                             </div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px;">
                                 <span style="color:#94A3B8;">Taxas já quitadas no mês:</span>
@@ -5751,7 +5830,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
 
                             <div id="dna-challenge-accordion-content" style="display:none; margin-top:12px; font-size:12px; color:#CBD5E1; line-height:1.5;">
                                 <ol style="margin:0; padding-left:18px; display:flex; flex-direction:column; gap:8px;">
-                                    <li><strong>Cadastre e ative passaportes:</strong> A cada carro recebido, ative o Passaporte Digital DNA AUTO.</li>
+                                    <li><strong>Cadastre e ative veículos:</strong> A cada carro recebido, ative o veículo na plataforma DNA AUTO.</li>
                                     <li><strong>Bata a meta de 100:</strong> Ao atingir 100 ativações pagas no mês civil, sua oficina entra automaticamente na disputa oficial de prêmios.</li>
                                     <li><strong>Dispute o pódio nacional:</strong> As 3 oficinas com maior volume no mês ganham R$ 10.000 (1º), R$ 5.000 (2º) e R$ 3.000 (3º).</li>
                                     <li><strong>Acompanhe em tempo real:</strong> A classificação exibida durante o mês é provisória e atualizada a cada ativação confirmada.</li>
@@ -5796,11 +5875,11 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                             `).join('') : `
                                 <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:rgba(2,6,23,0.5); border:1px solid rgba(255,255,255,0.04); border-radius:8px; font-size:12px;">
                                     <div>
-                                        <div style="font-weight:700; color:#F1F5F9;">Ativação Passaporte Digital</div>
-                                        <div style="font-size:10.5px; color:#64748B;">Comissão creditada à oficina</div>
+                                        <div style="font-weight:700; color:#F1F5F9;">Ativação de Veículo na Plataforma</div>
+                                        <div style="font-size:10.5px; color:#64748B;">50% de R$ 49,90 creditado à oficina</div>
                                     </div>
                                     <div style="text-align:right;">
-                                        <div style="font-weight:800; color:#4ADE80;">+R$ 29,95</div>
+                                        <div style="font-weight:800; color:#4ADE80;">+R$ 24,95</div>
                                     </div>
                                 </div>
                             `}

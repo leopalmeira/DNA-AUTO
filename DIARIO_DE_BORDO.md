@@ -1,3 +1,21 @@
+### Ciclo 132 — Refinamento de `Agendamentos Automáticos`, Separação da Fila de `Manutenção`, Conversas c/ Placa Garantida e Regra Financeira Oficial (`R$ 49,90` / `50% R$ 24,95` / `R$ 6,90`) (`v2.5.1`)
+- **Data:** 12/11/2026
+- **Responsáveis:** `@[frontend-specialist]` + `@[backend-specialist]` + `@[test-engineer]`
+- **Contexto & Demandas Atendidas:**
+  1. **Card `Agendamentos Automáticos` (ex-`Avisos WhatsApp`):**
+     - Renomeação oficial do card e cabeçalho para **Agendamentos Automáticos** em `workshopMobileView.js` (sincronizado com `public/`).
+     - Banner explicativo detalhando o fluxo autônomo completo: monitoramento contínuo de 100% dos carros cadastrados na oficina, disparo às 10h00, pré-confirmação antecipada direto no app antes das 17h00 (`PATCH /api/v1/workshops/:id/appointments/:appointmentId/confirm` e `POST /api/v1/workshops/:id/maintenance-bot/confirm-campaign`) e envio diário às 17h00 do PDF com placa, proprietário e horário dos confirmados para o próximo dia no WhatsApp da oficina.
+     - Exibição imediata dos veículos confirmados (`botAppointments`) na área principal de **Agendamentos Automáticos** mesmo quando `botCampaigns` está vazio.
+     - Aba **Conversas** enriquecida no backend (`baileys.service.js` -> `getChatConversations`) e frontend por sufixo de telefone para garantir exibição da placa em cada conversa, card clicável abrindo `openMobileChatModal`, correção de regex `/\D/g` na linha do chat modal e estilização completa da caixa `.ws-model-search-bar` em `workshop-mobile.css`.
+  2. **Card `Manutenção` Sem Redundância (`dueQueue`):**
+     - Removida definição duplicada legada de `renderMobileMaintenanceVehiclesView` (que exibia "Alerta de Manutenção dos Veículos" vazio); consolidada fila dinâmica `dueQueue` em `GET /api/v1/workshops/:id/maintenance-bot/campaigns` mostrando exclusivamente veículos **próximos de agendar** e **vencidos sem confirmação**.
+  3. **Regra Financeira Oficial (`R$ 49,90` / `R$ 24,95` / `R$ 6,90`) e Remoção de "Passaporte Digital" (`workshops.routes.js`, `abacatePay.service.js`, `seed.js`, `workshopMobileView.js`):**
+     - Atualizado cálculo e exibição para valor cheio **R$ 49,90** e ganho de ativação de **50% (R$ 24,95 por carro ativado na plataforma)**, além de listagem e contador de **Carros Cadastrados** (`registered_vehicles_count` e `registered_vehicles`) no `/financial-summary` e Bloco 1/2 do Financeiro.
+     - Removidas referências textuais a "Passaporte Digital" no Financeiro/cadastro e adicionada explicação explícita da **taxa fixa de R$ 6,90 por retorno confirmado** independente do valor do serviço (ex.: em serviço de R$ 1.000,00, a taxa continua sendo apenas R$ 6,90).
+  4. **Testes & Versionamento (`v2.5.1`):**
+     - Atualizados `test/api.test.js`, `test/oficina.finance.test.js`, `test/oficina.integration.test.js` e `test/maintenance_bot_and_cards.test.js` (cobrindo pré-confirmação, fila de manutenção, placa em conversas, ausência de `Passaporte Digital`/`29,95` e cálculo `49,90 / 24,95 / 6,90`).
+     - Versionamento incrementado para `2.5.1` (`server.js`, `oficina.app/index.html`, `public/oficina.html`, `sw.js`).
+
 ### Ciclo 131 — Bot Autônomo de Manutenção Preventiva (10h/17h), PDF Diário (`pdfkit`), Portal de Tickets, Correção de `Lançar Serviços` sem Carro Pré-selecionado e Healthcheck com Versão/Commit (`v2.5.0`)
 - **Data:** 12/11/2026
 - **Responsáveis:** `@[backend-specialist]` + `@[frontend-specialist]` + `@[test-engineer]`

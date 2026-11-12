@@ -457,6 +457,18 @@ const API = {
             body: JSON.stringify({ phone, message })
         });
     },
+    confirmWorkshopAppointment(workshopId, appointmentId) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/appointments/${encodeURIComponent(appointmentId)}/confirm`, {
+            method: 'PATCH',
+            body: JSON.stringify({})
+        });
+    },
+    confirmMaintenanceCampaign(workshopId, campaignId, payload = {}) {
+        return this.request(`/workshops/${encodeURIComponent(workshopId)}/maintenance-bot/confirm-campaign`, {
+            method: 'POST',
+            body: JSON.stringify({ campaign_id: campaignId, ...payload })
+        });
+    },
     getWorkshopSupportTickets(workshopId) {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/support-tickets`);
     },

@@ -391,11 +391,34 @@ class BaileysWorkshopService {
             ORDER BY c.created_at DESC
         `).all(workshopId, workshopId);
 
-        return rows.map(r => ({
-            ...r,
-            display_phone: this.formatDisplayPhone(r.phone_number),
-            unread_count: Number(r.unread_count) || 0
-        }));
+        const campPlates = db.prepare(`SELECT owner_phone, license_plate, vehicle_model, owner_name FROM maintenance_bot_campaigns WHERE workshop_id = ?`).all(workshopId);
+        const appPlates = db.prepare(`SELECT owner_phone, license_plate, vehicle_model, owner_name FROM workshop_appointments WHERE workshop_id = ?`).all(workshopId);
+        const plateByPhoneSuffix = new Map();
+        [...appPlates, ...campPlates].forEach((entry) => {
+            const digits = String(entry.owner_phone || '').replace(/\D/g, '');
+            const suffix = digits.slice(-8);
+            if (suffix.length >= 8 && entry.license_plate) {
+                plateByPhoneSuffix.set(suffix, {
+                    license_plate: entry.license_plate,
+                    vehicle_model: entry.vehicle_model || '',
+                    owner_name: entry.owner_name || ''
+                });
+            }
+        });
+
+        return rows.map(r => {
+            const digits = String(r.phone_number || '').replace(/\D/g, '');
+            const suffix = digits.slice(-8);
+            const fallback = (!r.vehicle_plate && suffix.length >= 8) ? plateByPhoneSuffix.get(suffix) : null;
+            return {
+                ...r,
+                client_name: r.client_name || (fallback && fallback.owner_name) || r.client_name,
+                vehicle_plate: r.vehicle_plate || (fallback && fallback.license_plate) || '',
+                vehicle_model: r.vehicle_model || (fallback && fallback.vehicle_model) || '',
+                display_phone: this.formatDisplayPhone(r.phone_number),
+                unread_count: Number(r.unread_count) || 0
+            };
+        });
     }
 
     getChatMessages(workshopId, phoneNumber) {

@@ -270,17 +270,17 @@ async function run20StepIntegrationTest() {
         console.log(`✅ [Passo 5] DNA ativado com sucesso: ${passportCode}`);
 
         // -------------------------------------------------------------
-        // PASSO 6: Verificação do modelo financeiro (Split R$ 29,95 / R$ 29,95)
+        // PASSO 6: Verificação do modelo financeiro (Split R$ 24,95 / R$ 24,95 — 50% de R$ 49,90)
         // -------------------------------------------------------------
-        console.log('\n[Passo 6] Verificação do modelo financeiro de ativação (R$ 59,90 = R$ 29,95 + R$ 29,95)...');
+        console.log('\n[Passo 6] Verificação do modelo financeiro de ativação (R$ 49,90 = R$ 24,95 + R$ 24,95)...');
         const dnaAct = db.prepare('SELECT * FROM dna_activations WHERE vehicle_dna_id = ?').get(activateDnaData.dna_id || passportCode)
             || db.prepare('SELECT da.* FROM dna_activations da JOIN vehicle_dna vd ON da.vehicle_dna_id = vd.id WHERE vd.dna_code = ?').get(passportCode);
         assert.ok(dnaAct, 'Registro comercial de ativação presente no banco');
-        assert.equal(dnaAct.amount_paid_cents, 5990, 'Cobrança do passaporte é exatamente R$ 59,90 (5990 centavos)');
-        assert.equal(dnaAct.commission_amount_cents, 2995, 'Repasse da oficina é exatamente R$ 29,95 (2995 centavos)');
+        assert.equal(dnaAct.amount_paid_cents, 4990, 'Cobrança da ativação é exatamente R$ 49,90 (4990 centavos)');
+        assert.equal(dnaAct.commission_amount_cents, 2495, 'Repasse da oficina é exatamente R$ 24,95 (2495 centavos)');
         const retainedSplit = dnaAct.amount_paid_cents - dnaAct.commission_amount_cents;
-        assert.equal(retainedSplit, 2995, 'Retenção da DNA AUTO é exatamente R$ 29,95 (2995 centavos)');
-        console.log('✅ [Passo 6] Modelo financeiro de ativação validado: R$ 29,95 Oficina / R$ 29,95 Plataforma');
+        assert.equal(retainedSplit, 2495, 'Retenção da DNA AUTO é exatamente R$ 24,95 (2495 centavos)');
+        console.log('✅ [Passo 6] Modelo financeiro de ativação validado: R$ 24,95 Oficina / R$ 24,95 Plataforma');
 
         // -------------------------------------------------------------
         // PASSO 7: Navegação para a tela "Lançar Serviços"

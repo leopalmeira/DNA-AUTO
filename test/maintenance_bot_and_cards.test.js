@@ -303,12 +303,80 @@ async function runTests() {
         assert.ok(supportHtml.includes(tktCreateData.ticket.protocol), 'Card Suporte deve listar protocolo do ticket');
         assert.ok(!supportHtml.includes('wa.me') && !supportHtml.includes('/admin'), 'Card Suporte não deve conter links /admin ou wa.me');
 
-        WorkshopView.botCampaigns = campApiData.campaigns;
+        const dashHtml = WorkshopView.renderMobileDashboardView();
+        assert.ok(dashHtml.includes('Agendamentos Automáticos'), 'Dashboard deve exibir card renomeado para Agendamentos Automáticos');
+        assert.ok(!dashHtml.includes('<h3>Avisos WhatsApp</h3>'), 'Dashboard não deve mais exibir título antigo Avisos WhatsApp');
+        assert.ok(dashHtml.includes('Próximos de agendar e vencidos'), 'Card Manutenção deve exibir subtítulo sem redundância');
+
+        // Validar Card Manutenção (dueQueue: próximos de agendar + vencidos sem confirmação)
+        WorkshopView.botDueQueue = [
+            {
+                vehicle_id: 'veh_corolla_xei',
+                license_plate: 'ABC1D23',
+                vehicle_model: 'Toyota Corolla',
+                owner_name: 'Mariana Souza',
+                current_km: 58500,
+                item_name: 'Troca de Óleo do Motor',
+                remaining_km: 1500,
+                is_overdue: false,
+                queue_group: 'proximos',
+                campaign_status: 'UNNOTIFIED'
+            }
+        ];
+        const maintHtml = WorkshopView.renderMobileMaintenanceVehiclesView();
+        assert.ok(maintHtml.includes('ABC1D23') && /Faltam 1\.?500 km/.test(maintHtml), 'Card Manutenção deve exibir veículos reais próximos/vencidos s/ confirmação');
+
+        // Validar Agendamentos Automáticos com botCampaigns vazio exibindo veículos confirmados e Conversas com placa
+        WorkshopView.botCampaigns = [];
         WorkshopView.botAppointments = campApiData.appointments;
+        WorkshopView.whatsappConversations = [
+            {
+                phone_number: '5511991112233',
+                client_name: 'Carlos Bot',
+                vehicle_plate: '',
+                vehicle_model: '',
+                last_message: '1 às 10h',
+                last_message_at: '2026-11-12T10:15:00.000Z'
+            }
+        ];
         const wppHtml = WorkshopView.renderMobileWhatsAppView();
-        assert.ok(wppHtml.includes('Agente Automático WhatsApp'), 'Card Avisos WhatsApp deve exibir agente automático');
-        assert.ok(wppHtml.includes('BRA2E19'), 'Card Avisos WhatsApp deve exibir veículos reais notificados/agendados');
-        console.log('✅ T5. Rotas REST, Tickets Admin/Oficina e 3 cards mobile da oficina validados com 100% de êxito.');
+        assert.ok(wppHtml.includes('Agendamentos Automáticos (Monitoramento Contínuo)'), 'Tela deve explicar claramente monitoramento contínuo, 10h e PDF 17h');
+        assert.ok(wppHtml.includes('BRA2E19'), 'Mesmo sem campanhas pendentes, veículos confirmados devem aparecer na tela principal no lugar do vazio');
+        assert.ok(!wppHtml.includes('Nenhum veículo notificado ou confirmado ainda'), 'Não deve mostrar estado vazio quando houver veículo confirmado');
+        assert.ok(wppHtml.includes('openMobileChatModal'), 'Card de conversa deve ser clicável para abrir chat');
+
+        // Testar rota de pré-confirmação antes das 17h
+        const firstAppId = campApiData.appointments[0].id;
+        const preConfirmRes = await fetch(`${BASE_URL}/workshops/${wsId}/appointments/${firstAppId}/confirm`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const preConfirmData = await preConfirmRes.json();
+        assert.equal(preConfirmRes.status, 200);
+        assert.equal(preConfirmData.appointment.status, 'CONFIRMED');
+
+        // Validar Card Financeiro (50% de R$ 49,90 = R$ 24,95, carros cadastrados, regra R$ 6,90 e sem Passaporte Digital)
+        WorkshopView.financialAuthenticated = true;
+        WorkshopView._financialCache = {
+            workshop: { id: wsId, name: 'Veloce Auto Center' },
+            registered_vehicles: [{ license_plate: 'BRA2E19', brand: 'Honda', model: 'Civic' }],
+            summary: {
+                registered_vehicles_count: 1,
+                passports_activated_count: 2,
+                commission_generated_cents: 4990,
+                platform_share_cents: 4990,
+                mechanical_total_revenue_cents: 100000,
+                pending_obligation_to_dna_cents: 690,
+                commissions_received_cents: 0
+            }
+        };
+        WorkshopView._rankingCache = { ranking: [] };
+        const finHtml = WorkshopView.renderMobileFinancialView();
+        assert.ok(finHtml.includes('Carros Cadastrados') && finHtml.includes('1 veículo(s)'), 'Financeiro deve mostrar carros cadastrados');
+        assert.ok(finHtml.includes('R$ 49,90') && finHtml.includes('R$ 24,95'), 'Financeiro deve exibir valor cheio R$ 49,90 e ganho 50% R$ 24,95');
+        assert.ok(finHtml.includes('R$ 6,90') && finHtml.includes('R$ 1.000,00'), 'Financeiro deve explicar taxa fixa R$ 6,90 independente do valor do serviço');
+        assert.ok(!finHtml.includes('Passaporte Digital') && !finHtml.includes('29,95'), 'Financeiro não deve conter referências a Passaporte Digital ou R$ 29,95');
+        console.log('✅ T5. Rotas REST, pré-confirmação, fila Manutenção, Agendamentos Automáticos e Financeiro 49,90/24,95/6,90 validados.');
 
         console.log('\n🎉 TODOS OS TESTES DO BOT DE MANUTENÇÃO, PDF DIÁRIO E CARDS PASSARAM COM 100% DE SUCESSO!');
     } finally {

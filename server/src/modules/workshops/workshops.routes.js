@@ -324,13 +324,36 @@ router.get('/:id/financial-summary', authenticateToken, (req, res) => {
         const validPassportsCount = Number(actRow.valid_count) || 0;
         const cancelledPassportsCount = Number(actRow.cancelled_count) || 0;
 
-        // Split Oficial DNA AUTO: R$ 59,90 total = R$ 29,95 Oficina + R$ 29,95 Plataforma
-        const passportPriceCents = 5990;
-        const commissionPerPassportCents = 2995;
-        const platformSharePerPassportCents = 2995;
+        // Split Oficial DNA AUTO: R$ 49,90 valor cheio = 50% Oficina (R$ 24,95) + 50% Plataforma (R$ 24,95)
+        const passportPriceCents = 4990;
+        const commissionPerPassportCents = 2495;
+        const platformSharePerPassportCents = 2495;
 
         const totalCommissionGeneratedCents = validPassportsCount * commissionPerPassportCents;
         const totalPlatformShareCents = validPassportsCount * platformSharePerPassportCents;
+
+        // Carros cadastrados vinculados à oficina
+        const registeredVehicles = db.prepare(`
+            SELECT DISTINCT
+                v.id,
+                v.license_plate,
+                v.brand,
+                v.model,
+                v.model_year,
+                vd.dna_code,
+                vd.status AS activation_status,
+                COALESCE(vd.activated_at, v.created_at) AS registered_at
+            FROM vehicles v
+            LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+            LEFT JOIN service_records sr ON sr.vehicle_id = v.id
+            LEFT JOIN workshop_appointments wa ON wa.vehicle_id = v.id OR wa.license_plate = v.license_plate
+            WHERE vd.activated_by_workshop_id = ?
+               OR sr.workshop_id = ?
+               OR wa.workshop_id = ?
+            ORDER BY registered_at DESC
+            LIMIT 100
+        `).all(workshopId, workshopId, workshopId);
+        const registeredVehiclesCount = registeredVehicles.length;
 
         // Comissões pagas e pendentes de repasse
         const commRow = db.prepare(`
@@ -405,9 +428,9 @@ router.get('/:id/financial-summary', authenticateToken, (req, res) => {
             transactions.push({
                 id: a.id,
                 date: a.date,
-                type: 'ATIVACAO_PASSAPORTE',
-                title: `Ativação DNA (${a.license_plate || 'Veículo'})`,
-                description: `${a.model || 'Carro'} - Split R$ 29,95 Oficina / R$ 29,95 Plataforma`,
+                type: 'ATIVACAO_VEICULO',
+                title: `Ativação na Plataforma (${a.license_plate || 'Veículo'})`,
+                description: `${a.model || 'Carro'} - 50% de R$ 49,90 (R$ 24,95 Oficina / R$ 24,95 Plataforma)`,
                 amount_cents: commissionPerPassportCents,
                 direction: 'CREDIT',
                 status: 'CONFIRMED'
@@ -451,6 +474,7 @@ router.get('/:id/financial-summary', authenticateToken, (req, res) => {
             },
             summary: {
                 // Bloco 1: Meu Financeiro
+                registered_vehicles_count: registeredVehiclesCount,
                 passports_activated_count: validPassportsCount,
                 cancelled_passports_count: cancelledPassportsCount,
                 commission_generated_cents: totalCommissionGeneratedCents,
@@ -482,10 +506,11 @@ router.get('/:id/financial-summary', authenticateToken, (req, res) => {
                     created_at: activePix.created_at
                 } : null
             },
+            registered_vehicles: registeredVehicles,
             accounting_clarification: {
-                rule_split: 'O passaporte DNA AUTO custa R$ 59,90 com divisão exata de R$ 29,95 para a oficina e R$ 29,95 para a DNA AUTO.',
+                rule_split: 'A ativação na plataforma DNA AUTO custa R$ 49,90 (valor cheio) com ganho de 50% para a oficina (R$ 24,95) e 50% para a DNA AUTO (R$ 24,95) por carro ativado.',
                 rule_platform_share: 'A participação da plataforma é retida diretamente no fluxo de pagamento e NÃO constitui dívida adicional da oficina.',
-                rule_commission_nature: 'A comissão de R$ 29,95 refere-se à participação bruta da oficina por passaporte ativado, antes dos custos operacionais e impostos.'
+                rule_commission_nature: 'A taxa de retorno confirmado é fixa em R$ 6,90 por veículo convidado que confirmar volta à oficina, independente do valor do serviço (ex: mesmo em serviço de R$ 1.000,00).'
             },
             recent_transactions: transactions.slice(0, 20)
         });
@@ -1700,12 +1725,12 @@ router.post('/:id/clients/register-activation', async (req, res) => {
             db.prepare(`UPDATE vehicles SET model = ?, brand = COALESCE(NULLIF(brand, 'Veículo'), ?), updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(model, brand || model.split(' ')[0], vehicle.id);
         }
 
-        // 1.5. Garante que o Veículo tenha Passaporte DNA AUTO Oficial ativo e Health Score inicial zerado
+        // 1.5. Garante que o Veículo tenha DNA AUTO Oficial ativo e Health Score inicial zerado (R$ 49,90 = 50% R$ 24,95 Oficina / 50% R$ 24,95 Plataforma)
         const activeReferral = AbacatePayService.getActiveWorkshopReferral(db, workshopId);
         const isRepProgram = Boolean(activeReferral || req.body.program_mode === 'REPRESENTATIVE' || Number(req.body.customer_price_cents) === 4990);
-        const registrationFeeCents = isRepProgram ? 4990 : 5990;
-        const workshopSplitCents = isRepProgram ? 2495 : 2995;
-        const platformSplitCents = isRepProgram ? 2495 : 2995;
+        const registrationFeeCents = 4990;
+        const workshopSplitCents = 2495;
+        const platformSplitCents = 2495;
         const activePlanId = isRepProgram ? 'plan_rep_program' : 'plan_normal';
         const isImmediatePaymentConfirmed = req.body.payment_confirmed === true || req.body.mark_as_paid === true || req.body.payment_status === 'COMPLETED' || req.body.payment_status === 'PAID';
 
@@ -2610,8 +2635,8 @@ router.delete('/:id/registrars/:registrarId', (req, res) => {
 // BOT AUTÔNOMO DE MANUTENÇÃO PREVENTIVA (10h/17h), AGENDA PDF E TICKETS DE SUPORTE
 // ==============================================================================
 
-// Listar campanhas do bot de manutenção, agendamentos confirmados e dispatches de PDF
-router.get('/:id/maintenance-bot/campaigns', (req, res) => {
+// Listar campanhas do bot de manutenção, agendamentos confirmados, fila pendente (Card Manutenção) e dispatches de PDF
+router.get('/:id/maintenance-bot/campaigns', async (req, res) => {
     try {
         const workshopId = req.params.id;
         const campaigns = db.prepare(`
@@ -2635,6 +2660,51 @@ router.get('/:id/maintenance-bot/campaigns', (req, res) => {
             LIMIT 20
         `).all(workshopId);
 
+        const confirmedPlates = new Set([
+            ...appointments
+                .filter(a => ['CONFIRMED', 'SCHEDULED'].includes(String(a.status || '').toUpperCase()))
+                .map(a => String(a.license_plate || '').toUpperCase()),
+            ...campaigns
+                .filter(c => String(c.status || '').toUpperCase() === 'CONFIRMED')
+                .map(c => String(c.license_plate || '').toUpperCase())
+        ].filter(Boolean));
+
+        const campaignByPlate = new Map();
+        campaigns.forEach(c => {
+            const p = String(c.license_plate || '').toUpperCase();
+            if (p && !campaignByPlate.has(p)) campaignByPlate.set(p, c);
+        });
+
+        let dueQueue = [];
+        try {
+            const rawDue = await maintenanceMonitor.getWorkshopVehiclesDueForMaintenance(workshopId);
+            dueQueue = rawDue
+                .filter(v => !confirmedPlates.has(String(v.license_plate || '').toUpperCase()))
+                .map(v => {
+                    const plateKey = String(v.license_plate || '').toUpperCase();
+                    const camp = campaignByPlate.get(plateKey);
+                    const isOverdue = String(v.prediction_status || '').toUpperCase() === 'VENCIDA' || Number(v.remaining_km) <= 0;
+                    return {
+                        vehicle_id: v.id,
+                        license_plate: v.license_plate,
+                        vehicle_model: `${v.brand || ''} ${v.model || ''}`.trim() || 'Veículo',
+                        owner_name: v.owner_name || 'Cliente',
+                        owner_phone: v.owner_phone || '',
+                        current_km: Number(v.current_mileage || v.current_km || 0),
+                        item_code: v.item_code,
+                        item_name: v.item_name,
+                        prediction_status: v.prediction_status,
+                        remaining_km: Number(v.remaining_km || 0),
+                        is_overdue: isOverdue,
+                        queue_group: isOverdue ? 'vencidos' : 'proximos',
+                        campaign_id: camp ? camp.id : null,
+                        campaign_status: camp ? camp.status : 'UNNOTIFIED'
+                    };
+                });
+        } catch (qErr) {
+            console.warn('Falha ao compor dueQueue do card Manutenção:', qErr.message);
+        }
+
         res.json({
             success: true,
             campaigns: campaigns.map(c => {
@@ -2643,11 +2713,102 @@ router.get('/:id/maintenance-bot/campaigns', (req, res) => {
                 return { ...c, offered_dates: offeredDates };
             }),
             appointments,
-            dispatches
+            dispatches,
+            dueQueue
         });
     } catch (err) {
         console.error('Erro ao listar campanhas do bot:', err);
         res.status(500).json({ error: 'Erro ao listar campanhas do bot de manutenção.' });
+    }
+});
+
+// Pré-confirmar agendamento diretamente no app da oficina antes das 17h
+router.patch('/:id/appointments/:appointmentId/confirm', (req, res) => {
+    try {
+        const { id: workshopId, appointmentId } = req.params;
+        const appRow = db.prepare(`SELECT * FROM workshop_appointments WHERE id = ? AND workshop_id = ?`).get(appointmentId, workshopId);
+        if (!appRow) {
+            return res.status(404).json({ error: 'Agendamento não encontrado para esta oficina.' });
+        }
+
+        db.prepare(`
+            UPDATE workshop_appointments
+            SET status = 'CONFIRMED'
+            WHERE id = ? AND workshop_id = ?
+        `).run(appointmentId, workshopId);
+
+        db.prepare(`
+            UPDATE maintenance_bot_campaigns
+            SET status = 'CONFIRMED',
+                chosen_date = COALESCE(chosen_date, ?),
+                chosen_time = COALESCE(chosen_time, ?),
+                confirmed_at = COALESCE(confirmed_at, CURRENT_TIMESTAMP),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE workshop_id = ? AND UPPER(license_plate) = UPPER(?)
+        `).run(appRow.appointment_date, appRow.appointment_time || '09:00', workshopId, appRow.license_plate);
+
+        const updated = db.prepare(`SELECT * FROM workshop_appointments WHERE id = ?`).get(appointmentId);
+        res.json({ success: true, appointment: updated });
+    } catch (err) {
+        console.error('Erro ao pré-confirmar agendamento:', err);
+        res.status(500).json({ error: 'Erro ao pré-confirmar agendamento na oficina.' });
+    }
+});
+
+// Pré-confirmar campanha pendente do bot diretamente pelo app antes das 17h
+router.post('/:id/maintenance-bot/confirm-campaign', (req, res) => {
+    try {
+        const workshopId = req.params.id;
+        const { campaign_id: campaignId, date, time } = req.body || {};
+        if (!campaignId) {
+            return res.status(400).json({ error: 'Informe campaign_id para confirmar.' });
+        }
+
+        const camp = db.prepare(`SELECT * FROM maintenance_bot_campaigns WHERE id = ? AND workshop_id = ?`).get(campaignId, workshopId);
+        if (!camp) {
+            return res.status(404).json({ error: 'Campanha não encontrada para esta oficina.' });
+        }
+
+        let offered = [];
+        try { offered = JSON.parse(camp.offered_dates_json || '[]'); } catch (_) {}
+        const chosenDate = date || (offered[0] && offered[0].date) || whatsappBotAgent.getNextWorkingDates(whatsappBotAgent.getSaoPauloNow().isoDate, 1)[0].date;
+        const chosenTime = time || '09:00';
+        const appId = camp.appointment_id || `app_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+        db.prepare(`
+            INSERT OR REPLACE INTO workshop_appointments (
+                id, workshop_id, vehicle_id, license_plate, vehicle_model, owner_name, owner_phone,
+                service_title, appointment_date, appointment_time, status, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'CONFIRMED', CURRENT_TIMESTAMP)
+        `).run(
+            appId,
+            workshopId,
+            camp.vehicle_id || null,
+            camp.license_plate,
+            camp.vehicle_model || 'Veículo',
+            camp.owner_name || 'Cliente',
+            camp.owner_phone || '',
+            camp.item_name || 'Revisão Preventiva',
+            chosenDate,
+            chosenTime
+        );
+
+        db.prepare(`
+            UPDATE maintenance_bot_campaigns
+            SET status = 'CONFIRMED',
+                chosen_date = ?,
+                chosen_time = ?,
+                appointment_id = ?,
+                confirmed_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(chosenDate, chosenTime, appId, camp.id);
+
+        const appointment = db.prepare(`SELECT * FROM workshop_appointments WHERE id = ?`).get(appId);
+        res.json({ success: true, appointment, chosenDate, chosenTime });
+    } catch (err) {
+        console.error('Erro ao confirmar campanha manualmente:', err);
+        res.status(500).json({ error: 'Erro ao confirmar campanha do bot.' });
     }
 });
 

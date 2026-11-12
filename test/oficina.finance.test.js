@@ -101,10 +101,10 @@ async function runFinance20ScenariosTest() {
         const currentMonth = new Date().toISOString().slice(0, 7); // 'YYYY-MM'
         const previousMonth = '2026-10';
 
-        // Helper para inserir ativações no dna_activations
+        // Helper para inserir ativações no dna_activations (R$ 49,90 cheio = 50% R$ 24,95 Oficina)
         const insertAct = db.prepare(`
             INSERT INTO dna_activations (id, vehicle_dna_id, workshop_id, payment_status, amount_paid_cents, commission_amount_cents, activated_at)
-            VALUES (?, ?, ?, ?, 5990, 2995, ?)
+            VALUES (?, ?, ?, ?, 4990, 2495, ?)
         `);
 
         // Helper de requisição HTTP
@@ -148,8 +148,8 @@ async function runFinance20ScenariosTest() {
             headers: { 'Authorization': `Bearer ${tokenOficinaA}` }
         });
         assert.equal(res2.body.summary.passports_activated_count, 42);
-        assert.equal(res2.body.summary.commission_generated_cents, 125790); // 42 * 2995 = 125790 centavos = R$ 1.257,90
-        assert.equal(res2.body.summary.platform_share_cents, 125790);
+        assert.equal(res2.body.summary.commission_generated_cents, 104790); // 42 * 2495 = 104790 centavos = R$ 1.047,90
+        assert.equal(res2.body.summary.platform_share_cents, 104790);
 
         const resStatus2 = await fetchApi('/workshops/ws_test_a/challenge-status', {
             headers: { 'Authorization': `Bearer ${tokenOficinaA}` }
@@ -192,7 +192,7 @@ async function runFinance20ScenariosTest() {
             headers: { 'Authorization': `Bearer ${tokenOficinaA}` }
         });
         assert.equal(res4.body.summary.passports_activated_count, 100);
-        assert.equal(res4.body.summary.commission_generated_cents, 299500); // 100 * 2995 = 299500 centavos = R$ 2.995,00
+        assert.equal(res4.body.summary.commission_generated_cents, 249500); // 100 * 2495 = 249500 centavos = R$ 2.495,00
 
         const resStatus4 = await fetchApi('/workshops/ws_test_a/challenge-status', {
             headers: { 'Authorization': `Bearer ${tokenOficinaA}` }
@@ -329,13 +329,13 @@ async function runFinance20ScenariosTest() {
         console.log('\n[Cenários 12 & 13] Registro e extrato de repasses quitados...');
         db.prepare(`
             INSERT INTO commissions (id, workshop_id, dna_activation_id, amount_cents, status)
-            VALUES ('comm_paid_1', 'ws_test_a', 'act_a_nov_1', 2995, 'PAID')
+            VALUES ('comm_paid_1', 'ws_test_a', 'act_a_nov_1', 2495, 'PAID')
         `).run();
         const resPaidComm = await fetchApi('/workshops/ws_test_a/financial-summary', {
             headers: { 'Authorization': `Bearer ${tokenOficinaA}` }
         });
-        assert.equal(resPaidComm.body.summary.commissions_received_cents, 2995);
-        console.log('✅ [Cenários 12 & 13] Aprovado: comissões pagas registradas corretamente (R$ 29,95).');
+        assert.equal(resPaidComm.body.summary.commissions_received_cents, 2495);
+        console.log('✅ [Cenários 12 & 13] Aprovado: comissões pagas registradas corretamente (R$ 24,95).');
 
         // =========================================================================
         // CENÁRIO 14: Taxa de R$ 6,90 por atendimento concluído
@@ -397,15 +397,15 @@ async function runFinance20ScenariosTest() {
         // =========================================================================
         // CENÁRIO 18: Exatidão Matemática do Split
         // =========================================================================
-        console.log('\n[Cenário 18] Exatidão matemática do Passaporte (R$ 59,90 = R$ 29,95 + R$ 29,95)...');
+        console.log('\n[Cenário 18] Exatidão matemática da Ativação (R$ 49,90 = 50% R$ 24,95 + 50% R$ 24,95)...');
         // Para 10 ativações
-        const total10 = 10 * 59.90;
-        const grossOficina10 = 10 * 29.95;
-        const feeDna10 = 10 * 29.95;
-        assert.equal(Math.round(total10 * 100), 59900);
-        assert.equal(Math.round(grossOficina10 * 100), 29950);
-        assert.equal(Math.round(feeDna10 * 100), 29950);
-        assert.equal(grossOficina10 + feeDna10, total10);
+        const total10 = 10 * 49.90;
+        const grossOficina10 = 10 * 24.95;
+        const feeDna10 = 10 * 24.95;
+        assert.equal(Math.round(total10 * 100), 49900);
+        assert.equal(Math.round(grossOficina10 * 100), 24950);
+        assert.equal(Math.round(feeDna10 * 100), 24950);
+        assert.equal(Math.round((grossOficina10 + feeDna10) * 100), Math.round(total10 * 100));
         console.log('✅ [Cenário 18] Aprovado: exatidão centesimal do split comprovada sem dízimas ou perdas.');
 
         // =========================================================================

@@ -4,12 +4,19 @@
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
 [![Testes Automatizados](https://img.shields.io/badge/Testes-100%25%20Aprovados%20(Auth%20%2B%20Oficina%20%2B%20API)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/)
-[![Oferta Oficial](https://img.shields.io/badge/Preço%20Ativação-R$%2059%2C90%20(Vitalício)-FFD21C?style=for-the-badge)](https://dna-auto-vua4.onrender.com/)
+[![Oferta Oficial](https://img.shields.io/badge/Ativa%C3%A7%C3%A3o%20Plataforma-R%24%2049%2C90%20(50%25%20Oficina)-FFD21C?style=for-the-badge)](https://dna-auto-vua4.onrender.com/)
 
-> **O Passaporte Digital Definitivo do Automóvel.**  
+> **Identidade & Histórico Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 131 — Bot Preventivo 10h/17h via WhatsApp, PDF Diário, Tickets de Suporte e Lançar Serviços Limpo `v2.5.0`):**
+> ✨ **Novidades Recentes (Ciclo 132 — Agendamentos Automáticos, Fila de Manutenção, Conversas c/ Placa e Regra Financeira `R$ 49,90 / R$ 24,95 / R$ 6,90` `v2.5.1`):**
+> - **Card `Agendamentos Automáticos` (ex-`Avisos WhatsApp`):** Explica de forma transparente o monitoramento contínuo da frota da oficina, disparo automático às 10h00, pré-confirmação direto no app antes das 17h00 (`PATCH /appointments/:id/confirm` / `POST /maintenance-bot/confirm-campaign`) e envio do PDF diário às 17h00 com placa, dono e horário para o WhatsApp da oficina. Veículos confirmados aparecem imediatamente na tela principal.
+> - **Aba `Conversas` com Placa Garantida & Clique Direto:** Enriquecimento de conversas por sufixo de telefone no `BaileysWorkshopService` + frontend garantindo a exibição da placa em cada conversa e abertura direta do modal de atendimento ao clicar no card. Campo de busca `.ws-model-search-bar` corrigido no CSS.
+> - **Card `Manutenção` sem Redundância (`dueQueue`):** Remoção do método duplicado legado; agora exibe exclusivamente veículos cadastrados **próximos do agendamento (`APROXIMANDO` / `RECOMENDADA`)** e **vencidos sem confirmação (`VENCIDA`)** com filtros funcionais (`Todos`, `Próximos`, `Vencidos s/ Confirmação`).
+> - **Card `Financeiro` Atualizado (`R$ 49,90` / `R$ 24,95` / `R$ 6,90`):** Exibe os **carros já cadastrados na oficina** (`registered_vehicles_count`), ganho de ativação atualizado para **50% de R$ 49,90 (R$ 24,95/carro)**, remoção completa de referências a "Passaporte Digital" na tela financeira e explicação explícita da **taxa fixa de R$ 6,90 por retorno confirmado** independente do valor do serviço (ex.: serviço de R$ 1.000,00 paga apenas R$ 6,90).
+> - **Qualidade & Cache:** 100% das 8 suítes de testes (`npm test`) aprovadas e cache-busting `?v=2.5.1` + `/api/v1/health` (`version: '2.5.1'`).
+> 
+> ✨ **Ciclo 131 — Bot Preventivo 10h/17h via WhatsApp, PDF Diário, Tickets de Suporte e Lançar Serviços Limpo `v2.5.0`:**
 > - **Bot Autônomo de Manutenção Preventiva (10h/17h):** Disparo automático às 10h00 (Brasília) para veículos com manutenção vencida ou próxima, oferecendo 3 datas úteis (Seg–Sex 08h–18h e Sábado até 11h00). Quando o cliente aceita/escolhe pelo WhatsApp (`BaileysWorkshopService`), o agente agenda automaticamente em `workshop_appointments` (`CONFIRMED`) e responde confirmando; às 17h00 gera e envia o PDF consolidado do próximo dia útil (`pdfkit`) no WhatsApp oficial da oficina.
 > - **App da Oficina (`/oficina/`):** Card **Avisos WhatsApp** conectado às campanhas/agendamentos reais do bot; Card **Suporte** exclusivo para abertura e acompanhamento de Tickets de Chamado (`support_tickets`, integrados ao Admin); Card **Lançar Serviços** sempre limpo sem carro pré-selecionado antes de digitar a placa.
 > - **App do Cliente & Deploy Render:** Remoção de dados de demonstração em `ownerView.js` e `dossierView.js`, `/api/v1/health` retornando versão (`2.5.0`) + commit em execução e cache-busting `?v=2.5.0`. 100% das 8 suítes de testes (`npm test`) aprovadas.

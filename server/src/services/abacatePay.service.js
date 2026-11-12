@@ -28,10 +28,10 @@ const ABACATE_BASE_URL = process.env.ABACATEPAY_BASE_URL || 'https://api.abacate
 const WEBHOOK_SECRET = process.env.ABACATEPAY_WEBHOOK_SECRET || 'dna_sec_abacatepay_prod_2026_webhook_key';
 
 const AbacatePayService = {
-    BASE_SINGLE_PRICE_CENTS: 2995,    // R$ 29,95
-    CUSTOMER_PRICE_CENTS: 5990,       // R$ 59,90
-    WORKSHOP_PROFIT_CENTS: 2995,      // R$ 29,95
-    ATTENDANCE_FEE_CENTS: 690,        // R$ 6,90 (Taxa por atendimento posterior concluído)
+    BASE_SINGLE_PRICE_CENTS: 2495,    // R$ 24,95 (50% de R$ 49,90)
+    CUSTOMER_PRICE_CENTS: 4990,       // R$ 49,90
+    WORKSHOP_PROFIT_CENTS: 2495,      // R$ 24,95 (50% de R$ 49,90)
+    ATTENDANCE_FEE_CENTS: 690,        // R$ 6,90 (Taxa fixa por retorno confirmado)
 
     // Programa Oficial de Representantes Comerciais (Seção 7)
     REP_PROGRAM_CUSTOMER_PRICE_CENTS: 4990,   // R$ 49,90
@@ -604,17 +604,17 @@ const AbacatePayService = {
             workshop_id: workshopId,
             plans: {
                 single: {
-                    name: 'Passaporte Digital DNA AUTO',
-                    cost: 'R$ 29,95',
+                    name: 'Ativação de Veículo na Plataforma DNA AUTO',
+                    cost: 'R$ 24,95',
                     cost_cents: this.BASE_SINGLE_PRICE_CENTS,
-                    customer_price: 'R$ 59,90',
-                    profit: 'R$ 29,95'
+                    customer_price: 'R$ 49,90',
+                    profit: 'R$ 24,95'
                 },
                 attendance_fee: {
-                    name: 'Taxa por Atendimento Concluído',
+                    name: 'Taxa Fixa por Retorno Confirmado',
                     cost: 'R$ 6,90',
                     cost_cents: 690,
-                    rule: 'Cobrança de R$ 6,90 por atendimento posterior concluído e elegível, independente da quantidade de peças ou serviços.'
+                    rule: 'Taxa fixa de R$ 6,90 por cada retorno de veículo cadastrado confirmado pela oficina/cliente, independente do valor do serviço (ex: mesmo em serviço de R$ 1.000,00).'
                 },
                 postpaid_10: {
                     name: 'Ciclo Pós-Pago (10 Carros)',
