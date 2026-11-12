@@ -1,3 +1,22 @@
+### Ciclo 133 — Fullscreen Edge-to-Edge (Cliente & Oficina), Prompt Central "Atualizar App" e Pipeline APK Android (`v2.5.2`)
+- **Data:** 12/11/2026
+- **Responsáveis:** `@[frontend-specialist]` + `@[mobile-developer]` + `@[backend-specialist]` + `@[test-engineer]`
+- **Contexto & Demandas Atendidas:**
+  1. **Tela Cheia Edge-to-Edge nos Dois Apps (`cliente.app/` e `oficina.app/`, sincronizados com `public/`):**
+     - **App do Cliente (`/cliente/`):** `manifest.json` (`theme_color` / `background_color`: `#020712`), CSS base de entrada em `#020712` com `-webkit-fill-available` e alternância dinâmica de `theme-color` e `screen-light` em `go(id)` para evitar faixa branca no topo durante splash/login.
+     - **App da Oficina (`/oficina/`):** Adicionados `viewport-fit=cover`, `<link rel="manifest" href="./manifest.json">`, `<meta name="theme-color" content="#010712">`, `<meta name="apple-mobile-web-app-capable" content="yes">` e `<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">`; `.ws-splash-screen` e `.dna-oficina-splash-screen` convertidos para `position: fixed; inset: 0` e `.ws-splash-hero-bg` alterado de `object-fit: contain` para `object-fit: cover` (c/ `max-width: 480px` centralizado apenas em desktop `>=600px`).
+  2. **Versionamento, Digital Asset Links e Distribuição APK (`server/src/server.js`):**
+     - `GET /api/v1/app/version`: expõe `version`, `version_code`, `min_version_code`, `force_update`, `apk_available` e `apk_url`.
+     - `GET /downloads/dna-auto-cliente.apk`: entrega o `.apk` local ou redireciona para `DNA_APK_DOWNLOAD_URL` (retornando HTTP 404 claro caso o binário ainda não exista).
+     - `GET /.well-known/assetlinks.json`: publica vínculo Android App Links + `getInstalledRelatedApps()` para `br.com.dnaauto.cliente`.
+  3. **Atualização Centrada no App & Detecção Inteligente de Instalação (`cliente.app/index.html`):**
+     - `DNAAppUpdater` verifica `/api/v1/app/version` no boot em contexto nativo/APK e exibe o modal central **"Atualizar App"** quando a versão instalada está defasada.
+     - `DNAApkInstaller` detecta `navigator.getInstalledRelatedApps()` em Android para evitar download repetido caso já instalado e iniciar o download automático apenas quando o app não está instalado e `apk_available` for verdadeiro.
+  4. **Projeto Capacitor & Workflow CI (`android-client/` e `.github/workflows/build-cliente-apk.yml`):**
+     - Estrutura isolada com permissões para GPS em segundo plano (`ACCESS_BACKGROUND_LOCATION`, `FOREGROUND_SERVICE_LOCATION`) e App Links pronto para compilação no GitHub Actions.
+  5. **Testes & Versionamento (`v2.5.2`):**
+     - Criado `test/apk_and_fullscreen.test.js` integrado ao `npm test` (9 suítes) e versionamento incrementado para `2.5.2` (`server.js`, `sw.js`, HTMLs).
+
 ### Ciclo 132 — Refinamento de `Agendamentos Automáticos`, Separação da Fila de `Manutenção`, Conversas c/ Placa Garantida e Regra Financeira Oficial (`R$ 49,90` / `50% R$ 24,95` / `R$ 6,90`) (`v2.5.1`)
 - **Data:** 12/11/2026
 - **Responsáveis:** `@[frontend-specialist]` + `@[backend-specialist]` + `@[test-engineer]`

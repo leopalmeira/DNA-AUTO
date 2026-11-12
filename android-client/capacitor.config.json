@@ -1,0 +1,19 @@
+{
+  "appId": "br.com.dnaauto.cliente",
+  "appName": "DNA AUTO",
+  "webDir": "www",
+  "server": {
+    "url": "https://dna-auto-byin.onrender.com/cliente?apk_version=2.5.2&apk_code=252",
+    "cleartext": false,
+    "allowNavigation": [
+      "dna-auto-byin.onrender.com",
+      "dna-auto-vua4.onrender.com",
+      "*.onrender.com"
+    ]
+  },
+  "android": {
+    "backgroundColor": "#020712",
+    "allowMixedContent": false,
+    "appendUserAgent": "DNAAutoAPK/2.5.2"
+  }
+}

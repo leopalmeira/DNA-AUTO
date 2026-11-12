@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 // Inicialização do Banco
 require('./database/db');
@@ -11,7 +12,29 @@ const { startMaintenanceScheduler } = require('./services/maintenanceMonitor.ser
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const APP_VERSION = '2.5.1';
+const APP_VERSION = '2.5.2';
+const APK_VERSION_CODE = Number(process.env.DNA_APK_VERSION_CODE || 252);
+const ANDROID_PACKAGE_NAME = process.env.ANDROID_PACKAGE_NAME || 'br.com.dnaauto.cliente';
+
+function resolveClientApkInfo() {
+    const candidates = [
+        path.join(__dirname, '..', 'uploads', 'apk', 'dna-auto-cliente.apk'),
+        path.join(__dirname, '..', '..', 'public', 'downloads', 'dna-auto-cliente.apk')
+    ];
+    const localApkPath = candidates.find((p) => fs.existsSync(p)) || null;
+    const externalApkUrl = (process.env.DNA_APK_DOWNLOAD_URL || '').trim() || null;
+    return {
+        version: (process.env.DNA_APK_LATEST_VERSION || APP_VERSION).trim(),
+        version_code: APK_VERSION_CODE,
+        min_version_code: Number(process.env.DNA_APK_MIN_VERSION_CODE || APK_VERSION_CODE),
+        force_update: process.env.DNA_APK_FORCE_UPDATE === 'true',
+        apk_available: Boolean(localApkPath || externalApkUrl),
+        local_apk_path: localApkPath,
+        apk_url: externalApkUrl || '/downloads/dna-auto-cliente.apk',
+        package_name: ANDROID_PACKAGE_NAME,
+        release_notes: process.env.DNA_APK_RELEASE_NOTES || 'Melhorias de desempenho, tela full-screen edge-to-edge e monitoramento contínuo.'
+    };
+}
 const DEPLOYED_AT = new Date().toISOString();
 const GIT_COMMIT = (process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || '').slice(0, 7) || null;
 
@@ -75,9 +98,59 @@ app.get('/api/v1/health', (req, res) => {
         version: APP_VERSION,
         commit: GIT_COMMIT,
         deployedAt: DEPLOYED_AT,
-        features: ['maintenance-bot-10h-17h', 'agenda-pdf-d1', 'support-tickets', 'real-client-dossier'],
+        features: ['maintenance-bot-10h-17h', 'agenda-pdf-d1', 'support-tickets', 'real-client-dossier', 'android-apk-updater'],
         timestamp: new Date().toISOString()
     });
+});
+
+// Controle de Versão & Distribuição do APK Android (Cliente)
+app.get('/api/v1/app/version', (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    const info = resolveClientApkInfo();
+    res.json({
+        success: true,
+        version: info.version,
+        version_code: info.version_code,
+        min_version_code: info.min_version_code,
+        force_update: info.force_update,
+        apk_available: info.apk_available,
+        apk_url: info.apk_url,
+        package_name: info.package_name,
+        release_notes: info.release_notes,
+        updated_at: DEPLOYED_AT
+    });
+});
+
+app.get('/downloads/dna-auto-cliente.apk', (req, res) => {
+    const info = resolveClientApkInfo();
+    if (info.local_apk_path) {
+        res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+        res.setHeader('Content-Disposition', 'attachment; filename="dna-auto-cliente.apk"');
+        return res.download(info.local_apk_path, 'dna-auto-cliente.apk');
+    }
+    if (process.env.DNA_APK_DOWNLOAD_URL) {
+        return res.redirect(302, process.env.DNA_APK_DOWNLOAD_URL.trim());
+    }
+    return res.status(404).json({
+        error: 'O binário APK ainda não foi compilado/publicado no servidor.',
+        apk_available: false
+    });
+});
+
+// Digital Asset Links (Android App Links + getInstalledRelatedApps)
+app.get('/.well-known/assetlinks.json', (req, res) => {
+    const rawFingerprints = (process.env.ANDROID_SHA256_FINGERPRINT || '').split(',').map((s) => s.trim()).filter(Boolean);
+    res.setHeader('Content-Type', 'application/json');
+    res.json([
+        {
+            relation: ['delegate_permission/common.handle_all_urls'],
+            target: {
+                namespace: 'android_app',
+                package_name: ANDROID_PACKAGE_NAME,
+                sha256_cert_fingerprints: rawFingerprints
+            }
+        }
+    ]);
 });
 
 // Endpoint de Ativação do Cliente via Código da Oficina

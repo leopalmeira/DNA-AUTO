@@ -2926,16 +2926,25 @@ input.dna-plate-input {
    14.0 SPLASH SCREEN DA OFICINA (IGUAL AO APP DO CLIENTE: FUNDO + 2 BOTÕES)
    ============================================================================== */
 .dna-oficina-splash-screen {
+    position: fixed;
+    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
+    max-width: 100vw;
+    height: 100%;
     min-height: 100vh;
     min-height: 100dvh;
-    position: relative;
+    min-height: -webkit-fill-available;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
     overflow: hidden;
     background: #010712;
+    z-index: 60;
 }
 
 /* Imagem de fundo em tela cheia (cover = sem bordas brancas, centralizada) */
@@ -4034,19 +4043,28 @@ select:-webkit-autofill:focus {
    TELA 1: SPLASH OFICIAL DA OFICINA
    ============================================================================== */
 .ws-splash-screen {
+    position: fixed;
+    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     width: 100%;
+    max-width: 100vw;
+    height: 100%;
     min-height: 100vh;
     min-height: 100dvh;
-    background: linear-gradient(180deg, #010C1A 0%, #010712 40%, #000812 100%);
-    position: relative;
+    min-height: -webkit-fill-available;
+    background: #010712;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
-    padding: calc(24px + env(safe-area-inset-top, 0px)) 20px calc(24px + env(safe-area-inset-bottom, 12px));
+    padding: calc(20px + env(safe-area-inset-top, 0px)) 20px calc(24px + env(safe-area-inset-bottom, 12px));
     box-sizing: border-box;
     overflow: hidden;
     color: #FFFFFF;
+    z-index: 60;
 }
 
 .ws-splash-hero-bg {
@@ -4054,11 +4072,19 @@ select:-webkit-autofill:focus {
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     object-position: center top;
     opacity: 1;
     pointer-events: none;
     z-index: 1;
+}
+
+@media (min-width: 600px) {
+    .ws-splash-hero-bg {
+        max-width: 480px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
 }
 
 .ws-splash-overlay {

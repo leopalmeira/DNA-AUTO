@@ -13,7 +13,8 @@
     "test:auth:credentials": "node test/credentials.auth.test.js",
     "test:oficina:staff_block": "node test/oficina.staff_financial_block.test.js",
     "test:bot_and_cards": "node test/maintenance_bot_and_cards.test.js",
-    "test": "node test/api.test.js && node test/oficina.components.test.js && node test/oficina.integration.test.js && node test/oficina.finance.test.js && node test/oficina.registrar_and_overflow.test.js && node test/credentials.auth.test.js && node test/oficina.staff_financial_block.test.js && node test/maintenance_bot_and_cards.test.js"
+    "test:apk_fullscreen": "node test/apk_and_fullscreen.test.js",
+    "test": "node test/api.test.js && node test/oficina.components.test.js && node test/oficina.integration.test.js && node test/oficina.finance.test.js && node test/oficina.registrar_and_overflow.test.js && node test/credentials.auth.test.js && node test/oficina.staff_financial_block.test.js && node test/maintenance_bot_and_cards.test.js && node test/apk_and_fullscreen.test.js"
   },
   "keywords": [],
   "author": "",

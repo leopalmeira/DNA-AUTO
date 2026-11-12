@@ -3,8 +3,9 @@
   "short_name": "DNA Oficina",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#080c14",
-  "theme_color": "#080c14",
+  "orientation": "portrait",
+  "background_color": "#010712",
+  "theme_color": "#010712",
   "description": "Painel de controle e cockpit operacional da oficina mecânica: recepção por placa, ordens de serviço nível 4, WhatsApp oficial e agenda.",
   "icons": [
     {

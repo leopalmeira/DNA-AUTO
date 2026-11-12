@@ -1,0 +1,84 @@
+name: Build Android APK (Cliente DNA AUTO)
+
+on:
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: 'URL base do App do Cliente'
+        required: true
+        default: 'https://dna-auto-byin.onrender.com'
+      version_name:
+        description: 'Versão do APK (ex: 2.5.2)'
+        required: true
+        default: '2.5.2'
+      version_code:
+        description: 'Código inteiro da versão (ex: 252)'
+        required: true
+        default: '252'
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Instalar Capacitor e gerar projeto Android
+        working-directory: android-client
+        run: |
+          npm install
+          npx cap add android
+          node -e "
+            const fs = require('fs');
+            const cfg = JSON.parse(fs.readFileSync('capacitor.config.json', 'utf8'));
+            const base = ('${{ github.event.inputs.server_url }}' || 'https://dna-auto-byin.onrender.com').replace(/\/$/, '');
+            const vName = '${{ github.event.inputs.version_name }}' || '2.5.2';
+            const vCode = '${{ github.event.inputs.version_code }}' || '252';
+            cfg.server.url = base + '/cliente?apk_version=' + vName + '&apk_code=' + vCode;
+            cfg.android.appendUserAgent = 'DNAAutoAPK/' + vName;
+            fs.writeFileSync('capacitor.config.json', JSON.stringify(cfg, null, 2));
+          "
+          npx cap sync android
+
+      - name: Configurar permissões GPS background, edge-to-edge e App Links
+        working-directory: android-client
+        run: |
+          node -e "
+            const fs = require('fs');
+            const manifestPath = 'android/app/src/main/AndroidManifest.xml';
+            let xml = fs.readFileSync(manifestPath, 'utf8');
+            const perms = [
+              '<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\" />',
+              '<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\" />',
+              '<uses-permission android:name=\"android.permission.ACCESS_BACKGROUND_LOCATION\" />',
+              '<uses-permission android:name=\"android.permission.FOREGROUND_SERVICE\" />',
+              '<uses-permission android:name=\"android.permission.FOREGROUND_SERVICE_LOCATION\" />',
+              '<uses-permission android:name=\"android.permission.REQUEST_INSTALL_PACKAGES\" />'
+            ].filter(p => !xml.includes(p)).join('\n    ');
+            xml = xml.replace('<application', perms + '\n    <application');
+            const host = new URL('${{ github.event.inputs.server_url }}' || 'https://dna-auto-byin.onrender.com').hostname;
+            const deepLinks = '<intent-filter android:autoVerify=\"true\"><action android:name=\"android.intent.action.VIEW\"/><category android:name=\"android.intent.category.DEFAULT\"/><category android:name=\"android.intent.category.BROWSABLE\"/><data android:scheme=\"https\" android:host=\"' + host + '\" android:pathPrefix=\"/cliente\"/></intent-filter><intent-filter><action android:name=\"android.intent.action.VIEW\"/><category android:name=\"android.intent.category.DEFAULT\"/><category android:name=\"android.intent.category.BROWSABLE\"/><data android:scheme=\"dnaauto\" android:host=\"open\"/></intent-filter>';
+            xml = xml.replace('</activity>', deepLinks + '\n        </activity>');
+            fs.writeFileSync(manifestPath, xml);
+          "
+
+      - name: Compilar APK Android
+        working-directory: android-client/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk ../../dna-auto-cliente.apk
+
+      - name: Publicar artifact dna-auto-cliente.apk
+        uses: actions/upload-artifact@v4
+        with:
+          name: dna-auto-cliente-apk
+          path: dna-auto-cliente.apk
