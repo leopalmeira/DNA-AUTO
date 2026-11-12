@@ -5,8 +5,8 @@ const target = process.argv[2] || 'cliente';
 const isOficina = target === 'oficina';
 
 const serverUrl = (process.env.INPUT_SERVER_URL || 'https://dna-auto-byin.onrender.com').replace(/\/$/, '');
-const versionName = process.env.INPUT_VERSION_NAME || '2.5.3';
-const versionCode = process.env.INPUT_VERSION_CODE || '253';
+const versionName = process.env.INPUT_VERSION_NAME || '2.5.4';
+const versionCode = process.env.INPUT_VERSION_CODE || '254';
 const host = new URL(serverUrl).hostname;
 
 const pkg = isOficina ? 'br.com.dnaauto.oficina' : 'br.com.dnaauto.cliente';
@@ -136,5 +136,34 @@ fs.writeFileSync(mainActivityPath, [
   '}',
   ''
 ].join('\n'));
+
+// 6. Ícones Oficiais do Aplicativo (Substitui ícones padrão do Capacitor)
+const sourceIconPath = path.join(__dirname, '..', 'cliente.app', 'img', 'icons', 'icon-512x512.png');
+const mipmapDirs = [
+  'mipmap-mdpi',
+  'mipmap-hdpi',
+  'mipmap-xhdpi',
+  'mipmap-xxhdpi',
+  'mipmap-xxxhdpi'
+];
+if (fs.existsSync(sourceIconPath)) {
+  const iconBuffer = fs.readFileSync(sourceIconPath);
+  const resDir = path.join(process.cwd(), 'android', 'app', 'src', 'main', 'res');
+  mipmapDirs.forEach((dir) => {
+    const targetDir = path.join(resDir, dir);
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+    fs.writeFileSync(path.join(targetDir, 'ic_launcher.png'), iconBuffer);
+    fs.writeFileSync(path.join(targetDir, 'ic_launcher_round.png'), iconBuffer);
+    fs.writeFileSync(path.join(targetDir, 'ic_launcher_foreground.png'), iconBuffer);
+  });
+
+  const bgXmlPath = path.join(resDir, 'values', 'ic_launcher_background.xml');
+  if (fs.existsSync(path.dirname(bgXmlPath))) {
+    fs.writeFileSync(bgXmlPath, `<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">${navBarColor}</color>\n</resources>\n`);
+  }
+  console.log(`✅ Ícones oficiais injetados nos mipmaps Android a partir de ${sourceIconPath}`);
+}
 
 console.log(`✅ Android project patched for ${target} (${pkg} v${versionName} code ${versionCode})`);

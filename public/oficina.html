@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <title>DNA AUTO | ERP & Painel Operacional da Oficina Credenciada</title>
     <meta name="description" content="Painel de controle profissional para oficinas e auto centers credenciados: recepção de veículos, ficha técnica, agendamentos, WhatsApp oficial e laudos Nível 4.">
     
@@ -581,6 +581,24 @@
             triggerApkAutoDownload,
             init: initOficinaApkLifecycle
         };
+
+        // Gerenciamento de teclado virtual nos formulários da Oficina
+        document.addEventListener('focusin', (e) => {
+            if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+                document.body.classList.add('keyboard-open');
+                setTimeout(() => {
+                    try { e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(_) {}
+                }, 120);
+            }
+        });
+        document.addEventListener('focusout', () => {
+            setTimeout(() => {
+                const active = document.activeElement;
+                if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')) {
+                    document.body.classList.remove('keyboard-open');
+                }
+            }, 150);
+        });
     </script>
 </body>
 </html>

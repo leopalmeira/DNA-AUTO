@@ -1,3 +1,27 @@
+### Ciclo 135 — Correção de Zoom/Display na Oficina, Centralização de Botões e Safe-Area, Elevação do Formulário com Teclado Virtual, Chamada de Veículo por Placa e Ícone Oficial nos APKs (`v2.5.4`)
+- **Data:** 12/11/2026
+- **Responsáveis:** `@[frontend-specialist]` + `@[backend-specialist]` + `@[mobile-developer]` + `@[test-engineer]`
+- **Contexto & Demandas Atendidas:**
+  1. **Correção de Zoom, Enquadramento e Safe-Area na Tela da Oficina (`oficina.app` / `public/oficina.html` / `workshop-mobile.css`):**
+     - O hero de splash (`.ws-splash-hero-bg`) foi ajustado de `object-fit: cover` para `object-fit: contain; object-position: center center; background: #010712;`, eliminando o zoom excessivo que cortava o veículo e deformava o display em simuladores e dispositivos móveis.
+     - Viewport configurada com `maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content`.
+     - `.ws-splash-actions` posicionado com margem de segurança inferior (`margin-bottom: calc(14px + env(safe-area-inset-bottom, 14px))`), evitando tocar ou cortar na borda inferior da tela.
+  2. **Chamada de Veículo por Placa no Cadastro da Oficina (`workshopMobileView.js`):**
+     - Em `handleAutoLookupPlateForRegister`, ampliado `maxlength` para 8 caracteres para digitação fluida com hífen e consulta automática instantânea ao atingir 7 dígitos.
+     - Adicionado suporte a busca por Enter e botão 🔍.
+     - Em `handleMobileSearchPlateForClientRegister`, implementado fallback resiliente direto para a rota pública `/api/v1/integrations/plate-lookup/:plate` sem depender de tokens de sessão que pudessem expirar, populando o card do carro com aura luminosa, modelo, marca, FIPE, definindo `this._lastLookedUpVehicle` e `this.selectedMobileVehicle`, e emitindo toast `🚗 Veículo [PLACA] chamado com sucesso!`.
+     - Em `handleUniversalPlateSearch`, substituído `alert()` intrusivo por toasts in-app suaves.
+  3. **Centralização e Safe-Area dos Botões no App do Cliente (`cliente.app` / `public/cliente.html`):**
+     - Em `.splash-actions`, ajustado `bottom: calc(28px + env(safe-area-inset-bottom, 18px)); left: 50%; transform: translateX(-50%); width: calc(100% - 48px); max-width: 380px;`, garantindo espaçamento generoso da barra inferior de gestos do Android/iOS e perfeito alinhamento central.
+     - Removida a trava rígida `aspect-ratio: 576 / 1024` de `.splash-wrapper`, permitindo adaptação fluida em telas de celulares modernas.
+  4. **Comportamento Responsivo ao Teclado Virtual no Login (Cliente & Oficina):**
+     - Adicionado `interactive-widget=resizes-content` à meta viewport de ambos os apps.
+     - Em CSS, adicionadas regras `@media (max-height: 580px)` e `body.keyboard-open` colapsando a imagem do topo hero (`max-height: 70px; opacity: 0.3;`) e permitindo scroll fluido no container de login (`overflow-y: auto !important; padding-bottom: 180px;`), garantindo que o campo de senha e os botões de ação fiquem sempre visíveis e empurrados para cima quando o teclado do celular sobrevier.
+     - Em JavaScript, adicionados ouvintes globais de `focusin` e `focusout` em inputs para aplicar `body.keyboard-open` e chamar `scrollIntoView({ behavior: 'smooth', block: 'center' })`.
+  5. **Injeção de Ícones Oficiais 3D do DNA AUTO nos Binários APK e PWA:**
+     - `scripts/patch-android.js`: adicionado passo 6 para injetar os ícones oficiais em alta resolução (`icon-512x512.png`) em todos os diretórios mipmap do Android (`mipmap-mdpi`, `mipmap-hdpi`, `mipmap-xhdpi`, `mipmap-xxhdpi`, `mipmap-xxxhdpi`), substituindo os ícones genéricos padrão do Capacitor pelo ícone 3D oficial com fundo escuro.
+     - Sincronizados os ícones oficiais em `oficina.app/img/icons/` e `public/img/icons/`.
+
 ### Ciclo 134 — Geração & Download Automático de APK Android Nativo para Cliente (`/cliente/`) e Oficina (`/oficina/`), Tela Cheia Edge-to-Edge e CI/CD (`v2.5.3`)
 - **Data:** 12/11/2026
 - **Responsáveis:** `@[mobile-developer]` + `@[frontend-specialist]` + `@[devops-engineer]` + `@[test-engineer]`

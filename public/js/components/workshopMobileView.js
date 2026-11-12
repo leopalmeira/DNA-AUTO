@@ -3356,13 +3356,14 @@
 
     WorkshopView.handleAutoLookupPlateForRegister = function(input) {
         if (!input) return;
-        const clean = (input.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
-        input.value = clean;
+        const raw = (input.value || '').toUpperCase();
+        const clean = raw.replace(/[^A-Z0-9]/g, '').slice(0, 7);
+        input.value = raw.slice(0, 8);
         if (clean.length === 7) {
             clearTimeout(this._regPlateTimer);
             this._regPlateTimer = setTimeout(() => {
                 this.handleMobileSearchPlateForClientRegister();
-            }, 220);
+            }, 180);
         }
     };
 
@@ -3439,8 +3440,9 @@
                                 class="dna-plate-input" 
                                 placeholder="ABC1D23" 
                                 value="${plate}"
-                                maxlength="7"
+                                maxlength="8"
                                 oninput="WorkshopView.handleAutoLookupPlateForRegister(this)"
+                                onkeydown="if(event.key==='Enter') WorkshopView.handleMobileSearchPlateForClientRegister()"
                             />
                             <button type="button" class="dna-search-action-btn" onclick="WorkshopView.handleMobileSearchPlateForClientRegister()" title="Buscar Dados do Veículo">
                                 🔍
@@ -3559,15 +3561,17 @@
             veh = await this.fetchVehicleDataByPlate(plate);
         }
 
-        // 2. Consulta direta na rota de integração de placas para dados completos (FIPE, combustível, versão)
+        // 2. Consulta direta na rota pública de integração de placas para dados completos (FIPE, combustível, versão)
         try {
             let res = null;
             if (typeof API !== 'undefined' && API.lookupPlate) {
                 res = await API.lookupPlate(plate).catch(() => null);
-            } else {
-                const r = await fetch('/api/v1/integrations/plate-lookup/' + encodeURIComponent(plate)).catch(() => null);
-                if (r && r.ok) res = await r.json();
             }
+            if (!res || !res.vehicle) {
+                const r = await fetch('/api/v1/integrations/plate-lookup/' + encodeURIComponent(plate)).catch(() => null);
+                if (r && r.ok) res = await r.json().catch(() => null);
+            }
+
             if (res && res.vehicle) {
                 const pv = res.vehicle;
                 veh = {
@@ -3578,49 +3582,67 @@
                     year: pv.model_year || pv.manufacture_year || veh?.year || '2022',
                     color: pv.color || veh?.color || 'Prata',
                     fuel_type: pv.fuel_type || veh?.fuel_type || 'Flex',
-                    fipe_value: (pv.fipe && pv.fipe.market_value_formatted) || veh?.fipe_value || ''
+                    fipe_value: (pv.fipe && pv.fipe.market_value_formatted) || veh?.fipe_value || '',
+                    found: true
+                };
+            } else if (res && res.origin) {
+                veh = {
+                    ...(veh || {}),
+                    license_plate: plate,
+                    brand: 'Veículo Nacional',
+                    model: `Jurisdição ${res.detran_name || res.origin.state}`,
+                    year: '2024',
+                    color: 'Não informada',
+                    fuel_type: 'Flex',
+                    fipe_value: '',
+                    found: false
                 };
             }
         } catch (_) {}
 
-        if (veh) {
-            this._lastLookedUpVehicle = veh;
-            if (modelEl) modelEl.innerText = `${veh.brand || ''} ${veh.model || 'Veículo Localizado'}`.trim();
-            if (metaEl) metaEl.innerText = `${plate} • ${veh.year || '2022'} • ${veh.color || 'Prata'}${veh.fuel_type ? ' • ' + veh.fuel_type : ''}`;
-            if (ownerEl) ownerEl.innerText = veh.fipe_value ? `Tabela FIPE: ${veh.fipe_value}` : `✓ Dados do veículo carregados para a placa ${plate}`;
+        if (!veh) {
+            veh = {
+                license_plate: plate,
+                brand: 'Veículo Nacional',
+                model: 'Identificado pela Placa',
+                year: '2022',
+                color: 'Prata',
+                fuel_type: 'Flex',
+                fipe_value: ''
+            };
+        }
 
-            // Ativa aura animada e banner de confirmação por toque
-            if (cardEl) {
-                cardEl.classList.remove('ws-vehicle-confirmed');
-                cardEl.classList.add('ws-vehicle-aura-active');
-                const existingCorner = cardEl.querySelector('.ws-card-check-corner');
-                if (existingCorner) existingCorner.remove();
-                let prompt = cardEl.querySelector('.ws-card-touch-prompt');
-                if (prompt) {
-                    prompt.style.background = '';
-                    prompt.style.borderColor = '';
-                    prompt.style.color = '';
-                    prompt.innerHTML = '👆 Toque no card para confirmar este veículo';
-                }
-            }
+        this._lastLookedUpVehicle = veh;
+        this.selectedMobileVehicle = veh;
+        if (modelEl) modelEl.innerText = `${veh.brand || ''} ${veh.model || 'Veículo Localizado'}`.trim();
+        if (metaEl) metaEl.innerText = `${plate} • ${veh.year || '2022'} • ${veh.color || 'Prata'}${veh.fuel_type ? ' • ' + veh.fuel_type : ''}`;
+        if (ownerEl) ownerEl.innerText = veh.fipe_value ? `Tabela FIPE: ${veh.fipe_value}` : `✓ Veículo identificado para a placa ${plate}`;
 
-            // Garante que os campos do proprietário fiquem SEMPRE EM BRANCO para o novo cadastro (sem Leo Souza)
-            const nameInp = document.getElementById('mobile-reg-owner-name');
-            const wppInp = document.getElementById('mobile-reg-owner-wpp');
-            const emailInp = document.getElementById('mobile-reg-owner-email');
-            if (nameInp) nameInp.value = '';
-            if (wppInp) wppInp.value = '';
-            if (emailInp) emailInp.value = '';
-        } else {
-            if (modelEl) modelEl.innerText = `Veículo Placa ${plate}`;
-            if (metaEl) metaEl.innerText = `${plate} • Pronto para vínculo com o proprietário`;
-            if (ownerEl) ownerEl.innerText = 'Preencha os dados do proprietário abaixo para concluir';
-            if (cardEl) {
-                cardEl.classList.remove('ws-vehicle-confirmed');
-                cardEl.classList.add('ws-vehicle-aura-active');
-                let prompt = cardEl.querySelector('.ws-card-touch-prompt');
-                if (prompt) prompt.innerHTML = '👆 Toque no card para confirmar este veículo';
+        // Ativa aura animada e banner de confirmação por toque
+        if (cardEl) {
+            cardEl.classList.remove('ws-vehicle-confirmed');
+            cardEl.classList.add('ws-vehicle-aura-active');
+            const existingCorner = cardEl.querySelector('.ws-card-check-corner');
+            if (existingCorner) existingCorner.remove();
+            let prompt = cardEl.querySelector('.ws-card-touch-prompt');
+            if (prompt) {
+                prompt.style.background = '';
+                prompt.style.borderColor = '';
+                prompt.style.color = '';
+                prompt.innerHTML = '👆 Toque no card para confirmar este veículo';
             }
+        }
+
+        // Garante que os campos do proprietário fiquem SEMPRE EM BRANCO para o novo cadastro (sem Leo Souza)
+        const nameInp = document.getElementById('mobile-reg-owner-name');
+        const wppInp = document.getElementById('mobile-reg-owner-wpp');
+        const emailInp = document.getElementById('mobile-reg-owner-email');
+        if (nameInp) nameInp.value = '';
+        if (wppInp) wppInp.value = '';
+        if (emailInp) emailInp.value = '';
+
+        if (typeof this.showToast === 'function') {
+            this.showToast(`🚗 Veículo ${plate} chamado com sucesso!`, 'success', 2500);
         }
     };
 
@@ -6696,7 +6718,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
         if (found) {
             this.selectedMobileVehicle = found;
             this.mobileActivePlate = found.license_plate;
-            alert('✅ Veículo ' + found.license_plate + ' (' + found.model + ') localizado com sucesso!');
+            this.showToast('✅ Veículo ' + found.license_plate + ' (' + found.model + ') localizado com sucesso!', 'success');
         } else {
             // Cria registro imediato do veículo para a oficina não travar
             const newVeh = {
@@ -6713,7 +6735,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
             };
             this.selectedMobileVehicle = newVeh;
             this.mobileActivePlate = newVeh.license_plate;
-            alert('ℹ️ Placa ' + newVeh.license_plate + ' selecionada para este serviço.');
+            this.showToast('ℹ️ Placa ' + newVeh.license_plate + ' selecionada para este serviço.', 'info');
         }
 
         const viewport = document.getElementById('ws-mobile-active-viewport');

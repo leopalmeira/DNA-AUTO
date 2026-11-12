@@ -12,8 +12,8 @@ const { startMaintenanceScheduler } = require('./services/maintenanceMonitor.ser
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const APP_VERSION = '2.5.3';
-const APK_VERSION_CODE = Number(process.env.DNA_APK_VERSION_CODE || 253);
+const APP_VERSION = '2.5.4';
+const APK_VERSION_CODE = Number(process.env.DNA_APK_VERSION_CODE || 254);
 const ANDROID_PACKAGE_NAME = process.env.ANDROID_PACKAGE_NAME || 'br.com.dnaauto.cliente';
 const ANDROID_OFICINA_PACKAGE_NAME = process.env.ANDROID_OFICINA_PACKAGE_NAME || 'br.com.dnaauto.oficina';
 const GITHUB_APK_RELEASE_BASE = (process.env.DNA_APK_RELEASE_BASE || 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest').replace(/\/$/, '');

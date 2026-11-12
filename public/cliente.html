@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/><title>DNA AUTO • App do Cliente • Protótipo</title>
+<html lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" name="viewport"/><title>DNA AUTO • App do Cliente • Protótipo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet"/>
@@ -486,13 +486,14 @@
 .splash-wrapper {
   position: relative;
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
   height: 100%;
+  height: 100dvh;
   max-height: 100dvh;
   margin: 0 auto;
-  aspect-ratio: 576 / 1024;
   overflow: hidden;
   background: #020712;
+  box-sizing: border-box;
 }
 
 .splash-bg {
@@ -563,14 +564,19 @@
 
 .splash-actions {
   position: absolute;
-  bottom: 5.5%;
-  left: 7.5%;
-  right: 7.5%;
+  bottom: calc(28px + env(safe-area-inset-bottom, 18px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 48px);
+  max-width: 380px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  align-items: center;
+  justify-content: center;
   pointer-events: auto !important;
   z-index: 50;
+  box-sizing: border-box;
 }
 
 .btn-splash-enter {
@@ -2644,6 +2650,45 @@ section.splash .splash-bg {
   display: flex !important;
   flex-direction: column !important;
   justify-content: flex-start !important;
+}
+
+@media (max-height: 580px) {
+  #login.screen {
+    justify-content: flex-start !important;
+    height: auto !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    padding-bottom: calc(40px + env(safe-area-inset-bottom, 16px)) !important;
+  }
+  .login-hero-container {
+    min-height: 60px !important;
+    max-height: 80px !important;
+    flex: 0 0 auto !important;
+    opacity: 0.35 !important;
+  }
+  .login-sheet-card {
+    margin-top: 0 !important;
+    border-radius: 20px 20px 0 0 !important;
+  }
+}
+
+body.keyboard-open #login.screen {
+  justify-content: flex-start !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+body.keyboard-open .login-hero-container {
+  min-height: 0 !important;
+  max-height: 70px !important;
+  flex: 0 0 auto !important;
+  opacity: 0.25 !important;
+}
+body.keyboard-open .login-sheet-card {
+  margin-top: 0 !important;
+  padding-bottom: calc(180px + env(safe-area-inset-bottom, 20px)) !important;
 }
 .login-native-form {
   display: flex !important;
@@ -8637,5 +8682,22 @@ window.DNAApkInstaller = {
   init: initClientApkLifecycle
 };
 
+// Gerenciamento de teclado virtual nos formulários do Cliente
+document.addEventListener('focusin', (e) => {
+  if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+    document.body.classList.add('keyboard-open');
+    setTimeout(() => {
+      try { e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(_) {}
+    }, 120);
+  }
+});
+document.addEventListener('focusout', () => {
+  setTimeout(() => {
+    const active = document.activeElement;
+    if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')) {
+      document.body.classList.remove('keyboard-open');
+    }
+  }, 150);
+});
 </script>
 </body></html>

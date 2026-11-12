@@ -4060,7 +4060,7 @@ select:-webkit-autofill:focus {
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
-    padding: calc(20px + env(safe-area-inset-top, 0px)) 20px calc(24px + env(safe-area-inset-bottom, 12px));
+    padding: calc(20px + env(safe-area-inset-top, 0px)) 20px calc(38px + env(safe-area-inset-bottom, 20px));
     box-sizing: border-box;
     overflow: hidden;
     color: #FFFFFF;
@@ -4072,8 +4072,9 @@ select:-webkit-autofill:focus {
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center top;
+    object-fit: contain;
+    object-position: center center;
+    background: #010712;
     opacity: 1;
     pointer-events: none;
     z-index: 1;
@@ -4195,9 +4196,11 @@ select:-webkit-autofill:focus {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    width: 100%;
+    width: calc(100% - 32px);
     max-width: 360px;
     margin: 0 auto;
+    margin-bottom: calc(14px + env(safe-area-inset-bottom, 14px));
+    box-sizing: border-box;
 }
 
 .ws-splash-btn-entrar {
@@ -4251,6 +4254,45 @@ select:-webkit-autofill:focus {
     display: flex;
     flex-direction: column;
     position: relative;
+}
+
+@media (max-height: 580px) {
+    .ws-login-screen {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    .ws-login-hero {
+        min-height: 70px !important;
+        max-height: 85px !important;
+        flex: 0 0 auto !important;
+    }
+    .ws-login-hero-content {
+        display: none !important;
+    }
+    .ws-login-card-container {
+        margin-top: 0 !important;
+        padding-bottom: calc(40px + env(safe-area-inset-bottom, 16px)) !important;
+    }
+}
+
+body.keyboard-open .ws-login-screen {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+body.keyboard-open .ws-login-hero {
+    min-height: 60px !important;
+    max-height: 75px !important;
+    flex: 0 0 auto !important;
+}
+body.keyboard-open .ws-login-hero-bg {
+    opacity: 0.2 !important;
+}
+body.keyboard-open .ws-login-hero-content {
+    display: none !important;
+}
+body.keyboard-open .ws-login-card-container {
+    margin-top: 0 !important;
+    padding-bottom: calc(140px + env(safe-area-inset-bottom, 20px)) !important;
 }
 
 .ws-login-hero {

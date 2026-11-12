@@ -8,13 +8,13 @@ on:
         required: true
         default: 'https://dna-auto-byin.onrender.com'
       version_name:
-        description: 'Versão dos APKs (ex: 2.5.3)'
+        description: 'Versão dos APKs (ex: 2.5.4)'
         required: true
-        default: '2.5.3'
+        default: '2.5.4'
       version_code:
-        description: 'Código inteiro da versão (ex: 253)'
+        description: 'Código inteiro da versão (ex: 254)'
         required: true
-        default: '253'
+        default: '254'
   push:
     branches:
       - master
@@ -45,8 +45,8 @@ jobs:
         working-directory: android-client
         env:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
-          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.3' }}
-          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '253' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.4' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '254' }}
         run: |
           npm install
           npx cap add android
@@ -61,8 +61,8 @@ jobs:
         working-directory: android-oficina
         env:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
-          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.3' }}
-          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '253' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.4' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '254' }}
         run: |
           npm install
           npx cap add android
@@ -96,7 +96,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VNAME="${{ github.event.inputs.version_name }}"
-          if [ -z "$VNAME" ]; then VNAME="2.5.3"; fi
+          if [ -z "$VNAME" ]; then VNAME="2.5.4"; fi
           gh release delete apk-latest --yes || true
           git push origin :refs/tags/apk-latest || true
           gh release create apk-latest dna-auto-cliente.apk dna-auto-oficina.apk \

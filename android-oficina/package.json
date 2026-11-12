@@ -1,6 +1,6 @@
 {
   "name": "dna-auto-oficina-android",
-  "version": "2.5.3",
+  "version": "2.5.4",
   "private": true,
   "description": "Empacotador Android APK nativo do ERP da Oficina DNA AUTO com tela cheia edge-to-edge e atualização automática.",
   "scripts": {
