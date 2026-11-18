@@ -61,22 +61,76 @@ try {
     }
 } catch (_) {}
 
-// Garantir oficina credenciada base no banco de dados para evitar falhas de Foreign Key
+// Garantir oficina credenciada base e contas padrão de testes em todos os perfis
 try {
-    const hasWorkshop = db.prepare(`SELECT id FROM workshops LIMIT 1`).get();
+    const bcrypt = require('bcryptjs');
+    try { db.exec(`ALTER TABLE workshop_users ADD COLUMN generated_password TEXT`); } catch (_) {}
+
+    const hasWorkshop = db.prepare(`SELECT id FROM workshops WHERE id = 'ws_veloce'`).get();
     if (!hasWorkshop) {
         db.prepare(`
             INSERT OR IGNORE INTO workshops (
                 id, company_name, trade_name, cnpj, email, phone,
-                address_street, address_number, address_neighborhood, city, state, zip_code, status
+                address_street, address_number, address_neighborhood, city, state, zip_code, status, verified_badge
             ) VALUES (
-                'ws_veloce', 'Veloce Manutenção Automotiva LTDA', 'Veloce Auto Center',
-                '12.345.678/0001-99', 'contato@veloceautocenter.com.br', '(11) 98765-4321',
-                'Av. das Oficinas', '1000', 'Centro', 'São Paulo', 'SP', '01001-000', 'ACTIVE'
+                'ws_veloce', 'Auto Center Veloce Premium LTDA', 'Veloce Auto Center Premium',
+                '12.345.678/0001-90', 'contato@veloce.com.br', '(19) 3241-8900',
+                'Av. Barão de Itapura', '1420', 'Guanabara', 'Campinas', 'SP', '13020-432', 'APPROVED', 1
             )
         `).run();
     }
-} catch (_) {}
+
+    const ensureRole = db.prepare(`INSERT OR IGNORE INTO roles (id, code, name, description) VALUES (?, ?, ?, ?)`);
+    ensureRole.run('role_admin', 'ADMIN', 'Administrador DNA AUTO', 'Gestão completa da plataforma');
+    ensureRole.run('role_workshop_owner', 'WORKSHOP_OWNER', 'Gestor da Oficina', 'Gerenciamento da oficina e equipe');
+    ensureRole.run('role_workshop_mechanic', 'WORKSHOP_MECHANIC', 'Mecânico Chefe', 'Registro técnico de serviços e peças');
+    ensureRole.run('role_workshop_staff', 'WORKSHOP_STAFF', 'Registrador da Oficina', 'Registrador técnico de fotos de peças e serviços da oficina');
+    ensureRole.run('role_owner', 'OWNER', 'Proprietário de Veículo', 'Acompanhamento do DNA e transferências');
+    ensureRole.run('role_representative', 'REPRESENTATIVE', 'Representante Comercial', 'Indicação comercial de oficinas e acompanhamento de comissões');
+
+    const defaultPassHash = bcrypt.hashSync('senha123', 10);
+    const staffPassHash = bcrypt.hashSync('123456', 10);
+    const repPassHash = bcrypt.hashSync('rep123456', 10);
+
+    const ensureUser = db.prepare(`
+        INSERT OR IGNORE INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
+        VALUES (?, ?, ?, ?, ?, ?, 'ACTIVE', 0)
+    `);
+    ensureUser.run('usr_workshop_marcos', 'Marcos Silveira', 'marcos@veloce.com.br', defaultPassHash, '(19) 98888-1111', 'role_workshop_owner');
+    ensureUser.run('usr_workshop_dna', 'Oficina Credenciada DNA AUTO', 'oficina@dnaauto.com.br', defaultPassHash, '(11) 98888-4444', 'role_workshop_owner');
+    ensureUser.run('usr_workshop_oficina', 'Carlos - Auto Center Silva', 'oficina@autocenter.com.br', defaultPassHash, '(11) 98888-3333', 'role_workshop_owner');
+    ensureUser.run('usr_workshop_roberto', 'Roberto Mecânico Chefe', 'roberto@veloce.com.br', defaultPassHash, '(19) 98888-2222', 'role_workshop_mechanic');
+    ensureUser.run('usr_workshop_staff_demo', 'Funcionário Registrador (Sem Financeiro)', 'funcionario@veloce.com.br', staffPassHash, '(19) 98888-5555', 'role_workshop_staff');
+    ensureUser.run('usr_owner_carlos', 'Carlos Alberto Silva', 'carlos.silva@email.com', defaultPassHash, '(11) 97777-3333', 'role_owner');
+    ensureUser.run('usr_client', 'Cliente Proprietário', 'cliente@dnaauto.com.br', defaultPassHash, '(11) 98888-7777', 'role_owner');
+    ensureUser.run('usr_rep_000123', 'Leonardo Palmeira (Representante Comercial)', 'representante@dnaauto.com.br', repPassHash, '(11) 99888-0123', 'role_representative');
+
+    const ensureWu = db.prepare(`
+        INSERT OR IGNORE INTO workshop_users (id, workshop_id, user_id, position_title, can_activate_dna, can_prove_services, generated_password)
+        VALUES (?, 'ws_veloce', ?, ?, 1, 1, ?)
+    `);
+    ensureWu.run('wu_1', 'usr_workshop_marcos', 'Proprietário & Diretor Técnico', null);
+    ensureWu.run('wu_2', 'usr_workshop_roberto', 'Mecânico Chefe Responsável', null);
+    ensureWu.run('wu_3', 'usr_workshop_oficina', 'Gestor da Auto Center Silva', null);
+    ensureWu.run('wu_4', 'usr_workshop_dna', 'Oficina Credenciada Master', null);
+    ensureWu.run('wu_5_staff_demo', 'usr_workshop_staff_demo', 'Registrador Técnico', 'REG123');
+
+    db.prepare(`
+        INSERT OR IGNORE INTO representatives (
+            id, user_id, rep_code, name, cpf_cnpj, email, phone, city, state,
+            pix_key, experience, status, max_workshops_limit, monthly_goal_workshops,
+            monthly_goal_activations, links_shared_count, training_completed
+        ) VALUES (
+            'rep_000123', 'usr_rep_000123', 'REP000123',
+            'Leonardo Palmeira (Representante Comercial)', '123.456.789-00',
+            'representante@dnaauto.com.br', '(11) 99888-0123', 'São Paulo', 'SP',
+            'representante@dnaauto.com.br', 'Vendas B2B Automotivo e Autopeças',
+            'ACTIVE', 15, 5, 220, 3, 1
+        )
+    `).run();
+} catch (e) {
+    console.warn('Garantia de contas de teste ignorada:', e.message);
+}
 
 // Garantir presença da tabela client_activations
 try {

@@ -65,11 +65,13 @@ function seedBase(dbInstance) {
         ];
         for (const r of roles) insertRole.run(r);
 
-        // 3. Usuários Padrão (Apenas o Administrador da Plataforma)
+        // 3. Usuários Padrão (Admin + Contas Oficiais de Teste para Todos os Perfis, sem veículos mock)
         const adminHash = bcrypt.hashSync('admin123', 10);
+        const testUserHash = bcrypt.hashSync('senha123', 10);
+        const staffInitialHash = bcrypt.hashSync('123456', 10);
 
         const insertUser = db.prepare(`
-            INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
+            INSERT OR REPLACE INTO users (id, name, email, password_hash, phone, role_id, status, is_demo)
             VALUES (@id, @name, @email, @password_hash, @phone, @role_id, @status, 0)
         `);
 
@@ -80,6 +82,101 @@ function seedBase(dbInstance) {
             password_hash: adminHash,
             phone: '(11) 99999-0001',
             role_id: 'role_admin',
+            status: 'ACTIVE'
+        });
+
+        // Oficina Credenciada Base para Login & Testes Operacionais
+        db.prepare(`
+            INSERT OR REPLACE INTO workshops (
+                id, company_name, trade_name, cnpj, phone, email,
+                address_street, address_number, address_neighborhood, city, state, zip_code,
+                status, verified_badge, notes
+            ) VALUES (
+                'ws_veloce', 'Auto Center Veloce Premium LTDA', 'Veloce Auto Center Premium',
+                '12.345.678/0001-90', '(19) 3241-8900', 'contato@veloce.com.br',
+                'Av. Barão de Itapura', '1420', 'Guanabara', 'Campinas', 'SP', '13020-432',
+                'APPROVED', 1, 'Oficina base credenciada para testes operacionais e financeiros.'
+            )
+        `).run();
+
+        // Contas de Teste da Oficina (Gestores, Mecânico e Funcionário/Registrador)
+        insertUser.run({
+            id: 'usr_workshop_marcos',
+            name: 'Marcos Silveira',
+            email: 'marcos@veloce.com.br',
+            password_hash: testUserHash,
+            phone: '(19) 98888-1111',
+            role_id: 'role_workshop_owner',
+            status: 'ACTIVE'
+        });
+        insertUser.run({
+            id: 'usr_workshop_dna',
+            name: 'Oficina Credenciada DNA AUTO',
+            email: 'oficina@dnaauto.com.br',
+            password_hash: testUserHash,
+            phone: '(11) 98888-4444',
+            role_id: 'role_workshop_owner',
+            status: 'ACTIVE'
+        });
+        insertUser.run({
+            id: 'usr_workshop_oficina',
+            name: 'Carlos - Auto Center Silva',
+            email: 'oficina@autocenter.com.br',
+            password_hash: testUserHash,
+            phone: '(11) 98888-3333',
+            role_id: 'role_workshop_owner',
+            status: 'ACTIVE'
+        });
+        insertUser.run({
+            id: 'usr_workshop_roberto',
+            name: 'Roberto Mecânico Chefe',
+            email: 'roberto@veloce.com.br',
+            password_hash: testUserHash,
+            phone: '(19) 98888-2222',
+            role_id: 'role_workshop_mechanic',
+            status: 'ACTIVE'
+        });
+        insertUser.run({
+            id: 'usr_workshop_staff_demo',
+            name: 'Funcionário Registrador (Sem Financeiro)',
+            email: 'funcionario@veloce.com.br',
+            password_hash: staffInitialHash,
+            phone: '(19) 98888-5555',
+            role_id: 'role_workshop_staff',
+            status: 'ACTIVE'
+        });
+
+        try {
+            db.exec(`ALTER TABLE workshop_users ADD COLUMN generated_password TEXT`);
+        } catch (_) {}
+
+        const insertWu = db.prepare(`
+            INSERT OR REPLACE INTO workshop_users (id, workshop_id, user_id, position_title, can_activate_dna, can_prove_services, generated_password)
+            VALUES (@id, @workshop_id, @user_id, @position_title, @can_activate_dna, @can_prove_services, @generated_password)
+        `);
+        insertWu.run({ id: 'wu_1', workshop_id: 'ws_veloce', user_id: 'usr_workshop_marcos', position_title: 'Proprietário & Diretor Técnico', can_activate_dna: 1, can_prove_services: 1, generated_password: null });
+        insertWu.run({ id: 'wu_2', workshop_id: 'ws_veloce', user_id: 'usr_workshop_roberto', position_title: 'Mecânico Chefe Responsável', can_activate_dna: 1, can_prove_services: 1, generated_password: null });
+        insertWu.run({ id: 'wu_3', workshop_id: 'ws_veloce', user_id: 'usr_workshop_oficina', position_title: 'Gestor da Auto Center Silva', can_activate_dna: 1, can_prove_services: 1, generated_password: null });
+        insertWu.run({ id: 'wu_4', workshop_id: 'ws_veloce', user_id: 'usr_workshop_dna', position_title: 'Oficina Credenciada Master', can_activate_dna: 1, can_prove_services: 1, generated_password: null });
+        insertWu.run({ id: 'wu_5_staff_demo', workshop_id: 'ws_veloce', user_id: 'usr_workshop_staff_demo', position_title: 'Registrador Técnico', can_activate_dna: 1, can_prove_services: 1, generated_password: 'REG123' });
+
+        // Contas de Teste do App do Cliente (Proprietários)
+        insertUser.run({
+            id: 'usr_owner_carlos',
+            name: 'Carlos Alberto Silva',
+            email: 'carlos.silva@email.com',
+            password_hash: testUserHash,
+            phone: '(11) 97777-3333',
+            role_id: 'role_owner',
+            status: 'ACTIVE'
+        });
+        insertUser.run({
+            id: 'usr_client',
+            name: 'Cliente Proprietário',
+            email: 'cliente@dnaauto.com.br',
+            password_hash: testUserHash,
+            phone: '(11) 98888-7777',
+            role_id: 'role_owner',
             status: 'ACTIVE'
         });
 

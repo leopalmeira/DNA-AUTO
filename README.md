@@ -127,6 +127,27 @@ Abaixo estão discriminados todos os links exclusivos do ecossistema DNA AUTO co
 
 ---
 
+### 🔐 Credenciais Oficiais de Contas para Testes (Todos os Perfis)
+
+> Todas as contas abaixo são provisionadas automaticamente na inicialização do banco (`db.js` e `seedBase`) para testes completos de ponta a ponta em qualquer ambiente (Produção ou Local).  
+> O campo de login aceita **E-mail**, **Telefone/WhatsApp**, **CPF**, **CNPJ da Oficina** ou **Placa do Veículo**.
+
+| Perfil / Ambiente | Onde Testar | E-mail (Login) | Telefone / Identificador Alt. | Senha | PIN / Código Extra |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| 🛡️ **Admin Matriz (`ADMIN`)** | `/admin` | `admin@dnaauto.com.br` | `(11) 99999-0001` | `admin123` | — |
+| 🏢 **Oficina — Gestor Principal (`WORKSHOP_OWNER`)** | `/oficina` • `/oficina?mode=web` | `marcos@veloce.com.br` | `(19) 98888-1111` • CNPJ `12.345.678/0001-90` | `senha123` | PIN Financeiro: `123456` |
+| 🏢 **Oficina — Gestor DNA AUTO (`WORKSHOP_OWNER`)** | `/oficina` • `/oficina?mode=web` | `oficina@dnaauto.com.br` | `(11) 98888-4444` | `senha123` | PIN Financeiro: `123456` |
+| 🏢 **Oficina — Gestor Auto Center (`WORKSHOP_OWNER`)** | `/oficina` • `/oficina?mode=web` | `oficina@autocenter.com.br` | `(11) 98888-3333` | `senha123` | PIN Financeiro: `123456` |
+| 🔧 **Oficina — Mecânico Chefe (`WORKSHOP_MECHANIC`)** | `/oficina` | `roberto@veloce.com.br` | `(19) 98888-2222` | `senha123` | — |
+| 👷 **Oficina — Funcionário / Registrador (`WORKSHOP_STAFF`)** | `/oficina` *(card Financeiro oculto/bloqueado)* | `funcionario@veloce.com.br` | `(19) 98888-5555` | `123456` ou `REG123` | Sem acesso financeiro (`403`) |
+| 🚗 **Cliente Proprietário (`OWNER` — Carlos)** | `/cliente` • `/login` | `carlos.silva@email.com` | `(11) 97777-3333` • Placa `BRA2E19` *(c/ seed demo)* | `senha123` | — |
+| 🚗 **Cliente Proprietário (`OWNER` — Padrão)** | `/cliente` • `/login` | `cliente@dnaauto.com.br` | `(11) 98888-7777` | `senha123` | — |
+| 🤝 **Representante Comercial (`REPRESENTATIVE`)** | `/representante` *(bloqueado em `/oficina` e `/cliente`)* | `representante@dnaauto.com.br` | `(11) 99888-0123` | `rep123456` | Código: `REP000123` |
+
+> 💡 **Dica de testes rápidos:** Novos clientes ou funcionários cadastrados pelo App da Oficina iniciam com a senha padrão **`123456`**. Para carregar também os 4 veículos demonstrativos (`BRA2E19`, `ABC1D23`, `KXZ9012` e `STR1A99`), execute `node server/src/database/seed.js --demo`.
+
+---
+
 ## 💡 A Proposta de Valor e o Problema que Resolvemos
 
 ### A Dor do Mercado
@@ -446,35 +467,46 @@ Abra: **`http://localhost:3000`**
 
 ---
 
-## 🔑 Credenciais de Demonstração (Seed)
+## 🔑 Credenciais de Demonstração e Contas para Testes (Seed)
 
-O banco de dados de desenvolvimento vem pré-configurado com os seguintes usuários:
+O banco de dados é inicializado automaticamente com todas as contas de teste por perfil em `seedBase()` e `db.js`:
 
 ### 1. Administrador Geral (Matriz)
-* **URL de Acesso:** `http://localhost:3000/admin`
+* **URL de Acesso:** `/admin` (`http://localhost:3000/admin`)
 * **E-mail:** `admin@dnaauto.com.br`
+* **Telefone:** `(11) 99999-0001`
 * **Senha:** `admin123`
 
-### 2. Oficina Credenciada (Veloce Auto Center)
-* **URL de Acesso:** `http://localhost:3000` *(Aba "Oficina Parceira")*
-* **E-mail:** `marcos@veloce.com.br`
-* **Senha:** `senha123`
+### 2. Oficina Credenciada (Veloce Auto Center Premium — `ws_veloce`)
+* **URL de Acesso:** `/oficina` (Mobile/PWA) ou `/oficina?mode=web` (ERP Desktop)
+* **CNPJ da Oficina:** `12.345.678/0001-90`
+* **PIN do Card Financeiro:** `123456` *(ou a própria senha do gestor)*
+* **Contas de Gestor (`WORKSHOP_OWNER`):**
+  * `marcos@veloce.com.br` • Telefone: `(19) 98888-1111` • Senha: **`senha123`**
+  * `oficina@dnaauto.com.br` • Telefone: `(11) 98888-4444` • Senha: **`senha123`**
+  * `oficina@autocenter.com.br` • Telefone: `(11) 98888-3333` • Senha: **`senha123`**
+* **Conta de Mecânico Chefe (`WORKSHOP_MECHANIC`):**
+  * `roberto@veloce.com.br` • Telefone: `(19) 98888-2222` • Senha: **`senha123`**
+* **Conta de Funcionário / Registrador (`WORKSHOP_STAFF` — com bloqueio total do módulo financeiro):**
+  * `funcionario@veloce.com.br` • Telefone: `(19) 98888-5555` • Senha: **`123456`** ou **`REG123`**
 
-### 3. Cliente Proprietário (Honda Civic com DNA)
-* **URL de Acesso:** `http://localhost:3000/cliente`
-* **E-mail:** `carlos.silva@email.com`
-* **Senha:** `senha123`
+### 3. Clientes / Proprietários de Veículo (`OWNER`)
+* **URL de Acesso:** `/cliente` (`http://localhost:3000/cliente`) ou `/login`
+* **Conta 1 (Carlos Alberto Silva):** `carlos.silva@email.com` • Telefone: `(11) 97777-3333` • Senha: **`senha123`**
+* **Conta 2 (Cliente Padrão):** `cliente@dnaauto.com.br` • Telefone: `(11) 98888-7777` • Senha: **`senha123`**
+* *Nota:* Clientes cadastrados pela oficina iniciam com senha padrão **`123456`** e também podem entrar usando **CPF**, **WhatsApp** ou **Placa**.
 
-### 4. Representante Comercial Autorizado (Carlos Mendes — REP000123)
-* **URL do Portal / Painel:** `http://localhost:3000/representante` *(ou `https://dna-auto-vua4.onrender.com/representante`)*
-* **URL Direta de Indicação da Oficina:** `http://localhost:3000/representante/indicacao/REP000123`
+### 4. Representante Comercial Autorizado (`REP000123`)
+* **URL do Portal / Painel:** `/representante` (`http://localhost:3000/representante`)
+* **URL Direta de Indicação da Oficina:** `/representante/indicacao/REP000123`
 * **Código Comercial Exclusivo:** `REP000123`
-* **E-mail:** `representante@dnaauto.com.br`
+* **E-mail:** `representante@dnaauto.com.br` • Telefone: `(11) 99888-0123`
 * **Senha:** `rep123456`
 
-### 4. Veículos Demonstrativos Prontos para Teste
-* **Honda Civic Touring 1.5 Turbo 2021:** Placa `BRA2E19` • Código DNA: `DNA-BR-8F72-29A4-X91` *(Histórico Nível 4 com Score 93/100)*
-* **Toyota Corolla Altis Hybrid 2022:** Placa `COR2D22` • Código DNA: `DNA-BR-7K2M-91A3-Z44` *(Possui serviço pendente de validação pela oficina)*
+### 5. Veículos Demonstrativos (`node server/src/database/seed.js --demo`)
+* **Honda Civic Touring 1.5 Turbo 2021:** Placa `BRA2E19` • Código DNA: `DNA-BR-8F72-29A4-X91` *(Histórico Nível 4 com Score 94/100)*
+* **Toyota Corolla XEi 2.0 2019/2020:** Placa `ABC1D23` • Código DNA: `DNA-BR-4B19-72C1-M40` *(Possui serviço pendente de validação pela oficina)*
+* **VW Gol Trendline 1.6 2017/2018:** Placa `KXZ9012` • Código DNA: `DNA-BR-1A90-55E8-K12` *(DNA recém-ativado)*
 * **Fiat Strada Freedom 1.3 2023:** Placa `STR1A99` *(Veículo sem DNA, pronto para testar o fluxo de ativação pela oficina)*
 
 ---

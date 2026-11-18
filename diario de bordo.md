@@ -1,3 +1,14 @@
+### Ciclo 138 — Garantia de Contas de Teste por Perfil no Seed Base e Documentação Completa de Credenciais no `README.md`
+- **Data:** 18/11/2026
+- **Responsáveis:** `@[backend-specialist]` + `@[documentation-writer]` + `@[test-engineer]`
+- **Contexto & Demandas Atendidas:**
+  1. **Provisionamento Base de Contas de Teste (`server/src/database/seed.js` e `server/src/database/db.js`):**
+     - Garantida a presença automática em `seedBase()` e no bootstrap `db.js` das contas de teste de todos os perfis (`ADMIN`, `WORKSHOP_OWNER`, `WORKSHOP_MECHANIC`, `WORKSHOP_STAFF` sem acesso financeiro, `OWNER` e `REPRESENTATIVE`), além da oficina base `ws_veloce`, preservando `seedBase()` sem veículos mock para não afetar contagens iniciais nos testes.
+  2. **Documentação Completa no `README.md`:**
+     - Adicionada tabela consolidada de credenciais de teste para todos os perfis logo após o bloco de Acesso Rápido e atualizada a seção `## 🔑 Credenciais de Demonstração e Contas para Testes (Seed)` (incluindo PIN financeiro `123456`, senhas `123456`/`REG123` de funcionário e placas reais do `--demo`).
+  3. **Validação:**
+     - `node -c` em `seed.js` e `db.js`, além das 9 suítes (`npm test`) e `representante.homologation.test.js` (20 cenários) aprovados com 100% de sucesso.
+
 ### Ciclo 137 — Correção de Zoom no Login do App do Cliente e Redesign UI/UX Profissional da Tela de Login e Cadastro da Oficina (`v2.5.5`)
 - **Data:** 18/11/2026
 - **Responsáveis:** `@[frontend-specialist]` + `@[mobile-developer]` + `@[test-engineer]`
