@@ -1,3 +1,19 @@
+### Ciclo 137 — Correção de Zoom no Login do App do Cliente e Redesign UI/UX Profissional da Tela de Login e Cadastro da Oficina (`v2.5.5`)
+- **Data:** 18/11/2026
+- **Responsáveis:** `@[frontend-specialist]` + `@[mobile-developer]` + `@[test-engineer]`
+- **Contexto & Demandas Atendidas:**
+  1. **Eliminação do Zoom no Background de Login do App do Cliente (`cliente.app/index.html` e `public/cliente.html`):**
+     - Gerada nova arte `login-hero-official.png` (`586x790`, em `cliente.app/img/` e `public/img/`) a partir da arte oficial completa (`dna-auth-splash.png`) com fade suave de vignette para `#010916`, preservando logo, título, slogan e o veículo inteiro sem corte.
+     - `.login-hero-container` e `.login-hero-banner-img` ajustados para `object-fit: contain; object-position: center bottom; max-width: 390px;` sobre `#010916`, eliminando o zoom exagerado causado por `object-fit: cover` no recorte antigo.
+  2. **Redesign Profissional UI/UX da Tela de Login & Cadastro do App da Oficina (`oficina.app/js/components/workshopMobileView.js` e `oficina.app/css/workshop-mobile.css`):**
+     - Gerada imagem `oficina-login-hero-clean.png` (`586x790`, em `oficina.app/img/` e `public/img/`) com vignette para `#010916`, substituindo o enquadramento estreito com bordas duras.
+     - Removida a sobreposição de logo/título HTML duplicados (`.ws-login-hero-content`) sobre o veículo e ampliada a área do hero com `.ws-login-hero-bg` em `object-fit: contain; object-position: center bottom;`.
+     - Redesenhado o bottom sheet branco (`.ws-login-card-sheet`) em padrão corporativo de alta definição: badge institucional `ACESSO OFICINA CREDENCIADA`, inputs com compartimento esquerdo dedicado (`.ws-login-field-icon`) e ícones vetoriais SVG (`#0066FF`) substituindo emojis do sistema, botão de olho SVG, checkbox estilizado, botão primário pill `.ws-login-pill-btn` com classe `.dna-oficina-login-btn` (restaurando feedback visual/loading no submit) e remoção dos botões sociais falsos (`ou continue com` Google/Apple).
+     - Limpeza de regras CSS órfãs e correção de contraste de placeholder/autofill em `.ws-login-input-row` e `.dna-oficina-login-input` (cadastro da oficina também atualizado com SVGs nítidos).
+  3. **Cache-Busting & Validação (`v2.5.5`):**
+     - `server.js`, `sw.js` (`cliente.app`, `oficina.app`, `public`) e HTMLs atualizados para `2.5.5` (`APK_VERSION_CODE = 255`), com paridade validada entre `cliente.app`/`oficina.app` e `public/`.
+     - Bateria completa `npm test` (9/9 suítes) executada com 100% de sucesso.
+
 ### Ciclo 136 — Refinamento de Enquadramento Sem Zoom na Oficina, Elevação e Safe-Area Ampliada dos Botões, Ocultação de Hero no Teclado, Inclusão dos Binários APK 3D e Purga de Cache PWA (`v2.5.4`)
 - **Data:** 12/11/2026
 - **Responsáveis:** `@[frontend-specialist]` + `@[backend-specialist]` + `@[mobile-developer]` + `@[test-engineer]`

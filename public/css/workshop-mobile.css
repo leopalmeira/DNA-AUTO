@@ -2680,7 +2680,7 @@ input.dna-plate-input {
     position: relative;
     overflow-x: hidden;
     overflow-y: auto;
-    background: #010712;
+    background: #010916;
 }
 
 .dna-oficina-login-bg {
@@ -2691,7 +2691,7 @@ input.dna-plate-input {
     background-size: contain;
     background-position: center top;
     background-repeat: no-repeat;
-    background-color: #010712;
+    background-color: #010916;
     z-index: 1;
 }
 
@@ -2807,9 +2807,12 @@ input.dna-plate-input {
     top: 50%;
     transform: translateY(-50%);
     font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     pointer-events: none;
     z-index: 5;
-    color: #64748B;
+    color: #0066FF;
 }
 
 .dna-oficina-login-input {
@@ -3414,8 +3417,6 @@ textarea {
 
 /* CAIXAS COM FUNDO BRANCO OU CLARO (EX: LOGIN, CARDS BRANCOS, BUSCA CLARA) */
 .ws-light-box input,
-.ws-login-card-sheet input,
-.ws-login-input-row input,
 .ws-model-dash-card input,
 .bg-white input,
 input.bg-white,
@@ -3433,19 +3434,38 @@ input[style*="background-color: white"],
     caret-color: #0F172A !important;
 }
 
+.ws-login-card-sheet input,
+.ws-login-input-row input {
+    color: #0F172A !important;
+    -webkit-text-fill-color: #0F172A !important;
+    color-scheme: light !important;
+    background-color: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    caret-color: #0F172A !important;
+}
+
+.ws-login-card-sheet input:focus,
+.ws-login-input-row input:focus {
+    border: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
 .ws-login-input-row input::placeholder,
+.dna-oficina-login-input::placeholder,
 .bg-white input::placeholder,
 input.light-input::placeholder,
 .dna-input-light::placeholder {
     color: #64748B !important;
     -webkit-text-fill-color: #64748B !important;
     font-weight: 500 !important;
+    opacity: 1 !important;
 }
 
 .dna-mobile-shell input::placeholder,
 .dna-mobile-shell textarea::placeholder,
 .dna-plate-input::placeholder,
-.dna-oficina-login-input::placeholder,
 input::placeholder,
 textarea::placeholder {
     color: rgba(255, 255, 255, 0.6) !important;
@@ -3464,13 +3484,6 @@ textarea:focus {
     box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.25) !important;
     outline: none !important;
 }
-    color: #FFFFFF !important;
-    -webkit-text-fill-color: #FFFFFF !important;
-    background-color: rgba(15, 28, 55, 0.98) !important;
-    border-color: #00D4FF !important;
-    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.25) !important;
-    outline: none !important;
-}
 
 /* Ícone de data e calendário em branco de alta visibilidade */
 ::-webkit-calendar-picker-indicator {
@@ -3478,7 +3491,7 @@ textarea:focus {
     cursor: pointer;
 }
 
-/* Autofill do navegador mantendo texto branco e fundo navy escuro */
+/* Autofill do navegador mantendo contraste correto */
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus,
@@ -3493,8 +3506,16 @@ select:-webkit-autofill:focus {
     transition: background-color 5000s ease-in-out 0s !important;
     color: #FFFFFF !important;
 }
-    filter: invert(1) brightness(1.2) !important;
-    cursor: pointer;
+
+.ws-login-input-row input:-webkit-autofill,
+.ws-login-input-row input:-webkit-autofill:hover,
+.ws-login-input-row input:-webkit-autofill:focus,
+.dna-oficina-login-input:-webkit-autofill,
+.dna-oficina-login-input:-webkit-autofill:hover,
+.dna-oficina-login-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #0F172A !important;
+    -webkit-box-shadow: 0 0 0px 1000px #f8fbff inset !important;
+    color: #0F172A !important;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -4245,39 +4266,53 @@ select:-webkit-autofill:focus {
 }
 
 /* ==============================================================================
-   TELA 2: LOGIN OFICIAL DA OFICINA
+   TELA 2: LOGIN OFICIAL DA OFICINA (HARMONIZADA COM IDENTIDADE DNA AUTO)
    ============================================================================== */
 .ws-login-screen {
     width: 100%;
-    min-height: 100vh;
     min-height: 100dvh;
-    background: #F1F5F9;
+    height: 100dvh;
+    max-height: 100dvh;
+    background: #010916;
     display: flex;
     flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
     position: relative;
+    box-sizing: border-box;
 }
 
 @media (max-height: 580px) {
     .ws-login-screen {
+        justify-content: flex-start !important;
+        height: auto !important;
+        min-height: 100% !important;
+        max-height: none !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
+        padding-bottom: calc(40px + env(safe-area-inset-bottom, 16px)) !important;
     }
     .ws-login-hero {
-        min-height: 70px !important;
+        min-height: 60px !important;
         max-height: 85px !important;
         flex: 0 0 auto !important;
+        opacity: 0.35 !important;
     }
-    .ws-login-hero-content {
-        display: none !important;
-    }
+    .ws-login-card-sheet,
     .ws-login-card-container {
         margin-top: 0 !important;
+        border-radius: 20px 20px 0 0 !important;
         padding-bottom: calc(40px + env(safe-area-inset-bottom, 16px)) !important;
     }
 }
 
 body.keyboard-open .ws-login-screen {
     justify-content: flex-start !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
     padding-top: calc(14px + env(safe-area-inset-top, 0px)) !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch !important;
@@ -4287,7 +4322,8 @@ body.keyboard-open .ws-login-hero {
 }
 body.keyboard-open .ws-login-card-sheet,
 body.keyboard-open .ws-login-card-container {
-    margin-top: 0 !important;
+    margin-top: calc(12px + env(safe-area-inset-top, 0px)) !important;
+    border-radius: 24px !important;
     padding-bottom: calc(220px + env(safe-area-inset-bottom, 20px)) !important;
 }
 
@@ -4307,182 +4343,234 @@ body.keyboard-open .dna-oficina-login-card {
 }
 
 .ws-login-hero {
-    height: clamp(200px, 32vh, 260px);
-    background: radial-gradient(circle at 50% 30%, #0A1C38 0%, #030814 100%);
     position: relative;
-    padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 20px;
+    width: 100%;
+    max-width: 480px;
+    flex: 1 1 auto;
+    min-height: 220px;
+    max-height: calc(100dvh - 285px);
+    background: radial-gradient(ellipse at 50% 60%, #041936 0%, #010916 78%);
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    align-items: flex-end;
+    justify-content: center;
+    margin: 0 auto;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 0;
     box-sizing: border-box;
     overflow: hidden;
 }
 
 .ws-login-hero-bg {
-    position: absolute;
-    inset: 0;
     width: 100%;
     height: 100%;
+    max-width: 390px;
     object-fit: contain;
-    object-position: center top;
-    background: #010712;
-    opacity: 0.6;
+    object-position: center bottom;
+    background: transparent;
+    opacity: 1;
+    display: block;
+    margin: 0 auto;
     pointer-events: none;
 }
 
-.ws-login-hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(3, 8, 20, 0.2) 0%, rgba(3, 8, 20, 0.7) 60%, #030814 100%);
-    pointer-events: none;
+.ws-login-back-pill {
+    position: absolute !important;
+    top: max(14px, env(safe-area-inset-top, 14px)) !important;
+    left: 14px !important;
+    z-index: 30 !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 50% !important;
+    border: 1.5px solid #00c3ff !important;
+    background: rgba(8, 22, 44, 0.7) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    display: grid !important;
+    place-items: center !important;
+    cursor: pointer !important;
+    box-shadow: 0 0 14px rgba(0, 195, 255, 0.35) !important;
+    padding: 0 !important;
+    transition: transform 0.15s ease, background 0.15s ease !important;
 }
-
-.ws-login-hero-content {
-    position: relative;
-    z-index: 5;
-    text-align: center;
-    margin-top: 10px;
-}
-
-.ws-login-hero-content .brand-title {
-    font-size: 26px;
-    font-weight: 900;
-    color: #FFFFFF;
-    letter-spacing: -0.5px;
-    font-family: 'Outfit', sans-serif;
-}
-.ws-login-hero-content .brand-title span {
-    color: #0084FF;
-}
-
-.ws-login-hero-content .brand-sub {
-    font-size: 14px;
-    font-weight: 700;
-    color: #38BDF8;
-    margin-top: 2px;
-}
-
-.ws-login-hero-content .brand-desc {
-    font-size: 12px;
-    color: #94A3B8;
-    margin-top: 4px;
+.ws-login-back-pill:active {
+    transform: scale(0.92) !important;
 }
 
 /* Card Branco Sheet Inferior de Login */
 .ws-login-card-sheet {
     position: relative;
     z-index: 10;
+    width: 100%;
+    max-width: 480px;
     background: #FFFFFF;
-    border-radius: 24px 24px 0 0;
-    margin-top: -20px;
-    flex: 1;
-    padding: 24px 20px 30px;
+    border-radius: 28px 28px 0 0;
+    margin: -16px auto 0;
+    flex: 0 0 auto;
+    padding: clamp(18px, 2.4vh, 22px) clamp(18px, 4vw, 22px) calc(clamp(18px, 2.4vh, 22px) + env(safe-area-inset-bottom, 12px));
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    gap: 13px;
+    box-shadow: 0 -12px 32px rgba(0, 5, 15, 0.35);
     box-sizing: border-box;
 }
 
-.ws-login-input-row {
-    height: 48px;
-    background: #FFFFFF !important;
-    border: 1px solid #CBD5E1 !important;
-    border-radius: 12px;
+.ws-login-sheet-header {
     display: flex;
     align-items: center;
-    padding: 0 14px;
-    gap: 10px;
+    justify-content: center;
+    margin-bottom: 2px;
+}
+
+.ws-login-role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 9999px;
+    background: #EEF6FF;
+    border: 1px solid #CCE3FF;
+    color: #0066FF;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.55px;
+    text-transform: uppercase;
+}
+
+.ws-login-input-row {
+    height: 52px;
+    background: #f8fbff !important;
+    border: 1.5px solid #dce8f5 !important;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    padding: 0;
     box-sizing: border-box;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    overflow: hidden;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-.ws-login-input-row .icon {
-    font-size: 18px;
-    color: #64748B;
+.ws-login-input-row:focus-within {
+    background: #ffffff !important;
+    border-color: #0066FF !important;
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.12) !important;
+}
+
+.ws-login-field-icon {
+    width: 46px;
+    height: 100%;
+    border-right: 1.5px solid #dce8f5;
+    display: grid;
+    place-items: center;
     flex-shrink: 0;
+    background: transparent;
 }
+
 .ws-login-input-row input {
     flex: 1;
-    border: none !important;
+    width: 100%;
+    height: 100%;
+    border: 0 !important;
     background: transparent !important;
+    padding: 0 14px !important;
     font-size: 14px !important;
+    font-weight: 500 !important;
     color: #0F172A !important;
     outline: none !important;
     box-shadow: none !important;
-    padding: 0 !important;
+    font-family: inherit;
+}
+
+.ws-login-eye-btn {
+    border: 0;
+    background: transparent;
+    color: #0066FF;
+    display: grid;
+    place-items: center;
+    padding: 0 14px;
+    height: 100%;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
 .ws-login-options-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 12px;
-    color: #64748B;
-    margin: 2px 2px;
+    font-size: 13px;
+    color: #1E293B;
+    margin: 2px 0 4px;
 }
-.ws-login-options-row label {
+.ws-login-remember-label {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     cursor: pointer;
     font-weight: 600;
+    user-select: none;
+}
+.ws-login-remember-label input {
+    display: none !important;
+}
+.ws-custom-checkbox-box {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    background: #0066FF;
+    border: 1.5px solid #0066FF;
+    display: grid;
+    place-items: center;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+.ws-login-remember-label input:not(:checked) + .ws-custom-checkbox-box {
+    background: #FFFFFF;
+    border-color: #CBD5E1;
+}
+.ws-login-remember-label input:not(:checked) + .ws-custom-checkbox-box svg {
+    display: none;
 }
 .ws-login-options-row a {
     color: #0066FF;
+    font-size: 13px;
     font-weight: 700;
     text-decoration: none;
 }
 
-.ws-login-divider {
-    display: flex;
-    align-items: center;
-    text-align: center;
-    color: #94A3B8;
-    font-size: 12px;
-    margin: 8px 0;
+.ws-login-pill-btn {
+    margin-top: 4px !important;
+    height: 52px !important;
+    width: 100% !important;
+    border: 0 !important;
+    border-radius: 9999px !important;
+    background: linear-gradient(90deg, #0077ff 0%, #0055ff 100%) !important;
+    color: #FFFFFF !important;
+    font-family: 'Outfit', 'Inter', sans-serif !important;
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.3px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    box-shadow: 0 8px 24px rgba(0, 102, 255, 0.4) !important;
+    cursor: pointer !important;
+    transition: transform 0.18s ease, box-shadow 0.18s ease !important;
 }
-.ws-login-divider::before,
-.ws-login-divider::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid #E2E8F0;
+.ws-login-pill-btn:hover {
+    box-shadow: 0 10px 28px rgba(0, 102, 255, 0.5) !important;
+    transform: translateY(-1px);
 }
-.ws-login-divider:not(:empty)::before {
-    margin-right: 12px;
-}
-.ws-login-divider:not(:empty)::after {
-    margin-left: 12px;
-}
-
-.ws-login-social-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-}
-.ws-login-social-btn {
-    width: 60px;
-    height: 44px;
-    border-radius: 12px;
-    background: #FFFFFF;
-    border: 1px solid #E2E8F0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    cursor: pointer;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+.ws-login-pill-btn:active {
+    transform: scale(0.98) !important;
 }
 
 .ws-login-signup-text {
     text-align: center;
     font-size: 13px;
     color: #64748B;
-    margin-top: 10px;
+    margin-top: 6px;
 }
 .ws-login-signup-text a {
     color: #0066FF;
-    font-weight: 700;
+    font-weight: 800;
     text-decoration: none;
 }
 

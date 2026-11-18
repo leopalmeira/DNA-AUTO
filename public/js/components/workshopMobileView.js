@@ -7070,12 +7070,14 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
     WorkshopView.togglePasswordVisibility = function(inputId, btn) {
         const inp = document.getElementById(inputId);
         if (!inp) return;
+        const eyeOpenSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0066FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+        const eyeClosedSvg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0066FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
         if (inp.type === 'password') {
             inp.type = 'text';
-            btn.textContent = '👁️‍🗨️';
+            if (btn) btn.innerHTML = eyeClosedSvg;
         } else {
             inp.type = 'password';
-            btn.textContent = '👁️';
+            if (btn) btn.innerHTML = eyeOpenSvg;
         }
     };
 
@@ -7083,58 +7085,77 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
         const container = document.getElementById('view-content');
         if (!container) return;
 
-        const bgImageUrl = './img/dna-auto-login-hero.jpg';
+        const heroImgUrl = './img/oficina-login-hero-clean.png?v=2.5.5';
 
         container.innerHTML = `
             <div class="ws-login-screen">
                 <div class="ws-login-hero">
-                    <img src="${bgImageUrl}" alt="DNA AUTO Oficina" class="ws-login-hero-bg" onerror="this.src='/img/dna-auto-login-hero.jpg'" />
-                    <div class="ws-login-hero-overlay"></div>
-
-                    <button type="button" class="ws-model-back-btn" onclick="WorkshopView.showOficinaLoginScreen()" aria-label="Voltar">
-                        ‹
+                    <button type="button" class="ws-model-back-btn ws-login-back-pill" onclick="WorkshopView.showOficinaLoginScreen()" aria-label="Voltar">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#38b6ff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m15 18-6-6 6-6"/>
+                        </svg>
                     </button>
-
-                    <div class="ws-login-hero-content">
-                        <div style="display:flex; align-items:center; justify-content:center; gap:8px;">
-                            <svg width="34" height="34" viewBox="0 0 100 100" fill="none">
-                                <path d="M20 15 H55 C78 15 90 28 90 50 C90 72 78 85 55 85 H20 L35 62 H52 C63 62 68 56 68 50 C68 44 63 38 52 38 H35 L20 15Z" fill="#0084FF"/>
-                            </svg>
-                            <span style="font-size:26px; font-weight:900; letter-spacing:-0.5px; color:#FFFFFF; font-family:'Outfit', sans-serif;">DNA <span style="color:#0084FF;">AUTO</span></span>
-                        </div>
-                        <div class="ws-login-hero-content brand-sub">Oficina</div>
-                        <div class="ws-login-hero-content brand-desc">Acesse sua conta para continuar</div>
-                    </div>
+                    <img src="${heroImgUrl}" alt="DNA AUTO Oficina" class="ws-login-hero-bg" onerror="this.src='./img/dna-auto-login-hero.jpg'" />
                 </div>
 
                 <div class="ws-login-card-sheet">
+                    <div class="ws-login-sheet-header">
+                        <div class="ws-login-role-badge">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#0066FF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                <path d="m9 12 2 2 4-4"/>
+                            </svg>
+                            <span>ACESSO OFICINA CREDENCIADA</span>
+                        </div>
+                    </div>
+
                     <div class="ws-login-input-row">
-                        <span class="icon">👤</span>
+                        <div class="ws-login-field-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0066FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
                         <input
                             type="text"
                             id="oficina-login-email"
-                            placeholder="E-mail ou CPF"
+                            placeholder="E-mail, CPF ou CNPJ"
                             autocomplete="username"
+                            aria-label="E-mail, CPF ou CNPJ cadastrado"
                         />
                     </div>
 
                     <div class="ws-login-input-row">
-                        <span class="icon">🔒</span>
+                        <div class="ws-login-field-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0066FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="5" y="11" width="14" height="10" rx="2"/>
+                                <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                            </svg>
+                        </div>
                         <input
                             type="password"
                             id="oficina-login-password"
                             placeholder="Senha"
                             autocomplete="current-password"
-                            onkeydown="if(event.key==='Enter') WorkshopView.handleOficinaLogin()"
+                            aria-label="Senha de acesso"
+                            onkeydown="if(event.key==='Enter'){event.preventDefault();WorkshopView.handleOficinaLogin();}"
                         />
-                        <button type="button" onclick="WorkshopView.togglePasswordVisibility('oficina-login-password', this)" style="background:none; border:none; color:#0066FF; font-size:18px; cursor:pointer; padding:2px 4px;">
-                            👁️
+                        <button type="button" class="ws-login-eye-btn" onclick="WorkshopView.togglePasswordVisibility('oficina-login-password', this)" aria-label="Mostrar ou ocultar senha">
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0066FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
                         </button>
                     </div>
 
                     <div class="ws-login-options-row">
-                        <label>
+                        <label class="ws-login-remember-label">
                             <input type="checkbox" id="oficina-remember-me" checked />
+                            <span class="ws-custom-checkbox-box" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m4 12 5 5L20 7"/>
+                                </svg>
+                            </span>
                             <span>Lembrar de mim</span>
                         </label>
                         <a href="javascript:void(0)" onclick="WorkshopView.showToast('Para recuperar sua senha, entre em contato com o suporte ou gestor da oficina.', 'info')">
@@ -7142,20 +7163,12 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                         </a>
                     </div>
 
-                    <button type="button" class="ws-model-btn-primary" style="margin:4px 0 0; width:100%;" onclick="WorkshopView.handleOficinaLogin()">
-                        <span>Entrar</span> <span>→</span>
+                    <button type="button" class="dna-oficina-login-btn ws-login-pill-btn" onclick="WorkshopView.handleOficinaLogin()">
+                        <span>Entrar</span>
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M5 12h14m-7-7 7 7-7 7"/>
+                        </svg>
                     </button>
-
-                    <div class="ws-login-divider">ou continue com</div>
-
-                    <div class="ws-login-social-row">
-                        <button type="button" class="ws-login-social-btn" onclick="WorkshopView.showToast('Login com Google em processo de conexão.', 'info')" title="Entrar com Google">
-                            <span style="font-weight:900; font-size:20px; background:conic-gradient(#4285f4 0 90deg,#34a853 90deg 170deg,#fbbc05 170deg 235deg,#ea4335 235deg 310deg,#4285f4 310deg); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">G</span>
-                        </button>
-                        <button type="button" class="ws-login-social-btn" onclick="WorkshopView.showToast('Login com Apple ID em processo de conexão.', 'info')" title="Entrar com Apple">
-                            <span style="font-size:20px; color:#0F172A;"></span>
-                        </button>
-                    </div>
 
                     <div class="ws-login-signup-text">
                         <span>Não tem uma conta? </span>
@@ -7167,7 +7180,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
 
         setTimeout(() => {
             const emailField = document.getElementById('oficina-login-email');
-            if (emailField) emailField.focus();
+            if (emailField && window.innerWidth >= 768) emailField.focus();
         }, 120);
     };
 
@@ -7176,7 +7189,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
         const container = document.getElementById('view-content');
         if (!container) return;
 
-        const bgImageUrl = './img/dna-auto-login-hero.jpg';
+        const bgImageUrl = './img/oficina-login-hero-clean.png?v=2.5.5';
 
         container.innerHTML = `
             <div class="dna-oficina-login-screen">
@@ -7186,24 +7199,32 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                 <!-- Seta de Voltar -->
                 <button
                     type="button"
+                    class="ws-login-back-pill"
                     onclick="WorkshopView.showOficinaLoginForm()"
-                    style="position:absolute; top:calc(18px + env(safe-area-inset-top,0px)); left:16px; z-index:20; background:rgba(0,0,0,0.45); border:none; border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);"
                     aria-label="Voltar"
                 >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="15 18 9 12 15 6"/>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38b6ff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6"/>
                     </svg>
                 </button>
 
                 <div class="dna-oficina-login-card" style="max-height:85vh; overflow-y:auto;">
-                    <div style="text-align:center; margin-bottom:14px;">
-                        <strong style="font-size:16px; color:#FFFFFF; display:block;">Cadastrar Oficina</strong>
-                        <span style="font-size:11.5px; color:#94A3B8;">Preencha os dados para criar sua conta</span>
+                    <div style="text-align:center; margin-bottom:10px;">
+                        <div class="dna-oficina-login-badge" style="margin-bottom:8px;">
+                            <span class="dna-oficina-badge-dot"></span>
+                            <span>CREDENCIAMENTO OFICIAL</span>
+                        </div>
+                        <strong style="font-size:17px; color:#FFFFFF; display:block;">Cadastrar Oficina</strong>
+                        <span style="font-size:12px; color:#94A3B8;">Preencha os dados para criar sua conta</span>
                     </div>
 
                     <div class="dna-oficina-login-form">
                         <div class="dna-login-input-group">
-                            <span class="dna-login-input-icon">🏢</span>
+                            <span class="dna-login-input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#0066FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/>
+                                </svg>
+                            </span>
                             <input
                                 type="text"
                                 id="reg-oficina-nome"
@@ -7214,7 +7235,11 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                         </div>
 
                         <div class="dna-login-input-group">
-                            <span class="dna-login-input-icon">✉️</span>
+                            <span class="dna-login-input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#0066FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                                </svg>
+                            </span>
                             <input
                                 type="email"
                                 id="reg-oficina-email"
@@ -7226,7 +7251,11 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                         </div>
 
                         <div class="dna-login-input-group">
-                            <span class="dna-login-input-icon">💬</span>
+                            <span class="dna-login-input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#0066FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                                </svg>
+                            </span>
                             <input
                                 type="tel"
                                 id="reg-oficina-whatsapp"
@@ -7237,7 +7266,11 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                         </div>
 
                         <div class="dna-login-input-group">
-                            <span class="dna-login-input-icon">🔒</span>
+                            <span class="dna-login-input-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#0066FF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                                </svg>
+                            </span>
                             <input
                                 type="password"
                                 id="reg-oficina-senha"
@@ -7255,7 +7288,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                         </button>
 
                         <div style="text-align:center; margin-top:8px;">
-                            <span style="color:#64748B; font-size:12.5px;">Já tem conta? </span>
+                            <span style="color:#94A3B8; font-size:12.5px;">Já tem conta? </span>
                             <a href="javascript:void(0)" onclick="WorkshopView.showOficinaLoginForm()" style="color:#00D4FF; font-size:12.5px; font-weight:700; text-decoration:none;">Entrar</a>
                         </div>
                     </div>
@@ -7397,7 +7430,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
                 existingErr.textContent = msg;
             }
 
-            if (btn) { btn.disabled = false; btn.innerHTML = '<span>Entrar</span>'; }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<span>Entrar</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>'; }
         }
     };
 
