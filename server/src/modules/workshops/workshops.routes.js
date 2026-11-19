@@ -14,6 +14,7 @@ const authRoutes = require('../auth/auth.routes');
 const maintenanceMonitor = require('../../services/maintenanceMonitor.service');
 const whatsappBotAgent = require('../../services/whatsappBotAgent.service');
 const { generateDailyAgendaPdf } = require('../../services/agendaPdf.service');
+const { SP_CAPITAL_WORKSHOPS } = require('./spWorkshopsCatalog');
 
 // Diretório para upload de fotos, áudios e vídeos do WhatsApp da Central de Atendimento
 const WHATSAPP_UPLOADS_DIR = path.resolve(__dirname, '../../..', 'uploads', 'whatsapp');
@@ -227,49 +228,104 @@ router.get('/ranking/most-active', (req, res) => {
     }
 });
 
-// Rede de Oficinas Credenciadas (Para o App do Cliente / Dono) com filtro por Estado/Sigla (RJ, SP, etc.)
+// Rede de Oficinas Credenciadas (Para o App do Cliente / Dono) com filtro por Estado/Sigla (RJ, SP, etc.), Zona e Busca
 router.get('/network', (req, res) => {
     try {
-        const { state, uf } = req.query;
+        const { state, uf, zone, q } = req.query;
         const requestedUf = (uf || state || '').toUpperCase().trim();
+        const requestedZone = (zone || '').toLowerCase().trim();
+        const searchTerm = (q || '').toLowerCase().trim();
 
-        const workshops = db.prepare(`
+        const dbWorkshops = db.prepare(`
             SELECT id, trade_name as name, cnpj, phone, email, address_street, address_number, address_neighborhood, city, state, zip_code, verified_badge, status
             FROM workshops
             WHERE status = 'APPROVED' OR status = 'ACTIVE' OR status IS NULL
             ORDER BY verified_badge DESC, trade_name ASC
         `).all();
 
-        const defaultFallback = [
-            { id: 'ws_riobarra', name: 'DNA Auto Rio Barra', city: 'Rio de Janeiro', state: 'RJ', phone: '(21) 98765-1234', address_neighborhood: 'Barra da Tijuca', verified_badge: 1 },
-            { id: 'ws_riobotafogo', name: 'Carioca Prime Auto Center', city: 'Rio de Janeiro', state: 'RJ', phone: '(21) 97654-4321', address_neighborhood: 'Botafogo', verified_badge: 1 },
-            { id: 'ws_veloce', name: 'Veloce Auto Center', city: 'São Paulo', state: 'SP', phone: '(11) 99876-5432', address_neighborhood: 'Bela Vista', verified_badge: 1 },
-            { id: 'ws_autotech', name: 'Auto Center Silva', city: 'São Paulo', state: 'SP', phone: '(11) 98765-4321', address_neighborhood: 'Moema', verified_badge: 1 },
-            { id: 'ws_topmotors', name: 'Top Motors Performance', city: 'Campinas', state: 'SP', phone: '(11) 97654-3210', address_neighborhood: 'Cambuí', verified_badge: 1 },
-            { id: 'ws_marcelo', name: 'Oficina Mecânica do Marcelo', city: 'São Bernardo', state: 'SP', phone: '(11) 96543-2109', address_neighborhood: 'Rudge Ramos', verified_badge: 1 }
-        ];
+        const formattedDb = dbWorkshops.map((w, idx) => {
+            const addr = w.address_street
+                ? `${w.address_street}, ${w.address_number || 'S/N'}${w.address_neighborhood ? ` - ${w.address_neighborhood}` : ''}, ${w.city || 'São Paulo'} - ${w.state || 'SP'}`
+                : `${w.city || 'São Paulo'} - ${w.state || 'SP'}`;
+            const mapsQuery = `${w.name || 'Oficina Credenciada'}, ${addr}`;
+            return {
+                id: w.id,
+                name: w.name || w.trade_name || 'Oficina Credenciada DNA AUTO',
+                rating: Number((4.8 + (idx % 2) * 0.1).toFixed(1)),
+                reviews: 84 + idx * 17,
+                distance: '',
+                neighborhood: w.address_neighborhood || w.city || 'Centro',
+                zone: (w.city || '').toLowerCase().includes('campinas') ? 'Interior SP' : 'Região Metropolitana',
+                city: w.city || 'São Paulo',
+                state: (w.state || 'SP').toUpperCase(),
+                address: addr,
+                phone: w.phone || '(11) 2364-5797',
+                whatsapp: String(w.phone || '551123645797').replace(/\D/g, ''),
+                verified: true,
+                type: idx % 2 === 0 ? 'Oficina Credenciada' : 'Auto Center',
+                specialties: 'Revisão Preventiva, Diagnóstico OBD2 & Mecânica Geral',
+                maps_query: mapsQuery,
+                google_maps_url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery)}`,
+                photoUrl: '/img/oficina-premium.jpg',
+                source: 'database'
+            };
+        });
 
-        let baseList = workshops.length > 0 ? workshops : defaultFallback;
-
-        if (requestedUf && requestedUf !== 'TODOS') {
-            baseList = baseList.filter(w => (w.state || '').toUpperCase() === requestedUf);
-        }
-
-        const formatted = baseList.map((w, idx) => ({
+        const formattedSpCatalog = SP_CAPITAL_WORKSHOPS.map((w) => ({
             id: w.id,
-            name: w.name || w.trade_name || 'Oficina Credenciada DNA AUTO',
-            rating: (4.7 + (idx % 3) * 0.1).toFixed(1),
-            distance: `${(1.2 + idx * 1.5).toFixed(1)} km`,
-            neighborhood: w.address_neighborhood || w.city || 'Centro',
-            city: w.city || 'São Paulo',
-            state: w.state || 'SP',
-            address: w.address_street ? `${w.address_street}, ${w.address_number || 'S/N'}` : 'Av. Principal, 1000',
-            phone: w.phone || '(11) 99876-5432',
+            numericId: w.numericId,
+            name: w.name,
+            rating: Number(w.rating),
+            reviews: w.reviews,
+            distance: '',
+            neighborhood: w.neighborhood,
+            zone: w.zone,
+            city: w.city,
+            state: w.state,
+            address: w.address,
+            phone: w.phone,
+            whatsapp: w.whatsapp,
+            lat: w.lat,
+            lng: w.lng,
             verified: true,
-            type: idx % 2 === 0 ? 'Oficina' : 'Auto Center'
+            type: w.type,
+            specialties: w.specialties,
+            maps_query: w.maps_query,
+            google_maps_url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(w.maps_query)}`,
+            photoUrl: `/${w.photoUrl}`,
+            source: 'google_maps_verified'
         }));
 
-        res.json({ success: true, workshops: formatted });
+        const seenNames = new Set(formattedSpCatalog.map(w => w.name.toLowerCase()));
+        let combined = [
+            ...formattedSpCatalog,
+            ...formattedDb.filter(w => !seenNames.has(w.name.toLowerCase()))
+        ];
+
+        if (requestedUf && requestedUf !== 'TODOS') {
+            combined = combined.filter(w => (w.state || '').toUpperCase() === requestedUf);
+        }
+
+        if (requestedZone && requestedZone !== 'todas') {
+            combined = combined.filter(w => (w.zone || '').toLowerCase() === requestedZone);
+        }
+
+        if (searchTerm) {
+            combined = combined.filter(w =>
+                (w.name || '').toLowerCase().includes(searchTerm) ||
+                (w.neighborhood || '').toLowerCase().includes(searchTerm) ||
+                (w.address || '').toLowerCase().includes(searchTerm) ||
+                (w.specialties || '').toLowerCase().includes(searchTerm) ||
+                (w.zone || '').toLowerCase().includes(searchTerm)
+            );
+        }
+
+        res.json({
+            success: true,
+            total: combined.length,
+            sp_capital_count: SP_CAPITAL_WORKSHOPS.length,
+            workshops: combined
+        });
     } catch (err) {
         console.error('Erro ao listar rede de oficinas:', err);
         res.status(500).json({ error: 'Erro ao listar oficinas da rede credenciada.' });

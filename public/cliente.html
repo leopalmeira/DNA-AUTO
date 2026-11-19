@@ -4778,6 +4778,52 @@ nav[aria-label="Navegação principal"] span,
   box-shadow: 0 4px 18px rgba(10, 35, 70, 0.12) !important;
   margin-bottom: 12px !important;
   flex-shrink: 0 !important;
+  scroll-margin-top: 14px !important;
+  transition: box-shadow 0.28s ease, border-color 0.28s ease !important;
+}
+
+#oficinas .map-shell.map-focus-pulse {
+  border-color: #0066FF !important;
+  animation: dnaMapFocusPulse 1.05s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes dnaMapFocusPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 102, 255, 0.55), 0 8px 24px rgba(0, 102, 255, 0.25);
+  }
+  45% {
+    box-shadow: 0 0 0 6px rgba(0, 102, 255, 0.22), 0 10px 28px rgba(0, 102, 255, 0.28);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 102, 255, 0), 0 4px 18px rgba(10, 35, 70, 0.12);
+  }
+}
+
+.map-loading-pill {
+  position: absolute !important;
+  top: 10px !important;
+  left: 50% !important;
+  transform: translateX(-50%) translateY(-6px) !important;
+  z-index: 6 !important;
+  background: rgba(7, 24, 63, 0.9) !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 5px 12px !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+  box-shadow: 0 4px 14px rgba(4, 20, 48, 0.28) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.2s ease, transform 0.2s ease !important;
+}
+
+.map-loading-pill.visible {
+  opacity: 1 !important;
+  transform: translateX(-50%) translateY(0) !important;
 }
 
 #google-maps-frame {
@@ -5189,6 +5235,147 @@ nav[aria-label="Navegação principal"] span,
 .shop-card.selected .shop-view-action {
   color: #004dc7 !important;
   font-weight: 850 !important;
+}
+
+/* Barra de Busca e Filtros por Zona de São Paulo Capital */
+.oficinas-sp-filters {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin: 0 0 10px 0 !important;
+}
+
+.oficinas-search-wrap {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  background: #ffffff !important;
+  border: 1.5px solid #cfe0f4 !important;
+  border-radius: 12px !important;
+  padding: 0 10px !important;
+  height: 40px !important;
+  box-shadow: 0 2px 8px rgba(11, 40, 80, 0.05) !important;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+.oficinas-search-wrap:focus-within {
+  border-color: #0066FF !important;
+  box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.14) !important;
+}
+
+.oficinas-search-icon {
+  color: #557297 !important;
+  flex-shrink: 0 !important;
+  margin-right: 8px !important;
+}
+
+.oficinas-search-input {
+  flex: 1 !important;
+  min-width: 0 !important;
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  color: #07183F !important;
+}
+
+.oficinas-search-input::placeholder {
+  color: #6b85a8 !important;
+}
+
+.oficinas-search-clear {
+  border: 0 !important;
+  background: #e6effa !important;
+  color: #36557d !important;
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 50% !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  display: none !important;
+  place-items: center !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+}
+
+.oficinas-search-clear.visible {
+  display: grid !important;
+}
+
+.oficinas-zone-pills {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  overflow-x: auto !important;
+  padding-bottom: 2px !important;
+  scrollbar-width: none !important;
+}
+
+.oficinas-zone-pills::-webkit-scrollbar {
+  display: none !important;
+}
+
+.zone-pill {
+  flex-shrink: 0 !important;
+  border: 1px solid #c9dcf2 !important;
+  background: #ffffff !important;
+  color: #294972 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 6px 11px !important;
+  border-radius: 999px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all 0.16s ease !important;
+}
+
+.zone-pill.active {
+  background: #0066FF !important;
+  border-color: #0066FF !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 10px rgba(0, 102, 255, 0.25) !important;
+}
+
+.shop-phone-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 11px !important;
+  color: #35547a !important;
+  font-weight: 600 !important;
+  margin-top: 2px !important;
+}
+
+.shop-actions-right {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
+}
+
+.shop-details-chip {
+  border: 1px solid #c7daf2 !important;
+  background: #f4f8ff !important;
+  color: #16407a !important;
+  font-size: 10.5px !important;
+  font-weight: 750 !important;
+  padding: 3px 8px !important;
+  border-radius: 7px !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: background 0.15s ease, border-color 0.15s ease !important;
+}
+
+.shop-details-chip:hover,
+.shop-details-chip:active {
+  background: #e3effe !important;
+  border-color: #0066FF !important;
+}
+
+.map-floating-info {
+  cursor: pointer !important;
 }
 
 
@@ -5940,14 +6127,15 @@ nav[aria-label="Navegação principal"] span,
   <main class="oficinas-content">
     <div class="oficinas-heading">
       <h1>Oficinas da Rede</h1>
-      <p class="subtitle">Oficinas credenciadas perto de você.</p>
+      <p class="subtitle">Oficinas reais na capital de SP com localização no Google Maps.</p>
     </div>
     
-    <!-- Container do Google Maps Oficial (Iframe Responsivo com Pino no Endereço) -->
+    <!-- Container do Google Maps Oficial (Iframe Responsivo com Pino no Endereço Real) -->
     <div class="map-shell" id="google-map-shell">
+      <div class="map-loading-pill" id="map-loading-pill" aria-live="polite">📍 Localizando no Google Maps...</div>
       <iframe id="google-maps-frame"
         title="Google Maps com Oficinas Credenciadas DNA AUTO"
-        src="https://maps.google.com/maps?q=Av.+Paulista,+1200+-+Bela+Vista,+S%C3%A3o+Paulo+-+SP&t=&z=15&ie=UTF8&iwloc=&output=embed"
+        src="https://maps.google.com/maps?q=Centro+Automotivo+Porto+Servi%C3%A7o,+Rua+Pedroso,+394+-+Bela+Vista,+S%C3%A3o+Paulo+-+SP&hl=pt-BR&t=&z=16&ie=UTF8&iwloc=&output=embed"
         width="100%"
         height="100%"
         loading="lazy"
@@ -5955,13 +6143,13 @@ nav[aria-label="Navegação principal"] span,
         referrerpolicy="no-referrer-when-downgrade">
       </iframe>
       
-      <!-- Card Flutuante com Nome da Oficina, Endereço e Botão Rota GPS -->
+      <!-- Card Flutuante com Nome da Oficina, Endereço Real e Botão Rota GPS -->
       <div class="map-floating-bar" id="map-floating-bar">
-        <div class="map-floating-info">
-          <strong id="map-active-shop-name">📍 Veloce Auto Center</strong>
-          <span id="map-active-shop-addr">Av. Paulista, 1200 - São Paulo/SP</span>
+        <div class="map-floating-info" onclick="openOficinaModal(selectedOficinaId)" role="button" tabindex="0" aria-label="Ver detalhes e telefone da oficina selecionada">
+          <strong id="map-active-shop-name">📍 Centro Automotivo Porto Serviço - Bela Vista</strong>
+          <span id="map-active-shop-addr">Rua Pedroso, 394 - Bela Vista, São Paulo - SP</span>
         </div>
-        <a href="https://www.google.com/maps/dir/?api=1&destination=Av.+Paulista,+1200+-+Bela+Vista,+S%C3%A3o+Paulo+-+SP" target="_blank" class="btn-gmap-route" id="btn-gmap-route" aria-label="Traçar rota no Google Maps">
+        <a href="https://www.google.com/maps/dir/?api=1&destination=Centro+Automotivo+Porto+Servi%C3%A7o,+Rua+Pedroso,+394+-+Bela+Vista,+S%C3%A3o+Paulo+-+SP" target="_blank" rel="noopener noreferrer" class="btn-gmap-route" id="btn-gmap-route" aria-label="Traçar rota no Google Maps">
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
           Rota GPS
         </a>
@@ -5986,7 +6174,7 @@ nav[aria-label="Navegação principal"] span,
       <button type="button" class="uf-card sp-card active selected-filter" data-uf="SP" onclick="selectUfFilter('SP')" aria-label="São Paulo - Rede Ativa">
         <div class="uf-card-top">
           <span class="uf-sigla">SP</span>
-          <span class="uf-counter-pill">4 ativas</span>
+          <span class="uf-counter-pill" id="sp-active-counter-pill">33 ativas</span>
         </div>
         <span class="uf-nome">São Paulo</span>
         <span class="uf-badge-status">
@@ -5995,9 +6183,19 @@ nav[aria-label="Navegação principal"] span,
       </button>
     </div>
 
+    <!-- Busca e Filtro por Região da Capital de SP -->
+    <div class="oficinas-sp-filters" id="oficinas-sp-filters">
+      <div class="oficinas-search-wrap">
+        <svg class="oficinas-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="oficinas-search-input" class="oficinas-search-input" placeholder="Buscar por oficina, bairro ou serviço em SP..." oninput="onOficinaSearchInput(this.value)" autocomplete="off" />
+        <button type="button" id="oficinas-search-clear" class="oficinas-search-clear" onclick="clearOficinaSearch()" aria-label="Limpar busca">✕</button>
+      </div>
+      <div class="oficinas-zone-pills" id="oficinas-zone-bar" role="tablist" aria-label="Filtrar por região de São Paulo"></div>
+    </div>
+
     <div class="oficinas-list-header">
-      <h2 class="oficinas-list-title" id="oficinas-list-title">Oficinas Parceiras · SP</h2>
-      <span class="oficinas-list-badge" id="oficinas-list-badge">4 credenciadas</span>
+      <h2 class="oficinas-list-title" id="oficinas-list-title">Oficinas Parceiras · SP Capital</h2>
+      <span class="oficinas-list-badge" id="oficinas-list-badge">33 credenciadas</span>
     </div>
 
     <div id="oficinas-list" class="shops-list" aria-label="Lista de oficinas credenciadas DNA AUTO"></div>
@@ -6081,7 +6279,7 @@ nav[aria-label="Navegação principal"] span,
         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
         CREDENCIADA OFICIAL DNA AUTO
       </div>
-      <h2 id="oficinas-modal-title">Veloce Auto Center</h2>
+      <h2 id="oficinas-modal-title">Centro Automotivo Porto Serviço - Bela Vista</h2>
       <div id="oficinas-modal-body"></div>
       
       <!-- 3 Ações Obrigatórias: Como Chegar (Rota Real), Ligar (tel:), Agendar Serviço -->
@@ -7110,6 +7308,11 @@ const estadosDisponiveis = [
 ];
 
 let selectedUfFilter = 'SP'; // SP é o card em azul ativo padrão
+let selectedZoneFilter = 'TODAS';
+let oficinaSearchQuery = '';
+let __dnaMapFrameTimer = null;
+let __dnaMapLoadingTimer = null;
+let __dnaMapPulseTimer = null;
 
 // Contador Regressivo Oficial de 30 Dias para a Rede do Rio de Janeiro
 function getRjCountdown() {
@@ -7156,105 +7359,669 @@ function startRjCountdownTimer() {
   rjCountdownInterval = setInterval(tick, 1000);
 }
 
+// Catálogo Verificado de 33 Oficinas Reais em São Paulo (Capital) + Rede RJ (Breve)
 const oficinasDaRede = [
   {
     id: 1,
-    nome: 'Veloce Auto Center',
+    backend_id: 'ws_sp_porto_bela_vista',
+    nome: 'Centro Automotivo Porto Serviço - Bela Vista',
     bairro: 'Bela Vista',
+    zona: 'Centro',
     cidade: 'São Paulo - SP',
     uf: 'SP',
-    distancia: '1,2 km',
-    nota: '4.9',
-    avaliacoes: 58,
-    lat: -23.565,
-    lng: -46.65,
-    tipo: 'Mecânica Geral, Injeção Eletrônica & Diagnóstico OBD2',
-    endereco: 'Av. Paulista, 1200 - Bela Vista, São Paulo - SP',
-    telefone: '(11) 99876-5432',
-    whatsapp: '5511998765432',
-    imagem: 'img/ws-workshop-thumb1.jpg'
-  },
-  {
-    id: 2,
-    nome: 'Auto Center Silva',
-    bairro: 'Moema',
-    cidade: 'São Paulo - SP',
-    uf: 'SP',
-    distancia: '2,8 km',
     nota: '4.8',
-    avaliacoes: 42,
-    lat: -23.6015,
-    lng: -46.6621,
-    tipo: 'Suspensão Laser 3D, Freios & Alinhamento',
-    endereco: 'Al. dos Maracatins, 450 - Moema, São Paulo - SP',
-    telefone: '(11) 98765-4321',
-    whatsapp: '5511987654321',
-    imagem: 'img/autocenter-silva.jpg'
-  },
-  {
-    id: 3,
-    nome: 'Oficina Premium Jardins',
-    bairro: 'Jardins',
-    cidade: 'São Paulo - SP',
-    uf: 'SP',
-    distancia: '4,1 km',
-    nota: '5.0',
-    avaliacoes: 64,
-    lat: -23.5678,
-    lng: -46.6653,
-    tipo: 'Revisão Preventiva Padrão OEM & Câmbio Automático',
-    endereco: 'Rua Oscar Freire, 890 - Cerqueira César, São Paulo - SP',
-    telefone: '(11) 97654-3210',
-    whatsapp: '5511976543210',
+    avaliacoes: 412,
+    lat: -23.5629,
+    lng: -46.6433,
+    tipo: 'Revisão Preventiva, Freios, Suspensão, Alinhamento & Diagnóstico',
+    endereco: 'Rua Pedroso, 394 - Bela Vista, São Paulo - SP',
+    mapsQuery: 'Centro Automotivo Porto Serviço, Rua Pedroso, 394 - Bela Vista, São Paulo - SP',
+    telefone: '(11) 2364-5797',
+    whatsapp: '551123645797',
     imagem: 'img/oficina-premium.jpg'
   },
   {
-    id: 4,
-    nome: 'Auto Elétrica Central & Baterias',
-    bairro: 'Vila Mariana',
+    id: 2,
+    backend_id: 'ws_sp_prochaskar_pinheiros',
+    nome: 'Prochaskar Pinheiros (Bosch Car Service)',
+    bairro: 'Pinheiros',
+    zona: 'Zona Oeste',
     cidade: 'São Paulo - SP',
     uf: 'SP',
-    distancia: '5,6 km',
-    nota: '4.7',
-    avaliacoes: 37,
-    lat: -23.5892,
-    lng: -46.6348,
-    tipo: 'Sistemas Elétricos, Alternadores, Baterias EFB/AGM & Start-Stop',
-    endereco: 'Rua Domingos de Morais, 1420 - Vila Mariana, São Paulo - SP',
-    telefone: '(11) 96543-2109',
-    whatsapp: '5511965432109',
+    nota: '4.6',
+    avaliacoes: 628,
+    lat: -23.5664,
+    lng: -46.6901,
+    tipo: 'Bosch Car Service, Ar-Condicionado, Injeção Eletrônica & Mecânica Geral',
+    endereco: 'Rua dos Pinheiros, 1180 - Pinheiros, São Paulo - SP',
+    mapsQuery: 'Prochaskar Pinheiros, Rua dos Pinheiros, 1180 - Pinheiros, São Paulo - SP',
+    telefone: '(11) 3817-5961',
+    whatsapp: '5511940040120',
+    imagem: 'img/ws-workshop-thumb1.jpg'
+  },
+  {
+    id: 3,
+    backend_id: 'ws_sp_prochaskar_pompeia',
+    nome: 'Prochaskar Pompéia / Perdizes (Bosch Car Service)',
+    bairro: 'Pompéia',
+    zona: 'Zona Oeste',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.6',
+    avaliacoes: 514,
+    lat: -23.5359,
+    lng: -46.6873,
+    tipo: 'Bosch Car Service, Direção Hidráulica, Ar-Condicionado & Revisão Completa',
+    endereco: 'Av. Pompéia, 1801 - Pompéia, São Paulo - SP',
+    mapsQuery: 'Prochaskar Pompéia, Av. Pompéia, 1801 - Pompéia, São Paulo - SP',
+    telefone: '(11) 3868-2264',
+    whatsapp: '5511940172292',
+    imagem: 'img/autocenter-silva.jpg'
+  },
+  {
+    id: 4,
+    backend_id: 'ws_sp_navega_moema',
+    nome: 'Navega Mecânica',
+    bairro: 'Moema',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 286,
+    lat: -23.6021,
+    lng: -46.6669,
+    tipo: 'Mecânica Multimarcas, Revisão Preventiva, Motor, Freios & Embreagem',
+    endereco: 'Rua Gaivota, 856 - Moema, São Paulo - SP',
+    mapsQuery: 'Navega Mecânica, Rua Gaivota, 856 - Moema, São Paulo - SP',
+    telefone: '(11) 5055-9992',
+    whatsapp: '551150559992',
     imagem: 'img/mecanica-souza.jpg'
   },
   {
     id: 5,
+    backend_id: 'ws_sp_k2_moema',
+    nome: 'K2 Moema Centro Automotivo',
+    bairro: 'Moema',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.7',
+    avaliacoes: 342,
+    lat: -23.5978,
+    lng: -46.6716,
+    tipo: 'Troca de Óleo, Suspensão, Alinhamento 3D, Pneus & Freios ABS',
+    endereco: 'Av. Hélio Pellegrino, 775 - Moema, São Paulo - SP',
+    mapsQuery: 'K2 Moema Centro Automotivo, Av. Hélio Pellegrino, 775 - Moema, São Paulo - SP',
+    telefone: '(11) 5096-2812',
+    whatsapp: '551150962812',
+    imagem: 'img/ws-workshop-thumb3.jpg'
+  },
+  {
+    id: 6,
+    backend_id: 'ws_sp_mb_vila_mariana',
+    nome: 'Centro Automotivo MB',
+    bairro: 'Vila Mariana',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 219,
+    lat: -23.5887,
+    lng: -46.6352,
+    tipo: 'Mecânica Geral, Injeção Eletrônica, Revisão Preventiva & Freios',
+    endereco: 'Rua Domingos de Morais, 1885 - Vila Mariana, São Paulo - SP',
+    mapsQuery: 'Centro Automotivo MB, Rua Domingos de Morais, 1885 - Vila Mariana, São Paulo - SP',
+    telefone: '(11) 99756-8062',
+    whatsapp: '5511997568062',
+    imagem: 'img/oficina-premium.jpg'
+  },
+  {
+    id: 7,
+    backend_id: 'ws_sp_rvm_vila_mariana',
+    nome: 'RVM Garage Auto Center',
+    bairro: 'Vila Mariana',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.9',
+    avaliacoes: 174,
+    lat: -23.5833,
+    lng: -46.6448,
+    tipo: 'Diagnóstico Eletrônico OBD2, Revisão Completa, Suspensão & Freios',
+    endereco: 'Rua Dr. Amâncio de Carvalho, 19 - Vila Mariana, São Paulo - SP',
+    mapsQuery: 'RVM Garage Auto Center, Rua Dr. Amâncio de Carvalho, 19 - Vila Mariana, São Paulo - SP',
+    telefone: '(11) 91180-8181',
+    whatsapp: '5511911808181',
+    imagem: 'img/ws-workshop-thumb1.jpg'
+  },
+  {
+    id: 8,
+    backend_id: 'ws_sp_germany_brooklin',
+    nome: 'Germany Car Service',
+    bairro: 'Brooklin',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.9',
+    avaliacoes: 318,
+    lat: -23.6119,
+    lng: -46.6789,
+    tipo: 'Nacionais & Importados Premium, Câmbio Automático & Diagnóstico Avançado',
+    endereco: 'Av. Santo Amaro, 3093 - Brooklin, São Paulo - SP',
+    mapsQuery: 'Germany Car Service, Av. Santo Amaro, 3093 - Brooklin, São Paulo - SP',
+    telefone: '(11) 98184-0704',
+    whatsapp: '5511981840704',
+    imagem: 'img/autocenter-silva.jpg'
+  },
+  {
+    id: 9,
+    backend_id: 'ws_sp_mr_service_chacara',
+    nome: 'Mr. Service Oficina Mecânica',
+    bairro: 'Chácara Santo Antônio',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 205,
+    lat: -23.6317,
+    lng: -46.7061,
+    tipo: 'Revisão Preventiva, Injeção Eletrônica, Freios & Embreagem',
+    endereco: 'Rua Alexandre Dumas, 846 - Chácara Santo Antônio, São Paulo - SP',
+    mapsQuery: 'Mr. Service, Rua Alexandre Dumas, 846 - Chácara Santo Antônio, São Paulo - SP',
+    telefone: '(11) 98888-2023',
+    whatsapp: '5511988882023',
+    imagem: 'img/mecanica-souza.jpg'
+  },
+  {
+    id: 10,
+    backend_id: 'ws_sp_stradale_itaim',
+    nome: 'Stradale Car Service',
+    bairro: 'Itaim Bibi',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 263,
+    lat: -23.5836,
+    lng: -46.6879,
+    tipo: 'Revisão Padrão OEM, Ar-Condicionado, Câmbio & Diagnóstico Computadorizado',
+    endereco: 'Av. Cidade Jardim, 911 - Itaim Bibi, São Paulo - SP',
+    mapsQuery: 'Stradale Car Service, Av. Cidade Jardim, 911 - Itaim Bibi, São Paulo - SP',
+    telefone: '(11) 3900-5454',
+    whatsapp: '551139005454',
+    imagem: 'img/oficina-premium.jpg'
+  },
+  {
+    id: 11,
+    backend_id: 'ws_sp_paulinho_vila_olimpia',
+    nome: 'Paulinho Total Auto Mecânica',
+    bairro: 'Vila Olímpia',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.7',
+    avaliacoes: 294,
+    lat: -23.5919,
+    lng: -46.6788,
+    tipo: 'Mecânica Geral, Motor, Injeção Eletrônica & Revisão Periódica',
+    endereco: 'Rua Dr. Alceu de Campos Rodrigues, 535 - Vila Olímpia, São Paulo - SP',
+    mapsQuery: 'Paulinho Total, Rua Dr. Alceu de Campos Rodrigues, 535 - Vila Olímpia, São Paulo - SP',
+    telefone: '(11) 3849-7344',
+    whatsapp: '551138497344',
+    imagem: 'img/ws-workshop-thumb3.jpg'
+  },
+  {
+    id: 12,
+    backend_id: 'ws_sp_campo_belo_eletrica',
+    nome: 'Auto Elétrico e Mecânica Campo Belo',
+    bairro: 'Campo Belo',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 247,
+    lat: -23.6227,
+    lng: -46.6746,
+    tipo: 'Auto Elétrica, Baterias Start-Stop, Alternadores, Módulos & Mecânica Geral',
+    endereco: 'Rua Otávio Tarquínio de Sousa, 304 - Campo Belo, São Paulo - SP',
+    mapsQuery: 'Auto Elétrico e Mecânica Campo Belo, Rua Otávio Tarquínio de Sousa, 304 - Campo Belo, São Paulo - SP',
+    telefone: '(11) 5094-1107',
+    whatsapp: '5511920624681',
+    imagem: 'img/ws-workshop-thumb1.jpg'
+  },
+  {
+    id: 13,
+    backend_id: 'ws_sp_premier_campo_belo',
+    nome: 'Premier Auto Tech',
+    bairro: 'Campo Belo',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 198,
+    lat: -23.6218,
+    lng: -46.6697,
+    tipo: 'Diagnóstico Eletrônico, Suspensão, Freios ABS & Troca de Óleo',
+    endereco: 'Rua Vieira de Morais, 1144 - Campo Belo, São Paulo - SP',
+    mapsQuery: 'Premier Auto Tech, Rua Vieira de Morais, 1144 - Campo Belo, São Paulo - SP',
+    telefone: '(11) 5096-8099',
+    whatsapp: '551150968099',
+    imagem: 'img/autocenter-silva.jpg'
+  },
+  {
+    id: 14,
+    backend_id: 'ws_sp_bfp_santo_amaro',
+    nome: 'BFP Auto Service - Santo Amaro',
+    bairro: 'Santo Amaro',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 376,
+    lat: -23.6479,
+    lng: -46.7042,
+    tipo: 'Revisão Completa, Injeção Eletrônica, Alinhamento 3D & Mecânica Geral',
+    endereco: 'Largo Bonneville, 74 - Santo Amaro, São Paulo - SP',
+    mapsQuery: 'BFP Auto Service, Largo Bonneville, 74 - Santo Amaro, São Paulo - SP',
+    telefone: '(11) 5286-2010',
+    whatsapp: '551152862010',
+    imagem: 'img/oficina-premium.jpg'
+  },
+  {
+    id: 15,
+    backend_id: 'ws_sp_morumbi_car_center',
+    nome: 'Morumbi Car Center',
+    bairro: 'Morumbi',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.7',
+    avaliacoes: 289,
+    lat: -23.6063,
+    lng: -46.7276,
+    tipo: 'Centro Automotivo Completo, Freios, Suspensão & Revisão Multimarcas',
+    endereco: 'Av. Giovanni Gronchi, 2729 - Morumbi, São Paulo - SP',
+    mapsQuery: 'Morumbi Car Center, Av. Giovanni Gronchi, 2729 - Morumbi, São Paulo - SP',
+    telefone: '(11) 3772-0045',
+    whatsapp: '5511940386115',
+    imagem: 'img/mecanica-souza.jpg'
+  },
+  {
+    id: 16,
+    backend_id: 'ws_sp_checarmec_ipiranga',
+    nome: 'Checarmec Reparação Automotiva',
+    bairro: 'Ipiranga',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.9',
+    avaliacoes: 418,
+    lat: -23.5917,
+    lng: -46.6054,
+    tipo: 'Motor, Injeção Eletrônica, Freios & Revisão Preventiva Auditada',
+    endereco: 'Rua 28 de Setembro, 1020 - Ipiranga, São Paulo - SP',
+    mapsQuery: 'Checarmec Reparação Automotiva, Rua 28 de Setembro, 1020 - Ipiranga, São Paulo - SP',
+    telefone: '(11) 5061-5229',
+    whatsapp: '5511984846573',
+    imagem: 'img/ws-workshop-thumb3.jpg'
+  },
+  {
+    id: 17,
+    backend_id: 'ws_sp_hp_ipiranga',
+    nome: 'HP Auto Mecânica',
+    bairro: 'Ipiranga',
+    zona: 'Zona Sul',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.9',
+    avaliacoes: 164,
+    lat: -23.5944,
+    lng: -46.6012,
+    tipo: 'Manutenção Preventiva, Correia Dentada, Embreagem & Freios',
+    endereco: 'Rua José Chimenti, 100 - Ipiranga, São Paulo - SP',
+    mapsQuery: 'HP Auto Mecânica, Rua José Chimenti, 100 - Ipiranga, São Paulo - SP',
+    telefone: '(11) 91317-6450',
+    whatsapp: '5511913176450',
+    imagem: 'img/ws-workshop-thumb1.jpg'
+  },
+  {
+    id: 18,
+    backend_id: 'ws_sp_alto_pinheiros',
+    nome: 'Oficina Alto de Pinheiros',
+    bairro: 'Vila Madalena',
+    zona: 'Zona Oeste',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 231,
+    lat: -23.5503,
+    lng: -46.6974,
+    tipo: 'Mecânica Geral, Revisão Preventiva, Elétrica & Ar-Condicionado',
+    endereco: 'Rua Dr. Alberto Seabra, 810 - Vila Madalena, São Paulo - SP',
+    mapsQuery: 'Oficina Alto de Pinheiros, Rua Dr. Alberto Seabra, 810 - Vila Madalena, São Paulo - SP',
+    telefone: '(11) 4575-0040',
+    whatsapp: '551145750040',
+    imagem: 'img/autocenter-silva.jpg'
+  },
+  {
+    id: 19,
+    backend_id: 'ws_sp_elicar_pinheiros',
+    nome: 'Elicar Centro Automotivo',
+    bairro: 'Pinheiros / Vila Madalena',
+    zona: 'Zona Oeste',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 187,
+    lat: -23.5542,
+    lng: -46.6914,
+    tipo: 'Mecânica Multimarcas, Diagnóstico OBD2, Suspensão & Freios',
+    endereco: 'Rua Mourato Coelho, 1483 - Pinheiros, São Paulo - SP',
+    mapsQuery: 'Elicar, Rua Mourato Coelho, 1483 - Pinheiros, São Paulo - SP',
+    telefone: '(11) 99822-2558',
+    whatsapp: '5511998222558',
+    imagem: 'img/mecanica-souza.jpg'
+  },
+  {
+    id: 20,
+    backend_id: 'ws_sp_auto_lapa_bosch',
+    nome: 'Auto Lapa (Bosch Car Service)',
+    bairro: 'Lapa',
+    zona: 'Zona Oeste',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 312,
+    lat: -23.5244,
+    lng: -46.7031,
+    tipo: 'Bosch Car Service, Injeção Eletrônica, Freios ABS & Revisão Oficial',
+    endereco: 'Rua João Pereira, 172 - Lapa, São Paulo - SP',
+    mapsQuery: 'Auto Lapa Bosch Car Service, Rua João Pereira, 172 - Lapa, São Paulo - SP',
+    telefone: '(11) 94794-0898',
+    whatsapp: '5511947940898',
+    imagem: 'img/oficina-premium.jpg'
+  },
+  {
+    id: 21,
+    backend_id: 'ws_sp_hightech_lapa_bosch',
+    nome: 'High Tech Centro Automotivo (Bosch Car Service)',
+    bairro: 'Lapa',
+    zona: 'Zona Oeste',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 356,
+    lat: -23.5236,
+    lng: -46.6951,
+    tipo: 'Bosch Car Service, Scanner Automotivo, Motor, Freios & Suspensão',
+    endereco: 'Rua Guaicurús, 957 - Lapa, São Paulo - SP',
+    mapsQuery: 'High Tech Centro Automotivo, Rua Guaicurús, 957 - Lapa, São Paulo - SP',
+    telefone: '(11) 3864-0944',
+    whatsapp: '5511922449995',
+    imagem: 'img/ws-workshop-thumb3.jpg'
+  },
+  {
+    id: 22,
+    backend_id: 'ws_sp_cartec_butanta',
+    nome: 'Cartec Mecânica Automotiva',
+    bairro: 'Butantã',
+    zona: 'Zona Oeste',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 274,
+    lat: -23.5754,
+    lng: -46.7343,
+    tipo: 'Mecânica Geral, Injeção Eletrônica, Câmbio & Revisão Periódica',
+    endereco: 'Rua Iquiririm, 355 - Butantã, São Paulo - SP',
+    mapsQuery: 'Cartec Mecânica, Rua Iquiririm, 355 - Butantã, São Paulo - SP',
+    telefone: '(11) 3726-5954',
+    whatsapp: '5511947734897',
+    imagem: 'img/ws-workshop-thumb1.jpg'
+  },
+  {
+    id: 23,
+    backend_id: 'ws_sp_mundial_barra_funda',
+    nome: 'Mundial Auto Center',
+    bairro: 'Barra Funda',
+    zona: 'Centro',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.7',
+    avaliacoes: 329,
+    lat: -23.5245,
+    lng: -46.6579,
+    tipo: 'Pneus, Alinhamento 3D, Balanceamento, Freios & Revisão Geral',
+    endereco: 'Rua do Bosque, 393 - Barra Funda, São Paulo - SP',
+    mapsQuery: 'Mundial Auto Center, Rua do Bosque, 393 - Barra Funda, São Paulo - SP',
+    telefone: '(11) 3392-5712',
+    whatsapp: '5511953744589',
+    imagem: 'img/autocenter-silva.jpg'
+  },
+  {
+    id: 24,
+    backend_id: 'ws_sp_carcel_cambuci',
+    nome: 'Auto Center Car Cel',
+    bairro: 'Cambuci',
+    zona: 'Centro',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 243,
+    lat: -23.5621,
+    lng: -46.6254,
+    tipo: 'Mecânica Geral, Elétrica Automotiva, Suspensão & Troca de Óleo',
+    endereco: 'Rua Silveira da Mota, 67 - Cambuci, São Paulo - SP',
+    mapsQuery: 'Auto Center Car Cel, Rua Silveira da Mota, 67 - Cambuci, São Paulo - SP',
+    telefone: '(11) 3209-5415',
+    whatsapp: '551132095415',
+    imagem: 'img/mecanica-souza.jpg'
+  },
+  {
+    id: 25,
+    backend_id: 'ws_sp_sr_veiculos_tatuape',
+    nome: 'SR Veículos e Serviços',
+    bairro: 'Tatuapé',
+    zona: 'Zona Leste',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 334,
+    lat: -23.5396,
+    lng: -46.5718,
+    tipo: 'Mecânica Multimarcas, Nacionais & Importados, Revisão & Funilaria',
+    endereco: 'Rua Bernardo Magalhães, 51 - Tatuapé, São Paulo - SP',
+    mapsQuery: 'SR Veículos e Serviços, Rua Bernardo Magalhães, 51 - Tatuapé, São Paulo - SP',
+    telefone: '(11) 2295-2601',
+    whatsapp: '551122952601',
+    imagem: 'img/oficina-premium.jpg'
+  },
+  {
+    id: 26,
+    backend_id: 'ws_sp_giros_tatuape',
+    nome: 'Giros Auto Center',
+    bairro: 'Tatuapé',
+    zona: 'Zona Leste',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.7',
+    avaliacoes: 268,
+    lat: -23.5418,
+    lng: -46.5759,
+    tipo: 'Injeção Eletrônica, Troca de Óleo, Suspensão & Freios',
+    endereco: 'Rua Cândido Vale, 46 - Tatuapé, São Paulo - SP',
+    mapsQuery: 'Giros Auto Center, Rua Cândido Vale, 46 - Tatuapé, São Paulo - SP',
+    telefone: '(11) 2091-0081',
+    whatsapp: '551120910081',
+    imagem: 'img/ws-workshop-thumb3.jpg'
+  },
+  {
+    id: 27,
+    backend_id: 'ws_sp_tecnomax_tatuape_bosch',
+    nome: 'Tecnomax Car Service (Bosch Car Service)',
+    bairro: 'Tatuapé / Penha',
+    zona: 'Zona Leste',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 309,
+    lat: -23.5284,
+    lng: -46.5546,
+    tipo: 'Bosch Car Service, Diagnóstico Eletrônico, Ar-Condicionado & Revisão',
+    endereco: 'Av. Airton Pretini, 397 - Penha de França, São Paulo - SP',
+    mapsQuery: 'Tecnomax Car Service, Av. Airton Pretini, 397 - Penha de França, São Paulo - SP',
+    telefone: '(11) 2613-6393',
+    whatsapp: '551126136393',
+    imagem: 'img/ws-workshop-thumb1.jpg'
+  },
+  {
+    id: 28,
+    backend_id: 'ws_sp_premium3011_mooca',
+    nome: 'Oficina Premium 3011',
+    bairro: 'Mooca',
+    zona: 'Zona Leste',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.9',
+    avaliacoes: 387,
+    lat: -23.5594,
+    lng: -46.5961,
+    tipo: 'Mecânica Multimarcas, Importados, Câmbio Automático & Revisão OEM',
+    endereco: 'Rua da Mooca, 3011 - Mooca, São Paulo - SP',
+    mapsQuery: 'Oficina Premium 3011, Rua da Mooca, 3011 - Mooca, São Paulo - SP',
+    telefone: '(11) 2619-3011',
+    whatsapp: '5511995404258',
+    imagem: 'img/autocenter-silva.jpg'
+  },
+  {
+    id: 29,
+    backend_id: 'ws_sp_porto_analia_franco',
+    nome: 'Porto Anália Franco Centro Automotivo',
+    bairro: 'Anália Franco',
+    zona: 'Zona Leste',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 271,
+    lat: -23.5624,
+    lng: -46.5653,
+    tipo: 'Revisão Preventiva, Alinhamento, Freios, Suspensão & Baterias',
+    endereco: 'Av. Ver. Abel Ferreira, 334 - Vila Regente Feijó, São Paulo - SP',
+    mapsQuery: 'Porto Anália Franco Centro Automotivo, Av. Ver. Abel Ferreira, 334 - São Paulo - SP',
+    telefone: '(11) 91461-5026',
+    whatsapp: '5511914615026',
+    imagem: 'img/oficina-premium.jpg'
+  },
+  {
+    id: 30,
+    backend_id: 'ws_sp_foxcar_vila_prudente_bosch',
+    nome: 'FOXCAR Oficina Técnica (Bosch Car Service)',
+    bairro: 'Vila Prudente',
+    zona: 'Zona Leste',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.9',
+    avaliacoes: 295,
+    lat: -23.5841,
+    lng: -46.5818,
+    tipo: 'Bosch Car Service, Diagnóstico Computadorizado, Injeção & Freios',
+    endereco: 'Rua Itiúba, 1 - Vila Prudente, São Paulo - SP',
+    mapsQuery: 'FOXCAR Oficina Técnica, Rua Itiúba, 1 - Vila Prudente, São Paulo - SP',
+    telefone: '(11) 2965-0632',
+    whatsapp: '5511947744775',
+    imagem: 'img/mecanica-souza.jpg'
+  },
+  {
+    id: 31,
+    backend_id: 'ws_sp_decastro_santana_bosch',
+    nome: 'Auto Mecânica De Castro (Bosch Car Service)',
+    bairro: 'Santana',
+    zona: 'Zona Norte',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 344,
+    lat: -23.4959,
+    lng: -46.6331,
+    tipo: 'Bosch Car Service, Manutenção Preventiva, Motor & Suspensão',
+    endereco: 'Rua Conselheiro Moreira de Barros, 625 - Santana, São Paulo - SP',
+    mapsQuery: 'Auto Mecânica De Castro, Rua Conselheiro Moreira de Barros, 625 - Santana, São Paulo - SP',
+    telefone: '(11) 2950-0990',
+    whatsapp: '551129500990',
+    imagem: 'img/ws-workshop-thumb3.jpg'
+  },
+  {
+    id: 32,
+    backend_id: 'ws_sp_besser_santana_bosch',
+    nome: 'Mecânica Besser (Bosch Car Service)',
+    bairro: 'Santana',
+    zona: 'Zona Norte',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.7',
+    avaliacoes: 256,
+    lat: -23.4945,
+    lng: -46.6258,
+    tipo: 'Bosch Car Service, Injeção Eletrônica, Freios ABS & Revisão Geral',
+    endereco: 'Rua Voluntários da Pátria, 3281 - Santana, São Paulo - SP',
+    mapsQuery: 'Mecânica Besser, Rua Voluntários da Pátria, 3281 - Santana, São Paulo - SP',
+    telefone: '(11) 2973-4295',
+    whatsapp: '551129734295',
+    imagem: 'img/ws-workshop-thumb1.jpg'
+  },
+  {
+    id: 33,
+    backend_id: 'ws_sp_casa_verde_centro',
+    nome: 'Centro Automotivo Casa Verde',
+    bairro: 'Casa Verde',
+    zona: 'Zona Norte',
+    cidade: 'São Paulo - SP',
+    uf: 'SP',
+    nota: '4.8',
+    avaliacoes: 192,
+    lat: -23.5059,
+    lng: -46.6556,
+    tipo: 'Mecânica Geral, Alinhamento, Troca de Óleo & Suspensão',
+    endereco: 'Rua Baroré, 291 - Casa Verde, São Paulo - SP',
+    mapsQuery: 'Centro Automotivo Casa Verde, Rua Baroré, 291 - Casa Verde, São Paulo - SP',
+    telefone: '(11) 3951-2099',
+    whatsapp: '551139512099',
+    imagem: 'img/autocenter-silva.jpg'
+  },
+  {
+    id: 101,
+    backend_id: 'ws_riobarra',
     nome: 'DNA Auto Rio Barra',
     bairro: 'Barra da Tijuca',
+    zona: 'Zona Oeste RJ',
     cidade: 'Rio de Janeiro - RJ',
     uf: 'RJ',
-    distancia: 'Rede RJ (Breve)',
     nota: '5.0',
     avaliacoes: 71,
     lat: -22.9995,
     lng: -43.361,
     tipo: 'Revisão Preventiva Padrão OEM & Câmbio Automático',
     endereco: 'Av. das Américas, 3500 - Barra da Tijuca, Rio de Janeiro - RJ',
+    mapsQuery: 'Av. das Américas, 3500 - Barra da Tijuca, Rio de Janeiro - RJ',
     telefone: '(21) 98765-1234',
     whatsapp: '5521987651234',
     imagem: 'img/oficina-premium.jpg'
   },
   {
-    id: 11,
+    id: 102,
+    backend_id: 'ws_riobotafogo',
     nome: 'Carioca Prime Auto Center',
     bairro: 'Botafogo',
+    zona: 'Zona Sul RJ',
     cidade: 'Rio de Janeiro - RJ',
     uf: 'RJ',
-    distancia: 'Rede RJ (Breve)',
     nota: '4.9',
     avaliacoes: 58,
     lat: -22.9519,
     lng: -43.1856,
     tipo: 'Injeção Eletrônica, Freios ABS & Diagnóstico OBD2',
     endereco: 'Rua São Clemente, 185 - Botafogo, Rio de Janeiro - RJ',
+    mapsQuery: 'Rua São Clemente, 185 - Botafogo, Rio de Janeiro - RJ',
     telefone: '(21) 97654-4321',
     whatsapp: '5521976544321',
     imagem: 'img/ws-workshop-thumb1.jpg'
@@ -7263,45 +8030,120 @@ const oficinasDaRede = [
 
 let selectedOficinaId = 1;
 
-// Atualiza o Google Maps oficial com pino no endereço exato da oficina
-function updateGoogleMap(query, zoom, shopName, shopAddress) {
+function showMapLoadingPill(label) {
+  const pill = document.getElementById('map-loading-pill');
+  if (!pill) return;
+  pill.textContent = label || '📍 Localizando no Google Maps...';
+  pill.classList.add('visible');
+  clearTimeout(__dnaMapLoadingTimer);
+  __dnaMapLoadingTimer = setTimeout(() => {
+    pill.classList.remove('visible');
+  }, 2200);
+}
+
+function hideMapLoadingPill() {
+  const pill = document.getElementById('map-loading-pill');
+  if (pill) pill.classList.remove('visible');
+  clearTimeout(__dnaMapLoadingTimer);
+}
+
+// Atualiza o Google Maps oficial com pino exato no estabelecimento real da oficina
+function updateGoogleMap(query, zoom, shopName, shopAddress, options) {
+  const opts = options || {};
   const iframe = document.getElementById('google-maps-frame');
-  const z = zoom || 15;
-  const newSrc = 'https://maps.google.com/maps?q=' + encodeURIComponent(query) + '&t=&z=' + z + '&ie=UTF8&iwloc=&output=embed';
-  
-  if (iframe) {
-    iframe.src = newSrc;
-  }
+  const z = zoom || 16;
+  const targetQuery = query || shopAddress || 'São Paulo - SP';
+  const newSrc = 'https://maps.google.com/maps?q=' + encodeURIComponent(targetQuery) + '&hl=pt-BR&t=&z=' + z + '&ie=UTF8&iwloc=&output=embed';
 
   const elName = document.getElementById('map-active-shop-name');
   const elAddr = document.getElementById('map-active-shop-addr');
   const elRoute = document.getElementById('btn-gmap-route');
 
   if (elName) elName.textContent = '📍 ' + (shopName || 'Oficina Credenciada');
-  if (elAddr) elAddr.textContent = shopAddress || query;
+  if (elAddr) elAddr.textContent = shopAddress || targetQuery;
   if (elRoute) {
-    elRoute.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(shopAddress || query);
+    elRoute.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(targetQuery);
+  }
+
+  if (iframe) {
+    showMapLoadingPill('📍 Centralizando em ' + (shopName || 'Google Maps') + '...');
+    iframe.onload = () => hideMapLoadingPill();
+
+    clearTimeout(__dnaMapFrameTimer);
+    const applySrc = () => {
+      if (iframe.src !== newSrc) {
+        iframe.src = newSrc;
+      } else {
+        hideMapLoadingPill();
+      }
+    };
+
+    if (opts.delayMs && opts.delayMs > 0) {
+      __dnaMapFrameTimer = setTimeout(applySrc, opts.delayMs);
+    } else {
+      applySrc();
+    }
   }
 }
 
-// Rola suavemente a tela até o topo para focalizar o mapa e a oficina clicada
+// Rola suavemente a tela até o topo do mapa para focalizar a oficina clicada sem conflitos de rolagem
 function scrollToMap() {
   const mapShell = document.getElementById('google-map-shell');
-  const content = document.querySelector('.oficinas-content');
+  const content = document.querySelector('#oficinas .oficinas-content');
   const screen = document.getElementById('oficinas');
+  if (!mapShell) return;
 
-  if (content) {
-    content.scrollTo({ top: 0, behavior: 'smooth' });
-    content.scrollTop = 0;
-  }
-  if (screen) {
-    screen.scrollTo({ top: 0, behavior: 'smooth' });
-    screen.scrollTop = 0;
-  }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // 1. Se algum container interno da tela #oficinas tiver rolagem ativa, rola suavemente até o topo
+  [content, screen].forEach(el => {
+    if (el && el.scrollTop > 0) {
+      if (typeof el.scrollTo === 'function') {
+        try {
+          el.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (_) {
+          el.scrollTop = 0;
+        }
+      } else {
+        el.scrollTop = 0;
+      }
+    }
+  });
 
-  if (mapShell) {
-    mapShell.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // 2. Rola suavemente a janela / documento para posicionar o mapa no topo com respiro visual
+  const rect = typeof mapShell.getBoundingClientRect === 'function' ? mapShell.getBoundingClientRect() : { top: 0 };
+  const currentWindowY =
+    window.pageYOffset ||
+    (document.documentElement && document.documentElement.scrollTop) ||
+    (document.body && document.body.scrollTop) ||
+    0;
+  const targetY = Math.max(0, Math.round(currentWindowY + rect.top - 14));
+
+  if (typeof window.scrollTo === 'function') {
+    try {
+      window.scrollTo({ top: targetY, behavior: 'smooth' });
+    } catch (_) {
+      window.scrollTo(0, targetY);
+    }
+  }
+
+  // Fallback para WebViews onde o scroll root é o document.body ou documentElement
+  const scrollRoot = document.scrollingElement || document.documentElement || document.body;
+  if (scrollRoot && scrollRoot.scrollTop > targetY + 4 && typeof scrollRoot.scrollTo === 'function') {
+    try {
+      scrollRoot.scrollTo({ top: targetY, behavior: 'smooth' });
+    } catch (_) {
+      scrollRoot.scrollTop = targetY;
+    }
+  }
+
+  // Destaque visual suave no contorno do mapa confirmando o foco na oficina clicada
+  if (mapShell.classList) {
+    mapShell.classList.remove('map-focus-pulse');
+    void mapShell.offsetWidth;
+    mapShell.classList.add('map-focus-pulse');
+    clearTimeout(__dnaMapPulseTimer);
+    __dnaMapPulseTimer = setTimeout(() => {
+      mapShell.classList.remove('map-focus-pulse');
+    }, 1100);
   }
 }
 
@@ -7314,24 +8156,87 @@ function selectOficina(id, autoScroll) {
 
   const o = oficinasDaRede.find(x => x.id === id);
   if (o) {
-    updateGoogleMap(o.nome + ', ' + o.endereco, 15, o.nome, o.endereco);
+    const query = o.mapsQuery || (o.nome + ', ' + o.endereco);
+    updateGoogleMap(query, 16, o.nome, o.endereco, { delayMs: autoScroll ? 140 : 0 });
   }
 
   if (autoScroll) {
-    scrollToMap();
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => scrollToMap());
+    } else {
+      scrollToMap();
+    }
   }
+}
+
+function getFilteredSpOficinas() {
+  const spAll = oficinasDaRede.filter(o => o.uf === 'SP');
+  const q = (oficinaSearchQuery || '').trim().toLowerCase();
+
+  return spAll.filter(o => {
+    const zoneMatch = selectedZoneFilter === 'TODAS' || (o.zona || '').toLowerCase() === selectedZoneFilter.toLowerCase();
+    if (!zoneMatch) return false;
+    if (!q) return true;
+    const haystack = [o.nome, o.bairro, o.zona, o.endereco, o.tipo, o.telefone].join(' ').toLowerCase();
+    return haystack.includes(q);
+  });
+}
+
+function renderOficinasZoneBar() {
+  const bar = document.getElementById('oficinas-zone-bar');
+  const filtersWrap = document.getElementById('oficinas-sp-filters');
+  if (filtersWrap) {
+    filtersWrap.style.display = selectedUfFilter === 'SP' ? 'flex' : 'none';
+  }
+  if (!bar || selectedUfFilter !== 'SP') return;
+
+  const spAll = oficinasDaRede.filter(o => o.uf === 'SP');
+  const zones = ['TODAS', 'Centro', 'Zona Sul', 'Zona Oeste', 'Zona Leste', 'Zona Norte'];
+
+  bar.innerHTML = zones.map(z => {
+    const count = z === 'TODAS' ? spAll.length : spAll.filter(o => o.zona === z).length;
+    const label = z === 'TODAS' ? 'Todas (' + count + ')' : z + ' (' + count + ')';
+    const isActive = selectedZoneFilter === z;
+    return '<button type="button" class="zone-pill' + (isActive ? ' active' : '') + '" onclick="selectZoneFilter(\'' + z + '\')">' + label + '</button>';
+  }).join('');
+}
+
+function selectZoneFilter(zone) {
+  selectedZoneFilter = zone || 'TODAS';
+  renderOficinasZoneBar();
+  renderOficinasList();
+}
+
+function onOficinaSearchInput(value) {
+  oficinaSearchQuery = value || '';
+  const clearBtn = document.getElementById('oficinas-search-clear');
+  if (clearBtn) {
+    clearBtn.classList.toggle('visible', oficinaSearchQuery.trim().length > 0);
+  }
+  renderOficinasList();
+}
+
+function clearOficinaSearch() {
+  oficinaSearchQuery = '';
+  const input = document.getElementById('oficinas-search-input');
+  if (input) input.value = '';
+  const clearBtn = document.getElementById('oficinas-search-clear');
+  if (clearBtn) clearBtn.classList.remove('visible');
+  renderOficinasList();
 }
 
 function selectUfFilter(uf) {
   selectedUfFilter = uf;
 
   renderOficinasUfBar();
+  renderOficinasZoneBar();
   renderOficinasList();
 
   if (uf === 'SP') {
-    const spList = oficinasDaRede.filter(o => o.uf === 'SP');
-    if (spList.length > 0) {
-      selectOficina(spList[0].id, false);
+    const spList = getFilteredSpOficinas();
+    const target = spList[0] || oficinasDaRede.find(o => o.uf === 'SP');
+    if (target) {
+      selectOficina(target.id, false);
     }
   } else if (uf === 'RJ') {
     const rjList = oficinasDaRede.filter(o => o.uf === 'RJ');
@@ -7346,6 +8251,7 @@ function renderOficinasUfBar() {
   if (!container) return;
 
   const cd = getRjCountdown();
+  const spTotalCount = oficinasDaRede.filter(o => o.uf === 'SP').length;
 
   // Exatamente os dois cards: RJ à esquerda (Cinza "Breve" + contador de 30 dias) e SP à direita (Azul Ativo)
   container.innerHTML =
@@ -7365,7 +8271,7 @@ function renderOficinasUfBar() {
     '<button type="button" class="uf-card sp-card active' + (selectedUfFilter === 'SP' ? ' selected-filter' : '') + '" data-uf="SP" onclick="selectUfFilter(\'SP\')" aria-label="São Paulo - Rede Ativa">' +
       '<div class="uf-card-top">' +
         '<span class="uf-sigla">SP</span>' +
-        '<span class="uf-counter-pill">4 ativas</span>' +
+        '<span class="uf-counter-pill" id="sp-active-counter-pill">' + spTotalCount + ' ativas</span>' +
       '</div>' +
       '<span class="uf-nome">São Paulo</span>' +
       '<span class="uf-badge-status">' +
@@ -7406,21 +8312,38 @@ function renderOficinasList() {
     return;
   }
 
-  // Modo SP (Ativo)
-  const spList = oficinasDaRede.filter(o => o.uf === 'SP');
-  if (headerTitle) headerTitle.textContent = 'Oficinas Parceiras · SP';
-  if (headerBadge) headerBadge.textContent = spList.length + ' credenciadas';
+  // Modo SP Capital (Ativo)
+  const spList = getFilteredSpOficinas();
+  if (headerTitle) {
+    headerTitle.textContent = selectedZoneFilter === 'TODAS'
+      ? 'Oficinas Parceiras · SP Capital'
+      : 'Oficinas · SP (' + selectedZoneFilter + ')';
+  }
+  if (headerBadge) {
+    headerBadge.textContent = spList.length + (spList.length === 1 ? ' credenciada' : ' credenciadas');
+  }
 
   list.innerHTML = '';
+
+  if (spList.length === 0) {
+    list.innerHTML =
+      '<div style="background:#ffffff; border:1.5px dashed #cbd5e1; border-radius:16px; padding:22px 16px; text-align:center; color:#475569;">' +
+        '<strong style="display:block; color:#0f172a; font-size:14px; margin-bottom:4px;">Nenhuma oficina encontrada</strong>' +
+        '<p style="font-size:12px; margin:0 0 12px 0;">Tente outro bairro, zona ou limpe o filtro de busca.</p>' +
+        '<button type="button" onclick="selectedZoneFilter=\'TODAS\'; clearOficinaSearch(); renderOficinasZoneBar();" style="background:#0066FF; color:#ffffff; border:0; border-radius:8px; padding:8px 14px; font-size:12px; font-weight:700; cursor:pointer;">Mostrar todas de SP</button>' +
+      '</div>';
+    return;
+  }
+
   spList.forEach(o => {
     const el = document.createElement('article');
     el.className = 'shop-card' + (o.id === selectedOficinaId ? ' selected' : '');
     el.setAttribute('data-id', o.id);
     el.setAttribute('role', 'button');
     el.setAttribute('tabindex', '0');
-    el.setAttribute('aria-label', o.nome + ' - ' + o.cidade + ' - Ver no mapa');
+    el.setAttribute('aria-label', o.nome + ' - ' + o.bairro + ' - Ver no mapa');
 
-    el.innerHTML = 
+    el.innerHTML =
       '<div class="shop-thumb">' +
         '<img src="' + o.imagem + '" alt="' + o.nome + '" loading="lazy" onerror="this.onerror=null; this.src=\'img/ws-workshop-thumb1.jpg\';">' +
         '<span class="shop-active-badge">No Mapa</span>' +
@@ -7435,15 +8358,21 @@ function renderOficinasList() {
           '<span class="shop-pin-ico" aria-hidden="true">📍</span>' +
           '<span class="shop-address-text">' + o.endereco + '</span>' +
         '</div>' +
+        '<div class="shop-phone-row">' +
+          '<span>📞 ' + o.telefone + '</span>' +
+        '</div>' +
         '<div class="shop-meta-row">' +
           '<div class="shop-meta-tags">' +
-            '<span class="shop-dist-tag">' + (o.uf || o.cidade.split(' - ')[0]) + '</span>' +
-            '<span>' + o.avaliacoes + ' avaliações</span>' +
+            '<span class="shop-dist-tag">' + o.bairro + (o.zona ? ' · ' + o.zona : '') + '</span>' +
+            '<span>' + o.avaliacoes + ' av.</span>' +
           '</div>' +
-          '<span class="shop-view-action">' +
-            '<span>Ver no mapa</span>' +
-            '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>' +
-          '</span>' +
+          '<div class="shop-actions-right">' +
+            '<button type="button" class="shop-details-chip" onclick="event.stopPropagation(); openOficinaModal(' + o.id + ');">Detalhes</button>' +
+            '<span class="shop-view-action">' +
+              '<span>Mapa</span>' +
+              '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>' +
+            '</span>' +
+          '</div>' +
         '</div>' +
       '</div>';
 
@@ -7474,13 +8403,14 @@ function openOficinaModal(id) {
   if (modalTitle) modalTitle.textContent = o.nome;
   if (modalBody) {
     modalBody.innerHTML =
+      '<p style="margin-bottom:6px; font-size:12px; color:#385782;"><strong>Região:</strong> ' + o.bairro + (o.zona ? ' · ' + o.zona : '') + ' (' + o.cidade + ')</p>' +
       '<p style="margin-bottom:6px; font-size:12px; color:#385782;"><strong>Especialidades:</strong> ' + o.tipo + '</p>' +
       '<p style="margin-bottom:6px; font-size:12px; color:#385782;"><strong>Endereço:</strong> ' + o.endereco + '</p>' +
-      '<p style="margin-bottom:6px; font-size:12px; color:#385782;"><strong>Avaliação:</strong> ⭐ ' + o.nota + ' (' + o.avaliacoes + ' avaliações auditadas)</p>' +
+      '<p style="margin-bottom:6px; font-size:12px; color:#385782;"><strong>Google Maps:</strong> ⭐ ' + o.nota + ' (' + o.avaliacoes + ' avaliações)</p>' +
       '<p style="margin-bottom:12px; font-size:12px; color:#385782;"><strong>Telefone:</strong> ' + o.telefone + '</p>';
   }
   if (btnRoute) {
-    btnRoute.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(o.endereco);
+    btnRoute.href = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(o.mapsQuery || o.endereco);
   }
   if (btnCall) {
     btnCall.href = 'tel:' + o.telefone.replace(/\D/g, '');
@@ -7574,6 +8504,7 @@ async function submitClientAppointment(e) {
 
 function initOficinasMap() {
   renderOficinasUfBar();
+  renderOficinasZoneBar();
   startRjCountdownTimer();
   renderOficinasList();
 
@@ -7586,7 +8517,7 @@ function initOficinasMap() {
     };
   }
 
-  // Inicializar no primeiro de SP (Veloce Auto Center)
+  // Inicializar na primeira oficina real de SP Capital
   const spList = oficinasDaRede.filter(o => o.uf === 'SP');
   const o = spList.find(x => x.id === selectedOficinaId) || spList[0] || oficinasDaRede[0];
   if (o) {

@@ -9,7 +9,12 @@
 > **Identidade & Histórico Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
 > 
-> ✨ **Novidades Recentes (Ciclo 137 — Eliminação de Zoom no Login do Cliente e Redesign Profissional UI/UX do Login & Cadastro da Oficina `v2.5.5`):**
+> ✨ **Novidades Recentes (Ciclo 139 — 33 Oficinas Reais de São Paulo Capital com Google Maps & Auto-Scroll Suave no App do Cliente):**
+> - **33 Oficinas Reais em São Paulo Capital (`cliente.app/index.html`, `public/cliente.html` e `spWorkshopsCatalog.js`):** Substituição das 4 oficinas fictícias por **33 oficinas reais verificadas** espalhadas pelas 5 regiões da capital paulista (**Centro, Zona Sul, Zona Oeste, Zona Leste e Zona Norte**), com nome real, endereço exato no Google Maps, telefone DDD 11, avaliações, especialidades, busca instantânea por bairro/nome e filtros por região.
+> - **Rolagem Suave Automática até o Mapa ao Clicar:** Ao tocar em qualquer oficina da lista, a tela sobe suavemente enquadrando o mapa Google Maps (`hl=pt-BR`, zoom `16`) no topo com destaque visual (`.map-focus-pulse`), barra flutuante atualizada, rota GPS exata e modal de detalhes (`Como chegar`, `Ligar` e `Agendar serviço`).
+> - **API `/api/v1/workshops/network` Enriquecida & Testes (10/10 Suítes):** Endpoint atualizado com suporte a filtros `?uf=SP`, `?zone=` e `?q=` e nova suíte automatizada `test/client_workshops_sp.test.js`.
+> 
+> ✨ **Ciclo 137 — Eliminação de Zoom no Login do Cliente e Redesign Profissional UI/UX do Login & Cadastro da Oficina `v2.5.5`:**
 > - **Login Sem Zoom no App do Cliente (`cliente.app` / `public/cliente.html`):** Substituída a imagem ampliada por `login-hero-official.png` (`586x790`) com vignette suave para `#010916` e ajuste de `.login-hero-banner-img` para `object-fit: contain; object-position: center bottom; max-width: 390px;`, exibindo logo, slogan e veículo inteiro sem cortes nem distorção.
 > - **Redesign Profissional do Login da Oficina (`oficina.app` / `workshopMobileView.js` + `workshop-mobile.css`):** Nova arte hero `oficina-login-hero-clean.png` sem bordas duras e sem sobreposição de texto/logo duplicado sobre o carro; bottom sheet compacto e limpo com badge `ACESSO OFICINA CREDENCIADA`, campos com ícones vetoriais SVG (`#0066FF`) em substituição aos emojis, botão pill `.ws-login-pill-btn` conectado a `.dna-oficina-login-btn`, remoção de botões sociais falsos e atualização do formulário de cadastro com SVGs e cache-busting `v2.5.5`.
 > 

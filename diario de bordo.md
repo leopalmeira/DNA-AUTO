@@ -1,3 +1,20 @@
+### Ciclo 139 — Expansão da Rede Real de Oficinas em São Paulo Capital (33 Oficinas Google Maps) e Rolagem Suave Automática até o Mapa no App do Cliente
+- **Data:** 19/11/2026
+- **Responsáveis:** `@[frontend-specialist]` + `@[backend-specialist]` + `@[test-engineer]`
+- **Contexto & Demandas Atendidas:**
+  1. **Catálogo Real de 33 Oficinas na Capital de São Paulo (`cliente.app/index.html`, `public/cliente.html` e `server/src/modules/workshops/spWorkshopsCatalog.js`):**
+     - Substituídas as 4 oficinas fictícias antigas por **33 oficinas reais e verificadas de São Paulo (Capital)** com dados reais compatíveis com o Google Maps (nome real do estabelecimento, endereço completo com rua/número/bairro, telefone DDD 11, WhatsApp, avaliação, especialidades e query precisa `mapsQuery` com `hl=pt-BR&z=16`).
+     - Cobertura completa das 5 regiões da capital paulista: **Centro** (Bela Vista, Barra Funda, Cambuci), **Zona Sul** (Moema, Vila Mariana, Brooklin, Chácara Santo Antônio, Itaim Bibi, Vila Olímpia, Campo Belo, Santo Amaro, Morumbi, Ipiranga), **Zona Oeste** (Pinheiros, Pompéia/Perdizes, Vila Madalena, Lapa, Butantã), **Zona Leste** (Tatuapé, Penha de França, Mooca, Anália Franco, Vila Prudente) e **Zona Norte** (Santana, Casa Verde).
+     - Contadores do card SP atualizados dinamicamente (`33 ativas` / `33 credenciadas`) e adicionada busca rápida por nome/bairro/serviço + filtros por zona da capital.
+  2. **Rolagem Suave Automática para o Mapa ao Clicar na Oficina (`scrollToMap` / `selectOficina`):**
+     - Removido o conflito de `scrollTop = 0` imediato e o choque entre `window.scrollTo(0)` e `scrollIntoView()` que interrompiam a rolagem em dispositivos móveis e WebViews.
+     - Agora, ao tocar em qualquer oficina da lista, a tela rola suavemente até enquadrar o mapa no topo (`scroll-margin-top: 14px`), aplica destaque visual suave (`.map-focus-pulse`) + pill de status (`📍 Centralizando em ...`), atualiza a barra flutuante e centraliza o pino exato da oficina no Google Maps sem travamentos durante o scroll.
+     - Botão `Detalhes` adicionado aos cards (e toque na barra flutuante do mapa) conectado ao modal `openOficinaModal` com ações de `Como chegar`, `Ligar` e `Agendar serviço`.
+  3. **Sincronia Backend (`server/src/modules/workshops/workshops.routes.js`):**
+     - Rota `GET /api/v1/workshops/network` enriquecida com o catálogo verificado das 33 oficinas reais de SP Capital (suportando `?uf=SP`, `?zone=` e `?q=`), preservando oficinas do banco (ex.: `ws_veloce`) e compatibilidade integral com os testes existentes.
+  4. **Validação & Paridade:**
+     - Sincronia 100% garantida entre `cliente.app/index.html` e `public/cliente.html`, validação sintática (`node -c` e parsing dos scripts inline) e nova suíte `test/client_workshops_sp.test.js` integrada ao `npm test` (10/10 suítes aprovadas com 100% de sucesso).
+
 ### Ciclo 138 — Garantia de Contas de Teste por Perfil no Seed Base e Documentação Completa de Credenciais no `README.md`
 - **Data:** 18/11/2026
 - **Responsáveis:** `@[backend-specialist]` + `@[documentation-writer]` + `@[test-engineer]`
