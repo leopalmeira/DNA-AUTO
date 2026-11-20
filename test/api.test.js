@@ -46,8 +46,10 @@ async function runTests() {
         console.assert(!!adminToken, 'Token admin ausente');
         console.log('✅ 2. Autenticação Admin: Sucesso com JWT');
 
-        // Teste 3: Estatísticas da Rede DNA AUTO
-        const resStats = await fetch(`${BASE_URL}/admin/network-stats`);
+        // Teste 3: Estatísticas da Rede DNA AUTO (exige JWT Admin — Fase 10 Segurança)
+        const resStats = await fetch(`${BASE_URL}/admin/network-stats`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+        });
         const dataStats = await resStats.json();
         console.assert(dataStats.network.totalVehicles >= 4, 'Total de veículos incorreto');
         console.assert(dataStats.network.provenServices >= 3, 'Serviços comprovados incorretos');

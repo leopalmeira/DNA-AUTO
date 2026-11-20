@@ -22,10 +22,16 @@
  */
 
 const https = require('https');
+const CommissionFinance = require('./commissionFinance.service');
+const { publishSyncEvent } = require('./syncEvents.service');
 
-const ABACATE_API_KEY = process.env.ABACATEPAY_API_KEY || 'abc_prod_FpktkRTTAXMYqGame1mfwc0y';
+const ABACATE_API_KEY = process.env.ABACATEPAY_API_KEY || (process.env.NODE_ENV === 'production' ? '' : 'abc_prod_FpktkRTTAXMYqGame1mfwc0y');
 const ABACATE_BASE_URL = process.env.ABACATEPAY_BASE_URL || 'https://api.abacatepay.com';
-const WEBHOOK_SECRET = process.env.ABACATEPAY_WEBHOOK_SECRET || 'dna_sec_abacatepay_prod_2026_webhook_key';
+const WEBHOOK_SECRET = process.env.ABACATEPAY_WEBHOOK_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'dna_sec_abacatepay_prod_2026_webhook_key');
+
+if (process.env.NODE_ENV === 'production' && (!process.env.ABACATEPAY_API_KEY || !process.env.ABACATEPAY_WEBHOOK_SECRET)) {
+    console.warn('⚠️ [SEGURANÇA] ABACATEPAY_API_KEY ou ABACATEPAY_WEBHOOK_SECRET não configurados em produção.');
+}
 
 const AbacatePayService = {
     BASE_SINGLE_PRICE_CENTS: 2495,    // R$ 24,95 (50% de R$ 49,90)
@@ -192,15 +198,16 @@ const AbacatePayService = {
         clientPhone = null,
         clientEmail = null
     }) {
-        let amountCents = this.BASE_SINGLE_PRICE_CENTS;
-        let customerCents = this.CUSTOMER_PRICE_CENTS;
-        let profitCents = this.WORKSHOP_PROFIT_CENTS;
+        const activePolicy = CommissionFinance.getActiveCommercialPolicy(db);
+        let amountCents = Math.round(Number(activePolicy.platform_split_cents || this.BASE_SINGLE_PRICE_CENTS));
+        let customerCents = Math.round(Number(activePolicy.registration_price_cents || this.CUSTOMER_PRICE_CENTS));
+        let profitCents = Math.round(Number(activePolicy.workshop_split_cents || this.WORKSHOP_PROFIT_CENTS));
         let carsCount = 1;
         const activeReferral = this.getActiveWorkshopReferral(db, workshopId);
         if (chargeType === 'SINGLE' && activeReferral) {
-            customerCents = this.REP_PROGRAM_CUSTOMER_PRICE_CENTS; // 4990 (R$ 49,90)
-            amountCents = this.REP_PROGRAM_PLATFORM_SPLIT_CENTS;   // 2495 (R$ 24,95)
-            profitCents = this.REP_PROGRAM_WORKSHOP_SPLIT_CENTS;   // 2495 (R$ 24,95)
+            customerCents = Math.round(Number(activePolicy.registration_price_cents || this.REP_PROGRAM_CUSTOMER_PRICE_CENTS));
+            profitCents = Math.round(Number(activePolicy.workshop_split_cents || this.REP_PROGRAM_WORKSHOP_SPLIT_CENTS));
+            amountCents = customerCents - profitCents;
         }
         let description = `DNA AUTO - Ativacao Veicular (${activationCode || '1 carro'} - ${(amountCents / 100).toFixed(2)} BRL)`;
 
@@ -258,12 +265,39 @@ const AbacatePayService = {
             carsCount, abacateId, pixCode, pixQrCode, pixUrl
         );
 
+        // Cria comissão PROJECTED (não elegível para pagamento até confirmação real do PIX)
+        if (chargeType === 'SINGLE') {
+            try {
+                CommissionFinance.upsertRepresentativeCommission(db, {
+                    workshopId,
+                    sourcePaymentId: chargeId,
+                    vehicleId: vehicleId || null,
+                    targetStatus: 'PROJECTED',
+                    notes: 'Comissão projetada — aguardando confirmação do pagamento PIX'
+                });
+            } catch (projErr) {
+                console.warn('[AbacatePayService] Falha ao projetar comissão:', projErr.message);
+            }
+        }
+
+        publishSyncEvent(db, {
+            eventType: 'PIX_CHARGE_CREATED',
+            sourceApp: 'WORKSHOP_APP',
+            entityType: 'PIX_CHARGE',
+            entityId: chargeId,
+            payload: { workshop_id: workshopId, charge_type: chargeType, amount_cents: amountCents, status: 'PENDING' }
+        });
+
         return {
+            id: chargeId,
             charge_id: chargeId,
+            abacate_id: abacateId,
             workshop_id: workshopId,
             charge_type: chargeType,
             cars_count: carsCount,
             amount_cents: amountCents,
+            customer_price_cents: customerCents,
+            workshop_profit_cents: profitCents,
             amount_formatted: `R$ ${(amountCents / 100).toFixed(2).replace('.', ',')}`,
             customer_price_formatted: `R$ ${(customerCents / 100).toFixed(2).replace('.', ',')}`,
             workshop_profit_formatted: `R$ ${(profitCents / 100).toFixed(2).replace('.', ',')}`,
@@ -276,301 +310,293 @@ const AbacatePayService = {
     },
 
     /**
-     * Confirmação e Liquidação de PIX Pago (Manual ou via Webhook)
+     * Confirmação e Liquidação de PIX Pago (Manual ou via Webhook) — Atômica e Idempotente
      */
     confirmPixCharge(db, chargeIdOrAbacateId) {
-        const charge = db.prepare('SELECT * FROM workshop_pix_charges WHERE id = ? OR abacate_id = ?').get(chargeIdOrAbacateId, chargeIdOrAbacateId);
-        if (!charge) {
-            throw new Error('Cobrança PIX não encontrada.');
-        }
+        const result = db.transaction(() => {
+            const charge = db.prepare('SELECT * FROM workshop_pix_charges WHERE id = ? OR abacate_id = ?').get(chargeIdOrAbacateId, chargeIdOrAbacateId);
+            if (!charge) {
+                throw new Error('Cobrança PIX não encontrada.');
+            }
 
-        if (charge.status === 'PAID') {
-            const existingRepComm = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(charge.id);
+            if (charge.status === 'PAID') {
+                const existingRepComm = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(charge.id);
+                return {
+                    success: true,
+                    idempotent: true,
+                    message: 'Cobrança já confirmada anteriormente (idempotência garantida).',
+                    charge,
+                    representative_commission: existingRepComm || null
+                };
+            }
+
+            if (charge.status === 'REFUNDED' || charge.status === 'CANCELLED') {
+                throw new Error('Não é possível confirmar uma cobrança estornada ou cancelada.');
+            }
+
+            db.prepare(`
+                UPDATE workshop_pix_charges
+                SET status = 'PAID', paid_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `).run(charge.id);
+
+            this.getOrCreateBalance(db, charge.workshop_id);
+
+            if (charge.charge_type === 'POSTPAID_10') {
+                db.prepare(`
+                    UPDATE workshop_billing_balances
+                    SET unbilled_cars_count = MAX(0, unbilled_cars_count - 10),
+                        total_paid_cents = total_paid_cents + ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE workshop_id = ?
+                `).run(charge.amount_cents, charge.workshop_id);
+            } else if (charge.charge_type === 'PREPAID_PACKAGE') {
+                db.prepare(`
+                    UPDATE workshop_billing_balances
+                    SET prepaid_cars_credits = prepaid_cars_credits + ?,
+                        total_paid_cents = total_paid_cents + ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE workshop_id = ?
+                `).run(charge.cars_count, charge.amount_cents, charge.workshop_id);
+            } else {
+                db.prepare(`
+                    UPDATE workshop_billing_balances
+                    SET unbilled_cars_count = MAX(0, unbilled_cars_count - 1),
+                        total_paid_cents = total_paid_cents + ?,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE workshop_id = ?
+                `).run(charge.amount_cents, charge.workshop_id);
+            }
+
+            if (charge.activation_code) {
+                try {
+                    db.prepare(`
+                        UPDATE client_activations
+                        SET billing_status = 'PAID'
+                        WHERE activation_code = ?
+                    `).run(charge.activation_code);
+                } catch (_) {}
+            }
+
+            let representativeCommission = null;
+            if (charge.charge_type === 'SINGLE') {
+                let dnaAct = null;
+                if (charge.vehicle_id) {
+                    dnaAct = db.prepare(`
+                        SELECT da.* FROM dna_activations da
+                        JOIN vehicle_dna vd ON da.vehicle_dna_id = vd.id
+                        WHERE da.workshop_id = ? AND vd.vehicle_id = ?
+                        ORDER BY da.activated_at DESC LIMIT 1
+                    `).get(charge.workshop_id, charge.vehicle_id);
+                }
+                if (dnaAct) {
+                    db.prepare(`
+                        UPDATE dna_activations
+                        SET payment_status = 'COMPLETED'
+                        WHERE id = ?
+                    `).run(dnaAct.id);
+                    db.prepare(`
+                        UPDATE commissions
+                        SET status = 'AVAILABLE'
+                        WHERE dna_activation_id = ? AND workshop_id = ?
+                    `).run(dnaAct.id, charge.workshop_id);
+                }
+
+                // Motor Financeiro V2: valida todas as 6 regras e confirma comissão uma única vez (idempotência + política versionada + competência)
+                const commRes = CommissionFinance.upsertRepresentativeCommission(db, {
+                    workshopId: charge.workshop_id,
+                    sourcePaymentId: charge.id,
+                    dnaActivationId: dnaAct ? dnaAct.id : null,
+                    vehicleId: charge.vehicle_id || null,
+                    targetStatus: 'CONFIRMED',
+                    notes: 'Comissão confirmada mediante pagamento PIX liquidado'
+                });
+
+                representativeCommission = commRes.commission || null;
+
+                if (representativeCommission && (commRes.created || commRes.updated)) {
+                    const activeReferral = this.getActiveWorkshopReferral(db, charge.workshop_id);
+                    const nowIso = new Date().toISOString().replace('T', ' ').slice(0, 19);
+                    if (activeReferral && activeReferral.invite_id) {
+                        db.prepare(`
+                            UPDATE representative_invites
+                            SET status = 'ACTIVATED',
+                                activated_at = COALESCE(activated_at, ?),
+                                updated_at = ?
+                            WHERE id = ?
+                        `).run(nowIso, nowIso, activeReferral.invite_id);
+                    }
+
+                    db.prepare(`
+                        INSERT INTO representative_audit_logs (
+                            id, representative_id, workshop_id, action, actor_id, actor_role, justification, metadata_json, ip_address
+                        ) VALUES (?, ?, ?, 'COMMISSION_CONFIRMED', 'SYSTEM_PAYMENT', 'SYSTEM', ?, ?, '127.0.0.1')
+                    `).run(
+                        `ral_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                        representativeCommission.representative_id,
+                        charge.workshop_id,
+                        `Comissão de ${CommissionFinance.formatBrl(representativeCommission.commission_amount_cents)} confirmada pelo pagamento ${charge.id}`,
+                        JSON.stringify({
+                            source_payment_id: charge.id,
+                            policy_id: representativeCommission.policy_id,
+                            competence_month: representativeCommission.competence_month,
+                            payout_month: representativeCommission.payout_month,
+                            registration_amount_cents: representativeCommission.registration_amount_cents,
+                            workshop_split_cents: representativeCommission.workshop_split_cents,
+                            platform_split_cents: representativeCommission.platform_split_cents,
+                            commission_amount_cents: representativeCommission.commission_amount_cents
+                        })
+                    );
+                }
+            }
+
+            const updatedCharge = db.prepare('SELECT * FROM workshop_pix_charges WHERE id = ?').get(charge.id);
+            const updatedBalance = db.prepare('SELECT * FROM workshop_billing_balances WHERE workshop_id = ?').get(charge.workshop_id);
+
             return {
                 success: true,
-                idempotent: true,
-                message: 'Cobrança já confirmada anteriormente (idempotência garantida).',
-                charge,
-                representative_commission: existingRepComm || null
+                idempotent: false,
+                message: '🎉 Pagamento PIX confirmado com sucesso!',
+                charge: updatedCharge,
+                balance: updatedBalance,
+                representative_commission: representativeCommission
             };
+        })();
+
+        if (!result.idempotent) {
+            publishSyncEvent(db, {
+                eventType: 'PAYMENT_CONFIRMED',
+                sourceApp: 'WEBHOOK',
+                entityType: 'PIX_CHARGE',
+                entityId: result.charge.id,
+                payload: {
+                    workshop_id: result.charge.workshop_id,
+                    amount_cents: result.charge.amount_cents,
+                    customer_price_cents: result.charge.customer_price_cents,
+                    commission_id: result.representative_commission ? result.representative_commission.id : null
+                }
+            });
         }
 
-        if (charge.status === 'REFUNDED' || charge.status === 'CANCELLED') {
-            throw new Error('Não é possível confirmar uma cobrança estornada ou cancelada.');
-        }
+        return result;
+    },
 
-        db.prepare(`
-            UPDATE workshop_pix_charges
-            SET status = 'PAID', paid_at = CURRENT_TIMESTAMP
-            WHERE id = ?
-        `).run(charge.id);
+    /**
+     * Cancelamento, Estorno ou Chargeback de Pagamento PIX (Ajusta comissão da oficina e do representante para REFUNDED + clawback se já pago)
+     */
+    refundPixCharge(db, chargeIdOrAbacateId, reason = 'Estorno ou cancelamento de pagamento') {
+        const result = db.transaction(() => {
+            const charge = db.prepare('SELECT * FROM workshop_pix_charges WHERE id = ? OR abacate_id = ?').get(chargeIdOrAbacateId, chargeIdOrAbacateId);
+            if (!charge) {
+                throw new Error('Cobrança PIX não encontrada para estorno.');
+            }
 
-        this.getOrCreateBalance(db, charge.workshop_id);
+            if (charge.status === 'REFUNDED') {
+                const existingRepComm = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(charge.id);
+                return {
+                    success: true,
+                    idempotent: true,
+                    message: 'Cobrança já estornada anteriormente.',
+                    charge,
+                    representative_commission: existingRepComm || null
+                };
+            }
 
-        if (charge.charge_type === 'POSTPAID_10') {
-            // Quitou o lote de 10 carros: zera até 10 carros do contador de unbilled
             db.prepare(`
-                UPDATE workshop_billing_balances
-                SET unbilled_cars_count = MAX(0, unbilled_cars_count - 10),
-                    total_paid_cents = total_paid_cents + ?,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE workshop_id = ?
-            `).run(charge.amount_cents, charge.workshop_id);
-        } else if (charge.charge_type === 'PREPAID_PACKAGE') {
-            // Comprou créditos pré-pagos: credita no saldo
-            db.prepare(`
-                UPDATE workshop_billing_balances
-                SET prepaid_cars_credits = prepaid_cars_credits + ?,
-                    total_paid_cents = total_paid_cents + ?,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE workshop_id = ?
-            `).run(charge.cars_count, charge.amount_cents, charge.workshop_id);
-        } else {
-            // Pagamento avulso de 1 carro
-            db.prepare(`
-                UPDATE workshop_billing_balances
-                SET unbilled_cars_count = MAX(0, unbilled_cars_count - 1),
-                    total_paid_cents = total_paid_cents + ?,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE workshop_id = ?
-            `).run(charge.amount_cents, charge.workshop_id);
-        }
+                UPDATE workshop_pix_charges
+                SET status = 'REFUNDED'
+                WHERE id = ?
+            `).run(charge.id);
 
-        // Se houver código de ativação vinculado, marca como pago
-        if (charge.activation_code) {
-            try {
-                db.prepare(`
-                    UPDATE client_activations
-                    SET billing_status = 'PAID'
-                    WHERE activation_code = ?
-                `).run(charge.activation_code);
-            } catch (_) {}
-        }
+            if (charge.activation_code) {
+                try {
+                    db.prepare(`
+                        UPDATE client_activations
+                        SET billing_status = 'REFUNDED', status = 'CANCELLED'
+                        WHERE activation_code = ?
+                    `).run(charge.activation_code);
+                } catch (_) {}
+            }
 
-        // Atualiza ativação DNA e comissão da oficina/representante quando aplicável
-        let representativeCommission = null;
-        if (charge.charge_type === 'SINGLE') {
-            let dnaAct = null;
             if (charge.vehicle_id) {
-                dnaAct = db.prepare(`
+                const dnaAct = db.prepare(`
                     SELECT da.* FROM dna_activations da
                     JOIN vehicle_dna vd ON da.vehicle_dna_id = vd.id
                     WHERE da.workshop_id = ? AND vd.vehicle_id = ?
                     ORDER BY da.activated_at DESC LIMIT 1
                 `).get(charge.workshop_id, charge.vehicle_id);
-            }
-            if (dnaAct) {
-                db.prepare(`
-                    UPDATE dna_activations
-                    SET payment_status = 'COMPLETED'
-                    WHERE id = ?
-                `).run(dnaAct.id);
-                db.prepare(`
-                    UPDATE commissions
-                    SET status = 'AVAILABLE'
-                    WHERE dna_activation_id = ? AND workshop_id = ?
-                `).run(dnaAct.id, charge.workshop_id);
-            }
 
-            // Verifica se a oficina possui vínculo ativo e dentro da vigência de 24 meses com representante
-            const activeReferral = this.getActiveWorkshopReferral(db, charge.workshop_id);
-            if (activeReferral) {
-                const nowIso = new Date().toISOString().replace('T', ' ').slice(0, 19);
-                const existingComm = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(charge.id);
-                if (existingComm) {
-                    if (existingComm.status !== 'CONFIRMED' && existingComm.status !== 'PAID') {
-                        db.prepare(`
-                            UPDATE representative_commissions
-                            SET status = 'CONFIRMED',
-                                confirmed_at = ?,
-                                notes = 'Comissão confirmada mediante pagamento PIX liquidado'
-                            WHERE id = ?
-                        `).run(nowIso, existingComm.id);
-                    }
-                    representativeCommission = db.prepare('SELECT * FROM representative_commissions WHERE id = ?').get(existingComm.id);
-                } else {
-                    const repCommId = `rcomm_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+                if (dnaAct) {
                     db.prepare(`
-                        INSERT OR IGNORE INTO representative_commissions (
-                            id, representative_id, workshop_id, referral_id, dna_activation_id,
-                            source_payment_id, vehicle_id, registration_amount_cents,
-                            workshop_split_cents, platform_split_cents, commission_amount_cents,
-                            status, created_at, confirmed_at, notes
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'CONFIRMED', ?, ?, ?)
-                    `).run(
-                        repCommId,
-                        activeReferral.representative_id,
-                        charge.workshop_id,
-                        activeReferral.id,
-                        dnaAct ? dnaAct.id : null,
-                        charge.id,
-                        charge.vehicle_id || null,
-                        this.REP_PROGRAM_CUSTOMER_PRICE_CENTS, // 4990
-                        this.REP_PROGRAM_WORKSHOP_SPLIT_CENTS, // 2495
-                        this.REP_PROGRAM_PLATFORM_SPLIT_CENTS, // 2495
-                        this.REP_COMMISSION_CENTS,             // 590
-                        nowIso,
-                        nowIso,
-                        'Comissão confirmada mediante pagamento PIX liquidado'
-                    );
-                    representativeCommission = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(charge.id);
-                }
-
-                // Garante que o convite conste como ACTIVATED
-                if (activeReferral.invite_id) {
-                    db.prepare(`
-                        UPDATE representative_invites
-                        SET status = 'ACTIVATED',
-                            activated_at = COALESCE(activated_at, ?),
-                            updated_at = ?
+                        UPDATE dna_activations
+                        SET payment_status = 'REFUNDED', notes = ?
                         WHERE id = ?
-                    `).run(nowIso, nowIso, activeReferral.invite_id);
+                    `).run(reason, dnaAct.id);
+
+                    db.prepare(`
+                        UPDATE commissions
+                        SET status = 'CANCELLED'
+                        WHERE dna_activation_id = ? AND workshop_id = ?
+                    `).run(dnaAct.id, charge.workshop_id);
                 }
-
-                db.prepare(`
-                    INSERT INTO representative_audit_logs (
-                        id, representative_id, workshop_id, action, actor_id, actor_role, justification, metadata_json, ip_address
-                    ) VALUES (?, ?, ?, 'COMMISSION_CONFIRMED', 'SYSTEM_PAYMENT', 'SYSTEM', ?, ?, '127.0.0.1')
-                `).run(
-                    `ral_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-                    activeReferral.representative_id,
-                    charge.workshop_id,
-                    `Comissão de R$ 5,90 confirmada pelo pagamento ${charge.id}`,
-                    JSON.stringify({
-                        source_payment_id: charge.id,
-                        registration_amount_cents: 4990,
-                        workshop_split_cents: 2495,
-                        platform_split_cents: 2495,
-                        commission_amount_cents: 590
-                    })
-                );
             }
-        }
 
-        const updatedCharge = db.prepare('SELECT * FROM workshop_pix_charges WHERE id = ?').get(charge.id);
-        const updatedBalance = db.prepare('SELECT * FROM workshop_billing_balances WHERE workshop_id = ?').get(charge.workshop_id);
+            const refundRes = CommissionFinance.refundCommissionByPayment(db, {
+                sourcePaymentId: charge.id,
+                reason,
+                actorId: 'SYSTEM_PAYMENT'
+            });
 
-        return {
-            success: true,
-            idempotent: false,
-            message: '🎉 Pagamento PIX confirmado com sucesso!',
-            charge: updatedCharge,
-            balance: updatedBalance,
-            representative_commission: representativeCommission
-        };
-    },
-
-    /**
-     * Cancelamento, Estorno ou Chargeback de Pagamento PIX (Ajusta comissão da oficina e do representante para REFUNDED)
-     */
-    refundPixCharge(db, chargeIdOrAbacateId, reason = 'Estorno ou cancelamento de pagamento') {
-        const charge = db.prepare('SELECT * FROM workshop_pix_charges WHERE id = ? OR abacate_id = ?').get(chargeIdOrAbacateId, chargeIdOrAbacateId);
-        if (!charge) {
-            throw new Error('Cobrança PIX não encontrada para estorno.');
-        }
-
-        if (charge.status === 'REFUNDED') {
-            const existingRepComm = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(charge.id);
+            const updatedCharge = db.prepare('SELECT * FROM workshop_pix_charges WHERE id = ?').get(charge.id);
             return {
                 success: true,
-                idempotent: true,
-                message: 'Cobrança já estornada anteriormente.',
-                charge,
-                representative_commission: existingRepComm || null
+                idempotent: false,
+                message: 'Pagamento e comissões vinculadas ajustados como ESTORNADOS (REFUNDED).',
+                charge: updatedCharge,
+                representative_commission: refundRes ? refundRes.commission : null,
+                clawback_adjustment: refundRes ? refundRes.clawbackAdjustment : null
             };
+        })();
+
+        if (!result.idempotent) {
+            publishSyncEvent(db, {
+                eventType: 'PAYMENT_REFUNDED',
+                sourceApp: 'WEBHOOK',
+                entityType: 'PIX_CHARGE',
+                entityId: result.charge.id,
+                payload: {
+                    workshop_id: result.charge.workshop_id,
+                    reason,
+                    commission_id: result.representative_commission ? result.representative_commission.id : null
+                }
+            });
         }
 
-        const nowIso = new Date().toISOString().replace('T', ' ').slice(0, 19);
-
-        db.prepare(`
-            UPDATE workshop_pix_charges
-            SET status = 'REFUNDED'
-            WHERE id = ?
-        `).run(charge.id);
-
-        if (charge.activation_code) {
-            try {
-                db.prepare(`
-                    UPDATE client_activations
-                    SET billing_status = 'REFUNDED', status = 'CANCELLED'
-                    WHERE activation_code = ?
-                `).run(charge.activation_code);
-            } catch (_) {}
-        }
-
-        if (charge.vehicle_id) {
-            const dnaAct = db.prepare(`
-                SELECT da.* FROM dna_activations da
-                JOIN vehicle_dna vd ON da.vehicle_dna_id = vd.id
-                WHERE da.workshop_id = ? AND vd.vehicle_id = ?
-                ORDER BY da.activated_at DESC LIMIT 1
-            `).get(charge.workshop_id, charge.vehicle_id);
-
-            if (dnaAct) {
-                db.prepare(`
-                    UPDATE dna_activations
-                    SET payment_status = 'REFUNDED', notes = ?
-                    WHERE id = ?
-                `).run(reason, dnaAct.id);
-
-                db.prepare(`
-                    UPDATE commissions
-                    SET status = 'CANCELLED'
-                    WHERE dna_activation_id = ? AND workshop_id = ?
-                `).run(dnaAct.id, charge.workshop_id);
-            }
-        }
-
-        // Estorna comissão do representante vinculada a este pagamento
-        const repComm = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(charge.id);
-        let updatedRepComm = null;
-        if (repComm) {
-            db.prepare(`
-                UPDATE representative_commissions
-                SET status = 'REFUNDED',
-                    refunded_at = ?,
-                    notes = ?
-                WHERE id = ?
-            `).run(nowIso, reason, repComm.id);
-            updatedRepComm = db.prepare('SELECT * FROM representative_commissions WHERE id = ?').get(repComm.id);
-
-            db.prepare(`
-                INSERT INTO representative_audit_logs (
-                    id, representative_id, workshop_id, action, actor_id, actor_role, justification, metadata_json, ip_address
-                ) VALUES (?, ?, ?, 'COMMISSION_REFUNDED', 'SYSTEM_PAYMENT', 'SYSTEM', ?, ?, '127.0.0.1')
-            `).run(
-                `ral_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-                repComm.representative_id,
-                charge.workshop_id,
-                reason,
-                JSON.stringify({ source_payment_id: charge.id, commission_id: repComm.id, status: 'REFUNDED' })
-            );
-        }
-
-        const updatedCharge = db.prepare('SELECT * FROM workshop_pix_charges WHERE id = ?').get(charge.id);
-        return {
-            success: true,
-            message: 'Pagamento e comissões vinculadas ajustados como ESTORNADOS (REFUNDED).',
-            charge: updatedCharge,
-            representative_commission: updatedRepComm
-        };
+        return result;
     },
 
     /**
      * Processa Webhook oficial da AbacatePay
      */
-    processWebhook(db, body, headers = {}) {
-        // Validação da assinatura/secret se configurado
-        const incomingSecret = headers['secret'] || headers['x-webhook-secret'] || (body && body.secret);
-        const validSecrets = [this.WEBHOOK_SECRET, 'dna_sec_abacate_2026', 'dna_sec_abacatepay_prod_2026_webhook_key'];
+    processWebhook(db, body, headers = {}, query = {}) {
+        // Validação rigorosa da assinatura/secret quando configurada ou fornecida
+        const incomingSecret = headers['secret'] || headers['x-webhook-secret'] || (query && (query.webhookSecret || query.secret)) || (body && body.secret);
+        const validSecrets = [this.WEBHOOK_SECRET, 'dna_sec_abacate_2026', 'dna_sec_abacatepay_prod_2026_webhook_key'].filter(Boolean);
+        if (process.env.NODE_ENV === 'production' && this.WEBHOOK_SECRET && !incomingSecret) {
+            const err = new Error('Assinatura/secret do webhook obrigatória em produção.');
+            err.statusCode = 401;
+            throw err;
+        }
         if (incomingSecret && !validSecrets.includes(incomingSecret)) {
-            console.warn('[AbacatePay Webhook] Assinatura/Secret inválida.');
+            const err = new Error('Assinatura/secret do webhook inválida.');
+            err.statusCode = 401;
+            throw err;
         }
 
         const event = body && (body.event || body.type);
         const data = body && (body.data || body);
-        const externalId = data && (data.externalId || data.external_id || data.metadata?.chargeId);
-        const abacateId = data && data.id;
+        const externalId = data && (data.externalId || data.external_id || data.metadata?.chargeId || data.metadata?.charge_id);
+        const abacateId = data && (data.id || data.billing?.id);
 
         const targetId = externalId || abacateId;
         if (!targetId) {

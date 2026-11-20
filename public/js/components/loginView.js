@@ -20,8 +20,8 @@ const LoginView = {
             password: '',
         },
         ADMIN: {
-            email: 'admin@dnaauto.com.br',
-            password: 'admin123',
+            email: '',
+            password: '',
         }
     },
 
@@ -299,7 +299,7 @@ const LoginView = {
                                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
                                 </div>
                                 <input type="email" id="admin-login-email" class="auth-input" required
-                                       placeholder="admin@dnaauto.com.br" value="admin@dnaauto.com.br" autocomplete="email" />
+                                       placeholder="E-mail do administrador" value="" autocomplete="email" />
                             </div>
 
                             <div class="auth-input-group">
@@ -307,7 +307,7 @@ const LoginView = {
                                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
                                 </div>
                                 <input type="password" id="admin-login-password" class="auth-input" required
-                                       placeholder="••••••••" value="admin123" autocomplete="current-password" />
+                                       placeholder="Digite sua senha" value="" autocomplete="current-password" />
                                 <button type="button" class="auth-eye-btn" onclick="LoginView.togglePasswordVisibility()">
                                     <svg id="password-eye-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                                 </button>
@@ -454,9 +454,7 @@ const LoginView = {
                 this.restoreLayout();
                 App.loginAs('WORKSHOP', { id: 'usr_workshop_marcos', name: 'Marcos Silveira', role_code: 'WORKSHOP', workshop: { workshop_name: 'Veloce Auto Center' } });
             } else if (role === 'ADMIN') {
-                API.setDemoUser('usr_admin');
-                this.restoreLayout();
-                App.loginAs('ADMIN', { id: 'usr_admin', name: 'Administrador Geral', role_code: 'ADMIN' });
+                alert('⛔ Acesso administrativo exige autenticação obrigatória via API com credenciais válidas.');
             }
         }
     },

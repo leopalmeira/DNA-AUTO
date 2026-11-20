@@ -9,10 +9,14 @@ require('./database/db');
 // Serviço Anti-Sleep / Keep-Alive (Render Free Tier)
 const { startKeepAlive } = require('./services/keepAlive.service');
 const { startMaintenanceScheduler } = require('./services/maintenanceMonitor.service');
+const { createRateLimiter } = require('./middlewares/rateLimit');
+const { publishSyncEvent } = require('./services/syncEvents.service');
 
 const app = express();
+const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const PORT = process.env.PORT || 3000;
 const APP_VERSION = '2.5.5';
+const ADMIN_CENTRAL_VERSION = '2.6.0';
 const APK_VERSION_CODE = Number(process.env.DNA_APK_VERSION_CODE || 255);
 const ANDROID_PACKAGE_NAME = process.env.ANDROID_PACKAGE_NAME || 'br.com.dnaauto.cliente';
 const ANDROID_OFICINA_PACKAGE_NAME = process.env.ANDROID_OFICINA_PACKAGE_NAME || 'br.com.dnaauto.oficina';
@@ -48,10 +52,43 @@ function resolveApkInfo(appType = 'cliente') {
 const DEPLOYED_AT = new Date().toISOString();
 const GIT_COMMIT = (process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || '').slice(0, 7) || null;
 
-// Middlewares Globais
-app.use(cors());
+// Middlewares Globais & Segurança (Fase 10)
+const allowedOriginsEnv = (process.env.CORS_ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+const corsOptions = {
+    origin(origin, callback) {
+        // Permite requisições server-to-server, mobile WebView/APK/Capacitor (origin ausente) ou ambiente dev/test
+        if (!origin || process.env.NODE_ENV !== 'production' || allowedOriginsEnv.length === 0) {
+            return callback(null, true);
+        }
+        if (allowedOriginsEnv.includes('*') || allowedOriginsEnv.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error('Origem não autorizada pela política CORS da plataforma DNA AUTO.'));
+    },
+    credentials: true
+};
+
+app.use(cors(corsOptions));
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+});
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
+
+// Rate limiters em endpoints de autenticação e recuperação de senha
+const authRateLimiter = createRateLimiter({
+    windowMs: 60 * 1000,
+    max: 30,
+    testMax: 5000,
+    message: 'Muitas tentativas de autenticação. Aguarde 1 minuto antes de tentar novamente.'
+});
+app.use('/api/v1/auth/login', authRateLimiter);
+app.use('/api/v1/auth/forgot-password', authRateLimiter);
+app.use('/api/v1/auth/reset-password', authRateLimiter);
+app.use('/api/v1/representatives/login', authRateLimiter);
 
 // Configuração padrão de cache para frontend estático
 const staticHeaders = {
@@ -413,6 +450,18 @@ app.post('/api/v1/clients/activate', (req, res) => {
             );
         }
 
+        publishSyncEvent(db, {
+            eventType: 'CLIENT_ACTIVATION_COMPLETED',
+            sourceApp: 'CLIENT_APP',
+            entityType: 'CLIENT_ACTIVATION',
+            entityId: activation.id,
+            payload: {
+                workshop_id: activation.workshop_id,
+                vehicle_id: vehicle ? vehicle.id : null,
+                activation_code: activation.activation_code
+            }
+        });
+
         res.json({
             success: true,
             message: '🎉 Veículo ativado com sucesso!',
@@ -453,21 +502,21 @@ app.get(['/dna-auto-login.html', '/dna-auto-login', '/login'], (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
-    res.sendFile(path.join(__dirname, '..', '..', 'cliente.app', 'dna-auto-login.html'));
+    res.sendFile('cliente.app/dna-auto-login.html', { root: PROJECT_ROOT });
 });
 
 app.get(['/cliente', '/cliente.html', '/app', '/meucarro', '/cliente.app'], (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
-    res.sendFile(path.join(__dirname, '..', '..', 'cliente.app', 'index.html'));
+    res.sendFile('cliente.app/index.html', { root: PROJECT_ROOT });
 });
 
 app.get(['/oficina', '/oficina.html', '/painel', '/workshop', '/erp', '/oficina.app', '/oficinal.app'], (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
-    res.sendFile(path.join(__dirname, '..', '..', 'oficina.app', 'index.html'));
+    res.sendFile('oficina.app/index.html', { root: PROJECT_ROOT });
 });
 
 // Rota Dedicada para a Landing de Oficinas Parceiras (/parceiro, /autocenter)
@@ -475,7 +524,7 @@ app.get(['/parceiro', '/parceiros', '/seja-parceiro', '/autocenter', '/autocente
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
-    res.sendFile(path.join(__dirname, '..', '..', 'public', 'parceiro.html'));
+    res.sendFile('public/parceiro.html', { root: PROJECT_ROOT });
 });
 
 // Rotas Dedicadas para o Portal Oficial de Representantes Comerciais (/representante) e Link de Indicação (/representante/indicacao/:code)
@@ -483,14 +532,14 @@ app.get(['/representante', '/representantes', '/representante.html'], (req, res)
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
-    res.sendFile(path.join(__dirname, '..', '..', 'public', 'representante.html'));
+    res.sendFile('public/representante.html', { root: PROJECT_ROOT });
 });
 
 app.get(['/representante/indicacao/:code', '/representantes/indicacao/:code'], (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
-    res.sendFile(path.join(__dirname, '..', '..', 'public', 'representante-indicacao.html'));
+    res.sendFile('public/representante-indicacao.html', { root: PROJECT_ROOT });
 });
 
 // Fallback para SPA no Frontend
@@ -500,7 +549,7 @@ app.use((req, res) => {
         res.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
         res.set('Pragma', 'no-cache');
         res.set('Expires', '0');
-        res.sendFile(path.join(__dirname, '..', '..', 'public', 'index.html'));
+        res.sendFile('public/index.html', { root: PROJECT_ROOT });
     } else {
         res.status(404).json({ error: 'Endpoint da API não encontrado.' });
     }

@@ -193,11 +193,12 @@ router.post('/pix/:chargeId/refund', (req, res) => {
 // 6. Webhook Oficial da AbacatePay (Notificação em Tempo Real)
 router.post('/webhook/abacatepay', (req, res) => {
     try {
-        const result = AbacatePayService.processWebhook(db, req.body, req.headers);
+        const result = AbacatePayService.processWebhook(db, req.body, req.headers, req.query);
         res.json({ received: true, ...result });
     } catch (err) {
-        console.error('Erro ao processar Webhook AbacatePay:', err);
-        res.status(500).json({ error: 'Erro ao processar webhook.' });
+        console.error('Erro ao processar Webhook AbacatePay:', err.message);
+        const statusCode = err.statusCode || 500;
+        res.status(statusCode).json({ error: err.message || 'Erro ao processar webhook.' });
     }
 });
 

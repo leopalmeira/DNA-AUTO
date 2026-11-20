@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="/css/landing.css?v=20260914_chat_media_v6">
     <link rel="stylesheet" href="/css/dossier.css?v=20260914_chat_media_v6">
     <link rel="stylesheet" href="/css/owner-app.css?v=20260914_chat_media_v6">
+    <link rel="stylesheet" href="/css/admin-v2.css?v=2.6.0">
     <link rel="stylesheet" href="/css/print.css?v=20260914_chat_media_v6">
 </head>
 <body>
@@ -62,7 +63,7 @@
             <!-- Indicador da Rede em Tempo Real -->
             <div class="network-pill">
                 <div class="pulse-dot"></div>
-                <span>REDE AO VIVO: <strong>4 VEÍCULOS</strong> • <strong>5 COMPROVADOS</strong></span>
+                <span id="global-network-pill-text">REDE DNA AUTO • <strong>SINCRONIZADA</strong></span>
             </div>
 
             <!-- Ações do Topo / Sessão do Usuário Autenticado -->
@@ -104,28 +105,8 @@
                             </li>
                             <li class="nav-item" data-view="admin" data-admin-tab="workshops" onclick="AdminView.switchTab('workshops')">
                                 <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
-                                <span>Oficinas & Carros</span>
-                                <span class="nav-badge" id="side-badge-workshops">3</span>
+                                <span>Oficinas Credenciadas</span>
                             </li>
-                            <!-- Submenu Discreto: Oficinas Cadastradas e Carros -->
-                            <ul class="nav-sub-menu" id="side-sub-workshops">
-                                <li class="nav-sub-item active" data-ws-filter="all" onclick="AdminView.filterByWorkshop('all', event)">
-                                    <span>Todas as Oficinas</span>
-                                    <span class="nav-sub-count">4</span>
-                                </li>
-                                <li class="nav-sub-item" data-ws-filter="ws_veloce" onclick="AdminView.filterByWorkshop('ws_veloce', event)">
-                                    <span>Veloce Auto Center</span>
-                                    <span class="nav-sub-count">2</span>
-                                </li>
-                                <li class="nav-sub-item" data-ws-filter="ws_mastercar" onclick="AdminView.filterByWorkshop('ws_mastercar', event)">
-                                    <span>MasterCar Bosch</span>
-                                    <span class="nav-sub-count">1</span>
-                                </li>
-                                <li class="nav-sub-item" data-ws-filter="ws_central" onclick="AdminView.filterByWorkshop('ws_central', event)">
-                                    <span>Auto Elétrica Central</span>
-                                    <span class="nav-sub-count">1</span>
-                                </li>
-                            </ul>
                             <li class="nav-item" data-view="admin" data-admin-tab="revenue" onclick="AdminView.switchTab('revenue')">
                                 <svg class="nav-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v12M15 9.5a3.5 3.5 0 0 0-7 0c0 2 2 3 3.5 3.5s3.5 1.5 3.5 3.5a3.5 3.5 0 0 1-7 0"></path></svg>
                                 <span>Faturamento</span>
@@ -566,13 +547,19 @@
 
     <!-- Scripts da Aplicação (v=20260914_chat_media_v6) -->
     <script src="/js/components/qrcode.js?v=20260914_chat_media_v6"></script>
-    <script src="/js/api.js?v=2.5.0"></script>
+    <script src="/js/api.js?v=2.6.0"></script>
     <script src="/js/components/dnaAiStudio.js?v=20260914_chat_media_v6"></script>
     <script src="/js/components/dossierView.js?v=2.5.0"></script>
     <script src="/js/components/workshopView.js?v=20260914_chat_media_v6"></script>
     <script src="/js/components/ownerView.js?v=2.5.0"></script>
-    <script src="/js/components/adminView.js?v=2.5.0"></script>
-    <script src="/js/components/loginView.js?v=20260914_chat_media_v6"></script>
+    <script src="/js/components/admin/adminCharts.js?v=2.6.0"></script>
+    <script src="/js/components/admin/adminSync.js?v=2.6.0"></script>
+    <script src="/js/components/admin/adminScreensCore.js?v=2.6.0"></script>
+    <script src="/js/components/admin/adminScreensCommercial.js?v=2.6.0"></script>
+    <script src="/js/components/admin/adminScreensFinance.js?v=2.6.0"></script>
+    <script src="/js/components/admin/adminScreensOps.js?v=2.6.0"></script>
+    <script src="/js/components/adminView.js?v=2.6.0"></script>
+    <script src="/js/components/loginView.js?v=2.6.0"></script>
     <script src="/js/components/landingHomeView.js?v=20260914_chat_media_v6"></script>
     <script src="/js/components/landingClientView.js?v=20260914_chat_media_v6"></script>
     <script src="/js/components/landingWorkshopView.js?v=20260914_chat_media_v6"></script>
@@ -581,7 +568,7 @@
     <script src="/js/components/posterGenerator.js?v=20260914_chat_media_v6"></script>
     <script src="/js/components/saleReportModal.js?v=20260914_chat_media_v6"></script>
     <script src="/js/components/pwaInstall.js?v=20260914_chat_media_v6"></script>
-    <script src="/js/app.js?v=20260914_chat_media_v6"></script>
+    <script src="/js/app.js?v=2.6.0"></script>
 
 </body>
 </html>

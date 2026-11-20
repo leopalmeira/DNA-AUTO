@@ -3,6 +3,10 @@ const db = require('../database/db');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dna_auto_secret_jwt_key_2026_super_secure';
 
+if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
+    console.warn('⚠️ [SEGURANÇA] JWT_SECRET não definido em produção! Configure uma chave forte nas variáveis de ambiente.');
+}
+
 function enforceRepresentativeBoundary(user, req, res) {
     if (user && user.role_code === 'REPRESENTATIVE') {
         const rep = db.prepare(`SELECT * FROM representatives WHERE user_id = ?`).get(user.id);
@@ -14,10 +18,18 @@ function enforceRepresentativeBoundary(user, req, res) {
             '/api/v1/representatives',
             '/api/v1/auth/me'
         ];
+        // Representantes nunca podem acessar /api/v1/representatives/admin/*
+        if (url.startsWith('/api/v1/representatives/admin')) {
+            res.status(403).json({
+                error: 'Acesso negado. Endpoints administrativos são restritos ao perfil ADMIN.',
+                code: 'ADMIN_ROLE_REQUIRED'
+            });
+            return false;
+        }
         const isAllowed = allowedPrefixes.some(prefix => url === prefix || url.startsWith(prefix + '/'));
         if (!isAllowed) {
             res.status(403).json({
-                error: 'REGRA ABSOLUTA DE SEGURANÇA: O representante comercial possui acesso restrito exclusivamente ao portal /representante e não pode acessar o aplicativo da oficina nem o aplicativo do cliente.',
+                error: 'REGRA ABSOLUTA DE SEGURANÇA: O representante comercial possui acesso restrito exclusivamente ao portal /representante e não pode acessar o aplicativo da oficina, aplicativo do cliente nem o painel administrativo.',
                 code: 'REPRESENTATIVE_ROLE_ISOLATION'
             });
             return false;
@@ -26,13 +38,31 @@ function enforceRepresentativeBoundary(user, req, res) {
     return true;
 }
 
-function authenticateToken(req, res, next) {
+function isAdminEndpoint(req) {
+    const url = String(req.originalUrl || req.url || '').split('?')[0];
+    return url.startsWith('/api/v1/admin') || url.startsWith('/api/v1/representatives/admin');
+}
+
+function extractBearerToken(req) {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        return authHeader.slice(7).trim();
+    }
+    // Permite token via query apenas em stream SSE (EventSource não suporta headers Authorization customizados)
+    const url = String(req.originalUrl || req.url || '').split('?')[0];
+    if (url.endsWith('/sync/stream') && req.query && req.query.access_token) {
+        return String(req.query.access_token).trim();
+    }
+    return null;
+}
+
+function authenticateToken(req, res, next) {
+    const token = extractBearerToken(req);
 
     if (!token) {
-        // Se não tiver token, cria sessão simulada ou demo se header X-Demo-User vier
-        const demoUserId = req.headers['x-demo-user-id'];
+        // Nunca permite bypass por X-Demo-User-Id em endpoints administrativos ou em produção
+        const allowDemoFallback = process.env.ALLOW_DEMO_HEADER === 'true' && process.env.NODE_ENV !== 'production' && !isAdminEndpoint(req);
+        const demoUserId = allowDemoFallback ? req.headers['x-demo-user-id'] : null;
         if (demoUserId) {
             const user = db.prepare(`
                 SELECT u.id, u.name, u.email, u.phone, u.role_id,
@@ -40,45 +70,30 @@ function authenticateToken(req, res, next) {
                        COALESCE(r.name, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'Registrador da Oficina' ELSE 'Usuário' END) as role_name
                 FROM users u
                 LEFT JOIN roles r ON u.role_id = r.id
-                WHERE u.id = ?
+                WHERE u.id = ? AND u.status = 'ACTIVE'
             `).get(demoUserId);
-            if (user) {
+            if (user && user.role_code !== 'ADMIN') {
                 if (!enforceRepresentativeBoundary(user, req, res)) return;
                 req.user = user;
                 return next();
             }
         }
-        return res.status(401).json({ error: 'Token de autenticação não fornecido.' });
+        return res.status(401).json({
+            error: 'Token de autenticação não fornecido.',
+            code: 'AUTH_TOKEN_MISSING'
+        });
     }
 
     jwt.verify(token, JWT_SECRET, (err, decodedUser) => {
-        if (err) {
-            // Se o token for de sessão simulada ou em ambiente de desenvolvimento, verificar X-Demo-User-Id ou o token
-            let demoUserId = req.headers['x-demo-user-id'];
-            if (!demoUserId && typeof token === 'string' && token.includes('usr_')) {
-                const match = token.match(/(usr_[a-zA-Z0-9_]+)/);
-                if (match) demoUserId = match[1];
-            }
-            if (demoUserId) {
-                const fallbackUser = db.prepare(`
-                    SELECT u.id, u.name, u.email, u.phone, u.role_id,
-                           COALESCE(r.code, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'WORKSHOP_STAFF' WHEN u.role_id = 'role_workshop_owner' THEN 'WORKSHOP_OWNER' ELSE 'CUSTOMER' END) as role_code,
-                           COALESCE(r.name, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'Registrador da Oficina' ELSE 'Usuário' END) as role_name
-                    FROM users u
-                    LEFT JOIN roles r ON u.role_id = r.id
-                    WHERE u.id = ? AND u.status = 'ACTIVE'
-                `).get(demoUserId);
-                if (fallbackUser) {
-                    if (!enforceRepresentativeBoundary(fallbackUser, req, res)) return;
-                    req.user = fallbackUser;
-                    return next();
-                }
-            }
-            return res.status(403).json({ error: 'Sessão inválida ou expirada.' });
+        if (err || !decodedUser || !decodedUser.id) {
+            return res.status(401).json({
+                error: 'Sessão inválida ou expirada. Faça login novamente.',
+                code: 'AUTH_TOKEN_INVALID'
+            });
         }
 
         const user = db.prepare(`
-            SELECT u.id, u.name, u.email, u.phone, u.role_id,
+            SELECT u.id, u.name, u.email, u.phone, u.role_id, u.status,
                    COALESCE(r.code, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'WORKSHOP_STAFF' WHEN u.role_id = 'role_workshop_owner' THEN 'WORKSHOP_OWNER' ELSE 'CUSTOMER' END) as role_code,
                    COALESCE(r.name, CASE WHEN u.role_id = 'role_workshop_staff' THEN 'Registrador da Oficina' ELSE 'Usuário' END) as role_name
             FROM users u
@@ -87,7 +102,10 @@ function authenticateToken(req, res, next) {
         `).get(decodedUser.id);
 
         if (!user) {
-            return res.status(403).json({ error: 'Usuário não encontrado ou inativo.' });
+            return res.status(403).json({
+                error: 'Usuário não encontrado ou inativo.',
+                code: 'AUTH_USER_INACTIVE'
+            });
         }
 
         if (!enforceRepresentativeBoundary(user, req, res)) return;
@@ -112,11 +130,15 @@ function authenticateToken(req, res, next) {
 function authorizeRoles(...allowedRoles) {
     return (req, res, next) => {
         if (!req.user) {
-            return res.status(401).json({ error: 'Usuário não autenticado.' });
+            return res.status(401).json({
+                error: 'Usuário não autenticado.',
+                code: 'AUTH_REQUIRED'
+            });
         }
         if (!allowedRoles.includes(req.user.role_code)) {
             return res.status(403).json({
-                error: `Acesso negado. Perfil '${req.user.role_name}' não possui permissão para esta operação.`
+                error: `Acesso negado. Perfil '${req.user.role_name}' não possui permissão para esta operação.`,
+                code: 'FORBIDDEN_ROLE'
             });
         }
         next();
@@ -125,8 +147,7 @@ function authorizeRoles(...allowedRoles) {
 
 function blockRepresentativeOutsidePortal(req, res, next) {
     try {
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
+        const token = extractBearerToken(req);
         if (token) {
             const decoded = jwt.verify(token, JWT_SECRET);
             if (decoded && decoded.role_code === 'REPRESENTATIVE') {
