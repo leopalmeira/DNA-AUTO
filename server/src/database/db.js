@@ -603,6 +603,10 @@ try {
     // Inicializar regras padrão se ainda não existirem
     const PredictiveMaintenanceService = require('../services/predictiveMaintenance.service');
     PredictiveMaintenanceService.seedRulesIfEmpty(db);
+
+    // Executar migração idempotente da Central Administrativa Integrada V2
+    const { runAdminCentralV2Migration } = require('./migrations/adminCentralV2.migration');
+    runAdminCentralV2Migration(db);
 } catch (err) {
     console.warn('Verificação de tabelas preditivas:', err.message);
 }

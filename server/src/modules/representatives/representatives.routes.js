@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../../database/db');
 const { authenticateToken, authorizeRoles, JWT_SECRET } = require('../../middlewares/auth');
+const { publishSyncEvent } = require('../../services/syncEvents.service');
 
 const REP_STATUS = Object.freeze({
     PENDING: 'PENDING_APPROVAL',
@@ -172,6 +173,14 @@ router.post('/register', (req, res) => {
                 req.ip || '127.0.0.1'
             );
         })();
+
+        publishSyncEvent(db, {
+            eventType: 'REPRESENTATIVE_REGISTERED',
+            sourceApp: 'REP_PORTAL',
+            entityType: 'REPRESENTATIVE',
+            entityId: repId,
+            payload: { rep_code: repCode, name, status: REP_STATUS.PENDING, city, state }
+        });
 
         // Sem token: o acesso ao painel só é liberado após a aprovação da DNA AUTO
         res.status(201).json({
@@ -1201,6 +1210,14 @@ function changeRepresentativeStatus(req, res, newStatus, action, defaultJustific
                 req.ip || '127.0.0.1'
             );
         })();
+
+        publishSyncEvent(db, {
+            eventType: 'REPRESENTATIVE_STATUS_CHANGED',
+            sourceApp: 'ADMIN_PANEL',
+            entityType: 'REPRESENTATIVE',
+            entityId: rep.id,
+            payload: { rep_code: rep.rep_code, previous_status: rep.status, new_status: newStatus }
+        });
 
         res.json({ success: true, id: rep.id, rep_code: rep.rep_code, status: newStatus });
     } catch (err) {

@@ -7,6 +7,7 @@ const db = require('../../database/db');
 const { JWT_SECRET, authenticateToken } = require('../../middlewares/auth');
 const { logAudit } = require('../../middlewares/audit');
 const apiPlacasService = require('../../services/apiPlacas.service');
+const { publishSyncEvent } = require('../../services/syncEvents.service');
 
 try {
     db.exec(`ALTER TABLE users ADD COLUMN must_change_password INTEGER DEFAULT 0`);
@@ -649,6 +650,14 @@ router.post('/register-client', async (req, res) => {
             userAgent: req.headers['user-agent']
         });
 
+        publishSyncEvent(db, {
+            eventType: 'CLIENT_REGISTERED',
+            sourceApp: 'CLIENT_APP',
+            entityType: 'OWNER',
+            entityId: ownerId,
+            payload: { user_id: userId, vehicle_id: vehicle ? vehicle.id : null, license_plate: vehicle ? vehicle.license_plate : null }
+        });
+
         // Buscar dados de DNA vinculados
         let vehicleDna = null;
         if (vehicle) {
@@ -1113,6 +1122,14 @@ router.post('/register-owner', async (req, res) => {
             entityId: userId,
             ipAddress: req.ip || req.connection.remoteAddress,
             userAgent: req.headers['user-agent']
+        });
+
+        publishSyncEvent(db, {
+            eventType: 'CLIENT_REGISTERED',
+            sourceApp: 'CLIENT_APP',
+            entityType: 'OWNER',
+            entityId: ownerId,
+            payload: { user_id: userId, vehicle_id: vehicle ? vehicle.id : null, license_plate: vehicle ? vehicle.license_plate : null }
         });
 
         res.status(201).json({
@@ -1656,6 +1673,19 @@ function handleRegisterWorkshop(req, res) {
         } catch (linkErr) {
             console.warn('Aviso na verificação de vínculo de representante:', linkErr.message);
         }
+
+        publishSyncEvent(db, {
+            eventType: 'WORKSHOP_REGISTERED',
+            sourceApp: 'WORKSHOP_APP',
+            entityType: 'WORKSHOP',
+            entityId: workshopId,
+            payload: {
+                trade_name: tradeName.trim(),
+                city: city ? city.trim() : 'São Paulo',
+                state: state ? state.trim().toUpperCase() : 'SP',
+                rep_code: referralLinkInfo ? referralLinkInfo.rep_code : null
+            }
+        });
 
         res.status(201).json({
             token,

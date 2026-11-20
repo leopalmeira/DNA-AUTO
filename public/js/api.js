@@ -7,7 +7,7 @@ const API = {
         ? 'https://dna-auto-vua4.onrender.com/api/v1'
         : '/api/v1',
     token: localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token') || null,
-    currentDemoUserId: localStorage.getItem('dna_auto_demo_user_id') || 'usr_admin',
+    currentDemoUserId: null,
 
     setToken(token) {
         this.token = token;
@@ -21,18 +21,16 @@ const API = {
     },
 
     setDemoUser(userId) {
-        this.currentDemoUserId = userId;
-        if (userId) localStorage.setItem('dna_auto_demo_user_id', userId);
-        else localStorage.removeItem('dna_auto_demo_user_id');
+        // Preservado como no-op seguro para compatibilidade (autenticação oficial usa JWT Bearer)
+        this.currentDemoUserId = null;
+        localStorage.removeItem('dna_auto_demo_user_id');
     },
 
     async request(endpoint, options = {}) {
         const headers = options.headers || {};
-        if (this.token) {
-            headers['Authorization'] = `Bearer ${this.token}`;
-        }
-        if (this.currentDemoUserId) {
-            headers['X-Demo-User-Id'] = this.currentDemoUserId;
+        const activeToken = this.token || localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+        if (activeToken) {
+            headers['Authorization'] = `Bearer ${activeToken}`;
         }
 
         if (!(options.body instanceof FormData) && !headers['Content-Type']) {
@@ -45,7 +43,10 @@ const API = {
             const res = await fetch(`${this.baseUrl}${endpoint}`, options);
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                throw new Error(data.error || data.message || `Erro HTTP ${res.status}`);
+                const err = new Error(data.error || data.message || `Erro HTTP ${res.status}`);
+                err.status = res.status;
+                err.code = data.code || null;
+                throw err;
             }
             return data;
         } catch (err) {
@@ -476,6 +477,206 @@ const API = {
         return this.request(`/workshops/${encodeURIComponent(workshopId)}/support-tickets`, {
             method: 'POST',
             body: JSON.stringify(payload)
+        });
+    },
+
+    // =========================================================================
+    // CENTRAL ADMINISTRATIVA INTEGRADA V2
+    // =========================================================================
+    _qs(params = {}) {
+        const clean = {};
+        for (const [k, v] of Object.entries(params || {})) {
+            if (v !== undefined && v !== null && v !== '') clean[k] = String(v);
+        }
+        const s = new URLSearchParams(clean).toString();
+        return s ? `?${s}` : '';
+    },
+    getAdminDashboardOverview(params = {}) {
+        return this.request(`/admin/dashboard/overview${this._qs(params)}`);
+    },
+    getAdminDashboardTimeseries(params = {}) {
+        return this.request(`/admin/dashboard/timeseries${this._qs(params)}`);
+    },
+    adminGlobalSearch(q) {
+        return this.request(`/admin/global-search${this._qs({ q })}`);
+    },
+    getAdminOperationsOverview() {
+        return this.request('/admin/operations/overview');
+    },
+    getAdminGoals(params = {}) {
+        return this.request(`/admin/goals${this._qs(params)}`);
+    },
+    getAdminRepresentatives(params = {}) {
+        return this.request(`/admin/representatives/summary${this._qs(params)}`);
+    },
+    getAdminRepresentativesSummary(params = {}) {
+        return this.request(`/admin/representatives/summary${this._qs(params)}`);
+    },
+    getAdminRepresentativeOverview(id) {
+        return this.request(`/admin/representatives/${encodeURIComponent(id)}/overview`);
+    },
+    getAdminRepresentativeWorkshops(id) {
+        return this.request(`/admin/representatives/${encodeURIComponent(id)}/workshops`);
+    },
+    getAdminRepresentativeClients(id) {
+        return this.request(`/admin/representatives/${encodeURIComponent(id)}/clients`);
+    },
+    getAdminRepresentativeCommissions(id, params = {}) {
+        return this.request(`/admin/representatives/${encodeURIComponent(id)}/commissions${this._qs(params)}`);
+    },
+    getAdminRepresentativePayouts(id) {
+        return this.request(`/admin/representatives/${encodeURIComponent(id)}/payouts`);
+    },
+    approveRepresentative(id, justification = '') {
+        return this.request(`/admin/representatives/${encodeURIComponent(id)}/approve`, {
+            method: 'POST',
+            body: JSON.stringify({ justification })
+        });
+    },
+    rejectRepresentative(id, justification = '') {
+        return this.request(`/admin/representatives/${encodeURIComponent(id)}/reject`, {
+            method: 'POST',
+            body: JSON.stringify({ justification })
+        });
+    },
+    suspendRepresentative(id, justification = '') {
+        return this.request(`/admin/representatives/${encodeURIComponent(id)}/suspend`, {
+            method: 'POST',
+            body: JSON.stringify({ justification })
+        });
+    },
+    reactivateRepresentative(id, justification = '') {
+        return this.request(`/admin/representatives/${encodeURIComponent(id)}/reactivate`, {
+            method: 'POST',
+            body: JSON.stringify({ justification })
+        });
+    },
+    updateRepresentativeGoals(id, payload) {
+        return this.request(`/admin/representatives/${encodeURIComponent(id)}/goals`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload)
+        });
+    },
+    getAdminWorkshopsSummary(params = {}) {
+        return this.request(`/admin/workshops/summary${this._qs(params)}`);
+    },
+    getAdminWorkshopPerformance(id) {
+        return this.request(`/admin/workshops/${encodeURIComponent(id)}/performance`);
+    },
+    reassignWorkshopRepresentative(workshopId, payload) {
+        return this.request(`/admin/workshops/${encodeURIComponent(workshopId)}/reassign-representative`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+    getAdminUniqueClients(params = {}) {
+        return this.request(`/admin/clients/unique${this._qs(params)}`);
+    },
+    getAdminServiceOrders(params = {}) {
+        return this.request(`/admin/service-orders${this._qs(params)}`);
+    },
+    getAdminMaintenanceHistory() {
+        return this.request('/admin/maintenance-history');
+    },
+    getAdminCommercialAcquisition(params = {}) {
+        return this.request(`/admin/commercial/acquisition${this._qs(params)}`);
+    },
+    getAdminCommercialRanking(params = {}) {
+        return this.request(`/admin/commercial/ranking${this._qs(params)}`);
+    },
+    getAdminFinanceOverview(params = {}) {
+        return this.request(`/admin/finance/overview${this._qs(params)}`);
+    },
+    getAdminFinanceCommissions(params = {}) {
+        return this.request(`/admin/finance/commissions${this._qs(params)}`);
+    },
+    updateAdminCommissionDispute(id, payload) {
+        return this.request(`/admin/finance/commissions/${encodeURIComponent(id)}/dispute`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+    getAdminNextPayouts(params = {}) {
+        return this.request(`/admin/finance/payouts/next${this._qs(params)}`);
+    },
+    getAdminPayoutsHistory(params = {}) {
+        return this.request(`/admin/finance/payouts/history${this._qs(params)}`);
+    },
+    closeAdminPayoutCycle(payload) {
+        return this.request('/admin/finance/payouts/close', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+    markAdminPayoutPaid(batchId, payload) {
+        return this.request(`/admin/finance/payouts/${encodeURIComponent(batchId)}/mark-paid`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+    getAdminWorkshopPayouts() {
+        return this.request('/admin/finance/workshop-payouts');
+    },
+    markAdminWorkshopPayoutPaid(workshopId, payload) {
+        return this.request(`/admin/finance/workshop-payouts/${encodeURIComponent(workshopId)}/mark-paid`, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+    getAdminAttendanceFees() {
+        return this.request('/admin/finance/attendance-fees');
+    },
+    getAdminFinancialReconciliation(params = {}) {
+        return this.request(`/admin/finance/reconciliation${this._qs(params)}`);
+    },
+    getAdminCommercialPolicies() {
+        return this.request('/admin/commercial-policies');
+    },
+    createAdminCommercialPolicy(payload) {
+        return this.request('/admin/commercial-policies', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+    },
+    activateAdminCommercialPolicy(id) {
+        return this.request(`/admin/commercial-policies/${encodeURIComponent(id)}/activate`, {
+            method: 'POST'
+        });
+    },
+    getAdminWhatsAppOverview() {
+        return this.request('/admin/whatsapp/overview');
+    },
+    getAdminSupportTickets(params = {}) {
+        return this.request(`/admin/support-tickets${this._qs(params)}`);
+    },
+    replyAdminSupportTicket(ticketId, payload) {
+        return this.request(`/admin/support-tickets/${encodeURIComponent(ticketId)}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload)
+        });
+    },
+    getAdminSyncStatus() {
+        return this.request('/admin/sync/status');
+    },
+    getAdminFinancialAudit(params = {}) {
+        return this.request(`/admin/audit/financial${this._qs(params)}`);
+    },
+    getAdminSettings() {
+        return this.request('/admin/settings');
+    },
+    saveAdminSettings(payload) {
+        return this.request('/admin/settings', {
+            method: 'PUT',
+            body: JSON.stringify(payload)
+        });
+    },
+    getAdminUsers(params = {}) {
+        return this.request(`/admin/users${this._qs(params)}`);
+    },
+    updateAdminUserStatus(userId, status) {
+        return this.request(`/admin/users/${encodeURIComponent(userId)}/status`, {
+            method: 'PATCH',
+            body: JSON.stringify({ status })
         });
     }
 };

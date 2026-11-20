@@ -15,7 +15,9 @@
     "test:bot_and_cards": "node test/maintenance_bot_and_cards.test.js",
     "test:apk_fullscreen": "node test/apk_and_fullscreen.test.js",
     "test:client_workshops_sp": "node test/client_workshops_sp.test.js",
-    "test": "node test/api.test.js && node test/oficina.components.test.js && node test/oficina.integration.test.js && node test/oficina.finance.test.js && node test/oficina.registrar_and_overflow.test.js && node test/credentials.auth.test.js && node test/oficina.staff_financial_block.test.js && node test/maintenance_bot_and_cards.test.js && node test/apk_and_fullscreen.test.js && node test/client_workshops_sp.test.js"
+    "test:representante": "node --test test/representante.homologation.test.js",
+    "test:admin:v2": "node --test test/admin.central.v2.test.js",
+    "test": "node test/api.test.js && node test/oficina.components.test.js && node test/oficina.integration.test.js && node test/oficina.finance.test.js && node test/oficina.registrar_and_overflow.test.js && node test/credentials.auth.test.js && node test/oficina.staff_financial_block.test.js && node test/maintenance_bot_and_cards.test.js && node test/apk_and_fullscreen.test.js && node test/client_workshops_sp.test.js && node --test test/representante.homologation.test.js && node --test test/admin.central.v2.test.js"
   },
   "keywords": [],
   "author": "",

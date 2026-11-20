@@ -1781,12 +1781,16 @@ router.post('/:id/clients/register-activation', async (req, res) => {
             db.prepare(`UPDATE vehicles SET model = ?, brand = COALESCE(NULLIF(brand, 'Veículo'), ?), updated_at = CURRENT_TIMESTAMP WHERE id = ?`).run(model, brand || model.split(' ')[0], vehicle.id);
         }
 
-        // 1.5. Garante que o Veículo tenha DNA AUTO Oficial ativo e Health Score inicial zerado (R$ 49,90 = 50% R$ 24,95 Oficina / 50% R$ 24,95 Plataforma)
+        // 1.5. Garante que o Veículo tenha DNA AUTO Oficial ativo com política comercial versionada vigente
+        const CommissionFinance = require('../../services/commissionFinance.service');
+        const { publishSyncEvent } = require('../../services/syncEvents.service');
+        const activePolicy = CommissionFinance.getActiveCommercialPolicy(db);
         const activeReferral = AbacatePayService.getActiveWorkshopReferral(db, workshopId);
         const isRepProgram = Boolean(activeReferral || req.body.program_mode === 'REPRESENTATIVE' || Number(req.body.customer_price_cents) === 4990);
-        const registrationFeeCents = 4990;
-        const workshopSplitCents = 2495;
-        const platformSplitCents = 2495;
+        const registrationFeeCents = Math.round(Number(activePolicy.registration_price_cents || 4990));
+        const workshopSplitCents = Math.round(Number(activePolicy.workshop_split_cents || Math.floor(registrationFeeCents / 2)));
+        const platformSplitCents = registrationFeeCents - workshopSplitCents;
+        const repCommissionCents = Math.round(Number(activePolicy.rep_commission_cents || 590));
         const activePlanId = isRepProgram ? 'plan_rep_program' : 'plan_normal';
         const isImmediatePaymentConfirmed = req.body.payment_confirmed === true || req.body.mark_as_paid === true || req.body.payment_status === 'COMPLETED' || req.body.payment_status === 'PAID';
 
@@ -1941,28 +1945,16 @@ router.post('/:id/clients/register-activation', async (req, res) => {
                 clientPhone: rawPhone
             });
 
-            if (activeReferral && pixCharge && pixCharge.charge_id && actCommId) {
-                const nowIso = new Date().toISOString().replace('T', ' ').slice(0, 19);
-                const repCommId = `rcomm_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
-                db.prepare(`
-                    INSERT OR IGNORE INTO representative_commissions (
-                        id, representative_id, workshop_id, referral_id, dna_activation_id,
-                        source_payment_id, vehicle_id, registration_amount_cents,
-                        workshop_split_cents, platform_split_cents, commission_amount_cents,
-                        status, created_at, notes
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, 4990, 2495, 2495, 590, 'PROJECTED', ?, ?)
-                `).run(
-                    repCommId,
-                    activeReferral.representative_id,
+            if (activeReferral && pixCharge && pixCharge.charge_id) {
+                const projRes = CommissionFinance.upsertRepresentativeCommission(db, {
                     workshopId,
-                    activeReferral.id,
-                    actCommId,
-                    pixCharge.charge_id,
-                    vehicle.id,
-                    nowIso,
-                    'Comissão prevista — aguardando confirmação do pagamento do cadastro'
-                );
-                representativeCommission = db.prepare('SELECT * FROM representative_commissions WHERE source_payment_id = ?').get(pixCharge.charge_id);
+                    sourcePaymentId: pixCharge.charge_id,
+                    dnaActivationId: actCommId || null,
+                    vehicleId: vehicle.id,
+                    targetStatus: 'PROJECTED',
+                    notes: 'Comissão prevista — aguardando confirmação do pagamento do cadastro'
+                });
+                representativeCommission = projRes.commission || null;
             }
 
             if ((isImmediatePaymentConfirmed || billingResult.consumed_credit) && pixCharge && pixCharge.charge_id) {
@@ -1975,6 +1967,20 @@ router.post('/:id/clients/register-activation', async (req, res) => {
                 }
             }
         } catch (_) {}
+
+        publishSyncEvent(db, {
+            eventType: 'CLIENT_ACTIVATION_CREATED',
+            sourceApp: 'WORKSHOP_APP',
+            entityType: 'CLIENT_ACTIVATION',
+            entityId: actId,
+            payload: {
+                workshop_id: workshopId,
+                vehicle_id: vehicle.id,
+                license_plate: plate,
+                owner_id: owner ? owner.id : null,
+                activation_code: activationCode
+            }
+        });
 
         const baseUrl = process.env.SERVER_URL || 'https://dna-auto-vua4.onrender.com';
         const clientAppUrl = `${baseUrl}/cliente?code=${activationCode}`;
@@ -2018,7 +2024,7 @@ router.post('/:id/clients/register-activation', async (req, res) => {
                 gross_amount_cents: registrationFeeCents,
                 workshop_amount_cents: workshopSplitCents,
                 platform_gross_amount_cents: platformSplitCents,
-                representative_commission_cents: activeReferral ? 590 : 0
+                representative_commission_cents: activeReferral ? repCommissionCents : 0
             },
             representative_commission: representativeCommission,
             pix_charge: pixCharge ? { ...pixCharge, id: pixCharge.charge_id || pixCharge.id } : null,
@@ -2926,7 +2932,7 @@ router.get('/:id/appointments/daily-pdf', async (req, res) => {
         const pdfResult = await generateDailyAgendaPdf({ workshop: ws, targetDate, appointments });
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `inline; filename="${pdfResult.fileName}"`);
-        res.sendFile(pdfResult.filePath);
+        res.sendFile(path.basename(pdfResult.filePath), { root: path.dirname(pdfResult.filePath) });
     } catch (err) {
         console.error('Erro ao gerar download de PDF da agenda:', err);
         res.status(500).json({ error: 'Erro ao gerar PDF da agenda.' });

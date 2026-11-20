@@ -30,14 +30,18 @@ const App = {
         const isExplicitLogin = pathname === '/login' || hash === '#login';
 
         // Se houver usuário salvo na sessão e não for um pedido explícito de tela de login
+        const isJwtFormat = (tok) => typeof tok === 'string' && tok.split('.').length === 3 && tok.length > 30;
         if (savedUser && savedUser.role_code && !isExplicitLogin) {
-            if (!savedToken) {
-                savedToken = 'sess_' + savedUser.role_code.toLowerCase() + '_' + (savedUser.id || Date.now());
-                localStorage.setItem('dna_token', savedToken);
-                localStorage.setItem('dna_auto_token', savedToken);
+            // Segurança RBAC: sessão ADMIN exige obrigatoriamente JWT válido (nunca fabrica token fake)
+            if (savedUser.role_code === 'ADMIN' && !isJwtFormat(savedToken)) {
+                this.setLoggedUser(null);
+                API.setToken(null);
+                this.switchView('login-admin');
+                return;
             }
-            API.setToken(savedToken);
-            if (savedUser.id) API.setDemoUser(savedUser.id);
+            if (savedToken) {
+                API.setToken(savedToken);
+            }
             console.log('👤 Restaurando sessão ativa:', savedUser.name, `[${savedUser.role_code}]`);
 
             // Restaura o usuário e sincroniza interface
@@ -282,6 +286,11 @@ const App = {
             }
         }
 
+        // Se sair da Central Administrativa V2, encerrar SSE/timers e limpar classe de layout
+        if (this.currentView === 'admin' && viewName !== 'admin' && typeof AdminView !== 'undefined' && typeof AdminView.destroy === 'function') {
+            AdminView.destroy();
+        }
+
         this.currentView = viewName;
         localStorage.setItem('dna_current_view', viewName);
 
@@ -383,17 +392,11 @@ const App = {
 
         if (saveToStorage) {
             this.setLoggedUser(this.currentUser);
-            if (!localStorage.getItem('dna_token')) {
-                const token = 'sess_' + normRole.toLowerCase() + '_' + (user.id || Date.now());
-                localStorage.setItem('dna_token', token);
-                API.setToken(token);
+            const existingTok = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+            if (existingTok) {
+                API.setToken(existingTok);
             }
         }
-
-        // Configura usuário ativo na API
-        if (normRole === 'ADMIN') API.setDemoUser('usr_admin');
-        else if (normRole === 'WORKSHOP') API.setDemoUser(user.id || 'usr_workshop_marcos');
-        else if (normRole === 'OWNER') API.setDemoUser(user.id || 'usr_owner_carlos');
 
         // Restaurar layout (sidebar e header) que foram escondidos no login
         LoginView.restoreLayout();
@@ -416,6 +419,10 @@ const App = {
 
     // ── Logout Seguro ──
     logout() {
+        if (typeof AdminView !== 'undefined' && typeof AdminView.destroy === 'function') {
+            AdminView.destroy();
+        }
+        document.body.classList.remove('is-admin-v2');
         document.body.classList.remove('is-workshop-erp');
         document.body.classList.remove('is-owner-app');
         localStorage.removeItem('dna_current_view');

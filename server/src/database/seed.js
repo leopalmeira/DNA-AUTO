@@ -2,13 +2,16 @@ const bcrypt = require('bcryptjs');
 
 // Limpar tabelas existentes para reset limpo e idempotente
 const clearTables = [
+    'commission_payout_items', 'financial_adjustments', 'commission_payout_batches', 'commission_payout_cycles',
+    'sync_events', 'commercial_policies', 'admin_system_settings',
     'representative_audit_logs', 'representative_commissions', 'workshop_referrals',
     'representative_invites', 'representatives',
     'workshop_pix_charges', 'workshop_billing_balances', 'workshop_attendance_fees',
     'password_reset_tokens',
     'trip_classification_metrics', 'vehicle_maintenance_predictions', 'maintenance_rules',
     'vehicle_trips', 'odometer_readings', 'monitoring_preferences',
-    'client_activations', 'whatsapp_messages', 'whatsapp_sessions',
+    'client_activations', 'whatsapp_messages', 'whatsapp_sessions', 'maintenance_bot_campaigns',
+    'daily_agenda_dispatches', 'support_tickets',
     'audit_logs', 'commissions', 'dna_activations', 'pricing_plans', 'reports',
     'notifications', 'health_scores', 'fipe_values', 'market_values', 'auctions',
     'debts', 'fines', 'taxes', 'vehicle_documents', 'mileage_records', 'vehicle_photos',
@@ -305,6 +308,12 @@ function seedBase(dbInstance) {
             created_at: '2026-03-01 08:00:00'
         });
     })();
+
+    // Garantir políticas comerciais versionadas e configurações base após reset limpo
+    try {
+        const { runAdminCentralV2Migration } = require('./migrations/adminCentralV2.migration');
+        runAdminCentralV2Migration(db);
+    } catch (_) {}
 
     console.log('✅ Estrutura base limpa criada com sucesso. Apenas Administrador Geral cadastrado.');
 }

@@ -7,7 +7,7 @@ const API = {
         ? 'https://dna-auto-vua4.onrender.com/api/v1'
         : '/api/v1',
     token: localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token') || null,
-    currentDemoUserId: localStorage.getItem('dna_auto_demo_user_id') || 'usr_admin',
+    currentDemoUserId: null,
 
     setToken(token) {
         this.token = token;

@@ -6,6 +6,14 @@ services:
     region: oregon
     buildCommand: npm install
     startCommand: npm start
+    # ATENÇÃO INFRAESTRUTURA / PERSISTÊNCIA SQLITE:
+    # O plano 'free' do Render usa disco efêmero (dados SQLite são perdidos a cada deploy/restart).
+    # Para produção durável, migre para plan: starter (ou superior) e habilite o disco persistente abaixo,
+    # definindo DB_PATH=/var/data/dna_auto.db (ou migre para banco gerenciado conforme docs/ADMIN-CENTRAL-V2.md):
+    # disk:
+    #   name: dna-auto-data
+    #   mountPath: /var/data
+    #   sizeGB: 5
     envVars:
       - key: NODE_ENV
         value: production
@@ -13,8 +21,18 @@ services:
         value: 10000
       - key: SERVER_URL
         value: https://dna-auto-vua4.onrender.com
+      - key: DB_PATH
+        sync: false
+      - key: JWT_SECRET
+        sync: false
       - key: WDAPI_TOKEN
-        value: be14254e5b6a32f36acabc0542e822dd
+        sync: false
+      - key: ABACATEPAY_API_KEY
+        sync: false
+      - key: ABACATEPAY_WEBHOOK_SECRET
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://dna-auto-vua4.onrender.com,https://cliente-app.onrender.com,https://oficina-app.onrender.com
 
   - type: web
     name: cliente-app
