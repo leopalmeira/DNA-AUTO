@@ -83,7 +83,7 @@ public class DnaMileagePlugin extends Plugin {
             edit.putBoolean("alert50", target > 0 && official >= target - 50);
             edit.putBoolean("alert40", target > 0 && official >= target - 40);
             edit.putBoolean("confirmRequired", false);
-            edit.remove("lastLat").remove("lastLon").remove("lastTime");
+            edit.remove("lastLat").remove("lastLon").remove("lastTime").remove("lastSpeedKmh");
         }
         if (newTarget && !reset) {
             edit.putBoolean("alert80", false).putBoolean("alert50", false).putBoolean("alert40", false).putBoolean("confirmRequired", false);
@@ -122,6 +122,7 @@ public class DnaMileagePlugin extends Plugin {
         out.put("alert40", p.getBoolean("alert40", false));
         out.put("targetName", p.getString("targetName", "manutenção programada"));
         out.put("remainingKm", p.getFloat("targetKm", 0f) <= 0 ? -1 : Math.max(0, p.getFloat("targetKm", 0f) - p.getFloat("officialKm", 0f) - p.getFloat("trackedKm", 0f) - p.getFloat("tripKm", 0f)));
+        out.put("moving", System.currentTimeMillis() - p.getLong("lastTime", 0L) < 120000L && p.getFloat("lastSpeedKmh", 0f) >= 5f);
         out.put("lastFixAt", p.getLong("lastTime", 0L));
         try {
             out.put("trips", new JSONArray(p.getString("pendingTrips", "[]")));
@@ -261,7 +262,7 @@ public class DnaMileageService extends Service implements LocationListener {
         SharedPreferences.Editor edit = prefs.edit();
         edit.putFloat("lastLat", (float) location.getLatitude())
             .putFloat("lastLon", (float) location.getLongitude())
-            .putLong("lastTime", now);
+            .putLong("lastTime", now).putFloat("lastSpeedKmh", (float) speedKmh);
         long tripStart = prefs.getLong("tripStart", 0L);
         if (tripStart == 0 && speedKmh >= 20) {
             edit.putLong("tripStart", now).putFloat("tripKm", 0f)
