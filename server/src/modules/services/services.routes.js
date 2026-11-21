@@ -66,7 +66,7 @@ router.post('/workshop-register', authenticateToken, (req, res, next) => {
         }
         const partAmount = parsedPartsForValidation.reduce((sum, item) =>
             sum + (Number(item.unit_price_cents) || 0) * (Number(item.quantity) || 1), 0);
-        const laborAmount = Number(labor_cost_cents) || 0;
+        const laborAmount = Number(labor_cost_cents ?? req.body.cost_cents ?? req.body.service_value_cents) || 0;
         const fullAmount = partAmount + laborAmount;
         if (!Number.isSafeInteger(fullAmount) || fullAmount <= 0 ||
             !Number.isSafeInteger(laborAmount) || laborAmount < 0 ||
@@ -185,7 +185,7 @@ router.post('/workshop-register', authenticateToken, (req, res, next) => {
             partsCostCents += (Number(p.unit_price_cents) || 0) * (Number(p.quantity) || 1);
         });
 
-        const laborCost = Number(labor_cost_cents) || 0;
+        const laborCost = Number(labor_cost_cents ?? req.body.cost_cents ?? req.body.service_value_cents) || 0;
         const totalCost = partsCostCents + laborCost;
 
         // Identificar exatamente qual profissional/registrador lançou o serviço
