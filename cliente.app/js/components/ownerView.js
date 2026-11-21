@@ -27,6 +27,7 @@ const OwnerView = {
     predictiveData: null,
     odometerData: null,
     monitoringData: null,
+    odometerConfirmation: null,
     isMiniObdLockModalOpen: false,
     isOdometerModalOpen: false,
     isPredictiveModalOpen: false,
@@ -97,7 +98,9 @@ const OwnerView = {
                 if (u && u.email) {
                     this.vehicleData.user_email = u.email;
                 }
-                if (u && u.vehicle) {
+                // Não disparar chamadas em cascata nem trocar o veículo selecionado
+                // de volta ao primeiro carro em todo redesenho do aplicativo.
+                if (u && u.vehicle && !this.vehicleData.id && this.vehicleData.license_plate === '---') {
                     this.applyVehicleData(u.vehicle);
                 }
             } else if (typeof localStorage !== 'undefined') {
@@ -198,6 +201,7 @@ const OwnerView = {
 
     // ── Botão de Sair / Logout Oficial (Direciona para Splash/Boas-Vindas) ──
     logout() {
+        if (window.DnaTrackingEngine) window.DnaTrackingEngine.stopTracking();
         localStorage.removeItem('dna_logged_user');
         localStorage.removeItem('dna_user_name');
         localStorage.removeItem('dna_token');
@@ -1646,6 +1650,9 @@ const OwnerView = {
         this.vehicleAppointments = [];
         this.vehicleAlerts = [];
         this.predictiveData = null;
+        this.odometerData = null;
+        this.monitoringData = null;
+        this.odometerConfirmation = null;
 
         // Priorizar sempre o nome do usuário logado na sessão ativa
         const loggedUserStr = typeof localStorage !== 'undefined' ? localStorage.getItem('dna_logged_user') : null;
@@ -1679,14 +1686,17 @@ const OwnerView = {
             // O app Cliente pode estar em um domínio estático diferente do servidor de API.
             const base = (typeof API !== 'undefined' && API.baseUrl) || '/api/v1';
             const vehiclePath = encodeURIComponent(plate);
+            const token = (typeof API !== 'undefined' && API.token) || localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+            const secured = { headers: token ? { Authorization: `Bearer ${token}` } : {} };
             const [rDossier, rInsp, rObd, rPred, rOdom, rMon] = await Promise.all([
                 fetch(`${base}/dossier/${vehiclePath}`).catch(() => null),
                 fetch(`${base}/vehicles/${vehiclePath}/inspection`).catch(() => null),
                 fetch(`${base}/vehicles/${vehiclePath}/obd`).catch(() => null),
-                fetch(`${base}/vehicles/${vehiclePath}/predictive-maintenance`).catch(() => null),
-                fetch(`${base}/vehicles/${vehiclePath}/odometer`).catch(() => null),
-                fetch(`${base}/vehicles/${vehiclePath}/monitoring`).catch(() => null)
+                fetch(`${base}/vehicles/${vehiclePath}/predictive-maintenance`, secured).catch(() => null),
+                fetch(`${base}/vehicles/${vehiclePath}/odometer`, secured).catch(() => null),
+                fetch(`${base}/vehicles/${vehiclePath}/monitoring`, secured).catch(() => null)
             ]);
+            if (this.vehicleData.license_plate !== plate) return;
 
             if (rDossier && rDossier.ok) {
                 const dData = await rDossier.json();
@@ -1769,6 +1779,7 @@ const OwnerView = {
                 const data = await rPred.json();
                 if (data.success) {
                     this.predictiveData = data;
+                    this.odometerConfirmation = data.odometer_confirmation || data.summary?.odometer_confirmation || null;
                     this.vehicleAlerts = Array.isArray(data.alerts) ? data.alerts : [];
                 }
             }
@@ -1776,12 +1787,14 @@ const OwnerView = {
                 const data = await rOdom.json();
                 if (data.success) {
                     this.odometerData = data;
+                    this.odometerConfirmation = data.odometer_confirmation || this.odometerConfirmation;
                 }
             }
             if (rMon && rMon.ok) {
                 const data = await rMon.json();
                 if (data.success) {
                     this.monitoringData = data;
+                    this.odometerConfirmation = data.odometer_confirmation || this.odometerConfirmation;
                 }
             }
 
@@ -2193,6 +2206,31 @@ const OwnerView = {
         }
     },
 
+    // Lembrete vinculado ao CRONOGRAMA, nunca a quilometragem arbitrária desde o cadastro.
+    renderOdometerReminder() {
+        const st = this.odometerConfirmation;
+        const tracking = window.DnaTrackingEngine;
+        const disabled = tracking && !tracking.preferences?.isEnabled;
+        const enableButton = disabled ? '<button onclick="OwnerView.openPrivacyModal()" style="background:#075CE8;color:white;border:0;border-radius:9px;padding:9px 12px;font-weight:700;margin-top:8px;">Ativar GPS com consentimento</button>' : '';
+        if (!st || st.stage === 'OK') {
+            return disabled ? `<div style="margin:12px 0;padding:13px;border:1px solid #93C5FD;background:#EFF6FF;border-radius:12px;color:#0F172A;">
+                <strong style="font-size:13px;">Monitoramento de deslocamentos desligado</strong><p style="font-size:12px;line-height:1.4;">Ative nas configurações para acompanhar os quilômetros estimados no Android.</p>${enableButton}</div>` : '';
+        }
+        const required = st.needs_confirmation;
+        const remain = st.remaining_to_maintenance_km;
+        const kmText = remain == null ? '' : Math.max(0, Number(remain)).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+        const description = st.stage === 'INITIAL'
+            ? 'Informe a leitura atual do painel para iniciar a previsão da próxima revisão.'
+            : required
+                ? 'Faltam cerca de ' + kmText + ' km para a próxima manutenção. Confirme a quilometragem real do painel para recalcular o retorno à oficina.'
+                : 'Pré-aviso: faltam cerca de ' + kmText + ' km para sua manutenção. Ao chegar a 50 km restantes, confirme o painel.';
+        return `<div role="status" style="margin:12px 0;padding:14px;background:${required ? '#FFF1F2' : '#FFFBEB'};border:1.5px solid ${required ? '#EF4444' : '#F59E0B'};border-radius:12px;color:#0F172A;">
+            <strong style="display:block;margin-bottom:6px;font-size:14px;">${required ? 'Confirmação do hodômetro necessária' : 'Manutenção se aproximando'}</strong>
+            <p style="font-size:12px;line-height:1.5;margin:0 0 10px;">${description}</p>
+            ${required ? '<button onclick="OwnerView.openOdometerModal()" style="background:#B91C1C;border:0;color:white;padding:10px 13px;border-radius:9px;font-weight:800;">Informar km real do painel</button>' : '<button onclick="OwnerView.navigateTo(\'revisions\')" style="background:#B45309;border:0;color:white;padding:9px 12px;border-radius:9px;font-weight:700;">Ver previsão de manutenção</button>'}
+            ${enableButton}<small style="display:block;margin-top:8px;font-size:11px;">Confirme com o veículo parado. GPS é apenas uma estimativa.</small></div>`;
+    },
+
     // ── 1. TELA INICIAL (HOME / DASHBOARD) — EXATAMENTE COMO NO PRINT OFICIAL (TELA 4) ──
     renderHomeScreen() {
         const v = this.vehicleData || {};
@@ -2226,6 +2264,8 @@ const OwnerView = {
                 <h2 class="dna-print-welcome-title">Olá, ${displayName} 👋</h2>
                 <p class="dna-print-welcome-sub">Aqui está o resumo do seu veículo</p>
             </div>
+
+            ${this.renderOdometerReminder()}
 
             <!-- 2. Card Branco de Destaque do Carro -->
             <div class="dna-print-car-card" onclick="OwnerView.navigateTo('vehicle')">
@@ -5940,6 +5980,7 @@ const OwnerView = {
             });
 
             if (res.success) {
+                this.odometerConfirmation = null;
                 if (window.DnaTrackingEngine) await window.DnaTrackingEngine.odometerConfirmed();
                 this.showOwnerToast('Hodômetro oficial confirmado com sucesso!', 'success');
                 this.closeOdometerModal();
@@ -5988,20 +6029,28 @@ const OwnerView = {
         this.render();
     },
     async savePrivacyPreferences(enabled) {
-        if (typeof window.DnaTrackingEngine !== 'undefined') {
-            const ok = await window.DnaTrackingEngine.savePreferences({ isEnabled: enabled });
-            if (!ok) {
-                this.showOwnerToast(window.DnaTrackingEngine.lastError || 'Verifique permissões de GPS e notificações do Android.', 'error');
-                this.render();
-                return;
-            }
-        }
+        const plate = this.vehicleData.license_plate;
         try {
-            const plate = this.vehicleData.license_plate;
-            await API.saveVehicleMonitoringPreferences(plate, { is_enabled: enabled, consent_given: enabled });
+            // Primeiro grava consentimento no servidor: o APK só pode iniciar
+            // coleta de GPS quando o veículo estiver vinculado ao titular.
+            const res = await API.saveVehicleMonitoringPreferences(plate, {
+                is_enabled: enabled, consent_given: enabled
+            });
+            if (!res?.success) throw new Error(res?.error || 'Não foi possível salvar a preferência.');
+            if (window.DnaTrackingEngine) {
+                const ok = await window.DnaTrackingEngine.savePreferences({
+                    isEnabled: enabled,
+                    consentGiven: enabled || window.DnaTrackingEngine.preferences?.consentGiven
+                });
+                if (ok === false) {
+                    await API.saveVehicleMonitoringPreferences(plate, { is_enabled: false, consent_given: false });
+                    throw new Error(window.DnaTrackingEngine.lastError || 'Permissão de GPS não concedida.');
+                }
+            }
             await this.fetchVehicleExtras(plate);
-        } catch (e) {
-            this.showOwnerToast('Não foi possível salvar a preferência no servidor.', 'error');
+            this.showOwnerToast(enabled ? 'GPS autorizado. Acompanhamento ativado.' : 'GPS desativado.', 'success');
+        } catch (error) {
+            this.showOwnerToast(error.message || 'Falha ao configurar monitoramento.', 'error');
         }
         this.render();
     },
