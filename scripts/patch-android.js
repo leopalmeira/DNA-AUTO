@@ -182,4 +182,4 @@ if (fs.existsSync(sourceIconPath)) {
 console.log(`✅ Android project patched for ${target} (${pkg} v${versionName} code ${versionCode})`);
 
 // Serviço independente da WebView, apenas no APK do cliente.
-if (!isOficina) require('./dna-mileage-android')(pkg, process.cwd());
+if (!isOficina) require('./dna-mileage-android')(pkg, path.join(process.cwd(), 'android'));
