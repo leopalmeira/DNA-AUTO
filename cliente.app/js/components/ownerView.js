@@ -5554,7 +5554,7 @@ const OwnerView = {
         const pred = this.predictiveData || {};
         const odom = this.odometerData || {};
         const mon = this.monitoringData || {};
-        const prefs = mon.preferences || {};
+        const prefs = mon.monitoring || {};
         const isTracking = (typeof window.DnaTrackingEngine !== 'undefined' && window.DnaTrackingEngine.isTracking);
 
         let statusBadge = '<span class="dna-pred-status-badge is-active"><span class="dna-pred-dot"></span> Monitoramento Ativo</span>';
@@ -5653,6 +5653,7 @@ const OwnerView = {
                     <button type="button" class="dna-pred-btn-primary" onclick="OwnerView.openOdometerModal()">
                         <span>📝 Confirmar Hodômetro</span>
                     </button>
+                    <div style="font-size:10.5px;color:#FBBF24;padding:8px 0;">Pré-aviso aos 80 km restantes; aos 50 km, confirme o hodômetro. GPS é estimativa do telefone, não leitura do veículo.</div>
                     <button type="button" class="dna-pred-btn-secondary" onclick="OwnerView.openPredictiveScheduleModal()">
                         <span>📊 Ver Cronograma</span>
                     </button>
@@ -5863,8 +5864,12 @@ const OwnerView = {
                         </div>
 
                         <div style="font-size:11px; color:#94A3B8; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px;">
-                            Status Atual: <strong style="color:${isTracking ? '#10B981' : '#F59E0B'};">${isTracking ? 'Ativo em 1º plano' : 'Pausado'}</strong>
+                            Status Atual: <strong style="color:${isTracking ? '#10B981' : '#F59E0B'};">${isTracking ? (window.DnaTrackingEngine.nativePlugin?.() ? 'GPS nativo em segundo plano' : 'Ativo somente com a tela aberta') : 'Pausado'}</strong>
                         </div>
+                    </div>
+
+                    <div style="font-size:11px;color:#CBD5E1;line-height:1.5;margin:0 0 14px;">
+                        Para rastrear com o aplicativo fechado, ative o monitoramento e autorize localização precisa, notificações e, quando disponível, localização durante todo o tempo nas configurações do Android. O serviço exibirá uma notificação persistente e poderá ser interrompido pela economia de bateria ou pelas restrições do fabricante. GPS do telefone pode incluir viagens em outro carro; confirme a leitura real do painel.
                     </div>
 
                     <!-- Simulação de Testes em Bancada -->
@@ -5927,6 +5932,7 @@ const OwnerView = {
 
         try {
             const plate = this.vehicleData.license_plate;
+            if (window.DnaTrackingEngine) await window.DnaTrackingEngine.syncNativeTrips();
             const res = await API.registerVehicleOdometer(plate, {
                 odometer_km: km,
                 reading_source: 'OWNER_DASHBOARD',
@@ -5934,6 +5940,7 @@ const OwnerView = {
             });
 
             if (res.success) {
+                if (window.DnaTrackingEngine) await window.DnaTrackingEngine.odometerConfirmed();
                 this.showOwnerToast('Hodômetro oficial confirmado com sucesso!', 'success');
                 this.closeOdometerModal();
                 await this.fetchVehicleExtras(plate);
@@ -5982,13 +5989,20 @@ const OwnerView = {
     },
     async savePrivacyPreferences(enabled) {
         if (typeof window.DnaTrackingEngine !== 'undefined') {
-            window.DnaTrackingEngine.savePreferences({ isEnabled: enabled });
+            const ok = await window.DnaTrackingEngine.savePreferences({ isEnabled: enabled });
+            if (!ok) {
+                this.showOwnerToast(window.DnaTrackingEngine.lastError || 'Verifique permissões de GPS e notificações do Android.', 'error');
+                this.render();
+                return;
+            }
         }
         try {
             const plate = this.vehicleData.license_plate;
-            await API.saveVehicleMonitoringPreferences(plate, { is_enabled: enabled });
+            await API.saveVehicleMonitoringPreferences(plate, { is_enabled: enabled, consent_given: enabled });
             await this.fetchVehicleExtras(plate);
-        } catch (_) {}
+        } catch (e) {
+            this.showOwnerToast('Não foi possível salvar a preferência no servidor.', 'error');
+        }
         this.render();
     },
     clearLocalTrips() {
