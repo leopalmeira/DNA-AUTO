@@ -58,6 +58,9 @@ public class DnaMileagePlugin extends Plugin {
         String confirmedAt = call.getString("confirmedAt", "");
         double official = call.getDouble("officialKm", 0.0);
         double target = call.getDouble("targetKm", 0.0);
+        String targetName = call.getString("targetName", "manutenção programada").trim();
+        if (targetName.isEmpty()) targetName = "manutenção programada";
+        if (targetName.length() > 100) targetName = targetName.substring(0, 100);
         if (official < 0 || official > 20000000 || target < 0 || target > 20000000) {
             call.reject("Quilometragem inválida.");
             return;
@@ -68,7 +71,7 @@ public class DnaMileagePlugin extends Plugin {
             return;
         }
         boolean reset = !previousPlate.equals(plate) || (!confirmedAt.isEmpty() && !confirmedAt.equals(previousConfirmedAt));
-        boolean newTarget = Math.abs(p.getFloat("targetKm", 0f) - target) > 1f;
+        boolean newTarget = Math.abs(p.getFloat("targetKm", 0f) - target) > 1f || !p.getString("targetName", "").equals(targetName);
         SharedPreferences.Editor edit = p.edit();
         if (reset) {
             edit.putFloat("trackedKm", 0f);
@@ -78,15 +81,16 @@ public class DnaMileagePlugin extends Plugin {
             // O servidor as reconcilia pela data/hora de cada percurso.
             edit.putBoolean("alert80", false);
             edit.putBoolean("alert50", target > 0 && official >= target - 50);
+            edit.putBoolean("alert40", target > 0 && official >= target - 40);
             edit.putBoolean("confirmRequired", false);
             edit.remove("lastLat").remove("lastLon").remove("lastTime");
         }
         if (newTarget && !reset) {
-            edit.putBoolean("alert80", false).putBoolean("alert50", false).putBoolean("confirmRequired", false);
+            edit.putBoolean("alert80", false).putBoolean("alert50", false).putBoolean("alert40", false).putBoolean("confirmRequired", false);
         }
         edit.putString("plate", plate).putString("confirmedAt", confirmedAt)
             .putFloat("officialKm", (float) official).putFloat("targetKm", (float) target)
-            .putBoolean("enabled", enabled).apply();
+            .putString("targetName", targetName).putBoolean("enabled", enabled).apply();
 
         Intent i = new Intent(getContext(), DnaMileageService.class);
         try {
@@ -115,6 +119,9 @@ public class DnaMileagePlugin extends Plugin {
         out.put("officialKm", p.getFloat("officialKm", 0));
         out.put("estimatedKm", p.getFloat("officialKm", 0) + p.getFloat("trackedKm", 0) + p.getFloat("tripKm", 0));
         out.put("confirmRequired", p.getBoolean("confirmRequired", false));
+        out.put("alert40", p.getBoolean("alert40", false));
+        out.put("targetName", p.getString("targetName", "manutenção programada"));
+        out.put("remainingKm", p.getFloat("targetKm", 0f) <= 0 ? -1 : Math.max(0, p.getFloat("targetKm", 0f) - p.getFloat("officialKm", 0f) - p.getFloat("trackedKm", 0f) - p.getFloat("tripKm", 0f)));
         out.put("lastFixAt", p.getLong("lastTime", 0L));
         try {
             out.put("trips", new JSONArray(p.getString("pendingTrips", "[]")));
@@ -308,12 +315,17 @@ public class DnaMileageService extends Service implements LocationListener {
         if (target <= 0f) return;
         float estimate = prefs.getFloat("officialKm", 0f) + prefs.getFloat("trackedKm", 0f) + prefs.getFloat("tripKm", 0f);
         float remaining = target - estimate;
-        if (remaining <= 50f && !prefs.getBoolean("alert50", false)) {
+        String item = prefs.getString("targetName", "manutenção programada");
+        if (remaining <= 40f && !prefs.getBoolean("alert40", false)) {
+            prefs.edit().putBoolean("alert80", true).putBoolean("alert50", true)
+                .putBoolean("alert40", true).putBoolean("confirmRequired", true).apply();
+            alert("DNA AUTO: agende sua manutenção", "Faltam aproximadamente " + Math.max(0, Math.round(remaining)) + " km para " + item + ". Agende uma avaliação para reduzir o risco de falhas. Pare em local seguro antes de interagir.");
+        } else if (remaining <= 50f && !prefs.getBoolean("alert50", false)) {
             prefs.edit().putBoolean("alert50", true).putBoolean("confirmRequired", true).apply();
-            alert("DNA AUTO: confirme a quilometragem", "Faltam cerca de " + Math.max(0, Math.round(remaining)) + " km para a manutenção. Abra o DNA AUTO e informe o km real do painel.");
+            alert("DNA AUTO: confirme a quilometragem", "Faltam cerca de " + Math.max(0, Math.round(remaining)) + " km para " + item + ". Abra o DNA AUTO com o carro parado e informe o km real do painel.");
         } else if (remaining <= 80f && !prefs.getBoolean("alert80", false)) {
             prefs.edit().putBoolean("alert80", true).apply();
-            alert("DNA AUTO: manutenção próxima", "Estimativa de " + Math.max(0, Math.round(remaining)) + " km até a manutenção. Confira o hodômetro do veículo.");
+            alert("DNA AUTO: manutenção próxima", "Estimativa de " + Math.max(0, Math.round(remaining)) + " km até " + item + ". Confira o hodômetro do veículo quando estacionar.");
         }
     }
 
@@ -349,6 +361,7 @@ public class DnaMileageService extends Service implements LocationListener {
             .setSmallIcon(android.R.drawable.ic_dialog_alert).setContentTitle(title)
             .setContentText(message).setStyle(new NotificationCompat.BigTextStyle().bigText(message))
             .setAutoCancel(true).setContentIntent(openAppIntent())
+            .setCategory(NotificationCompat.CATEGORY_REMINDER).setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setPriority(NotificationCompat.PRIORITY_HIGH).setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE).build();
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         nm.notify(ALERT_NOTIFICATION, n);
