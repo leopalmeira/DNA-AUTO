@@ -1681,6 +1681,33 @@
         padding: 20px 18px;
       }
     }
+
+    /* Safe-Area nos 4 lados (topo, base, esquerda, direita) */
+    :root {
+      --dna-safe-top: max(46px, calc(env(safe-area-inset-top, 0px) + 12px));
+      --dna-safe-bottom: max(20px, calc(env(safe-area-inset-bottom, 0px) + 8px));
+      --dna-safe-left: max(20px, calc(env(safe-area-inset-left, 0px) + 18px));
+      --dna-safe-right: max(20px, calc(env(safe-area-inset-right, 0px) + 18px));
+    }
+    .login-back-btn {
+      top: var(--dna-safe-top) !important;
+      left: var(--dna-safe-left) !important;
+    }
+    .register-header-bar {
+      padding: var(--dna-safe-top) var(--dna-safe-right) 12px var(--dna-safe-left) !important;
+    }
+    .register-form-container {
+      padding: 10px var(--dna-safe-right) calc(32px + var(--dna-safe-bottom)) var(--dna-safe-left) !important;
+    }
+    .splash-actions,
+    .login-form-container {
+      padding-left: var(--dna-safe-left) !important;
+      padding-right: var(--dna-safe-right) !important;
+      padding-bottom: calc(20px + var(--dna-safe-bottom)) !important;
+    }
+    #screen-forgot {
+      padding: var(--dna-safe-top) var(--dna-safe-right) var(--dna-safe-bottom) var(--dna-safe-left) !important;
+    }
   </style>
 </head>
 
