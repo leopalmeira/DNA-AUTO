@@ -3085,6 +3085,17 @@
                         </div>
                     </div>
 
+                    <!-- Valores cobrados: obrigatórios para vínculo financeiro no cliente -->
+                    <div class="dna-input-group" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0;">
+                        <label class="dna-input-label">Valor da Peça (R$)
+                            <input id="mobile-entry-part-price" type="number" min="0" step="0.01" value="0" placeholder="0,00" class="dna-input-field" />
+                        </label>
+                        <label class="dna-input-label">Mão de Obra (R$)
+                            <input id="mobile-entry-labor-price" type="number" min="0" step="0.01" placeholder="Valor cobrado" class="dna-input-field" />
+                        </label>
+                    </div>
+                    <div style="font-size:11px;color:#94A3B8;">Sem peça: informe apenas a mão de obra. Se houve troca, informe ambos os valores. Foto e NF são opcionais.</div>
+
                     <!-- Botão Final de Confirmação -->
                     <button type="button" class="dna-primary-btn-lg green" style="margin-top:16px; height:50px; font-size:14.5px; font-weight:800;" onclick="WorkshopView.handleSubmitServiceFromEntry()">
                         <span>✅ Confirmar & Lançar Serviço no DNA AUTO</span> <span>›</span>
@@ -3166,37 +3177,50 @@
         }
 
         const sDate = new Date().toISOString().split('T')[0];
-        const sMileage = Number(v.current_mileage || v.mileage || 45000);
+        const sMileage = Number(v.current_mileage || v.mileage);
+        const laborText = document.getElementById('mobile-entry-labor-price')?.value.trim() || '';
+        const laborAmount = Number(laborText);
+        const partAmount = Number(document.getElementById('mobile-entry-part-price')?.value || 0);
+        if (!laborText || !Number.isFinite(laborAmount) || laborAmount < 0 ||
+            !Number.isFinite(partAmount) || partAmount < 0 ||
+            (partAmount === 0 && laborAmount === 0) ||
+            !Number.isFinite(sMileage) || sMileage <= 0) {
+            this.showToast('Informe a quilometragem e os valores cobrados da peça e/ou da mão de obra.', 'warning', 6000);
+            return;
+        }
+        const laborCents = Math.round(laborAmount * 100);
+        const partCents = Math.round(partAmount * 100);
+        const parts = partCents > 0 ? [{part_name: serviceTitle, quantity: 1, unit_price_cents: partCents}] : [];
+        const formData = new FormData();
+        formData.append('vehicle_id', v.id || v.license_plate);
+        formData.append('license_plate', v.license_plate || '');
+        formData.append('workshop_id', this.getEffectiveWorkshopId?.() || this.currentWorkshopId || '');
+        formData.append('service_title', serviceTitle);
+        formData.append('category', serviceCategory);
+        formData.append('description', description);
+        formData.append('service_date', sDate);
+        formData.append('mileage', String(sMileage));
+        formData.append('labor_cost_cents', String(laborCents));
+        formData.append('parts_json', JSON.stringify(parts));
+        formData.append('total_cost_cents', String(laborCents + partCents));
+        if (this.entryPartPhotoFile) formData.append('photos', this.entryPartPhotoFile);
 
+        let savedService;
         try {
-            const formData = new FormData();
-            formData.append('vehicle_id', v.id || ('veh_' + v.license_plate));
-            formData.append('workshop_id', this.getEffectiveWorkshopId());
-            formData.append('service_title', serviceTitle);
-            formData.append('category', serviceCategory);
-            formData.append('description', description);
-            formData.append('service_date', sDate);
-            formData.append('mileage', sMileage);
-            formData.append('labor_cost_cents', 15000);
-            formData.append('warranty_months', 6);
-            if (this.entryPartPhotoFile) {
-                formData.append('photos', this.entryPartPhotoFile);
-            }
-
-            const token = localStorage.getItem('dna_token');
-            const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
-            await fetch('/api/v1/services/workshop-register', {
-                method: 'POST',
-                headers,
-                body: formData
-            }).catch(() => null);
-        } catch (e) {
-            console.warn('Registro de serviço local:', e.message);
+            if (typeof API === 'undefined' || !API.registerWorkshopService)
+                throw new Error('API indisponível');
+            savedService = await API.registerWorkshopService(formData);
+            if (!savedService?.success || !savedService.serviceId)
+                throw new Error(savedService?.error || 'Servidor não confirmou a gravação');
+        } catch (err) {
+            this.showToast('Não foi possível salvar o serviço: ' + err.message +
+                '. Confira a conexão e tente novamente.', 'error', 6500);
+            return;
         }
 
         // Adiciona registro local para exibição em tempo real
         const newRecord = {
-            id: 'srv_' + Date.now(),
+            id: savedService.serviceId,
             service_title: serviceTitle,
             category: serviceCategory,
             description: description,
@@ -3205,15 +3229,17 @@
             workshop_name: this.officialWorkshopName || 'Auto Center Credenciada',
             workshop_city: 'Unidade Local',
             proof_level: 4,
-            proof_status: 'WORKSHOP_PROVEN'
+            proof_status: 'WORKSHOP_PROVEN',
+            total_cost_cents: laborCents + partCents,
+            labor_cost_cents: laborCents,
+            parts_cost_cents: partCents
         };
 
         if (!this.selectedMobileVehicleServices) this.selectedMobileVehicleServices = [];
         this.selectedMobileVehicleServices.unshift(newRecord);
 
-        // Se o carro não tinha DNA ativo, ativa localmente
-        this.selectedMobileVehicleHasDna = true;
-        if (!v.dna_code) v.dna_code = 'DNA-BR-' + (v.license_plate || '').replace(/[^A-Z0-9]/g, '');
+        // A ativação e o código DNA são definidos exclusivamente pelo servidor.
+        this.selectedMobileVehicleHasDna = Boolean(v.dna_code || this.selectedMobileVehicleHasDna);
 
         // Limpa campos
         this.entryServiceNotes = '';
@@ -3226,7 +3252,8 @@
             resultBox.innerHTML = this.renderMobileEntryFullVehicleView(this.selectedMobileVehicle);
         }
 
-        WorkshopView.showToast('✓ Serviço lançado com sucesso e adicionado ao histórico do veículo!', 'success');
+        WorkshopView.showToast('Serviço e valores gravados no histórico do veículo. Protocolo: ' +
+            savedService.serviceId, 'success');
     };
 
     // Busca detalhada ao digitar placa na entrada de veículos
@@ -4867,6 +4894,16 @@
                     <!-- 4. FOTOS LADO A LADO: FOTO DA PEÇA (ESQUERDA) + FOTO DA NOTA FISCAL (DIREITA) -->
                     ${this.renderSideBySideProofsSection('photos-send')}
 
+                    <div class="dna-input-group" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+                        <label class="dna-input-label">Peças (R$)
+                            <input id="mobile-photos-parts-price" type="number" min="0" step="0.01" value="0" class="dna-input-field" />
+                        </label>
+                        <label class="dna-input-label">Mão de Obra (R$)
+                            <input id="mobile-photos-labor-price" type="number" min="0" step="0.01" placeholder="Valor cobrado" class="dna-input-field" />
+                        </label>
+                    </div>
+                    <div style="font-size:11px;color:#94A3B8;">A foto e o comprovante são opcionais. O custo real do atendimento é obrigatório.</div>
+
                     <!-- BOTÕES DE AÇÃO -->
                     <div style="margin-top:16px; display:flex; flex-direction:column; gap:10px;">
                         <button class="dna-primary-btn-lg" onclick="WorkshopView.handleMobileSavePhotos()">
@@ -4930,49 +4967,63 @@
     };
 
     WorkshopView.handleMobileSavePhotos = async function() {
-        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
-        if (!v) {
-            WorkshopView.showToast('Selecione ou localize um veículo pela placa primeiro.', 'warning');
+        if (this._savingMobilePhotos) return;
+        const v = this.selectedMobileVehicle;
+        if (!v || !v.license_plate) {
+            this.showToast('Selecione o veículo do cliente antes de salvar.', 'warning');
             return;
         }
-
-        const kmInput = document.getElementById('mobile-service-km-input');
-        const kmVal = kmInput ? parseInt(kmInput.value) : (v.mileage || 45000);
-        const desc = document.getElementById('mobile-photos-desc-input')?.value || 'Registro fotográfico de manutenção';
-
-        // Atualiza quilometragem localmente e notifica backend
-        v.mileage = kmVal;
+        const km = Number(document.getElementById('mobile-service-km-input')?.value ||
+            document.getElementById('mobile-srv-last-km')?.value || v.current_mileage || v.mileage);
+        const description = document.getElementById('mobile-photos-desc-input')?.value.trim() || 'Manutenção registrada pela oficina';
+        const rawLabor = document.getElementById('mobile-photos-labor-price')?.value.trim() || '';
+        const labor = Number(rawLabor);
+        const partsValue = Number(document.getElementById('mobile-photos-parts-price')?.value || 0);
+        if (!rawLabor || !Number.isFinite(labor) || labor < 0 ||
+            !Number.isFinite(partsValue) || partsValue < 0 ||
+            labor + partsValue <= 0 || !Number.isFinite(km) || km <= 0) {
+            this.showToast('Informe a quilometragem e os valores cobrados, mesmo sem foto ou NF.', 'warning');
+            return;
+        }
+        const partsCents = Math.round(partsValue * 100);
+        const laborCents = Math.round(labor * 100);
+        const parts = partsCents > 0
+            ? [{part_name: description.split('\n')[0], quantity: 1, unit_price_cents: partsCents}] : [];
+        const fd = new FormData();
+        fd.append('vehicle_id', v.id || v.license_plate);
+        fd.append('license_plate', v.license_plate);
+        fd.append('workshop_id', this.getEffectiveWorkshopId?.() || this.currentWorkshopId || '');
+        fd.append('service_title', description.split('\n')[0] || 'Manutenção realizada');
+        fd.append('description', description);
+        fd.append('category', 'Manutenção');
+        fd.append('mileage', String(km));
+        fd.append('service_date', new Date().toISOString().slice(0, 10));
+        fd.append('labor_cost_cents', String(laborCents));
+        fd.append('parts_json', JSON.stringify(parts));
+        fd.append('total_cost_cents', String(partsCents + laborCents));
+        this.appendServiceFiles(fd);
+        this._savingMobilePhotos = true;
         try {
-            await fetch(`/api/v1/vehicles/${v.license_plate}/odometer`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ current_mileage: kmVal, source: 'OFICINA_FOTOS_PECA' })
-            });
-        } catch (_) {}
-
-        // Tenta registrar na API de serviços com fotos comprovadas
-        try {
-            const token = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token') || '';
-            const payload = {
-                vehicle_id: v.license_plate,
-                service_title: desc.split('\n')[0] || 'Manutenção & Troca de Peças',
-                description: desc,
-                mileage: kmVal,
-                category: 'MECANICA',
-                service_date: new Date().toISOString().split('T')[0]
-            };
-            await fetch('/api/v1/services/workshop-register', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                },
-                body: JSON.stringify(payload)
-            });
-        } catch (_) {}
-
-        WorkshopView.showToast(`📸 Foto da peça e Nota Fiscal registradas com sucesso para ${v.license_plate} aos ${kmVal.toLocaleString('pt-BR')} KM!\nDisponíveis no Dossiê 360° e no aplicativo do cliente.`, 'success');
-        this.switchMobileSection('dashboard');
+            if (typeof API === 'undefined' || !API.registerWorkshopService)
+                throw new Error('API indisponível');
+            const result = await API.registerWorkshopService(fd);
+            if (!result?.success || !result.serviceId)
+                throw new Error(result?.error || 'Servidor não confirmou a gravação');
+            v.mileage = km;
+            this.mobileUploadedPhotos = [];
+            this.mobilePhotoFiles = [];
+            this.mobileInvoicePhoto = null;
+            this.mobileInvoiceFile = null;
+            this.mobileInvoiceAttachment = null;
+            this.showToast('Fotos, nota e valores salvos no histórico do veículo ' +
+                v.license_plate + '. Protocolo: ' + result.serviceId, 'success', 6000);
+            this.switchMobileSection('dashboard');
+        } catch (err) {
+            this.showToast('Não foi possível salvar: ' + err.message +
+                '. Anexos preservados para nova tentativa.', 'error', 6500);
+        } finally {
+            this._savingMobilePhotos = false;
+        }
     };
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -5096,12 +5147,12 @@
     };
 
     WorkshopView.handleMobileSaveInvoice = function(isIssue) {
-        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
-        alert(isIssue 
-            ? `📄 Nota Fiscal Eletrônica emitida com sucesso para o veículo ${v.license_plate}!\nO documento foi transmitido e vinculado à Ficha Digital.`
-            : `💾 Dados da Nota Fiscal salvos com sucesso para ${v.license_plate}.`
-        );
-        this.switchMobileSection('dashboard');
+        if (isIssue) {
+            this.showToast('Emissão fiscal eletrônica exige integração com a SEFAZ; nenhum documento foi emitido.', 'warning', 6500);
+            return;
+        }
+        this.showToast('Para vincular a nota fiscal ao veículo, anexe o documento no lançamento do serviço e informe os valores cobrados.', 'info', 6500);
+        this.switchMobileSection('lancar-servicos');
     };
 
     // ──────────────────────────────────────────────────────────────────────────
