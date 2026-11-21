@@ -8,6 +8,8 @@ const DnaTrackingEngine = {
     watchId: null,
     _nativeStarting: false,
     _promptedOdometerThisSession: false,
+    _urgentAlertShown: null,
+    _urgentRetryScheduled: false,
     lastError: null,
     currentTrip: null,
     lastPosition: null,
@@ -30,7 +32,7 @@ const DnaTrackingEngine = {
         if (!this._listenersBound) {
             window.addEventListener('online', () => { this.syncNativeTrips(); this.syncQueuedTrips(); });
             document.addEventListener('visibilitychange', () => {
-                if (!document.hidden) this.syncNativeTrips();
+                if (!document.hidden) { this.syncNativeTrips(); this.promptOdometerIfNeeded(); }
             });
             this._listenersBound = true;
         }
@@ -99,12 +101,13 @@ const DnaTrackingEngine = {
             const owner = window.OwnerView || {};
             const officialKm = Number(owner.odometerData?.official_odometer_km || owner.vehicleData?.current_mileage || 0);
             const confirmedAt = String(owner.odometerData?.odometer?.official_date || 'cadastro-inicial') + '|' + officialKm;
-            const targets = (owner.predictiveData?.predictions || [])
-                .map(x => Number(x.next_due_km))
-                .filter(n => Number.isFinite(n) && n > 0);
-            const targetKm = targets.length ? Math.min(...targets) : 0;
+            const nextMaintenance = (owner.predictiveData?.predictions || [])
+                .filter(x => x.alert_status !== "DADOS_INSUFICIENTES" && Number.isFinite(Number(x.next_due_km)) && Number(x.next_due_km) > 0)
+                .sort((a, b) => Number(a.next_due_km) - Number(b.next_due_km))[0];
+            const targetKm = Number(nextMaintenance?.next_due_km || 0);
+            const targetName = String(nextMaintenance?.item_name || "manutenção programada").trim().slice(0, 100);
             await native.configure({
-                enabled: true, plate, officialKm, targetKm, confirmedAt
+                enabled: true, plate, officialKm, targetKm, targetName, confirmedAt
             });
             this.isTracking = true;
             await this.syncNativeTrips();
@@ -150,11 +153,81 @@ const DnaTrackingEngine = {
         }
     },
 
+
+    // Tela de destaque somente quando o cliente volta ao aplicativo, nunca por cima de outros apps.
+    showUrgentMaintenance(state) {
+        if (!state || state.moving || document.hidden || !document.body || !window.OwnerView || window.OwnerView.authScreen) return false;
+        if (document.getElementById('dna-critical-maintenance-overlay')) return true;
+        const overlay = document.createElement('div');
+        overlay.id = 'dna-critical-maintenance-overlay';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-label', 'Alerta de manutenção preventiva');
+        overlay.innerHTML = [
+            '<style>',
+            '#dna-critical-maintenance-overlay{position:fixed;inset:0;z-index:2147483000;background:rgba(9,16,30,.91);display:flex;align-items:center;justify-content:center;padding:22px;box-sizing:border-box;font-family:system-ui,sans-serif;}',
+            '#dna-critical-maintenance-overlay .dna-critical-card{position:relative;max-width:440px;width:100%;box-sizing:border-box;background:#fff;border:4px solid #ef4444;border-radius:22px;padding:28px 22px;text-align:center;color:#172033;box-shadow:0 0 0 9px rgba(239,68,68,.18);animation:dna-critical-pulse 2.6s ease-in-out infinite;}',
+            '#dna-critical-maintenance-overlay .dna-critical-tag{display:inline-block;background:#fee2e2;color:#991b1b;border-radius:30px;padding:8px 12px;font-weight:900;font-size:12px;letter-spacing:.04em;}',
+            '#dna-critical-maintenance-overlay .dna-critical-km{display:block;font-size:36px;line-height:1.18;font-weight:900;color:#b91c1c;margin:18px 0 8px;}',
+            '#dna-critical-maintenance-overlay .dna-critical-item{display:block;font-size:19px;font-weight:850;margin:0 0 12px;overflow-wrap:anywhere;}',
+            '#dna-critical-maintenance-overlay .dna-critical-explain{font-size:14px;line-height:1.55;color:#374151;margin:0 0 18px;}',
+            '#dna-critical-maintenance-overlay button{display:block;width:100%;border-radius:12px;border:0;padding:13px 16px;font-size:15px;font-weight:850;cursor:pointer;margin-top:9px;}',
+            '#dna-critical-maintenance-overlay .dna-critical-book{background:#b91c1c;color:white;}',
+            '#dna-critical-maintenance-overlay .dna-critical-check{background:#e2e8f0;color:#172033;}',
+            '#dna-critical-maintenance-overlay .dna-critical-later{background:transparent;color:#475569;text-decoration:underline;}',
+            '@keyframes dna-critical-pulse{0%,100%{box-shadow:0 0 0 6px rgba(239,68,68,.10);}50%{box-shadow:0 0 0 12px rgba(239,68,68,.24);}}',
+            '@media(prefers-reduced-motion:reduce){#dna-critical-maintenance-overlay .dna-critical-card{animation:none;}}',
+            '</style>',
+            '<div class="dna-critical-card">',
+            '<div class="dna-critical-tag">ATENÇÃO • MANUTENÇÃO PRÓXIMA</div>',
+            '<strong class="dna-critical-km" id="dna-critical-remaining"></strong>',
+            '<strong class="dna-critical-item" id="dna-critical-name"></strong>',
+            '<p class="dna-critical-explain">Agende uma avaliação preventiva para reduzir o risco de falhas inesperadas. A distância foi estimada pelo GPS: confirme o hodômetro real. Interaja somente com o carro parado.</p>',
+            '<button class="dna-critical-book" type="button">Agendar manutenção</button>',
+            '<button class="dna-critical-check" type="button">Informar km do painel</button>',
+            '<button class="dna-critical-later" type="button">Agora não</button>',
+            '</div>'
+        ].join('');
+        const km = Math.max(0, Math.round(Number(state.remainingKm) || 0));
+        overlay.querySelector('#dna-critical-remaining').textContent = 'Faltam aproximadamente ' + km + ' km';
+        overlay.querySelector('#dna-critical-name').textContent = String(state.targetName || 'Manutenção programada').slice(0, 100);
+        const close = () => overlay.remove();
+        overlay.querySelector('.dna-critical-book').addEventListener('click', () => {
+            close();
+            window.OwnerView.navigateTo('workshops');
+        });
+        overlay.querySelector('.dna-critical-check').addEventListener('click', () => {
+            close();
+            this._promptedOdometerThisSession = true;
+            window.OwnerView.openOdometerModal();
+        });
+        overlay.querySelector('.dna-critical-later').addEventListener('click', close);
+        document.body.appendChild(overlay);
+        overlay.querySelector('.dna-critical-book').focus();
+        return true;
+    },
+
     async promptOdometerIfNeeded() {
         const native = this.nativePlugin();
-        if (!native || this._promptedOdometerThisSession) return;
+        if (!native || document.hidden) return;
         try {
             const state = await native.getState();
+            const urgentKey = [state?.plate, state?.targetName, state?.officialKm].join("|");
+            if (state?.alert40 && this._urgentAlertShown !== urgentKey) {
+                if (this.showUrgentMaintenance(state)) {
+                    this._urgentAlertShown = urgentKey;
+                    return;
+                }
+                if (state.moving && !this._urgentRetryScheduled) {
+                    this._urgentRetryScheduled = true;
+                    setTimeout(() => {
+                        this._urgentRetryScheduled = false;
+                        if (!document.hidden) this.promptOdometerIfNeeded();
+                    }, 60000);
+                }
+                return;
+            }
+            if (this._promptedOdometerThisSession) return;
             if (state?.confirmRequired && window.OwnerView) {
                 this._promptedOdometerThisSession = true;
                 setTimeout(() => {
