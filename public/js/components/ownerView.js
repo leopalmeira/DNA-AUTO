@@ -5565,8 +5565,8 @@ const OwnerView = {
         }
 
         const officialKm = odom.official_odometer_km || this.vehicleData.current_mileage || 0;
-        const estimatedDistance = odom.estimated_distance_since_official_km || 0;
-        const currentEstimated = odom.current_estimated_km || officialKm;
+        const estimatedDistance = Number(odom.odometer?.estimated_distance_since_official_km ?? odom.estimated_distance_since_official_km ?? 0);
+        const currentEstimated = Number(odom.odometer?.current_estimated_km ?? odom.current_estimated_km ?? officialKm);
         const uncertaintyKm = odom.uncertainty_margin_km || (estimatedDistance > 0 ? Math.max(5, Math.round(estimatedDistance * 0.08)) : 0);
         const lastOfficialDate = odom.last_official_reading_date ? new Date(odom.last_official_reading_date).toLocaleDateString('pt-BR') : 'Cadastro';
         const lastSyncDate = odom.last_sync_date ? new Date(odom.last_sync_date).toLocaleDateString('pt-BR') : 'Hoje';
@@ -5707,7 +5707,7 @@ const OwnerView = {
     renderOdometerModal() {
         const odom = this.odometerData || {};
         const officialKm = odom.official_odometer_km || this.vehicleData.current_mileage || 0;
-        const currentEst = odom.current_estimated_km || officialKm;
+        const currentEst = Number(odom.odometer?.current_estimated_km ?? odom.current_estimated_km ?? officialKm);
 
         return `
             <div class="dna-modal-overlay active" onclick="if(event.target === this) OwnerView.closeOdometerModal();">
