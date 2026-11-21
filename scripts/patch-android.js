@@ -5,8 +5,8 @@ const target = process.argv[2] || 'cliente';
 const isOficina = target === 'oficina';
 
 const serverUrl = (process.env.INPUT_SERVER_URL || 'https://dna-auto-byin.onrender.com').replace(/\/$/, '');
-const versionName = process.env.INPUT_VERSION_NAME || '2.5.4';
-const versionCode = process.env.INPUT_VERSION_CODE || '254';
+const versionName = process.env.INPUT_VERSION_NAME || '2.5.5';
+const versionCode = process.env.INPUT_VERSION_CODE || '255';
 const host = new URL(serverUrl).hostname;
 
 const pkg = isOficina ? 'br.com.dnaauto.oficina' : 'br.com.dnaauto.cliente';
