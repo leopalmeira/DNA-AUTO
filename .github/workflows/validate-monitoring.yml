@@ -1,0 +1,37 @@
+name: Validate DNA AUTO Native GPS
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+    paths:
+      - 'scripts/dna-mileage-android.js'
+      - 'cliente.app/**'
+      - 'public/js/components/**'
+      - 'server/src/services/predictiveMaintenance.service.js'
+      - 'server/src/modules/vehicles/vehicles.routes.js'
+      - 'test/monitoring_tracking.test.js'
+      - 'package.json'
+      - '.github/workflows/validate-monitoring.yml'
+
+jobs:
+  monitoring-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: test
+      DB_PATH: /tmp/dna_auto_monitoring_ci.db
+      JWT_SECRET: dna-auto-ci-only-non-production-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify GPS and 80/50 rules
+        run: npm run test:monitoring
+      - name: Full regression suite
+        run: npm test
