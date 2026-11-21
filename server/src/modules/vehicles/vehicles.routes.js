@@ -1614,7 +1614,8 @@ function authorizeTrackingVehicleOwner(req, res, next) {
             WHERE vehicle_id = ? AND activated_by_workshop_id = ?
             LIMIT 1
         `).get(vehicle.id, workshopId);
-        if (authorizedWorkshop && req.user.workshop.can_prove_services !== 0) return next();
+        if ((authorizedWorkshop || vehicle.workshop_id === workshopId) &&
+            req.user.workshop.can_prove_services !== 0) return next();
     }
     const linked = db.prepare(`
         SELECT 1 FROM owners
