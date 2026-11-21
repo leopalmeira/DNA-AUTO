@@ -1607,8 +1607,11 @@ function authorizeTrackingVehicleOwner(req, res, next) {
     if (req.user?.role_code === 'ADMIN') return next();
     const linked = db.prepare(`
         SELECT 1 FROM owners
-        WHERE id = ? AND (user_id = ? OR (email IS NOT NULL AND LOWER(email) = LOWER(?)))
-    `).get(vehicle.current_owner_id || '', req.user.id, req.user.email || '');
+        WHERE (id = ? OR id IN (
+            SELECT new_owner_id FROM ownership_transfers
+            WHERE vehicle_id = ? AND status = 'COMPLETED'
+        )) AND (user_id = ? OR (email IS NOT NULL AND LOWER(email) = LOWER(?)))
+    `).get(vehicle.current_owner_id || '', vehicle.id, req.user.id, req.user.email || '');
     if (!linked) return res.status(403).json({ error: 'Veículo não vinculado a esta conta.' });
     next();
 }
