@@ -24,15 +24,18 @@ const DnaTrackingEngine = {
 
     // Inicializa o motor
     init(licensePlate) {
+        if (!licensePlate || licensePlate === '---') return;
         this.licensePlate = licensePlate;
         this.loadPreferences();
-        if (this.preferences.isEnabled) {
-            this.startTracking();
+        if (!this._listenersBound) {
+            window.addEventListener('online', () => { this.syncNativeTrips(); this.syncQueuedTrips(); });
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) this.syncNativeTrips();
+            });
+            this._listenersBound = true;
         }
-        window.addEventListener('online', () => this.syncNativeTrips());
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) this.syncNativeTrips();
-        });
+        this.syncNativeTrips();
+        if (this.preferences.isEnabled && this.preferences.consentGiven) this.startTracking();
     },
 
     // Preferências e Consentimento LGPD
@@ -95,7 +98,7 @@ const DnaTrackingEngine = {
             }
             const owner = window.OwnerView || {};
             const officialKm = Number(owner.odometerData?.official_odometer_km || owner.vehicleData?.current_mileage || 0);
-            const confirmedAt = String(owner.odometerData?.odometer?.official_date || 'cadastro-inicial');
+            const confirmedAt = String(owner.odometerData?.odometer?.official_date || 'cadastro-inicial') + '|' + officialKm;
             const targets = (owner.predictiveData?.predictions || [])
                 .map(x => Number(x.next_due_km))
                 .filter(n => Number.isFinite(n) && n > 0);
@@ -127,7 +130,11 @@ const DnaTrackingEngine = {
             if (!trips.length || !state.plate) return true;
             const res = await fetch(`/api/v1/vehicles/${encodeURIComponent(state.plate)}/monitoring/sync-trips`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...((localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token')) ?
+                        { Authorization: 'Bearer ' + (localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token')) } : {})
+                },
                 body: JSON.stringify({ trips })
             });
             if (!res.ok) throw new Error('Falha HTTP ' + res.status);
