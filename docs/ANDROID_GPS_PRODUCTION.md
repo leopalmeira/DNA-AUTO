@@ -6,10 +6,18 @@ O APK cliente usa o serviço Android nativo `DnaMileageService`, independente da
 
 - Quando restam aproximadamente **80 km para a manutenção mais próxima**, gerar pré-aviso.
 - Quando restam aproximadamente **50 km**, solicitar ao cliente a quilometragem real do painel, preferencialmente na primeira tela quando o carro estiver parado.
+- Quando restam aproximadamente **40 km**, disparar aviso Android de alta prioridade com **nome da manutenção**, som/vibração conforme preferências do aparelho e atalho para agendar. Ao retornar ao aplicativo, exibir um painel de destaque com borda pulsante, quilometragem estimada, nome da peça, agendamento e confirmação do hodômetro.
+- Se o dispositivo indicar deslocamento, adiar a abertura do painel interno até que o carro esteja parado. O usuário deve interagir somente estacionado. O aviso é emitido uma vez por meta e leitura-base.
 - Após a confirmação, recalcular previsões e reiniciar o ciclo, sem alertar em loop para o mesmo alvo. O usuário ainda precisa realizar a manutenção na oficina.
 - Não somar viagens anteriores à hora da confirmação nem viagens rejeitadas.
 - Só coletar dados com consentimento explícito, autenticação válida e veículo vinculado ao titular. O cliente pode desligar o rastreamento.
 - Se não houver manutenção programada com quilometragem válida, não criar um prazo fictício.
+
+## Visibilidade do alerta quando o app está fechado
+
+Enquanto o serviço nativo de GPS estiver autorizado e em execução, o Android poderá exibir uma notificação **heads-up** de manutenção mesmo com a tela do DNA AUTO fechada. O usuário pode tocar nela para voltar ao aplicativo e ver a tela de destaque. O comportamento visual e sonoro depende das permissões, canais e preferências do celular; não é garantido em todos os fabricantes.
+
+**O APK não força a abertura automática de uma atividade em tela cheia sobre outros aplicativos.** No Android 14+, intents de tela cheia são reservadas essencialmente a apps de chamadas e alarmes; usar esse privilégio para revisões automotivas poderia conflitar com as regras da Google Play. A borda do painel tem pulsação suave, com respeito à preferência de movimento reduzido.
 
 ## Android e limites reais
 
