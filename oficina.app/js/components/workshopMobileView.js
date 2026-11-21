@@ -18,7 +18,17 @@
     WorkshopView.selectedMobileVehicle = null;
     WorkshopView.selectedMobileService = null;
     WorkshopView.mobileUploadedPhotos = [];
+    WorkshopView.mobilePhotoFiles = [];
     WorkshopView.mobileInvoiceAttachment = null;
+    WorkshopView.mobileInvoiceFile = null;
+    WorkshopView.appendServiceFiles = function(formData) {
+        (this.mobilePhotoFiles || []).slice(0, 6).forEach(file => {
+            formData.append('photos', file, file.name || 'foto-servico.jpg');
+        });
+        if (this.mobileInvoiceFile) {
+            formData.append('invoice', this.mobileInvoiceFile, this.mobileInvoiceFile.name || 'nota-fiscal.jpg');
+        }
+    };
     WorkshopView.mobileActivePlate = '';
     WorkshopView.mobileAlertsSent = {};
     WorkshopView.mobileVehicleEntryTab = 'buscar'; // 'buscar' | 'manual' | 'recentes'
@@ -4472,11 +4482,11 @@
                         <div style="display:grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap:10px; width:100%; box-sizing:border-box;">
                             <div class="dna-input-group" style="width:100%; min-width:0; box-sizing:border-box;">
                                 <label class="dna-input-label" style="font-size:11px;">Mão de Obra (R$)</label>
-                                <input type="number" id="mobile-srv-labor-cost" value="150" min="0" step="10" oninput="WorkshopView.recalculateDetailTotal()" style="width:100%; min-width:0; max-width:100%; box-sizing:border-box; height:44px; padding:0 10px; font-size:13px; font-weight:700; background:rgba(11,22,44,0.95); color:#FFF; border:1px solid rgba(0,102,255,0.4); border-radius:8px;" />
+                                <input type="number" id="mobile-srv-labor-cost" value="" placeholder="Valor cobrado" min="0" step="0.01" oninput="WorkshopView.recalculateDetailTotal()" style="width:100%; min-width:0; max-width:100%; box-sizing:border-box; height:44px; padding:0 10px; font-size:13px; font-weight:700; background:rgba(11,22,44,0.95); color:#FFF; border:1px solid rgba(0,102,255,0.4); border-radius:8px;" />
                             </div>
                             <div class="dna-input-group" style="width:100%; min-width:0; box-sizing:border-box;">
                                 <label class="dna-input-label" style="font-size:11px;">Total da Ordem (R$)</label>
-                                <input type="text" id="mobile-srv-total-cost" value="R$ 150,00" readonly style="width:100%; min-width:0; max-width:100%; box-sizing:border-box; height:44px; padding:0 10px; font-size:13px; font-weight:800; color:#10B981; background:rgba(16,185,129,0.12); border:1.5px solid rgba(16,185,129,0.4); text-align:center; border-radius:8px;" />
+                                <input type="text" id="mobile-srv-total-cost" value="R$ 0,00" readonly style="width:100%; min-width:0; max-width:100%; box-sizing:border-box; height:44px; padding:0 10px; font-size:13px; font-weight:800; color:#10B981; background:rgba(16,185,129,0.12); border:1.5px solid rgba(16,185,129,0.4); text-align:center; border-radius:8px;" />
                             </div>
                         </div>
                     </div>
@@ -4621,7 +4631,7 @@
     };
 
     WorkshopView.recalculateDetailTotal = function() {
-        const laborVal = parseFloat(document.getElementById('mobile-srv-labor-cost')?.value || '0') || 0;
+        const laborVal = Number(document.getElementById('mobile-srv-labor-cost')?.value || '0') || 0;
         let partsTotal = 0;
         if (this.mobileDetailParts) {
             this.mobileDetailParts.forEach(p => {
@@ -4636,155 +4646,74 @@
     };
 
     WorkshopView.handleMobileSaveServiceRecord = async function() {
-        const v = this.selectedMobileVehicle || (this.getEffectiveVehiclesList()[0] || null);
-        if (!v) {
-            if (typeof this.showToast === 'function') this.showToast('Nenhum veículo selecionado.', 'warning');
-            else alert('Nenhum veículo selecionado.');
+        if (this._savingMobileService) return;
+        const v = this.selectedMobileVehicle;
+        if (!v || !v.license_plate) {
+            this.showToast('Selecione o veículo do cliente pela placa antes de salvar.', 'warning');
             return;
         }
         const s = this.selectedMobileService || this.monitoredServicesCatalog[0];
-        const lastKm = document.getElementById('mobile-srv-last-km')?.value || v.mileage || 10000;
-        const nextKm = document.getElementById('mobile-srv-next-km')?.value || (Number(lastKm) + 10000);
-        const notes = document.getElementById('mobile-srv-detail-notes')?.value || `Serviço de ${s.title} executado e inspecionado conforme especificações técnicas.`;
-        const srvDate = document.getElementById('mobile-srv-last-date')?.value || new Date().toISOString().split('T')[0];
-        const laborVal = parseFloat(document.getElementById('mobile-srv-labor-cost')?.value || '150') || 150;
-        const laborCents = Math.round(laborVal * 100);
-
-        const parts = (this.mobileDetailParts && this.mobileDetailParts.length > 0)
-            ? this.mobileDetailParts
-            : [{ part_name: s.title, quantity: 1, unit_price_cents: 0 }];
-
+        const km = Number(document.getElementById('mobile-srv-last-km')?.value);
+        const rawLabor = document.getElementById('mobile-srv-labor-cost')?.value.trim() || '';
+        const labor = Number(rawLabor);
+        const parts = Array.isArray(this.mobileDetailParts) ? this.mobileDetailParts : [];
+        const validParts = parts.every(p => Number(p.quantity) > 0 &&
+            Number.isSafeInteger(Number(p.unit_price_cents)) && Number(p.unit_price_cents) > 0);
+        if (!Number.isFinite(km) || km <= 0 || !rawLabor ||
+            !Number.isFinite(labor) || labor < 0 || !validParts ||
+            (labor === 0 && parts.length === 0)) {
+            this.showToast('Informe quilometragem, valor da mão de obra e valor de cada peça. O total deve ser maior que zero.', 'warning', 6500);
+            return;
+        }
+        const laborCents = Math.round(labor * 100);
+        const partsCents = parts.reduce((sum, p) => sum + Number(p.unit_price_cents) * Number(p.quantity), 0);
+        const totalCents = laborCents + partsCents;
+        if (!Number.isSafeInteger(totalCents) || totalCents <= 0) {
+            this.showToast('O valor total do serviço deve ser maior que zero.', 'warning');
+            return;
+        }
+        const plate = String(v.license_plate).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+        const formData = new FormData();
+        formData.append('vehicle_id', v.id || v.vehicle_id || plate);
+        formData.append('license_plate', plate);
+        formData.append('service_title', s.title);
+        formData.append('category', s.category || 'Manutenção');
+        formData.append('description', document.getElementById('mobile-srv-detail-notes')?.value.trim() || s.title);
+        formData.append('service_date', document.getElementById('mobile-srv-last-date')?.value || new Date().toISOString().slice(0, 10));
+        formData.append('mileage', String(km));
+        formData.append('labor_cost_cents', String(laborCents));
+        formData.append('parts_json', JSON.stringify(parts));
+        formData.append('total_cost_cents', String(totalCents));
+        formData.append('responsible_technician_name', this.getLoggedWorkshopUser?.().name || 'Profissional da Oficina');
+        formData.append('workshop_id', this.getEffectiveWorkshopId?.() || this.currentWorkshopId || '');
+        this.appendServiceFiles(formData);
+        this._savingMobileService = true;
         try {
-            const token = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
-            if (token && typeof API !== 'undefined') API.setToken(token);
-
-            // 1. Garantir que o veículo está cadastrado na base de dados
-            let targetVehId = v.id || v.vehicle_id || (v.license_plate ? 'veh_' + v.license_plate : null);
-            if (typeof API !== 'undefined') {
-                try {
-                    const lookupFn = API.getDossier || API.getVehicleDossier;
-                    if (typeof lookupFn === 'function') {
-                        const vRes = await lookupFn.call(API, v.license_plate).catch(() => null);
-                        if (vRes && vRes.vehicle && vRes.vehicle.id) {
-                            targetVehId = vRes.vehicle.id;
-                        }
-                    }
-                } catch (_) {}
+            if (typeof API === 'undefined' || typeof API.registerWorkshopService !== 'function') {
+                throw new Error('API da oficina indisponível.');
             }
-
-            // 2. Montar FormData multipart para o endpoint /services/workshop-register
-            const loggedUser = this.getLoggedWorkshopUser ? this.getLoggedWorkshopUser() : { name: 'Profissional da Oficina' };
-            const launcherName = loggedUser.name || 'Profissional da Oficina';
-            const capturedPhoto = (this.mobileUploadedPhotos && this.mobileUploadedPhotos[0]) || this.entryPartPhotoPreview || null;
-            const activeWsId = this.getEffectiveWorkshopId ? this.getEffectiveWorkshopId() : (this.currentWorkshopId || 'ws_veloce');
-
-            let partsCostCents = 0;
-            parts.forEach(p => { partsCostCents += (Number(p.unit_price_cents) || 0) * (Number(p.quantity) || 1); });
-            const totalCostCents = laborCents + partsCostCents;
-
-            if (typeof API !== 'undefined' && API.registerWorkshopService) {
-                const fd = new FormData();
-                fd.append('vehicle_id', targetVehId || v.license_plate);
-                fd.append('license_plate', v.license_plate || '');
-                fd.append('plate', v.license_plate || '');
-                fd.append('service_title', s.title);
-                fd.append('category', s.title.includes('Óleo') ? 'Óleo e Filtros' : (s.title.includes('Freio') ? 'Freios' : 'Manutenção Preventiva'));
-                fd.append('mileage', String(lastKm));
-                fd.append('description', notes);
-                fd.append('service_date', srvDate);
-                fd.append('labor_cost_cents', String(laborCents));
-                fd.append('total_cost_cents', String(totalCostCents));
-                fd.append('parts_json', JSON.stringify(parts));
-                fd.append('responsible_technician_name', launcherName);
-                if (capturedPhoto) {
-                    fd.append('part_photo_url', capturedPhoto);
-                }
-                fd.append('workshop_id', activeWsId);
-
-                try {
-                    await API.registerWorkshopService(fd);
-                } catch (apiErr) {
-                    console.warn('Tentando fallback via JSON para /services/workshop-register:', apiErr);
-                    const headers = { 'Content-Type': 'application/json' };
-                    if (token) headers['Authorization'] = 'Bearer ' + token;
-                    const fallbackRes = await fetch('/api/v1/services/workshop-register', {
-                        method: 'POST',
-                        headers,
-                        body: JSON.stringify({
-                            vehicle_id: targetVehId || v.license_plate,
-                            license_plate: v.license_plate,
-                            plate: v.license_plate,
-                            workshop_id: activeWsId,
-                            service_title: s.title,
-                            category: s.title.includes('Óleo') ? 'Óleo e Filtros' : (s.title.includes('Freio') ? 'Freios' : 'Manutenção Preventiva'),
-                            mileage: Number(lastKm),
-                            description: notes,
-                            service_date: srvDate,
-                            labor_cost_cents: laborCents,
-                            total_cost_cents: totalCostCents,
-                            parts_json: JSON.stringify(parts),
-                            responsible_technician_name: launcherName,
-                            part_photo_url: capturedPhoto
-                        })
-                    }).catch(() => null);
-                    if (!fallbackRes || !fallbackRes.ok) {
-                        // Se backend remoto estiver inacessível, registra localmente e continua
-                        console.warn('Persistindo serviço localmente no cache da oficina.');
-                    }
-                }
-            } else if (typeof fetch !== 'undefined') {
-                const headers = { 'Content-Type': 'application/json' };
-                if (token) headers['Authorization'] = 'Bearer ' + token;
-                await fetch('/api/v1/services/workshop-register', {
-                    method: 'POST',
-                    headers,
-                    body: JSON.stringify({
-                        vehicle_id: targetVehId || v.license_plate,
-                        license_plate: v.license_plate,
-                        plate: v.license_plate,
-                        workshop_id: activeWsId,
-                        service_title: s.title,
-                        category: 'Manutenção Preventiva',
-                        mileage: Number(lastKm),
-                        description: notes,
-                        service_date: srvDate,
-                        labor_cost_cents: laborCents,
-                        total_cost_cents: totalCostCents,
-                        parts_json: JSON.stringify(parts),
-                        responsible_technician_name: launcherName,
-                        part_photo_url: capturedPhoto
-                    })
-                }).catch(() => {});
+            const result = await API.registerWorkshopService(formData);
+            if (!result || !result.success || !result.serviceId) {
+                throw new Error(result?.error || 'O servidor não confirmou o registro.');
             }
-
-            if (typeof this.loadWorkshopMenuSummary === 'function') {
-                this.loadWorkshopMenuSummary();
-            }
-
-            const successMsg = `✅ Serviço "${s.title}" registrado com sucesso no veículo ${v.license_plate} por ${launcherName}!
-Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).replace('.', ',')}.`;
-            if (typeof this.showToast === 'function') {
-                this.showToast(successMsg, 'success', 5000);
-            } else {
-                alert(successMsg);
-            }
-
-            // Limpar estado temporário
+            v.mileage = km;
             this.mobileDetailParts = [];
             this.mobileUploadedPhotos = [];
+            this.mobilePhotoFiles = [];
             this.mobileInvoicePhoto = null;
-            v.mileage = Number(lastKm);
-
-            // Redireciona de volta para a dashboard oficial
-            setTimeout(() => {
-                WorkshopView.switchMobileSection('dashboard');
-            }, 500);
-
+            this.mobileInvoiceFile = null;
+            this.mobileInvoiceAttachment = null;
+            this.showToast('Serviço salvo no histórico do veículo ' + plate +
+                '. Valor total R$ ' + (totalCents / 100).toLocaleString('pt-BR', {minimumFractionDigits: 2}) +
+                '. Protocolo: ' + result.serviceId, 'success', 6000);
+            if (typeof this.loadWorkshopMenuSummary === 'function') this.loadWorkshopMenuSummary();
+            this.switchMobileSection('dashboard');
         } catch (err) {
-            console.error('Erro ao salvar serviço:', err);
-            const errMsg = `Erro ao salvar serviço: ${err.message || 'Falha na conexão'}`;
-            if (typeof this.showToast === 'function') this.showToast(errMsg, 'error');
-            else alert(errMsg);
+            console.error('Falha ao persistir serviço:', err);
+            this.showToast('Não foi possível salvar: ' + (err.message || 'verifique sua conexão') +
+                '. Os dados continuam na tela para nova tentativa.', 'error', 7000);
+        } finally {
+            this._savingMobileService = false;
         }
     };
 
@@ -4954,24 +4883,22 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
     };
 
     WorkshopView.handleMobilePhotoFileSelect = function(input) {
-        if (!input.files || input.files.length === 0) return;
-        Array.from(input.files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                this.mobileUploadedPhotos.push(e.target.result);
-                const viewport = document.getElementById('ws-mobile-active-viewport');
-                if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
-            };
-            reader.readAsDataURL(file);
-        });
+        this.handlePhotoInputFiles(input, 'mobile-photo');
     };
 
     WorkshopView.handleMobileInvoicePhotoSelect = function(input) {
         if (!input.files || input.files.length === 0) return;
         const file = input.files[0];
         this.mobileInvoiceAttachment = file.name;
+        this.mobileInvoiceFile = file;
+        if (file.type === 'application/pdf') {
+            this.mobileInvoicePhoto = null;
+            const viewport = document.getElementById('ws-mobile-active-viewport');
+            if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
+            return;
+        }
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = e => {
             this.mobileInvoicePhoto = e.target.result;
             const viewport = document.getElementById('ws-mobile-active-viewport');
             if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
@@ -4981,6 +4908,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
 
     WorkshopView.handleMobileRemoveInvoicePhoto = function() {
         this.mobileInvoicePhoto = null;
+        this.mobileInvoiceFile = null;
         this.mobileInvoiceAttachment = null;
         const viewport = document.getElementById('ws-mobile-active-viewport');
         if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
@@ -4992,6 +4920,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
 
     WorkshopView.handleMobileRemovePhoto = function(index) {
         this.mobileUploadedPhotos.splice(index, 1);
+        if (this.mobilePhotoFiles) this.mobilePhotoFiles.splice(index, 1);
         const viewport = document.getElementById('ws-mobile-active-viewport');
         if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
     };
@@ -6822,10 +6751,16 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
     };
 
     WorkshopView.handlePhotoInputFiles = function(input, blockId) {
-        if (!input.files || input.files.length === 0) return;
+        if (!input.files || !input.files.length) return;
+        if (!this.mobilePhotoFiles) this.mobilePhotoFiles = [];
         Array.from(input.files).forEach(file => {
+            if (this.mobilePhotoFiles.length >= 6) {
+                this.showToast('Limite de seis fotos por registro.', 'warning');
+                return;
+            }
+            this.mobilePhotoFiles.push(file);
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = e => {
                 this.mobileUploadedPhotos.push(e.target.result);
                 const viewport = document.getElementById('ws-mobile-active-viewport');
                 if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
@@ -6836,6 +6771,7 @@ Odômetro atual: ${lastKm} km | Valor: R$ ${(totalCostCents / 100).toFixed(2).re
 
     WorkshopView.removePhotoByIndex = function(idx) {
         this.mobileUploadedPhotos.splice(idx, 1);
+        if (this.mobilePhotoFiles) this.mobilePhotoFiles.splice(idx, 1);
         const viewport = document.getElementById('ws-mobile-active-viewport');
         if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
     };
