@@ -8,13 +8,13 @@ on:
         required: true
         default: 'https://dna-auto-byin.onrender.com'
       version_name:
-        description: 'Versão dos APKs (ex: 2.5.4)'
+        description: 'Versão dos APKs (ex: 2.5.6)'
         required: true
-        default: '2.5.5'
+        default: '2.5.6'
       version_code:
-        description: 'Código inteiro da versão (ex: 254)'
+        description: 'Código inteiro da versão (ex: 256)'
         required: true
-        default: '255'
+        default: '256'
   push:
     branches:
       - master
@@ -31,8 +31,6 @@ on:
       - 'android-client/**'
       - 'scripts/patch-android.js'
       - 'scripts/dna-mileage-android.js'
-      - 'cliente.app/js/components/clientTrackingEngine.js'
-      - 'cliente.app/js/components/ownerView.js'
       - '.github/workflows/build-cliente-apk.yml'
 
 jobs:
@@ -56,8 +54,8 @@ jobs:
         working-directory: android-client
         env:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
-          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.5' }}
-          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '255' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.6' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '256' }}
         run: |
           npm install
           npx cap add android
@@ -72,8 +70,8 @@ jobs:
         working-directory: android-oficina
         env:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
-          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.5' }}
-          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '255' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.6' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '256' }}
         run: |
           npm install
           npx cap add android
@@ -84,11 +82,49 @@ jobs:
           ./gradlew assembleDebug
           cp app/build/outputs/apk/debug/app-debug.apk ../../dna-auto-oficina.apk
 
+      # O APK debug muda a assinatura a cada runner. Nunca publicar debug como
+      # atualização de produção: usar a MESMA chave privada em todos os builds.
+      - name: Assinar APKs de produção com keystore persistente
+        if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
+        env:
+          DNA_ANDROID_KEYSTORE_BASE64: ${{ secrets.DNA_ANDROID_KEYSTORE_BASE64 }}
+          DNA_ANDROID_STORE_PASSWORD: ${{ secrets.DNA_ANDROID_STORE_PASSWORD }}
+          DNA_ANDROID_KEY_ALIAS: ${{ secrets.DNA_ANDROID_KEY_ALIAS }}
+          DNA_ANDROID_KEY_PASSWORD: ${{ secrets.DNA_ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for var in DNA_ANDROID_KEYSTORE_BASE64 DNA_ANDROID_STORE_PASSWORD DNA_ANDROID_KEY_ALIAS DNA_ANDROID_KEY_PASSWORD; do
+            if [ -z "${!var}" ]; then
+              echo "::error::Secret ${var} ausente. Não publicar APK com assinatura temporária."
+              exit 1
+            fi
+          done
+          printf '%s' "$DNA_ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/dna-auto-release.keystore
+          BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n1)
+          for item in cliente oficina; do
+            pushd "android-$item/android" >/dev/null
+            chmod +x gradlew
+            ./gradlew assembleRelease
+            SRC="app/build/outputs/apk/release/app-release-unsigned.apk"
+            "$BUILD_TOOLS/zipalign" -f -p 4 "$SRC" "../../dna-auto-$item-aligned.apk"
+            "$BUILD_TOOLS/apksigner" sign \
+              --ks /tmp/dna-auto-release.keystore \
+              --ks-key-alias "$DNA_ANDROID_KEY_ALIAS" \
+              --ks-pass env:DNA_ANDROID_STORE_PASSWORD \
+              --key-pass env:DNA_ANDROID_KEY_PASSWORD \
+              --out "../../dna-auto-$item.apk" "../../dna-auto-$item-aligned.apk"
+            "$BUILD_TOOLS/apksigner" verify --verbose "../../dna-auto-$item.apk"
+            popd >/dev/null
+            rm "dna-auto-$item-aligned.apk"
+          done
+
       - name: Extrair SHA-256 dos Certificados
         id: cert
         run: |
-          SHA_CLIENTE=$(keytool -printcert -jarfile dna-auto-cliente.apk | grep "SHA256:" | head -n1 | sed 's/.*SHA256: *//')
-          SHA_OFICINA=$(keytool -printcert -jarfile dna-auto-oficina.apk | grep "SHA256:" | head -n1 | sed 's/.*SHA256: *//')
+          BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n1)
+          SHA_CLIENTE=$("$BUILD_TOOLS/apksigner" verify --print-certs dna-auto-cliente.apk | awk -F ': ' '/Signer #1 certificate SHA-256 digest/{print $2;exit}')
+          SHA_OFICINA=$("$BUILD_TOOLS/apksigner" verify --print-certs dna-auto-oficina.apk | awk -F ': ' '/Signer #1 certificate SHA-256 digest/{print $2;exit}')
+          test -n "$SHA_CLIENTE" && test -n "$SHA_OFICINA"
           echo "SHA256 Cliente: $SHA_CLIENTE"
           echo "SHA256 Oficina: $SHA_OFICINA"
           echo "sha256_cliente=$SHA_CLIENTE" >> $GITHUB_OUTPUT
@@ -108,9 +144,12 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VNAME="${{ github.event.inputs.version_name }}"
-          if [ -z "$VNAME" ]; then VNAME="2.5.4"; fi
-          gh release delete apk-latest --yes || true
-          git push origin :refs/tags/apk-latest || true
-          gh release create apk-latest dna-auto-cliente.apk dna-auto-oficina.apk \
-            --title "DNA AUTO APKs v${VNAME}" \
-            --notes "Binários APK Android compilados para App do Cliente e App da Oficina. Suporte a tela cheia edge-to-edge, GPS background e download automático direto da URL."
+          if [ -z "$VNAME" ]; then VNAME="2.5.6"; fi
+          if gh release view apk-latest >/dev/null 2>&1; then
+            gh release upload apk-latest dna-auto-cliente.apk dna-auto-oficina.apk --clobber
+            gh release edit apk-latest --title "DNA AUTO APKs v${VNAME}" --notes "APKs assinados com keystore persistente. GPS em segundo plano com consentimento e alertas de hodômetro."
+          else
+            gh release create apk-latest dna-auto-cliente.apk dna-auto-oficina.apk \
+              --title "DNA AUTO APKs v${VNAME}" \
+              --notes "APKs assinados com keystore persistente. GPS em segundo plano com consentimento e alertas de hodômetro."
+          fi

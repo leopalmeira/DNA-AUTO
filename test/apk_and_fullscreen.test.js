@@ -63,7 +63,7 @@ async function runTests() {
         const vCliente = await vClienteRes.json();
         assert.strictEqual(vCliente.success, true);
         assert.strictEqual(vCliente.app, 'cliente');
-        assert.strictEqual(vCliente.version, '2.5.5');
+        assert.strictEqual(vCliente.version, '2.5.6');
         assert.strictEqual(vCliente.package_name, 'br.com.dnaauto.cliente');
         assert.strictEqual(vCliente.apk_available, true);
         assert.strictEqual(vCliente.apk_url, '/downloads/dna-auto-cliente.apk');
@@ -73,7 +73,7 @@ async function runTests() {
         const vOficina = await vOficinaRes.json();
         assert.strictEqual(vOficina.success, true);
         assert.strictEqual(vOficina.app, 'oficina');
-        assert.strictEqual(vOficina.version, '2.5.5');
+        assert.strictEqual(vOficina.version, '2.5.6');
         assert.strictEqual(vOficina.package_name, 'br.com.dnaauto.oficina');
         assert.strictEqual(vOficina.apk_available, true);
         assert.strictEqual(vOficina.apk_url, '/downloads/dna-auto-oficina.apk');

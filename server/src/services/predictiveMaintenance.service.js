@@ -321,6 +321,7 @@ class PredictiveMaintenanceService {
             return {
                 km: reading.reading_km,
                 date: reading.reading_date,
+                timestamp: reading.created_at || reading.reading_date,
                 source: reading.source,
                 details: reading.source_details || 'Registro Oficial'
             };
@@ -339,6 +340,7 @@ class PredictiveMaintenanceService {
             return {
                 km: service.mileage,
                 date: service.service_date,
+                timestamp: service.service_date,
                 source: 'WORKSHOP_SERVICE',
                 details: 'Ordem de Serviço Chancelada por Oficina Credenciada'
             };
@@ -357,6 +359,7 @@ class PredictiveMaintenanceService {
             return {
                 km: genericMileage.mileage,
                 date: genericMileage.recorded_at,
+                timestamp: genericMileage.recorded_at,
                 source: genericMileage.source || 'REGISTRATION',
                 details: 'Quilometragem Inicial de Cadastro'
             };
@@ -365,6 +368,7 @@ class PredictiveMaintenanceService {
         return {
             km: 0,
             date: new Date().toISOString().split('T')[0],
+            timestamp: null,
             source: 'NONE',
             details: 'Nenhuma leitura oficial cadastrada'
         };
@@ -381,7 +385,8 @@ class PredictiveMaintenanceService {
             FROM vehicle_trips
             WHERE vehicle_id = ?
               AND classification = 'IN_VEHICLE'
-              AND (DATE(end_time) >= DATE(?) OR ? IS NULL)
+              AND (is_validated_by_user IS NULL OR is_validated_by_user = 1)
+              AND (? IS NULL OR julianday(end_time) > julianday(?))
         `).get(vehicleId, officialDate, officialDate);
 
         return {
@@ -464,6 +469,40 @@ class PredictiveMaintenanceService {
     /**
      * Recalcula todas as previsões e alertas de manutenção do veículo
      */
+    /**
+     * O aviso de 80 km e a confirmação de 50 km são quilômetros RESTANTES
+     * até a revisão mais próxima, não km percorridos desde o cadastro.
+     * Uma leitura recente do proprietário evita solicitar confirmação em loop.
+     */
+    static getOdometerConfirmationStatus(officialKm, estimatedDistance, predictions = [], officialSource = 'NONE') {
+        const travelled = Math.max(0, Number(estimatedDistance) || 0);
+        const baseline = Number(officialKm) || 0;
+        const candidates = predictions
+            .filter(p => Number.isFinite(Number(p.next_due_km)) && Number(p.next_due_km) > 0 && p.alert_status !== 'DADOS_INSUFICIENTES')
+            .map(p => Number(p.next_due_km));
+        const targetKm = candidates.length ? Math.min(...candidates) : null;
+        const remaining = targetKm === null ? null : Math.max(0, targetKm - baseline - travelled);
+        const recentlyConfirmed = /^OWNER/.test(String(officialSource)) && travelled < 80;
+        const stage = baseline <= 0 ? 'INITIAL'
+            : remaining === null || recentlyConfirmed ? 'OK'
+            : remaining <= 50 ? 'REQUIRED'
+            : remaining <= 80 ? 'PRENOTICE' : 'OK';
+        return {
+            stage,
+            needs_confirmation: stage === 'INITIAL' || stage === 'REQUIRED',
+            official_odometer_km: baseline,
+            estimated_distance_since_official_km: travelled,
+            next_maintenance_km: targetKm,
+            remaining_to_maintenance_km: remaining,
+            pre_notice_when_remaining_km: 80,
+            confirmation_when_remaining_km: 50,
+            message: stage === 'INITIAL' ? 'Informe a quilometragem do painel para iniciar as previsões.'
+                : stage === 'REQUIRED' ? 'Faltam aproximadamente 50 km ou menos para a manutenção. Confirme a quilometragem real do painel.'
+                : stage === 'PRENOTICE' ? 'Pré-aviso: faltam aproximadamente 80 km para a manutenção. Prepare-se para conferir o painel.'
+                : 'Acompanhamento estimado sem solicitação de nova leitura.'
+        };
+    }
+
     static recalculatePredictions(database, vehicleId) {
         this.seedRulesIfEmpty(database);
 
@@ -471,7 +510,7 @@ class PredictiveMaintenanceService {
         if (!vehicle) return null;
 
         const official = this.getLatestOfficialOdometer(database, vehicleId);
-        const { estimated_km: estimatedDistance, trips_count } = this.getEstimatedDistanceSinceOfficial(database, vehicleId, official.date);
+        const { estimated_km: estimatedDistance, trips_count } = this.getEstimatedDistanceSinceOfficial(database, vehicleId, official.timestamp || official.date);
 
         const officialKm = Number(official.km) || 0;
         const currentEstimatedKm = officialKm + Math.round(estimatedDistance);
@@ -661,6 +700,7 @@ class PredictiveMaintenanceService {
             current_estimated_km: currentEstimatedKm,
             uncertainty_km: uncertaintyKm,
             trips_count,
+            odometer_confirmation: this.getOdometerConfirmationStatus(officialKm, estimatedDistance, predictions, official.source),
             most_urgent_item: mostUrgent,
             all_predictions: predictions,
             last_recalculated_at: new Date().toISOString()
@@ -672,7 +712,7 @@ class PredictiveMaintenanceService {
      */
     static recordOfficialOdometer(database, vehicleId, readingKm, source, sourceDetails, userId) {
         const km = Number(readingKm);
-        if (isNaN(km) || km < 0) {
+        if (!Number.isSafeInteger(km) || km <= 0 || km > 10000000) {
             return { success: false, error: 'Quilometragem inválida. Informe um número inteiro positivo.' };
         }
 

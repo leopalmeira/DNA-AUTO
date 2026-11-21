@@ -1600,8 +1600,36 @@ function findVehicleByIdentifier(identifier) {
     `).get(clean, cleanPlate, clean.toUpperCase(), clean.toUpperCase(), clean.toUpperCase());
 }
 
+// Confirma titularidade antes de expor histórico de deslocamentos ou alterar km.
+function authorizeTrackingVehicleOwner(req, res, next) {
+    const vehicle = findVehicleByIdentifier(req.params.identifier);
+    if (!vehicle) return res.status(404).json({ error: 'Veículo não encontrado.' });
+    if (req.user?.role_code === 'ADMIN') return next();
+    // Equipe de oficina pode validar o hodômetro apenas dos veículos ligados
+    // à própria oficina; leitura de GPS e consentimento continuam exclusivos ao titular.
+    if (req.method === 'POST' && req.path.endsWith('/odometer') && req.user?.workshop?.workshop_id) {
+        const workshopId = req.user.workshop.workshop_id;
+        const authorizedWorkshop = db.prepare(`
+            SELECT 1 FROM vehicle_dna
+            WHERE vehicle_id = ? AND activated_by_workshop_id = ?
+            LIMIT 1
+        `).get(vehicle.id, workshopId);
+        if ((authorizedWorkshop || vehicle.workshop_id === workshopId) &&
+            req.user.workshop.can_prove_services !== 0) return next();
+    }
+    const linked = db.prepare(`
+        SELECT 1 FROM owners
+        WHERE (id = ? OR id IN (
+            SELECT new_owner_id FROM ownership_transfers
+            WHERE vehicle_id = ? AND status = 'COMPLETED'
+        )) AND (user_id = ? OR (email IS NOT NULL AND LOWER(email) = LOWER(?)))
+    `).get(vehicle.current_owner_id || '', vehicle.id, req.user.id, req.user.email || '');
+    if (!linked) return res.status(403).json({ error: 'Veículo não vinculado a esta conta.' });
+    next();
+}
+
 // 1. Obter Estado Geral de Monitoramento e Estatísticas do Veículo
-router.get('/:identifier/monitoring', (req, res) => {
+router.get('/:identifier/monitoring', authenticateToken, authorizeTrackingVehicleOwner, (req, res) => {
     try {
         const vehicle = findVehicleByIdentifier(req.params.identifier);
         if (!vehicle) {
@@ -1614,7 +1642,7 @@ router.get('/:identifier/monitoring', (req, res) => {
             const prefId = `mpref_${vehicle.id}`;
             db.prepare(`
                 INSERT INTO monitoring_preferences (id, vehicle_id, is_monitoring_enabled, consent_given_at)
-                VALUES (?, ?, 1, CURRENT_TIMESTAMP)
+                VALUES (?, ?, 0, NULL)
             `).run(prefId, vehicle.id);
             prefs = db.prepare('SELECT * FROM monitoring_preferences WHERE id = ?').get(prefId);
         }
@@ -1664,7 +1692,8 @@ router.get('/:identifier/monitoring', (req, res) => {
                 estimated_distance_since_official_km: summary.estimated_distance_since_official_km,
                 current_estimated_km: summary.current_estimated_km,
                 uncertainty_km: summary.uncertainty_km
-            }
+            },
+            odometer_confirmation: summary.odometer_confirmation
         });
     } catch (err) {
         console.error('Erro ao consultar monitoramento:', err);
@@ -1673,7 +1702,7 @@ router.get('/:identifier/monitoring', (req, res) => {
 });
 
 // 2. Atualizar Preferências de Monitoramento e Consentimento LGPD
-router.post('/:identifier/monitoring/preferences', (req, res) => {
+router.post('/:identifier/monitoring/preferences', authenticateToken, authorizeTrackingVehicleOwner, (req, res) => {
     try {
         const vehicle = findVehicleByIdentifier(req.params.identifier);
         if (!vehicle) {
@@ -1682,19 +1711,25 @@ router.post('/:identifier/monitoring/preferences', (req, res) => {
 
         const { is_monitoring_enabled, is_enabled, paired_bluetooth_name, consent_given } = req.body;
         const enabledVal = is_monitoring_enabled !== undefined ? is_monitoring_enabled : is_enabled;
-        const isEnabled = enabledVal !== undefined ? (enabledVal ? 1 : 0) : 1;
+        const isEnabled = enabledVal !== undefined ? (enabledVal ? 1 : 0) : 0;
+        if (isEnabled && !consent_given) {
+            const oldConsent = db.prepare('SELECT consent_given_at FROM monitoring_preferences WHERE vehicle_id = ?').get(vehicle.id);
+            if (!oldConsent?.consent_given_at) {
+                return res.status(400).json({ error: 'É necessário consentimento explícito para ativar o GPS.' });
+            }
+        }
 
         db.prepare(`
             INSERT INTO monitoring_preferences (
                 id, vehicle_id, is_monitoring_enabled, consent_given_at, paired_bluetooth_name, updated_at
-            ) VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, CURRENT_TIMESTAMP)
+            ) VALUES (?, ?, ?, CASE WHEN ? = 1 THEN CURRENT_TIMESTAMP ELSE NULL END, ?, CURRENT_TIMESTAMP)
             ON CONFLICT(vehicle_id) DO UPDATE SET
                 is_monitoring_enabled = excluded.is_monitoring_enabled,
                 paired_bluetooth_name = COALESCE(excluded.paired_bluetooth_name, monitoring_preferences.paired_bluetooth_name),
                 consent_given_at = CASE WHEN ? = 1 THEN CURRENT_TIMESTAMP ELSE monitoring_preferences.consent_given_at END,
                 updated_at = CURRENT_TIMESTAMP
         `).run(
-            `mpref_${vehicle.id}`, vehicle.id, isEnabled, paired_bluetooth_name || null, consent_given ? 1 : 0
+            `mpref_${vehicle.id}`, vehicle.id, isEnabled, consent_given ? 1 : 0, paired_bluetooth_name || null, consent_given ? 1 : 0
         );
 
         const updatedPrefs = db.prepare('SELECT * FROM monitoring_preferences WHERE vehicle_id = ?').get(vehicle.id);
@@ -1717,7 +1752,7 @@ router.post('/:identifier/monitoring/preferences', (req, res) => {
 });
 
 // 3. Sincronização em Lote de Viagens Estimadas pelo Aplicativo
-router.post('/:identifier/monitoring/sync-trips', (req, res) => {
+router.post('/:identifier/monitoring/sync-trips', authenticateToken, authorizeTrackingVehicleOwner, (req, res) => {
     try {
         const vehicle = findVehicleByIdentifier(req.params.identifier);
         if (!vehicle) {
@@ -1729,6 +1764,10 @@ router.post('/:identifier/monitoring/sync-trips', (req, res) => {
             return res.status(400).json({ error: 'Nenhuma viagem informada no payload de sincronização.' });
         }
 
+        const prefs = db.prepare('SELECT * FROM monitoring_preferences WHERE vehicle_id = ?').get(vehicle.id);
+        if (!prefs || prefs.is_monitoring_enabled !== 1 || !prefs.consent_given_at) {
+            return res.status(403).json({ error: 'Monitoramento desativado ou sem consentimento registrado.' });
+        }
         const result = PredictiveMaintenanceService.processTripSync(db, vehicle.id, vehicle.current_owner_id, trips);
 
         // Atualizar timestamp da última sincronização
@@ -1743,6 +1782,7 @@ router.post('/:identifier/monitoring/sync-trips', (req, res) => {
             message: `${result.processed} viagem(ns) processada(s) com sucesso.`,
             synced_count: result.processed,
             accepted_km: result.accepted_km,
+            odometer_confirmation: PredictiveMaintenanceService.recalculatePredictions(db, vehicle.id).odometer_confirmation,
             results: result.results || []
         });
     } catch (err) {
@@ -1752,7 +1792,7 @@ router.post('/:identifier/monitoring/sync-trips', (req, res) => {
 });
 
 // 4. Feedback do Usuário sobre Viagem (Validação Empírica da Meta de 70%)
-router.post('/:identifier/monitoring/trip-feedback', (req, res) => {
+router.post('/:identifier/monitoring/trip-feedback', authenticateToken, authorizeTrackingVehicleOwner, (req, res) => {
     try {
         const vehicle = findVehicleByIdentifier(req.params.identifier);
         if (!vehicle) {
@@ -1772,10 +1812,11 @@ router.post('/:identifier/monitoring/trip-feedback', (req, res) => {
             UPDATE vehicle_trips
             SET is_validated_by_user = ?,
                 user_feedback = ?
-            WHERE (id = ? OR id LIKE ?) AND vehicle_id = ?
-        `).run(validated, notes, trip_id, `%${trip_id}%`, vehicle.id);
+            WHERE id = ? AND vehicle_id = ?
+        `).run(validated, notes, trip_id, vehicle.id);
 
         PredictiveMaintenanceService.updateEmpiricalMetrics(db, vehicle.id);
+        PredictiveMaintenanceService.recalculatePredictions(db, vehicle.id);
         const metrics = db.prepare('SELECT * FROM trip_classification_metrics WHERE vehicle_id = ?').get(vehicle.id);
 
         res.json({
@@ -1793,7 +1834,7 @@ router.post('/:identifier/monitoring/trip-feedback', (req, res) => {
 });
 
 // 5. Consultar Histórico e Reconciliação do Hodômetro
-router.get('/:identifier/odometer', (req, res) => {
+router.get('/:identifier/odometer', authenticateToken, authorizeTrackingVehicleOwner, (req, res) => {
     try {
         const vehicle = findVehicleByIdentifier(req.params.identifier);
         if (!vehicle) {
@@ -1826,6 +1867,7 @@ router.get('/:identifier/odometer', (req, res) => {
                 uncertainty_km: summary.uncertainty_km,
                 margin_label: `±${summary.uncertainty_km} km (Incerteza da estimativa de sensores)`
             },
+            odometer_confirmation: summary.odometer_confirmation,
             history: readings
         });
     } catch (err) {
@@ -1835,7 +1877,7 @@ router.get('/:identifier/odometer', (req, res) => {
 });
 
 // 6. Confirmar Nova Leitura Oficial do Hodômetro (Reconciliação com o Painel)
-router.post('/:identifier/odometer', (req, res) => {
+router.post('/:identifier/odometer', authenticateToken, authorizeTrackingVehicleOwner, (req, res) => {
     try {
         const vehicle = findVehicleByIdentifier(req.params.identifier);
         if (!vehicle) {
@@ -1865,7 +1907,7 @@ router.post('/:identifier/odometer', (req, res) => {
 });
 
 // 7. Obter Cronograma Completo de Manutenção Preditiva do Veículo
-router.get('/:identifier/predictive-maintenance', (req, res) => {
+router.get('/:identifier/predictive-maintenance', authenticateToken, authorizeTrackingVehicleOwner, (req, res) => {
     try {
         const vehicle = findVehicleByIdentifier(req.params.identifier);
         if (!vehicle) {
@@ -1891,8 +1933,10 @@ router.get('/:identifier/predictive-maintenance', (req, res) => {
                 estimated_distance_since_official_km: data.estimated_distance_since_official_km,
                 current_estimated_km: data.current_estimated_km,
                 uncertainty_km: data.uncertainty_km,
-                most_urgent_item: data.most_urgent_item
+                most_urgent_item: data.most_urgent_item,
+                odometer_confirmation: data.odometer_confirmation
             },
+            odometer_confirmation: data.odometer_confirmation,
             predictions: data.all_predictions,
             schedule: data.all_predictions,
             uncertainty_margin_km: data.uncertainty_km,
@@ -1905,7 +1949,7 @@ router.get('/:identifier/predictive-maintenance', (req, res) => {
 });
 
 // 8. Forçar Recálculo de Manutenção Preditiva
-router.post('/:identifier/predictive-maintenance/recalculate', (req, res) => {
+router.post('/:identifier/predictive-maintenance/recalculate', authenticateToken, authorizeTrackingVehicleOwner, (req, res) => {
     try {
         const vehicle = findVehicleByIdentifier(req.params.identifier);
         if (!vehicle) {

@@ -992,7 +992,7 @@ async function runTests() {
         console.log(`✅ 52. Hodômetro Oficial & Proteção Monotônica: Leitura [88.500 km] registrada; tentativa de retrocesso [80.000 km] bloqueada com sucesso.`);
 
         // Teste 53: Motor de Manutenção Preditiva com Regras OEM Específicas do Fabricante
-        const resPred = await fetch(`${BASE_URL}/vehicles/BRA2E19/predictive-maintenance`);
+        const resPred = await fetch(`${BASE_URL}/vehicles/BRA2E19/predictive-maintenance`, { headers: { 'Authorization': `Bearer ${adminToken}` } });
         const dataPred = await resPred.json();
         console.assert(resPred.status === 200, 'Falha ao consultar manutenção preditiva');
         console.assert(dataPred.success === true, 'Manutenção preditiva deve retornar success: true');
@@ -1022,7 +1022,7 @@ async function runTests() {
         console.assert(resServiceAutoOdom.status === 201, 'Falha ao registrar serviço na oficina');
         
         // Verifica se o hodômetro oficial foi atualizado para 90.000 km
-        const resOdomAfterService = await fetch(`${BASE_URL}/vehicles/BRA2E19/odometer`);
+        const resOdomAfterService = await fetch(`${BASE_URL}/vehicles/BRA2E19/odometer`, { headers: { 'Authorization': `Bearer ${adminToken}` } });
         const dataOdomAfterService = await resOdomAfterService.json();
         console.assert(dataOdomAfterService.official_odometer_km === 90000, 'Hodômetro oficial deve ter sido atualizado para 90.000 km pela oficina');
         console.log(`✅ 54. Integração Oficina -> Hodômetro Oficial & Recálculo Preditivo: Serviço registrado atualizou hodômetro oficial para [90.000 km] e recalibrou previsões.`);

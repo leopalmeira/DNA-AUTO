@@ -62,17 +62,27 @@ public class DnaMileagePlugin extends Plugin {
             call.reject("Quilometragem inválida.");
             return;
         }
+        if (enabled && !previousPlate.isEmpty() && !previousPlate.equals(plate) &&
+            !p.getString("pendingTrips", "[]").equals("[]")) {
+            call.reject("Sincronize as viagens do veículo anterior antes de trocar de placa.");
+            return;
+        }
         boolean reset = !previousPlate.equals(plate) || (!confirmedAt.isEmpty() && !confirmedAt.equals(previousConfirmedAt));
+        boolean newTarget = Math.abs(p.getFloat("targetKm", 0f) - target) > 1f;
         SharedPreferences.Editor edit = p.edit();
         if (reset) {
             edit.putFloat("trackedKm", 0f);
             edit.putFloat("tripKm", 0f);
             edit.putLong("tripStart", 0L);
-            edit.putString("pendingTrips", "[]");
+            // Não apagar viagens ainda não sincronizadas na troca de hodômetro.
+            // O servidor as reconcilia pela data/hora de cada percurso.
             edit.putBoolean("alert80", false);
-            edit.putBoolean("alert50", false);
+            edit.putBoolean("alert50", target > 0 && official >= target - 50);
             edit.putBoolean("confirmRequired", false);
             edit.remove("lastLat").remove("lastLon").remove("lastTime");
+        }
+        if (newTarget && !reset) {
+            edit.putBoolean("alert80", false).putBoolean("alert50", false).putBoolean("confirmRequired", false);
         }
         edit.putString("plate", plate).putString("confirmedAt", confirmedAt)
             .putFloat("officialKm", (float) official).putFloat("targetKm", (float) target)
@@ -246,7 +256,7 @@ public class DnaMileageService extends Service implements LocationListener {
             .putFloat("lastLon", (float) location.getLongitude())
             .putLong("lastTime", now);
         long tripStart = prefs.getLong("tripStart", 0L);
-        if (tripStart == 0 && speedKmh >= 12) {
+        if (tripStart == 0 && speedKmh >= 20) {
             edit.putLong("tripStart", now).putFloat("tripKm", 0f)
                 .putInt("tripSamples", 1).putInt("tripAccurateSamples", 1)
                 .putFloat("speedSum", (float) speedKmh).putFloat("speedMax", (float) speedKmh);
@@ -271,8 +281,10 @@ public class DnaMileageService extends Service implements LocationListener {
                 JSONArray items = new JSONArray(prefs.getString("pendingTrips", "[]"));
                 JSONObject t = new JSONObject();
                 t.put("id", "native_" + UUID.randomUUID().toString());
-                t.put("start_time", new java.util.Date(start).toInstant().toString());
-                t.put("end_time", new java.util.Date(prefs.getLong("lastTime", start)).toInstant().toString());
+                java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+                format.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
+                t.put("start_time", format.format(new java.util.Date(start)));
+                t.put("end_time", format.format(new java.util.Date(prefs.getLong("lastTime", start))));
                 t.put("duration_seconds", duration);
                 t.put("distance_km", Math.round(km * 100.0) / 100.0);
                 t.put("samples_count", count);

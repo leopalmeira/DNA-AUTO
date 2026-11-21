@@ -5,8 +5,8 @@ const target = process.argv[2] || 'cliente';
 const isOficina = target === 'oficina';
 
 const serverUrl = (process.env.INPUT_SERVER_URL || 'https://dna-auto-byin.onrender.com').replace(/\/$/, '');
-const versionName = process.env.INPUT_VERSION_NAME || '2.5.5';
-const versionCode = process.env.INPUT_VERSION_CODE || '255';
+const versionName = process.env.INPUT_VERSION_NAME || '2.5.6';
+const versionCode = process.env.INPUT_VERSION_CODE || '256';
 const host = new URL(serverUrl).hostname;
 
 const pkg = isOficina ? 'br.com.dnaauto.oficina' : 'br.com.dnaauto.cliente';
@@ -124,6 +124,12 @@ fs.writeFileSync(mainActivityPath, [
   'import android.view.View;',
   'import android.view.WindowManager;',
   'import androidx.core.view.WindowCompat;',
+  ...(isOficina ? [] : [
+    'import android.Manifest;',
+    'import android.content.pm.PackageManager;',
+    'import androidx.core.app.ActivityCompat;',
+    'import androidx.core.content.ContextCompat;'
+  ]),
   'import androidx.core.view.WindowInsetsControllerCompat;',
   'import com.getcapacitor.BridgeActivity;',
   '',
@@ -145,6 +151,11 @@ fs.writeFileSync(mainActivityPath, [
   '        if (controller != null) {',
   '            controller.setAppearanceLightStatusBars(false);',
   '        }',
+  ...(isOficina ? [] : [
+    '        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {',
+    '            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 12033);',
+    '        }'
+  ]),
   '    }',
   '}',
   ''
