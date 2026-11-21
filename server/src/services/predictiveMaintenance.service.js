@@ -827,6 +827,20 @@ class PredictiveMaintenanceService {
             signalsUsed.accuracy = true;
         }
 
+        // Sem OBD/Bluetooth, viagens GPS longas e coerentes ainda podem compor
+        // uma ESTIMATIVA (nunca a leitura oficial do hodômetro).
+        // A confirmação manual do proprietário continua obrigatória nos alertas.
+        const gpsOnlyConsistent = !bluetooth_connected &&
+            accelerometer_profile === 'UNKNOWN' &&
+            samples_count >= 5 && samples_high_accuracy >= 5 &&
+            duration_seconds >= 180 && distance_km >= 0.5 &&
+            avg_speed_kmh >= 15 && avg_speed_kmh <= 130 &&
+            max_speed_kmh >= 35 && max_speed_kmh <= 140;
+        if (gpsOnlyConsistent) {
+            score += 7;
+            signalsUsed.gps_consistency = true;
+        }
+
         // Limitação da pontuação entre 0 e 100
         score = Math.min(100, Math.max(0, score));
 
