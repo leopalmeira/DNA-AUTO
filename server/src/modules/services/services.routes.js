@@ -25,7 +25,14 @@ router.post('/workshop-register', authenticateToken, (req, res, next) => {
         { name: 'invoice', maxCount: 1 }
     ])(req, res, (err) => {
         if (err) {
-            console.warn('[Upload Warning] Erro no processamento de upload, continuando sem arquivo:', err.message);
+            console.error('[Upload] Falha ao receber anexos do serviço:', err.message);
+            const status = err.code === 'LIMIT_FILE_SIZE' || err.code === 'LIMIT_FIELD_VALUE' ? 413 : 400;
+            return res.status(status).json({
+                success: false,
+                error: err.code === 'LIMIT_FILE_SIZE'
+                    ? 'Arquivo acima do limite permitido de 15 MB. Reduza o tamanho e tente novamente.'
+                    : 'Não foi possível anexar a foto ou nota fiscal: ' + err.message
+            });
         }
         next();
     });
@@ -47,6 +54,29 @@ router.post('/workshop-register', authenticateToken, (req, res, next) => {
             invoice_amount_cents
         } = req.body;
 
+        // Foto e nota fiscal opcionais; valores informados em centavos.
+        const parsedPartsForValidation = (() => {
+            try {
+                const data = typeof parts_json === 'string' ? JSON.parse(parts_json) : (parts_json || []);
+                return Array.isArray(data) ? data : null;
+            } catch (_) { return null; }
+        })();
+        if (!parsedPartsForValidation) {
+            return res.status(400).json({ success: false, error: 'Lista de peças inválida.' });
+        }
+        const partAmount = parsedPartsForValidation.reduce((sum, item) =>
+            sum + (Number(item.unit_price_cents) || 0) * (Number(item.quantity) || 1), 0);
+        const laborAmount = Number(labor_cost_cents) || 0;
+        const fullAmount = partAmount + laborAmount;
+        if (!Number.isSafeInteger(fullAmount) || fullAmount <= 0 ||
+            !Number.isSafeInteger(laborAmount) || laborAmount < 0 ||
+            parsedPartsForValidation.some(p => !Number.isSafeInteger(Number(p.unit_price_cents)) ||
+                Number(p.unit_price_cents) <= 0 || !Number.isInteger(Number(p.quantity)) || Number(p.quantity) <= 0)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Informe o valor das peças e da mão de obra. O total deve ser maior que zero.'
+            });
+        }
         const explicitPlate = (req.body.license_plate || req.body.plate || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
         let vehicleLookupKey = vehicle_id || req.body.license_plate || req.body.plate;
         const titleVal = service_title || req.body.title || 'Revisão Periódica';
@@ -148,14 +178,7 @@ router.post('/workshop-register', authenticateToken, (req, res, next) => {
 
         const targetVehicleId = vehicle.id;
         const serviceId = 'srv_' + Date.now();
-        let parsedParts = [];
-        if (parts_json) {
-            try {
-                parsedParts = typeof parts_json === 'string' ? JSON.parse(parts_json) : parts_json;
-            } catch (e) {
-                console.warn('Erro ao decodificar peças JSON:', e);
-            }
-        }
+        const parsedParts = parsedPartsForValidation;
 
         let partsCostCents = 0;
         parsedParts.forEach(p => {
@@ -163,8 +186,7 @@ router.post('/workshop-register', authenticateToken, (req, res, next) => {
         });
 
         const laborCost = Number(labor_cost_cents) || 0;
-        const explicitTotalCost = Number(req.body.total_cost_cents || req.body.service_value_cents || 0);
-        const totalCost = (partsCostCents + laborCost) > 0 ? (partsCostCents + laborCost) : explicitTotalCost;
+        const totalCost = partsCostCents + laborCost;
 
         // Identificar exatamente qual profissional/registrador lançou o serviço
         try {
@@ -478,6 +500,8 @@ router.post('/workshop-register', authenticateToken, (req, res, next) => {
             registered_by_user_id: effectiveLauncherId,
             part_photo_url: primaryPhotoUrl,
             total_cost_cents: totalCost,
+            parts_cost_cents: partsCostCents,
+            labor_cost_cents: laborCost,
             service_date: dateVal,
             attendance_fee: {
                 amount_cents: 690,
