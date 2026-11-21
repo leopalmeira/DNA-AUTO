@@ -5709,7 +5709,36 @@ input, select, textarea {
     to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+/* ==========================================================================
+   CONTRASTE GARANTIDO — LOGIN E CADASTRO DA OFICINA (v2.5.6)
+   Corrige o -webkit-text-fill-color herdado de regras globais em Android,
+   Safari/Chrome e o texto dos placeholders sobre fundos brancos.
+   ========================================================================== */
+.ws-login-card-sheet .ws-login-input-row input:not([type="checkbox"]),
+.dna-oficina-login-card input.dna-oficina-login-input {
+    color: #0F172A !important;
+    -webkit-text-fill-color: #0F172A !important;
+    caret-color: #0F172A !important;
+    color-scheme: light !important;
+}
 
+.ws-login-card-sheet .ws-login-input-row input::placeholder,
+.dna-oficina-login-card input.dna-oficina-login-input::placeholder {
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
+    opacity: 1 !important;
+}
 
-
-
+/* Evita letras brancas quando o navegador preenche e-mail/senha sozinho. */
+.ws-login-card-sheet .ws-login-input-row input:-webkit-autofill,
+.ws-login-card-sheet .ws-login-input-row input:-webkit-autofill:hover,
+.ws-login-card-sheet .ws-login-input-row input:-webkit-autofill:focus,
+.dna-oficina-login-card input.dna-oficina-login-input:-webkit-autofill,
+.dna-oficina-login-card input.dna-oficina-login-input:-webkit-autofill:hover,
+.dna-oficina-login-card input.dna-oficina-login-input:-webkit-autofill:focus {
+    color: #0F172A !important;
+    -webkit-text-fill-color: #0F172A !important;
+    caret-color: #0F172A !important;
+    -webkit-box-shadow: 0 0 0 1000px #F8FBFF inset !important;
+    box-shadow: 0 0 0 1000px #F8FBFF inset !important;
+}
