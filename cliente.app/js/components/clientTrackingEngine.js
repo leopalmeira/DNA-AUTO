@@ -8,7 +8,7 @@ const DnaTrackingEngine = {
     watchId: null,
     _nativeStarting: false,
     _promptedOdometerThisSession: false,
-    _urgentAlertShown: false,
+    _urgentAlertShown: null,
     _urgentRetryScheduled: false,
     lastError: null,
     currentTrip: null,
@@ -212,9 +212,10 @@ const DnaTrackingEngine = {
         if (!native || document.hidden) return;
         try {
             const state = await native.getState();
-            if (state?.alert40 && !this._urgentAlertShown) {
+            const urgentKey = [state?.plate, state?.targetName, state?.officialKm].join("|");
+            if (state?.alert40 && this._urgentAlertShown !== urgentKey) {
                 if (this.showUrgentMaintenance(state)) {
-                    this._urgentAlertShown = true;
+                    this._urgentAlertShown = urgentKey;
                     return;
                 }
                 if (state.moving && !this._urgentRetryScheduled) {
