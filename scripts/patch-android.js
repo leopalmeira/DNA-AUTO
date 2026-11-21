@@ -5,8 +5,8 @@ const target = process.argv[2] || 'cliente';
 const isOficina = target === 'oficina';
 
 const serverUrl = (process.env.INPUT_SERVER_URL || 'https://dna-auto-byin.onrender.com').replace(/\/$/, '');
-const versionName = process.env.INPUT_VERSION_NAME || '2.5.4';
-const versionCode = process.env.INPUT_VERSION_CODE || '254';
+const versionName = process.env.INPUT_VERSION_NAME || '2.5.5';
+const versionCode = process.env.INPUT_VERSION_CODE || '255';
 const host = new URL(serverUrl).hostname;
 
 const pkg = isOficina ? 'br.com.dnaauto.oficina' : 'br.com.dnaauto.cliente';
@@ -35,6 +35,8 @@ const perms = isOficina
       '<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />',
       '<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />',
       '<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />',
+      '<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />',
+      '<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />',
       '<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />',
       '<uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />',
       '<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />'
@@ -69,6 +71,16 @@ if (!xml.includes('asset_statements')) {
     '</application>',
     '    <meta-data android:name="asset_statements" android:resource="@string/asset_statements" />\n    </application>'
   );
+}
+if (!isOficina && !xml.includes('android:name=".DnaMileageService"')) {
+  xml = xml.replace('</application>', `
+    <service android:name=".DnaMileageService" android:foregroundServiceType="location" android:exported="false" />
+    <receiver android:name=".DnaMileageBootReceiver" android:enabled="true" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+      </intent-filter>
+    </receiver>
+  </application>`);
 }
 fs.writeFileSync(manifestPath, xml);
 
@@ -118,6 +130,7 @@ fs.writeFileSync(mainActivityPath, [
   'public class MainActivity extends BridgeActivity {',
   '    @Override',
   '    protected void onCreate(Bundle savedInstanceState) {',
+  ...(isOficina ? [] : ['        registerPlugin(DnaMileagePlugin.class);']),
   '        super.onCreate(savedInstanceState);',
   '        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);',
   '        getWindow().setStatusBarColor(Color.TRANSPARENT);',
@@ -167,3 +180,6 @@ if (fs.existsSync(sourceIconPath)) {
 }
 
 console.log(`✅ Android project patched for ${target} (${pkg} v${versionName} code ${versionCode})`);
+
+// Serviço independente da WebView, apenas no APK do cliente.
+if (!isOficina) require('./dna-mileage-android')(pkg, path.join(process.cwd(), 'android'));
