@@ -10,11 +10,11 @@ on:
       version_name:
         description: 'Versão dos APKs (ex: 2.5.4)'
         required: true
-        default: '2.5.4'
+        default: '2.5.5'
       version_code:
         description: 'Código inteiro da versão (ex: 254)'
         required: true
-        default: '254'
+        default: '255'
   push:
     branches:
       - master
@@ -22,6 +22,17 @@ on:
       - 'android-client/**'
       - 'android-oficina/**'
       - 'scripts/patch-android.js'
+      - 'scripts/dna-mileage-android.js'
+      - '.github/workflows/build-cliente-apk.yml'
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'android-client/**'
+      - 'scripts/patch-android.js'
+      - 'scripts/dna-mileage-android.js'
+      - 'cliente.app/js/components/clientTrackingEngine.js'
+      - 'cliente.app/js/components/ownerView.js'
       - '.github/workflows/build-cliente-apk.yml'
 
 jobs:
@@ -45,8 +56,8 @@ jobs:
         working-directory: android-client
         env:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
-          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.4' }}
-          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '254' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.5' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '255' }}
         run: |
           npm install
           npx cap add android
@@ -61,8 +72,8 @@ jobs:
         working-directory: android-oficina
         env:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
-          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.4' }}
-          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '254' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.5' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '255' }}
         run: |
           npm install
           npx cap add android
@@ -92,6 +103,7 @@ jobs:
             dna-auto-oficina.apk
 
       - name: Publicar Release Pública 'apk-latest'
+        if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
