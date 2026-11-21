@@ -1676,13 +1676,16 @@ const OwnerView = {
     async fetchVehicleExtras(plate) {
         if (!plate || plate === '---') return;
         try {
+            // O app Cliente pode estar em um domínio estático diferente do servidor de API.
+            const base = (typeof API !== 'undefined' && API.baseUrl) || '/api/v1';
+            const vehiclePath = encodeURIComponent(plate);
             const [rDossier, rInsp, rObd, rPred, rOdom, rMon] = await Promise.all([
-                fetch(`/api/v1/dossier/${encodeURIComponent(plate)}`).catch(() => null),
-                fetch(`/api/v1/vehicles/${encodeURIComponent(plate)}/inspection`).catch(() => null),
-                fetch(`/api/v1/vehicles/${encodeURIComponent(plate)}/obd`).catch(() => null),
-                fetch(`/api/v1/vehicles/${encodeURIComponent(plate)}/predictive-maintenance`).catch(() => null),
-                fetch(`/api/v1/vehicles/${encodeURIComponent(plate)}/odometer`).catch(() => null),
-                fetch(`/api/v1/vehicles/${encodeURIComponent(plate)}/monitoring`).catch(() => null)
+                fetch(`${base}/dossier/${vehiclePath}`).catch(() => null),
+                fetch(`${base}/vehicles/${vehiclePath}/inspection`).catch(() => null),
+                fetch(`${base}/vehicles/${vehiclePath}/obd`).catch(() => null),
+                fetch(`${base}/vehicles/${vehiclePath}/predictive-maintenance`).catch(() => null),
+                fetch(`${base}/vehicles/${vehiclePath}/odometer`).catch(() => null),
+                fetch(`${base}/vehicles/${vehiclePath}/monitoring`).catch(() => null)
             ]);
 
             if (rDossier && rDossier.ok) {
@@ -3653,7 +3656,7 @@ const OwnerView = {
                         const realDate = this.parseExpenseDate(item.dateISO || item.date);
                         const dateStr = realDate ? realDate.toLocaleDateString('pt-BR') : 'Data não informada';
                         const wsName = item.workshop_name || 'Oficina Credenciada';
-                        const nfStr = item.invoice_number ? `NF-e #${item.invoice_number}` : 'Comprovante Digital';
+                        const nfStr = item.invoice_number ? `NF-e #${item.invoice_number}` : 'Registro sem nota fiscal anexada';
                         return `
                             <div class="dna-print-receipt-item" onclick="OwnerView.navigateTo('services')">
                                 <div class="dna-print-receipt-icon">
