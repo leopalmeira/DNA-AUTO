@@ -1,0 +1,263 @@
+/* ==============================================================================
+   DNA AUTO | ENTERPRISE MANAGEMENT — DESIGN SYSTEM TOKENS V3
+   Referência visual: ERPs corporativos modernos (TOTVS Protheus / RM / SAP Fiori / Fluent)
+   Tema padrão: Claro Corporativo (Light) + Tema Escuro Profissional (Dark)
+   Conformidade alvo: WCAG 2.2 AA | Leitura confortável Full HD 100% zoom
+   ============================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
+
+:root,
+[data-adm-theme="light"] {
+    /* ── Tipografia Corporativa ── */
+    --adm-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --adm-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    /* ── Escala Tipográfica ── */
+    --adm-fs-page-title: 24px;
+    --adm-fs-section-title: 18px;
+    --adm-fs-card-title: 15.5px;
+    --adm-fs-nav: 14px;
+    --adm-fs-body: 14px;
+    --adm-fs-table: 13.5px;
+    --adm-fs-table-head: 12px;
+    --adm-fs-label: 13px;
+    --adm-fs-kpi: 26px;
+    --adm-fs-kpi-lg: 28px;
+    --adm-fs-aux: 12.5px;
+    --adm-fs-xs: 12px;
+
+    /* ── Sidebar Corporativa (Azul-Marinho DNA AUTO preservado no tema claro) ── */
+    --adm-sidebar-bg: #111D32;
+    --adm-sidebar-bg-deep: #0D1728;
+    --adm-sidebar-border: rgba(255, 255, 255, 0.08);
+    --adm-sidebar-divider: rgba(255, 255, 255, 0.07);
+    --adm-sidebar-text: #D1DCEB;
+    --adm-sidebar-text-hover: #FFFFFF;
+    --adm-sidebar-group-text: #8EA3C0;
+    --adm-sidebar-group-active: #E6F0FF;
+    --adm-sidebar-item-hover: rgba(255, 255, 255, 0.07);
+    --adm-sidebar-item-active-bg: #1769AA;
+    --adm-sidebar-item-active-text: #FFFFFF;
+    --adm-sidebar-icon: #9BB0CC;
+    --adm-sidebar-badge-bg: rgba(255, 255, 255, 0.12);
+    --adm-sidebar-badge-text: #E2E8F0;
+    --adm-sidebar-badge-alert-bg: #B7791F;
+    --adm-sidebar-badge-alert-text: #FFFFFF;
+    --adm-sidebar-width: 276px;
+    --adm-sidebar-collapsed-width: 72px;
+
+    /* ── Superfícies & Fundos (Tema Claro Corporativo) ── */
+    --adm-bg-canvas: #F4F7FB;
+    --adm-bg-surface: #FFFFFF;
+    --adm-bg-surface-alt: #F8FAFD;
+    --adm-bg-surface-hover: #EEF3F9;
+    --adm-bg-surface-selected: #E6F0FA;
+    --adm-bg-topbar: #FFFFFF;
+    --adm-bg-table-head: #EEF3F8;
+    --adm-bg-table-zebra: #FAFBFD;
+    --adm-bg-input: #FFFFFF;
+    --adm-bg-input-disabled: #F1F5F9;
+    --adm-bg-overlay: rgba(15, 23, 42, 0.54);
+
+    /* ── Cores Institucionais ── */
+    --adm-primary: #1769AA;
+    --adm-primary-hover: #12568C;
+    --adm-primary-active: #0E4673;
+    --adm-primary-soft: #E8F2FA;
+    --adm-primary-border: #B8D6EE;
+    --adm-accent: #2563EB;
+    --adm-accent-hover: #1D4ED8;
+    --adm-accent-soft: #EFF6FF;
+    --adm-brand-gold: #D99B00;
+    --adm-brand-gold-soft: #FEF7E0;
+    --adm-brand-gold-border: #F3D47A;
+
+    /* ── Tipografia & Contraste (WCAG 2.2 AA+) ── */
+    --adm-text-primary: #17263C;
+    --adm-text-secondary: #526277;
+    --adm-text-muted: #5C6D82;
+    --adm-text-inverse: #FFFFFF;
+    --adm-link: #1769AA;
+    --adm-link-hover: #12548A;
+
+    /* ── Bordas & Divisórias ── */
+    --adm-border: #DCE4ED;
+    --adm-border-subtle: #E6ECF4;
+    --adm-border-strong: #C2D0DF;
+    --adm-border-focus: #2563EB;
+
+    /* ── Semântica de Status (Texto + Fundo + Borda com alto contraste AA) ── */
+    --adm-success: #15803D;
+    --adm-success-text: #14532D;
+    --adm-success-bg: #E7F7ED;
+    --adm-success-border: #B3E2C5;
+
+    --adm-warning: #B7791F;
+    --adm-warning-text: #7C4D0E;
+    --adm-warning-bg: #FEF5E4;
+    --adm-warning-border: #F3D19C;
+
+    --adm-danger: #C62828;
+    --adm-danger-text: #8E1B1B;
+    --adm-danger-bg: #FDECEC;
+    --adm-danger-border: #F5BDBD;
+
+    --adm-info: #1769AA;
+    --adm-info-text: #0F4C81;
+    --adm-info-bg: #E8F3FC;
+    --adm-info-border: #B6D8F2;
+
+    --adm-neutral-text: #475569;
+    --adm-neutral-bg: #EEF2F7;
+    --adm-neutral-border: #D5DEE8;
+
+    /* ── Paleta Corporativa de Gráficos ── */
+    --adm-chart-1: #1769AA;
+    --adm-chart-2: #15803D;
+    --adm-chart-3: #2563EB;
+    --adm-chart-4: #B7791F;
+    --adm-chart-5: #6D28D9;
+    --adm-chart-grid: #DCE4ED;
+    --adm-chart-axis: #526277;
+    --adm-chart-dot-stroke: #FFFFFF;
+
+    /* ── Elevação & Sombras Corporativas ── */
+    --adm-shadow-xs: 0 1px 2px rgba(17, 29, 50, 0.05);
+    --adm-shadow-sm: 0 1px 3px rgba(17, 29, 50, 0.07), 0 1px 2px rgba(17, 29, 50, 0.04);
+    --adm-shadow-md: 0 6px 18px rgba(17, 29, 50, 0.09), 0 2px 6px rgba(17, 29, 50, 0.05);
+    --adm-shadow-lg: 0 16px 40px rgba(17, 29, 50, 0.16), 0 4px 12px rgba(17, 29, 50, 0.08);
+    --adm-focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.25);
+
+    /* ── Geometria & Ritmo ── */
+    --adm-topbar-height: 68px;
+    --adm-control-height: 40px;
+    --adm-control-height-sm: 34px;
+    --adm-radius-xs: 4px;
+    --adm-radius-sm: 6px;
+    --adm-radius-md: 8px;
+    --adm-radius-lg: 10px;
+    --adm-radius-xl: 12px;
+    --adm-transition-fast: 150ms cubic-bezier(0.2, 0, 0, 1);
+    --adm-transition-base: 190ms cubic-bezier(0.2, 0, 0, 1);
+    --adm-color-scheme: light;
+}
+
+/* ==============================================================================
+   TEMA ESCURO CORPORATIVO PROFISSIONAL (Tokens semânticos independentes)
+   ============================================================================== */
+[data-adm-theme="dark"] {
+    /* Sidebar */
+    --adm-sidebar-bg: #0B1322;
+    --adm-sidebar-bg-deep: #080E1A;
+    --adm-sidebar-border: #1E2D45;
+    --adm-sidebar-divider: #1A273D;
+    --adm-sidebar-text: #CBD5E1;
+    --adm-sidebar-text-hover: #FFFFFF;
+    --adm-sidebar-group-text: #7F96B5;
+    --adm-sidebar-group-active: #E2EEFF;
+    --adm-sidebar-item-hover: rgba(148, 163, 184, 0.10);
+    --adm-sidebar-item-active-bg: #1769AA;
+    --adm-sidebar-item-active-text: #FFFFFF;
+    --adm-sidebar-icon: #8EA3C0;
+    --adm-sidebar-badge-bg: rgba(148, 163, 184, 0.16);
+    --adm-sidebar-badge-text: #E2E8F0;
+    --adm-sidebar-badge-alert-bg: #D97706;
+    --adm-sidebar-badge-alert-text: #FFFFFF;
+
+    /* Superfícies & Fundos */
+    --adm-bg-canvas: #0D1524;
+    --adm-bg-surface: #131E31;
+    --adm-bg-surface-alt: #18253B;
+    --adm-bg-surface-hover: #1E2E49;
+    --adm-bg-surface-selected: rgba(37, 99, 235, 0.18);
+    --adm-bg-topbar: #111B2D;
+    --adm-bg-table-head: #162338;
+    --adm-bg-table-zebra: #152135;
+    --adm-bg-input: #0F1828;
+    --adm-bg-input-disabled: #172336;
+    --adm-bg-overlay: rgba(4, 8, 16, 0.76);
+
+    /* Cores Institucionais */
+    --adm-primary: #2B82C9;
+    --adm-primary-hover: #3B93DB;
+    --adm-primary-active: #1769AA;
+    --adm-primary-soft: rgba(43, 130, 201, 0.18);
+    --adm-primary-border: rgba(59, 147, 219, 0.36);
+    --adm-accent: #3B82F6;
+    --adm-accent-hover: #60A5FA;
+    --adm-accent-soft: rgba(59, 130, 246, 0.16);
+    --adm-brand-gold: #F5B82E;
+    --adm-brand-gold-soft: rgba(245, 184, 46, 0.14);
+    --adm-brand-gold-border: rgba(245, 184, 46, 0.35);
+
+    /* Tipografia & Contraste (WCAG 2.2 AA) */
+    --adm-text-primary: #F1F5F9;
+    --adm-text-secondary: #B0C0D4;
+    --adm-text-muted: #8FA3BC;
+    --adm-text-inverse: #FFFFFF;
+    --adm-link: #60A5FA;
+    --adm-link-hover: #93C5FD;
+
+    /* Bordas & Divisórias */
+    --adm-border: #24354F;
+    --adm-border-subtle: #1D2B42;
+    --adm-border-strong: #344A6C;
+    --adm-border-focus: #60A5FA;
+
+    /* Semântica de Status */
+    --adm-success: #22C55E;
+    --adm-success-text: #86EFAC;
+    --adm-success-bg: rgba(34, 197, 94, 0.15);
+    --adm-success-border: rgba(74, 222, 128, 0.34);
+
+    --adm-warning: #F59E0B;
+    --adm-warning-text: #FCD34D;
+    --adm-warning-bg: rgba(245, 158, 11, 0.16);
+    --adm-warning-border: rgba(251, 191, 36, 0.36);
+
+    --adm-danger: #EF4444;
+    --adm-danger-text: #FCA5A5;
+    --adm-danger-bg: rgba(239, 68, 68, 0.16);
+    --adm-danger-border: rgba(248, 113, 113, 0.38);
+
+    --adm-info: #38BDF8;
+    --adm-info-text: #7DD3FC;
+    --adm-info-bg: rgba(56, 189, 248, 0.15);
+    --adm-info-border: rgba(56, 189, 248, 0.34);
+
+    --adm-neutral-text: #CBD5E1;
+    --adm-neutral-bg: rgba(148, 163, 184, 0.15);
+    --adm-neutral-border: rgba(148, 163, 184, 0.28);
+
+    /* Paleta de Gráficos Dark */
+    --adm-chart-1: #3B93DB;
+    --adm-chart-2: #34D399;
+    --adm-chart-3: #60A5FA;
+    --adm-chart-4: #FBBF24;
+    --adm-chart-5: #A78BFA;
+    --adm-chart-grid: rgba(148, 163, 184, 0.16);
+    --adm-chart-axis: #94A3B8;
+    --adm-chart-dot-stroke: #131E31;
+
+    /* Elevação Dark */
+    --adm-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.32);
+    --adm-shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.38);
+    --adm-shadow-md: 0 10px 24px rgba(0, 0, 0, 0.48);
+    --adm-shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.62);
+    --adm-focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.32);
+    --adm-color-scheme: dark;
+}
+
+/* Respeito à preferência de redução de movimento (WCAG 2.2) */
+@media (prefers-reduced-motion: reduce) {
+    .adm-shell,
+    .adm-shell *,
+    .adm-shell *::before,
+    .adm-shell *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

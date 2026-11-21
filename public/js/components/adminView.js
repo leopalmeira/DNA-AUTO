@@ -1,6 +1,7 @@
 // ==============================================================================
-// DNA AUTO — CENTRAL ADMINISTRATIVA INTEGRADA V2 (ORQUESTRADOR PRINCIPAL)
-// Fases 2, 3, 4, 5, 6, 7 — Sidebar Fixa/Recolhível/Drawer + 26 Telas + SSE Sync
+// DNA AUTO | ENTERPRISE MANAGEMENT V3 — ORQUESTRADOR ADMINISTRATIVO ERP
+// Arquitetura inspirada em TOTVS Protheus / TOTVS RM / SAP Fiori / Fluent Design
+// Tema Claro Corporativo padrão + Tema Escuro Profissional + 6 Grupos / 26 Telas
 // ==============================================================================
 
 const AdminView = {
@@ -10,20 +11,34 @@ const AdminView = {
     globalMonth: '',
     sidebarCollapsed: false,
     drawerOpen: false,
+    theme: 'light', // Tema claro corporativo é o padrão inicial
+    collapsedGroups: {},
+    liveBadges: {},
+    liveNotifications: [],
     isMounted: false,
     searchDebounce: null,
     syncRefreshDebounce: null,
     modalConfirmHandler: null,
     lastApiState: { state: 'CONNECTING', lastSyncAt: null, errorMessage: null },
 
-    // Organização EXATA do Menu Lateral (Fase 2 — 6 grupos, 26 itens)
+    // Organização ERP Corporativa — 6 grupos funcionais, 26 rotas reais integradas à API
     MENU_GROUPS: [
         {
-            group: 'VISÃO GERAL',
+            group: 'VISÃO EXECUTIVA',
             items: [
                 { id: 'dashboard', label: 'Dashboard Geral', icon: 'grid' },
                 { id: 'operations', label: 'Operação da Rede', icon: 'activity' },
-                { id: 'goals', label: 'Indicadores e Metas', icon: 'target' }
+                { id: 'goals', label: 'Indicadores Estratégicos', icon: 'target' }
+            ]
+        },
+        {
+            group: 'GESTÃO COMERCIAL',
+            items: [
+                { id: 'representatives', label: 'Representantes Comerciais', icon: 'briefcase' },
+                { id: 'portfolios', label: 'Carteira de Oficinas', icon: 'layers' },
+                { id: 'acquisition', label: 'Captação de Clientes', icon: 'trending' },
+                { id: 'ranking', label: 'Ranking de Representantes', icon: 'award' },
+                { id: 'commercial-goals', label: 'Metas Comerciais', icon: 'sliders' }
             ]
         },
         {
@@ -31,19 +46,9 @@ const AdminView = {
             items: [
                 { id: 'workshops', label: 'Oficinas Credenciadas', icon: 'wrench' },
                 { id: 'clients', label: 'Clientes Cadastrados', icon: 'users' },
-                { id: 'vehicles', label: 'Veículos e DNA', icon: 'car' },
-                { id: 'service-orders', label: 'Ordens de Serviço', icon: 'file' },
-                { id: 'maintenance-history', label: 'Histórico de Manutenção', icon: 'clock' }
-            ]
-        },
-        {
-            group: 'GESTÃO COMERCIAL',
-            items: [
-                { id: 'representatives', label: 'Representantes Comerciais', icon: 'briefcase' },
-                { id: 'portfolios', label: 'Carteiras de Oficinas', icon: 'layers' },
-                { id: 'acquisition', label: 'Captação de Clientes', icon: 'trending' },
-                { id: 'ranking', label: 'Ranking de Representantes', icon: 'award' },
-                { id: 'commercial-goals', label: 'Metas Comerciais', icon: 'sliders' }
+                { id: 'vehicles', label: 'Veículos Registrados', icon: 'car' },
+                { id: 'service-orders', label: 'Histórico de Atendimentos', icon: 'file' },
+                { id: 'maintenance-history', label: 'Serviços e Manutenções', icon: 'clock' }
             ]
         },
         {
@@ -66,7 +71,7 @@ const AdminView = {
             ]
         },
         {
-            group: 'SISTEMA',
+            group: 'GOVERNANÇA E SISTEMA',
             items: [
                 { id: 'audit', label: 'Auditoria', icon: 'shield' },
                 { id: 'sync', label: 'Sincronização de Dados', icon: 'refresh' },
@@ -76,7 +81,60 @@ const AdminView = {
         }
     ],
 
-    // Ícones SVG limpos sem dependência externa
+    // Acesso seguro à biblioteca de componentes reutilizáveis AdminUI (com fallback resiliente)
+    ui() {
+        if (typeof AdminUI !== 'undefined') return AdminUI;
+        const self = this;
+        return {
+            esc: (s) => self.esc(s),
+            formatBrl: (c) => self.formatBrl(c),
+            formatNum: (n) => self.formatNum(n),
+            PageHeader: ({ title, subtitle = '', badgeHtml = '', updatedAt = '', backAction = null, backLabel = 'Voltar', actionsHtml = '' } = {}) => `
+                <div class="adm-section-head">
+                    <div>
+                        ${backAction ? `<div style="margin-bottom:8px;"><button type="button" class="adm-btn adm-btn-sm" onclick="${backAction}">← ${self.esc(backLabel)}</button></div>` : ''}
+                        <h2>${self.esc(title)} ${badgeHtml}</h2>
+                        ${subtitle ? `<p>${subtitle}</p>` : ''}
+                    </div>
+                    <div class="adm-header-actions">
+                        ${updatedAt ? `<div class="adm-updated-stamp">Atualizado: <strong>${self.esc(updatedAt)}</strong></div>` : ''}
+                        ${actionsHtml}
+                    </div>
+                </div>
+            `,
+            StatusBadge: (st, custom) => self.statusBadge(st, custom),
+            KPIStatCard: ({ label, value, sub = '', tone = 'tone-cyan', tag = '', tagTone = '', onClick = '', isMoney = false, progressPct = null } = {}) => `
+                <div class="adm-kpi-card ${onClick ? 'clickable' : ''} ${self.esc(tone)}" ${onClick ? `onclick="${onClick}"` : ''}>
+                    <div class="adm-kpi-top"><div class="adm-kpi-label">${self.esc(label)}</div>${tag ? `<span class="adm-kpi-tag ${self.esc(tagTone)}">${self.esc(tag)}</span>` : ''}</div>
+                    <div class="adm-kpi-value ${isMoney ? 'is-money' : ''}">${self.esc(value)}</div>
+                    ${progressPct !== null ? `<div class="adm-progress-track"><div class="adm-progress-fill" style="width:${Number(progressPct)}%"></div></div>` : ''}
+                    ${sub ? `<div class="adm-kpi-sub">${self.esc(sub)}</div>` : ''}
+                </div>
+            `,
+            FinancialMetric: ({ label, cents, classification = 'Confirmado', sub = '', tone = 'tone-success', onClick = '' } = {}) =>
+                self.ui().KPIStatCard({ label, value: self.formatBrl(cents), sub, tone, tag: classification, onClick, isMoney: true }),
+            FilterToolbar: (html) => `<div class="adm-filters-bar">${html}</div>`,
+            EmptyState: ({ title = 'Sem registros', subtitle = '', actionHtml = '' } = {}) =>
+                `<div class="adm-empty"><strong>${self.esc(title)}</strong>${subtitle ? `<p style="margin:4px 0 0;">${self.esc(subtitle)}</p>` : ''}${actionHtml}</div>`,
+            LoadingSkeleton: (lbl) => `<div class="adm-empty"><strong>${self.esc(lbl || 'Carregando...')}</strong></div>`,
+            ErrorState: ({ title = 'Falha ao consultar dados atualizados da API', message = '', retryAction = 'AdminView.reloadCurrentScreen()' } = {}) =>
+                `<div class="adm-error-state"><strong>⚠ ${self.esc(title)}</strong><p>${self.esc(message)}</p><button type="button" class="adm-btn adm-btn-primary" onclick="${retryAction}">↻ Tentar Novamente</button></div>`,
+            EnterpriseDataTable: ({ columns = [], rows = [], emptyTitle = 'Nenhum registro encontrado', emptySubtitle = '', pagination = null, testId = '' } = {}) => {
+                if (!rows.length) return `<div class="adm-empty"><strong>${self.esc(emptyTitle)}</strong>${self.esc(emptySubtitle)}</div>`;
+                const th = columns.map(c => `<th class="${c.align === 'right' ? 'is-num' : ''}">${self.esc(c.label)}</th>`).join('');
+                const tb = rows.map(r => `<tr>${columns.map(c => `<td class="${c.align === 'right' ? 'is-num' : ''} ${c.tdClass || ''}">${typeof c.render === 'function' ? c.render(r) : self.esc(r[c.key] ?? '-')}</td>`).join('')}</tr>`).join('');
+                return `<div class="adm-table-wrap"><table class="adm-table" ${testId ? `data-testid="${self.esc(testId)}"` : ''}><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table></div>${pagination ? self.renderPagination(pagination.page, pagination.totalPages, pagination.total, pagination.pageSize) : ''}`;
+            },
+            ConfirmationDialog: ({ title, message, detailsHtml = '', confirmLabel = 'Confirmar', cancelLabel = 'Cancelar', inputConfig = null } = {}) => `
+                <div class="adm-modal-overlay"><div class="adm-modal is-confirm"><div class="adm-modal-head"><h3>${self.esc(title)}</h3></div><div class="adm-modal-body"><div id="adm-modal-err" style="display:none;"></div>${message ? `<p>${self.esc(message)}</p>` : ''}${detailsHtml}${inputConfig ? `<textarea id="${self.esc(inputConfig.id || 'adm-confirm-input')}"></textarea>` : ''}</div><div class="adm-modal-foot"><button class="adm-btn" onclick="AdminView.closeModal()">${self.esc(cancelLabel)}</button><button class="adm-btn adm-btn-primary" id="adm-modal-confirm-btn" onclick="AdminView.submitModal()">${self.esc(confirmLabel)}</button></div></div></div>
+            `,
+            DetailDrawer: ({ title, subtitle = '', bodyHtml = '', footerHtml = '' } = {}) =>
+                `<div class="adm-detail-drawer-overlay"><div class="adm-detail-drawer"><div class="adm-detail-drawer-head"><h3>${self.esc(title)}</h3><p>${self.esc(subtitle)}</p></div><div class="adm-detail-drawer-body">${bodyHtml}</div><div class="adm-detail-drawer-foot">${footerHtml}</div></div></div>`,
+            renderNotificationItems: () => ''
+        };
+    },
+
+    // Ícones SVG corporativos limpos (stroke uniforme 1.75)
     iconSvg(name) {
         const paths = {
             grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
@@ -106,7 +164,7 @@ const AdminView = {
             settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 0 1 0 4h-.09c-.66 0-1.25.4-1.51 1z"/>',
             lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'
         };
-        return `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[name] || paths.grid}</svg>`;
+        return `<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">${paths[name] || paths.grid}</svg>`;
     },
 
     // --------------------------------------------------------------------------
@@ -148,28 +206,30 @@ const AdminView = {
         return d.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     },
 
-    statusBadge(status) {
+    statusBadge(status, customLabel = null) {
+        if (typeof AdminUI !== 'undefined') return AdminUI.StatusBadge(status, customLabel);
         const st = String(status || '').toUpperCase();
         const map = {
             ACTIVE: ['adm-badge-success', 'Ativo'],
             APPROVED: ['adm-badge-success', 'Aprovada'],
             CONFIRMED: ['adm-badge-success', 'Confirmada'],
-            PAID: ['adm-badge-cyan', 'Pago'],
+            PAID: ['adm-badge-info', 'Pago'],
             COMPLETED: ['adm-badge-success', 'Concluído'],
             RESOLVED: ['adm-badge-success', 'Resolvido'],
             CONNECTED: ['adm-badge-success', 'Conectado'],
             SENT: ['adm-badge-success', 'Enviada'],
             DELIVERED: ['adm-badge-success', 'Entregue'],
             DELIVERED_IN_PLATFORM: ['adm-badge-success', 'Entregue'],
+            CONCILIADO: ['adm-badge-success', 'Conciliado'],
             PENDING: ['adm-badge-warning', 'Pendente'],
             PENDING_APPROVAL: ['adm-badge-warning', 'Aguardando Aprovação'],
             PROJECTED: ['adm-badge-muted', 'Projetada'],
             SCHEDULED: ['adm-badge-warning', 'Agendado'],
             OPEN: ['adm-badge-warning', 'Aberto'],
-            OPEN_FORECAST: ['adm-badge-cyan', 'Previsão Aberta'],
-            IN_PROGRESS: ['adm-badge-cyan', 'Em Atendimento'],
+            OPEN_FORECAST: ['adm-badge-info', 'Previsão Aberta'],
+            IN_PROGRESS: ['adm-badge-info', 'Em Atendimento'],
             RECOMENDADA: ['adm-badge-warning', 'Recomendada'],
-            APROXIMANDO: ['adm-badge-cyan', 'Aproximando'],
+            APROXIMANDO: ['adm-badge-info', 'Aproximando'],
             VENCIDA: ['adm-badge-danger', 'Vencida'],
             SUSPENDED: ['adm-badge-danger', 'Suspenso'],
             REJECTED: ['adm-badge-danger', 'Recusado'],
@@ -180,50 +240,205 @@ const AdminView = {
             CLOSED: ['adm-badge-muted', 'Fechado'],
             HIGH: ['adm-badge-danger', 'Alta'],
             URGENT: ['adm-badge-danger', 'Urgente'],
-            NORMAL: ['adm-badge-cyan', 'Normal']
+            NORMAL: ['adm-badge-info', 'Normal']
         };
         const [cls, label] = map[st] || ['adm-badge-muted', st || '-'];
-        return `<span class="adm-badge ${cls}">${this.esc(label)}</span>`;
+        return `<span class="adm-badge ${cls}"><span class="adm-badge-dot" aria-hidden="true"></span>${this.esc(customLabel || label)}</span>`;
     },
 
     proofBadge(level) {
         const l = Number(level || 0);
-        if (l === 4) return '<span class="adm-badge adm-badge-success">Nível 4 • Comprovado</span>';
-        if (l === 3) return '<span class="adm-badge adm-badge-cyan">Nível 3 • Confirmado</span>';
-        if (l === 2) return '<span class="adm-badge adm-badge-warning">Nível 2 • Nota Anexada</span>';
-        return '<span class="adm-badge adm-badge-muted">Nível 1 • Declarado</span>';
+        if (l === 4) return '<span class="adm-badge adm-badge-success"><span class="adm-badge-dot" aria-hidden="true"></span>Nível 4 • Comprovado</span>';
+        if (l === 3) return '<span class="adm-badge adm-badge-info"><span class="adm-badge-dot" aria-hidden="true"></span>Nível 3 • Confirmado</span>';
+        if (l === 2) return '<span class="adm-badge adm-badge-warning"><span class="adm-badge-dot" aria-hidden="true"></span>Nível 2 • Nota Anexada</span>';
+        return '<span class="adm-badge adm-badge-muted"><span class="adm-badge-dot" aria-hidden="true"></span>Nível 1 • Declarado</span>';
     },
 
-    renderPagination(page, totalPages, total) {
+    renderPagination(page, totalPages, total, pageSize = 25) {
         const p = Number(page || 1);
         const tp = Math.max(1, Number(totalPages || 1));
+        const sz = Number(pageSize || 25);
         return `
             <div class="adm-pagination">
-                <span>Exibindo página <strong>${p}</strong> de <strong>${tp}</strong> (${this.formatNum(total)} registro(s))</span>
-                <div style="display:flex; gap:6px;">
-                    <button class="adm-btn adm-btn-sm" ${p <= 1 ? 'disabled' : ''} onclick="AdminView.updateParams({ page: ${Math.max(1, p - 1)} })">← Anterior</button>
-                    <button class="adm-btn adm-btn-sm" ${p >= tp ? 'disabled' : ''} onclick="AdminView.updateParams({ page: ${Math.min(tp, p + 1)} })">Próxima →</button>
+                <span>Exibindo página <strong>${p}</strong> de <strong>${tp}</strong> • <strong>${this.formatNum(total)}</strong> registro(s)</span>
+                <div class="adm-pagination-controls">
+                    <label style="display:inline-flex; align-items:center; gap:6px;">
+                        <span>Por página:</span>
+                        <select class="adm-select adm-page-size-select" aria-label="Registros por página" onchange="AdminView.updateParams({ page_size: Number(this.value), page: 1 })">
+                            ${[10, 25, 50, 100].map(n => `<option value="${n}" ${sz === n ? 'selected' : ''}>${n}</option>`).join('')}
+                        </select>
+                    </label>
+                    <button type="button" class="adm-btn adm-btn-sm" ${p <= 1 ? 'disabled' : ''} onclick="AdminView.updateParams({ page: ${Math.max(1, p - 1)} })">← Anterior</button>
+                    <button type="button" class="adm-btn adm-btn-sm" ${p >= tp ? 'disabled' : ''} onclick="AdminView.updateParams({ page: ${Math.min(tp, p + 1)} })">Próxima →</button>
                 </div>
             </div>
         `;
     },
 
-    toast(message) {
+    toast(message, tone = 'success') {
         let el = document.getElementById('adm-toast');
         if (!el) {
             el = document.createElement('div');
             el.id = 'adm-toast';
-            el.style.cssText = 'position:fixed; bottom:20px; right:20px; z-index:200; background:#0c1c36; border:1px solid rgba(0,212,255,0.45); color:#fff; padding:10px 16px; border-radius:10px; font-size:12.5px; box-shadow:0 10px 28px rgba(0,0,0,0.6);';
+            el.setAttribute && el.setAttribute('role', 'status');
+            el.setAttribute && el.setAttribute('aria-live', 'polite');
             document.body.appendChild(el);
         }
+        el.className = `adm-toast ${tone === 'error' ? 'is-error' : ''}`;
         el.textContent = message;
         el.style.display = 'block';
         clearTimeout(this._toastTimer);
-        this._toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3600);
+        this._toastTimer = setTimeout(() => { el.style.display = 'none'; }, 3800);
     },
 
     // --------------------------------------------------------------------------
-    // CICLO DE VIDA & RENDERIZAÇÃO DO SHELL (FASE 2)
+    // TEMA CLARO CORPORATIVO (PADRÃO) & TEMA ESCURO PROFISSIONAL
+    // --------------------------------------------------------------------------
+    loadSavedTheme() {
+        try {
+            const saved = localStorage.getItem('dna_adm_theme');
+            if (saved === 'dark' || saved === 'light') return saved;
+        } catch (_) {}
+        return 'light';
+    },
+
+    applyTheme(nextTheme) {
+        this.theme = nextTheme === 'dark' ? 'dark' : 'light';
+        try { localStorage.setItem('dna_adm_theme', this.theme); } catch (_) {}
+        const shell = document.getElementById('adm-shell');
+        if (shell && shell.setAttribute) shell.setAttribute('data-adm-theme', this.theme);
+        if (document.documentElement && document.documentElement.setAttribute) {
+            document.documentElement.setAttribute('data-adm-theme', this.theme);
+        }
+        const btn = document.getElementById('adm-theme-switcher');
+        if (btn && typeof AdminUI !== 'undefined') {
+            const wrap = document.createElement('div');
+            wrap.innerHTML = AdminUI.ThemeSwitcher(this.theme);
+            const nextBtn = wrap.firstElementChild;
+            if (nextBtn && btn.replaceWith) {
+                btn.replaceWith(nextBtn);
+            }
+        }
+    },
+
+    toggleTheme() {
+        this.applyTheme(this.theme === 'dark' ? 'light' : 'dark');
+    },
+
+    // --------------------------------------------------------------------------
+    // GRUPOS RECOLHÍVEIS DA SIDEBAR & CONTADORES REAIS
+    // --------------------------------------------------------------------------
+    loadSavedGroupState() {
+        try {
+            const raw = localStorage.getItem('dna_adm_collapsed_groups');
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object') return parsed;
+            }
+        } catch (_) {}
+        return {};
+    },
+
+    toggleNavGroup(groupName) {
+        this.collapsedGroups[groupName] = !this.collapsedGroups[groupName];
+        try { localStorage.setItem('dna_adm_collapsed_groups', JSON.stringify(this.collapsedGroups)); } catch (_) {}
+        const nodes = document.querySelectorAll('#adm-sidebar-nav .adm-nav-group');
+        nodes.forEach(el => {
+            if (el.dataset && el.dataset.group === groupName) {
+                const collapsed = Boolean(this.collapsedGroups[groupName]);
+                el.classList.toggle('is-collapsed', collapsed);
+                const hdr = el.querySelector && el.querySelector('.adm-nav-group-header');
+                if (hdr && hdr.setAttribute) hdr.setAttribute('aria-expanded', String(!collapsed));
+            }
+        });
+    },
+
+    updateLiveBadgesFromOverview(overview) {
+        if (!overview || !overview.cards) return;
+        const c = overview.cards || {};
+        const s = overview.supplementary || {};
+        const pendingReps = Number(c.pending_representatives || 0);
+        const pendingWs = Number(c.pending_workshops || 0);
+        const openTickets = Number(s.open_support_tickets || 0);
+
+        this.liveBadges = {
+            representatives: pendingReps,
+            workshops: pendingWs,
+            support: openTickets
+        };
+
+        document.querySelectorAll('[data-badge-screen]').forEach(el => {
+            const key = el.dataset && el.dataset.badgeScreen;
+            const val = Number(this.liveBadges[key] || 0);
+            if (val > 0) {
+                el.textContent = val > 99 ? '99+' : String(val);
+                el.style.display = 'inline-block';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+
+        // Atualizar Central de Notificações com pendências reais
+        const list = [];
+        if (pendingWs > 0) {
+            list.push({
+                tone: 'warning',
+                count: pendingWs,
+                title: `${pendingWs} oficina(s) aguardando aprovação`,
+                subtitle: 'Revise e homologue o credenciamento na Rede DNA AUTO.',
+                action: "AdminView.navigate('workshops', { status: 'PENDING' })"
+            });
+        }
+        if (pendingReps > 0) {
+            list.push({
+                tone: 'warning',
+                count: pendingReps,
+                title: `${pendingReps} representante(s) aguardando aprovação`,
+                subtitle: 'Aprove ou recuse novos cadastros comerciais.',
+                action: "AdminView.navigate('representatives', { status: 'PENDING_APPROVAL' })"
+            });
+        }
+        if (openTickets > 0) {
+            list.push({
+                tone: 'danger',
+                count: openTickets,
+                title: `${openTickets} chamado(s) de suporte em aberto`,
+                subtitle: 'Atendimentos enviados pelas oficinas credenciadas.',
+                action: "AdminView.navigate('support', { status: 'OPEN' })"
+            });
+        }
+        this.liveNotifications = list;
+
+        const total = pendingWs + pendingReps + openTickets;
+        const badgeEl = document.getElementById('adm-notif-count');
+        if (badgeEl) {
+            if (total > 0) {
+                badgeEl.textContent = total > 99 ? '99+' : String(total);
+                badgeEl.style.display = 'inline-flex';
+            } else {
+                badgeEl.style.display = 'none';
+            }
+        }
+        const pillEl = document.getElementById('adm-notif-total-pill');
+        if (pillEl) pillEl.textContent = `${total} pendência(s)`;
+        const listEl = document.getElementById('adm-notif-list');
+        if (listEl && typeof AdminUI !== 'undefined') {
+            listEl.innerHTML = AdminUI.renderNotificationItems(list);
+        }
+    },
+
+    async refreshSidebarBadges() {
+        if (typeof API === 'undefined' || typeof API.getAdminDashboardOverview !== 'function') return;
+        try {
+            const ov = await API.getAdminDashboardOverview({ period: this.globalPeriod });
+            this.updateLiveBadgesFromOverview(ov);
+        } catch (_) {
+            // Falha silenciosa: nunca mascara ou inventa contadores
+        }
+    },
+
+    // --------------------------------------------------------------------------
+    // CICLO DE VIDA & RENDERIZAÇÃO DO SHELL ERP V3
     // --------------------------------------------------------------------------
     resolveLegacyScreen(tab) {
         if (!tab) return 'dashboard';
@@ -248,6 +463,12 @@ const AdminView = {
         try {
             this.sidebarCollapsed = localStorage.getItem('dna_adm_sidebar_collapsed') === '1';
         } catch (_) {}
+        this.theme = this.loadSavedTheme();
+        this.collapsedGroups = this.loadSavedGroupState();
+
+        if (document.documentElement && document.documentElement.setAttribute) {
+            document.documentElement.setAttribute('data-adm-theme', this.theme);
+        }
 
         if (initialTab) {
             this.currentScreen = this.resolveLegacyScreen(initialTab);
@@ -256,112 +477,83 @@ const AdminView = {
 
         const adminName = (typeof App !== 'undefined' && App.currentUser && App.currentUser.name) || 'Administrador Geral';
         const adminInitials = adminName.split(' ').filter(Boolean).slice(0, 2).map(s => s[0]).join('').toUpperCase() || 'AD';
+        const meta = this.getScreenMeta(this.currentScreen);
 
-        container.innerHTML = `
-            <div id="adm-shell" class="adm-shell ${this.sidebarCollapsed ? 'sidebar-collapsed' : ''}">
-                <div class="adm-drawer-backdrop" onclick="AdminView.toggleDrawer(false)"></div>
-
-                <!-- SIDEBAR FIXA / RECOLHÍVEL / DRAWER MOBILE -->
-                <aside class="adm-sidebar" aria-label="Menu Administrativo DNA AUTO">
-                    <div class="adm-sidebar-brand">
-                        <div class="adm-brand-left">
-                            <div class="adm-brand-mark">
-                                <svg viewBox="0 0 120 120" width="22" height="22" fill="none" stroke="#FFD21C" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M 45 66 C 41 53 41 39 50 30 C 58 21 68 21 75 30 C 82 40 82 55 77 66" stroke-width="9"/>
-                                    <path d="M 32 69 C 25 52 27 29 40 16 C 53 4 75 4 88 16 C 100 29 101 52 94 69" stroke-width="9"/>
-                                    <path d="M 22 84 L 32 84 C 36 78 42 75 48 75 L 72 75 C 78 75 84 78 88 84 L 98 84" stroke-width="10"/>
-                                </svg>
-                            </div>
-                            <div class="adm-brand-text">
-                                <div class="adm-brand-title">DNA <span style="color:#ffd21c;">AUTO</span></div>
-                                <div class="adm-brand-sub">Central Admin V2</div>
+        if (typeof AdminUI !== 'undefined') {
+            const sidebarHtml = AdminUI.SidebarNavigation({
+                menuGroups: this.MENU_GROUPS,
+                collapsedGroups: this.collapsedGroups,
+                currentNavId: meta.navId,
+                activeGroup: meta.group,
+                badges: this.liveBadges,
+                adminName,
+                adminInitials,
+                iconFn: (icon) => this.iconSvg(icon)
+            });
+            const topbarHtml = AdminUI.EnterpriseTopbar({
+                trail: `DNA AUTO › ${meta.group}`,
+                title: meta.label,
+                globalPeriod: this.globalPeriod,
+                theme: this.theme,
+                adminName,
+                adminInitials,
+                notifications: this.liveNotifications
+            });
+            container.innerHTML = AdminUI.AdminLayout({
+                sidebarCollapsed: this.sidebarCollapsed,
+                theme: this.theme,
+                sidebarHtml,
+                topbarHtml
+            });
+        } else {
+            // Fallback compatível para ambientes de teste isolados sem adminUiKit.js
+            container.innerHTML = `
+                <div id="adm-shell" class="adm-shell ${this.sidebarCollapsed ? 'sidebar-collapsed' : ''}" data-adm-theme="${this.esc(this.theme)}">
+                    <div class="adm-drawer-backdrop" onclick="AdminView.toggleDrawer(false)"></div>
+                    <aside class="adm-sidebar" aria-label="Menu Administrativo DNA AUTO">
+                        <div class="adm-sidebar-brand">
+                            <div class="adm-brand-left">
+                                <div class="adm-brand-text">
+                                    <div class="adm-brand-title">DNA AUTO</div>
+                                    <div class="adm-brand-sub">ENTERPRISE ADMIN</div>
+                                </div>
                             </div>
                         </div>
-                        <button class="adm-icon-btn" title="Recolher / Expandir Menu" onclick="AdminView.toggleSidebarCollapse()" style="width:28px; height:28px;">⇄</button>
+                        <div class="adm-sidebar-scroll" id="adm-sidebar-nav"></div>
+                        <div class="adm-sidebar-footer">
+                            <div class="adm-avatar">${this.esc(adminInitials)}</div>
+                            <div class="adm-sidebar-footer-text">${this.esc(adminName)}</div>
+                        </div>
+                    </aside>
+                    <div class="adm-main">
+                        <header class="adm-topbar">
+                            <div class="adm-topbar-left">
+                                <div class="adm-breadcrumb">
+                                    <div class="adm-breadcrumb-trail" id="adm-breadcrumb-trail">DNA AUTO › ${this.esc(meta.group)}</div>
+                                    <div class="adm-breadcrumb-title" id="adm-breadcrumb-title">${this.esc(meta.label)}</div>
+                                </div>
+                            </div>
+                            <div class="adm-topbar-controls">
+                                <button type="button" class="adm-btn adm-btn-sm" id="adm-refresh-btn" onclick="AdminView.reloadCurrentScreen()">Atualizar</button>
+                                <div class="adm-api-pill checking" id="adm-api-pill"><span class="adm-status-dot"></span><span id="adm-api-pill-text">Verificando...</span></div>
+                            </div>
+                        </header>
+                        <div id="adm-offline-banner" class="adm-offline-banner" style="display:none;">
+                            <span id="adm-offline-banner-msg"></span>
+                        </div>
+                        <main class="adm-content" id="adm-screen-body"></main>
                     </div>
-
-                    <div class="adm-sidebar-scroll" id="adm-sidebar-nav">
-                        ${this.MENU_GROUPS.map(g => `
-                            <div class="adm-nav-group">
-                                <div class="adm-nav-group-label">${this.esc(g.group)}</div>
-                                <ul class="adm-nav-list">
-                                    ${g.items.map(it => `
-                                        <li class="adm-nav-item ${this.currentScreen === it.id ? 'active' : ''}" data-screen="${it.id}" title="${this.esc(it.label)}" onclick="AdminView.navigate('${it.id}')">
-                                            <span class="adm-nav-icon">${this.iconSvg(it.icon)}</span>
-                                            <span class="adm-nav-label">${this.esc(it.label)}</span>
-                                        </li>
-                                    `).join('')}
-                                </ul>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <div class="adm-sidebar-footer">
-                        <div class="adm-avatar">${this.esc(adminInitials)}</div>
-                        <div class="adm-sidebar-footer-text" style="min-width:0; flex:1;">
-                            <div style="font-size:12px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${this.esc(adminName)}</div>
-                            <div style="font-size:10.5px; color:#34d399; font-weight:700;">PERFIL ADMIN</div>
-                        </div>
-                        <button class="adm-icon-btn" title="Encerrar Sessão" onclick="App.logout()" style="width:30px; height:30px;">⏻</button>
-                    </div>
-                </aside>
-
-                <!-- ÁREA PRINCIPAL (TOPBAR + BANNER OFFLINE + CONTEÚDO) -->
-                <div class="adm-main">
-                    <header class="adm-topbar">
-                        <div class="adm-topbar-left">
-                            <button class="adm-icon-btn" id="adm-mobile-menu-btn" title="Abrir Menu" onclick="AdminView.toggleDrawer()">☰</button>
-                            <div class="adm-breadcrumb">
-                                <div class="adm-breadcrumb-trail" id="adm-breadcrumb-trail">CENTRAL DNA AUTO › VISÃO GERAL</div>
-                                <div class="adm-breadcrumb-title" id="adm-breadcrumb-title">Dashboard Geral</div>
-                            </div>
-                        </div>
-
-                        <div class="adm-topbar-controls">
-                            <div class="adm-global-search-wrap">
-                                <span class="adm-global-search-icon">🔍</span>
-                                <input type="text" id="adm-global-search" class="adm-global-search-input" placeholder="Busca global (rep, oficina, placa, cliente)..." oninput="AdminView.onGlobalSearchInput(this.value)" onfocus="AdminView.onGlobalSearchInput(this.value)" />
-                                <div id="adm-search-dropdown" class="adm-search-dropdown" style="display:none;"></div>
-                            </div>
-
-                            <select id="adm-global-period" class="adm-select" title="Filtro Global de Período" onchange="AdminView.onPeriodChange(this.value)">
-                                <option value="current_month" ${this.globalPeriod === 'current_month' ? 'selected' : ''}>Mês Atual</option>
-                                <option value="last_30_days" ${this.globalPeriod === 'last_30_days' ? 'selected' : ''}>Últimos 30 dias</option>
-                                <option value="last_90_days" ${this.globalPeriod === 'last_90_days' ? 'selected' : ''}>Últimos 90 dias</option>
-                                <option value="current_year" ${this.globalPeriod === 'current_year' ? 'selected' : ''}>Ano Atual</option>
-                                <option value="all" ${this.globalPeriod === 'all' ? 'selected' : ''}>Todo o Período</option>
-                            </select>
-
-                            <button class="adm-btn adm-btn-sm" id="adm-refresh-btn" title="Atualizar dados agora" onclick="AdminView.reloadCurrentScreen()">↻ Atualizar</button>
-
-                            <div class="adm-api-pill" id="adm-api-pill" title="Status de disponibilidade da API e sincronização em tempo real" onclick="AdminView.navigate('sync')" style="cursor:pointer;">
-                                <span class="adm-status-dot"></span>
-                                <span id="adm-api-pill-text">API Online</span>
-                            </div>
-                        </div>
-                    </header>
-
-                    <div id="adm-offline-banner" class="adm-offline-banner" style="display:none;">
-                        <div>
-                            <strong>⚠ Desconexão da API DNA AUTO:</strong>
-                            <span id="adm-offline-banner-msg">Não foi possível consultar os dados atualizados. Os indicadores não serão mascarados com cache antigo.</span>
-                        </div>
-                        <button class="adm-btn adm-btn-sm adm-btn-danger" onclick="AdminView.reloadCurrentScreen()">Tentar Reconectar</button>
-                    </div>
-
-                    <main class="adm-content" id="adm-screen-body">
-                        <div class="adm-empty"><strong>Carregando Central Administrativa...</strong>Conectando à API oficial DNA AUTO.</div>
-                    </main>
                 </div>
-            </div>
-
-            <div id="adm-modal-root"></div>
-        `;
+                <div id="adm-modal-root"></div>
+                <div id="adm-drawer-root"></div>
+            `;
+        }
 
         this.isMounted = true;
         this.bindGlobalEvents();
 
         if (typeof AdminSync !== 'undefined') {
+            this.updateApiStatusUi({ state: 'CONNECTING', lastSyncAt: null, errorMessage: null });
             AdminSync.start({
                 onState: (st) => this.updateApiStatusUi(st),
                 onEvent: (evt) => this.onRealtimeSyncEvent(evt)
@@ -374,6 +566,9 @@ const AdminView = {
     destroy() {
         this.isMounted = false;
         document.body.classList.remove('is-admin-v2');
+        if (document.documentElement && document.documentElement.removeAttribute) {
+            document.documentElement.removeAttribute('data-adm-theme');
+        }
         if (typeof AdminSync !== 'undefined') {
             AdminSync.stop();
         }
@@ -382,15 +577,125 @@ const AdminView = {
     },
 
     bindGlobalEvents() {
-        if (this._clickBound) return;
-        this._clickBound = true;
+        if (this._eventsBound) return;
+        this._eventsBound = true;
+
         document.addEventListener('click', (e) => {
-            const wrap = document.querySelector('.adm-global-search-wrap');
+            const target = e && e.target;
+            const searchWrap = document.querySelector && document.querySelector('.adm-global-search-wrap');
             const dd = document.getElementById('adm-search-dropdown');
-            if (dd && wrap && !wrap.contains(e.target)) {
+            if (dd && searchWrap && (!target || !searchWrap.contains(target))) {
                 dd.style.display = 'none';
             }
+
+            const notifWrap = document.getElementById('adm-notif-wrap');
+            const notifPop = document.getElementById('adm-notif-popover');
+            if (notifPop && notifWrap && (!target || !notifWrap.contains(target))) {
+                notifPop.style.display = 'none';
+            }
+
+            const profWrap = document.getElementById('adm-profile-wrap');
+            const profPop = document.getElementById('adm-profile-popover');
+            if (profPop && profWrap && (!target || !profWrap.contains(target))) {
+                profPop.style.display = 'none';
+            }
+
+            // Fechar menus contextuais de tabelas ao clicar fora
+            if (document.querySelectorAll) {
+                document.querySelectorAll('.adm-action-menu-dropdown').forEach(menu => {
+                    const parent = menu.parentElement;
+                    if (!parent || !target || !parent.contains(target)) {
+                        menu.style.display = 'none';
+                    }
+                });
+            }
         });
+
+        document.addEventListener('keydown', (e) => {
+            if (!this.isMounted || !e || e.key !== 'Escape') return;
+            this.closeAllPopovers();
+            const modalOpen = document.querySelector && document.querySelector('#adm-modal-root .adm-modal-overlay');
+            if (modalOpen) {
+                this.closeModal();
+                return;
+            }
+            const drawerOpen = document.querySelector && document.querySelector('#adm-drawer-root .adm-detail-drawer-overlay');
+            if (drawerOpen) {
+                this.closeDetailDrawer();
+                return;
+            }
+            if (this.drawerOpen) {
+                this.toggleDrawer(false);
+            }
+        });
+    },
+
+    closeAllPopovers() {
+        ['adm-search-dropdown', 'adm-notif-popover', 'adm-profile-popover'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        if (document.querySelectorAll) {
+            document.querySelectorAll('.adm-action-menu-dropdown').forEach(m => { m.style.display = 'none'; });
+        }
+    },
+
+    toggleNotificationsPopover(ev) {
+        if (ev && ev.stopPropagation) ev.stopPropagation();
+        const pop = document.getElementById('adm-notif-popover');
+        const prof = document.getElementById('adm-profile-popover');
+        if (prof) prof.style.display = 'none';
+        if (!pop) return;
+        const willOpen = pop.style.display === 'none';
+        pop.style.display = willOpen ? 'block' : 'none';
+        const btn = document.getElementById('adm-notif-btn');
+        if (btn && btn.setAttribute) btn.setAttribute('aria-expanded', String(willOpen));
+    },
+
+    toggleProfilePopover(ev) {
+        if (ev && ev.stopPropagation) ev.stopPropagation();
+        const pop = document.getElementById('adm-profile-popover');
+        const notif = document.getElementById('adm-notif-popover');
+        if (notif) notif.style.display = 'none';
+        if (!pop) return;
+        pop.style.display = pop.style.display === 'none' ? 'block' : 'none';
+    },
+
+    toggleActionMenu(menuId, ev) {
+        if (ev && ev.stopPropagation) ev.stopPropagation();
+        const target = document.getElementById(menuId);
+        if (!target) return;
+        const willOpen = target.style.display === 'none';
+        if (document.querySelectorAll) {
+            document.querySelectorAll('.adm-action-menu-dropdown').forEach(m => { m.style.display = 'none'; });
+        }
+        if (willOpen) {
+            target.style.display = 'block';
+            const btn = ev && ev.currentTarget;
+            if (btn && btn.getBoundingClientRect && typeof window !== 'undefined') {
+                const rect = btn.getBoundingClientRect();
+                const menuW = 220;
+                const menuH = target.offsetHeight || 190;
+                const vw = window.innerWidth || 1280;
+                const vh = window.innerHeight || 800;
+                const left = Math.max(12, Math.min(vw - menuW - 12, rect.right - menuW));
+                const top = (rect.bottom + menuH + 10 > vh) ? Math.max(12, rect.top - menuH - 6) : (rect.bottom + 6);
+                target.style.position = 'fixed';
+                target.style.left = `${left}px`;
+                target.style.top = `${top}px`;
+                target.style.right = 'auto';
+                target.style.zIndex = '90';
+            }
+        }
+    },
+
+    handleMenuButtonClick() {
+        const w = (typeof window !== 'undefined' && window.innerWidth) ? window.innerWidth : 1440;
+        if (w <= 960) {
+            this.toggleDrawer();
+        } else {
+            this.toggleSidebarCollapse();
+        }
     },
 
     toggleSidebarCollapse() {
@@ -412,7 +717,7 @@ const AdminView = {
     },
 
     filterByWorkshop(workshopId, ev) {
-        if (ev) ev.stopPropagation();
+        if (ev && ev.stopPropagation) ev.stopPropagation();
         if (!workshopId || workshopId === 'all') {
             this.navigate('workshops');
         } else {
@@ -424,6 +729,8 @@ const AdminView = {
         this.currentScreen = screenId;
         this.currentParams = { ...params };
         this.toggleDrawer(false);
+        this.closeAllPopovers();
+        this.closeDetailDrawer();
         this.updateNavHighlight();
         this.loadScreen();
     },
@@ -437,8 +744,8 @@ const AdminView = {
         this.navigate('representative-detail', { id, subtab });
     },
 
-    openWorkshop(id) {
-        this.navigate('workshop-detail', { id });
+    openWorkshop(id, subtab = 'summary') {
+        this.navigate('workshop-detail', { id, subtab });
     },
 
     onPeriodChange(period) {
@@ -451,7 +758,8 @@ const AdminView = {
     },
 
     // --------------------------------------------------------------------------
-    // SINCRONIZAÇÃO EM TEMPO REAL & STATUS DE DISPONIBILIDADE (FASE 7)
+    // SINCRONIZAÇÃO EM TEMPO REAL & STATUS REAL DA API (4 ESTADOS)
+    // Online | Instável | Offline | Verificando
     // --------------------------------------------------------------------------
     updateApiStatusUi(st) {
         this.lastApiState = st;
@@ -461,36 +769,40 @@ const AdminView = {
         const bannerMsg = document.getElementById('adm-offline-banner-msg');
         if (!pill || !txt) return;
 
-        pill.classList.remove('degraded', 'offline');
+        pill.classList.remove('checking', 'degraded', 'offline');
         if (st.state === 'ONLINE') {
-            const hhmm = st.lastSyncAt ? new Date(st.lastSyncAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
-            txt.textContent = hhmm ? `API Online • ${hhmm}` : 'API Online';
+            const hhmm = st.lastSyncAt
+                ? new Date(st.lastSyncAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                : '';
+            txt.textContent = hhmm ? `Online • ${hhmm}` : 'API Online';
             if (banner) banner.style.display = 'none';
         } else if (st.state === 'RECONNECTING') {
             pill.classList.add('degraded');
-            txt.textContent = 'Reconectando...';
+            txt.textContent = 'Instável';
             if (banner) {
                 banner.style.display = 'flex';
-                if (bannerMsg) bannerMsg.textContent = st.errorMessage || 'Conexão em tempo real instável. Tentando restabelecer...';
+                if (bannerMsg) bannerMsg.textContent = st.errorMessage || 'Conexão com a API instável. Tentando restabelecer sincronização...';
             }
         } else if (st.state === 'OFFLINE') {
             pill.classList.add('offline');
-            txt.textContent = 'API Indisponível';
+            txt.textContent = 'Offline';
             if (banner) {
                 banner.style.display = 'flex';
-                if (bannerMsg) bannerMsg.textContent = st.errorMessage || 'API indisponível no momento. Dados não sincronizados.';
+                if (bannerMsg) bannerMsg.textContent = st.errorMessage || 'API indisponível no momento. Os dados exibidos não serão mascarados com cache antigo.';
             }
+        } else {
+            pill.classList.add('checking');
+            txt.textContent = 'Verificando...';
         }
     },
 
     onRealtimeSyncEvent() {
         if (!this.isMounted) return;
-        // Evita re-render se houver modal aberto digitando dados
-        const modalOpen = document.querySelector('#adm-modal-root .adm-modal-overlay');
+        const modalOpen = document.querySelector && document.querySelector('#adm-modal-root .adm-modal-overlay');
         if (modalOpen) return;
         clearTimeout(this.syncRefreshDebounce);
         this.syncRefreshDebounce = setTimeout(() => {
-            if (this.isMounted && !document.querySelector('#adm-modal-root .adm-modal-overlay')) {
+            if (this.isMounted && !(document.querySelector && document.querySelector('#adm-modal-root .adm-modal-overlay'))) {
                 this.loadScreen({ silent: true });
             }
         }, 700);
@@ -504,7 +816,7 @@ const AdminView = {
             return { group: 'GESTÃO COMERCIAL', label: 'Ficha do Representante', navId: 'representatives' };
         }
         if (screenId === 'workshop-detail') {
-            return { group: 'REDE DNA AUTO', label: 'Desempenho da Oficina', navId: 'workshops' };
+            return { group: 'REDE DNA AUTO', label: 'Detalhamento da Oficina', navId: 'workshops' };
         }
         for (const g of this.MENU_GROUPS) {
             for (const it of g.items) {
@@ -513,19 +825,35 @@ const AdminView = {
                 }
             }
         }
-        return { group: 'VISÃO GERAL', label: 'Dashboard Geral', navId: 'dashboard' };
+        return { group: 'VISÃO EXECUTIVA', label: 'Dashboard Geral', navId: 'dashboard' };
     },
 
     updateNavHighlight() {
         const meta = this.getScreenMeta(this.currentScreen);
         const trail = document.getElementById('adm-breadcrumb-trail');
         const title = document.getElementById('adm-breadcrumb-title');
-        if (trail) trail.textContent = `CENTRAL DNA AUTO › ${meta.group}`;
+        if (trail) trail.textContent = `DNA AUTO › ${meta.group}`;
         if (title) title.textContent = meta.label;
 
-        document.querySelectorAll('#adm-sidebar-nav .adm-nav-item').forEach(el => {
-            el.classList.toggle('active', el.dataset.screen === meta.navId);
-        });
+        if (document.querySelectorAll) {
+            document.querySelectorAll('#adm-sidebar-nav .adm-nav-item').forEach(el => {
+                const isActive = el.dataset && el.dataset.screen === meta.navId;
+                el.classList.toggle('active', isActive);
+                if (el.setAttribute && el.removeAttribute) {
+                    if (isActive) el.setAttribute('aria-current', 'page');
+                    else el.removeAttribute('aria-current');
+                }
+            });
+
+            document.querySelectorAll('#adm-sidebar-nav .adm-nav-group').forEach(grp => {
+                const isActiveGrp = grp.dataset && grp.dataset.group === meta.group;
+                grp.classList.toggle('is-active-group', isActiveGrp);
+                if (isActiveGrp && grp.classList.contains('is-collapsed')) {
+                    grp.classList.remove('is-collapsed');
+                    this.collapsedGroups[meta.group] = false;
+                }
+            });
+        }
     },
 
     async loadScreen({ silent = false } = {}) {
@@ -537,7 +865,8 @@ const AdminView = {
         const refreshBtn = document.getElementById('adm-refresh-btn');
         if (refreshBtn && !silent) refreshBtn.disabled = true;
         if (!silent) {
-            body.innerHTML = `<div class="adm-empty"><strong>Carregando ${this.esc(this.getScreenMeta(this.currentScreen).label)}...</strong>Consultando dados reais na API DNA AUTO.</div>`;
+            const label = this.getScreenMeta(this.currentScreen).label;
+            body.innerHTML = this.ui().LoadingSkeleton(`Carregando ${label}...`);
         }
 
         const ctx = {
@@ -549,7 +878,7 @@ const AdminView = {
         try {
             let html = '';
             switch (this.currentScreen) {
-                // VISÃO GERAL
+                // VISÃO EXECUTIVA
                 case 'dashboard': html = await AdminScreensCore.renderDashboard(ctx); break;
                 case 'operations': html = await AdminScreensCore.renderOperations(ctx); break;
                 case 'goals': html = await AdminScreensCore.renderGoals(ctx); break;
@@ -578,7 +907,7 @@ const AdminView = {
                 case 'whatsapp': html = await AdminScreensOps.renderWhatsApp(ctx); break;
                 case 'alerts': html = await AdminScreensOps.renderAlerts(ctx); break;
                 case 'support': html = await AdminScreensOps.renderSupport(ctx); break;
-                // SISTEMA
+                // GOVERNANÇA E SISTEMA
                 case 'audit': html = await AdminScreensOps.renderAudit(ctx); break;
                 case 'sync': html = await AdminScreensOps.renderSync(ctx); break;
                 case 'settings': html = await AdminScreensOps.renderSettings(ctx); break;
@@ -586,7 +915,6 @@ const AdminView = {
                 default: html = await AdminScreensCore.renderDashboard(ctx);
             }
 
-            // Proteção anti-race-condition: ignora respostas antigas se usuário já navegou
             if (typeof AdminSync !== 'undefined' && !AdminSync.isLatestRequest(reqToken)) {
                 return;
             }
@@ -598,23 +926,21 @@ const AdminView = {
             }
             if (err && (err.status === 401 || err.status === 403)) {
                 body.innerHTML = `
-                    <div class="adm-empty" style="border-color:rgba(239,68,68,0.45);">
-                        <strong>Sessão administrativa expirada ou sem permissão (${err.status})</strong>
-                        <p style="margin:6px 0 14px;">${this.esc(err.message)}</p>
-                        <button class="adm-btn adm-btn-gold" onclick="App.logout(); App.switchView('login-admin');">Autenticar Novamente</button>
+                    <div class="adm-error-state" role="alert">
+                        <strong>Sessão administrativa expirada ou sem permissão (${this.esc(err.status)})</strong>
+                        <p style="margin:6px 0 16px;">${this.esc(err.message)}</p>
+                        <button type="button" class="adm-btn adm-btn-primary" onclick="App.logout(); App.switchView('login-admin');">Autenticar Novamente</button>
                     </div>
                 `;
                 return;
             }
             if (typeof AdminSync !== 'undefined') AdminSync.markRequestFailure(err);
-            // Nunca exibir cache antigo como atualizado quando a API falhar!
-            body.innerHTML = `
-                <div class="adm-empty" style="border-color:rgba(239,68,68,0.45); background:rgba(239,68,68,0.08);">
-                    <strong>⚠ Falha ao consultar dados atualizados da API</strong>
-                    <p style="margin:6px 0 14px; color:#fecaca;">${this.esc((err && err.message) || 'API temporariamente indisponível.')}</p>
-                    <button class="adm-btn adm-btn-primary" onclick="AdminView.reloadCurrentScreen()">↻ Tentar Novamente</button>
-                </div>
-            `;
+            body.innerHTML = this.ui().ErrorState({
+                title: 'Falha ao consultar dados atualizados da API',
+                message: (err && err.message) || 'API temporariamente indisponível.',
+                retryAction: 'AdminView.reloadCurrentScreen()',
+                retryLabel: 'Tentar Novamente'
+            });
         } finally {
             if (refreshBtn) refreshBtn.disabled = false;
         }
@@ -638,42 +964,44 @@ const AdminView = {
                 const sections = [];
                 if ((res.representatives || []).length) {
                     sections.push(`<div class="adm-search-group-title">Representantes</div>` + res.representatives.map(r => `
-                        <div class="adm-search-item" onclick="AdminView.selectSearchResult('rep', '${this.esc(r.id)}')">
-                            <span><strong class="adm-mono" style="color:#00d4ff;">${this.esc(r.rep_code)}</strong> ${this.esc(r.name)}</span>
-                            <span style="font-size:11px; color:#94a3b8;">${this.esc(r.city || '')}/${this.esc(r.state || '')}</span>
+                        <div class="adm-search-item" role="option" onclick="AdminView.selectSearchResult('rep', '${this.esc(r.id)}')">
+                            <span><strong class="adm-mono adm-text-accent">${this.esc(r.rep_code)}</strong> ${this.esc(r.name)}</span>
+                            <span class="adm-text-muted" style="font-size:12px;">${this.esc(r.city || '')}/${this.esc(r.state || '')}</span>
                         </div>
                     `).join(''));
                 }
                 if ((res.workshops || []).length) {
-                    sections.push(`<div class="adm-search-group-title">Oficinas</div>` + res.workshops.map(w => `
-                        <div class="adm-search-item" onclick="AdminView.selectSearchResult('ws', '${this.esc(w.id)}')">
+                    sections.push(`<div class="adm-search-group-title">Oficinas Credenciadas</div>` + res.workshops.map(w => `
+                        <div class="adm-search-item" role="option" onclick="AdminView.selectSearchResult('ws', '${this.esc(w.id)}')">
                             <span><strong>${this.esc(w.trade_name)}</strong></span>
-                            <span style="font-size:11px; color:#94a3b8;">${this.esc(w.city || '')}/${this.esc(w.state || '')}</span>
+                            <span class="adm-text-muted" style="font-size:12px;">${this.esc(w.city || '')}/${this.esc(w.state || '')}</span>
                         </div>
                     `).join(''));
                 }
                 if ((res.vehicles || []).length) {
-                    sections.push(`<div class="adm-search-group-title">Veículos & DNA</div>` + res.vehicles.map(v => `
-                        <div class="adm-search-item" onclick="AdminView.selectSearchResult('veh', '${this.esc(v.license_plate)}')">
+                    sections.push(`<div class="adm-search-group-title">Veículos e DNA</div>` + res.vehicles.map(v => `
+                        <div class="adm-search-item" role="option" onclick="AdminView.selectSearchResult('veh', '${this.esc(v.license_plate)}')">
                             <span><strong class="adm-mono">${this.esc(v.license_plate)}</strong> ${this.esc(v.brand || '')} ${this.esc(v.model || '')}</span>
-                            <span class="adm-mono" style="font-size:11px; color:#34d399;">${this.esc(v.dna_code || 'Sem DNA')}</span>
+                            <span class="adm-mono adm-text-success" style="font-size:12px;">${this.esc(v.dna_code || 'Sem DNA')}</span>
                         </div>
                     `).join(''));
                 }
                 if ((res.clients || []).length) {
                     sections.push(`<div class="adm-search-group-title">Clientes</div>` + res.clients.map(c => `
-                        <div class="adm-search-item" onclick="AdminView.selectSearchResult('client', '${this.esc(c.name)}')">
+                        <div class="adm-search-item" role="option" onclick="AdminView.selectSearchResult('client', '${this.esc(c.name)}')">
                             <span>${this.esc(c.name)}</span>
-                            <span style="font-size:11px; color:#94a3b8;">${this.esc(c.email || c.phone || '')}</span>
+                            <span class="adm-text-muted" style="font-size:12px;">${this.esc(c.email || c.phone || '')}</span>
                         </div>
                     `).join(''));
                 }
-                dd.innerHTML = sections.length ? sections.join('') : `<div style="padding:12px; font-size:12px; color:#94a3b8; text-align:center;">Nenhum resultado para "${this.esc(q)}".</div>`;
+                dd.innerHTML = sections.length
+                    ? sections.join('')
+                    : `<div style="padding:14px; font-size:13px; color:var(--adm-text-muted); text-align:center;">Nenhum resultado para "${this.esc(q)}".</div>`;
                 dd.style.display = 'block';
             } catch (_) {
                 dd.style.display = 'none';
             }
-        }, 250);
+        }, 260);
     },
 
     selectSearchResult(kind, value) {
@@ -686,37 +1014,73 @@ const AdminView = {
     },
 
     // --------------------------------------------------------------------------
-    // AÇÕES COMPARTILHADAS & MODAL ADMIN V2
+    // AÇÕES COMPARTILHADAS, CONFIRMATION DIALOG, MODAL & DETAIL DRAWER
     // --------------------------------------------------------------------------
-    async changeWorkshopStatus(workshopId, status) {
-        if (!confirm(`Confirmar alteração do status da oficina para ${status}?`)) return;
-        try {
-            await API.setWorkshopStatus(workshopId, status);
-            this.toast(`Oficina atualizada para ${status}.`);
-            await this.reloadCurrentScreen();
-        } catch (err) {
-            alert(`❌ Erro: ${err.message}`);
-        }
+    changeWorkshopStatus(workshopId, status, workshopName = '') {
+        const isDanger = status === 'SUSPENDED' || status === 'BLOCKED';
+        const labelAction = status === 'APPROVED' ? 'Aprovar Credenciamento' : (status === 'SUSPENDED' ? 'Suspender Oficina' : `Alterar Status (${status})`);
+        this.openConfirmDialog({
+            title: `${labelAction}${workshopName ? ` — ${workshopName}` : ''}`,
+            message: isDanger
+                ? 'A oficina selecionada será suspensa e ficará impedida de realizar novas operações até ser reativada. O histórico de veículos, clientes e financeiro será preservado integralmente.'
+                : 'A oficina passará a constar como aprovada e ativa na rede credenciada DNA AUTO.',
+            confirmLabel: labelAction,
+            tone: isDanger ? 'danger' : 'success',
+            onConfirm: async () => {
+                await API.setWorkshopStatus(workshopId, status);
+                this.toast(`Oficina atualizada para ${status === 'APPROVED' ? 'Aprovada' : (status === 'SUSPENDED' ? 'Suspensa' : status)}.`);
+                await this.reloadCurrentScreen();
+            }
+        });
     },
 
-    openModal({ title, body, confirmLabel = 'Confirmar', onConfirm }) {
+    openConfirmDialog({ title, message = '', detailsHtml = '', confirmLabel = 'Confirmar', cancelLabel = 'Cancelar', tone = 'primary', inputConfig = null, onConfirm }) {
+        const root = document.getElementById('adm-modal-root');
+        if (!root) return;
+        this.modalConfirmHandler = async () => {
+            let inputValue = null;
+            if (inputConfig) {
+                const inputId = inputConfig.id || 'adm-confirm-input';
+                const el = document.getElementById(inputId);
+                inputValue = el ? String(el.value || '').trim() : '';
+                if (inputConfig.required && inputValue.length < (inputConfig.minLength || 1)) {
+                    throw new Error(inputConfig.errorMessage || `Preencha o campo "${inputConfig.label || 'obrigatório'}" (mínimo ${inputConfig.minLength || 1} caracteres).`);
+                }
+            }
+            if (typeof onConfirm === 'function') {
+                await onConfirm(inputValue);
+            }
+        };
+        root.innerHTML = this.ui().ConfirmationDialog({
+            title,
+            message,
+            detailsHtml,
+            confirmLabel,
+            cancelLabel,
+            tone,
+            inputConfig
+        });
+    },
+
+    openModal({ title, body, confirmLabel = 'Confirmar', confirmTone = 'primary', onConfirm }) {
         const root = document.getElementById('adm-modal-root');
         if (!root) return;
         this.modalConfirmHandler = onConfirm;
+        const btnCls = confirmTone === 'danger' ? 'adm-btn-danger-solid' : (confirmTone === 'success' ? 'adm-btn-success' : 'adm-btn-primary');
         root.innerHTML = `
-            <div class="adm-modal-overlay" onclick="if(event.target===this) AdminView.closeModal()">
+            <div class="adm-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="adm-modal-title" onclick="if(event.target===this) AdminView.closeModal()">
                 <div class="adm-modal">
                     <div class="adm-modal-head">
-                        <h3 style="margin:0; font-size:15px; color:#fff;">${this.esc(title)}</h3>
-                        <button class="adm-icon-btn" style="width:28px; height:28px;" onclick="AdminView.closeModal()">✕</button>
+                        <h3 id="adm-modal-title">${this.esc(title)}</h3>
+                        <button type="button" class="adm-icon-btn" style="width:32px; height:32px;" aria-label="Fechar janela" onclick="AdminView.closeModal()">✕</button>
                     </div>
                     <div class="adm-modal-body">
-                        <div id="adm-modal-err" style="display:none; margin-bottom:10px; padding:8px 12px; border-radius:8px; background:rgba(239,68,68,0.16); border:1px solid rgba(239,68,68,0.4); color:#fecaca; font-size:12px;"></div>
+                        <div id="adm-modal-err" class="adm-chain-box is-danger" style="display:none; margin-bottom:12px;" role="alert"></div>
                         ${body}
                     </div>
                     <div class="adm-modal-foot">
-                        <button class="adm-btn" onclick="AdminView.closeModal()">Cancelar</button>
-                        <button class="adm-btn adm-btn-primary" id="adm-modal-confirm-btn" onclick="AdminView.submitModal()">${this.esc(confirmLabel)}</button>
+                        <button type="button" class="adm-btn" onclick="AdminView.closeModal()">Cancelar</button>
+                        <button type="button" class="adm-btn ${btnCls}" id="adm-modal-confirm-btn" onclick="AdminView.submitModal()">${this.esc(confirmLabel)}</button>
                     </div>
                 </div>
             </div>
@@ -746,5 +1110,16 @@ const AdminView = {
             }
             if (btn) btn.disabled = false;
         }
+    },
+
+    openDetailDrawer({ title, subtitle = '', bodyHtml = '', footerHtml = '' }) {
+        const root = document.getElementById('adm-drawer-root');
+        if (!root) return;
+        root.innerHTML = this.ui().DetailDrawer({ title, subtitle, bodyHtml, footerHtml });
+    },
+
+    closeDetailDrawer() {
+        const root = document.getElementById('adm-drawer-root');
+        if (root) root.innerHTML = '';
     }
 };

@@ -1,5 +1,5 @@
 // ==============================================================================
-// DNA AUTO — CENTRAL ADMINISTRATIVA V2: MOTOR FINANCEIRO & COMISSÕES (FASE 6)
+// DNA AUTO | ENTERPRISE MANAGEMENT V3 — MÓDULO FINANCEIRO & COMISSÕES
 // Faturamento Geral, Comissões, Próximos Pagamentos, Repasses, Taxas, Conciliação
 // ==============================================================================
 
@@ -13,6 +13,7 @@ const AdminScreensFinance = {
             API.getAdminDashboardTimeseries({ months: 6 }),
             API.getAdminCommercialPolicies()
         ]);
+        const UI = AdminView.ui();
         const rev = fin.revenue || {};
         const comm = fin.commissions || {};
         const wp = fin.workshop_payouts || {};
@@ -23,67 +24,67 @@ const AdminScreensFinance = {
         const brl = AdminView.formatBrl;
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Faturamento Geral & Estrutura Comercial</h2>
-                    <p>Receitas confirmadas em centavos inteiros, política comercial vigente e divisão exata entre Plataforma, Oficinas e Representantes.</p>
-                </div>
-                <button class="adm-btn adm-btn-sm" onclick="AdminView.navigate('settings')">Gerenciar Políticas Comerciais →</button>
-            </div>
+            ${UI.PageHeader({
+                title: 'Faturamento Geral & Estrutura Comercial',
+                subtitle: 'Receitas confirmadas em centavos inteiros, política comercial vigente e divisão exata entre Plataforma, Oficinas e Representantes.',
+                actionsHtml: `<button type="button" class="adm-btn adm-btn-sm" onclick="AdminView.navigate('settings')">Gerenciar Políticas Comerciais →</button>`
+            })}
 
             <div class="adm-chain-box">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                    <div>
-                        <span class="adm-badge adm-badge-success">POLÍTICA ATIVA: ${esc(pol.version_code || 'V1')}</span>
-                        <strong style="margin-left:8px; color:#fff;">${esc(pol.title || 'Tabela Padrão')}</strong>
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <span class="adm-badge adm-badge-success"><span class="adm-badge-dot" aria-hidden="true"></span>POLÍTICA ATIVA: ${esc(pol.version_code || 'V1')}</span>
+                        <strong class="adm-text-primary">${esc(pol.title || 'Tabela Padrão')}</strong>
                     </div>
-                    <div class="adm-mono" style="font-size:12px; color:#cbd5e1;">
-                        Cadastro: <strong>${brl(pol.registration_price_cents)}</strong> • Oficina (${pol.workshop_split_percent || 50}%): <strong>${brl(pol.workshop_split_cents)}</strong> • Plataforma (${pol.platform_split_percent || 50}%): <strong>${brl(pol.platform_split_cents)}</strong> • Comissão Rep.: <strong style="color:#ffd21c;">${brl(pol.rep_commission_cents)}</strong> • Taxa Retorno: <strong>${brl(pol.attendance_fee_cents)}</strong>
+                    <div class="adm-mono adm-text-secondary" style="font-size:13px;">
+                        Cadastro: <strong class="adm-text-primary">${brl(pol.registration_price_cents)}</strong> • Oficina (${pol.workshop_split_percent || 50}%): <strong class="adm-text-primary">${brl(pol.workshop_split_cents)}</strong> • Plataforma (${pol.platform_split_percent || 50}%): <strong class="adm-text-primary">${brl(pol.platform_split_cents)}</strong> • Comissão Rep.: <strong class="adm-text-accent">${brl(pol.rep_commission_cents)}</strong> • Taxa Retorno: <strong class="adm-text-primary">${brl(pol.attendance_fee_cents)}</strong>
                     </div>
                 </div>
             </div>
 
             <div class="adm-kpi-grid">
-                <div class="adm-kpi-card tone-success"><div class="adm-kpi-label">Faturamento Confirmado (Bruto)</div><div class="adm-kpi-value">${brl(rev.confirmed_revenue_cents)}</div><div class="adm-kpi-sub">${rev.pix_paid_count || 0} PIX pagos • ${rev.dna_completed_count || 0} DNA liquidados</div></div>
-                <div class="adm-kpi-card tone-cyan"><div class="adm-kpi-label">Parcela Plataforma (PIX Liquidado)</div><div class="adm-kpi-value">${brl(rev.pix_paid_platform_cents)}</div><div class="adm-kpi-sub">PIX Pendentes: ${brl(rev.pix_pending_cents)} (${rev.pix_pending_count || 0})</div></div>
-                <div class="adm-kpi-card tone-gold"><div class="adm-kpi-label">Comissões Representantes (Elegível)</div><div class="adm-kpi-value">${brl(comm.eligible_balance_cents)}</div><div class="adm-kpi-sub">Pagas: ${brl(comm.paid_cents)} • Projetadas: ${brl(comm.projected_cents)}</div></div>
-                <div class="adm-kpi-card tone-warning"><div class="adm-kpi-label">Repasses Oficinas / Taxas Retorno</div><div class="adm-kpi-value">${brl(wp.pending_cents)}</div><div class="adm-kpi-sub">Já repassado: ${brl(wp.paid_cents)} • Taxas conf.: ${brl(fees.confirmed_cents)}</div></div>
+                ${UI.FinancialMetric({ label: 'Faturamento Confirmado (Bruto)', cents: rev.confirmed_revenue_cents, classification: 'Confirmado', sub: `${rev.pix_paid_count || 0} PIX pagos • ${rev.dna_completed_count || 0} DNA liquidados`, tone: 'tone-success' })}
+                ${UI.FinancialMetric({ label: 'Parcela Plataforma (PIX Liquidado)', cents: rev.pix_paid_platform_cents, classification: 'Recebido', sub: `PIX Pendentes: ${brl(rev.pix_pending_cents)} (${rev.pix_pending_count || 0})`, tone: 'tone-cyan' })}
+                ${UI.FinancialMetric({ label: 'Comissões Representantes (Elegível)', cents: comm.eligible_balance_cents, classification: 'A Pagar', sub: `Pagas: ${brl(comm.paid_cents)} • Projetadas: ${brl(comm.projected_cents)}`, tone: 'tone-gold' })}
+                ${UI.FinancialMetric({ label: 'Repasses Oficinas Pendentes', cents: wp.pending_cents, classification: 'A Repassar', sub: `Já repassado: ${brl(wp.paid_cents)} • Taxas conf.: ${brl(fees.confirmed_cents)}`, tone: 'tone-warning' })}
             </div>
 
             <div class="adm-charts-grid">
                 <div class="adm-card">
                     <div class="adm-card-header"><h3 class="adm-card-title">Evolução Mensal do Faturamento Confirmado</h3></div>
-                    ${AdminCharts.renderLineChart(series.revenue_by_month || [], { valueKey: 'confirmed_revenue_cents', labelKey: 'month', color: '#10B981', isCurrency: true })}
+                    ${AdminCharts.renderLineChart(series.revenue_by_month || [], {
+                        valueKey: 'confirmed_revenue_cents',
+                        labelKey: 'month',
+                        seriesLabel: 'Faturamento Confirmado (BRL)',
+                        color: 'var(--adm-chart-2)',
+                        isCurrency: true
+                    })}
                 </div>
                 <div class="adm-card">
                     <div class="adm-card-header"><h3 class="adm-card-title">Políticas Comerciais Versionadas (${policies.length})</h3></div>
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Versão</th><th>Cadastro</th><th>Oficina / Plat.</th><th>Comissão Rep.</th><th>Status</th></tr></thead>
-                            <tbody>
-                                ${policies.map(p => `
-                                    <tr>
-                                        <td><strong class="adm-mono">${esc(p.version_code)}</strong><div style="font-size:11px; color:#94a3b8;">${esc(p.title)}</div></td>
-                                        <td class="adm-mono">${brl(p.registration_price_cents)}</td>
-                                        <td class="adm-mono">${brl(p.workshop_split_cents)} / ${brl(p.platform_split_cents)}</td>
-                                        <td class="adm-mono" style="color:#ffd21c;">${brl(p.rep_commission_cents)}</td>
-                                        <td>${p.is_active ? '<span class="adm-badge adm-badge-success">ATIVA</span>' : '<span class="adm-badge adm-badge-muted">INATIVA</span>'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
+                    ${UI.EnterpriseDataTable({
+                        rows: policies,
+                        emptyTitle: 'Nenhuma política cadastrada',
+                        columns: [
+                            { key: 'version_code', label: 'Versão', render: p => `<strong class="adm-mono">${esc(p.version_code)}</strong><div class="adm-cell-sub">${esc(p.title)}</div>` },
+                            { key: 'registration_price_cents', label: 'Cadastro', align: 'right', tdClass: 'adm-money', render: p => brl(p.registration_price_cents) },
+                            { key: 'workshop_split_cents', label: 'Oficina / Plat.', align: 'right', tdClass: 'adm-mono', render: p => `${brl(p.workshop_split_cents)} / ${brl(p.platform_split_cents)}` },
+                            { key: 'rep_commission_cents', label: 'Comissão Rep.', align: 'right', tdClass: 'adm-money adm-text-accent', render: p => brl(p.rep_commission_cents) },
+                            { key: 'is_active', label: 'Status', render: p => p.is_active ? AdminView.statusBadge('ACTIVE', 'Ativa') : AdminView.statusBadge('INACTIVE', 'Inativa') }
+                        ]
+                    })}
                 </div>
             </div>
         `;
     },
 
     // --------------------------------------------------------------------------
-    // 2. COMISSÕES DE REPRESENTANTES (8 Indicadores + Demonstrativo em Árvore)
+    // 2. COMISSÕES DE REPRESENTANTES (8 Indicadores + Extrato Auditável)
     // --------------------------------------------------------------------------
     async renderCommissions(ctx) {
         const f = ctx.params || {};
         const compMonth = f.competence_month || ctx.month || '';
+        const pageSize = Number(f.page_size || 30);
         const [overview, listRes] = await Promise.all([
             API.getAdminFinanceOverview({ competence_month: compMonth }),
             API.getAdminFinanceCommissions({
@@ -92,91 +93,97 @@ const AdminScreensFinance = {
                 dispute_status: f.dispute_status || '',
                 q: f.q || '',
                 page: f.page || 1,
-                page_size: 30
+                page_size: pageSize
             })
         ]);
+        const UI = AdminView.ui();
         const c = overview.commissions || {};
         const items = listRes.items || [];
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Comissões de Representantes (${listRes.total || 0})</h2>
-                    <p>Motor financeiro auditável (R$ 5,90 padrão por cadastro elegível e efetivamente pago dentro da vigência de 24 meses).</p>
-                </div>
-                <button class="adm-btn adm-btn-sm adm-btn-primary" onclick="AdminView.navigate('payouts')">Ir para Próximos Pagamentos & Fechamento →</button>
-            </div>
+            ${UI.PageHeader({
+                title: `Comissões de Representantes (${AdminView.formatNum(listRes.total)})`,
+                subtitle: 'Motor financeiro auditável por cadastro elegível e efetivamente pago dentro da vigência contratual de 24 meses.',
+                actionsHtml: `<button type="button" class="adm-btn adm-btn-sm adm-btn-primary" onclick="AdminView.navigate('payouts')">Próximos Pagamentos & Fechamento →</button>`
+            })}
 
-            <!-- 8 Indicadores Obrigatórios da Fase 6 -->
             <div class="adm-kpi-grid">
-                <div class="adm-kpi-card tone-muted"><div class="adm-kpi-label">1. Comissões Projetadas</div><div class="adm-kpi-value">${brl(c.projected_cents)}</div><div class="adm-kpi-sub">${c.projected_count || 0} reg. (PIX pendente — não entra em pagamento)</div></div>
-                <div class="adm-kpi-card tone-success"><div class="adm-kpi-label">2. Comissões Confirmadas (Total)</div><div class="adm-kpi-value">${brl(c.confirmed_total_cents)}</div><div class="adm-kpi-sub">${c.confirmed_total_count || 0} elegíveis confirmadas</div></div>
-                <div class="adm-kpi-card tone-cyan"><div class="adm-kpi-label">3. Comissões Já Pagas</div><div class="adm-kpi-value">${brl(c.paid_cents)}</div><div class="adm-kpi-sub">${c.paid_count || 0} repasse(s) liquidado(s)</div></div>
-                <div class="adm-kpi-card tone-danger"><div class="adm-kpi-label">4. Comissões Estornadas</div><div class="adm-kpi-value">${brl(c.refunded_cents)}</div><div class="adm-kpi-sub">${c.refunded_count || 0} estorno(s) / reembolso(s)</div></div>
-                <div class="adm-kpi-card tone-warning"><div class="adm-kpi-label">5. Comissões Vencidas (Ant.)</div><div class="adm-kpi-value">${brl(c.overdue_cents)}</div><div class="adm-kpi-sub">${c.overdue_count || 0} de competências anteriores</div></div>
-                <div class="adm-kpi-card tone-gold"><div class="adm-kpi-label">6. Comissões do Próximo Ciclo</div><div class="adm-kpi-value">${brl(c.next_cycle_eligible_cents)}</div><div class="adm-kpi-sub">${c.next_cycle_eligible_count || 0} na competência ${esc(overview.competence_month)} → ${esc(overview.payout_month)}</div></div>
-                <div class="adm-kpi-card tone-success"><div class="adm-kpi-label">7. Saldo Elegível Líquido</div><div class="adm-kpi-value">${brl(c.eligible_balance_cents)}</div><div class="adm-kpi-sub">Ajustes abertos: ${brl(c.open_adjustments_cents)}</div></div>
-                <div class="adm-kpi-card tone-danger"><div class="adm-kpi-label">8. Bloqueado por Contestação</div><div class="adm-kpi-value">${brl(c.blocked_dispute_cents)}</div><div class="adm-kpi-sub">${c.blocked_dispute_count || 0} comissão(ões) em análise</div></div>
+                ${UI.FinancialMetric({ label: 'Comissões Projetadas', cents: c.projected_cents, classification: 'Projetado', sub: `${c.projected_count || 0} reg. (PIX pendente — fora de pagamento)`, tone: 'tone-muted' })}
+                ${UI.FinancialMetric({ label: 'Comissões Confirmadas (Total)', cents: c.confirmed_total_cents, classification: 'Confirmado', sub: `${c.confirmed_total_count || 0} elegíveis confirmadas`, tone: 'tone-success' })}
+                ${UI.FinancialMetric({ label: 'Comissões Já Pagas', cents: c.paid_cents, classification: 'Liquidado', sub: `${c.paid_count || 0} repasse(s) liquidado(s)`, tone: 'tone-cyan' })}
+                ${UI.FinancialMetric({ label: 'Comissões Estornadas', cents: c.refunded_cents, classification: 'Estorno', sub: `${c.refunded_count || 0} estorno(s) / reembolso(s)`, tone: 'tone-danger' })}
+                ${UI.FinancialMetric({ label: 'Comissões Vencidas (Ant.)', cents: c.overdue_cents, classification: 'Pendente', sub: `${c.overdue_count || 0} de competências anteriores`, tone: 'tone-warning' })}
+                ${UI.FinancialMetric({ label: 'Comissões do Próximo Ciclo', cents: c.next_cycle_eligible_cents, classification: 'Previsto', sub: `${c.next_cycle_eligible_count || 0} na comp. ${overview.competence_month} → ${overview.payout_month}`, tone: 'tone-gold' })}
+                ${UI.FinancialMetric({ label: 'Saldo Elegível Líquido', cents: c.eligible_balance_cents, classification: 'A Pagar', sub: `Ajustes abertos: ${brl(c.open_adjustments_cents)}`, tone: 'tone-success' })}
+                ${UI.FinancialMetric({ label: 'Bloqueado por Contestação', cents: c.blocked_dispute_cents, classification: 'Bloqueado', sub: `${c.blocked_dispute_count || 0} comissão(ões) em análise`, tone: 'tone-danger' })}
             </div>
 
             <div class="adm-card">
-                <div class="adm-filters-bar">
-                    <input type="text" id="comm-q" class="adm-input" style="min-width:210px;" placeholder="Buscar rep, oficina ou pagamento..." value="${esc(f.q || '')}"
+                ${UI.FilterToolbar(`
+                    <input type="text" id="comm-q" class="adm-input adm-filter-search" aria-label="Buscar comissão"
+                           placeholder="Buscar representante, oficina ou ID de pagamento..." value="${esc(f.q || '')}"
                            onkeydown="if(event.key==='Enter') AdminScreensFinance.applyCommFilters()" />
-                    <input type="month" id="comm-month" class="adm-input" value="${esc(compMonth)}" onchange="AdminScreensFinance.applyCommFilters()" />
-                    <select id="comm-status" class="adm-select" onchange="AdminScreensFinance.applyCommFilters()">
+                    <input type="month" id="comm-month" class="adm-input" aria-label="Competência" value="${esc(compMonth)}" onchange="AdminScreensFinance.applyCommFilters()" />
+                    <select id="comm-status" class="adm-select" aria-label="Status da comissão" onchange="AdminScreensFinance.applyCommFilters()">
                         <option value="" ${!f.status ? 'selected' : ''}>Status: Todos</option>
-                        <option value="CONFIRMED" ${f.status === 'CONFIRMED' ? 'selected' : ''}>CONFIRMED (Confirmada)</option>
-                        <option value="PROJECTED" ${f.status === 'PROJECTED' ? 'selected' : ''}>PROJECTED (Projetada)</option>
-                        <option value="PAID" ${f.status === 'PAID' ? 'selected' : ''}>PAID (Paga)</option>
-                        <option value="REFUNDED" ${f.status === 'REFUNDED' ? 'selected' : ''}>REFUNDED (Estornada)</option>
+                        <option value="CONFIRMED" ${f.status === 'CONFIRMED' ? 'selected' : ''}>Confirmada</option>
+                        <option value="PROJECTED" ${f.status === 'PROJECTED' ? 'selected' : ''}>Projetada</option>
+                        <option value="PAID" ${f.status === 'PAID' ? 'selected' : ''}>Paga</option>
+                        <option value="REFUNDED" ${f.status === 'REFUNDED' ? 'selected' : ''}>Estornada</option>
                     </select>
-                    <select id="comm-dispute" class="adm-select" onchange="AdminScreensFinance.applyCommFilters()">
+                    <select id="comm-dispute" class="adm-select" aria-label="Status de contestação" onchange="AdminScreensFinance.applyCommFilters()">
                         <option value="" ${!f.dispute_status ? 'selected' : ''}>Contestação: Todas</option>
                         <option value="NONE" ${f.dispute_status === 'NONE' ? 'selected' : ''}>Sem contestação</option>
                         <option value="DISPUTED" ${f.dispute_status === 'DISPUTED' ? 'selected' : ''}>Bloqueadas / Contestadas</option>
                     </select>
-                    <button class="adm-btn adm-btn-sm adm-btn-primary" onclick="AdminScreensFinance.applyCommFilters()">Filtrar</button>
-                    <button class="adm-btn adm-btn-sm" onclick="AdminView.navigate('commissions')">Limpar</button>
-                </div>
+                    <button type="button" class="adm-btn adm-btn-primary" onclick="AdminScreensFinance.applyCommFilters()">Aplicar Filtros</button>
+                    <button type="button" class="adm-btn" onclick="AdminView.navigate('commissions')">Limpar</button>
+                `)}
 
-                ${items.length === 0 ? `<div class="adm-empty"><strong>Nenhuma comissão encontrada</strong>Não há lançamentos de comissão para os filtros aplicados.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Cadeia (Rep → Oficina → Placa/Pgto)</th><th>Política</th><th>Valor</th><th>Competência → Pgto</th><th>Status</th><th>Ações</th></tr></thead>
-                            <tbody>
-                                ${items.map(cm => `
-                                    <tr>
-                                        <td>
-                                            <div class="adm-chain-flow">
-                                                <span class="adm-chain-step"><strong style="color:#00d4ff;">${esc(cm.rep_code)}</strong> ${esc(cm.rep_name)}</span>
-                                                <span class="adm-chain-arrow">→</span>
-                                                <span class="adm-chain-step">${esc(cm.workshop_name)}</span>
-                                                <span class="adm-chain-arrow">→</span>
-                                                <span class="adm-chain-step adm-mono">${esc(cm.license_plate || cm.activation_code || cm.source_payment_id)} (${esc(cm.payment_status || cm.status)})</span>
-                                            </div>
-                                        </td>
-                                        <td class="adm-mono" style="font-size:11px;">${esc(cm.policy_version_code || 'V1')}</td>
-                                        <td class="adm-mono" style="font-weight:800; color:#ffd21c;">${brl(cm.commission_amount_cents)}</td>
-                                        <td class="adm-mono">${esc(cm.competence_month || '-')} → ${esc(cm.payout_month || '-')}</td>
-                                        <td>
-                                            ${AdminView.statusBadge(cm.status)}
-                                            ${cm.dispute_status === 'DISPUTED' ? `<div style="margin-top:3px;"><span class="adm-badge adm-badge-danger" title="${esc(cm.blocked_reason || '')}">BLOQUEADA</span></div>` : ''}
-                                        </td>
-                                        <td style="white-space:nowrap;">
-                                            ${cm.status === 'CONFIRMED' && cm.dispute_status !== 'DISPUTED' ? `<button class="adm-btn adm-btn-sm adm-btn-danger" onclick="AdminScreensFinance.toggleDispute('${esc(cm.id)}', 'DISPUTED')">Contestar</button>` : ''}
-                                            ${cm.status === 'CONFIRMED' && cm.dispute_status === 'DISPUTED' ? `<button class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminScreensFinance.toggleDispute('${esc(cm.id)}', 'NONE')">Desbloquear</button>` : ''}
-                                            ${cm.status !== 'CONFIRMED' ? `<span style="font-size:11px; color:#64748b;">${cm.payout_batch_id ? esc(cm.payout_batch_id) : 'Encerrada'}</span>` : ''}
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    ${AdminView.renderPagination(listRes.page, listRes.total_pages, listRes.total)}
-                `}
+                ${UI.EnterpriseDataTable({
+                    rows: items,
+                    emptyTitle: 'Nenhuma comissão encontrada',
+                    emptySubtitle: 'Não há lançamentos de comissão para os filtros aplicados.',
+                    pagination: { page: listRes.page, totalPages: listRes.total_pages, total: listRes.total, pageSize },
+                    columns: [
+                        {
+                            key: 'rep_code', label: 'Cadeia Auditável (Rep → Oficina → Pagamento)',
+                            render: cm => `
+                                <div class="adm-chain-flow">
+                                    <span class="adm-chain-step"><strong class="adm-text-accent adm-mono">${esc(cm.rep_code)}</strong> ${esc(cm.rep_name)}</span>
+                                    <span class="adm-chain-arrow" aria-hidden="true">→</span>
+                                    <span class="adm-chain-step">${esc(cm.workshop_name)}</span>
+                                    <span class="adm-chain-arrow" aria-hidden="true">→</span>
+                                    <span class="adm-chain-step adm-mono">${esc(cm.license_plate || cm.activation_code || cm.source_payment_id)} (${esc(cm.payment_status || cm.status)})</span>
+                                </div>
+                            `
+                        },
+                        { key: 'policy_version_code', label: 'Política', tdClass: 'adm-mono', render: cm => esc(cm.policy_version_code || 'V1') },
+                        { key: 'commission_amount_cents', label: 'Valor', align: 'right', tdClass: 'adm-money', render: cm => brl(cm.commission_amount_cents) },
+                        { key: 'competence_month', label: 'Competência → Pgto', tdClass: 'adm-mono', render: cm => `${esc(cm.competence_month || '-')} → ${esc(cm.payout_month || '-')}` },
+                        {
+                            key: 'status', label: 'Status',
+                            render: cm => `
+                                ${AdminView.statusBadge(cm.status)}
+                                ${cm.dispute_status === 'DISPUTED' ? `<div style="margin-top:4px;" title="${esc(cm.blocked_reason || '')}">${AdminView.statusBadge('DISPUTED', 'Bloqueada')}</div>` : ''}
+                            `
+                        },
+                        {
+                            key: 'actions', label: 'Ações', align: 'right', tdClass: 'adm-actions-cell',
+                            render: cm => {
+                                if (cm.status === 'CONFIRMED' && cm.dispute_status !== 'DISPUTED') {
+                                    return `<button type="button" class="adm-btn adm-btn-sm adm-btn-danger" onclick="AdminScreensFinance.toggleDispute('${esc(cm.id)}', 'DISPUTED')">Contestar</button>`;
+                                }
+                                if (cm.status === 'CONFIRMED' && cm.dispute_status === 'DISPUTED') {
+                                    return `<button type="button" class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminScreensFinance.toggleDispute('${esc(cm.id)}', 'NONE')">Desbloquear</button>`;
+                                }
+                                return `<span class="adm-text-muted adm-mono" style="font-size:12px;">${cm.payout_batch_id ? esc(cm.payout_batch_id) : 'Encerrada'}</span>`;
+                            }
+                        }
+                    ]
+                })}
             </div>
         `;
     },
@@ -191,19 +198,28 @@ const AdminScreensFinance = {
         });
     },
 
-    async toggleDispute(commissionId, nextStatus) {
-        let reason = '';
-        if (nextStatus === 'DISPUTED') {
-            reason = prompt('Informe o motivo do bloqueio/contestação desta comissão (mínimo 5 caracteres):');
-            if (!reason || reason.trim().length < 5) return;
-        }
-        try {
-            await API.updateAdminCommissionDispute(commissionId, { dispute_status: nextStatus, reason: reason.trim() });
-            AdminView.toast(nextStatus === 'DISPUTED' ? 'Comissão bloqueada por contestação.' : 'Comissão liberada para pagamento.');
-            await AdminView.reloadCurrentScreen();
-        } catch (err) {
-            alert(`❌ Erro: ${err.message}`);
-        }
+    toggleDispute(commissionId, nextStatus) {
+        const isDispute = nextStatus === 'DISPUTED';
+        AdminView.openConfirmDialog({
+            title: isDispute ? 'Contestar e Bloquear Comissão' : 'Desbloquear Comissão para Pagamento',
+            message: isDispute
+                ? 'Esta comissão ficará bloqueada e será excluída automaticamente do fechamento financeiro até que seja liberada.'
+                : 'A comissão contestada voltará a ficar elegível para composição do próximo ciclo financeiro.',
+            confirmLabel: isDispute ? 'Confirmar Bloqueio' : 'Confirmar Liberação',
+            tone: isDispute ? 'danger' : 'success',
+            inputConfig: isDispute ? {
+                id: 'comm-dispute-reason',
+                label: 'Motivo da Contestação / Bloqueio',
+                placeholder: 'Informe o motivo técnico ou divergência encontrada (mínimo 5 caracteres)...',
+                required: true,
+                minLength: 5
+            } : null,
+            onConfirm: async (reason) => {
+                await API.updateAdminCommissionDispute(commissionId, { dispute_status: nextStatus, reason: reason || '' });
+                AdminView.toast(isDispute ? 'Comissão bloqueada por contestação.' : 'Comissão liberada para pagamento.');
+                await AdminView.reloadCurrentScreen();
+            }
+        });
     },
 
     // --------------------------------------------------------------------------
@@ -216,6 +232,7 @@ const AdminScreensFinance = {
             API.getAdminNextPayouts({ competence_month: compMonth }),
             API.getAdminPayoutsHistory({ page: 1, page_size: 25 })
         ]);
+        const UI = AdminView.ui();
         const sum = forecast.summary || {};
         const reps = forecast.representatives || [];
         const batches = history.batches || [];
@@ -224,110 +241,105 @@ const AdminScreensFinance = {
         const brl = AdminView.formatBrl;
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Próximos Pagamentos & Fechamento de Ciclo</h2>
-                    <p>Competência <strong>${esc(forecast.competence_month)}</strong> → Pagamento previsto em <strong>${esc(forecast.scheduled_payout_date)}</strong> (${esc(forecast.payout_month)}). Sem PIX automático: liquidação somente via registro administrativo auditado.</p>
-                </div>
-                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                    <input type="month" class="adm-input" value="${esc(forecast.competence_month)}" onchange="AdminView.updateParams({ competence_month: this.value })" />
-                    ${forecast.can_close ? `
-                        <button class="adm-btn adm-btn-gold" onclick="AdminScreensFinance.openCloseCycleModal('${esc(forecast.competence_month)}', ${sum.next_payout_net_cents || 0}, ${sum.eligible_representatives_count || 0})">Fechar Ciclo ${esc(forecast.competence_month)}</button>
-                    ` : `
-                        <span class="adm-badge ${forecast.cycle_status === 'OPEN' ? 'adm-badge-muted' : 'adm-badge-success'}">CICLO: ${esc(forecast.cycle_status)}</span>
-                    `}
-                </div>
-            </div>
+            ${UI.PageHeader({
+                title: 'Próximos Pagamentos & Fechamento de Ciclo',
+                subtitle: `Competência <strong>${esc(forecast.competence_month)}</strong> → Pagamento previsto em <strong>${esc(forecast.scheduled_payout_date)}</strong> (${esc(forecast.payout_month)}). Liquidação exclusivamente via registro administrativo auditado.`,
+                actionsHtml: `
+                    <input type="month" class="adm-input" aria-label="Competência do ciclo" value="${esc(forecast.competence_month)}" onchange="AdminView.updateParams({ competence_month: this.value })" />
+                    ${forecast.can_close
+                        ? `<button type="button" class="adm-btn adm-btn-primary" onclick="AdminScreensFinance.openCloseCycleModal('${esc(forecast.competence_month)}', ${sum.next_payout_net_cents || 0}, ${sum.eligible_representatives_count || 0})">Fechar Ciclo ${esc(forecast.competence_month)}</button>`
+                        : `<span class="adm-badge ${forecast.cycle_status === 'OPEN' ? 'adm-badge-muted' : 'adm-badge-success'}"><span class="adm-badge-dot" aria-hidden="true"></span>CICLO: ${esc(forecast.cycle_status)}</span>`}
+                `
+            })}
 
             <div class="adm-kpi-grid">
-                <div class="adm-kpi-card tone-gold"><div class="adm-kpi-label">Próximo Pagamento (Líquido Elegível)</div><div class="adm-kpi-value">${brl(sum.next_payout_net_cents)}</div><div class="adm-kpi-sub">${sum.eligible_representatives_count || 0} rep(s) elegível(is) • Somente CONFIRMED</div></div>
-                <div class="adm-kpi-card tone-muted"><div class="adm-kpi-label">Projetado (Excluído do Pagamento)</div><div class="adm-kpi-value">${brl(sum.projected_cents)}</div><div class="adm-kpi-sub">Aguardando confirmação de pagamento PIX</div></div>
-                <div class="adm-kpi-card tone-danger"><div class="adm-kpi-label">Contestadas / Estornadas / Ajustes</div><div class="adm-kpi-value">${brl((sum.disputed_cents || 0) + (sum.refunded_cents || 0))}</div><div class="adm-kpi-sub">Ajustes aplicados: ${brl(sum.adjustments_cents)}</div></div>
-                <div class="adm-kpi-card tone-success"><div class="adm-kpi-label">Já Liquidado na Competência</div><div class="adm-kpi-value">${brl(sum.paid_cents)}</div><div class="adm-kpi-sub">Política: ${esc(forecast.policy?.version_code || 'V1')} (dia ${forecast.policy?.payout_day_of_month || 10})</div></div>
+                ${UI.FinancialMetric({ label: 'Próximo Pagamento (Líquido Elegível)', cents: sum.next_payout_net_cents, classification: 'Previsto', sub: `${sum.eligible_representatives_count || 0} rep(s) elegível(is) • Somente CONFIRMED`, tone: 'tone-gold' })}
+                ${UI.FinancialMetric({ label: 'Projetado (Excluído do Pagamento)', cents: sum.projected_cents, classification: 'Projetado', sub: 'Aguardando confirmação de pagamento PIX', tone: 'tone-muted' })}
+                ${UI.FinancialMetric({ label: 'Contestadas / Estornadas', cents: (sum.disputed_cents || 0) + (sum.refunded_cents || 0), classification: 'Bloqueado', sub: `Ajustes aplicados: ${brl(sum.adjustments_cents)}`, tone: 'tone-danger' })}
+                ${UI.FinancialMetric({ label: 'Já Liquidado na Competência', cents: sum.paid_cents, classification: 'Liquidado', sub: `Política: ${forecast.policy?.version_code || 'V1'} (dia ${forecast.policy?.payout_day_of_month || 10})`, tone: 'tone-success' })}
             </div>
 
             <div class="adm-card">
                 <div class="adm-card-header">
                     <div>
                         <h3 class="adm-card-title">Demonstrativo Detalhado por Representante — Competência ${esc(forecast.competence_month)}</h3>
-                        <p class="adm-card-subtitle">Árvore completa: REPRESENTANTE → OFICINA → CADASTRO → PAGAMENTO CONFIRMADO → COMISSÃO → COMPETÊNCIA → PAGAMENTO AGENDADO</p>
+                        <p class="adm-card-subtitle">Árvore completa: Representante → Oficina → Cadastro → Pagamento Confirmado → Comissão → Competência → Agendamento</p>
                     </div>
                 </div>
 
-                ${reps.length === 0 ? `<div class="adm-empty"><strong>Nenhuma comissão na competência ${esc(forecast.competence_month)}</strong>Selecione outra competência ou aguarde confirmações de pagamento.</div>` : reps.map(r => `
-                    <div class="adm-chain-box">
-                        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
-                            <div>
-                                <strong style="color:#fff; font-size:14px;">${esc(r.rep_name)}</strong>
-                                <span class="adm-mono" style="color:#00d4ff; margin-left:6px;">${esc(r.rep_code)}</span>
-                                <span style="margin-left:8px;">${AdminView.statusBadge(r.batch_status)}</span>
-                                <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">
-                                    Elegíveis: <strong>${r.eligible_commissions_count}</strong> (${brl(r.eligible_gross_cents)}) • Projetadas (fora do ciclo): <strong>${brl(r.projected_cents)}</strong> • Ajustes: <strong>${brl(r.adjustments_cents)}</strong> • Líquido: <strong style="color:#ffd21c;">${brl(r.next_payout_net_cents)}</strong>
+                ${reps.length === 0
+                    ? UI.EmptyState({ title: `Nenhuma comissão na competência ${forecast.competence_month}`, subtitle: 'Selecione outra competência ou aguarde confirmações de pagamento.' })
+                    : reps.map(r => `
+                        <div class="adm-chain-box">
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+                                <div>
+                                    <strong class="adm-text-primary" style="font-size:15px;">${esc(r.rep_name)}</strong>
+                                    <span class="adm-mono adm-text-accent" style="margin-left:8px; font-weight:700;">${esc(r.rep_code)}</span>
+                                    <span style="margin-left:8px;">${AdminView.statusBadge(r.batch_status)}</span>
+                                    <div class="adm-text-secondary" style="font-size:13px; margin-top:4px;">
+                                        Elegíveis: <strong>${r.eligible_commissions_count}</strong> (${brl(r.eligible_gross_cents)}) • Projetadas (fora do ciclo): <strong>${brl(r.projected_cents)}</strong> • Ajustes: <strong>${brl(r.adjustments_cents)}</strong> • Líquido: <strong class="adm-text-accent">${brl(r.next_payout_net_cents)}</strong>
+                                    </div>
+                                </div>
+                                <div class="adm-actions-group">
+                                    ${r.batch_id && r.batch_status === 'SCHEDULED'
+                                        ? `<button type="button" class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminScreensFinance.openMarkPaidModal('${esc(r.batch_id)}', '${esc(r.rep_name)}', ${r.batch_net_amount_cents || r.next_payout_net_cents})">Registrar Pagamento Realizado</button>`
+                                        : r.batch_status === 'PAID'
+                                            ? `<span class="adm-badge adm-badge-success"><span class="adm-badge-dot" aria-hidden="true"></span>PAGO • REF: ${esc(r.transfer_reference || '-')} (${esc(r.transfer_date || '')})</span>`
+                                            : ''}
                                 </div>
                             </div>
-                            <div style="display:flex; gap:8px; align-items:center;">
-                                ${r.batch_id && r.batch_status === 'SCHEDULED' ? `
-                                    <button class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminScreensFinance.openMarkPaidModal('${esc(r.batch_id)}', '${esc(r.rep_name)}', ${r.batch_net_amount_cents || r.next_payout_net_cents})">Registrar Pagamento Realizado</button>
-                                ` : r.batch_status === 'PAID' ? `
-                                    <span class="adm-badge adm-badge-success">PAGO • REF: ${esc(r.transfer_reference || '-')} (${esc(r.transfer_date || '')})</span>
-                                ` : ''}
-                            </div>
-                        </div>
 
-                        ${(r.workshops || []).map(ws => `
-                            <div style="margin-left:14px; padding-left:12px; border-left:2px solid rgba(0,212,255,0.28); margin-bottom:8px;">
-                                <div style="font-size:12px; color:#e2e8f0; margin-bottom:4px;">
-                                    <strong>Oficina:</strong> ${esc(ws.workshop_name)} (${esc(ws.workshop_city || '-')}/${esc(ws.workshop_state || '-')}) — Elegíveis: <strong>${ws.eligible_count}</strong> (${brl(ws.eligible_cents)})
+                            ${(r.workshops || []).map(ws => `
+                                <div style="margin-left:14px; padding-left:14px; border-left:2px solid var(--adm-primary-border); margin-bottom:10px;">
+                                    <div style="font-size:13px; color:var(--adm-text-primary); margin-bottom:6px;">
+                                        <strong>Oficina:</strong> ${esc(ws.workshop_name)} (${esc(ws.workshop_city || '-')}/${esc(ws.workshop_state || '-')}) — Elegíveis: <strong>${ws.eligible_count}</strong> (<span class="adm-money">${brl(ws.eligible_cents)}</span>)
+                                    </div>
+                                    <div style="display:flex; flex-direction:column; gap:5px;">
+                                        ${(ws.items || []).map(it => `
+                                            <div class="adm-chain-flow">
+                                                <span class="adm-chain-step">Cadastro: <strong>${esc(it.license_plate || it.activation_code || it.commission_id)}</strong></span>
+                                                <span class="adm-chain-arrow" aria-hidden="true">→</span>
+                                                <span class="adm-chain-step">Pgto: ${esc(it.payment_status)} (${esc(AdminView.formatDate(it.payment_paid_at))})</span>
+                                                <span class="adm-chain-arrow" aria-hidden="true">→</span>
+                                                <span class="adm-chain-step">Comissão: <strong class="adm-money">${brl(it.commission_amount_cents)}</strong> (${esc(it.status)})</span>
+                                                <span class="adm-chain-arrow" aria-hidden="true">→</span>
+                                                <span class="adm-chain-step">Comp. ${esc(it.competence_month)} → Agendado ${esc(it.scheduled_payout_date)}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
                                 </div>
-                                <div style="display:flex; flex-direction:column; gap:4px;">
-                                    ${(ws.items || []).map(it => `
-                                        <div class="adm-chain-flow" style="font-size:11px;">
-                                            <span class="adm-chain-step">Cadastro: ${esc(it.license_plate || it.activation_code || it.commission_id)}</span>
-                                            <span class="adm-chain-arrow">→</span>
-                                            <span class="adm-chain-step">Pgto: ${esc(it.payment_status)} (${esc(AdminView.formatDate(it.payment_paid_at))})</span>
-                                            <span class="adm-chain-arrow">→</span>
-                                            <span class="adm-chain-step">Comissão: <strong>${brl(it.commission_amount_cents)}</strong> (${esc(it.status)})</span>
-                                            <span class="adm-chain-arrow">→</span>
-                                            <span class="adm-chain-step">Comp. ${esc(it.competence_month)} → Agendado ${esc(it.scheduled_payout_date)}</span>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `).join('')}
+                            `).join('')}
+                        </div>
+                    `).join('')}
             </div>
 
             <div class="adm-card">
                 <div class="adm-card-header">
                     <div>
                         <h3 class="adm-card-title">Histórico de Lotes & Ciclos Fechados (${batches.length} lotes / ${cycles.length} ciclos)</h3>
-                        <p class="adm-card-subtitle">Registro imutável de todos os fechamentos e pagamentos realizados manualmente</p>
+                        <p class="adm-card-subtitle">Registro imutável de todos os fechamentos e liquidações realizadas manualmente</p>
                     </div>
                 </div>
-                ${batches.length === 0 ? `<div class="adm-empty"><strong>Nenhum lote fechado ainda</strong>Feche uma competência acima para gerar os lotes de pagamento auditáveis.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Lote</th><th>Competência → Prev.</th><th>Representante</th><th>Qtd. Com.</th><th>Bruto / Ajustes</th><th>Líquido</th><th>Status</th><th>Comprovante / Ação</th></tr></thead>
-                            <tbody>
-                                ${batches.map(b => `
-                                    <tr>
-                                        <td class="adm-mono" style="font-size:11px;">${esc(b.id)}</td>
-                                        <td class="adm-mono">${esc(b.competence_month)} → ${esc(b.scheduled_payout_date)}</td>
-                                        <td><strong>${esc(b.rep_name)}</strong> <span class="adm-mono" style="color:#00d4ff;">${esc(b.rep_code)}</span></td>
-                                        <td class="adm-mono">${b.commissions_count}</td>
-                                        <td class="adm-mono">${brl(b.gross_amount_cents)} / ${brl(b.adjustments_cents)}</td>
-                                        <td class="adm-mono" style="font-weight:800; color:#ffd21c;">${brl(b.net_amount_cents)}</td>
-                                        <td>${AdminView.statusBadge(b.status)}</td>
-                                        <td style="white-space:nowrap;">
-                                            ${b.status === 'SCHEDULED' ? `<button class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminScreensFinance.openMarkPaidModal('${esc(b.id)}', '${esc(b.rep_name)}', ${b.net_amount_cents})">Marcar Pago</button>` : `<span class="adm-mono" style="font-size:11px;">Ref: ${esc(b.transfer_reference || '-')} (${esc(b.transfer_date || '')})</span>`}
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
+                ${UI.EnterpriseDataTable({
+                    rows: batches,
+                    emptyTitle: 'Nenhum lote fechado ainda',
+                    emptySubtitle: 'Feche uma competência acima para gerar os lotes de pagamento auditáveis.',
+                    columns: [
+                        { key: 'id', label: 'Lote', tdClass: 'adm-mono', render: b => esc(b.id) },
+                        { key: 'competence_month', label: 'Competência → Prev.', tdClass: 'adm-mono', render: b => `${esc(b.competence_month)} → ${esc(b.scheduled_payout_date)}` },
+                        { key: 'rep_name', label: 'Representante', render: b => `<span class="adm-cell-title">${esc(b.rep_name)}</span><div class="adm-cell-sub adm-mono">${esc(b.rep_code)}</div>` },
+                        { key: 'commissions_count', label: 'Qtd. Com.', align: 'right', tdClass: 'adm-num', render: b => AdminView.formatNum(b.commissions_count) },
+                        { key: 'gross_amount_cents', label: 'Bruto / Ajustes', align: 'right', tdClass: 'adm-mono', render: b => `${brl(b.gross_amount_cents)} / ${brl(b.adjustments_cents)}` },
+                        { key: 'net_amount_cents', label: 'Líquido', align: 'right', tdClass: 'adm-money', render: b => brl(b.net_amount_cents) },
+                        { key: 'status', label: 'Status', render: b => AdminView.statusBadge(b.status) },
+                        {
+                            key: 'action', label: 'Comprovante / Ação', align: 'right', tdClass: 'adm-actions-cell',
+                            render: b => b.status === 'SCHEDULED'
+                                ? `<button type="button" class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminScreensFinance.openMarkPaidModal('${esc(b.id)}', '${esc(b.rep_name)}', ${b.net_amount_cents})">Marcar Pago</button>`
+                                : `<span class="adm-mono adm-text-secondary" style="font-size:12px;">Ref: ${esc(b.transfer_reference || '-')} (${esc(b.transfer_date || '')})</span>`
+                        }
+                    ]
+                })}
             </div>
         `;
     },
@@ -342,11 +354,11 @@ const AdminScreensFinance = {
                     <strong>Resumo do Fechamento Atômico:</strong><br/>
                     • Competência: <span class="adm-mono">${esc(competenceMonth)}</span><br/>
                     • Representantes elegíveis: <strong>${repsCount}</strong><br/>
-                    • Valor líquido previsto (somente CONFIRMED sem contestação): <strong style="color:#ffd21c;">${brl(netCents)}</strong><br/>
+                    • Valor líquido previsto (somente CONFIRMED sem contestação): <strong class="adm-money adm-text-accent">${brl(netCents)}</strong><br/>
                     • Comissões PROJECTED, REFUNDED e CONTESTADAS serão automaticamente excluídas.
                 </div>
                 <div class="adm-field">
-                    <label>Observações do Fechamento (Auditoria)</label>
+                    <label for="close-cycle-notes">Observações do Fechamento (Auditoria)</label>
                     <textarea id="close-cycle-notes" placeholder="Ex: Conferido extrato AbacatePay da competência..."></textarea>
                 </div>
             `,
@@ -363,25 +375,25 @@ const AdminScreensFinance = {
     openMarkPaidModal(batchId, repName, netCents) {
         const today = new Date().toISOString().slice(0, 10);
         const brl = AdminView.formatBrl;
-        const esc = AdminView.esc;
         AdminView.openModal({
             title: `Registrar Pagamento Manual — ${repName}`,
+            confirmTone: 'success',
             body: `
-                <div class="adm-chain-box" style="border-color:rgba(16,185,129,0.4);">
-                    <strong>Atenção:</strong> O sistema não realiza PIX automático. Efetue a transferência bancária/PIX no valor de <strong style="color:#34d399;">${brl(netCents)}</strong> pelo seu banco e registre abaixo o comprovante para auditoria.
+                <div class="adm-chain-box is-success">
+                    <strong>Atenção:</strong> O sistema não realiza PIX automático. Efetue a transferência bancária/PIX no valor de <strong class="adm-money">${brl(netCents)}</strong> pelo seu banco e registre abaixo o comprovante para auditoria.
                 </div>
                 <div class="adm-form-grid">
                     <div class="adm-field">
-                        <label>Data da Transferência *</label>
+                        <label for="pay-transfer-date">Data da Transferência *</label>
                         <input type="date" id="pay-transfer-date" class="adm-input" value="${today}" />
                     </div>
                     <div class="adm-field">
-                        <label>Referência / ID End-to-End do Comprovante *</label>
+                        <label for="pay-transfer-ref">Referência / ID End-to-End do Comprovante *</label>
                         <input type="text" id="pay-transfer-ref" class="adm-input" placeholder="Ex: PIX-E2E-20261210-001" />
                     </div>
                 </div>
                 <div class="adm-field">
-                    <label>Observações (Opcional)</label>
+                    <label for="pay-transfer-notes">Observações (Opcional)</label>
                     <textarea id="pay-transfer-notes" placeholder="Banco de origem, observações financeiras..."></textarea>
                 </div>
             `,
@@ -403,60 +415,66 @@ const AdminScreensFinance = {
     // --------------------------------------------------------------------------
     async renderWorkshopPayouts() {
         const data = await API.getAdminWorkshopPayouts();
+        const UI = AdminView.ui();
         const items = data.items || [];
         const t = data.totals || {};
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Repasses às Oficinas Credenciadas</h2>
-                    <p>Saldo de divisão 50% por ativação DNA liquidada. Registro manual auditado após transferência bancária.</p>
-                </div>
-            </div>
+            ${UI.PageHeader({
+                title: 'Repasses às Oficinas Credenciadas',
+                subtitle: 'Saldo de divisão contratual por ativação DNA liquidada. Registro manual auditado após transferência bancária.'
+            })}
 
-            <div class="adm-kpi-grid" style="grid-template-columns:repeat(2, minmax(0, 1fr));">
-                <div class="adm-kpi-card tone-warning"><div class="adm-kpi-label">Total Pendente de Repasse</div><div class="adm-kpi-value">${brl(t.pending_cents)}</div></div>
-                <div class="adm-kpi-card tone-success"><div class="adm-kpi-label">Total Já Repassado</div><div class="adm-kpi-value">${brl(t.paid_cents)}</div></div>
+            <div class="adm-kpi-grid cols-2">
+                ${UI.FinancialMetric({ label: 'Total Pendente de Repasse', cents: t.pending_cents, classification: 'A Repassar', tone: 'tone-warning' })}
+                ${UI.FinancialMetric({ label: 'Total Já Repassado', cents: t.paid_cents, classification: 'Liquidado', tone: 'tone-success' })}
             </div>
 
             <div class="adm-card">
-                ${items.length === 0 ? `<div class="adm-empty"><strong>Nenhuma oficina cadastrada</strong>Sem dados de repasse.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Oficina / CNPJ</th><th>Cidade/UF</th><th>Pendente</th><th>Pago</th><th>Último Repasse</th><th>Ação</th></tr></thead>
-                            <tbody>
-                                ${items.map(w => `
-                                    <tr>
-                                        <td><a href="javascript:void(0)" style="color:#fff; font-weight:700;" onclick="AdminView.openWorkshop('${esc(w.workshop_id)}')">${esc(w.trade_name)}</a><div class="adm-mono" style="font-size:11px; color:#64748b;">${esc(w.cnpj || '')}</div></td>
-                                        <td>${esc(w.city || '-')}/${esc(w.state || '-')}</td>
-                                        <td class="adm-mono" style="color:${w.pending_cents > 0 ? '#fbbf24' : '#64748b'}; font-weight:700;">${brl(w.pending_cents)} (${w.pending_count || 0})</td>
-                                        <td class="adm-mono" style="color:#34d399;">${brl(w.paid_cents)} (${w.paid_count || 0})</td>
-                                        <td class="adm-mono">${esc(AdminView.formatDate(w.last_paid_at))}</td>
-                                        <td>
-                                            ${w.pending_cents > 0 ? `<button class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminScreensFinance.markWorkshopPaid('${esc(w.workshop_id)}', '${esc(w.trade_name)}')">Registrar Repasse</button>` : '<span class="adm-badge adm-badge-muted">Quitado</span>'}
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
+                ${UI.EnterpriseDataTable({
+                    rows: items,
+                    emptyTitle: 'Nenhuma oficina com movimentação de repasse',
+                    emptySubtitle: 'Os saldos de repasse aparecem aqui conforme ativações DNA forem liquidadas.',
+                    columns: [
+                        { key: 'trade_name', label: 'Oficina / CNPJ', render: w => `<a href="javascript:void(0)" class="adm-link" onclick="AdminView.openWorkshop('${esc(w.workshop_id)}')">${esc(w.trade_name)}</a><div class="adm-cell-sub adm-mono">${esc(w.cnpj || '')}</div>` },
+                        { key: 'city', label: 'Cidade/UF', render: w => `${esc(w.city || '-')}/${esc(w.state || '-')}` },
+                        { key: 'pending_cents', label: 'Pendente', align: 'right', tdClass: 'adm-money', render: w => `<span class="${w.pending_cents > 0 ? 'adm-text-warning' : 'adm-text-muted'}">${brl(w.pending_cents)} (${w.pending_count || 0})</span>` },
+                        { key: 'paid_cents', label: 'Repassado', align: 'right', tdClass: 'adm-money adm-text-success', render: w => `${brl(w.paid_cents)} (${w.paid_count || 0})` },
+                        { key: 'last_paid_at', label: 'Último Repasse', tdClass: 'adm-mono', render: w => esc(AdminView.formatDate(w.last_paid_at)) },
+                        {
+                            key: 'action', label: 'Ação', align: 'right', tdClass: 'adm-actions-cell',
+                            render: w => w.pending_cents > 0
+                                ? `<button type="button" class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminScreensFinance.markWorkshopPaid('${esc(w.workshop_id)}', '${esc(w.trade_name)}', ${w.pending_cents})">Registrar Repasse</button>`
+                                : '<span class="adm-badge adm-badge-muted">Quitado</span>'
+                        }
+                    ]
+                })}
             </div>
         `;
     },
 
-    async markWorkshopPaid(workshopId, workshopName) {
-        const ref = prompt(`Informe o código/referência da transferência bancária para ${workshopName}:`);
-        if (!ref || ref.trim().length < 3) return;
-        try {
-            await API.markAdminWorkshopPayoutPaid(workshopId, { transfer_reference: ref.trim() });
-            AdminView.toast('Repasse à oficina registrado com sucesso.');
-            await AdminView.reloadCurrentScreen();
-        } catch (err) {
-            alert(`❌ Erro: ${err.message}`);
-        }
+    markWorkshopPaid(workshopId, workshopName, pendingCents = 0) {
+        AdminView.openConfirmDialog({
+            title: `Registrar Repasse — ${workshopName}`,
+            message: `Informe a referência do comprovante da transferência bancária/PIX realizada no valor de ${AdminView.formatBrl(pendingCents)}.`,
+            confirmLabel: 'Confirmar Repasse',
+            tone: 'success',
+            inputConfig: {
+                id: 'ws-payout-ref',
+                type: 'text',
+                label: 'Código / Referência da Transferência',
+                placeholder: 'Ex: TED-20261121-001 ou EndToEnd PIX',
+                required: true,
+                minLength: 3
+            },
+            onConfirm: async (ref) => {
+                await API.markAdminWorkshopPayoutPaid(workshopId, { transfer_reference: ref });
+                AdminView.toast('Repasse à oficina registrado com sucesso.');
+                await AdminView.reloadCurrentScreen();
+            }
+        });
     },
 
     // --------------------------------------------------------------------------
@@ -464,46 +482,39 @@ const AdminScreensFinance = {
     // --------------------------------------------------------------------------
     async renderAttendanceFees() {
         const data = await API.getAdminAttendanceFees();
+        const UI = AdminView.ui();
         const s = data.summary || {};
         const items = data.items || [];
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Taxas por Atendimento (Retornos Confirmados)</h2>
-                    <p>Cobrança de taxa por atendimento de retorno agendado pelo sistema preventivo DNA AUTO (padrão R$ 6,90).</p>
-                </div>
-            </div>
+            ${UI.PageHeader({
+                title: 'Taxas por Atendimento (Retornos Confirmados)',
+                subtitle: 'Cobrança de taxa por atendimento de retorno agendado pelo sistema preventivo DNA AUTO.'
+            })}
 
             <div class="adm-kpi-grid">
-                <div class="adm-kpi-card tone-blue"><div class="adm-kpi-label">Total de Lançamentos</div><div class="adm-kpi-value">${s.total_count || 0}</div><div class="adm-kpi-sub">Total bruto: ${brl(s.total_cents)}</div></div>
-                <div class="adm-kpi-card tone-success"><div class="adm-kpi-label">Confirmadas</div><div class="adm-kpi-value">${brl(s.confirmed_cents)}</div></div>
-                <div class="adm-kpi-card tone-cyan"><div class="adm-kpi-label">Pagas</div><div class="adm-kpi-value">${brl(s.paid_cents)}</div></div>
-                <div class="adm-kpi-card tone-warning"><div class="adm-kpi-label">Pendentes</div><div class="adm-kpi-value">${brl(s.pending_cents)}</div></div>
+                ${UI.KPIStatCard({ label: 'Total de Lançamentos', value: AdminView.formatNum(s.total_count), sub: `Total bruto: ${brl(s.total_cents)}`, tone: 'tone-blue' })}
+                ${UI.FinancialMetric({ label: 'Taxas Confirmadas', cents: s.confirmed_cents, classification: 'Confirmado', tone: 'tone-success' })}
+                ${UI.FinancialMetric({ label: 'Taxas Pagas', cents: s.paid_cents, classification: 'Recebido', tone: 'tone-cyan' })}
+                ${UI.FinancialMetric({ label: 'Taxas Pendentes', cents: s.pending_cents, classification: 'Pendente', tone: 'tone-warning' })}
             </div>
 
             <div class="adm-card">
-                ${items.length === 0 ? `<div class="adm-empty"><strong>Nenhuma taxa lançada</strong>As taxas aparecem quando agendamentos preventivos são confirmados nas oficinas.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Data</th><th>Oficina</th><th>Placa / Veículo</th><th>Origem</th><th>Valor</th><th>Status</th></tr></thead>
-                            <tbody>
-                                ${items.map(f => `
-                                    <tr>
-                                        <td class="adm-mono">${esc(AdminView.formatDateTime(f.created_at))}</td>
-                                        <td><strong>${esc(f.workshop_name)}</strong> <span style="color:#64748b;">(${esc(f.workshop_city || '-')}/${esc(f.workshop_state || '-')})</span></td>
-                                        <td class="adm-mono">${esc(f.license_plate || '-')} ${esc(f.brand || '')} ${esc(f.model || '')}</td>
-                                        <td>${esc(f.origin || f.fee_type || 'RETORNO_BOT')}</td>
-                                        <td class="adm-mono" style="font-weight:700;">${brl(f.amount_cents)}</td>
-                                        <td>${AdminView.statusBadge(f.status)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
+                ${UI.EnterpriseDataTable({
+                    rows: items,
+                    emptyTitle: 'Nenhuma taxa lançada',
+                    emptySubtitle: 'As taxas aparecem quando agendamentos preventivos são confirmados nas oficinas.',
+                    columns: [
+                        { key: 'created_at', label: 'Data / Hora', tdClass: 'adm-mono', render: f => esc(AdminView.formatDateTime(f.created_at)) },
+                        { key: 'workshop_name', label: 'Oficina', render: f => `<span class="adm-cell-title">${esc(f.workshop_name)}</span><div class="adm-cell-sub">${esc(f.workshop_city || '-')}/${esc(f.workshop_state || '-')}</div>` },
+                        { key: 'license_plate', label: 'Placa / Veículo', tdClass: 'adm-mono', render: f => `${esc(f.license_plate || '-')} ${esc(f.brand || '')} ${esc(f.model || '')}` },
+                        { key: 'origin', label: 'Origem', render: f => esc(f.origin || f.fee_type || 'RETORNO_BOT') },
+                        { key: 'amount_cents', label: 'Valor', align: 'right', tdClass: 'adm-money', render: f => brl(f.amount_cents) },
+                        { key: 'status', label: 'Status', render: f => AdminView.statusBadge(f.status) }
+                    ]
+                })}
             </div>
         `;
     },
@@ -514,48 +525,46 @@ const AdminScreensFinance = {
     async renderReconciliation(ctx) {
         const compMonth = (ctx.params && ctx.params.competence_month) || ctx.month || new Date().toISOString().slice(0, 7);
         const data = await API.getAdminFinancialReconciliation({ competence_month: compMonth });
+        const UI = AdminView.ui();
         const s = data.summary || {};
         const items = data.items || [];
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Conciliação Financeira — ${esc(data.competence_month)}</h2>
-                    <p>Cruzamento automático entre cobranças PIX (AbacatePay), ativações DNA, vínculos comerciais e comissões geradas.</p>
-                </div>
-                <input type="month" class="adm-input" value="${esc(data.competence_month)}" onchange="AdminView.updateParams({ competence_month: this.value })" />
-            </div>
+            ${UI.PageHeader({
+                title: `Conciliação Financeira — ${data.competence_month || ''}`,
+                subtitle: 'Cruzamento automático entre cobranças PIX (AbacatePay), ativações DNA, vínculos comerciais e comissões geradas.',
+                actionsHtml: `<input type="month" class="adm-input" aria-label="Competência para conciliação" value="${esc(data.competence_month)}" onchange="AdminView.updateParams({ competence_month: this.value })" />`
+            })}
 
             <div class="adm-kpi-grid">
-                <div class="adm-kpi-card tone-blue"><div class="adm-kpi-label">Transações Auditadas</div><div class="adm-kpi-value">${s.total_transactions || 0}</div><div class="adm-kpi-sub">Conciliadas: ${s.reconciled_count || 0}</div></div>
-                <div class="adm-kpi-card ${s.discrepancies_count > 0 ? 'tone-danger' : 'tone-success'}"><div class="adm-kpi-label">Divergências Encontradas</div><div class="adm-kpi-value">${s.discrepancies_count || 0}</div><div class="adm-kpi-sub">${s.discrepancies_count > 0 ? 'Requer conferência manual' : '100% íntegro'}</div></div>
-                <div class="adm-kpi-card tone-success"><div class="adm-kpi-label">PIX Liquidado (Cliente / Plat.)</div><div class="adm-kpi-value">${brl(s.paid_total_customer_cents)}</div><div class="adm-kpi-sub">Plataforma: ${brl(s.paid_total_platform_cents)} • Oficina: ${brl(s.paid_total_workshop_cents)}</div></div>
-                <div class="adm-kpi-card tone-gold"><div class="adm-kpi-label">Comissões Rep. Conciliadas</div><div class="adm-kpi-value">${brl(s.paid_total_rep_comm_cents)}</div></div>
+                ${UI.KPIStatCard({ label: 'Transações Auditadas', value: AdminView.formatNum(s.total_transactions), sub: `Conciliadas: ${s.reconciled_count || 0}`, tone: 'tone-blue' })}
+                ${UI.KPIStatCard({ label: 'Divergências Encontradas', value: AdminView.formatNum(s.discrepancies_count), sub: s.discrepancies_count > 0 ? 'Requer conferência manual' : '100% íntegro', tone: s.discrepancies_count > 0 ? 'tone-danger' : 'tone-success' })}
+                ${UI.FinancialMetric({ label: 'PIX Liquidado (Bruto)', cents: s.paid_total_customer_cents, classification: 'Recebido', sub: `Plataforma: ${brl(s.paid_total_platform_cents)} • Oficina: ${brl(s.paid_total_workshop_cents)}`, tone: 'tone-success' })}
+                ${UI.FinancialMetric({ label: 'Comissões Rep. Conciliadas', cents: s.paid_total_rep_comm_cents, classification: 'Confirmado', tone: 'tone-gold' })}
             </div>
 
             <div class="adm-card">
-                ${items.length === 0 ? `<div class="adm-empty"><strong>Sem transações PIX na competência ${esc(data.competence_month)}</strong>Selecione outro mês para conciliar.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Pagamento</th><th>Oficina</th><th>Placa / Código</th><th>Valor Cliente</th><th>Status PIX</th><th>Rep / Comissão</th><th>Conciliação</th></tr></thead>
-                            <tbody>
-                                ${items.map(r => `
-                                    <tr>
-                                        <td class="adm-mono" style="font-size:11px;">${esc(r.payment_id)}<div style="color:#64748b;">${esc(AdminView.formatDateTime(r.paid_at || r.created_at))}</div></td>
-                                        <td>${esc(r.workshop_name)}</td>
-                                        <td class="adm-mono">${esc(r.license_plate || r.activation_code || '-')}</td>
-                                        <td class="adm-mono">${brl(r.customer_price_cents)}</td>
-                                        <td>${AdminView.statusBadge(r.payment_status)}</td>
-                                        <td>${r.rep_code ? `<span class="adm-mono" style="color:#00d4ff;">${esc(r.rep_code)}</span> • ${r.commission_status ? `${brl(r.commission_amount_cents)} (${esc(r.commission_status)})` : 'Sem comissão'}` : '<span style="color:#64748b;">Direta</span>'}</td>
-                                        <td>${r.reconciliation_status === 'CONCILIADO' ? '<span class="adm-badge adm-badge-success">CONCILIADO</span>' : `<span class="adm-badge adm-badge-danger" title="${esc(r.discrepancy_reason || '')}">DIVERGENTE</span><div style="font-size:10.5px; color:#fca5a5;">${esc(r.discrepancy_reason || '')}</div>`}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
+                ${UI.EnterpriseDataTable({
+                    rows: items,
+                    emptyTitle: `Sem transações PIX na competência ${data.competence_month}`,
+                    emptySubtitle: 'Selecione outro mês para realizar a conciliação financeira.',
+                    columns: [
+                        { key: 'payment_id', label: 'Pagamento', tdClass: 'adm-mono', render: r => `<strong>${esc(r.payment_id)}</strong><div class="adm-cell-sub">${esc(AdminView.formatDateTime(r.paid_at || r.created_at))}</div>` },
+                        { key: 'workshop_name', label: 'Oficina', render: r => esc(r.workshop_name) },
+                        { key: 'license_plate', label: 'Placa / Código', tdClass: 'adm-mono', render: r => esc(r.license_plate || r.activation_code || '-') },
+                        { key: 'customer_price_cents', label: 'Valor Cliente', align: 'right', tdClass: 'adm-money', render: r => brl(r.customer_price_cents) },
+                        { key: 'payment_status', label: 'Status PIX', render: r => AdminView.statusBadge(r.payment_status) },
+                        { key: 'rep_code', label: 'Rep / Comissão', render: r => r.rep_code ? `<span class="adm-mono adm-text-accent" style="font-weight:700;">${esc(r.rep_code)}</span> • ${r.commission_status ? `${brl(r.commission_amount_cents)} (${esc(r.commission_status)})` : 'Sem comissão'}` : '<span class="adm-text-muted">Direta</span>' },
+                        {
+                            key: 'reconciliation_status', label: 'Conciliação',
+                            render: r => r.reconciliation_status === 'CONCILIADO'
+                                ? AdminView.statusBadge('CONCILIADO')
+                                : `${AdminView.statusBadge('DIVERGENTE')}<div class="adm-cell-sub adm-text-danger">${esc(r.discrepancy_reason || '')}</div>`
+                        }
+                    ]
+                })}
             </div>
         `;
     }

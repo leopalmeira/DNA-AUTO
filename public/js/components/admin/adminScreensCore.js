@@ -1,160 +1,409 @@
 // ==============================================================================
-// DNA AUTO — CENTRAL ADMINISTRATIVA V2: TELAS VISÃO GERAL & REDE DNA AUTO
-// Fases 2, 3 e 5
+// DNA AUTO | ENTERPRISE MANAGEMENT V3 — VISÃO EXECUTIVA & REDE DNA AUTO
+// Dashboard Executivo, Operação, Indicadores Estratégicos, Oficinas Credenciadas
+// (com Detalhamento em 7 Abas), Clientes, Veículos, Atendimentos e Manutenções
 // ==============================================================================
 
 const AdminScreensCore = {
+    lastWorkshopsData: [],
+
+    // Helper seguro para ordenação client-side em listagens compatíveis
+    sortItems(items, sortBy, sortDir = 'desc') {
+        if (!sortBy || !Array.isArray(items)) return items || [];
+        const dir = sortDir === 'asc' ? 1 : -1;
+        return [...items].sort((a, b) => {
+            const va = a?.[sortBy];
+            const vb = b?.[sortBy];
+            if (typeof va === 'number' || typeof vb === 'number') {
+                return (Number(va || 0) - Number(vb || 0)) * dir;
+            }
+            return String(va ?? '').localeCompare(String(vb ?? ''), 'pt-BR', { numeric: true, sensitivity: 'base' }) * dir;
+        });
+    },
+
+    filterByCredenciamentoPeriod(items, periodKey) {
+        if (!periodKey || periodKey === 'ALL') return items || [];
+        const daysMap = { '7d': 7, '30d': 30, '90d': 90, '365d': 365 };
+        const days = daysMap[periodKey];
+        if (!days) return items || [];
+        const cutoff = Date.now() - days * 86400000;
+        return (items || []).filter(item => {
+            if (!item.created_at) return false;
+            const iso = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(String(item.created_at))
+                ? `${String(item.created_at).replace(' ', 'T')}Z`
+                : String(item.created_at);
+            const t = new Date(iso).getTime();
+            return !Number.isNaN(t) && t >= cutoff;
+        });
+    },
+
     // --------------------------------------------------------------------------
-    // 1. DASHBOARD GERAL (FASE 3 — 16 Cards Principais + 8 Gráficos Reais)
+    // 1. DASHBOARD EXECUTIVO (Seções Operacional, Comercial, Financeira + 8 Gráficos)
     // --------------------------------------------------------------------------
     async renderDashboard(ctx) {
-        const [overview, timeseries] = await Promise.all([
+        const finPromise = typeof API.getAdminFinanceOverview === 'function'
+            ? API.getAdminFinanceOverview({ competence_month: ctx.month }).catch(() => null)
+            : Promise.resolve(null);
+
+        const [overview, timeseries, finOverview] = await Promise.all([
             API.getAdminDashboardOverview({ period: ctx.period, month: ctx.month }),
-            API.getAdminDashboardTimeseries({ months: 6 })
+            API.getAdminDashboardTimeseries({ months: 6 }),
+            finPromise
         ]);
+
+        AdminView.updateLiveBadgesFromOverview(overview);
+
+        const UI = AdminView.ui();
         const c = overview.cards || {};
         const s = overview.supplementary || {};
+        const finRev = (finOverview && finOverview.revenue) || {};
+        const finWp = (finOverview && finOverview.workshop_payouts) || {};
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
         const num = AdminView.formatNum;
-
-        // 16 Cards Principais exatos da Fase 3 (calculados 100% no backend)
-        const kpiCards = [
-            { label: '1. Representantes Cadastrados', val: num(c.total_representatives), sub: `${num(s.suspended_representatives)} suspensos • ${num(s.rejected_representatives)} recusados`, tone: 'tone-blue', route: 'representatives' },
-            { label: '2. Representantes Ativos', val: num(c.active_representatives), sub: `${num(s.active_referrals)} vínculos comerciais vigentes (24m)`, tone: 'tone-success', route: 'representatives' },
-            { label: '3. Reps. Aguardando Aprovação', val: num(c.pending_representatives), sub: c.pending_representatives > 0 ? 'Ação administrativa pendente' : 'Nenhuma pendência na fila', tone: c.pending_representatives > 0 ? 'tone-warning' : 'tone-success', route: 'representatives' },
-            { label: '4. Total de Oficinas', val: num(c.total_workshops), sub: `${num(s.cities_covered)} cidades • ${num(s.states_covered)} estados`, tone: 'tone-blue', route: 'workshops' },
-            { label: '5. Oficinas Ativas', val: num(c.active_workshops), sub: `${num(s.suspended_workshops)} suspensas / bloqueadas`, tone: 'tone-success', route: 'workshops' },
-            { label: '6. Oficinas Aguardando Aprovação', val: num(c.pending_workshops), sub: c.pending_workshops > 0 ? 'Requer credenciamento' : 'Fila de credenciamento limpa', tone: c.pending_workshops > 0 ? 'tone-warning' : 'tone-success', route: 'workshops' },
-            { label: '7. Total de Clientes Únicos', val: num(c.unique_clients), sub: 'Desduplicados (múltiplos carros = 1 cliente)', tone: 'tone-cyan', route: 'clients' },
-            { label: '8. Total de Veículos Cadastrados', val: num(c.total_vehicles), sub: `${num(s.vehicles_without_dna)} ainda sem DNA ativo`, tone: 'tone-blue', route: 'vehicles' },
-            { label: '9. Veículos com DNA Ativo', val: num(c.active_dna_vehicles), sub: c.total_vehicles > 0 ? `${Math.round((c.active_dna_vehicles / c.total_vehicles) * 100)}% da frota certificada` : '0% da frota', tone: 'tone-success', route: 'vehicles' },
-            { label: '10. Cadastros Pagos no Período', val: num(c.monthly_paid_registrations), sub: `Período: ${esc(overview.period?.label || '-')}`, tone: 'tone-gold', route: 'revenue' },
-            { label: '11. Faturamento Confirmado', val: brl(c.monthly_confirmed_revenue_cents), sub: `Volume mecânico OS: ${brl(s.mechanical_services_volume_cents)}`, tone: 'tone-success', route: 'revenue' },
-            { label: '12. Comissões Reps. a Pagar', val: brl(c.rep_commissions_payable_cents), sub: `Projetadas (não elegíveis): ${brl(s.rep_commissions_projected_cents)}`, tone: 'tone-gold', route: 'commissions' },
-            { label: '13. Comissões Próximo Ciclo', val: brl(c.rep_commissions_next_month_cents), sub: `Previsto p/ ${esc(overview.period?.scheduled_payout_date || overview.period?.payout_month || '-')}`, tone: 'tone-cyan', route: 'payouts' },
-            { label: '14. Repasses Oficinas Pendentes', val: brl(c.workshop_payouts_pending_cents), sub: 'Saldo disponível para repasse 50%', tone: 'tone-warning', route: 'workshop-payouts' },
-            { label: '15. Taxas por Atendimento Conf.', val: brl(c.attendance_fees_confirmed_cents), sub: `${num(s.attendance_fees_count)} retorno(s) contabilizado(s)`, tone: 'tone-blue', route: 'attendance-fees' },
-            { label: '16. Atendimentos no Período', val: num(c.monthly_attendances_count), sub: `${num(s.proven_services_count)} OS comprovadas Nível 4`, tone: 'tone-success', route: 'service-orders' }
-        ];
-
         const charts = timeseries || {};
         const updatedLabel = AdminView.formatDateTime(overview.generated_at);
 
-        return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Dashboard Executivo — Central DNA AUTO</h2>
-                    <p>Visão consolidada em tempo real dos aplicativos Cliente, Oficina, Representante Comercial e Financeiro. Período ativo: <strong>${esc(overview.period?.label || '-')}</strong></p>
-                </div>
-                <div class="adm-updated-stamp">Última atualização (API): <strong>${esc(updatedLabel)}</strong></div>
-            </div>
+        const dnaAdoptionPct = c.total_vehicles > 0
+            ? Math.round((Number(c.active_dna_vehicles || 0) / Number(c.total_vehicles)) * 100)
+            : null;
 
-            ${(c.pending_representatives > 0 || c.pending_workshops > 0 || s.open_support_tickets > 0) ? `
-                <div class="adm-card" style="padding:12px 16px; border-color:rgba(245,158,11,0.35); background:rgba(245,158,11,0.06); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-                    <div style="font-size:12.5px; color:#fde68a;">
-                        <strong>Pendências operacionais:</strong>
-                        ${c.pending_representatives > 0 ? `• <strong>${num(c.pending_representatives)}</strong> representante(s) aguardando aprovação ` : ''}
-                        ${c.pending_workshops > 0 ? `• <strong>${num(c.pending_workshops)}</strong> oficina(s) aguardando credenciamento ` : ''}
-                        ${s.open_support_tickets > 0 ? `• <strong>${num(s.open_support_tickets)}</strong> chamado(s) de suporte em aberto` : ''}
+        const hasPendencies = (c.pending_representatives > 0 || c.pending_workshops > 0 || s.open_support_tickets > 0);
+
+        return `
+            ${UI.PageHeader({
+                title: 'Dashboard Executivo',
+                subtitle: `Central gerencial consolidada em tempo real — Cliente, Oficina, Representante Comercial e Financeiro. Período ativo: <strong>${esc(overview.period?.label || '-')}</strong>.`,
+                updatedAt: updatedLabel,
+                actionsHtml: `
+                    <button type="button" class="adm-btn adm-btn-sm" onclick="AdminView.navigate('revenue')">Visão Financeira →</button>
+                    <button type="button" class="adm-btn adm-btn-sm adm-btn-primary" onclick="AdminView.navigate('workshops')">Gerenciar Oficinas</button>
+                `
+            })}
+
+            ${hasPendencies ? `
+                <div class="adm-alert-banner" role="region" aria-label="Pendências operacionais">
+                    <div>
+                        <strong>Pendências operacionais da rede:</strong>
+                        ${c.pending_representatives > 0 ? ` • <strong>${num(c.pending_representatives)}</strong> representante(s) aguardando aprovação` : ''}
+                        ${c.pending_workshops > 0 ? ` • <strong>${num(c.pending_workshops)}</strong> oficina(s) aguardando credenciamento` : ''}
+                        ${s.open_support_tickets > 0 ? ` • <strong>${num(s.open_support_tickets)}</strong> chamado(s) de suporte em aberto` : ''}
                     </div>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                        ${c.pending_representatives > 0 ? `<button class="adm-btn adm-btn-sm adm-btn-gold" onclick="AdminView.navigate('representatives', { status: 'PENDING_APPROVAL' })">Aprovar Representantes</button>` : ''}
-                        ${c.pending_workshops > 0 ? `<button class="adm-btn adm-btn-sm" onclick="AdminView.navigate('workshops', { status: 'PENDING' })">Revisar Oficinas</button>` : ''}
-                        ${s.open_support_tickets > 0 ? `<button class="adm-btn adm-btn-sm" onclick="AdminView.navigate('support')">Abrir Suporte</button>` : ''}
+                    <div class="adm-header-actions">
+                        ${c.pending_representatives > 0 ? `<button type="button" class="adm-btn adm-btn-sm adm-btn-primary" onclick="AdminView.navigate('representatives', { status: 'PENDING_APPROVAL' })">Aprovar Representantes</button>` : ''}
+                        ${c.pending_workshops > 0 ? `<button type="button" class="adm-btn adm-btn-sm" onclick="AdminView.navigate('workshops', { status: 'PENDING' })">Revisar Oficinas</button>` : ''}
+                        ${s.open_support_tickets > 0 ? `<button type="button" class="adm-btn adm-btn-sm" onclick="AdminView.navigate('support')">Abrir Suporte</button>` : ''}
                     </div>
                 </div>
             ` : ''}
 
+            <!-- SEÇÃO 1: INDICADORES OPERACIONAIS -->
+            <div class="adm-block-header">
+                <h3 class="adm-block-title">Indicadores Operacionais da Rede</h3>
+                <span class="adm-block-subtitle">Base real de oficinas, clientes desduplicados, frota certificada e atendimentos</span>
+            </div>
             <div class="adm-kpi-grid" data-testid="dashboard-kpi-grid">
-                ${kpiCards.map(k => `
-                    <div class="adm-kpi-card clickable ${k.tone}" onclick="AdminView.navigate('${k.route}')">
-                        <div class="adm-kpi-label">${esc(k.label)}</div>
-                        <div class="adm-kpi-value">${esc(k.val)}</div>
-                        <div class="adm-kpi-sub">${esc(k.sub)}</div>
-                    </div>
-                `).join('')}
+                ${UI.KPIStatCard({
+                    label: 'Oficinas Cadastradas',
+                    value: num(c.total_workshops),
+                    sub: `${num(s.cities_covered)} cidades • ${num(s.states_covered)} estados`,
+                    tone: 'tone-blue',
+                    onClick: "AdminView.navigate('workshops')"
+                })}
+                ${UI.KPIStatCard({
+                    label: 'Oficinas Ativas',
+                    value: num(c.active_workshops),
+                    sub: `${num(c.pending_workshops)} pendente(s) • ${num(s.suspended_workshops)} suspensa(s)`,
+                    tone: 'tone-success',
+                    onClick: "AdminView.navigate('workshops', { status: 'APPROVED' })"
+                })}
+                ${UI.KPIStatCard({
+                    label: 'Clientes Registrados (Únicos)',
+                    value: num(c.unique_clients),
+                    sub: 'Desduplicados (múltiplos veículos = 1 cliente)',
+                    tone: 'tone-cyan',
+                    onClick: "AdminView.navigate('clients')"
+                })}
+                ${UI.KPIStatCard({
+                    label: 'Veículos Registrados',
+                    value: num(c.total_vehicles),
+                    sub: `${num(c.active_dna_vehicles)} com DNA ativo • ${num(s.vehicles_without_dna)} sem DNA`,
+                    tone: 'tone-blue',
+                    onClick: "AdminView.navigate('vehicles')"
+                })}
+                ${UI.KPIStatCard({
+                    label: 'Veículos com DNA Ativo',
+                    value: num(c.active_dna_vehicles),
+                    sub: dnaAdoptionPct !== null ? `${dnaAdoptionPct}% da frota certificada` : 'Sem veículos cadastrados',
+                    tone: 'tone-success',
+                    progressPct: dnaAdoptionPct,
+                    onClick: "AdminView.navigate('vehicles', { dna_status: 'ACTIVE' })"
+                })}
+                ${UI.KPIStatCard({
+                    label: 'Atendimentos no Período',
+                    value: num(c.monthly_attendances_count),
+                    sub: `${num(s.proven_services_count)} OS comprovadas Nível 4`,
+                    tone: 'tone-cyan',
+                    onClick: "AdminView.navigate('service-orders')"
+                })}
+                ${UI.KPIStatCard({
+                    label: 'Oficinas Aguardando Aprovação',
+                    value: num(c.pending_workshops),
+                    sub: c.pending_workshops > 0 ? 'Requer homologação administrativa' : 'Fila de credenciamento em dia',
+                    tone: c.pending_workshops > 0 ? 'tone-warning' : 'tone-success',
+                    onClick: "AdminView.navigate('workshops', { status: 'PENDING' })"
+                })}
+                ${UI.KPIStatCard({
+                    label: 'Chamados de Suporte Abertos',
+                    value: num(s.open_support_tickets),
+                    sub: s.open_support_tickets > 0 ? 'Aguardando resposta da matriz' : 'Nenhum chamado pendente',
+                    tone: s.open_support_tickets > 0 ? 'tone-danger' : 'tone-success',
+                    onClick: "AdminView.navigate('support')"
+                })}
             </div>
 
+            <!-- SEÇÃO 2: INDICADORES COMERCIAIS -->
+            <div class="adm-block-header">
+                <h3 class="adm-block-title">Indicadores Comerciais</h3>
+                <span class="adm-block-subtitle">Expansão da rede via representantes e cadastros liquidados no período</span>
+            </div>
+            <div class="adm-kpi-grid">
+                ${UI.KPIStatCard({
+                    label: 'Representantes Cadastrados',
+                    value: num(c.total_representatives),
+                    sub: `${num(s.suspended_representatives)} suspensos • ${num(s.rejected_representatives)} recusados`,
+                    tone: 'tone-blue',
+                    onClick: "AdminView.navigate('representatives')"
+                })}
+                ${UI.KPIStatCard({
+                    label: 'Representantes Ativos',
+                    value: num(c.active_representatives),
+                    sub: `${num(s.active_referrals)} vínculos comerciais vigentes (24m)`,
+                    tone: 'tone-success',
+                    onClick: "AdminView.navigate('representatives', { status: 'ACTIVE' })"
+                })}
+                ${UI.KPIStatCard({
+                    label: 'Reps. Aguardando Aprovação',
+                    value: num(c.pending_representatives),
+                    sub: c.pending_representatives > 0 ? 'Ação administrativa pendente' : 'Nenhuma pendência na fila',
+                    tone: c.pending_representatives > 0 ? 'tone-warning' : 'tone-success',
+                    onClick: "AdminView.navigate('representatives', { status: 'PENDING_APPROVAL' })"
+                })}
+                ${UI.KPIStatCard({
+                    label: 'Cadastros Pagos no Período',
+                    value: num(c.monthly_paid_registrations),
+                    sub: `Período: ${overview.period?.label || '-'}`,
+                    tone: 'tone-cyan',
+                    onClick: "AdminView.navigate('acquisition')"
+                })}
+            </div>
+
+            <!-- SEÇÃO 3: INDICADORES FINANCEIROS -->
+            <div class="adm-block-header">
+                <h3 class="adm-block-title">Indicadores Financeiros</h3>
+                <span class="adm-block-subtitle">Separação rigorosa entre valores faturados, recebidos, pendentes, previstos e a repassar</span>
+            </div>
+            <div class="adm-kpi-grid">
+                ${UI.FinancialMetric({
+                    label: 'Faturamento Bruto Confirmado',
+                    cents: c.monthly_confirmed_revenue_cents,
+                    classification: 'Confirmado',
+                    sub: `Volume mecânico OS: ${brl(s.mechanical_services_volume_cents)}`,
+                    tone: 'tone-success',
+                    onClick: "AdminView.navigate('revenue')"
+                })}
+                ${UI.FinancialMetric({
+                    label: 'Receita Líquida Plataforma (PIX)',
+                    cents: finRev.pix_paid_platform_cents || 0,
+                    classification: 'Recebido',
+                    sub: finOverview ? `${num(finRev.pix_paid_count)} PIX liquidados • Repassado ofic.: ${brl(finWp.paid_cents)}` : 'Consulte Faturamento Geral para detalhamento',
+                    tone: 'tone-cyan',
+                    onClick: "AdminView.navigate('revenue')"
+                })}
+                ${UI.FinancialMetric({
+                    label: 'Valores Pendentes (PIX em Aberto)',
+                    cents: finRev.pix_pending_cents || 0,
+                    classification: 'Pendente',
+                    sub: `${num(finRev.pix_pending_count || 0)} cobrança(s) aguardando compensação`,
+                    tone: 'tone-warning',
+                    onClick: "AdminView.navigate('reconciliation')"
+                })}
+                ${UI.FinancialMetric({
+                    label: 'Comissões a Pagar (Elegível)',
+                    cents: c.rep_commissions_payable_cents,
+                    classification: 'A Pagar',
+                    sub: `Projetadas (não elegíveis): ${brl(s.rep_commissions_projected_cents)}`,
+                    tone: 'tone-gold',
+                    onClick: "AdminView.navigate('commissions')"
+                })}
+                ${UI.FinancialMetric({
+                    label: 'Comissões Próximo Ciclo',
+                    cents: c.rep_commissions_next_month_cents,
+                    classification: 'Previsto',
+                    sub: `Previsão p/ ${overview.period?.scheduled_payout_date || overview.period?.payout_month || '-'}`,
+                    tone: 'tone-blue',
+                    onClick: "AdminView.navigate('payouts')"
+                })}
+                ${UI.FinancialMetric({
+                    label: 'Repasses Pendentes às Oficinas',
+                    cents: c.workshop_payouts_pending_cents,
+                    classification: 'A Repassar',
+                    sub: `Já repassado: ${brl(finWp.paid_cents || 0)}`,
+                    tone: 'tone-warning',
+                    onClick: "AdminView.navigate('workshop-payouts')"
+                })}
+                ${UI.FinancialMetric({
+                    label: 'Taxas por Atendimento',
+                    cents: c.attendance_fees_confirmed_cents,
+                    classification: 'Confirmado',
+                    sub: `${num(s.attendance_fees_count)} retorno(s) contabilizado(s)`,
+                    tone: 'tone-success',
+                    onClick: "AdminView.navigate('attendance-fees')"
+                })}
+                ${UI.FinancialMetric({
+                    label: 'Comissões já Pagas (Histórico)',
+                    cents: s.rep_commissions_paid_cents || 0,
+                    classification: 'Liquidado',
+                    sub: `Estornadas: ${brl(s.rep_commissions_refunded_cents || 0)} • Bloq.: ${brl(s.rep_commissions_blocked_cents || 0)}`,
+                    tone: 'tone-cyan',
+                    onClick: "AdminView.navigate('payouts')"
+                })}
+            </div>
+
+            <!-- SEÇÃO 4: ANÁLISE GRÁFICA EXECUTIVA -->
+            <div class="adm-block-header">
+                <h3 class="adm-block-title">Evolução Histórica e Distribuição da Rede</h3>
+                <span class="adm-block-subtitle">Séries reais dos últimos ${charts.months || 6} meses alimentadas diretamente pelo banco de dados</span>
+            </div>
             <div class="adm-charts-grid">
                 <div class="adm-card">
                     <div class="adm-card-header">
                         <div>
-                            <h3 class="adm-card-title">1. Evolução de Cadastros por Mês</h3>
-                            <p class="adm-card-subtitle">Cadastros pagos (ciano) vs Ativações de cliente iniciadas (verde)</p>
+                            <h3 class="adm-card-title">Evolução Mensal de Cadastramentos</h3>
+                            <p class="adm-card-subtitle">Comparativo entre cadastros pagos e ativações iniciadas</p>
                         </div>
                     </div>
-                    ${AdminCharts.renderBarChart(charts.registrations_by_month || [], { valueKey: 'paid_registrations', secondaryKey: 'client_activations', labelKey: 'month', color: '#00D4FF', secondaryColor: '#10B981' })}
+                    ${AdminCharts.renderBarChart(charts.registrations_by_month || [], {
+                        valueKey: 'paid_registrations',
+                        secondaryKey: 'client_activations',
+                        labelKey: 'month',
+                        primaryLabel: 'Cadastros Pagos',
+                        secondaryLabel: 'Ativações Iniciadas',
+                        color: 'var(--adm-chart-1)',
+                        secondaryColor: 'var(--adm-chart-2)'
+                    })}
                 </div>
 
                 <div class="adm-card">
                     <div class="adm-card-header">
                         <div>
-                            <h3 class="adm-card-title">2. Evolução de Faturamento Confirmado</h3>
-                            <p class="adm-card-subtitle">Receita confirmada de ativações DNA nos últimos ${charts.months || 6} meses</p>
+                            <h3 class="adm-card-title">Faturamento Mensal Confirmado</h3>
+                            <p class="adm-card-subtitle">Receita efetivamente confirmada de ativações DNA</p>
                         </div>
                     </div>
-                    ${AdminCharts.renderLineChart(charts.revenue_by_month || [], { valueKey: 'confirmed_revenue_cents', labelKey: 'month', color: '#10B981', isCurrency: true })}
+                    ${AdminCharts.renderLineChart(charts.revenue_by_month || [], {
+                        valueKey: 'confirmed_revenue_cents',
+                        labelKey: 'month',
+                        seriesLabel: 'Faturamento Confirmado (BRL)',
+                        color: 'var(--adm-chart-2)',
+                        isCurrency: true
+                    })}
                 </div>
 
                 <div class="adm-card">
                     <div class="adm-card-header">
                         <div>
-                            <h3 class="adm-card-title">3. Crescimento da Rede de Oficinas</h3>
+                            <h3 class="adm-card-title">Crescimento da Rede de Oficinas</h3>
                             <p class="adm-card-subtitle">Base acumulada de oficinas credenciadas por mês</p>
                         </div>
                     </div>
-                    ${AdminCharts.renderLineChart(charts.workshops_growth_by_month || [], { valueKey: 'cumulative_workshops', labelKey: 'month', color: '#FFD21C' })}
+                    ${AdminCharts.renderLineChart(charts.workshops_growth_by_month || [], {
+                        valueKey: 'cumulative_workshops',
+                        labelKey: 'month',
+                        seriesLabel: 'Oficinas Acumuladas',
+                        color: 'var(--adm-chart-3)'
+                    })}
                 </div>
 
                 <div class="adm-card">
                     <div class="adm-card-header">
                         <div>
-                            <h3 class="adm-card-title">4. Representantes com Maior Captação</h3>
-                            <p class="adm-card-subtitle">Ranking de oficinas vinculadas à carteira comercial</p>
+                            <h3 class="adm-card-title">Comissões por Competência</h3>
+                            <p class="adm-card-subtitle">Valores confirmados em aberto versus liquidados</p>
                         </div>
                     </div>
-                    ${AdminCharts.renderHorizontalBars(charts.top_representatives_by_workshops || [], { labelKey: 'name', subKey: 'rep_code', valueKey: 'linked_workshops', color: '#00D4FF', suffix: ' oficina(s)' })}
+                    ${AdminCharts.renderBarChart(charts.commissions_by_competence || [], {
+                        valueKey: 'confirmed_cents',
+                        secondaryKey: 'paid_cents',
+                        labelKey: 'competence_month',
+                        primaryLabel: 'Confirmadas em Aberto',
+                        secondaryLabel: 'Comissões Pagas',
+                        color: 'var(--adm-chart-4)',
+                        secondaryColor: 'var(--adm-chart-2)',
+                        isCurrency: true
+                    })}
                 </div>
 
                 <div class="adm-card">
                     <div class="adm-card-header">
                         <div>
-                            <h3 class="adm-card-title">5. Cadastros Pagos por Representante</h3>
-                            <p class="adm-card-subtitle">Cadastros efetivamente liquidados e comissionados</p>
+                            <h3 class="adm-card-title">Representantes com Maior Carteira</h3>
+                            <p class="adm-card-subtitle">Oficinas vinculadas por representante comercial</p>
                         </div>
                     </div>
-                    ${AdminCharts.renderHorizontalBars(charts.paid_registrations_by_rep || [], { labelKey: 'name', subKey: 'rep_code', valueKey: 'paid_registrations', color: '#10B981', suffix: ' pago(s)' })}
+                    ${AdminCharts.renderHorizontalBars(charts.top_representatives_by_workshops || [], {
+                        labelKey: 'name',
+                        subKey: 'rep_code',
+                        valueKey: 'linked_workshops',
+                        color: 'var(--adm-chart-1)',
+                        suffix: ' oficina(s)'
+                    })}
                 </div>
 
                 <div class="adm-card">
                     <div class="adm-card-header">
                         <div>
-                            <h3 class="adm-card-title">6. Comissões por Competência</h3>
-                            <p class="adm-card-subtitle">Confirmadas em aberto (dourado) vs Pagas (verde)</p>
+                            <h3 class="adm-card-title">Cadastros Pagos por Representante</h3>
+                            <p class="adm-card-subtitle">Ativações efetivamente liquidadas e comissionadas</p>
                         </div>
                     </div>
-                    ${AdminCharts.renderBarChart(charts.commissions_by_competence || [], { valueKey: 'confirmed_cents', secondaryKey: 'paid_cents', labelKey: 'competence_month', color: '#FFD21C', secondaryColor: '#10B981', isCurrency: true })}
+                    ${AdminCharts.renderHorizontalBars(charts.paid_registrations_by_rep || [], {
+                        labelKey: 'name',
+                        subKey: 'rep_code',
+                        valueKey: 'paid_registrations',
+                        color: 'var(--adm-chart-2)',
+                        suffix: ' pago(s)'
+                    })}
                 </div>
 
                 <div class="adm-card">
                     <div class="adm-card-header">
                         <div>
-                            <h3 class="adm-card-title">7. Distribuição Geográfica de Oficinas</h3>
-                            <p class="adm-card-subtitle">Total de oficinas credenciadas por Estado (UF)</p>
+                            <h3 class="adm-card-title">Distribuição Geográfica da Rede</h3>
+                            <p class="adm-card-subtitle">Oficinas credenciadas por unidade federativa (UF)</p>
                         </div>
                     </div>
-                    ${AdminCharts.renderHorizontalBars(charts.workshops_by_state || [], { labelKey: 'state', valueKey: 'total_workshops', color: '#3B82F6', suffix: ' oficina(s)' })}
+                    ${AdminCharts.renderHorizontalBars(charts.workshops_by_state || [], {
+                        labelKey: 'state',
+                        valueKey: 'total_workshops',
+                        color: 'var(--adm-chart-3)',
+                        suffix: ' oficina(s)'
+                    })}
                 </div>
 
                 <div class="adm-card">
                     <div class="adm-card-header">
                         <div>
-                            <h3 class="adm-card-title">8. Cadastros por Origem</h3>
+                            <h3 class="adm-card-title">Cadastros por Canal de Origem</h3>
                             <p class="adm-card-subtitle">Oficina via Representante × Oficina Direta × App Cliente</p>
                         </div>
                     </div>
-                    ${AdminCharts.renderHorizontalBars(charts.registrations_by_origin || [], { labelKey: 'label', valueKey: 'count', color: '#A855F7', suffix: ' registro(s)' })}
+                    ${AdminCharts.renderHorizontalBars(charts.registrations_by_origin || [], {
+                        labelKey: 'label',
+                        valueKey: 'count',
+                        color: 'var(--adm-chart-5)',
+                        suffix: ' registro(s)'
+                    })}
                 </div>
             </div>
         `;
@@ -165,17 +414,16 @@ const AdminScreensCore = {
     // --------------------------------------------------------------------------
     async renderOperations() {
         const data = await API.getAdminOperationsOverview();
+        const UI = AdminView.ui();
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Operação da Rede em Tempo Real</h2>
-                    <p>Monitoramento contínuo de credenciamentos pendentes, ativações recentes, ordens de serviço e agendamentos das oficinas.</p>
-                </div>
-                <div class="adm-updated-stamp">Atualizado: ${esc(AdminView.formatDateTime(data.generated_at))}</div>
-            </div>
+            ${UI.PageHeader({
+                title: 'Operação da Rede em Tempo Real',
+                subtitle: 'Fila de aprovações pendentes, ordens de serviço lançadas pelas oficinas, ativações e agendamentos.',
+                updatedAt: AdminView.formatDateTime(data.generated_at)
+            })}
 
             <div class="adm-charts-grid">
                 <div class="adm-card">
@@ -185,55 +433,53 @@ const AdminScreensCore = {
                             <p class="adm-card-subtitle">Credenciamentos recebidos pelo portal e links de representantes</p>
                         </div>
                     </div>
-                    ${(data.pending_workshops || []).length === 0 ? `<div class="adm-empty"><strong>Fila vazia</strong>Nenhuma oficina aguardando aprovação no momento.</div>` : `
-                        <div class="adm-table-wrap">
-                            <table class="adm-table">
-                                <thead><tr><th>Oficina</th><th>Cidade/UF</th><th>CNPJ</th><th>Ação</th></tr></thead>
-                                <tbody>
-                                    ${data.pending_workshops.map(w => `
-                                        <tr>
-                                            <td><strong>${esc(w.trade_name)}</strong><div style="font-size:11px; color:#64748b;">${esc(w.email || w.phone || '')}</div></td>
-                                            <td>${esc(w.city || '-')}/${esc(w.state || '-')}</td>
-                                            <td class="adm-mono">${esc(w.cnpj || '-')}</td>
-                                            <td style="white-space:nowrap;">
-                                                <button class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminView.changeWorkshopStatus('${esc(w.id)}', 'APPROVED')">Aprovar</button>
-                                                <button class="adm-btn adm-btn-sm adm-btn-danger" onclick="AdminView.changeWorkshopStatus('${esc(w.id)}', 'SUSPENDED')">Recusar</button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `}
+                    ${UI.EnterpriseDataTable({
+                        rows: data.pending_workshops || [],
+                        emptyTitle: 'Fila de oficinas vazia',
+                        emptySubtitle: 'Nenhuma oficina aguardando aprovação no momento.',
+                        columns: [
+                            { key: 'trade_name', label: 'Oficina', render: w => `<span class="adm-cell-title">${esc(w.trade_name)}</span><div class="adm-cell-sub">${esc(w.email || w.phone || '')}</div>` },
+                            { key: 'city', label: 'Cidade/UF', render: w => `${esc(w.city || '-')}/${esc(w.state || '-')}` },
+                            { key: 'cnpj', label: 'CNPJ', tdClass: 'adm-mono', render: w => esc(w.cnpj || '-') },
+                            {
+                                key: 'actions', label: 'Ações', align: 'right', tdClass: 'adm-actions-cell',
+                                render: w => `
+                                    <div class="adm-actions-group">
+                                        <button type="button" class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminView.changeWorkshopStatus('${esc(w.id)}', 'APPROVED', '${esc(w.trade_name)}')">Aprovar</button>
+                                        <button type="button" class="adm-btn adm-btn-sm adm-btn-danger" onclick="AdminView.changeWorkshopStatus('${esc(w.id)}', 'SUSPENDED', '${esc(w.trade_name)}')">Recusar</button>
+                                    </div>
+                                `
+                            }
+                        ]
+                    })}
                 </div>
 
                 <div class="adm-card">
                     <div class="adm-card-header">
                         <div>
                             <h3 class="adm-card-title">Representantes Aguardando Aprovação (${(data.pending_representatives || []).length})</h3>
-                            <p class="adm-card-subtitle">Representantes sem carteira ativa até validação administrativa</p>
+                            <p class="adm-card-subtitle">Representantes sem carteira ativa até homologação</p>
                         </div>
                     </div>
-                    ${(data.pending_representatives || []).length === 0 ? `<div class="adm-empty"><strong>Fila vazia</strong>Nenhum representante aguardando aprovação.</div>` : `
-                        <div class="adm-table-wrap">
-                            <table class="adm-table">
-                                <thead><tr><th>Código</th><th>Nome</th><th>Região</th><th>Ação</th></tr></thead>
-                                <tbody>
-                                    ${data.pending_representatives.map(r => `
-                                        <tr>
-                                            <td class="adm-mono" style="color:#00d4ff; font-weight:700;">${esc(r.rep_code)}</td>
-                                            <td><strong>${esc(r.name)}</strong><div style="font-size:11px; color:#64748b;">${esc(r.email)}</div></td>
-                                            <td>${esc(r.city || '-')}/${esc(r.state || '-')}</td>
-                                            <td style="white-space:nowrap;">
-                                                <button class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminScreensCommercial.changeRepStatus('${esc(r.id)}', 'approve')">Aprovar</button>
-                                                <button class="adm-btn adm-btn-sm adm-btn-danger" onclick="AdminScreensCommercial.changeRepStatus('${esc(r.id)}', 'reject')">Rejeitar</button>
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `}
+                    ${UI.EnterpriseDataTable({
+                        rows: data.pending_representatives || [],
+                        emptyTitle: 'Fila de representantes vazia',
+                        emptySubtitle: 'Nenhum representante aguardando aprovação.',
+                        columns: [
+                            { key: 'rep_code', label: 'Código', tdClass: 'adm-mono adm-text-accent', render: r => `<strong>${esc(r.rep_code)}</strong>` },
+                            { key: 'name', label: 'Nome', render: r => `<span class="adm-cell-title">${esc(r.name)}</span><div class="adm-cell-sub">${esc(r.email)}</div>` },
+                            { key: 'city', label: 'Região', render: r => `${esc(r.city || '-')}/${esc(r.state || '-')}` },
+                            {
+                                key: 'actions', label: 'Ações', align: 'right', tdClass: 'adm-actions-cell',
+                                render: r => `
+                                    <div class="adm-actions-group">
+                                        <button type="button" class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminScreensCommercial.changeRepStatus('${esc(r.id)}', 'approve', '${esc(r.name)}')">Aprovar</button>
+                                        <button type="button" class="adm-btn adm-btn-sm adm-btn-danger" onclick="AdminScreensCommercial.changeRepStatus('${esc(r.id)}', 'reject', '${esc(r.name)}')">Rejeitar</button>
+                                    </div>
+                                `
+                            }
+                        ]
+                    })}
                 </div>
             </div>
 
@@ -243,82 +489,65 @@ const AdminScreensCore = {
                         <h3 class="adm-card-title">Últimas Ordens de Serviço Registradas (${(data.recent_services || []).length})</h3>
                         <p class="adm-card-subtitle">Sincronizado diretamente com o App Oficina e App Cliente</p>
                     </div>
-                    <button class="adm-btn adm-btn-sm" onclick="AdminView.navigate('service-orders')">Ver Todas as OS →</button>
+                    <button type="button" class="adm-btn adm-btn-sm" onclick="AdminView.navigate('service-orders')">Ver Todas as OS →</button>
                 </div>
-                ${(data.recent_services || []).length === 0 ? `<div class="adm-empty"><strong>Sem ordens de serviço</strong>Nenhum registro de manutenção lançado até o momento.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Data</th><th>Placa / Veículo</th><th>Serviço</th><th>Oficina</th><th>Nível</th><th>Valor</th></tr></thead>
-                            <tbody>
-                                ${data.recent_services.map(s => `
-                                    <tr>
-                                        <td class="adm-mono">${esc(AdminView.formatDate(s.service_date || s.created_at))}</td>
-                                        <td><strong class="adm-mono">${esc(s.license_plate)}</strong> <span style="color:#94a3b8;">${esc(s.brand || '')} ${esc(s.model || '')}</span></td>
-                                        <td>${esc(s.service_title || s.category)}</td>
-                                        <td>${esc(s.workshop_name || 'Declaração Cliente')}</td>
-                                        <td>${AdminView.proofBadge(s.proof_level)}</td>
-                                        <td class="adm-mono">${brl(s.total_cost_cents)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
+                ${UI.EnterpriseDataTable({
+                    rows: data.recent_services || [],
+                    emptyTitle: 'Sem ordens de serviço',
+                    emptySubtitle: 'Nenhum registro de manutenção lançado até o momento.',
+                    columns: [
+                        { key: 'service_date', label: 'Data', tdClass: 'adm-mono', render: s => esc(AdminView.formatDate(s.service_date || s.created_at)) },
+                        { key: 'license_plate', label: 'Placa / Veículo', render: s => `<strong class="adm-mono">${esc(s.license_plate)}</strong> <span class="adm-text-secondary">${esc(s.brand || '')} ${esc(s.model || '')}</span>` },
+                        { key: 'service_title', label: 'Serviço', render: s => esc(s.service_title || s.category) },
+                        { key: 'workshop_name', label: 'Oficina', render: s => esc(s.workshop_name || 'Declaração Cliente') },
+                        { key: 'proof_level', label: 'Nível', render: s => AdminView.proofBadge(s.proof_level) },
+                        { key: 'total_cost_cents', label: 'Valor', align: 'right', tdClass: 'adm-money', render: s => brl(s.total_cost_cents) }
+                    ]
+                })}
             </div>
 
             <div class="adm-charts-grid">
                 <div class="adm-card">
                     <div class="adm-card-header"><h3 class="adm-card-title">Ativações de Clientes Recentes (${(data.recent_activations || []).length})</h3></div>
-                    ${(data.recent_activations || []).length === 0 ? `<div class="adm-empty"><strong>Sem ativações</strong>Nenhuma ativação registrada.</div>` : `
-                        <div class="adm-table-wrap">
-                            <table class="adm-table">
-                                <thead><tr><th>Código</th><th>Cliente</th><th>Placa</th><th>Oficina</th><th>Status</th></tr></thead>
-                                <tbody>
-                                    ${data.recent_activations.slice(0, 12).map(a => `
-                                        <tr>
-                                            <td class="adm-mono" style="color:#00d4ff;">${esc(a.activation_code)}</td>
-                                            <td>${esc(a.client_name)}</td>
-                                            <td class="adm-mono">${esc(a.license_plate || '-')}</td>
-                                            <td>${esc(a.workshop_name || '-')}</td>
-                                            <td>${AdminView.statusBadge(a.billing_status || a.status)}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `}
+                    ${UI.EnterpriseDataTable({
+                        rows: (data.recent_activations || []).slice(0, 12),
+                        emptyTitle: 'Sem ativações',
+                        emptySubtitle: 'Nenhuma ativação registrada.',
+                        columns: [
+                            { key: 'activation_code', label: 'Código', tdClass: 'adm-mono adm-text-accent', render: a => esc(a.activation_code) },
+                            { key: 'client_name', label: 'Cliente', render: a => esc(a.client_name) },
+                            { key: 'license_plate', label: 'Placa', tdClass: 'adm-mono', render: a => esc(a.license_plate || '-') },
+                            { key: 'workshop_name', label: 'Oficina', render: a => esc(a.workshop_name || '-') },
+                            { key: 'status', label: 'Status', render: a => AdminView.statusBadge(a.billing_status || a.status) }
+                        ]
+                    })}
                 </div>
 
                 <div class="adm-card">
                     <div class="adm-card-header"><h3 class="adm-card-title">Agendamentos Recentes (${(data.recent_appointments || []).length})</h3></div>
-                    ${(data.recent_appointments || []).length === 0 ? `<div class="adm-empty"><strong>Sem agendamentos</strong>Nenhum agendamento registrado nas oficinas.</div>` : `
-                        <div class="adm-table-wrap">
-                            <table class="adm-table">
-                                <thead><tr><th>Data/Hora</th><th>Cliente</th><th>Placa</th><th>Oficina</th><th>Status</th></tr></thead>
-                                <tbody>
-                                    ${data.recent_appointments.slice(0, 12).map(a => `
-                                        <tr>
-                                            <td class="adm-mono">${esc(a.appointment_date || '-')} ${esc(a.appointment_time || '')}</td>
-                                            <td>${esc(a.owner_name || '-')}</td>
-                                            <td class="adm-mono">${esc(a.license_plate || '-')}</td>
-                                            <td>${esc(a.workshop_name || '-')}</td>
-                                            <td>${AdminView.statusBadge(a.status)}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `}
+                    ${UI.EnterpriseDataTable({
+                        rows: (data.recent_appointments || []).slice(0, 12),
+                        emptyTitle: 'Sem agendamentos',
+                        emptySubtitle: 'Nenhum agendamento registrado nas oficinas.',
+                        columns: [
+                            { key: 'appointment_date', label: 'Data / Hora', tdClass: 'adm-mono', render: a => `${esc(AdminView.formatDate(a.appointment_date))} ${esc(a.appointment_time || '')}` },
+                            { key: 'owner_name', label: 'Cliente', render: a => esc(a.owner_name || '-') },
+                            { key: 'license_plate', label: 'Placa', tdClass: 'adm-mono', render: a => esc(a.license_plate || '-') },
+                            { key: 'workshop_name', label: 'Oficina', render: a => esc(a.workshop_name || '-') },
+                            { key: 'status', label: 'Status', render: a => AdminView.statusBadge(a.status) }
+                        ]
+                    })}
                 </div>
             </div>
         `;
     },
 
     // --------------------------------------------------------------------------
-    // 3. INDICADORES E METAS
+    // 3. INDICADORES ESTRATÉGICOS E METAS
     // --------------------------------------------------------------------------
     async renderGoals(ctx) {
         const data = await API.getAdminGoals({ month: ctx.month });
+        const UI = AdminView.ui();
         const g = data.global_goals || {};
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
@@ -329,33 +558,35 @@ const AdminScreensCore = {
         const revPct = pct(g.revenue_actual_cents, g.revenue_target_cents);
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Indicadores e Metas — Competência ${esc(data.month)}</h2>
-                    <p>Acompanhamento de metas mensais globais da plataforma e desempenho individual por representante comercial.</p>
-                </div>
-                <button class="adm-btn adm-btn-sm" onclick="AdminView.navigate('settings')">Configurar Metas Globais</button>
-            </div>
+            ${UI.PageHeader({
+                title: `Indicadores Estratégicos — ${data.month || ''}`,
+                subtitle: 'Acompanhamento de metas mensais globais da plataforma e desempenho individual por representante comercial.',
+                actionsHtml: `<button type="button" class="adm-btn adm-btn-sm" onclick="AdminView.navigate('settings')">Configurar Metas Globais</button>`
+            })}
 
-            <div class="adm-kpi-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr));">
-                <div class="adm-kpi-card tone-cyan">
-                    <div class="adm-kpi-label">Meta de Novas Oficinas (${esc(data.month)})</div>
-                    <div class="adm-kpi-value">${g.workshops_actual || 0} / ${g.workshops_target || 0}</div>
-                    <div class="adm-progress-track"><div class="adm-progress-fill" style="width:${wsPct}%"></div></div>
-                    <div class="adm-kpi-sub">${wsPct}% atingido no mês</div>
-                </div>
-                <div class="adm-kpi-card tone-gold">
-                    <div class="adm-kpi-label">Meta de Cadastros Pagos (${esc(data.month)})</div>
-                    <div class="adm-kpi-value">${g.activations_actual || 0} / ${g.activations_target || 0}</div>
-                    <div class="adm-progress-track"><div class="adm-progress-fill" style="width:${actPct}%"></div></div>
-                    <div class="adm-kpi-sub">${actPct}% atingido no mês</div>
-                </div>
-                <div class="adm-kpi-card tone-success">
-                    <div class="adm-kpi-label">Meta de Faturamento Confirmado</div>
-                    <div class="adm-kpi-value">${brl(g.revenue_actual_cents)}</div>
-                    <div class="adm-progress-track"><div class="adm-progress-fill" style="width:${revPct}%"></div></div>
-                    <div class="adm-kpi-sub">Meta: ${brl(g.revenue_target_cents)} (${revPct}%)</div>
-                </div>
+            <div class="adm-kpi-grid cols-3">
+                ${UI.KPIStatCard({
+                    label: `Meta de Novas Oficinas (${data.month})`,
+                    value: `${g.workshops_actual || 0} / ${g.workshops_target || 0}`,
+                    sub: `${wsPct}% atingido na competência`,
+                    tone: 'tone-cyan',
+                    progressPct: wsPct
+                })}
+                ${UI.KPIStatCard({
+                    label: `Meta de Cadastros Pagos (${data.month})`,
+                    value: `${g.activations_actual || 0} / ${g.activations_target || 0}`,
+                    sub: `${actPct}% atingido na competência`,
+                    tone: 'tone-blue',
+                    progressPct: actPct
+                })}
+                ${UI.KPIStatCard({
+                    label: 'Meta de Faturamento Confirmado',
+                    value: brl(g.revenue_actual_cents),
+                    sub: `Meta: ${brl(g.revenue_target_cents)} (${revPct}%)`,
+                    tone: 'tone-success',
+                    progressPct: revPct,
+                    isMoney: true
+                })}
             </div>
 
             <div class="adm-card">
@@ -364,273 +595,718 @@ const AdminScreensCore = {
                         <h3 class="adm-card-title">Acompanhamento de Metas por Representante Ativo</h3>
                         <p class="adm-card-subtitle">Oficinas captadas e ativações pagas no mês ${esc(data.month)}</p>
                     </div>
-                    <button class="adm-btn adm-btn-sm" onclick="AdminView.navigate('commercial-goals')">Editar Metas Individuais →</button>
+                    <button type="button" class="adm-btn adm-btn-sm" onclick="AdminView.navigate('commercial-goals')">Editar Metas Individuais →</button>
                 </div>
-                ${(data.representatives_goals || []).length === 0 ? `<div class="adm-empty"><strong>Nenhum representante ativo</strong>Aprove representantes comerciais para monitorar suas metas mensais.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Código</th><th>Representante</th><th>UF</th><th>Carteira / Limite</th><th>Meta Oficinas (Mês)</th><th>Meta Ativações Pagas (Mês)</th></tr></thead>
-                            <tbody>
-                                ${data.representatives_goals.map(r => {
-                                    const pWs = pct(r.month_workshops, r.monthly_goal_workshops);
-                                    const pAct = pct(r.month_paid_activations, r.monthly_goal_activations);
-                                    return `
-                                        <tr>
-                                            <td class="adm-mono" style="color:#00d4ff; font-weight:700;">${esc(r.rep_code)}</td>
-                                            <td><a href="javascript:void(0)" style="color:#fff; font-weight:600; text-decoration:none;" onclick="AdminView.openRepresentative('${esc(r.id)}')">${esc(r.name)}</a></td>
-                                            <td>${esc(r.state || '-')}</td>
-                                            <td class="adm-mono">${r.total_workshops} / ${r.max_workshops_limit}</td>
-                                            <td>
-                                                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:3px;"><span>${r.month_workshops} / ${r.monthly_goal_workshops}</span><span>${pWs}%</span></div>
-                                                <div class="adm-progress-track"><div class="adm-progress-fill" style="width:${pWs}%"></div></div>
-                                            </td>
-                                            <td>
-                                                <div style="display:flex; justify-content:space-between; font-size:11px; margin-bottom:3px;"><span>${r.month_paid_activations} / ${r.monthly_goal_activations}</span><span>${pAct}%</span></div>
-                                                <div class="adm-progress-track"><div class="adm-progress-fill" style="width:${pAct}%"></div></div>
-                                            </td>
-                                        </tr>
-                                    `;
-                                }).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
+                ${UI.EnterpriseDataTable({
+                    rows: data.representatives_goals || [],
+                    emptyTitle: 'Nenhum representante ativo',
+                    emptySubtitle: 'Aprove representantes comerciais para monitorar suas metas mensais.',
+                    columns: [
+                        { key: 'rep_code', label: 'Código', tdClass: 'adm-mono adm-text-accent', render: r => `<strong>${esc(r.rep_code)}</strong>` },
+                        { key: 'name', label: 'Representante', render: r => `<a href="javascript:void(0)" class="adm-link" onclick="AdminView.openRepresentative('${esc(r.id)}')">${esc(r.name)}</a>` },
+                        { key: 'state', label: 'UF', render: r => esc(r.state || '-') },
+                        { key: 'total_workshops', label: 'Carteira / Limite', align: 'right', tdClass: 'adm-mono', render: r => `${r.total_workshops} / ${r.max_workshops_limit}` },
+                        {
+                            key: 'month_workshops', label: 'Meta Oficinas (Mês)',
+                            render: r => {
+                                const pWs = pct(r.month_workshops, r.monthly_goal_workshops);
+                                return `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;"><span>${r.month_workshops} / ${r.monthly_goal_workshops}</span><strong>${pWs}%</strong></div><div class="adm-progress-track"><div class="adm-progress-fill" style="width:${pWs}%"></div></div>`;
+                            }
+                        },
+                        {
+                            key: 'month_paid_activations', label: 'Meta Ativações Pagas (Mês)',
+                            render: r => {
+                                const pAct = pct(r.month_paid_activations, r.monthly_goal_activations);
+                                return `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;"><span>${r.month_paid_activations} / ${r.monthly_goal_activations}</span><strong>${pAct}%</strong></div><div class="adm-progress-track"><div class="adm-progress-fill" style="width:${pAct}%"></div></div>`;
+                            }
+                        }
+                    ]
+                })}
             </div>
         `;
     },
 
     // --------------------------------------------------------------------------
-    // 4. OFICINAS CREDENCIADAS (FASE 5)
+    // 4. OFICINAS CREDENCIADAS (FASE 4 — Redesign Completo ERP Corporativo)
     // --------------------------------------------------------------------------
     async renderWorkshops(ctx) {
         const f = ctx.params || {};
-        const data = await API.getAdminWorkshopsSummary({
-            q: f.q || '',
-            status: f.status || 'ALL',
-            state: f.state || 'ALL',
-            referral: f.referral || 'ALL',
-            page: f.page || 1,
-            page_size: 25
-        });
+        const pageSize = Number(f.page_size || 25);
+        const periodFilter = f.cred_period || 'ALL';
+        const needsClientWindow = periodFilter !== 'ALL';
+
+        const overviewPromise = typeof API.getAdminDashboardOverview === 'function'
+            ? API.getAdminDashboardOverview({ period: 'all' }).catch(() => null)
+            : Promise.resolve(null);
+
+        const [data, overview] = await Promise.all([
+            API.getAdminWorkshopsSummary({
+                q: f.q || '',
+                status: f.status || 'ALL',
+                state: f.state || 'ALL',
+                referral: f.referral || 'ALL',
+                page: needsClientWindow ? 1 : (f.page || 1),
+                page_size: needsClientWindow ? 200 : pageSize
+            }),
+            overviewPromise
+        ]);
+
+        if (overview) AdminView.updateLiveBadgesFromOverview(overview);
+
+        const UI = AdminView.ui();
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
+        const num = AdminView.formatNum;
+        const ovCards = (overview && overview.cards) || null;
+
+        let items = data.items || [];
+        if (needsClientWindow) {
+            items = this.filterByCredenciamentoPeriod(items, periodFilter);
+        }
+        items = this.sortItems(items, f.sort_by || '', f.sort_dir || 'desc');
+
+        const totalFiltered = needsClientWindow ? items.length : Number(data.total || 0);
+        const curPage = Number(f.page || 1);
+        const totalPages = needsClientWindow ? Math.max(1, Math.ceil(totalFiltered / pageSize)) : Number(data.total_pages || 1);
+        const displayItems = needsClientWindow ? items.slice((curPage - 1) * pageSize, curPage * pageSize) : items;
+
+        this.lastWorkshopsData = displayItems;
+
+        const hasFilters = Boolean(f.q || (f.status && f.status !== 'ALL') || (f.state && f.state !== 'ALL') || (f.referral && f.referral !== 'ALL') || periodFilter !== 'ALL');
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Oficinas Credenciadas (${data.total || 0})</h2>
-                    <p>Cadeia completa Representante → Oficina → Clientes Únicos → Veículos → Pagamentos → Comissões.</p>
+            ${UI.PageHeader({
+                title: 'Oficinas Credenciadas',
+                subtitle: 'Gerenciamento completo da rede de oficinas parceiras DNA AUTO.',
+                updatedAt: AdminView.formatDateTime(data.generated_at),
+                actionsHtml: `
+                    <button type="button" class="adm-btn adm-btn-sm" onclick="AdminScreensCore.exportWorkshopsCsv()">⬇ Exportar CSV</button>
+                    <button type="button" class="adm-btn adm-btn-sm adm-btn-primary" onclick="AdminView.reloadCurrentScreen()">↻ Atualizar Dados</button>
+                `
+            })}
+
+            ${ovCards ? `
+                <div class="adm-kpi-grid cols-6">
+                    ${UI.KPIStatCard({
+                        label: 'Total de Oficinas',
+                        value: num(ovCards.total_workshops),
+                        sub: `${num(overview.supplementary?.cities_covered || 0)} cidades`,
+                        tone: 'tone-blue',
+                        onClick: "AdminView.updateParams({ status: 'ALL', page: 1 })"
+                    })}
+                    ${UI.KPIStatCard({
+                        label: 'Oficinas Ativas',
+                        value: num(ovCards.active_workshops),
+                        sub: 'Homologadas na rede',
+                        tone: 'tone-success',
+                        onClick: "AdminView.updateParams({ status: 'APPROVED', page: 1 })"
+                    })}
+                    ${UI.KPIStatCard({
+                        label: 'Oficinas Pendentes',
+                        value: num(ovCards.pending_workshops),
+                        sub: ovCards.pending_workshops > 0 ? 'Aguardando aprovação' : 'Sem pendências',
+                        tone: ovCards.pending_workshops > 0 ? 'tone-warning' : 'tone-success',
+                        onClick: "AdminView.updateParams({ status: 'PENDING', page: 1 })"
+                    })}
+                    ${UI.KPIStatCard({
+                        label: 'Clientes Vinculados',
+                        value: num(ovCards.unique_clients),
+                        sub: 'Base única da rede',
+                        tone: 'tone-cyan',
+                        onClick: "AdminView.navigate('clients')"
+                    })}
+                    ${UI.KPIStatCard({
+                        label: 'Veículos Registrados',
+                        value: num(ovCards.total_vehicles),
+                        sub: `${num(ovCards.active_dna_vehicles)} com DNA ativo`,
+                        tone: 'tone-blue',
+                        onClick: "AdminView.navigate('vehicles')"
+                    })}
+                    ${UI.KPIStatCard({
+                        label: 'Faturamento Atribuído',
+                        value: brl(ovCards.monthly_confirmed_revenue_cents),
+                        sub: 'Receita confirmada acumulada',
+                        tone: 'tone-success',
+                        isMoney: true,
+                        onClick: "AdminView.navigate('revenue')"
+                    })}
                 </div>
-                <div class="adm-updated-stamp">Atualizado: ${esc(AdminView.formatDateTime(data.generated_at))}</div>
-            </div>
+            ` : ''}
 
             <div class="adm-card">
-                <div class="adm-filters-bar">
-                    <input type="text" class="adm-input" style="min-width:240px;" placeholder="Buscar nome fantasia, CNPJ, cidade, código rep..." value="${esc(f.q || '')}"
-                           onkeydown="if(event.key==='Enter') AdminView.updateParams({ q: this.value, page: 1 })" />
-                    <select class="adm-select" onchange="AdminView.updateParams({ status: this.value, page: 1 })">
+                ${UI.FilterToolbar(`
+                    <input type="text" id="ws-filter-q" class="adm-input adm-filter-search" aria-label="Pesquisar oficina"
+                           placeholder="Pesquisar por nome fantasia, razão social, CNPJ ou cidade..."
+                           value="${esc(f.q || '')}"
+                           onkeydown="if(event.key==='Enter') AdminScreensCore.applyWorkshopFilters()" />
+                    <select id="ws-filter-state" class="adm-select" aria-label="Filtrar por estado">
+                        <option value="ALL">Estado: Todos</option>
+                        ${(data.states_available || []).map(uf => `<option value="${esc(uf)}" ${f.state === uf ? 'selected' : ''}>UF: ${esc(uf)}</option>`).join('')}
+                    </select>
+                    <select id="ws-filter-status" class="adm-select" aria-label="Filtrar por status">
                         <option value="ALL" ${(!f.status || f.status === 'ALL') ? 'selected' : ''}>Status: Todos</option>
                         <option value="APPROVED" ${f.status === 'APPROVED' ? 'selected' : ''}>Aprovadas</option>
                         <option value="PENDING" ${f.status === 'PENDING' ? 'selected' : ''}>Pendentes</option>
                         <option value="SUSPENDED" ${f.status === 'SUSPENDED' ? 'selected' : ''}>Suspensas</option>
                     </select>
-                    <select class="adm-select" onchange="AdminView.updateParams({ state: this.value, page: 1 })">
-                        <option value="ALL">Estado: Todos</option>
-                        ${(data.states_available || []).map(uf => `<option value="${esc(uf)}" ${f.state === uf ? 'selected' : ''}>${esc(uf)}</option>`).join('')}
-                    </select>
-                    <select class="adm-select" onchange="AdminView.updateParams({ referral: this.value, page: 1 })">
+                    <select id="ws-filter-referral" class="adm-select" aria-label="Filtrar por vínculo comercial">
                         <option value="ALL" ${(!f.referral || f.referral === 'ALL') ? 'selected' : ''}>Vínculo: Todos</option>
                         <option value="LINKED" ${f.referral === 'LINKED' ? 'selected' : ''}>Indicadas por Representante</option>
                         <option value="DIRECT" ${f.referral === 'DIRECT' ? 'selected' : ''}>Diretas (sem representante)</option>
                     </select>
-                    <button class="adm-btn adm-btn-sm" onclick="AdminView.updateParams({ q: this.parentNode.querySelector('input').value, page: 1 })">Filtrar</button>
-                </div>
+                    <select id="ws-filter-period" class="adm-select" aria-label="Filtrar por período de credenciamento">
+                        <option value="ALL" ${periodFilter === 'ALL' ? 'selected' : ''}>Credenciamento: Todos</option>
+                        <option value="7d" ${periodFilter === '7d' ? 'selected' : ''}>Últimos 7 dias</option>
+                        <option value="30d" ${periodFilter === '30d' ? 'selected' : ''}>Últimos 30 dias</option>
+                        <option value="90d" ${periodFilter === '90d' ? 'selected' : ''}>Últimos 90 dias</option>
+                        <option value="365d" ${periodFilter === '365d' ? 'selected' : ''}>Últimos 12 meses</option>
+                    </select>
+                    <button type="button" class="adm-btn adm-btn-primary" onclick="AdminScreensCore.applyWorkshopFilters()">Aplicar Filtros</button>
+                    <button type="button" class="adm-btn ${hasFilters ? '' : 'adm-btn-ghost'}" onclick="AdminView.navigate('workshops')">Limpar Filtros</button>
+                `, { ariaLabel: 'Filtros de oficinas credenciadas' })}
 
-                ${(data.items || []).length === 0 ? `<div class="adm-empty"><strong>Nenhuma oficina encontrada</strong>Ajuste os filtros ou aguarde novos credenciamentos.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead>
-                                <tr>
-                                    <th>Oficina / CNPJ</th>
-                                    <th>Cidade/UF</th>
-                                    <th>Telefone</th>
-                                    <th>Credenciamento</th>
-                                    <th>Status</th>
-                                    <th>Representante / Validade</th>
-                                    <th>Clientes Únicos</th>
-                                    <th>Veículos</th>
-                                    <th>Pagos / Pend.</th>
-                                    <th>Fat. Atribuído</th>
-                                    <th>Comissões Rep.</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${data.items.map(w => `
-                                    <tr>
-                                        <td>
-                                            <a href="javascript:void(0)" style="color:#fff; font-weight:700; text-decoration:none;" onclick="AdminView.openWorkshop('${esc(w.id)}')">${esc(w.trade_name)}</a>
-                                            <div class="adm-mono" style="font-size:11px; color:#64748b;">${esc(w.cnpj || 'CNPJ não informado')}</div>
-                                        </td>
-                                        <td>${esc(w.city || '-')}/${esc(w.state || '-')}</td>
-                                        <td class="adm-mono">${esc(w.phone || '-')}</td>
-                                        <td class="adm-mono">${esc(AdminView.formatDate(w.created_at))}</td>
-                                        <td>${AdminView.statusBadge(w.status)}</td>
-                                        <td>
-                                            ${w.rep_code ? `
-                                                <a href="javascript:void(0)" style="color:#00d4ff; font-weight:700; text-decoration:none;" onclick="AdminView.openRepresentative('${esc(w.representative_id)}')">${esc(w.rep_code)}</a>
-                                                <div style="font-size:11px; color:#94a3b8;">${esc(w.representative_name || '')}</div>
-                                                <div style="font-size:10.5px; color:#64748b;">Vínculo: ${esc(AdminView.formatDate(w.referral_linked_at))} → ${esc(AdminView.formatDate(w.referral_valid_until))}</div>
-                                            ` : `<span class="adm-badge adm-badge-muted">Direta</span>`}
-                                        </td>
-                                        <td class="adm-mono" style="font-weight:700; color:#38bdf8;">${w.unique_clients_count || 0}</td>
-                                        <td class="adm-mono">${w.vehicles_count || 0} <span style="color:#64748b; font-size:11px;">(${w.active_dna_count || 0} DNA)</span></td>
-                                        <td class="adm-mono"><span style="color:#34d399; font-weight:700;">${w.paid_registrations_count || 0}</span> / <span style="color:#fbbf24;">${w.pending_registrations_count || 0}</span></td>
-                                        <td class="adm-mono" style="font-weight:700;">${brl(w.attributed_revenue_cents)}</td>
-                                        <td class="adm-mono" style="color:#ffd21c;">${brl(w.rep_commissions_generated_cents)}</td>
-                                        <td style="white-space:nowrap;">
-                                            <button class="adm-btn adm-btn-sm" onclick="AdminView.openWorkshop('${esc(w.id)}')">Abrir</button>
-                                            ${w.status !== 'APPROVED' ? `<button class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminView.changeWorkshopStatus('${esc(w.id)}', 'APPROVED')">Aprovar</button>` : `<button class="adm-btn adm-btn-sm adm-btn-danger" onclick="AdminView.changeWorkshopStatus('${esc(w.id)}', 'SUSPENDED')">Suspender</button>`}
-                                        </td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    ${AdminView.renderPagination(data.page, data.total_pages, data.total)}
-                `}
+                ${UI.EnterpriseDataTable({
+                    testId: 'workshops-table',
+                    rows: displayItems,
+                    sortBy: f.sort_by || '',
+                    sortDir: f.sort_dir || 'desc',
+                    onSortExpr: (field, dir) => `AdminView.updateParams({ sort_by: '${field}', sort_dir: '${dir}' })`,
+                    emptyTitle: 'Nenhuma oficina encontrada',
+                    emptySubtitle: hasFilters
+                        ? 'Nenhuma oficina corresponde aos filtros selecionados. Limpe os filtros para visualizar toda a rede.'
+                        : 'Aguardando novos credenciamentos de oficinas parceiras.',
+                    emptyActionHtml: hasFilters ? `<button type="button" class="adm-btn adm-btn-primary" onclick="AdminView.navigate('workshops')">Limpar Filtros</button>` : '',
+                    pagination: {
+                        page: curPage,
+                        totalPages,
+                        total: totalFiltered,
+                        pageSize
+                    },
+                    columns: [
+                        {
+                            key: 'trade_name', label: 'Oficina / CNPJ', sortable: true,
+                            render: w => `
+                                <a href="javascript:void(0)" class="adm-link" title="${esc(w.company_name || w.trade_name)}" onclick="AdminView.openWorkshop('${esc(w.id)}')">${esc(w.trade_name)}</a>
+                                <div class="adm-cell-sub adm-mono">${esc(w.cnpj || 'CNPJ não informado')}</div>
+                            `
+                        },
+                        {
+                            key: 'city', label: 'Cidade / UF', sortable: true,
+                            render: w => `<span title="${esc(w.city || '-')}/${esc(w.state || '-')}">${esc(w.city || '-')}/${esc(w.state || '-')}</span>`
+                        },
+                        {
+                            key: 'phone', label: 'Telefone', tdClass: 'adm-mono',
+                            render: w => esc(w.phone || '-')
+                        },
+                        {
+                            key: 'created_at', label: 'Credenciamento', sortable: true, tdClass: 'adm-mono',
+                            render: w => esc(AdminView.formatDate(w.created_at))
+                        },
+                        {
+                            key: 'status', label: 'Status', sortable: true,
+                            render: w => AdminView.statusBadge(w.status)
+                        },
+                        {
+                            key: 'representative_name', label: 'Representante',
+                            render: w => w.rep_code ? `
+                                <a href="javascript:void(0)" class="adm-link adm-mono" title="Validade do vínculo: ${esc(AdminView.formatDate(w.referral_linked_at))} até ${esc(AdminView.formatDate(w.referral_valid_until))}" onclick="AdminView.openRepresentative('${esc(w.representative_id)}')">${esc(w.rep_code)}</a>
+                                <div class="adm-cell-sub">${esc(w.representative_name || '')}</div>
+                            ` : `<span class="adm-badge adm-badge-muted"><span class="adm-badge-dot" aria-hidden="true"></span>Direta</span>`
+                        },
+                        {
+                            key: 'unique_clients_count', label: 'Clientes Únicos', align: 'right', sortable: true, tdClass: 'adm-num',
+                            render: w => num(w.unique_clients_count)
+                        },
+                        {
+                            key: 'vehicles_count', label: 'Veículos', align: 'right', sortable: true, tdClass: 'adm-num',
+                            render: w => `<span>${num(w.vehicles_count)}</span><div class="adm-cell-sub">${num(w.active_dna_count)} DNA</div>`
+                        },
+                        {
+                            key: 'paid_registrations_count', label: 'Pagos / Pend.', align: 'right', sortable: true, tdClass: 'adm-mono',
+                            render: w => `<span class="adm-text-success" style="font-weight:700;">${num(w.paid_registrations_count)}</span> <span class="adm-text-muted">/</span> <span class="adm-text-warning" style="font-weight:600;">${num(w.pending_registrations_count)}</span>`
+                        },
+                        {
+                            key: 'attributed_revenue_cents', label: 'Fat. Atribuído', align: 'right', sortable: true, tdClass: 'adm-money',
+                            render: w => brl(w.attributed_revenue_cents)
+                        },
+                        {
+                            key: 'rep_commissions_generated_cents', label: 'Comissões', align: 'right', sortable: true, tdClass: 'adm-money adm-text-accent',
+                            render: w => brl(w.rep_commissions_generated_cents)
+                        },
+                        {
+                            key: 'actions', label: 'Ações', align: 'right', tdClass: 'adm-actions-cell',
+                            render: w => {
+                                const menuId = `ws-menu-${esc(w.id).replace(/[^a-zA-Z0-9_-]/g, '')}`;
+                                return `
+                                    <div class="adm-actions-group">
+                                        <button type="button" class="adm-btn adm-btn-sm" onclick="AdminView.openWorkshop('${esc(w.id)}')">Abrir</button>
+                                        ${w.status !== 'APPROVED'
+                                            ? `<button type="button" class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminView.changeWorkshopStatus('${esc(w.id)}', 'APPROVED', '${esc(w.trade_name)}')">Aprovar</button>`
+                                            : `<button type="button" class="adm-btn adm-btn-sm adm-btn-danger" onclick="AdminView.changeWorkshopStatus('${esc(w.id)}', 'SUSPENDED', '${esc(w.trade_name)}')">Suspender</button>`}
+                                        <div class="adm-action-menu-wrap">
+                                            <button type="button" class="adm-btn adm-btn-sm" style="padding:0 9px;" aria-label="Mais ações para ${esc(w.trade_name)}" title="Mais ações" onclick="AdminView.toggleActionMenu('${menuId}', event)">⋮</button>
+                                            <div id="${menuId}" class="adm-action-menu-dropdown" style="display:none;" role="menu">
+                                                <button type="button" class="adm-action-menu-item" role="menuitem" onclick="AdminView.closeAllPopovers(); AdminScreensCore.openWorkshopQuickDrawer('${esc(w.id)}')">Resumo Rápido (Gaveta)</button>
+                                                <button type="button" class="adm-action-menu-item" role="menuitem" onclick="AdminView.closeAllPopovers(); AdminView.openWorkshop('${esc(w.id)}', 'clients')">Ver Clientes Vinculados</button>
+                                                <button type="button" class="adm-action-menu-item" role="menuitem" onclick="AdminView.closeAllPopovers(); AdminView.openWorkshop('${esc(w.id)}', 'vehicles')">Ver Veículos Registrados</button>
+                                                <button type="button" class="adm-action-menu-item" role="menuitem" onclick="AdminView.closeAllPopovers(); AdminView.openWorkshop('${esc(w.id)}', 'attendances')">Ver Atendimentos (OS)</button>
+                                                <button type="button" class="adm-action-menu-item" role="menuitem" onclick="AdminView.closeAllPopovers(); AdminScreensCommercial.openReassignModal('${esc(w.id)}', '${esc(w.trade_name)}', '${esc(w.rep_code || 'Nenhum')}')">Reatribuir Representante</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }
+                    ]
+                })}
             </div>
         `;
     },
 
+    applyWorkshopFilters() {
+        AdminView.updateParams({
+            q: document.getElementById('ws-filter-q')?.value || '',
+            state: document.getElementById('ws-filter-state')?.value || 'ALL',
+            status: document.getElementById('ws-filter-status')?.value || 'ALL',
+            referral: document.getElementById('ws-filter-referral')?.value || 'ALL',
+            cred_period: document.getElementById('ws-filter-period')?.value || 'ALL',
+            page: 1
+        });
+    },
+
+    exportWorkshopsCsv() {
+        const rows = this.lastWorkshopsData || [];
+        if (rows.length === 0) {
+            AdminView.toast('Não há oficinas listadas para exportar no filtro atual.', 'error');
+            return;
+        }
+        const headers = [
+            'Oficina', 'RazaoSocial', 'CNPJ', 'Cidade', 'UF', 'Telefone', 'Credenciamento', 'Status',
+            'RepresentanteCodigo', 'RepresentanteNome', 'ClientesUnicos', 'Veiculos', 'DnaAtivo',
+            'Pagos', 'Pendentes', 'FaturamentoAtribuidoBRL', 'ComissoesRepBRL'
+        ];
+        const fmt = c => (Number(c || 0) / 100).toFixed(2).replace('.', ',');
+        const csvLines = [
+            headers.join(';'),
+            ...rows.map(w => [
+                w.trade_name || '', w.company_name || '', w.cnpj || '', w.city || '', w.state || '',
+                w.phone || '', AdminView.formatDate(w.created_at), w.status || '',
+                w.rep_code || 'DIRETA', w.representative_name || '',
+                w.unique_clients_count || 0, w.vehicles_count || 0, w.active_dna_count || 0,
+                w.paid_registrations_count || 0, w.pending_registrations_count || 0,
+                fmt(w.attributed_revenue_cents), fmt(w.rep_commissions_generated_cents)
+            ].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';'))
+        ];
+        const blob = new Blob(['\uFEFF' + csvLines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `dna-auto-oficinas-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        AdminView.toast(`Exportação CSV concluída (${rows.length} oficina(s)).`);
+    },
+
+    async openWorkshopQuickDrawer(workshopId) {
+        AdminView.openDetailDrawer({
+            title: 'Carregando oficina...',
+            subtitle: 'Consultando indicadores reais na API DNA AUTO',
+            bodyHtml: AdminView.ui().LoadingSkeleton('Carregando detalhes da oficina...')
+        });
+        try {
+            const data = await API.getAdminWorkshopPerformance(workshopId);
+            const w = data.workshop || {};
+            const m = data.metrics || {};
+            const ref = data.referral;
+            const esc = AdminView.esc;
+            const brl = AdminView.formatBrl;
+            const UI = AdminView.ui();
+
+            AdminView.openDetailDrawer({
+                title: w.trade_name || 'Oficina',
+                subtitle: `${w.city || '-'}/${w.state || '-'} • CNPJ: ${w.cnpj || '-'}`,
+                bodyHtml: `
+                    <div style="margin-bottom:14px;">${AdminView.statusBadge(w.status)}</div>
+                    <div class="adm-kpi-grid cols-2">
+                        ${UI.KPIStatCard({ label: 'Clientes Únicos', value: AdminView.formatNum(m.unique_clients_count), tone: 'tone-cyan' })}
+                        ${UI.KPIStatCard({ label: 'Veículos / DNA', value: `${m.vehicles_count || 0} (${m.active_dna_count || 0})`, tone: 'tone-blue' })}
+                        ${UI.KPIStatCard({ label: 'Faturamento Atribuído', value: brl(m.attributed_revenue_cents), tone: 'tone-success', isMoney: true })}
+                        ${UI.KPIStatCard({ label: 'OS Realizadas', value: AdminView.formatNum(m.service_orders_count), sub: brl(m.mechanical_volume_cents), tone: 'tone-gold' })}
+                    </div>
+                    <div class="adm-chain-box">
+                        <div style="font-weight:700; margin-bottom:6px;">Dados Cadastrais</div>
+                        <div><strong>Razão Social:</strong> ${esc(w.company_name || '-')}</div>
+                        <div><strong>Telefone:</strong> <span class="adm-mono">${esc(w.phone || '-')}</span></div>
+                        <div><strong>E-mail:</strong> ${esc(w.email || '-')}</div>
+                        <div><strong>Credenciamento:</strong> ${esc(AdminView.formatDate(w.created_at))}</div>
+                    </div>
+                    <div class="adm-chain-box">
+                        <div style="font-weight:700; margin-bottom:6px;">Vínculo Comercial</div>
+                        ${ref
+                            ? `<div><strong>Representante:</strong> <span class="adm-mono adm-text-accent">${esc(ref.rep_code)}</span> — ${esc(ref.representative_name)}</div>
+                               <div><strong>Vigência:</strong> ${esc(AdminView.formatDate(ref.linked_at))} até ${esc(AdminView.formatDate(ref.valid_until))}</div>`
+                            : `<div>Oficina cadastrada diretamente (sem representante vinculado).</div>`}
+                    </div>
+                `,
+                footerHtml: `
+                    <button type="button" class="adm-btn" onclick="AdminView.closeDetailDrawer()">Fechar</button>
+                    <button type="button" class="adm-btn adm-btn-primary" onclick="AdminView.closeDetailDrawer(); AdminView.openWorkshop('${esc(w.id)}')">Abrir Detalhamento Completo →</button>
+                `
+            });
+        } catch (err) {
+            AdminView.openDetailDrawer({
+                title: 'Erro ao consultar oficina',
+                bodyHtml: AdminView.ui().ErrorState({ title: 'Falha ao consultar dados atualizados da API', message: err.message })
+            });
+        }
+    },
+
     // --------------------------------------------------------------------------
-    // 4B. DETALHE INDIVIDUAL DA OFICINA (Separação rigorosa Clientes Únicos × Veículos)
+    // 4B. DETALHAMENTO COMPLETO DA OFICINA (7 Abas Empresariais)
+    // Abas: Resumo | Clientes | Veículos | Atendimentos | Financeiro | Representante | Auditoria
     // --------------------------------------------------------------------------
     async renderWorkshopDetail(ctx) {
         const workshopId = ctx.params?.id;
         if (!workshopId) return this.renderWorkshops(ctx);
+
+        const activeTab = ctx.params?.subtab || 'summary';
         const data = await API.getAdminWorkshopPerformance(workshopId);
-        const w = data.workshop;
+        const w = data.workshop || {};
         const m = data.metrics || {};
         const ref = data.referral;
+        const staff = data.staff || [];
+        const uniqueClients = data.unique_clients || [];
+        const vehicles = data.vehicles || [];
+        const pixCharges = data.pix_charges || [];
+        const repComms = data.representative_commissions || [];
+        const UI = AdminView.ui();
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
+        const num = AdminView.formatNum;
+
+        const tabs = [
+            { id: 'summary', label: 'Resumo' },
+            { id: 'clients', label: `Clientes (${uniqueClients.length})` },
+            { id: 'vehicles', label: `Veículos (${vehicles.length})` },
+            { id: 'attendances', label: `Atendimentos (${m.service_orders_count || 0})` },
+            { id: 'financial', label: `Financeiro (${pixCharges.length})` },
+            { id: 'representative', label: 'Representante' },
+            { id: 'audit', label: 'Auditoria' }
+        ];
+
+        const renderClientsTable = (list) => UI.EnterpriseDataTable({
+            rows: list,
+            emptyTitle: 'Nenhum cliente vinculado',
+            emptySubtitle: 'Esta oficina ainda não cadastrou ou atendeu clientes.',
+            columns: [
+                { key: 'name', label: 'Cliente', render: cl => `<span class="adm-cell-title">${esc(cl.name)}</span>` },
+                { key: 'email', label: 'Contato', render: cl => `<div>${esc(cl.email || '-')}</div><div class="adm-cell-sub adm-mono">${esc(cl.phone || '-')}</div>` },
+                { key: 'vehicles_count', label: 'Qtd. Veículos', align: 'right', tdClass: 'adm-num adm-text-accent', render: cl => num(cl.vehicles_count) },
+                {
+                    key: 'vehicles', label: 'Veículos / Placas / DNA',
+                    render: cl => (cl.vehicles || []).map(v => `
+                        <span class="adm-badge adm-badge-info" style="margin:2px; cursor:pointer;" title="Abrir Dossiê de ${esc(v.license_plate)}" onclick="App.switchView('dossier', '${esc(v.license_plate)}')">
+                            ${esc(v.license_plate)} (${esc(v.brand || '')} ${esc(v.model || '')})${v.dna_code ? ` • ${esc(v.dna_code)}` : ''}
+                        </span>
+                    `).join('')
+                },
+                { key: 'services_count', label: 'OS Realizadas', align: 'right', tdClass: 'adm-num', render: cl => num(cl.services_count) },
+                { key: 'services_total_cents', label: 'Volume Serviços', align: 'right', tdClass: 'adm-money', render: cl => brl(cl.services_total_cents) }
+            ]
+        });
+
+        let tabContent = '';
+
+        if (activeTab === 'summary') {
+            tabContent = `
+                <div class="adm-chain-box">
+                    <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--adm-text-secondary); margin-bottom:10px;">Cadeia Comercial e Operacional Auditável</div>
+                    <div class="adm-chain-flow">
+                        <span class="adm-chain-step"><strong>Representante:</strong> ${ref ? `<a href="javascript:void(0)" class="adm-link" onclick="AdminView.openRepresentative('${esc(ref.representative_id)}')">${esc(ref.rep_code)} — ${esc(ref.representative_name)}</a>` : 'Cadastro Direto'}</span>
+                        <span class="adm-chain-arrow" aria-hidden="true">→</span>
+                        <span class="adm-chain-step"><strong>Oficina:</strong> ${esc(w.trade_name)} ${ref ? `(Validade: ${esc(AdminView.formatDate(ref.valid_until))})` : ''}</span>
+                        <span class="adm-chain-arrow" aria-hidden="true">→</span>
+                        <span class="adm-chain-step"><strong>Clientes Únicos:</strong> ${num(m.unique_clients_count)} (${num(m.vehicles_count)} veículos)</span>
+                        <span class="adm-chain-arrow" aria-hidden="true">→</span>
+                        <span class="adm-chain-step"><strong>Pagos:</strong> ${num(m.paid_registrations_count)} (${brl(m.attributed_revenue_cents)})</span>
+                        <span class="adm-chain-arrow" aria-hidden="true">→</span>
+                        <span class="adm-chain-step"><strong>Comissão Rep.:</strong> ${brl(m.rep_commissions_confirmed_cents)} conf.</span>
+                    </div>
+                </div>
+
+                <div class="adm-kpi-grid">
+                    ${UI.KPIStatCard({ label: 'Clientes Únicos', value: num(m.unique_clients_count), sub: 'Desduplicados por conta/e-mail/tel', tone: 'tone-cyan', onClick: `AdminView.updateParams({ subtab: 'clients' })` })}
+                    ${UI.KPIStatCard({ label: 'Veículos Cadastrados', value: num(m.vehicles_count), sub: `${num(m.active_dna_count)} com DNA ativo`, tone: 'tone-blue', onClick: `AdminView.updateParams({ subtab: 'vehicles' })` })}
+                    ${UI.FinancialMetric({ label: 'Faturamento Atribuído', cents: m.attributed_revenue_cents, classification: 'Confirmado', sub: `${num(m.paid_registrations_count)} pago(s) • ${num(m.pending_registrations_count)} pendente(s)`, tone: 'tone-success', onClick: `AdminView.updateParams({ subtab: 'financial' })` })}
+                    ${UI.KPIStatCard({ label: 'Atendimentos (OS / Agenda)', value: num(m.service_orders_count), sub: `${num(m.appointments_count)} agendamentos • OS: ${brl(m.mechanical_volume_cents)}`, tone: 'tone-gold', onClick: `AdminView.updateParams({ subtab: 'attendances' })` })}
+                </div>
+
+                <div class="adm-charts-grid">
+                    <div class="adm-card">
+                        <div class="adm-card-header"><h3 class="adm-card-title">Informações Cadastrais</h3></div>
+                        <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; font-size:13.5px;">
+                            <div><span class="adm-text-muted">Nome Fantasia</span><div style="font-weight:600;">${esc(w.trade_name || '-')}</div></div>
+                            <div><span class="adm-text-muted">Razão Social</span><div style="font-weight:600;">${esc(w.company_name || '-')}</div></div>
+                            <div><span class="adm-text-muted">CNPJ</span><div class="adm-mono" style="font-weight:600;">${esc(w.cnpj || '-')}</div></div>
+                            <div><span class="adm-text-muted">Credenciamento</span><div class="adm-mono">${esc(AdminView.formatDateTime(w.created_at))}</div></div>
+                            <div><span class="adm-text-muted">Cidade / UF</span><div>${esc(w.city || '-')}/${esc(w.state || '-')}</div></div>
+                            <div><span class="adm-text-muted">Telefone</span><div class="adm-mono">${esc(w.phone || '-')}</div></div>
+                            <div><span class="adm-text-muted">E-mail</span><div>${esc(w.email || '-')}</div></div>
+                            <div><span class="adm-text-muted">WhatsApp Oficial</span><div class="adm-mono">${esc(w.whatsapp_official || w.phone || '-')}</div></div>
+                        </div>
+                    </div>
+
+                    <div class="adm-card">
+                        <div class="adm-card-header"><h3 class="adm-card-title">Equipe da Oficina (${staff.length})</h3></div>
+                        ${UI.EnterpriseDataTable({
+                            rows: staff,
+                            emptyTitle: 'Nenhum usuário operacional vinculado',
+                            emptySubtitle: 'Os usuários administrativos e mecânicos vinculados à oficina aparecem aqui.',
+                            columns: [
+                                { key: 'name', label: 'Colaborador', render: u => `<span class="adm-cell-title">${esc(u.name)}</span><div class="adm-cell-sub">${esc(u.email)}</div>` },
+                                { key: 'position_title', label: 'Função', render: u => esc(u.position_title || u.role_code || '-') },
+                                { key: 'status', label: 'Status', render: u => AdminView.statusBadge(u.status) }
+                            ]
+                        })}
+                    </div>
+                </div>
+
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">Clientes Únicos Vinculados (${uniqueClients.length})</h3>
+                            <p class="adm-card-subtitle">Resumo operacional dos clientes e veículos efetivamente atendidos por esta oficina</p>
+                        </div>
+                        ${uniqueClients.length > 0 ? `<button type="button" class="adm-btn adm-btn-sm" onclick="AdminView.updateParams({ subtab: 'clients' })">Ver Aba Clientes →</button>` : ''}
+                    </div>
+                    ${renderClientsTable(uniqueClients.slice(0, 10))}
+                </div>
+            `;
+        } else if (activeTab === 'clients') {
+            tabContent = `
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">Clientes Efetivamente Vinculados à Oficina (${uniqueClients.length})</h3>
+                            <p class="adm-card-subtitle">Clientes com múltiplos veículos aparecem consolidados em um único registro</p>
+                        </div>
+                    </div>
+                    ${renderClientsTable(uniqueClients)}
+                </div>
+            `;
+        } else if (activeTab === 'vehicles') {
+            tabContent = `
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">Veículos Atendidos e Cadastrados (${vehicles.length})</h3>
+                            <p class="adm-card-subtitle">Relação real de veículos com DNA ativado ou histórico de serviço nesta oficina</p>
+                        </div>
+                    </div>
+                    ${UI.EnterpriseDataTable({
+                        rows: vehicles,
+                        emptyTitle: 'Nenhum veículo vinculado',
+                        emptySubtitle: 'Ainda não há veículos registrados ou atendidos por esta oficina.',
+                        columns: [
+                            { key: 'license_plate', label: 'Placa', tdClass: 'adm-mono', render: v => `<strong>${esc(v.license_plate)}</strong>` },
+                            { key: 'brand', label: 'Veículo', render: v => `<span class="adm-cell-title">${esc(v.brand || '')} ${esc(v.model || '')}</span><div class="adm-cell-sub">${esc(v.model_year || '-')} • ${esc(v.color || '-')}</div>` },
+                            { key: 'dna_code', label: 'Código DNA', render: v => v.dna_code ? `<span class="adm-badge adm-badge-success"><span class="adm-badge-dot" aria-hidden="true"></span>${esc(v.dna_code)}</span>` : `<span class="adm-badge adm-badge-muted">Sem DNA</span>` },
+                            { key: 'owner_name', label: 'Proprietário', render: v => `<div>${esc(v.owner_name || '-')}</div><div class="adm-cell-sub adm-mono">${esc(v.owner_phone || v.owner_email || '')}</div>` },
+                            { key: 'last_mileage', label: 'Último KM', align: 'right', tdClass: 'adm-mono', render: v => v.last_mileage ? `${num(v.last_mileage)} km` : '-' },
+                            { key: 'services_count', label: 'OS / Total', align: 'right', tdClass: 'adm-mono', render: v => `${num(v.services_count)} • ${brl(v.services_total_cents)}` },
+                            { key: 'latest_pix_status', label: 'PIX', render: v => v.latest_pix_status ? AdminView.statusBadge(v.latest_pix_status) : '<span class="adm-text-muted">-</span>' },
+                            { key: 'action', label: 'Ação', align: 'right', tdClass: 'adm-actions-cell', render: v => `<button type="button" class="adm-btn adm-btn-sm" onclick="App.switchView('dossier', '${esc(v.license_plate)}')">Dossiê →</button>` }
+                        ]
+                    })}
+                </div>
+            `;
+        } else if (activeTab === 'attendances') {
+            const osData = await API.getAdminServiceOrders({ workshop_id: workshopId, page: 1, page_size: 50 }).catch(() => ({ items: [], total: 0 }));
+            const osItems = osData.items || [];
+            tabContent = `
+                <div class="adm-kpi-grid cols-4">
+                    ${UI.KPIStatCard({ label: 'Ordens de Serviço', value: num(m.service_orders_count), tone: 'tone-blue' })}
+                    ${UI.KPIStatCard({ label: 'Serviços Comprovados (N4)', value: num(m.proven_services_count), tone: 'tone-success' })}
+                    ${UI.KPIStatCard({ label: 'Agendamentos Registrados', value: num(m.appointments_count), tone: 'tone-cyan' })}
+                    ${UI.FinancialMetric({ label: 'Volume Mecânico OS', cents: m.mechanical_volume_cents, classification: 'Registrado', tone: 'tone-gold' })}
+                </div>
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">Histórico de Atendimentos da Oficina (${osItems.length})</h3>
+                            <p class="adm-card-subtitle">Registros reais de serviços lançados no sistema para esta oficina</p>
+                        </div>
+                    </div>
+                    ${UI.EnterpriseDataTable({
+                        rows: osItems,
+                        emptyTitle: 'Nenhum atendimento registrado',
+                        emptySubtitle: 'Esta oficina ainda não possui ordens de serviço lançadas.',
+                        columns: [
+                            { key: 'service_date', label: 'Data', tdClass: 'adm-mono', render: s => esc(AdminView.formatDate(s.service_date || s.created_at)) },
+                            { key: 'license_plate', label: 'Placa / Veículo', render: s => `<a href="javascript:void(0)" class="adm-link adm-mono" onclick="App.switchView('dossier', '${esc(s.license_plate)}')">${esc(s.license_plate)}</a><div class="adm-cell-sub">${esc(s.brand || '')} ${esc(s.model || '')}</div>` },
+                            { key: 'service_title', label: 'Serviço / Categoria', render: s => `<span class="adm-cell-title">${esc(s.service_title || '-')}</span><div class="adm-cell-sub">${esc(s.category || '')}</div>` },
+                            { key: 'mileage', label: 'KM', align: 'right', tdClass: 'adm-mono', render: s => s.mileage ? `${num(s.mileage)} km` : '-' },
+                            { key: 'proof_level', label: 'Comprovação', render: s => AdminView.proofBadge(s.proof_level) },
+                            { key: 'total_cost_cents', label: 'Valor', align: 'right', tdClass: 'adm-money', render: s => brl(s.total_cost_cents) }
+                        ]
+                    })}
+                </div>
+            `;
+        } else if (activeTab === 'financial') {
+            tabContent = `
+                <div class="adm-kpi-grid cols-4">
+                    ${UI.FinancialMetric({ label: 'Faturamento Atribuído', cents: m.attributed_revenue_cents, classification: 'Confirmado', sub: `${num(m.paid_registrations_count)} pago(s)`, tone: 'tone-success' })}
+                    ${UI.FinancialMetric({ label: 'Parcela Oficina (Repasse)', cents: m.workshop_share_cents, classification: 'Repasse', tone: 'tone-cyan' })}
+                    ${UI.FinancialMetric({ label: 'Comissões Rep. Confirmadas', cents: m.rep_commissions_confirmed_cents, classification: 'Confirmado', sub: `Projetadas: ${brl(m.rep_commissions_projected_cents)}`, tone: 'tone-gold' })}
+                    ${UI.FinancialMetric({ label: 'Taxas por Atendimento', cents: m.attendance_fees_cents, classification: 'Cobrança', sub: `${num(m.attendance_fees_count)} registro(s)`, tone: 'tone-blue' })}
+                </div>
+                <div class="adm-charts-grid">
+                    <div class="adm-card">
+                        <div class="adm-card-header"><h3 class="adm-card-title">Cobranças PIX da Oficina (${pixCharges.length})</h3></div>
+                        ${UI.EnterpriseDataTable({
+                            rows: pixCharges.slice(0, 25),
+                            emptyTitle: 'Sem cobranças PIX',
+                            emptySubtitle: 'Nenhuma cobrança gerada por esta oficina.',
+                            columns: [
+                                { key: 'created_at', label: 'Data', tdClass: 'adm-mono', render: p => esc(AdminView.formatDate(p.paid_at || p.created_at)) },
+                                { key: 'charge_type', label: 'Tipo', render: p => esc(p.charge_type) },
+                                { key: 'activation_code', label: 'Código', tdClass: 'adm-mono', render: p => esc(p.activation_code || p.id) },
+                                { key: 'customer_price_cents', label: 'Valor Cliente', align: 'right', tdClass: 'adm-money', render: p => brl(p.customer_price_cents) },
+                                { key: 'status', label: 'Status', render: p => AdminView.statusBadge(p.status) }
+                            ]
+                        })}
+                    </div>
+
+                    <div class="adm-card">
+                        <div class="adm-card-header"><h3 class="adm-card-title">Comissões de Representante Geradas (${repComms.length})</h3></div>
+                        ${UI.EnterpriseDataTable({
+                            rows: repComms.slice(0, 25),
+                            emptyTitle: 'Sem comissões',
+                            emptySubtitle: 'Nenhuma comissão vinculada a esta oficina.',
+                            columns: [
+                                { key: 'competence_month', label: 'Competência', tdClass: 'adm-mono', render: rc => esc(rc.competence_month || '-') },
+                                { key: 'rep_code', label: 'Representante', render: rc => `<span class="adm-mono adm-text-accent" style="font-weight:700;">${esc(rc.rep_code)}</span> ${esc(rc.rep_name)}` },
+                                { key: 'commission_amount_cents', label: 'Valor', align: 'right', tdClass: 'adm-money', render: rc => brl(rc.commission_amount_cents) },
+                                { key: 'status', label: 'Status', render: rc => AdminView.statusBadge(rc.status) }
+                            ]
+                        })}
+                    </div>
+                </div>
+            `;
+        } else if (activeTab === 'representative') {
+            tabContent = ref ? `
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">Representante Comercial Responsável</h3>
+                            <p class="adm-card-subtitle">Vínculo contratual vigente de captação comercial desta oficina</p>
+                        </div>
+                        <div class="adm-header-actions">
+                            <button type="button" class="adm-btn adm-btn-sm" onclick="AdminView.openRepresentative('${esc(ref.representative_id)}')">Abrir Ficha do Representante →</button>
+                            <button type="button" class="adm-btn adm-btn-sm adm-btn-primary" onclick="AdminScreensCommercial.openReassignModal('${esc(w.id)}', '${esc(w.trade_name)}', '${esc(ref.rep_code)}')">Reatribuir Vínculo</button>
+                        </div>
+                    </div>
+                    <div class="adm-form-grid">
+                        <div class="adm-chain-box">
+                            <div><strong>Código:</strong> <span class="adm-mono adm-text-accent">${esc(ref.rep_code)}</span></div>
+                            <div><strong>Nome:</strong> ${esc(ref.representative_name)}</div>
+                            <div><strong>Status do Representante:</strong> ${AdminView.statusBadge(ref.representative_status)}</div>
+                            <div><strong>Canal de Origem:</strong> ${esc(ref.origin_channel || '-')}</div>
+                        </div>
+                        <div class="adm-chain-box">
+                            <div><strong>E-mail:</strong> ${esc(ref.representative_email || '-')}</div>
+                            <div><strong>Telefone:</strong> <span class="adm-mono">${esc(ref.representative_phone || '-')}</span></div>
+                            <div><strong>Início do Vínculo:</strong> <span class="adm-mono">${esc(AdminView.formatDate(ref.linked_at))}</span></div>
+                            <div><strong>Validade Contratual (24m):</strong> <span class="adm-mono">${esc(AdminView.formatDate(ref.valid_until))}</span></div>
+                        </div>
+                    </div>
+                    ${ref.justification ? `<div class="adm-chain-box"><strong>Justificativa / Histórico do Vínculo:</strong> ${esc(ref.justification)}</div>` : ''}
+                </div>
+            ` : `
+                <div class="adm-card">
+                    ${UI.EmptyState({
+                        title: 'Oficina sem representante comercial vinculado',
+                        subtitle: 'Esta oficina realizou cadastro direto na plataforma DNA AUTO. Caso aplicável, vincule um representante comercial com justificativa auditada.',
+                        actionHtml: `<button type="button" class="adm-btn adm-btn-primary" onclick="AdminScreensCommercial.openReassignModal('${esc(w.id)}', '${esc(w.trade_name)}', 'Nenhum')">Vincular Representante</button>`
+                    })}
+                </div>
+            `;
+        } else {
+            // Aba Auditoria — consulta eventos reais e filtra pela oficina atual
+            const [finAud, sysAud] = await Promise.all([
+                typeof API.getAdminFinancialAudit === 'function' ? API.getAdminFinancialAudit({ limit: 150 }).catch(() => ({})) : Promise.resolve({}),
+                typeof API.getAuditLogs === 'function' ? API.getAuditLogs({ limit: 150 }).catch(() => ({})) : Promise.resolve({})
+            ]);
+            const wsRepLogs = (finAud.representative_audit || []).filter(l => l.workshop_id === workshopId);
+            const wsSysLogs = (sysAud.logs || []).filter(l => l.entity_id === workshopId || String(l.data_after_json || '').includes(workshopId));
+            const combined = [
+                ...wsRepLogs.map(l => ({
+                    created_at: l.created_at,
+                    action: l.action,
+                    actor: `${l.actor_role || 'ADMIN'} (${l.actor_id || '-'})`,
+                    details: l.justification || '-'
+                })),
+                ...wsSysLogs.map(l => ({
+                    created_at: l.created_at,
+                    action: l.action,
+                    actor: l.user_name || l.user_id || 'Sistema',
+                    details: l.data_after_json || l.entity_type || '-'
+                }))
+            ].sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+
+            tabContent = `
+                <div class="adm-card">
+                    <div class="adm-card-header">
+                        <div>
+                            <h3 class="adm-card-title">Trilha de Auditoria da Oficina (${combined.length})</h3>
+                            <p class="adm-card-subtitle">Aprovações, suspensões, alterações de vínculo comercial e eventos financeiros registrados</p>
+                        </div>
+                    </div>
+                    ${UI.EnterpriseDataTable({
+                        rows: combined,
+                        emptyTitle: 'Sem eventos de auditoria específicos',
+                        emptySubtitle: 'Nenhuma alteração auditada registrada recentemente para esta oficina.',
+                        columns: [
+                            { key: 'created_at', label: 'Data / Hora', tdClass: 'adm-mono', render: l => esc(AdminView.formatDateTime(l.created_at)) },
+                            { key: 'action', label: 'Evento / Ação', render: l => `<span class="adm-badge adm-badge-info">${esc(l.action)}</span>` },
+                            { key: 'actor', label: 'Responsável', tdClass: 'adm-mono', render: l => esc(l.actor) },
+                            { key: 'details', label: 'Detalhes / Justificativa', render: l => `<div class="adm-truncate" title="${esc(l.details)}">${esc(l.details)}</div>` }
+                        ]
+                    })}
+                </div>
+            `;
+        }
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <div style="margin-bottom:6px;">
-                        <button class="adm-btn adm-btn-sm" onclick="AdminView.navigate('workshops')">← Voltar para Oficinas</button>
-                    </div>
-                    <h2>${esc(w.trade_name)} ${AdminView.statusBadge(w.status)}</h2>
-                    <p>${esc(w.company_name || '')} • CNPJ: <span class="adm-mono">${esc(w.cnpj || '-')}</span> • ${esc(w.city || '-')}/${esc(w.state || '-')} • Tel: ${esc(w.phone || '-')}</p>
-                </div>
-                <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                    <button class="adm-btn adm-btn-sm adm-btn-gold" onclick="AdminScreensCommercial.openReassignModal('${esc(w.id)}', '${esc(w.trade_name)}', '${esc(ref ? ref.rep_code : 'Nenhum')}')">Reatribuir Representante</button>
-                    ${w.status !== 'APPROVED' ? `<button class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminView.changeWorkshopStatus('${esc(w.id)}', 'APPROVED')">Aprovar Oficina</button>` : `<button class="adm-btn adm-btn-sm adm-btn-danger" onclick="AdminView.changeWorkshopStatus('${esc(w.id)}', 'SUSPENDED')">Suspender Oficina</button>`}
-                </div>
+            ${UI.PageHeader({
+                title: w.trade_name || 'Detalhamento da Oficina',
+                badgeHtml: AdminView.statusBadge(w.status),
+                subtitle: `${esc(w.company_name || '')} • CNPJ: <span class="adm-mono">${esc(w.cnpj || '-')}</span> • ${esc(w.city || '-')}/${esc(w.state || '-')} • Tel: <span class="adm-mono">${esc(w.phone || '-')}</span>`,
+                backAction: "AdminView.navigate('workshops')",
+                backLabel: 'Voltar para Oficinas Credenciadas',
+                actionsHtml: `
+                    <button type="button" class="adm-btn adm-btn-sm" onclick="AdminScreensCommercial.openReassignModal('${esc(w.id)}', '${esc(w.trade_name)}', '${esc(ref ? ref.rep_code : 'Nenhum')}')">Reatribuir Representante</button>
+                    ${w.status !== 'APPROVED'
+                        ? `<button type="button" class="adm-btn adm-btn-sm adm-btn-success" onclick="AdminView.changeWorkshopStatus('${esc(w.id)}', 'APPROVED', '${esc(w.trade_name)}')">Aprovar Oficina</button>`
+                        : `<button type="button" class="adm-btn adm-btn-sm adm-btn-danger" onclick="AdminView.changeWorkshopStatus('${esc(w.id)}', 'SUSPENDED', '${esc(w.trade_name)}')">Suspender Oficina</button>`}
+                `
+            })}
+
+            <div class="adm-subtabs" role="tablist" aria-label="Seções da oficina">
+                ${tabs.map(t => `
+                    <button type="button"
+                            role="tab"
+                            aria-selected="${activeTab === t.id}"
+                            class="adm-subtab ${activeTab === t.id ? 'active' : ''}"
+                            onclick="AdminView.updateParams({ subtab: '${t.id}' })">
+                        ${esc(t.label)}
+                    </button>
+                `).join('')}
             </div>
 
-            <div class="adm-chain-box">
-                <div style="font-size:11px; color:#94a3b8; font-weight:700; text-transform:uppercase; margin-bottom:8px;">Cadeia Comercial Auditável</div>
-                <div class="adm-chain-flow">
-                    <span class="adm-chain-step"><strong>Representante:</strong> ${ref ? `<a href="javascript:void(0)" style="color:#00d4ff;" onclick="AdminView.openRepresentative('${esc(ref.representative_id)}')">${esc(ref.rep_code)} — ${esc(ref.representative_name)}</a>` : 'Cadastro Direto'}</span>
-                    <span class="adm-chain-arrow">→</span>
-                    <span class="adm-chain-step"><strong>Oficina:</strong> ${esc(w.trade_name)} ${ref ? `(Validade: ${esc(AdminView.formatDate(ref.valid_until))})` : ''}</span>
-                    <span class="adm-chain-arrow">→</span>
-                    <span class="adm-chain-step"><strong>Clientes Únicos:</strong> ${m.unique_clients_count || 0} (${m.vehicles_count || 0} veículos)</span>
-                    <span class="adm-chain-arrow">→</span>
-                    <span class="adm-chain-step"><strong>Pagos:</strong> ${m.paid_registrations_count || 0} (${brl(m.attributed_revenue_cents)})</span>
-                    <span class="adm-chain-arrow">→</span>
-                    <span class="adm-chain-step"><strong>Comissão Rep.:</strong> ${brl(m.rep_commissions_confirmed_cents)} conf.</span>
-                </div>
-            </div>
-
-            <div class="adm-kpi-grid">
-                <div class="adm-kpi-card tone-cyan"><div class="adm-kpi-label">Clientes Únicos</div><div class="adm-kpi-value">${m.unique_clients_count || 0}</div><div class="adm-kpi-sub">Desduplicados por conta/e-mail/tel</div></div>
-                <div class="adm-kpi-card tone-blue"><div class="adm-kpi-label">Veículos Cadastrados</div><div class="adm-kpi-value">${m.vehicles_count || 0}</div><div class="adm-kpi-sub">${m.active_dna_count || 0} com DNA ativo</div></div>
-                <div class="adm-kpi-card tone-success"><div class="adm-kpi-label">Cadastros Pagos / Ativações</div><div class="adm-kpi-value">${m.paid_registrations_count || 0}</div><div class="adm-kpi-sub">${m.pending_registrations_count || 0} pendente(s) • Fat.: ${brl(m.attributed_revenue_cents)}</div></div>
-                <div class="adm-kpi-card tone-gold"><div class="adm-kpi-label">Atendimentos (OS / Agenda)</div><div class="adm-kpi-value">${m.service_orders_count || 0}</div><div class="adm-kpi-sub">${m.appointments_count || 0} agendamentos • OS: ${brl(m.mechanical_volume_cents)}</div></div>
-            </div>
-
-            <div class="adm-card">
-                <div class="adm-card-header">
-                    <div>
-                        <h3 class="adm-card-title">Clientes Únicos desta Oficina (${(data.unique_clients || []).length})</h3>
-                        <p class="adm-card-subtitle">Clientes com múltiplos veículos aparecem uma única vez com toda a frota agrupada</p>
-                    </div>
-                </div>
-                ${(data.unique_clients || []).length === 0 ? `<div class="adm-empty"><strong>Nenhum cliente vinculado</strong>Esta oficina ainda não cadastrou ou atendeu clientes.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Cliente</th><th>Contato</th><th>Qtd. Veículos</th><th>Veículos / Placas / DNA</th><th>OS Realizadas</th><th>Volume Serviços</th></tr></thead>
-                            <tbody>
-                                ${data.unique_clients.map(cl => `
-                                    <tr>
-                                        <td><strong>${esc(cl.name)}</strong></td>
-                                        <td style="font-size:11.5px; color:#94a3b8;">${esc(cl.email || '-')}<br/>${esc(cl.phone || '-')}</td>
-                                        <td class="adm-mono" style="font-weight:700; color:#38bdf8;">${cl.vehicles_count}</td>
-                                        <td>
-                                            ${(cl.vehicles || []).map(v => `
-                                                <span class="adm-badge adm-badge-cyan" style="margin:2px; cursor:pointer;" onclick="App.switchView('dossier', '${esc(v.license_plate)}')">
-                                                    ${esc(v.license_plate)} (${esc(v.brand || '')} ${esc(v.model || '')}) ${v.dna_code ? `• ${esc(v.dna_code)}` : ''}
-                                                </span>
-                                            `).join('')}
-                                        </td>
-                                        <td class="adm-mono">${cl.services_count || 0}</td>
-                                        <td class="adm-mono">${brl(cl.services_total_cents)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
-            </div>
-
-            <div class="adm-charts-grid">
-                <div class="adm-card">
-                    <div class="adm-card-header"><h3 class="adm-card-title">Cobranças PIX da Oficina (${(data.pix_charges || []).length})</h3></div>
-                    ${(data.pix_charges || []).length === 0 ? `<div class="adm-empty"><strong>Sem cobranças PIX</strong>Nenhuma cobrança gerada por esta oficina.</div>` : `
-                        <div class="adm-table-wrap">
-                            <table class="adm-table">
-                                <thead><tr><th>Data</th><th>Tipo</th><th>Código</th><th>Valor Cliente</th><th>Status</th></tr></thead>
-                                <tbody>
-                                    ${data.pix_charges.slice(0, 15).map(p => `
-                                        <tr>
-                                            <td class="adm-mono">${esc(AdminView.formatDate(p.paid_at || p.created_at))}</td>
-                                            <td>${esc(p.charge_type)}</td>
-                                            <td class="adm-mono">${esc(p.activation_code || p.id)}</td>
-                                            <td class="adm-mono">${brl(p.customer_price_cents)}</td>
-                                            <td>${AdminView.statusBadge(p.status)}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `}
-                </div>
-
-                <div class="adm-card">
-                    <div class="adm-card-header"><h3 class="adm-card-title">Comissões de Representante Geradas (${(data.representative_commissions || []).length})</h3></div>
-                    ${(data.representative_commissions || []).length === 0 ? `<div class="adm-empty"><strong>Sem comissões</strong>Nenhuma comissão vinculada a esta oficina.</div>` : `
-                        <div class="adm-table-wrap">
-                            <table class="adm-table">
-                                <thead><tr><th>Competência</th><th>Representante</th><th>Valor</th><th>Status</th></tr></thead>
-                                <tbody>
-                                    ${data.representative_commissions.slice(0, 15).map(rc => `
-                                        <tr>
-                                            <td class="adm-mono">${esc(rc.competence_month || '-')}</td>
-                                            <td><span class="adm-mono" style="color:#00d4ff;">${esc(rc.rep_code)}</span> ${esc(rc.rep_name)}</td>
-                                            <td class="adm-mono" style="font-weight:700;">${brl(rc.commission_amount_cents)}</td>
-                                            <td>${AdminView.statusBadge(rc.status)}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `}
-                </div>
-            </div>
+            ${tabContent}
         `;
     },
 
@@ -639,194 +1315,196 @@ const AdminScreensCore = {
     // --------------------------------------------------------------------------
     async renderClients(ctx) {
         const f = ctx.params || {};
+        const pageSize = Number(f.page_size || 25);
         const data = await API.getAdminUniqueClients({
             q: f.q || '',
             workshop_id: f.workshop_id || 'all',
             page: f.page || 1,
-            page_size: 25
+            page_size: pageSize
         });
+        const UI = AdminView.ui();
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
+        const num = AdminView.formatNum;
+        const items = this.sortItems(data.items || [], f.sort_by || '', f.sort_dir || 'desc');
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Clientes Cadastrados — Base Única (${data.total || 0})</h2>
-                    <p>Proprietários desduplicados da rede DNA AUTO. Um cliente com múltiplos veículos é contabilizado apenas uma vez.</p>
-                </div>
-            </div>
+            ${UI.PageHeader({
+                title: `Clientes Cadastrados (${num(data.total)})`,
+                subtitle: 'Proprietários desduplicados da rede DNA AUTO. Um cliente com múltiplos veículos é contabilizado uma única vez.'
+            })}
 
             <div class="adm-card">
-                <div class="adm-filters-bar">
-                    <input type="text" class="adm-input" style="min-width:260px;" placeholder="Buscar nome, e-mail, telefone, placa ou DNA..." value="${esc(f.q || '')}"
+                ${UI.FilterToolbar(`
+                    <input type="text" id="cli-filter-q" class="adm-input adm-filter-search" aria-label="Buscar cliente"
+                           placeholder="Buscar por nome, e-mail, telefone, placa ou código DNA..." value="${esc(f.q || '')}"
                            onkeydown="if(event.key==='Enter') AdminView.updateParams({ q: this.value, page: 1 })" />
-                    <button class="adm-btn adm-btn-sm" onclick="AdminView.updateParams({ q: this.parentNode.querySelector('input').value, page: 1 })">Buscar</button>
-                </div>
+                    <button type="button" class="adm-btn adm-btn-primary" onclick="AdminView.updateParams({ q: document.getElementById('cli-filter-q')?.value || '', page: 1 })">Aplicar Filtros</button>
+                    ${f.q ? `<button type="button" class="adm-btn" onclick="AdminView.navigate('clients')">Limpar</button>` : ''}
+                `)}
 
-                ${(data.items || []).length === 0 ? `<div class="adm-empty"><strong>Nenhum cliente encontrado</strong>Não há clientes cadastrados para os filtros informados.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Cliente / CPF</th><th>Contato</th><th>Oficina Principal</th><th>Veículos</th><th>Frota (Placa / DNA)</th><th>OS</th><th>Gasto Total OS</th><th>Status</th></tr></thead>
-                            <tbody>
-                                ${data.items.map(c => `
-                                    <tr>
-                                        <td><strong>${esc(c.name)}</strong><div class="adm-mono" style="font-size:11px; color:#64748b;">${esc(c.cpf_masked)}</div></td>
-                                        <td style="font-size:11.5px; color:#94a3b8;">${esc(c.email || '-')}<br/>${esc(c.phone || '-')}</td>
-                                        <td>${esc(c.preferred_workshop_name)}</td>
-                                        <td class="adm-mono" style="font-weight:700; color:#00d4ff;">${c.vehicles_count}</td>
-                                        <td>
-                                            ${(c.vehicles || []).length === 0 ? '<span style="color:#64748b;">Sem veículo</span>' : c.vehicles.map(v => `
-                                                <span class="adm-badge adm-badge-cyan" style="margin:2px; cursor:pointer;" onclick="App.switchView('dossier', '${esc(v.license_plate)}')">${esc(v.license_plate)} ${v.dna_code ? `• ${esc(v.dna_code)}` : ''}</span>
-                                            `).join('')}
-                                        </td>
-                                        <td class="adm-mono">${c.services_count || 0}</td>
-                                        <td class="adm-mono">${brl(c.total_spent_cents)}</td>
-                                        <td>${AdminView.statusBadge(c.status)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    ${AdminView.renderPagination(data.page, data.total_pages, data.total)}
-                `}
+                ${UI.EnterpriseDataTable({
+                    rows: items,
+                    sortBy: f.sort_by || '',
+                    sortDir: f.sort_dir || 'desc',
+                    onSortExpr: (field, dir) => `AdminView.updateParams({ sort_by: '${field}', sort_dir: '${dir}' })`,
+                    emptyTitle: 'Nenhum cliente encontrado',
+                    emptySubtitle: 'Não há clientes cadastrados para os filtros informados.',
+                    pagination: { page: data.page, totalPages: data.total_pages, total: data.total, pageSize },
+                    columns: [
+                        { key: 'name', label: 'Cliente / CPF', sortable: true, render: c => `<span class="adm-cell-title">${esc(c.name)}</span><div class="adm-cell-sub adm-mono">${esc(c.cpf_masked)}</div>` },
+                        { key: 'email', label: 'Contato', render: c => `<div>${esc(c.email || '-')}</div><div class="adm-cell-sub adm-mono">${esc(c.phone || '-')}</div>` },
+                        { key: 'preferred_workshop_name', label: 'Oficina Principal', sortable: true, render: c => esc(c.preferred_workshop_name || '-') },
+                        { key: 'vehicles_count', label: 'Veículos', align: 'right', sortable: true, tdClass: 'adm-num adm-text-accent', render: c => num(c.vehicles_count) },
+                        {
+                            key: 'vehicles', label: 'Frota (Placa / DNA)',
+                            render: c => (c.vehicles || []).length === 0
+                                ? '<span class="adm-text-muted">Sem veículo</span>'
+                                : c.vehicles.map(v => `<span class="adm-badge adm-badge-info" style="margin:2px; cursor:pointer;" onclick="App.switchView('dossier', '${esc(v.license_plate)}')">${esc(v.license_plate)}${v.dna_code ? ` • ${esc(v.dna_code)}` : ''}</span>`).join('')
+                        },
+                        { key: 'services_count', label: 'OS', align: 'right', sortable: true, tdClass: 'adm-num', render: c => num(c.services_count) },
+                        { key: 'total_spent_cents', label: 'Volume Serviços', align: 'right', sortable: true, tdClass: 'adm-money', render: c => brl(c.total_spent_cents) },
+                        { key: 'status', label: 'Status', render: c => AdminView.statusBadge(c.status) }
+                    ]
+                })}
             </div>
         `;
     },
 
     // --------------------------------------------------------------------------
-    // 6. VEÍCULOS E DNA
+    // 6. VEÍCULOS REGISTRADOS E DNA
     // --------------------------------------------------------------------------
     async renderVehicles(ctx) {
         const f = ctx.params || {};
         const qs = API._qs({ q: f.q || '', dna_status: f.dna_status || '', workshop_id: f.workshop_id || 'all', page_size: 100 });
         const data = await API.request(`/admin/fleet${qs}`);
-        const vehicles = data.vehicles || [];
+        const UI = AdminView.ui();
+        const vehicles = this.sortItems(data.vehicles || [], f.sort_by || '', f.sort_dir || 'desc');
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
+        const num = AdminView.formatNum;
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Veículos e DNA (${vehicles.length})</h2>
-                    <p>Frota completa sincronizada entre App Cliente e App Oficina com código DNA permanente e acesso direto ao Dossiê.</p>
-                </div>
-            </div>
+            ${UI.PageHeader({
+                title: `Veículos Registrados (${num(vehicles.length)})`,
+                subtitle: 'Frota completa sincronizada entre App Cliente e App Oficina com código DNA permanente e acesso ao Dossiê.'
+            })}
 
             <div class="adm-card">
-                <div class="adm-filters-bar">
-                    <input type="text" class="adm-input" style="min-width:250px;" placeholder="Buscar placa, código DNA, marca ou modelo..." value="${esc(f.q || '')}"
+                ${UI.FilterToolbar(`
+                    <input type="text" id="veh-filter-q" class="adm-input adm-filter-search" aria-label="Buscar veículo"
+                           placeholder="Buscar por placa, código DNA, marca ou modelo..." value="${esc(f.q || '')}"
                            onkeydown="if(event.key==='Enter') AdminView.updateParams({ q: this.value })" />
-                    <select class="adm-select" onchange="AdminView.updateParams({ dna_status: this.value })">
+                    <select id="veh-filter-dna" class="adm-select" aria-label="Filtrar por status DNA" onchange="AdminView.updateParams({ dna_status: this.value })">
                         <option value="" ${!f.dna_status ? 'selected' : ''}>DNA: Todos</option>
                         <option value="ACTIVE" ${f.dna_status === 'ACTIVE' ? 'selected' : ''}>Apenas DNA Ativo</option>
                         <option value="NONE" ${f.dna_status === 'NONE' ? 'selected' : ''}>Sem DNA Ativo</option>
                     </select>
-                    <button class="adm-btn adm-btn-sm" onclick="AdminView.updateParams({ q: this.parentNode.querySelector('input').value })">Filtrar</button>
-                </div>
+                    <button type="button" class="adm-btn adm-btn-primary" onclick="AdminView.updateParams({ q: document.getElementById('veh-filter-q')?.value || '' })">Aplicar Filtros</button>
+                    ${(f.q || f.dna_status) ? `<button type="button" class="adm-btn" onclick="AdminView.navigate('vehicles')">Limpar</button>` : ''}
+                `)}
 
-                ${vehicles.length === 0 ? `<div class="adm-empty"><strong>Nenhum veículo encontrado</strong>Não existem veículos para o filtro selecionado.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Placa</th><th>Veículo</th><th>Código DNA</th><th>Proprietário</th><th>Oficina Vinculada</th><th>KM Atual</th><th>OS / Total</th><th>Ação</th></tr></thead>
-                            <tbody>
-                                ${vehicles.map(v => `
-                                    <tr>
-                                        <td class="adm-mono" style="font-weight:800; color:#fff;">${esc(v.license_plate)}</td>
-                                        <td><strong>${esc(v.brand)} ${esc(v.model)}</strong><div style="font-size:11px; color:#64748b;">${esc(v.model_year || '')} • ${esc(v.color || '-')}</div></td>
-                                        <td>${v.dna_code ? `<span class="adm-badge adm-badge-success">${esc(v.dna_code)}</span>` : `<span class="adm-badge adm-badge-muted">Sem DNA</span>`}</td>
-                                        <td>${esc(v.owner_name)}<div style="font-size:11px; color:#64748b;">${esc(v.owner_phone || '')}</div></td>
-                                        <td>${esc(v.workshop_name)}</td>
-                                        <td class="adm-mono">${v.current_mileage ? `${Number(v.current_mileage).toLocaleString('pt-BR')} km` : '-'}</td>
-                                        <td class="adm-mono">${v.services_count || 0} • ${brl(v.total_maintenance_cents)}</td>
-                                        <td><button class="adm-btn adm-btn-sm" onclick="App.switchView('dossier', '${esc(v.license_plate)}')">Dossiê →</button></td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
+                ${UI.EnterpriseDataTable({
+                    rows: vehicles,
+                    sortBy: f.sort_by || '',
+                    sortDir: f.sort_dir || 'desc',
+                    onSortExpr: (field, dir) => `AdminView.updateParams({ sort_by: '${field}', sort_dir: '${dir}' })`,
+                    emptyTitle: 'Nenhum veículo encontrado',
+                    emptySubtitle: 'Não existem veículos para os filtros selecionados.',
+                    columns: [
+                        { key: 'license_plate', label: 'Placa', sortable: true, tdClass: 'adm-mono', render: v => `<strong>${esc(v.license_plate)}</strong>` },
+                        { key: 'brand', label: 'Veículo', sortable: true, render: v => `<span class="adm-cell-title">${esc(v.brand)} ${esc(v.model)}</span><div class="adm-cell-sub">${esc(v.model_year || '-')} • ${esc(v.color || '-')}</div>` },
+                        { key: 'dna_code', label: 'Código DNA', render: v => v.dna_code ? `<span class="adm-badge adm-badge-success"><span class="adm-badge-dot" aria-hidden="true"></span>${esc(v.dna_code)}</span>` : `<span class="adm-badge adm-badge-muted">Sem DNA</span>` },
+                        { key: 'owner_name', label: 'Proprietário', sortable: true, render: v => `<div>${esc(v.owner_name || '-')}</div><div class="adm-cell-sub adm-mono">${esc(v.owner_phone || '')}</div>` },
+                        { key: 'workshop_name', label: 'Oficina Vinculada', sortable: true, render: v => esc(v.workshop_name || '-') },
+                        { key: 'current_mileage', label: 'KM Atual', align: 'right', sortable: true, tdClass: 'adm-mono', render: v => v.current_mileage ? `${num(v.current_mileage)} km` : '-' },
+                        { key: 'total_maintenance_cents', label: 'OS / Total', align: 'right', sortable: true, tdClass: 'adm-mono', render: v => `${num(v.services_count)} • ${brl(v.total_maintenance_cents)}` },
+                        { key: 'action', label: 'Ação', align: 'right', tdClass: 'adm-actions-cell', render: v => `<button type="button" class="adm-btn adm-btn-sm" onclick="App.switchView('dossier', '${esc(v.license_plate)}')">Dossiê →</button>` }
+                    ]
+                })}
             </div>
         `;
     },
 
     // --------------------------------------------------------------------------
-    // 7. ORDENS DE SERVIÇO
+    // 7. HISTÓRICO DE ATENDIMENTOS (ORDENS DE SERVIÇO)
     // --------------------------------------------------------------------------
     async renderServiceOrders(ctx) {
         const f = ctx.params || {};
+        const pageSize = Number(f.page_size || 25);
         const data = await API.getAdminServiceOrders({
             q: f.q || '',
             proof_level: f.proof_level || '',
             page: f.page || 1,
-            page_size: 25
+            page_size: pageSize
         });
+        const UI = AdminView.ui();
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
+        const num = AdminView.formatNum;
+        const items = this.sortItems(data.items || [], f.sort_by || '', f.sort_dir || 'desc');
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Ordens de Serviço da Rede (${data.total || 0})</h2>
-                    <p>Serviços executados e declarados em toda a rede com nível de comprovação documental.</p>
-                </div>
-            </div>
+            ${UI.PageHeader({
+                title: `Histórico de Atendimentos (${num(data.total)})`,
+                subtitle: 'Ordens de serviço executadas e declaradas em toda a rede com nível de comprovação documental.'
+            })}
 
             <div class="adm-card">
-                <div class="adm-filters-bar">
-                    <input type="text" class="adm-input" style="min-width:250px;" placeholder="Buscar placa, título do serviço ou oficina..." value="${esc(f.q || '')}"
+                ${UI.FilterToolbar(`
+                    <input type="text" id="os-filter-q" class="adm-input adm-filter-search" aria-label="Buscar atendimento"
+                           placeholder="Buscar por placa, título do serviço ou oficina..." value="${esc(f.q || '')}"
                            onkeydown="if(event.key==='Enter') AdminView.updateParams({ q: this.value, page: 1 })" />
-                    <select class="adm-select" onchange="AdminView.updateParams({ proof_level: this.value, page: 1 })">
+                    <select id="os-filter-proof" class="adm-select" aria-label="Filtrar por comprovação" onchange="AdminView.updateParams({ proof_level: this.value, page: 1 })">
                         <option value="" ${!f.proof_level ? 'selected' : ''}>Comprovação: Todos</option>
                         <option value="4" ${f.proof_level === '4' ? 'selected' : ''}>Nível 4 — Comprovado Oficina</option>
                         <option value="3" ${f.proof_level === '3' ? 'selected' : ''}>Nível 3 — Confirmado</option>
                         <option value="2" ${f.proof_level === '2' ? 'selected' : ''}>Nível 2 — Nota Anexada</option>
                         <option value="1" ${f.proof_level === '1' ? 'selected' : ''}>Nível 1 — Declarado Cliente</option>
                     </select>
-                    <button class="adm-btn adm-btn-sm" onclick="AdminView.updateParams({ q: this.parentNode.querySelector('input').value, page: 1 })">Filtrar</button>
-                </div>
+                    <button type="button" class="adm-btn adm-btn-primary" onclick="AdminView.updateParams({ q: document.getElementById('os-filter-q')?.value || '', page: 1 })">Aplicar Filtros</button>
+                    ${(f.q || f.proof_level) ? `<button type="button" class="adm-btn" onclick="AdminView.navigate('service-orders')">Limpar</button>` : ''}
+                `)}
 
-                ${(data.items || []).length === 0 ? `<div class="adm-empty"><strong>Nenhuma ordem de serviço</strong>Não foram encontradas ordens de serviço para os filtros aplicados.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Data</th><th>Placa / Veículo</th><th>Serviço / Categoria</th><th>Oficina</th><th>KM</th><th>Comprovação</th><th>Valor</th></tr></thead>
-                            <tbody>
-                                ${data.items.map(s => `
-                                    <tr>
-                                        <td class="adm-mono">${esc(AdminView.formatDate(s.service_date || s.created_at))}</td>
-                                        <td><strong class="adm-mono" style="cursor:pointer; color:#00d4ff;" onclick="App.switchView('dossier', '${esc(s.license_plate)}')">${esc(s.license_plate)}</strong><div style="font-size:11px; color:#94a3b8;">${esc(s.brand || '')} ${esc(s.model || '')}</div></td>
-                                        <td><strong>${esc(s.service_title || '-')}</strong><div style="font-size:11px; color:#64748b;">${esc(s.category || '')}</div></td>
-                                        <td>${esc(s.workshop_name || 'Declaração do Cliente')}</td>
-                                        <td class="adm-mono">${s.mileage ? `${Number(s.mileage).toLocaleString('pt-BR')} km` : '-'}</td>
-                                        <td>${AdminView.proofBadge(s.proof_level)}</td>
-                                        <td class="adm-mono" style="font-weight:700;">${brl(s.total_cost_cents)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                    ${AdminView.renderPagination(data.page, data.total_pages, data.total)}
-                `}
+                ${UI.EnterpriseDataTable({
+                    rows: items,
+                    sortBy: f.sort_by || '',
+                    sortDir: f.sort_dir || 'desc',
+                    onSortExpr: (field, dir) => `AdminView.updateParams({ sort_by: '${field}', sort_dir: '${dir}' })`,
+                    emptyTitle: 'Nenhuma ordem de serviço encontrada',
+                    emptySubtitle: 'Não foram encontrados atendimentos para os filtros aplicados.',
+                    pagination: { page: data.page, totalPages: data.total_pages, total: data.total, pageSize },
+                    columns: [
+                        { key: 'service_date', label: 'Data', sortable: true, tdClass: 'adm-mono', render: s => esc(AdminView.formatDate(s.service_date || s.created_at)) },
+                        { key: 'license_plate', label: 'Placa / Veículo', sortable: true, render: s => `<a href="javascript:void(0)" class="adm-link adm-mono" onclick="App.switchView('dossier', '${esc(s.license_plate)}')">${esc(s.license_plate)}</a><div class="adm-cell-sub">${esc(s.brand || '')} ${esc(s.model || '')}</div>` },
+                        { key: 'service_title', label: 'Serviço / Categoria', sortable: true, render: s => `<span class="adm-cell-title">${esc(s.service_title || '-')}</span><div class="adm-cell-sub">${esc(s.category || '')}</div>` },
+                        { key: 'workshop_name', label: 'Oficina', sortable: true, render: s => esc(s.workshop_name || 'Declaração do Cliente') },
+                        { key: 'mileage', label: 'KM', align: 'right', sortable: true, tdClass: 'adm-mono', render: s => s.mileage ? `${num(s.mileage)} km` : '-' },
+                        { key: 'proof_level', label: 'Comprovação', sortable: true, render: s => AdminView.proofBadge(s.proof_level) },
+                        { key: 'total_cost_cents', label: 'Valor', align: 'right', sortable: true, tdClass: 'adm-money', render: s => brl(s.total_cost_cents) }
+                    ]
+                })}
             </div>
         `;
     },
 
     // --------------------------------------------------------------------------
-    // 8. HISTÓRICO DE MANUTENÇÃO
+    // 8. SERVIÇOS E MANUTENÇÕES (PREVISÕES PREDITIVAS + LINHA DO TEMPO)
     // --------------------------------------------------------------------------
     async renderMaintenanceHistory() {
         const data = await API.getAdminMaintenanceHistory();
+        const UI = AdminView.ui();
         const preds = data.predictions || [];
         const srvs = data.services || [];
         const esc = AdminView.esc;
         const brl = AdminView.formatBrl;
+        const num = AdminView.formatNum;
 
         return `
-            <div class="adm-section-head">
-                <div>
-                    <h2>Histórico e Previsões de Manutenção</h2>
-                    <p>Monitoramento preditivo da frota (itens vencidos/próximos) e linha do tempo consolidada de manutenções.</p>
-                </div>
-            </div>
+            ${UI.PageHeader({
+                title: 'Serviços e Manutenções',
+                subtitle: 'Monitoramento preditivo da frota (itens vencidos ou próximos) e linha do tempo consolidada de manutenções.'
+            })}
 
             <div class="adm-card">
                 <div class="adm-card-header">
@@ -835,47 +1513,35 @@ const AdminScreensCore = {
                         <p class="adm-card-subtitle">Baseado no motor de manutenção preditiva por quilometragem e tempo</p>
                     </div>
                 </div>
-                ${preds.length === 0 ? `<div class="adm-empty"><strong>Sem previsões registradas</strong>Nenhuma previsão preditiva calculada ainda para a frota.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Placa / Veículo</th><th>Item / Regra</th><th>Status Alerta</th><th>Próx. KM</th><th>Próx. Data</th></tr></thead>
-                            <tbody>
-                                ${preds.slice(0, 30).map(p => `
-                                    <tr>
-                                        <td><strong class="adm-mono">${esc(p.license_plate)}</strong> ${esc(p.brand || '')} ${esc(p.model || '')}</td>
-                                        <td>${esc(p.item_name || p.rule_code || '-')}</td>
-                                        <td>${AdminView.statusBadge(p.alert_status)}</td>
-                                        <td class="adm-mono">${p.next_due_km ? `${Number(p.next_due_km).toLocaleString('pt-BR')} km` : '-'}</td>
-                                        <td class="adm-mono">${esc(p.next_due_date || '-')}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
+                ${UI.EnterpriseDataTable({
+                    rows: preds.slice(0, 35),
+                    emptyTitle: 'Sem previsões registradas',
+                    emptySubtitle: 'Nenhuma previsão preditiva calculada ainda para a frota.',
+                    columns: [
+                        { key: 'license_plate', label: 'Placa / Veículo', render: p => `<strong class="adm-mono">${esc(p.license_plate)}</strong> <span class="adm-text-secondary">${esc(p.brand || '')} ${esc(p.model || '')}</span>` },
+                        { key: 'item_name', label: 'Item / Regra', render: p => esc(p.item_name || p.rule_code || '-') },
+                        { key: 'alert_status', label: 'Status Alerta', render: p => AdminView.statusBadge(p.alert_status) },
+                        { key: 'next_due_km', label: 'Próximo KM', align: 'right', tdClass: 'adm-mono', render: p => p.next_due_km ? `${num(p.next_due_km)} km` : '-' },
+                        { key: 'next_due_date', label: 'Próxima Data', tdClass: 'adm-mono', render: p => esc(AdminView.formatDate(p.next_due_date)) }
+                    ]
+                })}
             </div>
 
             <div class="adm-card">
                 <div class="adm-card-header"><h3 class="adm-card-title">Linha do Tempo de Manutenções (${srvs.length})</h3></div>
-                ${srvs.length === 0 ? `<div class="adm-empty"><strong>Sem histórico</strong>Nenhum registro de manutenção encontrado.</div>` : `
-                    <div class="adm-table-wrap">
-                        <table class="adm-table">
-                            <thead><tr><th>Data</th><th>Placa / DNA</th><th>Serviço</th><th>Oficina</th><th>KM</th><th>Valor</th></tr></thead>
-                            <tbody>
-                                ${srvs.slice(0, 35).map(s => `
-                                    <tr>
-                                        <td class="adm-mono">${esc(AdminView.formatDate(s.service_date))}</td>
-                                        <td class="adm-mono"><strong>${esc(s.license_plate)}</strong> <span style="color:#64748b;">${esc(s.dna_code || '')}</span></td>
-                                        <td>${esc(s.service_title || s.category)}</td>
-                                        <td>${esc(s.workshop_name || 'Cliente')}</td>
-                                        <td class="adm-mono">${s.mileage ? `${Number(s.mileage).toLocaleString('pt-BR')} km` : '-'}</td>
-                                        <td class="adm-mono">${brl(s.total_cost_cents)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    </div>
-                `}
+                ${UI.EnterpriseDataTable({
+                    rows: srvs.slice(0, 35),
+                    emptyTitle: 'Sem histórico de manutenções',
+                    emptySubtitle: 'Nenhum registro de manutenção encontrado.',
+                    columns: [
+                        { key: 'service_date', label: 'Data', tdClass: 'adm-mono', render: s => esc(AdminView.formatDate(s.service_date)) },
+                        { key: 'license_plate', label: 'Placa / DNA', tdClass: 'adm-mono', render: s => `<strong>${esc(s.license_plate)}</strong> <span class="adm-text-muted">${esc(s.dna_code || '')}</span>` },
+                        { key: 'service_title', label: 'Serviço', render: s => esc(s.service_title || s.category) },
+                        { key: 'workshop_name', label: 'Oficina', render: s => esc(s.workshop_name || 'Cliente') },
+                        { key: 'mileage', label: 'KM', align: 'right', tdClass: 'adm-mono', render: s => s.mileage ? `${num(s.mileage)} km` : '-' },
+                        { key: 'total_cost_cents', label: 'Valor', align: 'right', tdClass: 'adm-money', render: s => brl(s.total_cost_cents) }
+                    ]
+                })}
             </div>
         `;
     }
