@@ -1428,47 +1428,49 @@ const OwnerView = {
     },
 
     // Buscar Oficinas Credenciadas da API
+    parseExpenseDate(raw) {
+        if (!raw) return null;
+        const text = String(raw).trim();
+        let match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+        if (match) {
+            const d = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+            return Number.isNaN(d.getTime()) ? null : d;
+        }
+        match = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+        if (match) {
+            const d = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+            return Number.isNaN(d.getTime()) ? null : d;
+        }
+        const result = new Date(text);
+        return Number.isNaN(result.getTime()) ? null : result;
+    },
+
     calculateVehicleExpenses() {
-        const v = this.vehicleData || {};
-        const timeline = v.timeline || [];
+        const timeline = this.vehicleData?.timeline || [];
+        const today = new Date();
+        const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 6, today.getDate());
+        const twelveMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 12, today.getDate());
         let totalCents = 0;
         let semesterCents = 0;
+        let yearCents = 0;
         const partsList = [];
-        const now = new Date();
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(now.getMonth() - 6);
-
         timeline.forEach(item => {
-            let cost = 0;
-            if (typeof item.total_cost_cents === 'number') cost = item.total_cost_cents;
-            else if (typeof item.cost_cents === 'number') cost = item.cost_cents;
-            else if (typeof item.cost === 'number') cost = Math.round(item.cost * 100);
-            else if (typeof item.price === 'number') cost = Math.round(item.price * 100);
-
-            totalCents += cost;
-
-            if (item.date) {
-                const itemDate = new Date(item.date);
-                if (!isNaN(itemDate.getTime()) && itemDate >= sixMonthsAgo) {
-                    semesterCents += cost;
-                }
-            } else {
-                semesterCents += cost;
-            }
-
+            const amount = Number(item.total_cost_cents ?? item.cost_cents ??
+                (typeof item.cost === 'number' ? Math.round(item.cost * 100) : 0));
+            if (!Number.isFinite(amount) || amount < 0) return;
+            const date = this.parseExpenseDate(item.dateISO || item.date);
+            totalCents += amount;
+            if (date && date >= sixMonthsAgo && date <= today) semesterCents += amount;
+            if (date && date >= twelveMonthsAgo && date <= today) yearCents += amount;
             if (Array.isArray(item.parts)) {
-                item.parts.forEach(p => partsList.push(typeof p === 'string' ? { name: p, date: item.date, workshop: item.workshop } : p));
+                item.parts.forEach(p => partsList.push(
+                    typeof p === 'string' ? { name: p, date: item.date, workshop: item.workshop } : p
+                ));
             } else if (item.part_name || item.part) {
                 partsList.push({ name: item.part_name || item.part, date: item.date, workshop: item.workshop });
             }
         });
-
-        return {
-            totalCents,
-            semesterCents,
-            partsList,
-            hasExpenses: totalCents > 0
-        };
+        return { totalCents, semesterCents, yearCents, partsList, hasExpenses: totalCents > 0 };
     },
 
     async fetchWorkshopsNetwork() {
@@ -1710,6 +1712,8 @@ const OwnerView = {
                             const costCents = Number(s.total_cost_cents) || 0;
                             const priceFormatted = 'R$ ' + (costCents / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
                             const kmVal = Number(s.mileage) || 0;
+                            const linkedInvoice = Array.isArray(dData.invoices)
+                                ? dData.invoices.find(inv => inv.service_record_id === s.id) : null;
                             const kmBadge = kmVal ? `${kmVal.toLocaleString('pt-BR')} km` : '';
                             const isPart = Boolean(s.category && s.category.toLowerCase().includes('peça'));
 
@@ -1718,6 +1722,7 @@ const OwnerView = {
                                 title: s.service_title || 'Serviço Realizado',
                                 service_title: s.service_title || 'Serviço Realizado',
                                 date: dateFormatted,
+                                dateISO: dateStr,
                                 dateBadge: dateBadge,
                                 mileage: kmVal,
                                 km: kmBadge,
@@ -1727,6 +1732,10 @@ const OwnerView = {
                                 price: priceFormatted,
                                 total_cost_cents: costCents,
                                 cost_cents: costCents,
+                                labor_cost_cents: Number(s.labor_cost_cents) || 0,
+                                parts_cost_cents: Number(s.parts_cost_cents) || 0,
+                                invoice_number: linkedInvoice?.invoice_number || null,
+                                invoice_file_path: linkedInvoice?.file_path || null,
                                 partName: s.description || s.service_title,
                                 thumbUrl: s.part_photo_url || '/img/part-oil.jpg',
                                 type: isPart ? 'part' : 'service',
@@ -2759,7 +2768,7 @@ const OwnerView = {
                 <!-- Relatório de Gastos do Veículo (Dinâmico / Baseado em Dados Inseridos) -->
                 ${(() => {
                     const expenses = this.calculateVehicleExpenses();
-                    const periodVal = this.expensePeriod === 'year' ? expenses.totalCents : expenses.semesterCents;
+                    const periodVal = this.expensePeriod === 'year' ? expenses.yearCents : expenses.semesterCents;
                     const formattedVal = expenses.hasExpenses ? ('R$ ' + (periodVal / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })) : 'R$ 0,00';
 
                     return `
@@ -3500,11 +3509,18 @@ const OwnerView = {
         const period = this.expensePeriod || 'semester';
         const expenses = this.calculateVehicleExpenses();
         const v = this.vehicleData || {};
-        const timeline = v.timeline || [];
-        const hasData = expenses.hasExpenses && timeline.length > 0;
-        const totalVal = hasData 
-            ? (period === 'year' ? expenses.totalCents : expenses.semesterCents) 
-            : 0;
+        const allRecords = v.timeline || [];
+        const today = new Date();
+        const monthsBack = period === 'year' ? 12 : 6;
+        const cutoff = new Date(today.getFullYear(), today.getMonth() - monthsBack, today.getDate());
+        const timeline = allRecords.filter(item => {
+            if (period === 'all') return true;
+            const date = this.parseExpenseDate(item.dateISO || item.date);
+            return date && date >= cutoff && date <= today;
+        });
+        const totalVal = period === 'all' ? expenses.totalCents :
+            (period === 'year' ? expenses.yearCents : expenses.semesterCents);
+        const hasData = totalVal > 0;
         const formattedTotal = 'R$ ' + (totalVal / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
         const periodLabel = period === 'year' ? 'no último ano' : (period === 'all' ? 'em todo o histórico' : 'nos últimos 6 meses');
 
@@ -3516,14 +3532,14 @@ const OwnerView = {
                     <div class="dna-print-expense-hero-val-row">
                         <h2 class="dna-print-expense-hero-val">${formattedTotal}</h2>
                         ${hasData ? `
-                            <span class="dna-print-expense-hero-badge">✓ Auditado</span>
+                            <span class="dna-print-expense-hero-badge">✓ Registrado</span>
                         ` : `
                             <span class="dna-print-expense-hero-badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3);">0 registros</span>
                         `}
                     </div>
                     <span class="dna-print-expense-hero-sub">
                         ${hasData 
-                            ? 'Valores comprovados com fotos e notas fiscais chanceladas por oficinas credenciadas.' 
+                            ? 'Despesas registradas pelas oficinas, com ou sem anexo de foto ou nota fiscal.' 
                             : 'Nenhum gasto ou serviço registrado ainda. Os dados aparecerão aqui automaticamente assim que sua oficina credenciada registrar as manutenções do carro.'}
                     </span>
                 </div>
@@ -3538,13 +3554,24 @@ const OwnerView = {
                     ${hasData ? `
                         <div class="dna-print-bars-row">
                             ${(() => {
-                                const maxCost = Math.max(...timeline.map(t => (t.total_cost_cents || t.cost_cents || 100)), 100);
-                                return timeline.slice(0, 6).map((item, idx) => {
-                                    const cost = item.total_cost_cents || item.cost_cents || 0;
-                                    const pct = Math.max(15, Math.min(100, Math.round((cost / maxCost) * 100)));
-                                    const d = item.date ? new Date(item.date) : new Date();
-                                    const mName = d.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
-                                    const isLast = idx === 0;
+                                const today = new Date();
+                                const months = Array.from({ length: 6 }, (_, idx) =>
+                                    new Date(today.getFullYear(), today.getMonth() - (5 - idx), 1));
+                                const monthly = months.map(month => {
+                                    const cost = timeline.reduce((sum, item) => {
+                                        const date = this.parseExpenseDate(item.dateISO || item.date);
+                                        return date && date.getFullYear() === month.getFullYear() &&
+                                            date.getMonth() === month.getMonth()
+                                            ? sum + (Number(item.total_cost_cents || item.cost_cents) || 0) : sum;
+                                    }, 0);
+                                    return { month, cost };
+                                });
+                                const maxCost = Math.max(...monthly.map(m => m.cost), 100);
+                                return monthly.map((item, idx) => {
+                                    const cost = item.cost;
+                                    const pct = cost > 0 ? Math.max(6, Math.round(cost / maxCost * 100)) : 0;
+                                    const mName = item.month.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '');
+                                    const isLast = idx === 5;
                                     return `
                                         <div class="dna-print-bar-col ${isLast ? 'highlight' : ''}">
                                             <span class="dna-print-bar-val">R$ ${Math.round(cost / 100)}</span>
@@ -3623,7 +3650,8 @@ const OwnerView = {
                 <div class="dna-print-receipts-list">
                     ${hasData ? timeline.map(item => {
                         const cost = item.total_cost_cents || item.cost_cents || 0;
-                        const dateStr = item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'Data não informada';
+                        const realDate = this.parseExpenseDate(item.dateISO || item.date);
+                        const dateStr = realDate ? realDate.toLocaleDateString('pt-BR') : 'Data não informada';
                         const wsName = item.workshop_name || 'Oficina Credenciada';
                         const nfStr = item.invoice_number ? `NF-e #${item.invoice_number}` : 'Comprovante Digital';
                         return `
@@ -3634,6 +3662,8 @@ const OwnerView = {
                                 <div class="dna-print-receipt-info">
                                     <strong>${item.title || 'Serviço Realizado'}</strong>
                                     <span>${dateStr} • ${nfStr} • ${wsName}</span>
+                                    <span>Peças: R$ ${(Number(item.parts_cost_cents || 0) / 100).toLocaleString('pt-BR', {minimumFractionDigits: 2})}
+                                    • Mão de obra: R$ ${(Number(item.labor_cost_cents || 0) / 100).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
                                 </div>
                                 <span class="dna-print-receipt-val">R$ ${(cost / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                             </div>
