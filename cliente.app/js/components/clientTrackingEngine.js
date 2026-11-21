@@ -6,6 +6,9 @@
 const DnaTrackingEngine = {
     isTracking: false,
     watchId: null,
+    _nativeStarting: false,
+    _promptedOdometerThisSession: false,
+    lastError: null,
     currentTrip: null,
     lastPosition: null,
     stationaryTimer: null,
@@ -26,6 +29,10 @@ const DnaTrackingEngine = {
         if (this.preferences.isEnabled) {
             this.startTracking();
         }
+        window.addEventListener('online', () => this.syncNativeTrips());
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) this.syncNativeTrips();
+        });
     },
 
     // Preferências e Consentimento LGPD
@@ -33,29 +40,139 @@ const DnaTrackingEngine = {
         try {
             const raw = localStorage.getItem('dna_tracking_preferences');
             this.preferences = raw ? JSON.parse(raw) : {
-                isEnabled: true,
-                consentGiven: true,
-                consentDate: new Date().toISOString(),
+                isEnabled: false,
+                consentGiven: false,
+                consentDate: null,
                 pairedBluetoothName: localStorage.getItem('dna_obd_device_name') || null
             };
         } catch (_) {
-            this.preferences = { isEnabled: true, consentGiven: true };
+            this.preferences = { isEnabled: false, consentGiven: false };
         }
     },
 
-    savePreferences(prefs) {
+    async savePreferences(prefs) {
         this.preferences = Object.assign(this.preferences || {}, prefs);
+        if (this.preferences.isEnabled) {
+            this.preferences.consentGiven = true;
+            this.preferences.consentDate = this.preferences.consentDate || new Date().toISOString();
+        }
         localStorage.setItem('dna_tracking_preferences', JSON.stringify(this.preferences));
         if (this.preferences.isEnabled) {
-            this.startTracking();
+            const started = await this.startTracking();
+            if (started === false) {
+                this.preferences.isEnabled = false;
+                localStorage.setItem('dna_tracking_preferences', JSON.stringify(this.preferences));
+                return false;
+            }
         } else {
-            this.stopTracking();
+            await this.stopTracking();
         }
+        return true;
+    },
+
+    // O monitoramento nativo continua com a tela apagada; web/PWA só rastreia em 1º plano.
+    nativePlugin() {
+        const cap = window.Capacitor;
+        if (!cap || !(cap.isNativePlatform?.() || cap.platform === 'android')) return null;
+        if (cap.isPluginAvailable && !cap.isPluginAvailable('DnaMileage')) return null;
+        return cap.Plugins?.DnaMileage || (typeof cap.registerPlugin === 'function' ? cap.registerPlugin('DnaMileage') : null);
+    },
+
+    async startNativeTracking() {
+        const native = this.nativePlugin();
+        if (!native || this._nativeStarting) return this.isTracking;
+        const plate = String(this.licensePlate || '').trim();
+        if (!plate) return false;
+        this._nativeStarting = true;
+        this.lastError = null;
+        try {
+            // Sincronize dados nativos antigos antes de trocar veículo/base do hodômetro.
+            const state = await native.getState();
+            if (state?.plate && state.plate !== plate && state.trips?.length) {
+                await this.syncNativeTrips();
+                const pending = await native.getState();
+                if (pending.trips?.length) throw new Error('Sincronize as viagens do veículo anterior antes de trocar de carro.');
+            }
+            const owner = window.OwnerView || {};
+            const officialKm = Number(owner.odometerData?.official_odometer_km || owner.vehicleData?.current_mileage || 0);
+            const confirmedAt = String(owner.odometerData?.odometer?.official_date || 'cadastro-inicial');
+            const targets = (owner.predictiveData?.predictions || [])
+                .map(x => Number(x.next_due_km))
+                .filter(n => Number.isFinite(n) && n > 0);
+            const targetKm = targets.length ? Math.min(...targets) : 0;
+            await native.configure({
+                enabled: true, plate, officialKm, targetKm, confirmedAt
+            });
+            this.isTracking = true;
+            await this.syncNativeTrips();
+            await this.promptOdometerIfNeeded();
+            return true;
+        } catch (e) {
+            this.isTracking = false;
+            this.lastError = e?.message || 'Não foi possível ativar o monitoramento do Android.';
+            console.warn('[DNA AUTO] Serviço de localização nativo:', this.lastError);
+            return false;
+        } finally {
+            this._nativeStarting = false;
+        }
+    },
+
+    async syncNativeTrips() {
+        const native = this.nativePlugin();
+        if (!native || this._syncingNative) return false;
+        this._syncingNative = true;
+        try {
+            const state = await native.getState();
+            const trips = Array.isArray(state?.trips) ? state.trips : [];
+            if (!trips.length || !state.plate) return true;
+            const res = await fetch(`/api/v1/vehicles/${encodeURIComponent(state.plate)}/monitoring/sync-trips`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ trips })
+            });
+            if (!res.ok) throw new Error('Falha HTTP ' + res.status);
+            const result = await res.json();
+            if (!result.success) throw new Error(result.error || 'Sincronização não confirmada.');
+            await native.acknowledgeTrips({ ids: trips.map(t => t.id).filter(Boolean) });
+            return true;
+        } catch (e) {
+            console.warn('[DNA AUTO] As viagens continuarão guardadas no Android para sincronização:', e.message);
+            return false;
+        } finally {
+            this._syncingNative = false;
+        }
+    },
+
+    async promptOdometerIfNeeded() {
+        const native = this.nativePlugin();
+        if (!native || this._promptedOdometerThisSession) return;
+        try {
+            const state = await native.getState();
+            if (state?.confirmRequired && window.OwnerView) {
+                this._promptedOdometerThisSession = true;
+                setTimeout(() => {
+                    const owner = window.OwnerView;
+                    if (!owner?.authScreen && typeof owner.openOdometerModal === 'function') {
+                        owner.openOdometerModal();
+                    } else {
+                        this._promptedOdometerThisSession = false;
+                    }
+                }, 450);
+            }
+        } catch (_) {}
+    },
+
+    async odometerConfirmed() {
+        this._promptedOdometerThisSession = false;
+        const native = this.nativePlugin();
+        if (native) await native.acknowledgeOdometer().catch(() => null);
+        // fetchVehicleExtras depois da gravação atualizará a base oficial e os limites.
     },
 
     // Iniciar monitoramento
     startTracking() {
-        if (this.isTracking) return;
+        if (this.nativePlugin()) return this.startNativeTracking();
+        if (this.isTracking) return true;
         if (!navigator.geolocation) {
             console.warn('[DNA AUTO] Geolocalização não suportada neste navegador.');
             return;
@@ -80,11 +197,26 @@ const DnaTrackingEngine = {
         } catch (e) {
             console.warn('[DNA AUTO] Erro ao iniciar GPS:', e);
             this.isTracking = false;
+            return false;
         }
+        return true;
     },
 
     // Parar monitoramento
-    stopTracking() {
+    async stopTracking() {
+        const native = this.nativePlugin();
+        if (native) {
+            try {
+                const state = await native.getState();
+                await native.configure({
+                    enabled: false,
+                    plate: state.plate || this.licensePlate || '',
+                    officialKm: Number(state.officialKm || 0),
+                    targetKm: 0,
+                    confirmedAt: ''
+                });
+            } catch (e) { console.warn('[DNA AUTO] Parada do GPS nativo:', e); }
+        }
         if (this.watchId !== null) {
             navigator.geolocation.clearWatch(this.watchId);
             this.watchId = null;
