@@ -201,7 +201,7 @@ const OwnerView = {
 
     // ── Botão de Sair / Logout Oficial (Direciona para Splash/Boas-Vindas) ──
     logout() {
-        if (window.DnaTrackingEngine) window.DnaTrackingEngine.stopTracking();
+        if (window.DnaTrackingEngine) window.DnaTrackingEngine.savePreferences({ isEnabled: false });
         localStorage.removeItem('dna_logged_user');
         localStorage.removeItem('dna_user_name');
         localStorage.removeItem('dna_token');
