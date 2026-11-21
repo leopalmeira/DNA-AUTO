@@ -1605,6 +1605,17 @@ function authorizeTrackingVehicleOwner(req, res, next) {
     const vehicle = findVehicleByIdentifier(req.params.identifier);
     if (!vehicle) return res.status(404).json({ error: 'Veículo não encontrado.' });
     if (req.user?.role_code === 'ADMIN') return next();
+    // Equipe de oficina pode validar o hodômetro apenas dos veículos ligados
+    // à própria oficina; leitura de GPS e consentimento continuam exclusivos ao titular.
+    if (req.method === 'POST' && req.path.endsWith('/odometer') && req.user?.workshop?.workshop_id) {
+        const workshopId = req.user.workshop.workshop_id;
+        const authorizedWorkshop = db.prepare(`
+            SELECT 1 FROM vehicle_dna
+            WHERE vehicle_id = ? AND activated_by_workshop_id = ?
+            LIMIT 1
+        `).get(vehicle.id, workshopId);
+        if (authorizedWorkshop && req.user.workshop.can_prove_services !== 0) return next();
+    }
     const linked = db.prepare(`
         SELECT 1 FROM owners
         WHERE (id = ? OR id IN (
