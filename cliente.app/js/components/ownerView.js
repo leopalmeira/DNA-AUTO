@@ -1483,49 +1483,62 @@ const OwnerView = {
         return { totalCents, semesterCents, yearCents, partsList, hasExpenses: totalCents > 0 };
     },
 
-    // Rede de oficinas com preferência pela oficina que ativou o DNA do veículo selecionado.
-    // A prioridade é recalculada por veículo, nunca reaproveitada de outro proprietário.
+    // Preferência é calculada no servidor para cada veículo do titular.
+    // A listagem para agendar utiliza apenas oficinas credenciadas disponíveis.
     async fetchWorkshopsNetwork() {
         const vehicleKey = String(this.vehicleData?.id || this.vehicleData?.license_plate || '').trim();
         if (this._workshopsLoaded && this._workshopsVehicleKey === vehicleKey) return;
         if (this._workshopsLoadingKey === vehicleKey) return;
         this._workshopsLoadingKey = vehicleKey;
         try {
-            const res = await API.getWorkshopsNetwork();
-            const network = res?.success && Array.isArray(res.workshops) ? res.workshops : [];
-            let origin = null;
+            let list = [];
             const token = (typeof API !== 'undefined' && API.token) ||
                 localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+
             if (vehicleKey && vehicleKey !== '---' && token) {
-                const preferredRes = await fetch('/api/v1/vehicles/' + encodeURIComponent(vehicleKey) + '/booking-workshops', {
+                const preferredRes = await fetch('/api/v1/vehicles/' + encodeURIComponent(vehicleKey) +
+                    '/booking-workshops', {
                     headers: { Authorization: 'Bearer ' + token }, cache: 'no-store'
-                }).catch(() => null);
-                if (preferredRes?.ok) {
-                    const data = await preferredRes.json().catch(() => null);
-                    origin = data?.success && Array.isArray(data.workshops)
-                        ? data.workshops.find(w => w.is_origin) || null : null;
+                });
+                if (preferredRes.ok) {
+                    const data = await preferredRes.json();
+                    if (data?.success && Array.isArray(data.workshops)) {
+                        list = data.workshops;
+                    }
+                } else if ([401, 403].includes(preferredRes.status)) {
+                    // Não usar dados de outro veículo se a autorização falhar.
+                    throw new Error('Sem autorização para consultar as oficinas deste veículo.');
+                }
+            } else {
+                // Sem veículo selecionado, o catálogo público continua disponível
+                // para consulta, mas não se apresenta uma oficina como "de origem".
+                const networkRes = await fetch('/api/v1/workshops/network', { cache: 'no-store' });
+                if (networkRes.ok) {
+                    const data = await networkRes.json();
+                    if (data?.success && Array.isArray(data.workshops)) {
+                        list = data.workshops.map(w => ({ ...w, is_origin: false }));
+                    }
                 }
             }
-            const currentKey = String(this.vehicleData?.id || this.vehicleData?.license_plate || '').trim();
-            if (currentKey !== vehicleKey) return;
 
-            const dedup = new Set();
-            const mapped = [];
-            if (origin) {
-                dedup.add(String(origin.id));
-                mapped.push({ ...origin, is_origin: true });
-            }
-            for (const w of network) {
-                if (!w?.id || dedup.has(String(w.id))) continue;
-                dedup.add(String(w.id));
-                mapped.push({ ...w, is_origin: Boolean(origin && String(w.id) === String(origin.id)) });
-            }
-            this.workshopsList = mapped;
+            if (String(this.vehicleData?.id || this.vehicleData?.license_plate || '').trim() !== vehicleKey) return;
+            const seen = new Set();
+            this.workshopsList = list.filter(w => {
+                if (!w?.id || seen.has(String(w.id))) return false;
+                seen.add(String(w.id));
+                return true;
+            }).sort((a, b) => Number(Boolean(b.is_origin)) - Number(Boolean(a.is_origin)));
             this._workshopsLoaded = true;
             this._workshopsVehicleKey = vehicleKey;
             this.render();
         } catch (err) {
-            console.warn('[DNA Auto Cliente] Falha ao carregar rede de oficinas:', err);
+            console.warn('[DNA Auto Cliente] Falha ao carregar oficinas preferenciais:', err);
+            if (String(this.vehicleData?.id || this.vehicleData?.license_plate || '').trim() === vehicleKey) {
+                this.workshopsList = [];
+                this._workshopsLoaded = true;
+                this._workshopsVehicleKey = vehicleKey;
+                this.render();
+            }
         } finally {
             if (this._workshopsLoadingKey === vehicleKey) this._workshopsLoadingKey = null;
         }
