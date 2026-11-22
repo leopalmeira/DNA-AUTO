@@ -7627,6 +7627,7 @@ async function handleLoginSubmit(event) {
     // Sucesso! Usuário validado pelo banco de dados SQLite
     localStorage.setItem('dna_token', data.token);
     localStorage.setItem('dna_auto_token', data.token);
+    window.dispatchEvent(new Event('dna-user-logged-in'));
     if (data.user) {
       localStorage.setItem('dna_logged_user', JSON.stringify(data.user));
       if (data.user.name) localStorage.setItem('dna_user_name', data.user.name);
@@ -10422,4 +10423,5 @@ document.addEventListener('focusout', () => {
   }, 150);
 });
 </script>
+<script src="/cliente.app/js/dnaPushClient.js"></script>
 </body></html>
