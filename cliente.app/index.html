@@ -9386,8 +9386,12 @@ function openOficinaModal(id) {
     btnCall.href = 'tel:' + o.telefone.replace(/\D/g, '');
   }
   if (btnSchedule) {
+    // Também pelo mapa, Agendar Serviço abre a lista completa, com a oficina
+    // de origem em destaque; a escolha continua livre para o cliente.
     btnSchedule.onclick = () => {
-      openScheduleModal(o);
+      const infoOverlay = document.getElementById('oficinas-overlay');
+      if (infoOverlay) infoOverlay.classList.remove('open');
+      openBookingWorkshopPicker();
     };
   }
 
@@ -9447,8 +9451,10 @@ function dnaBookingBuildItem(workshop) {
   return item;
 }
 
-async function openBookingWorkshopPicker(serviceName = '') {
+async function openBookingWorkshopPicker(serviceName = '', selectedVehicle = null) {
   dnaBookingSelectedService = String(serviceName || '').trim();
+  dnaBookingOptions = [];
+  dnaBookingVehicle = null;
   closeBookingWorkshopPicker();
   const overlay = document.createElement('div');
   overlay.id = 'dna-booking-picker';
@@ -9471,7 +9477,9 @@ async function openBookingWorkshopPicker(serviceName = '') {
     return;
   }
   try {
-    let v = window.currentRegisteredVehicle || null;
+    // O SPA OwnerView pode escolher outro veículo; essa escolha prevalece
+    // sobre qualquer placa antiga salva na WebView do Android.
+    let v = selectedVehicle || window.currentRegisteredVehicle || null;
     let identifier = v?.id || v?.license_plate || localStorage.getItem('dna_registered_plate');
     if (!identifier) {
       const mineRes = await fetch('/api/v1/vehicles/my-vehicles', {
