@@ -1,54 +1,69 @@
-# DNA AUTO: arquitetura gratuita Cloudflare
+# DNA AUTO — Implantação nova, sem Render (Cloudflare Free)
 
-Meta: hospedagem com custo R$ 0 enquanto o uso estiver dentro das cotas do plano gratuito.
+## Decisão de arquitetura
 
-- Cloudflare Pages para os sites Cliente, Oficina e Admin (hoje em cliente.app, oficina.app e public).
-- Cloudflare Workers para reescrever a API Express atual como endpoints compativeis com Workers.
-- Cloudflare D1 para banco relacional SQLite gerenciado, persistente entre deploys.
+A instalação é **nova e vazia**. Não migrar dados, usuários, senhas, fotos ou qualquer arquivo de servidores anteriores. Toda a infraestrutura de hospedagem nova usa exclusivamente:
 
-Este codigo esta SOMENTE NA BRANCH infra/cloudflare-gratuito, isolado da producao. O Worker atual serve apenas health check e BLOQUEIA login, cadastro e servicos com HTTP 503. Nao aponte aplicativos reais para esse Worker: ele nao esta pronto.
+- Cloudflare Pages: Cliente, Oficina e Admin, em três projetos independentes.
+- Cloudflare Workers: API WebCrypto com rotas REST e autorização por perfil.
+- Cloudflare D1: SQLite relacional persistente, começando **sem clientes, oficinas e veículos**.
+- Cloudflare R2: **opcional e ainda não provisionado**. Anexos não são aceitos até R2 estar configurado e confirmado no plano gratuito; serviços sem anexo funcionam.
 
-A ferramenta cloudflare/scripts/export-schema.cjs cria banco LOCAL TEMPORARIO a partir do codigo atual e extrai apenas estrutura, sem clientes. Testa importacao em SQLite local. Nao confirma D1 ate importar em homologacao. Para gerar: node cloudflare/scripts/export-schema.cjs /tmp/dna-d1-schema.sql.
+Os arquivos `server/` e o esquema antigo são preservados como referência de desenvolvimento. Não executam em Workers. `render.yaml` foi retirado desta branch.
 
-Etapas obrigatorias antes de qualquer migracao:
-1. Recuperar e salvar copias do banco SQLite e das fotos atuais do Render ANTES do proximo deploy.
-2. Autorizar conta Cloudflare Free uma unica vez; criar D1 de teste e preencher o database_id do wrangler.toml.
-3. Validar a compatibilidade de SQL e migrar TODAS as tabelas e registros preservando IDs, bcrypt e vinculos.
-4. Reescrever modulos da API; better-sqlite3 e sincronico, D1 e assincrono, portanto nao funcionam por simples troca de arquivo.
-5. Adaptar WhatsApp, uploads e tarefas programadas; fotos precisam de armazenamento permanente separado.
-6. Testar cadastro completo, login, services, JWT e historicos com contas de homologacao.
-7. Depois configurar Cloudflare Pages e URL base da API nos aplicativos. So apos validar mudar o trafego e desligar o Render.
+## Situação real (não é publicação em produção)
 
-Limites Free de referencia: Workers 100 mil requisicoes/dia; D1 500 MB por banco (5 GB por conta), 5 milhoes linhas lidas/dia e 100 mil gravadas/dia. Cotas ultrapassadas fazem requisicoes falharem. Nao ha garantia de capacidade ilimitada.
+Código de API D1 parcial desenvolvido e testado com simulador SQLite; não houve implantação autenticada na conta Cloudflare. Os testes de código abrangem cadastro, login, lançamento de serviço, histórico e oficina preferencial. O status de homologação `/api/v1/health` retorna `production_ready: false` mesmo com o esquema instalado.
 
-Firebase Cloud Storage requer Blaze (faturamento), portanto NAO o usaremos nesta fase. Codigo Firebase anterior permanece opcional/desativado na ausencia de credenciais.
+Ainda exigem implementação ou validação específica antes de produção: módulos administrativos avançados, financeiro, representantes, WhatsApp, notificações, manutenção preditiva, anexos R2, integração Android nativa e todos os demais endpoints do Express legado não portados (retornam HTTP 501). Não prometer funcionalidade inexistente.
+
+## Publicação isolada e automatizada pelo GitHub
+
+Workflow: `.github/workflows/deploy-cloudflare-free.yml`.
+Branch de implantação: `infra/cloudflare-gratuito`.
+
+Conectar a conta Cloudflare ao processo autorizado e cadastrar **GitHub Actions Secrets**, nunca colocar tokens no commit:
+- `CF_API_TOKEN` — token Cloudflare com permissões mínimas necessárias para Workers, Pages e D1.
+- `CF_ACCOUNT_ID` — ID de conta Cloudflare.
+- `DNA_JWT_SECRET` — sequência aleatória de pelo menos 32 caracteres.
+- `DNA_BOOTSTRAP_TOKEN` — chave aleatória diferente, de pelo menos 32 caracteres, usada UMA vez para criar o admin.
+
+Depois de validar credenciais/conta, iniciar manualmente o workflow, ou fazer um commit deliberado SOMENTE no marcador `.github/cloudflare/ACIONAR_PUBLICACAO.md` (gatilho restrito). **Não criar o marcador antecipadamente.**
+
+O workflow projeta o banco vazio `dna-auto-free`, carrega esquema com `cloudflare/scripts/export-schema.cjs` (NÃO copia dados) e perfis com `cloudflare/api/sql/seed-roles.sql`, publica o Worker `dna-auto-api-staging` e os três Pages em URLs definidas na conta. A execução ainda não foi realizada; publicação pode falhar por permissões, nomes de projetos ou limitações da conta, o que precisa ser diagnosticado no GitHub Actions antes de prosseguir.
+
+O resumo do workflow publica as URLs que forem realmente verificadas por HTTP. NÃO inferir ou divulgar URLs antes dessa confirmação.
+
+## Inicializar administrador com segurança
+
+Depois de implantar e verificar o banco D1 vazio, uma pessoa autorizada deve criar a primeira conta admin com `POST /api/v1/auth/bootstrap-admin`, enviando o `DNA_BOOTSTRAP_TOKEN` no cabeçalho `Authorization: Bearer ...`, e body JSON com `name`, `email` e `password` (senha mínima 12 caracteres). Nunca colocar senha em GitHub, navegador compartilhado, documentação ou chat. Remover o segredo de bootstrap após a criação. A criação do primeiro administrador é idempotente (não cria segundo admin).
+
+## Hospedagem de aplicativos
+
+O script `cloudflare/pages/build.cjs` exige:
+- `DNA_API_BASE_URL`: URL HTTPS da API Worker terminando em `/api/v1`.
+- `DNA_CLIENT_BASE_URL`: HTTPS Pages Cliente.
+- `DNA_OFICINA_BASE_URL`: HTTPS Pages Oficina.
+- `DNA_ADMIN_BASE_URL`: HTTPS Pages Admin.
+
+Só altera artefatos gerados, nunca modifica fontes originais. O script rejeita hosts `onrender.com` e substitui links legados nesses artefatos. Para APK Android, `scripts/patch-android.js` requer `INPUT_SERVER_URL` com o domínio HTTPS do projeto Pages correspondente.
+
+## Testes, limites e critérios de liberação
+
+O workflow `.github/workflows/test-cloudflare-free.yml` testa esquema em emulador D1 local, API em SQLite isolado, autenticação, cadastros, serviço sem foto, histórico e build Pages. **Testes locais não substituem testes reais em Workers.**
+
+Antes de liberar usuários reais:
+1. Testar no Worker publicado os fluxos de criação admin, oficina, cliente, placa, senha individual, login, sessão e autorização entre empresas.
+2. Verificar integridade de histórico, quilometragem, agendamento e acesso do Cliente somente ao próprio veículo.
+3. Configurar, testar e proteger R2 se forem necessárias notas/fotos; caso contrário, bloquear anexos sem quebrar o serviço.
+4. Validar TODOS os recursos essenciais dos três aplicativos e versões Android, não apenas o HTTP 200 da homepage.
+5. Confirmar limites do Workers Free e D1 Free em produção e contabilizar a CPU de hashing de senha.
+6. Manter o `production_ready` como `false` até os requisitos realmente atendidos.
+
+Plano gratuito não é capacidade ilimitada: Workers Free tem CPU de 10ms/req e limite diário de requisições; D1 Free máximo 500MB por banco e limites diários de linhas. Ao exceder cotas, chamadas podem falhar. Não habilitar serviços que requerem faturamento sem aprovação explícita e mecanismo de controle.
 
 Fontes:
-https://developers.cloudflare.com/workers/platform/limits/
-https://developers.cloudflare.com/d1/platform/pricing/
-https://developers.cloudflare.com/pages/platform/limits/
-https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024
-
-## Exportacao segura do banco real (bloqueada ate haver copia autorizada)
-
-Nao existe dump real de clientes versionado no GitHub. A ferramenta `cloudflare/scripts/export-live-db.cjs` requer um arquivo SQLite de backup **consistente** obtido do Render sem interromper o sistema e um destino fora do repositorio:
-
-```
-node cloudflare/scripts/export-live-db.cjs /copia-privada/dna_auto.db /copia-privada/dna-d1.sql
-```
-
-A ferramenta verifica integridade e chaves estrangeiras, cria snapshot via API nativa SQLite (WAL), rejeita comandos acima do limite de 100 KB do D1, exporta todas as tabelas, registros e indices e gera `dna-d1.sql.manifest.json` com contagens e hashes SHA-256. Os arquivos tem permissoes restritas, nunca devem ir para GitHub nem ser enviados por mensagens. Nao sobrescreve arquivos existentes. O dump inclui dados pessoais e credenciais em hash; proteger e apagar com procedimento seguro apos validacao.
-
-**Importar apenas em D1 NOVO E VAZIO de homologacao**, depois de autorizar Cloudflare e verificar compatibilidade real com Wrangler. Em ambiente autorizado:
-
-```
-npx wrangler d1 execute dna-auto-staging --remote --file=/copia-privada/dna-d1.sql --config=cloudflare/api/wrangler.toml
-```
-
-Se qualquer comando falhar, nao alterar o Render. Comparar para cada tabela `SELECT COUNT(*)`, FKs, IDs, login, cadastro, servicos e historico com o manifesto; fazer novo snapshot final depois de congelar gravacoes para evitar perder alteracoes ocorridas durante a copia. A exportacao por si so **nao realiza importacao**, nao garante D1 pronto, nem substitui a migracao da API sincrona, fotos, notificacoes e WhatsApp.
-
-Atenção: uploads atualmente gravados em disco e sessao Baileys (WhatsApp) nao podem ser substituidos apenas por Pages/Workers/D1; definir armazenamento e integracao gratuitos adequados e testar antes de descontinuar Render. O plano Free pode bloquear operacoes ao exceder cotas.
-
-## CORS de seguranca (staging)
-
-O Worker apenas permite chamadas de navegador cujos dominios estejam explicitamente em ALLOWED_ORIGINS, separados por virgula (HTTPS, sem barra ao final). Configurar origens reais dos projetos Pages e dominios adicionais; outros Origin recebem HTTP 403. Requisicoes sem Origin (ferramentas CLI) nao sao consideradas prova de autenticacao, e os endpoints continuam bloqueados ate a migracao completa. Testes automatizados verificam preflight e bloqueio de origem inesperada.
+- https://developers.cloudflare.com/workers/platform/limits/
+- https://developers.cloudflare.com/d1/platform/limits/
+- https://developers.cloudflare.com/d1/platform/pricing/
+- https://developers.cloudflare.com/pages/platform/limits/
