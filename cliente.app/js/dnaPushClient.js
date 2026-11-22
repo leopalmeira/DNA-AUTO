@@ -109,6 +109,18 @@
       form.querySelector('[name=date]').min=new Date().toISOString().slice(0,10);
     } catch(error) {overlay.querySelector('[data-form]').innerHTML='<p>'+esc(error.message)+'</p>';}
   }
+  async function unregister() {
+    const session=token();
+    if (!session || !native()) return;
+    try {
+      const result=await native().getToken();
+      if (result?.token) await fetch('/api/v1/push/unregister',{
+        method:'POST',headers:{Authorization:'Bearer '+session,'Content-Type':'application/json'},
+        body:JSON.stringify({token:result.token}),keepalive:true
+      });
+    } catch(error) {console.warn('[DNA push] Falha ao desvincular aparelho:',error.message);}
+    lastRegister=0;
+  }
   async function pending() {
     if (!native() || document.hidden) return;
     try {
@@ -123,5 +135,5 @@
   document.addEventListener('DOMContentLoaded',tick);
   if (document.readyState!=='loading') tick();
   setInterval(()=>{if(!document.hidden)register();},60000);
-  window.DnaPushClient={register,tick};
+  window.DnaPushClient={register,unregister,tick};
 })();
