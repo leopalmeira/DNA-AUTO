@@ -25,3 +25,5 @@ jobs:
       - run: node --check cloudflare/api/src/index.mjs && node --check cloudflare/scripts/export-schema.cjs
       - run: node --test cloudflare/api/test/worker.test.mjs
       - run: node cloudflare/scripts/export-schema.cjs /tmp/dna-cloudflare-schema.sql && test -s /tmp/dna-cloudflare-schema.sql
+      - name: Validar os tres sites Cloudflare Pages
+        run: node --test cloudflare/pages/build.test.cjs

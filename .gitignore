@@ -12,3 +12,6 @@ server/sessions/*
 !server/sessions/.gitkeep
 scratch/
 .vscode/
+
+# Artefatos gerados para Cloudflare Pages (nao versionar)
+cloudflare/pages/dist-*/
