@@ -15,6 +15,14 @@ on:
         description: 'Código inteiro da versão (ex: 256)'
         required: true
         default: '256'
+      oficina_version_name:
+        description: 'Versão exclusiva do APK da Oficina'
+        required: true
+        default: '2.5.7'
+      oficina_version_code:
+        description: 'Código inteiro exclusivo do APK da Oficina'
+        required: true
+        default: '257'
   push:
     branches:
       - master
@@ -58,6 +66,7 @@ jobs:
           INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '256' }}
         run: |
           npm install
+          node ../scripts/patch-android.js cliente --config-only
           npx cap add android
           npx cap sync android
           node ../scripts/patch-android.js cliente
@@ -70,10 +79,11 @@ jobs:
         working-directory: android-oficina
         env:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
-          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.6' }}
-          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '256' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.oficina_version_name || '2.5.7' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.oficina_version_code || '257' }}
         run: |
           npm install
+          node ../scripts/patch-android.js oficina --config-only
           npx cap add android
           npx cap sync android
           node ../scripts/patch-android.js oficina
@@ -143,13 +153,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          VNAME="${{ github.event.inputs.version_name }}"
-          if [ -z "$VNAME" ]; then VNAME="2.5.6"; fi
+          VNAME="Cliente v${{ github.event.inputs.version_name || '2.5.6' }} / Oficina v${{ github.event.inputs.oficina_version_name || '2.5.7' }}"
           if gh release view apk-latest >/dev/null 2>&1; then
             gh release upload apk-latest dna-auto-cliente.apk dna-auto-oficina.apk --clobber
-            gh release edit apk-latest --title "DNA AUTO APKs v${VNAME}" --notes "APKs assinados com keystore persistente. GPS em segundo plano com consentimento e alertas de hodômetro."
+            gh release edit apk-latest --title "DNA AUTO APKs — ${VNAME}" --notes "APKs assinados com keystore persistente. GPS em segundo plano com consentimento e alertas de hodômetro."
           else
             gh release create apk-latest dna-auto-cliente.apk dna-auto-oficina.apk \
-              --title "DNA AUTO APKs v${VNAME}" \
+              --title "DNA AUTO APKs — ${VNAME}" \
               --notes "APKs assinados com keystore persistente. GPS em segundo plano com consentimento e alertas de hodômetro."
           fi
