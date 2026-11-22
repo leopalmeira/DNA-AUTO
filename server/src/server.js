@@ -18,6 +18,8 @@ const PORT = process.env.PORT || 3000;
 const APP_VERSION = '2.5.6';
 const ADMIN_CENTRAL_VERSION = '2.6.0';
 const APK_VERSION_CODE = Number(process.env.DNA_APK_VERSION_CODE || 256);
+const OFICINA_APK_VERSION = '2.5.7';
+const OFICINA_APK_VERSION_CODE = Number(process.env.DNA_OFICINA_APK_VERSION_CODE || 257);
 const ANDROID_PACKAGE_NAME = process.env.ANDROID_PACKAGE_NAME || 'br.com.dnaauto.cliente';
 const ANDROID_OFICINA_PACKAGE_NAME = process.env.ANDROID_OFICINA_PACKAGE_NAME || 'br.com.dnaauto.oficina';
 const GITHUB_APK_RELEASE_BASE = (process.env.DNA_APK_RELEASE_BASE || 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest').replace(/\/$/, '');
@@ -37,9 +39,9 @@ function resolveApkInfo(appType = 'cliente') {
     const externalApkUrl = envUrl || `${GITHUB_APK_RELEASE_BASE}/${fileName}`;
     return {
         app: isOficina ? 'oficina' : 'cliente',
-        version: (process.env.DNA_APK_LATEST_VERSION || APP_VERSION).trim(),
-        version_code: APK_VERSION_CODE,
-        min_version_code: Number(process.env.DNA_APK_MIN_VERSION_CODE || APK_VERSION_CODE),
+        version: (isOficina ? (process.env.DNA_OFICINA_APK_LATEST_VERSION || OFICINA_APK_VERSION) : (process.env.DNA_APK_LATEST_VERSION || APP_VERSION)).trim(),
+        version_code: isOficina ? OFICINA_APK_VERSION_CODE : APK_VERSION_CODE,
+        min_version_code: Number(isOficina ? (process.env.DNA_OFICINA_APK_MIN_VERSION_CODE || OFICINA_APK_VERSION_CODE) : (process.env.DNA_APK_MIN_VERSION_CODE || APK_VERSION_CODE)),
         force_update: process.env.DNA_APK_FORCE_UPDATE === 'true',
         apk_available: true,
         local_apk_path: localApkPath,
