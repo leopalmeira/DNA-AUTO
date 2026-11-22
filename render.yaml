@@ -34,7 +34,7 @@ services:
       - key: ABACATEPAY_WEBHOOK_SECRET
         sync: false
       - key: CORS_ALLOWED_ORIGINS
-        value: https://dna-auto-vua4.onrender.com,https://cliente-app.onrender.com,https://oficina-app.onrender.com
+        value: https://dna-auto-vua4.onrender.com,https://dna-auto-byin.onrender.com,https://cliente-app.onrender.com,https://oficina-app.onrender.com
 
   - type: web
     name: cliente-app

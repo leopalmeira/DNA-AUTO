@@ -122,22 +122,9 @@ const DEPLOYED_AT = new Date().toISOString();
 const GIT_COMMIT = (process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || '').slice(0, 7) || null;
 
 // Middlewares Globais & Segurança (Fase 10)
-const allowedOriginsEnv = (process.env.CORS_ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-const corsOptions = {
-    origin(origin, callback) {
-        // Permite requisições server-to-server, mobile WebView/APK/Capacitor (origin ausente) ou ambiente dev/test
-        if (!origin || process.env.NODE_ENV !== 'production' || allowedOriginsEnv.length === 0) {
-            return callback(null, true);
-        }
-        if (allowedOriginsEnv.includes('*') || allowedOriginsEnv.includes(origin)) {
-            return callback(null, true);
-        }
-        return callback(new Error('Origem não autorizada pela política CORS da plataforma DNA AUTO.'));
-    },
-    credentials: true
-};
-
-app.use(cors(corsOptions));
+// Autorizar a própria origem de cada implantação, sem liberar domínios terceiros.
+const { createCorsOptions } = require('./utils/corsPolicy');
+app.use(cors(createCorsOptions()));
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
