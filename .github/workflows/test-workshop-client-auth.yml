@@ -1,0 +1,38 @@
+name: Teste do cadastro e login de clientes pela oficina
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'server/src/modules/auth/auth.routes.js'
+      - 'server/src/modules/workshops/workshops.routes.js'
+      - 'oficina.app/js/components/workshopMobileView.js'
+      - 'public/js/components/workshopMobileView.js'
+      - 'test/credentials.auth.test.js'
+      - '.github/workflows/test-workshop-client-auth.yml'
+  workflow_dispatch:
+
+jobs:
+  teste-login-cliente:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+      DB_PATH: ${{ runner.temp }}/dna-auth-workshop-test.sqlite
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Instalar dependências
+        run: npm ci
+      - name: Verificar sintaxe dos módulos alterados
+        run: |
+          node --check server/src/modules/auth/auth.routes.js
+          node --check server/src/modules/workshops/workshops.routes.js
+          node --check oficina.app/js/components/workshopMobileView.js
+          node --check public/js/components/workshopMobileView.js
+          node --check test/credentials.auth.test.js
+      - name: Teste integrado do primeiro acesso e senha pessoal
+        run: npm run test:auth:credentials
