@@ -1,0 +1,255 @@
+/* DNA AUTO Cliente — Alertas & Manutenções, modo consulta.
+   Escopo intencional: apenas a tela #alertas, sem afetar os módulos da oficina. */
+#alertas.screen {
+  background: linear-gradient(156deg,#eef6ff 0%,#e6f1ff 45%,#e3efff 100%) !important;
+  color: #091b3c;
+}
+#alertas .app-header {
+  flex: 0 0 auto;
+  background: transparent !important;
+}
+#alertas .alertas-scroll {
+  padding: 14px max(16px,env(safe-area-inset-right)) 24px max(16px,env(safe-area-inset-left)) !important;
+  overflow-x: hidden !important;
+  min-height: 0;
+}
+#alertas .alertas-intro {
+  padding: 4px 4px 16px !important;
+}
+#alertas .alertas-intro h1 {
+  font-family: Inter,system-ui,sans-serif !important;
+  font-size: clamp(23px,6.3vw,29px) !important;
+  font-weight: 850 !important;
+  line-height: 1.12 !important;
+  letter-spacing: -.9px !important;
+  color: #091a3d !important;
+  margin: 0 0 8px !important;
+}
+#alertas .alertas-intro p {
+  color: #49617f !important;
+  font-size: 14px !important;
+  font-weight: 450 !important;
+  line-height: 1.45 !important;
+  margin: 0 !important;
+}
+#alertas .dna-maint-readonly-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 13px;
+  background: rgba(255,255,255,.7);
+  border: 1px solid #dae7f8;
+  border-radius: 999px;
+  padding: 6px 11px;
+  color: #35557c;
+  font-size: 11px;
+  font-weight: 700;
+}
+#alertas .alertas-tabs {
+  display: grid !important;
+  grid-template-columns: repeat(2,minmax(0,1fr)) !important;
+  gap: 5px !important;
+  background: rgba(213,230,250,.9) !important;
+  border: 1px solid #fff !important;
+  padding: 5px !important;
+  border-radius: 17px !important;
+  margin: 0 0 19px !important;
+  box-shadow: 0 4px 13px rgba(26,73,130,.07);
+}
+#alertas .alertas-tab {
+  height: 43px !important;
+  min-width: 0;
+  padding: 0 6px !important;
+  border: none !important;
+  border-radius: 13px !important;
+  font-family: Inter,system-ui,sans-serif !important;
+  font-size: clamp(12px,3.5vw,14px) !important;
+  font-weight: 750 !important;
+  color: #476484 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition: background .16s ease,color .16s ease !important;
+}
+#alertas .alertas-tab.active {
+  color: #fff !important;
+  background: linear-gradient(120deg,#0876ff,#0554e5) !important;
+  box-shadow: 0 4px 14px rgba(5,85,230,.23) !important;
+}
+#alertas .alertas-tab:focus-visible,
+#alertas .dna-maint-details:focus-visible {
+  outline: 3px solid #0b72ff !important;
+  outline-offset: 2px;
+}
+#alertas .alertas-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  padding: 0 1px 8px;
+}
+#alertas .dna-maint-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ecf2fa;
+  border-left: 4px solid #e5a019;
+  border-radius: 20px;
+  background: linear-gradient(160deg,#fff,#f9fbff);
+  box-shadow: 0 8px 20px rgba(11,52,114,.10);
+  padding: 16px 15px 13px;
+}
+#alertas .dna-maint-card.tone-good { border-left-color:#17ab71; }
+#alertas .dna-maint-card.tone-danger { border-left-color:#dc4040; }
+#alertas .dna-maint-card.tone-info { border-left-color:#2780ec; }
+#alertas .dna-maint-main {
+  display: grid;
+  grid-template-columns: 51px minmax(0,1fr);
+  gap: 12px;
+  align-items: start;
+}
+#alertas .dna-maint-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 15px;
+  background: #fff0ce;
+  color: #af6800;
+  font-size: 25px;
+  line-height: 1;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+#alertas .tone-good .dna-maint-icon { color:#087447;background:#e0f7e9; }
+#alertas .tone-danger .dna-maint-icon { color:#b42329;background:#ffe1e1; }
+#alertas .tone-info .dna-maint-icon { color:#1769be;background:#e4f0ff; }
+#alertas .dna-maint-copy { min-width: 0; }
+#alertas .dna-maint-name {
+  margin: 0 0 6px !important;
+  color: #0b1d42 !important;
+  font-family: Inter,system-ui,sans-serif;
+  font-size: clamp(15px,4.1vw,18px);
+  font-weight: 800;
+  line-height: 1.23;
+  overflow-wrap: anywhere;
+}
+#alertas .dna-maint-badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  margin: 0 0 7px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: #a65b00;
+  background: #fff0d1;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: .08px;
+  overflow-wrap: anywhere;
+}
+#alertas .tone-good .dna-maint-badge { color:#087747;background:#e0f7e9; }
+#alertas .tone-danger .dna-maint-badge { color:#b42329;background:#ffe6e7; }
+#alertas .tone-info .dna-maint-badge { color:#1769be;background:#e4f0ff; }
+#alertas .dna-maint-distance {
+  margin: 0 0 3px !important;
+  color: #af6400;
+  font-size: clamp(14px,3.9vw,17px);
+  font-weight: 850;
+  line-height: 1.25;
+}
+#alertas .tone-good .dna-maint-distance { color:#128654; }
+#alertas .tone-danger .dna-maint-distance { color:#bd3030; }
+#alertas .tone-info .dna-maint-distance { color:#1769be; }
+#alertas .dna-maint-recommendation {
+  margin: 0 !important;
+  color:#536983;
+  font-size: 12.5px;
+  line-height:1.5;
+  overflow-wrap: anywhere;
+}
+#alertas .dna-maint-footer {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  gap:10px;
+  border-top:1px solid #e0e9f5;
+  margin-top: 14px;
+  padding-top: 11px;
+}
+#alertas .dna-maint-readonly {
+  flex: 1 1 120px;
+  min-width: 0;
+  color: #516985;
+  font-weight: 650;
+  font-size: 10.5px;
+  line-height:1.4;
+}
+#alertas .dna-maint-details {
+  flex: 0 0 auto;
+  min-height: 37px;
+  border: 1.5px solid #0876f7;
+  background:#fff;
+  color:#0560d8;
+  border-radius: 11px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+#alertas .dna-maint-details:active { background:#e7f0ff; }
+#alertas .dna-maint-empty {
+  color:#49617f;
+  font-size: 13px;
+  line-height:1.6;
+  text-align: center;
+  border:1px dashed #acc9ef;
+  border-radius:16px;
+  padding: 27px 17px;
+  background:rgba(255,255,255,.78);
+}
+#alertas .alertas-bottom-nav {
+  background: rgba(255,255,255,.98) !important;
+  box-shadow: 0 -3px 12px rgba(22,67,120,.08);
+  border-top: 1px solid #dbe8f8 !important;
+}
+#alertas .alertas-bottom-nav .nav-btn { color:#59718e !important; }
+#alertas .alertas-bottom-nav .nav-btn.active { color:#0066f5 !important; }
+.dna-maint-overlay {
+  position:fixed; inset:0;
+  z-index:150000;
+  background:rgba(7,20,45,.75);
+  backdrop-filter:blur(5px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));
+  box-sizing:border-box;
+}
+.dna-maint-dialog {
+  width:100%; max-width:390px;
+  max-height:88dvh;
+  overflow:auto;
+  background:#fff;
+  border-radius:20px;
+  box-shadow:0 20px 50px rgba(0,0,0,.3);
+  padding:21px;
+  box-sizing:border-box;
+  color:#14284b;
+}
+.dna-maint-dialog-header { display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px; }
+.dna-maint-dialog-header h2 { color:#0a1d40;font-weight:850;font-size:19px;line-height:1.25;margin:0; }
+.dna-maint-dialog-close { width:34px;height:34px;flex-shrink:0;border:0;background:#eaf1fc;border-radius:12px;color:#314563;font-size:25px;cursor:pointer; }
+.dna-maint-dialog-field { padding:9px 0;border-bottom:1px solid #e5eaf4; }
+.dna-maint-dialog-field strong { display:block;font-size:11px;color:#657b98;margin-bottom:3px; }
+.dna-maint-dialog-field p {font-size:13px;line-height:1.5;color:#182b4a;margin:0;white-space:pre-wrap;overflow-wrap:anywhere;}
+.dna-maint-dialog-note { color:#4a6587;background:#eff6ff;border-radius:12px;padding:12px;font-size:11px;line-height:1.55;margin:16px 0 0; }
+@media(max-width:345px) {
+  #alertas .dna-maint-main {grid-template-columns:42px minmax(0,1fr);gap:9px;}
+  #alertas .dna-maint-icon {width:42px;height:42px;font-size:21px;}
+  #alertas .dna-maint-footer {align-items:stretch;}
+  #alertas .dna-maint-details {width:100%;}
+}
