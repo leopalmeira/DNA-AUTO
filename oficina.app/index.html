@@ -462,6 +462,33 @@
             };
         }
 
+        // A leitura nativa prevalece sobre a versão antiga salva em URL/localStorage.
+        async function resolveInstalledOficinaApkContext(customInstalled) {
+            if (customInstalled) return customInstalled;
+            const ctx = getInstalledApkContext();
+            if (!ctx.isNativeShell) return ctx;
+            const nativeApp = window.Capacitor?.Plugins?.App;
+            if (typeof nativeApp?.getInfo !== 'function') return ctx;
+            try {
+                const info = await nativeApp.getInfo();
+                if (info?.id !== 'br.com.dnaauto.oficina') return ctx;
+                const nativeVersion = String(info.version || '').trim();
+                const nativeBuild = Number(info.build);
+                const nativeCode = Number.isSafeInteger(nativeBuild) && nativeBuild > 0 ? nativeBuild : ctx.versionCode;
+                if (nativeVersion) localStorage.setItem('dna_oficina_apk_version', nativeVersion);
+                if (nativeCode) localStorage.setItem('dna_oficina_apk_version_code', String(nativeCode));
+                return { ...ctx, version: nativeVersion || ctx.version, versionCode: nativeCode, source: 'android-package' };
+            } catch (err) {
+                console.warn('[DNA Oficina] Versão nativa não disponível:', err);
+                return ctx;
+            }
+        }
+
+        function hideOficinaApkUpdateModal() {
+            const modal = document.getElementById('dna-update-modal');
+            if (modal) modal.remove();
+        }
+
         function showApkUpdateModal(serverInfo, installedCtx) {
             let modal = document.getElementById('dna-update-modal');
             if (!modal) {
@@ -473,37 +500,57 @@
                         <div style="width:54px;height:54px;margin:0 auto 14px;border-radius:16px;background:linear-gradient(135deg,#0084ff,#00d4ff);display:flex;align-items:center;justify-content:center;font-size:26px;">🚀</div>
                         <h3 style="margin:0 0 8px;font-size:19px;font-weight:800;font-family:Outfit,Inter,sans-serif;">Atualizar App</h3>
                         <p id="dna-update-desc" style="margin:0 0 18px;font-size:13px;line-height:1.45;color:#cbd5e1;"></p>
-                        <a id="dna-update-cta" href="${serverInfo.apk_url}" download="dna-auto-oficina.apk" style="display:flex;align-items:center;justify-content:center;width:100%;height:46px;border-radius:9999px;background:linear-gradient(110deg,#03b1fb,#0053f6);color:#ffffff;font-weight:800;font-size:14.5px;text-decoration:none;box-shadow:0 8px 20px rgba(0,99,249,0.45);">Atualizar App Agora</a>
-                        <button id="dna-update-later" type="button" style="margin-top:10px;width:100%;height:38px;border:0;background:transparent;color:#94a3b8;font-size:12.5px;font-weight:600;cursor:pointer;">Depois</button>
+                        <a id="dna-update-cta" href="/downloads/dna-auto-oficina.apk" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:center;width:100%;height:46px;border-radius:9999px;background:linear-gradient(110deg,#03b1fb,#0053f6);color:#ffffff;font-weight:800;font-size:14.5px;text-decoration:none;box-shadow:0 8px 20px rgba(0,99,249,0.45);">Atualizar App Agora</a>
                     </div>
                 `;
                 document.body.appendChild(modal);
             }
             const descEl = document.getElementById('dna-update-desc');
             const ctaEl = document.getElementById('dna-update-cta');
-            const laterBtn = document.getElementById('dna-update-later');
             if (descEl) {
                 const cur = installedCtx?.version ? `v${installedCtx.version}` : 'desatualizada';
-                descEl.textContent = `Uma nova versão (v${serverInfo.version}) do DNA Oficina está disponível (sua versão atual: ${cur}).`;
+                descEl.textContent = `Uma nova versão (v${serverInfo.version}) do DNA Oficina está disponível (sua versão atual: ${cur}). A instalação exige confirmação do Android.`;
             }
-            if (ctaEl) ctaEl.href = serverInfo.apk_url || '/downloads/dna-auto-oficina.apk';
-            if (laterBtn) {
-                laterBtn.style.display = serverInfo.force_update ? 'none' : 'block';
-                laterBtn.onclick = () => { modal.style.display = 'none'; };
+            if (ctaEl) {
+                const apkUrl = new URL(serverInfo.apk_url || '/downloads/dna-auto-oficina.apk', window.location.origin);
+                ctaEl.href = apkUrl.href;
+                ctaEl.onclick = (event) => {
+                    const browser = window.Capacitor?.Plugins?.Browser;
+                    // No APK nativo, abrir o download pelo navegador do Android.
+                    // A confirmação final de instalação continua sendo do sistema.
+                    if (typeof browser?.open === 'function') {
+                        event.preventDefault();
+                        browser.open({ url: apkUrl.href }).catch((err) => {
+                            console.warn('[DNA Oficina] Falha ao abrir navegador nativo:', err);
+                            window.location.assign(apkUrl.href);
+                        });
+                    }
+                    // APKs antigos: o link real continua clicável (fallback HTTPS).
+                };
             }
             modal.style.display = 'flex';
         }
 
         async function checkOficinaApkUpdate(customInstalled) {
-            const ctx = customInstalled || getInstalledApkContext();
-            if (!ctx.isNativeShell && !ctx.version && !ctx.versionCode) return { updateNeeded: false, reason: 'browser' };
+            const ctx = await resolveInstalledOficinaApkContext(customInstalled);
+            if (!ctx.isNativeShell && !ctx.version && !ctx.versionCode) {
+                hideOficinaApkUpdateModal();
+                return { updateNeeded: false, reason: 'browser' };
+            }
             const res = await fetch('/api/v1/app/version-oficina?_t=' + Date.now(), { cache: 'no-store' });
             if (!res.ok) return { updateNeeded: false, reason: 'http_error' };
             const info = await res.json();
-            const byCode = ctx.versionCode && info.version_code && ctx.versionCode < Number(info.version_code);
-            const bySemver = ctx.version && info.version && compareSemver(ctx.version, info.version) < 0;
-            const updateNeeded = Boolean((byCode || bySemver) && info.apk_available);
+            const installedCode = Number(ctx.versionCode);
+            const availableCode = Number(info.version_code);
+            // Não comparar também uma versão antiga do cache se o Android já confirmou o versionCode.
+            const hasCodes = Number.isSafeInteger(installedCode) && installedCode > 0 &&
+                Number.isSafeInteger(availableCode) && availableCode > 0;
+            const outdated = hasCodes
+                ? installedCode < availableCode
+                : Boolean(ctx.version && info.version && compareSemver(ctx.version, info.version) < 0);
+            const updateNeeded = Boolean(outdated && info.apk_available && info.apk_url);
             if (updateNeeded) showApkUpdateModal(info, ctx);
+            else hideOficinaApkUpdateModal();
             return { updateNeeded, server: info, installed: ctx };
         }
 
