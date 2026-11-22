@@ -49,6 +49,15 @@ async function runTests() {
     }
 
     // Regressão: botão único, comparação nativa e remoção imediata ao atualizar.
+    assert.ok(!clienteHtml.includes('id="dna-update-later"'), 'Cliente não deve oferecer o botão Depois');
+    assert.ok(clienteHtml.includes('resolveInstalledClientApkContext'), 'Cliente deve ler versão Android real');
+    assert.ok(clienteHtml.includes('nativeApp.getInfo()'), 'Cliente deve dar prioridade ao pacote Android');
+    assert.ok(clienteHtml.includes('installedCode < availableCode'), 'Cliente deve dar prioridade ao versionCode');
+    assert.ok(clienteHtml.includes('hideClientApkUpdateModal()'), 'Cliente deve remover modal quando atualizado');
+    assert.ok(clienteHtml.includes('browser.open({ url: apkUrl.href })'), 'Cliente deve abrir navegador Android');
+    const clienteDependencies = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'android-client', 'package.json'), 'utf8')).dependencies;
+    assert.ok(clienteDependencies['@capacitor/app'], 'Cliente precisa do plugin App para ler versão instalada');
+    assert.ok(clienteDependencies['@capacitor/browser'], 'Cliente precisa do plugin Browser para baixar APK no Android');
     assert.ok(!oficinaHtml.includes('id="dna-update-later"'), 'Oficina não deve oferecer o botão Depois');
     assert.ok(oficinaHtml.includes('resolveInstalledOficinaApkContext'), 'Versão instalada deve ser lida do pacote Android');
     assert.ok(oficinaHtml.includes('nativeApp.getInfo()'), 'App.getInfo deve ter prioridade sobre URL antiga');
@@ -58,6 +67,33 @@ async function runTests() {
     const oficinaNativeConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'android-oficina', 'capacitor.config.json'), 'utf8'));
     assert.ok(oficinaNativeConfig.server.url.includes('apk_version=2.5.7&apk_code=257'), 'APK precisa anunciar versão 2.5.7');
     assert.strictEqual(oficinaNativeConfig.android.appendUserAgent, 'DNAOficinaAPK/2.5.7');
+
+    // A release pública deve ter APKs assinados e manifesto com versões reais.
+    // Simular GitHub para testes determinísticos e sem rede externa.
+    const releaseManifestUrl = 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/dna-auto-release.json';
+    const releaseApiUrl = 'https://api.github.com/repos/leopalmeira/DNA-AUTO/releases/tags/apk-latest';
+    const sha = 'a'.repeat(64);
+    const manifest = {
+        schema_version: 1,
+        release_tag: 'apk-latest',
+        signature_scheme: 'release-keystore',
+        apps: {
+            cliente: { apk_name: 'dna-auto-cliente.apk', package_name: 'br.com.dnaauto.cliente', version: '2.5.6', version_code: 256, mandatory: true, apk_size: 12345, sha256: sha },
+            oficina: { apk_name: 'dna-auto-oficina.apk', package_name: 'br.com.dnaauto.oficina', version: '2.5.7', version_code: 257, mandatory: true, apk_size: 12346, sha256: sha }
+        }
+    };
+    const assets = [
+        { name: 'dna-auto-release.json', size: 700, browser_download_url: releaseManifestUrl },
+        { name: 'dna-auto-cliente.apk', size: 12345, browser_download_url: 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/dna-auto-cliente.apk' },
+        { name: 'dna-auto-oficina.apk', size: 12346, browser_download_url: 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/dna-auto-oficina.apk' }
+    ];
+    const originalFetch = global.fetch;
+    global.fetch = (resource, options) => {
+        const url = String(resource);
+        if (url === releaseApiUrl) return Promise.resolve(new Response(JSON.stringify({ assets }), { status: 200 }));
+        if (url === releaseManifestUrl) return Promise.resolve(new Response(JSON.stringify(manifest), { status: 200 }));
+        return originalFetch(resource, options);
+    };
 
     // 4. Testar endpoints reais de versão dos APKs e Asset Links via HTTP
     const server = await new Promise((resolve) => {
@@ -78,6 +114,8 @@ async function runTests() {
         assert.strictEqual(vCliente.package_name, 'br.com.dnaauto.cliente');
         assert.strictEqual(vCliente.apk_available, true);
         assert.strictEqual(vCliente.apk_url, '/downloads/dna-auto-cliente.apk');
+        assert.strictEqual(vCliente.force_update, true);
+        assert.strictEqual(vCliente.version_code, 256);
 
         const vOficinaRes = await fetch(`${base}/api/v1/app/version-oficina`);
         assert.strictEqual(vOficinaRes.status, 200);
@@ -109,6 +147,7 @@ async function runTests() {
         if (server) {
             server.close();
         }
+        global.fetch = originalFetch;
     }
 }
 
