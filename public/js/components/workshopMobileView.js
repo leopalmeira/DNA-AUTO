@@ -6507,18 +6507,17 @@
 
             const res = await API.login({ email, password });
 
-            if (!res || !res.token) {
-                throw new Error((res && res.error) || (res && res.message) || 'E-mail ou senha incorretos.');
+            if (!res?.token || !res?.user?.workshop?.workshop_id ||
+                !String(res.user.role_code || '').toUpperCase().startsWith('WORKSHOP')) {
+                throw new Error('Login sem credencial de oficina válida. Utilize seu usuário e senha cadastrados.');
             }
 
-            // ✅ Login aprovado
-            localStorage.setItem('dna_token', res.token);
-            if (res.user) {
-                localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
-                if (res.user.workshop && res.user.workshop.trade_name) {
-                    this.officialWorkshopName = res.user.workshop.trade_name;
-                }
-            }
+            // Login web também precisa sincronizar JWT com a instância API ativa.
+            API.setToken(res.token);
+            localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
+            localStorage.setItem('dna_workshop_id', res.user.workshop.workshop_id);
+            this.currentWorkshopId = res.user.workshop.workshop_id;
+            this.officialWorkshopName = res.user.workshop.workshop_name || res.user.workshop.trade_name || 'Oficina Credenciada';
             localStorage.removeItem('dna_logged_out');
             const isWeb = this.authTargetMode === 'web';
             this.setDesktopMode(isWeb);
@@ -6533,7 +6532,7 @@
 
     // Processar Cadastro da Auto Center
     WorkshopView.handleWorkshopAuthRegister = async function(e) {
-        if (e && e.preventDefault) e.preventDefault();
+        if (e?.preventDefault) e.preventDefault();
         const tradeName = (document.getElementById('ws-reg-tradename')?.value || '').trim();
         const cnpj = (document.getElementById('ws-reg-cnpj')?.value || '').trim();
         const phone = (document.getElementById('ws-reg-phone')?.value || '').trim();
@@ -6543,49 +6542,34 @@
         const password = (document.getElementById('ws-reg-password')?.value || '').trim();
         const errEl = document.getElementById('ws-reg-error-msg');
 
-        if (!tradeName || !email || !password) {
-            if (errEl) {
-                errEl.style.display = 'block';
-                errEl.textContent = 'Preencha todos os campos obrigatórios.';
-            }
+        if (!tradeName || !cnpj || !email || !password) {
+            if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Preencha nome, documento, e-mail e senha.'; }
             return;
         }
-
         try {
-            if (typeof API !== 'undefined' && API.registerWorkshop) {
-                await API.registerWorkshop({
-                    tradeName,
-                    companyName: tradeName,
-                    cnpj,
-                    phone,
-                    email,
-                    city,
-                    state,
-                    password
-                });
+            if (typeof API === 'undefined' || typeof API.registerWorkshop !== 'function') {
+                throw new Error('Serviço de cadastro indisponível.');
             }
+            const res = await API.registerWorkshop({
+                tradeName, companyName: tradeName, cnpj, phone, email, city, state, password
+            });
+            if (!res?.token || !res?.user?.workshop?.workshop_id ||
+                !String(res.user.role_code || '').toUpperCase().startsWith('WORKSHOP')) {
+                throw new Error('Cadastro sem autenticação confirmada. Entre com seus dados para continuar.');
+            }
+            // Nunca criar usuário fake/local em caso de falha do servidor.
+            API.setToken(res.token);
+            localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
+            localStorage.setItem('dna_workshop_id', res.user.workshop.workshop_id);
+            this.currentWorkshopId = res.user.workshop.workshop_id;
+            this.officialWorkshopName = res.user.workshop.workshop_name || res.user.workshop.trade_name || tradeName;
+            localStorage.removeItem('dna_logged_out');
+            this.setDesktopMode(this.authTargetMode === 'web');
+            if (typeof this.showToast === 'function') this.showToast('Oficina cadastrada e autenticada com sucesso.', 'success');
         } catch (err) {
-            console.warn('Registro processado localmente:', err.message);
+            if (errEl) { errEl.style.display = 'block'; errEl.textContent = err.message || 'Não foi possível cadastrar a oficina.'; }
+            if (typeof this.showToast === 'function') this.showToast(err.message || 'Falha no cadastro.', 'error');
         }
-
-        this.officialWorkshopName = tradeName;
-        const newUser = {
-            id: 'ws_user_' + Date.now(),
-            name: tradeName,
-            email: email,
-            role_code: 'WORKSHOP',
-            workshop: {
-                id: 'ws_' + Date.now(),
-                trade_name: tradeName,
-                cnpj: cnpj,
-                phone: phone
-            }
-        };
-        localStorage.setItem('dna_logged_user', JSON.stringify(newUser));
-
-        alert('🎉 Parabéns! Sua Auto Center foi cadastrada com sucesso no DNA AUTO.');
-        const isWeb = this.authTargetMode === 'web';
-        this.setDesktopMode(isWeb);
     };
 
     // Login com Oficina de Demonstração
