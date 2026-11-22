@@ -31,6 +31,13 @@ for (const name of ['cliente', 'oficina', 'admin']) {
             const source = name === 'admin' ? path.join(root, 'public', 'index.html') : path.join(root, name + '.app', 'index.html');
             assert.ok(fs.readFileSync(path.join(dist, 'index.html'), 'utf8').length > 0);
             assert.ok(fs.existsSync(path.join(dist, '_redirects')));
+            assert.ok(fs.existsSync(path.join(dist, '_worker.js')));
+            assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dist, '_routes.json'), 'utf8')),
+                { version: 1, include: ['/api/v1', '/api/v1/*'], exclude: [] });
+            const proxy = fs.readFileSync(path.join(dist, '_worker.js'), 'utf8');
+            assert.ok(proxy.includes(apiUrl));
+            assert.ok(proxy.includes("incoming.pathname.startsWith('/api/v1/')"));
+
             assert.ok(!fs.readFileSync(path.join(dist, 'index.html'), 'utf8').includes('onrender.com'));
         } finally { fs.rmSync(dist, { recursive: true, force: true }); }
     });
@@ -67,4 +74,32 @@ test('build sem as quatro URLs falha, evitando publicar site que aponte ao Rende
             DNA_OFICINA_BASE_URL: '', DNA_ADMIN_BASE_URL: '' }
     });
     assert.notEqual(res.status, 0);
+});
+
+test('Pages Advanced Function encaminha API absoluta e serve assets', async () => {
+    build('cliente', apiUrl);
+    const dist = path.join(directory, 'dist-cliente');
+    const code = fs.readFileSync(path.join(dist, '_worker.js'), 'utf8');
+    try {
+        const mod = await import('data:text/javascript,' + encodeURIComponent(code));
+        const sent = [];
+        const previous = global.fetch;
+        global.fetch = async request => { sent.push(request); return new Response('ok'); };
+        try {
+            const apiReq = new Request('https://dna-cliente.example.pages.dev/api/v1/services/catalog/parts?x=1', {
+                headers: { 'Authorization': 'Bearer example', 'Cookie': 'secretcookie' }
+            });
+            const apiResult = await mod.default.fetch(apiReq, { ASSETS: { fetch: () => new Response('asset') } });
+            assert.equal(await apiResult.text(), 'ok');
+            assert.equal(sent.length, 1);
+            assert.equal(sent[0].url, apiUrl + '/services/catalog/parts?x=1');
+            assert.equal(sent[0].headers.get('Authorization'), 'Bearer example');
+            assert.equal(sent[0].headers.get('Cookie'), null);
+            const asset = await mod.default.fetch(
+                new Request('https://dna-cliente.example.pages.dev/app.js'),
+                { ASSETS: { fetch: () => new Response('asset') } }
+            );
+            assert.equal(await asset.text(), 'asset');
+        } finally { global.fetch = previous; }
+    } finally { fs.rmSync(dist, { recursive: true, force: true }); }
 });

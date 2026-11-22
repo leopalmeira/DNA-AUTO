@@ -78,6 +78,29 @@ function rewriteTextLinks(directory) {
     }
 }
 rewriteTextLinks(dir);
+// Proxy mesmo dominio para telas legadas que ainda usam fetch('/api/v1/...').
+// _routes.json evita contabilizar requests de arquivos estaticos no Workers Free.
+const proxyCode = [
+    'const UPSTREAM = ' + JSON.stringify(apiBaseUrl) + ';',
+    'export default {',
+    '  async fetch(request, env) {',
+    '    const incoming = new URL(request.url);',
+    "    if (incoming.pathname === '/api/v1' || incoming.pathname.startsWith('/api/v1/')) {",
+    "      const target = new URL(UPSTREAM + incoming.pathname.slice('/api/v1'.length) + incoming.search);",
+    '      if (target.origin === incoming.origin) return new Response("Proxy circular recusado", { status: 502 });',
+    '      const upstream = new Request(target, request);',
+    "      upstream.headers.delete('Cookie');",
+    '      return fetch(upstream);',
+    '    }',
+    '    return env.ASSETS.fetch(request);',
+    '  }',
+    '};',
+    ''
+].join('\n');
+fs.writeFileSync(path.join(dir, '_worker.js'), proxyCode);
+fs.writeFileSync(path.join(dir, '_routes.json'), JSON.stringify({
+    version: 1, include: ['/api/v1', '/api/v1/*'], exclude: []
+}, null, 2) + '\n');
 fs.writeFileSync(path.join(dir, '_redirects'), [
     '/cliente ' + clientBase + '/ 302',
     '/oficina ' + workshopBase + '/ 302',
