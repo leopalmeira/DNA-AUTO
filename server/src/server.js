@@ -66,7 +66,7 @@ async function fetchVerifiedApkRelease() {
                 const asset = assets.get(expectedName);
                 if (!entry || entry.apk_name !== expectedName ||
                     entry.package_name !== 'br.com.dnaauto.' + appType ||
-                    !/^\\d+\\.\\d+\\.\\d+$/.test(entry.version) ||
+                    !/^\d+\.\d+\.\d+$/.test(entry.version) ||
                     !Number.isSafeInteger(entry.version_code) || entry.version_code < 1 ||
                     !Number.isSafeInteger(entry.apk_size) || entry.apk_size <= 0 ||
                     !/^[a-f0-9]{64}$/i.test(entry.sha256 || '') ||
