@@ -6,7 +6,7 @@ on:
       server_url:
         description: 'URL base da plataforma'
         required: true
-        default: 'https://dna-auto-byin.onrender.com'
+        default: ''
       version_name:
         description: 'Versão dos APKs (ex: 2.5.6)'
         required: true
@@ -71,7 +71,7 @@ jobs:
       - name: Compilar APK do Cliente (dna-auto-cliente.apk)
         working-directory: android-client
         env:
-          INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
+          INPUT_SERVER_URL: ${{ github.event.inputs.server_url }}
           INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.6' }}
           INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '256' }}
         run: |
@@ -88,7 +88,7 @@ jobs:
       - name: Compilar APK da Oficina (dna-auto-oficina.apk)
         working-directory: android-oficina
         env:
-          INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
+          INPUT_SERVER_URL: ${{ github.event.inputs.server_url }}
           INPUT_VERSION_NAME: ${{ github.event.inputs.oficina_version_name || '2.5.8' }}
           INPUT_VERSION_CODE: ${{ github.event.inputs.oficina_version_code || '258' }}
         run: |

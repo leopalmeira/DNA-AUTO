@@ -4,14 +4,20 @@ const path = require('path');
 const target = process.argv[2] || 'cliente';
 const isOficina = target === 'oficina';
 
-const serverUrl = (process.env.INPUT_SERVER_URL || 'https://dna-auto-byin.onrender.com').replace(/\/$/, '');
+const serverUrl = String(process.env.INPUT_SERVER_URL || '').replace(/\/$/, '');
+if (!serverUrl) throw new Error('INPUT_SERVER_URL com endereco Pages Cloudflare e obrigatoria.');
+const validUrl = new URL(serverUrl);
+if (validUrl.protocol !== 'https:' || validUrl.hostname.endsWith('.onrender.com') ||
+    validUrl.pathname !== '/' || validUrl.search || validUrl.hash) {
+  throw new Error('O aplicativo Android deve usar URL HTTPS raiz de Cloudflare Pages.');
+}
 const versionName = process.env.INPUT_VERSION_NAME || '2.5.6';
 const versionCode = process.env.INPUT_VERSION_CODE || '256';
 const host = new URL(serverUrl).hostname;
 
 const pkg = isOficina ? 'br.com.dnaauto.oficina' : 'br.com.dnaauto.cliente';
 const pkgPath = pkg.replace(/\./g, '/');
-const pathPrefix = isOficina ? '/oficina' : '/cliente';
+const pathPrefix = '';
 const customScheme = isOficina ? 'dnaoficina' : 'dnaauto';
 const navBarColor = isOficina ? '#010712' : '#020712';
 
@@ -19,6 +25,9 @@ const navBarColor = isOficina ? '#010712' : '#020712';
 // Assim, o novo APK não continuará se identificando como a versão 2.5.4.
 const configPath = path.join(process.cwd(), 'capacitor.config.json');
 const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+config.server = config.server || {};
+config.server.allowNavigation = [host];
+config.server.cleartext = false;
 config.server.url = serverUrl + pathPrefix + '?apk_version=' + encodeURIComponent(versionName) + '&apk_code=' + encodeURIComponent(versionCode);
 config.android.appendUserAgent = (isOficina ? 'DNAOficinaAPK/' : 'DNAAutoAPK/') + versionName;
 fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
@@ -31,6 +40,7 @@ fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
 const fallbackIndexPath = path.join(process.cwd(), 'www', 'index.html');
 if (fs.existsSync(fallbackIndexPath)) {
   const fallbackHtml = fs.readFileSync(fallbackIndexPath, 'utf8')
+    .replace(/https:\/\/[a-z0-9-]+\.onrender\.com\/oficina(?:\?[^'"]*)?/g, serverUrl + '/')
     .replace(/apk_version=[0-9.]+&apk_code=[0-9]+/g, 'apk_version=' + versionName + '&apk_code=' + versionCode);
   fs.writeFileSync(fallbackIndexPath, fallbackHtml);
 }
