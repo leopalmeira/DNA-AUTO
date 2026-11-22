@@ -12,6 +12,11 @@ router.post('/register', authenticateToken, limit, (req,res) => {
     res.json({success:true, registered:true});
   } catch (error) { res.status(400).json({success:false,error:error.message}); }
 });
+router.post('/unregister', authenticateToken, limit, (req,res) => {
+  const t=req.body?.token;
+  if (t) Push.unregister(req.user.id,t);
+  res.json({success:true});
+});
 router.post('/ack', limit, (req,res) => {
   const { delivery_id, ack_secret, action } = req.body || {};
   if (!/^push_[0-9a-f]{20}$/.test(String(delivery_id||'')) || !/^[0-9a-f]{48}$/.test(String(ack_secret||''))) {
