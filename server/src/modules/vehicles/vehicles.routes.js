@@ -1965,14 +1965,14 @@ router.get('/:identifier/booking-workshops', authenticateToken, authorizeTrackin
                     -- A oficina que FEZ O CADASTRO é a origem preferencial.
                     -- Em reativações posteriores, conservar o primeiro cadastro
                     -- daquele veículo; recorrer à placa apenas para registros legados.
-                    ORDER BY CASE WHEN ca.vehicle_id = v.id THEN 0 ELSE 1 END,
+                    ORDER BY CASE WHEN ca.vehicle_id = ? THEN 0 ELSE 1 END,
                              ca.created_at ASC, ca.activated_at ASC LIMIT 1
                    ) AS client_activation_workshop_id,
                    v.workshop_id
             FROM vehicles v
             LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
             WHERE v.id = ?
-        `).get(vehicle.id);
+        `).get(vehicle.id, vehicle.id);
         const originId = link?.client_activation_workshop_id ||
             link?.activated_by_workshop_id || link?.workshop_id || null;
 
