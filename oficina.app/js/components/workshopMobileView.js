@@ -2593,7 +2593,12 @@
         try {
             const token = localStorage.getItem('dna_token');
             const ws = (typeof this.getCurrentWorkshop === 'function' ? this.getCurrentWorkshop() : null) || {};
-            const wsId = ws.id || ws.workshop_id || 'ws_1793680372992';
+            let wsId = ws.id || ws.workshop_id || this.currentWorkshopId || null;
+            if (!wsId && typeof API !== 'undefined' && API.getMe) {
+                const session = await API.getMe();
+                wsId = session?.user?.workshop?.workshop_id || null;
+            }
+            if (!wsId) throw new Error('A sessão não possui oficina vinculada.');
 
             const headers = { 'Content-Type': 'application/json' };
             if (token) headers['Authorization'] = 'Bearer ' + token;

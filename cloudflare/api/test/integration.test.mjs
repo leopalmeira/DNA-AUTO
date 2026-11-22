@@ -89,6 +89,14 @@ test('integração completa D1: bootstrap, oficina, cliente, login, serviço e h
   assert.ok(ws.json.workshop_id);
   const workshopId = ws.json.workshop_id;
   const workshopToken = ws.json.token;
+  const goodManager = await call('/auth/verify-manager-password', 'POST',
+    { password: 'OficinaForte@2026' }, workshopToken);
+  assert.equal(goodManager.status, 200, JSON.stringify(goodManager.json));
+  assert.equal(goodManager.json.verified, true);
+  const badManager = await call('/auth/verify-manager-password', 'POST',
+    { password: '123456' }, workshopToken);
+  assert.equal(badManager.status, 403);
+
   const client = await call('/workshops/' + workshopId + '/clients/register-activation', 'POST', {
     client_name: 'Pessoa Teste', email: 'cliente@dna.test', whatsapp: '21999999999',
     license_plate: 'ABC1D23', brand: 'Marca', model: 'Modelo',
@@ -138,6 +146,15 @@ test('integração completa D1: bootstrap, oficina, cliente, login, serviço e h
   assert.equal(preferred.status, 200);
   assert.equal(preferred.json.workshops[0].id, workshopId);
   assert.equal(preferred.json.workshops[0].is_origin, true);
+  const finance = await call('/workshops/' + workshopId + '/financial-summary', 'GET', undefined, workshopToken);
+  assert.equal(finance.status, 200, JSON.stringify(finance.json));
+  assert.equal(finance.json.summary.mechanical_total_revenue_cents, 15500);
+  assert.equal(finance.json.summary.commission_generated_cents, 0);
+  const forbiddenFinance = await call('/workshops/' + workshopId + '/financial-summary', 'GET', undefined, clientToken);
+  assert.equal(forbiddenFinance.status, 403);
+  const forbiddenManager = await call('/auth/verify-manager-password', 'POST',
+    { password: client.json.initial_password }, clientToken);
+  assert.equal(forbiddenManager.status, 403);
   const summary = await call('/vehicles/' + client.json.vehicle.id + '/maintenance-overview', 'GET', undefined, clientToken);
   assert.equal(summary.status, 200);
   assert.equal(summary.json.completed.length, 1);
