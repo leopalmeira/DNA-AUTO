@@ -160,7 +160,7 @@ fs.writeFileSync(mainActivityPath, [
   'public class MainActivity extends BridgeActivity {',
   '    @Override',
   '    protected void onCreate(Bundle savedInstanceState) {',
-  ...(isOficina ? [] : ['        registerPlugin(DnaMileagePlugin.class);']),
+  ...(isOficina ? [] : ['        registerPlugin(DnaMileagePlugin.class);', '        registerPlugin(DnaPushPlugin.class);']),
   '        super.onCreate(savedInstanceState);',
   '        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);',
   '        getWindow().setStatusBarColor(Color.TRANSPARENT);',
@@ -218,3 +218,4 @@ console.log(`✅ Android project patched for ${target} (${pkg} v${versionName} c
 
 // Serviço independente da WebView, apenas no APK do cliente.
 if (!isOficina) require('./dna-mileage-android')(pkg, path.join(process.cwd(), 'android'));
+if (!isOficina) require('./dna-push-android')(pkg, path.join(process.cwd(), 'android'), serverUrl);
