@@ -1,31 +1,6 @@
 // DNA AUTO Service Worker — PWA Oficial (Google Play Store & TWA Ready)
-const CACHE_NAME = 'dna-auto-v2.5.7';
-const ASSETS_TO_CACHE = [
-    '/',
-    '/index.html',
-    '/manifest.json',
-    '/css/variables.css',
-    '/css/base.css',
-    '/css/components.css',
-    '/css/dossier.css',
-    '/css/owner-app.css',
-    '/css/print.css',
-    '/js/api.js',
-    '/js/app.js',
-    '/js/components/ownerView.js',
-    '/js/components/dossierView.js',
-    '/js/components/workshopView.js',
-    '/js/components/workshopMobileView.js',
-    '/css/workshop-mobile.css',
-    '/js/components/loginView.js',
-    '/js/components/landingView.js',
-    '/js/components/qrcode.js',
-    '/img/icons/icon-192x192.png',
-    '/img/icons/icon-512x512.png',
-    '/img/icons/maskable-icon-512x512.png',
-    '/img/icons/dna-logo.svg',
-    '/img/icons/favicon.png'
-];
+const CACHE_NAME = 'dna-oficina-v2.5.8';
+const ASSETS_TO_CACHE = ['/oficina/','/oficina/manifest.json','/oficina/img/icons/icon-192x192.png','/oficina/img/icons/icon-512x512.png','/oficina/img/icons/maskable-icon-512x512.png'];
 
 // Instalação do Service Worker: Faz pré-cache dos assets estáticos
 self.addEventListener('install', (event) => {
@@ -73,7 +48,7 @@ self.addEventListener('fetch', (event) => {
                     caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
                     return res;
                 })
-                .catch(() => caches.match('/index.html') || caches.match('/'))
+                .catch(() => caches.match('/oficina/'))
         );
         return;
     }

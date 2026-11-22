@@ -1,7 +1,7 @@
 {
   "name": "DNA AUTO - ERP da Oficina",
   "short_name": "DNA Oficina",
-  "start_url": "./",
+  "start_url": "/oficina/",
   "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#010712",
@@ -17,28 +17,30 @@
   "description": "Painel de controle e cockpit operacional da oficina mecânica: recepção por placa, ordens de serviço nível 4, WhatsApp oficial e agenda.",
   "icons": [
     {
-      "src": "./img/icons/icon-192x192.png",
+      "src": "/oficina.app/img/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "./img/icons/icon-512x512.png",
+      "src": "/oficina.app/img/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./img/icons/maskable-icon-512x512.png",
+      "src": "/oficina.app/img/icons/maskable-icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "./img/icons/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png",
+      "src": "/oficina.app/img/icons/icon-oficina.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
     }
-  ]
+  ],
+  "id": "/oficina/",
+  "scope": "/oficina/"
 }
