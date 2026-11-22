@@ -26,19 +26,35 @@ const API = {
         else localStorage.removeItem('dna_auto_demo_user_id');
     },
 
+    // Uma única fonte de verdade para a sessão da API. Não reutiliza JWT antigo em memória.
+    getToken() {
+        const stored = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token') || null;
+        this.token = stored;
+        return stored;
+    },
+
     async request(endpoint, options = {}) {
-        const headers = options.headers || {};
-        // O login pode acontecer depois de inicializar o cliente API (PWA/Android).
-        // Recupere o JWT atualizado em vez de enviar a requisição sem Authorization.
-        const activeToken = this.token || localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
-        if (activeToken) {
+        const headers = { ...(options.headers || {}) };
+        // JWT recuperado do armazenamento persistente em toda requisição.
+        const activeToken = this.getToken();
+        if (activeToken && endpoint !== '/auth/login' && !endpoint.startsWith('/auth/register-')) {
             headers['Authorization'] = `Bearer ${activeToken}`;
+        }
+        // Não envia requisição de serviço sem sessão: preserva os campos para novo login.
+        if (endpoint === '/services/workshop-register' && !activeToken) {
+            const err = new Error('Sessão da oficina ausente. Faça login novamente antes de registrar o serviço.');
+            err.status = 401;
+            err.code = 'AUTH_TOKEN_MISSING';
+            throw err;
         }
         if (this.currentDemoUserId) {
             headers['X-Demo-User-Id'] = this.currentDemoUserId;
         }
 
-        if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+        if (options.body instanceof FormData) {
+            // O navegador informa o boundary do multipart automaticamente.
+            delete headers['Content-Type'];
+        } else if (!headers['Content-Type']) {
             headers['Content-Type'] = 'application/json';
         }
 
