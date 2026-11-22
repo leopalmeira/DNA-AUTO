@@ -14,18 +14,26 @@ async function main() {
         'Agendamento da revisão deve preservar serviço escolhido');
     assert.ok(!html.includes("license_plate: 'BRA2E19'"), 'Proibidos dados fictícios no envio');
 
+    const ownerView = read('cliente.app/js/components/ownerView.js');
+    assert.equal(ownerView,read('public/js/components/ownerView.js'),
+        'Listagem alternativa deve estar sincronizada');
+    assert.ok(ownerView.includes('Sua oficina de origem'));
+    assert.ok(ownerView.includes('booking-workshops'));
+
     const routes = read('server/src/modules/vehicles/vehicles.routes.js');
     const a = routes.indexOf('// Agendamento do app Cliente: identifica a oficina');
     const b = routes.indexOf('// Painel de manutenção do cliente', a);
     assert.ok(a > 0 && b > a);
     const db = new Database(':memory:');
-    db.exec('CREATE TABLE vehicles(id TEXT PRIMARY KEY,workshop_id TEXT);' +
+    db.exec('CREATE TABLE vehicles(id TEXT PRIMARY KEY,workshop_id TEXT,license_plate TEXT);' +
         'CREATE TABLE vehicle_dna(vehicle_id TEXT,activated_by_workshop_id TEXT);' +
+        'CREATE TABLE client_activations(vehicle_id TEXT,license_plate TEXT,workshop_id TEXT,activated_at TEXT,created_at TEXT);' +
         'CREATE TABLE workshops(id TEXT PRIMARY KEY,trade_name TEXT,address_street TEXT,' +
         'address_number TEXT,address_neighborhood TEXT,city TEXT,state TEXT,phone TEXT,' +
         'whatsapp_official TEXT,status TEXT,verified_badge INTEGER);');
-    db.exec("INSERT INTO vehicles VALUES('veh1',NULL),('veh2','ws_z');" +
+    db.exec("INSERT INTO vehicles VALUES('veh1',NULL,'ABC1D23'),('veh2','ws_z','XYZ9E99'),('veh3',NULL,'DEF4H44');" +
         "INSERT INTO vehicle_dna VALUES('veh1','ws_z');" +
+        "INSERT INTO client_activations VALUES('veh3','DEF4H44','ws_a','2026-11-20','2026-11-19');" +
         "INSERT INTO workshops(id,trade_name,status,verified_badge) VALUES" +
         "('ws_a','Outra Oficina','ACTIVE',1)," +
         "('ws_z','Minha Oficina','APPROVED',1)," +
@@ -55,6 +63,7 @@ async function main() {
     assert.equal(r.body.workshops[1].name,'Outra Oficina');
     assert.equal(r.body.workshops.length,2,'Bloqueadas não são oferecidas');
     assert.equal(get('veh2').body.origin_workshop_id,'ws_z','Fallback por veículo');
+    assert.equal(get('veh3').body.origin_workshop_id,'ws_a','Fallback por cadastro de adesão');
     assert.equal(get('missing').status,404);
     db.close();
 
