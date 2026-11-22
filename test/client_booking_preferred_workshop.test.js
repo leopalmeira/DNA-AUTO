@@ -23,7 +23,7 @@ async function main() {
     // Regressão: havia duas implementações com o mesmo nome; a segunda
     // anulava a ordenação preferencial e a tela alternativa podia destacar
     // uma oficina qualquer como se fosse a de instalação.
-    assert.equal((ownerView.match(/async fetchWorkshopsNetwork\\(\\)/g) || []).length, 1,
+    assert.equal((ownerView.match(/async fetchWorkshopsNetwork\(\)/g) || []).length, 1,
         'Não pode haver outro carregador sobrescrevendo a prioridade por veículo');
     assert.ok(ownerView.includes('window.openBookingWorkshopPicker(serviceName)'),
         'Todo agendamento pela tela alternativa deve abrir o seletor preferencial');
@@ -35,7 +35,7 @@ async function main() {
     assert.ok(loaderStart >= 0 && loaderEnd > loaderStart);
     const loaderText = ownerView.slice(loaderStart, loaderEnd);
     const ownerLoader = new Function('API', 'localStorage', 'fetch', 'console',
-        'return ({' + loaderText + '\\n}).fetchWorkshopsNetwork;')(
+        'return ({' + loaderText + '\n}).fetchWorkshopsNetwork;')(
         {getWorkshopsNetwork: async () => ({success:true,workshops:[
             {id:'ws_a',name:'Outra Oficina'}, {id:'ws_z',name:'Minha Oficina'}
         ]})},
