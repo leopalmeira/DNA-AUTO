@@ -13,7 +13,7 @@ Os arquivos `server/` e o esquema antigo são preservados como referência de de
 
 ## Situação real (não é publicação em produção)
 
-Código de API D1 parcial desenvolvido e testado com simulador SQLite; não houve implantação autenticada na conta Cloudflare. Os testes de código abrangem cadastro, login, lançamento de serviço, histórico e oficina preferencial. O status de homologação `/api/v1/health` retorna `production_ready: false` mesmo com o esquema instalado.
+Código de API D1 parcial desenvolvido e testado em simulador SQLite **e no runtime local real do Cloudflare (workerd + D1 local)**; não houve implantação autenticada na conta Cloudflare. Os testes de código abrangem cadastro, login, lançamento de serviço, histórico e oficina preferencial. O status de homologação `/api/v1/health` retorna `production_ready: false` mesmo com o esquema instalado.
 
 Ainda exigem implementação ou validação específica antes de produção: módulos administrativos avançados, financeiro, representantes, WhatsApp, notificações, manutenção preditiva, anexos KV na conta real, integração Android nativa e todos os demais endpoints do Express legado não portados (retornam HTTP 501). Não prometer funcionalidade inexistente.
 
@@ -28,7 +28,7 @@ Conectar a conta Cloudflare ao processo autorizado e cadastrar **GitHub Actions 
 - `DNA_JWT_SECRET` — sequência aleatória de pelo menos 32 caracteres.
 - `DNA_BOOTSTRAP_TOKEN` — chave aleatória diferente, de pelo menos 32 caracteres, usada UMA vez para criar o admin.
 
-Depois de validar credenciais/conta, iniciar manualmente o workflow, ou fazer um commit deliberado SOMENTE no marcador `.github/cloudflare/ACIONAR_PUBLICACAO.md` (gatilho restrito). **Não criar o marcador antecipadamente.**
+O marcador `.github/cloudflare/ACIONAR_PUBLICACAO.md` já foi criado com autorização do proprietário e acionou o workflow em 22/11/2026. Ele **parou sem publicar** porque os GitHub Actions Secrets ainda estão vazios (run 45046638129). Após configurar os segredos, executar manualmente o workflow na branch correta ou atualizar novamente o marcador; **um commit comum não dispara a implantação**.
 
 O workflow projeta o banco vazio `dna-auto-free`, carrega esquema com `cloudflare/scripts/export-schema.cjs` (NÃO copia dados) e perfis com `cloudflare/api/sql/seed-roles.sql`, publica o Worker `dna-auto-api-staging` e os três Pages em URLs definidas na conta. A execução ainda não foi realizada; publicação pode falhar por permissões, nomes de projetos ou limitações da conta, o que precisa ser diagnosticado no GitHub Actions antes de prosseguir.
 
@@ -73,3 +73,16 @@ Fontes:
 O deploy tentará criar/reutilizar o namespace KV `dna-auto-media-free`, sem R2. Fotos e PDFs são limitados a **2 MB por arquivo**, armazenados como valores privados (não públicos). O acesso é mediado pela API Worker, que valida o token e o vínculo do usuário ao veículo. Limite Free KV: 1 GB e 1.000 gravações/dia, com bloqueio ao exceder. A disponibilidade no edge pode levar até 60 segundos. É solução de piloto; antes de crescer, será necessário definir política de retenção, limites de uso e armazenamento de longo prazo sem ultrapassar cotas.
 
 Fontes: https://developers.cloudflare.com/kv/platform/pricing/ e https://developers.cloudflare.com/kv/platform/limits/
+
+## Conexão necessária — etapa pendente de ação humana
+
+Tentativa de implantação autorizada: https://github.com/leopalmeira/DNA-AUTO/actions/runs/45046638129
+
+A rotina comprovou que os **segredos da conta Cloudflare ainda NÃO estão cadastrados no GitHub Actions**. Por essa razão nenhum D1, KV, Worker ou Pages remoto foi criado. Não há URLs reais para entregar.
+
+1. No painel Cloudflare, abra https://dash.cloudflare.com/profile/api-tokens e crie token restrito à conta correta, com permissões necessárias para editar Workers Scripts, D1, Workers KV e Pages (não usar token de conta global se for possível criar token restrito).
+2. Copie o identificador da conta Cloudflare no painel da conta, não é senha.
+3. Em https://github.com/leopalmeira/DNA-AUTO/settings/secrets/actions configure **Repository secrets** (não variables) chamados **CF_API_TOKEN**, **CF_ACCOUNT_ID**, **DNA_JWT_SECRET**, **DNA_BOOTSTRAP_TOKEN**. Use duas chaves aleatórias distintas de 32 bytes ou mais para JWT e bootstrap. Não adicione seus valores em commits, Issues ou chats. O script verifica presença, tamanho e identidade das chaves antes de começar.
+4. No GitHub Actions, selecione **Implantar DNA AUTO somente na Cloudflare Free**, faça Run workflow a partir de `infra/cloudflare-gratuito`. Os links realmente verificados aparecerão no resumo do job bem-sucedido.
+
+O projeto ainda não é produção: recursos avançados foram preservados apenas como referência e precisam ser portados/homologados separadamente. Este guia não autoriza uso de Render nem migração de dados legados.
