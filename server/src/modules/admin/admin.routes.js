@@ -1397,6 +1397,28 @@ router.get('/workshops/:id/clients', (req, res) => {
     }
 });
 
+// Teste de push direcionado: aceite FCM não equivale a recebimento no aparelho.
+router.get('/push/devices', (req,res) => {
+    try {
+        const push = require('../../services/pushNotifications.service');
+        res.json({success:true, configured:push.configured(), vehicles:push.devices(), deliveries:push.deliveries()});
+    } catch(error) { res.status(500).json({error:'Falha ao consultar dispositivos.'}); }
+});
+router.post('/push/test', criticalAdminLimiter, async (req,res) => {
+    try {
+        const {vehicle_id,service_title,remaining_km} = req.body || {};
+        const km=Number(remaining_km);
+        const service=String(service_title||'').trim();
+        if (!vehicle_id || !service || service.length>120 || !Number.isInteger(km) || km<0 || km>5000) return res.status(400).json({error:'Veículo, serviço e km entre 0 e 5000 são obrigatórios.'});
+        const push=require('../../services/pushNotifications.service');
+        const result=await push.send({vehicleId:String(vehicle_id),service,km,source:'ADMIN_TEST'});
+        res.status(result.success?200:409).json(result);
+    } catch(error) {
+        console.error('Push Admin:',error.message);
+        res.status(502).json({success:false,error:'Falha no envio pelo Firebase: '+error.message});
+    }
+});
+
 router.get('/maintenance-alerts', (req, res) => {
     try {
         const vehicles = db.prepare(`
