@@ -23,6 +23,7 @@ const {
 let schedulerTimer = null;
 let lastMorningRunDate = null;
 let lastEveningRunDate = null;
+let lastPushScanAt = 0;
 
 function getBaileysService() {
     // Carregamento sob demanda para evitar dependência circular com baileys.service.js
@@ -391,6 +392,36 @@ function startMaintenanceScheduler() {
 
     const tick = async () => {
         try {
+            // Push automático baseado nos registros de manutenção sincronizados.
+            // Alertas locais por GPS continuam independentes com o APK em segundo plano.
+            if (Date.now() - lastPushScanAt >= 5 * 60 * 1000) {
+                lastPushScanAt = Date.now();
+                try {
+                    const Push = require('./pushNotifications.service');
+                    if (Push.configured()) {
+                        const queue = db.prepare(
+                            'SELECT p.vehicle_id,p.item_code,p.item_name,p.next_due_km,p.remaining_km_min ' +
+                            'FROM vehicle_maintenance_predictions p ' +
+                            'WHERE p.remaining_km_min BETWEEN -100 AND 80 ' +
+                            'AND p.alert_status IN ("APROXIMANDO","RECOMENDADA","VENCIDA") ' +
+                            'ORDER BY p.remaining_km_min ASC LIMIT 40'
+                        ).all();
+                        for (const item of queue) {
+                            const remaining = Math.max(0,Math.round(item.remaining_km_min));
+                            const stage = remaining <= 40 ? '40' : '80';
+                            const duplicate = db.prepare('SELECT id FROM workshop_appointments WHERE vehicle_id=? AND status IN ("CONFIRMED","SCHEDULED") AND appointment_date>=date("now") LIMIT 1').get(item.vehicle_id);
+                            if (duplicate) continue;
+                            const result = await Push.send({
+                                vehicleId:item.vehicle_id, service:item.item_name || item.item_code,
+                                km:remaining, source:'AUTO_MILEAGE',
+                                dedupe:'auto:'+item.vehicle_id+':'+item.item_code+':'+item.next_due_km+':'+stage
+                            });
+                            if (result.success) console.log('[DNA push] Aviso preventivo processado: '+item.vehicle_id);
+                        }
+                    }
+                } catch (error) { console.warn('[DNA push] Scanner preventivo:',error.message); }
+            }
+
             const now = getSaoPauloNow();
             // 10:00-10:04 -> Disparo preventivo de 3 datas úteis
             if (now.hour === 10 && now.minute < 5 && lastMorningRunDate !== now.isoDate) {
