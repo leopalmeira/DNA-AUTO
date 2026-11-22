@@ -1957,12 +1957,20 @@ router.get('/:identifier/booking-workshops', authenticateToken, authorizeTrackin
         if (!vehicle) return res.status(404).json({ success: false, error: 'Veículo não encontrado.' });
 
         const link = db.prepare(`
-            SELECT vd.activated_by_workshop_id, v.workshop_id
+            SELECT vd.activated_by_workshop_id,
+                   (SELECT ca.workshop_id FROM client_activations ca
+                    WHERE ca.vehicle_id = v.id
+                       OR UPPER(REPLACE(ca.license_plate, '-', '')) =
+                          UPPER(REPLACE(v.license_plate, '-', ''))
+                    ORDER BY ca.activated_at DESC, ca.created_at DESC LIMIT 1
+                   ) AS client_activation_workshop_id,
+                   v.workshop_id
             FROM vehicles v
             LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
             WHERE v.id = ?
         `).get(vehicle.id);
-        const originId = link?.activated_by_workshop_id || link?.workshop_id || null;
+        const originId = link?.activated_by_workshop_id ||
+            link?.client_activation_workshop_id || link?.workshop_id || null;
 
         const partners = db.prepare(`
             SELECT w.id, w.trade_name AS name, w.address_street, w.address_number,
