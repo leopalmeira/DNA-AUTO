@@ -20,6 +20,45 @@ async function main() {
     assert.ok(ownerView.includes('Sua oficina de origem'));
     assert.ok(ownerView.includes('booking-workshops'));
 
+    // Regressão: havia duas implementações com o mesmo nome; a segunda
+    // anulava a ordenação preferencial e a tela alternativa podia destacar
+    // uma oficina qualquer como se fosse a de instalação.
+    assert.equal((ownerView.match(/async fetchWorkshopsNetwork\\(\\)/g) || []).length, 1,
+        'Não pode haver outro carregador sobrescrevendo a prioridade por veículo');
+    assert.ok(ownerView.includes('window.openBookingWorkshopPicker(serviceName)'),
+        'Todo agendamento pela tela alternativa deve abrir o seletor preferencial');
+    assert.ok(!ownerView.includes("list.find(w => w.installed_here) || list[0]"),
+        'É proibido tratar a primeira oficina aleatória como ativadora do veículo');
+
+    const loaderStart = ownerView.indexOf('    async fetchWorkshopsNetwork() {');
+    const loaderEnd = ownerView.indexOf('    // Alternar entre veículos da conta', loaderStart);
+    assert.ok(loaderStart >= 0 && loaderEnd > loaderStart);
+    const loaderText = ownerView.slice(loaderStart, loaderEnd);
+    const ownerLoader = new Function('API', 'localStorage', 'fetch', 'console',
+        'return ({' + loaderText + '\\n}).fetchWorkshopsNetwork;')(
+        {getWorkshopsNetwork: async () => ({success:true,workshops:[
+            {id:'ws_a',name:'Outra Oficina'}, {id:'ws_z',name:'Minha Oficina'}
+        ]})},
+        {getItem: key => key === 'dna_token' ? 'token-teste' : null},
+        async url => ({ok:true,json:async () => ({success:true,workshops:[
+            {id:url.includes('veh2') ? 'ws_a' : 'ws_z',is_origin:true,name:'Preferida'}
+        ]})}),
+        console
+    );
+    const ownerState = {
+        vehicleData: {id:'veh1'}, workshopsList: [], _workshopsLoaded:false,
+        render() { this.renderCount = (this.renderCount || 0)+1; }
+    };
+    await ownerLoader.call(ownerState);
+    assert.equal(ownerState.workshopsList[0].id, 'ws_z');
+    assert.equal(ownerState.workshopsList[0].is_origin, true);
+    assert.equal(ownerState.workshopsList.length,2,'Sem duplicar a oficina preferida');
+    ownerState.vehicleData.id = 'veh2';
+    await ownerLoader.call(ownerState);
+    assert.equal(ownerState.workshopsList[0].id,'ws_a',
+        'Ao selecionar outro veículo, a oficina preferencial também deve mudar');
+
+
     const routes = read('server/src/modules/vehicles/vehicles.routes.js');
     const a = routes.indexOf('// Agendamento do app Cliente: identifica a oficina');
     const b = routes.indexOf('// Painel de manutenção do cliente', a);
