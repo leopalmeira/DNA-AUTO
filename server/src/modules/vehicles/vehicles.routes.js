@@ -1948,6 +1948,61 @@ router.get('/:identifier/predictive-maintenance', authenticateToken, authorizeTr
     }
 });
 
+// Agendamento do app Cliente: identifica a oficina que ativou o DNA do veículo.
+// Não usa dados escolhidos pelo navegador para determinar a oficina de origem.
+// Outras oficinas permanecem disponíveis; clínicas bloqueadas/inativas não são oferecidas.
+router.get('/:identifier/booking-workshops', authenticateToken, authorizeTrackingVehicleOwner, (req, res) => {
+    try {
+        const vehicle = findVehicleByIdentifier(req.params.identifier);
+        if (!vehicle) return res.status(404).json({ success: false, error: 'Veículo não encontrado.' });
+
+        const link = db.prepare(`
+            SELECT vd.activated_by_workshop_id, v.workshop_id
+            FROM vehicles v
+            LEFT JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+            WHERE v.id = ?
+        `).get(vehicle.id);
+        const originId = link?.activated_by_workshop_id || link?.workshop_id || null;
+
+        const partners = db.prepare(`
+            SELECT w.id, w.trade_name AS name, w.address_street, w.address_number,
+                   w.address_neighborhood, w.city, w.state, w.phone, w.whatsapp_official,
+                   w.status, w.verified_badge
+            FROM workshops w
+            WHERE w.status IN ('APPROVED', 'ACTIVE') OR w.status IS NULL
+            ORDER BY CASE WHEN w.id = ? THEN 0 ELSE 1 END,
+                     w.verified_badge DESC, w.trade_name COLLATE NOCASE ASC
+        `).all(originId);
+
+        const workshops = partners.map(w => ({
+            id: w.id,
+            name: w.name,
+            address: [w.address_street && [w.address_street, w.address_number].filter(Boolean).join(', '),
+                w.address_neighborhood, [w.city, w.state].filter(Boolean).join('/')].filter(Boolean).join(' · '),
+            city: w.city || '',
+            state: w.state || '',
+            phone: w.phone || '',
+            whatsapp: w.whatsapp_official || w.phone || '',
+            is_origin: Boolean(originId && w.id === originId),
+            verified: Boolean(w.verified_badge)
+        }));
+        const origin = workshops.find(w => w.is_origin) || null;
+
+        res.set('Cache-Control', 'no-store');
+        return res.json({
+            success: true,
+            vehicle_id: vehicle.id,
+            license_plate: vehicle.license_plate,
+            origin_workshop_id: origin ? origin.id : null,
+            origin_workshop_name: origin ? origin.name : null,
+            workshops
+        });
+    } catch (err) {
+        console.error('[Agendamento Cliente] Erro ao listar oficinas:', err);
+        return res.status(500).json({ success: false, error: 'Não foi possível consultar a lista de oficinas.' });
+    }
+});
+
 // Painel de manutenção do cliente — somente leitura e vinculado à conta do titular.
 // Pendências: cronograma calculado no servidor. Concluídas: somente serviços
 // comprovados ou confirmados por oficina; declarações do proprietário não concluem alertas.
