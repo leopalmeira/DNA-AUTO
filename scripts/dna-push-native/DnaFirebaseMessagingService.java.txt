@@ -61,8 +61,21 @@ public final class DnaFirebaseMessagingService extends FirebaseMessagingService 
             .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
             .setDefaults(Notification.DEFAULT_SOUND|Notification.DEFAULT_VIBRATE)
             .build();
-        nm.notify(id.hashCode(),notification);
-        acknowledgeAsync(id,secret,"RECEIVED");
+        boolean permitted = androidx.core.app.NotificationManagerCompat.from(this).areNotificationsEnabled();
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel current = nm.getNotificationChannel(CHANNEL);
+            permitted = permitted && current != null && current.getImportance() > NotificationManager.IMPORTANCE_NONE;
+        }
+        if (permitted) {
+            try {
+                nm.notify(id.hashCode(),notification);
+                acknowledgeAsync(id,secret,"RECEIVED");
+            } catch(SecurityException e) {
+                android.util.Log.w("DNA-PUSH", "Notificação não permitida pelo Android.");
+            }
+        } else {
+            android.util.Log.w("DNA-PUSH", "Canal de notificações desativado pelo usuário.");
+        }
     }
     public static void acknowledgeAsync(String id, String secret, String action) {
         if (id == null || secret == null || id.isEmpty() || secret.isEmpty()) return;
