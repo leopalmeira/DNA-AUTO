@@ -4083,6 +4083,39 @@ const OwnerView = {
         // Apenas abre o WhatsApp pessoal do cliente; a API comercial não é acionada.
         window.location.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
     },
+    async confirmSchedulingDirect(index) {
+        const service = (document.getElementById('dna-scheduling-service')?.value || '').trim();
+        const date = document.getElementById('dna-scheduling-date')?.value || '';
+        const time = document.getElementById('dna-scheduling-time')?.value || '';
+        const feedback = document.getElementById('dna-scheduling-feedback');
+        const vehicle = this.vehicleData || {};
+        if (!service || !date || !time || Date.parse(date + 'T' + time) < Date.now()) {
+            if (feedback) { feedback.textContent = 'Informe serviço, dia e horário futuros.'; feedback.style.color = '#FCA5A5'; }
+            return;
+        }
+        const list = Array.isArray(this.workshopsList) ? this.workshopsList : [];
+        const preferred = list.find(w => w.installed_here) || list[0];
+        const ordered = preferred ? [preferred, ...list.filter(w => w.id !== preferred.id)] : [];
+        const workshop = ordered[index];
+        if (!workshop || workshop.source !== 'database' || !vehicle.id) {
+            if (feedback) { feedback.textContent = 'A confirmação direta exige veículo e oficina cadastrados. Use o WhatsApp desta oficina.'; feedback.style.color = '#FCA5A5'; }
+            return;
+        }
+        const button = document.getElementById('dna-confirm-direct-' + index);
+        if (button) button.disabled = true;
+        if (feedback) { feedback.textContent = 'Confirmando o horário na oficina...'; feedback.style.color = '#BAE6FD'; }
+        try {
+            const data = await API.request('/workshops/' + encodeURIComponent(workshop.id) + '/client-appointments', {
+                method: 'POST',
+                body: JSON.stringify({ vehicle_id: vehicle.id, service_title: service, appointment_date: date, appointment_time: time })
+            });
+            if (!data.success || !data.appointment) throw Error('Agendamento não foi confirmado.');
+            this.vehicleAppointments = [...(this.vehicleAppointments || []), data.appointment];
+            if (feedback) { feedback.textContent = 'Agendamento confirmado para ' + date.split('-').reverse().join('/') + ' às ' + time + ' na ' + workshop.name + '. A oficina já recebeu os dados.'; feedback.style.color = '#86EFAC'; }
+        } catch (error) {
+            if (feedback) { feedback.textContent = error.message || 'Não foi possível confirmar o horário.'; feedback.style.color = '#FCA5A5'; }
+        } finally { if (button) button.disabled = false; }
+    },
     // ── MODAL: REVISÃO E AGENDAMENTO (LINK DIRETO COM OFICINA DE INSTALAÇÃO OU ESCOLHER OUTRA) ──
     openSchedulingModal() {
         const v = this.vehicleData || {};
@@ -4165,6 +4198,7 @@ const OwnerView = {
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
                             <span>Solicitar pelo WhatsApp da oficina</span>
                         </a>
+                        ${installedWorkshop.source === 'database' ? `<button type="button" id="dna-confirm-direct-0" onclick="OwnerView.confirmSchedulingDirect(0)" style="width:100%;padding:12px;margin-top:8px;border-radius:8px;border:none;background:#00D4FF;color:#071322;font-weight:800;">Confirmar automaticamente no DNA AUTO</button>` : ''}
                     </div>
 
                     <!-- Divisor / Opção de escolher outras -->
@@ -4190,6 +4224,7 @@ const OwnerView = {
                                             <span>⭐ ${w.rating}</span> • <span>${w.neighborhood} (${w.distance})</span>
                                         </div>
                                     </div>
+                                    ${w.source === 'database' ? `<button type="button" id="dna-confirm-direct-${otherWorkshops.indexOf(w) + 1}" onclick="OwnerView.confirmSchedulingDirect(${otherWorkshops.indexOf(w) + 1})" style="background:#00D4FF;color:#071322;border:0;padding:8px;border-radius:6px;font-weight:800;">Confirmar</button>` : ''}
                                     <a href="#" onclick="event.preventDefault(); OwnerView.sendSchedulingWhatsApp(${otherWorkshops.indexOf(w) + 1});" target="_blank" class="btn btn-sm" style="background:#0066FF; color:#FFFFFF; font-weight:700; font-size:11px; padding:6px 12px; border-radius:6px; text-decoration:none; white-space:nowrap;">
                                         Agendar
                                     </a>
