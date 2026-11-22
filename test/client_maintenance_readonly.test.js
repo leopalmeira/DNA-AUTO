@@ -13,6 +13,8 @@ async function run() {
   const clientModule = read('cliente.app/js/components/clientMaintenanceReadonly.js');
   const publicModule = read('public/js/components/clientMaintenanceReadonly.js');
   const backend = read('server/src/modules/vehicles/vehicles.routes.js');
+  const servicesBackend = read('server/src/modules/services/services.routes.js');
+  const forecastingBackend = read('server/src/services/predictiveMaintenance.service.js');
   assert.equal(appHtml, publicHtml, 'Frontend público deve espelhar tela cliente');
   assert.equal(clientModule, publicModule, 'Módulo JS público deve espelhar app cliente');
   assert.equal(read('cliente.app/css/maintenance-readonly.css'),
@@ -38,6 +40,35 @@ async function run() {
     backend.includes("sr.workshop_confirmation_status = 'CONFIRMED'") &&
     backend.includes('sr.workshop_id IS NOT NULL'),
     'Conclusões são somente de serviços confirmados por oficina');
+
+  assert.ok(forecastingBackend.includes("AND sr.proof_level >= 3") &&
+    forecastingBackend.includes("AND sr.workshop_confirmation_status = 'CONFIRMED'"),
+    'Declarações não confirmadas do cliente não devem recalibrar previsões');
+  assert.ok(servicesBackend.includes("router.post('/workshop-register', authenticateToken, requireWorkshopProofPermission,") &&
+    servicesBackend.includes("router.post('/:id/confirm-decision', authenticateToken, requireWorkshopProofPermission,"),
+    'Rotas de manutenção comprovada só podem aceitar usuário de oficina autorizado');
+
+  const permStart = servicesBackend.indexOf('function requireWorkshopProofPermission');
+  const permEnd = servicesBackend.indexOf("router.post('/workshop-register'", permStart);
+  assert.ok(permStart > 0 && permEnd > permStart);
+  const guard = new Function(servicesBackend.slice(permStart, permEnd) +
+    '\nreturn requireWorkshopProofPermission;')();
+  const checkGuard = user => {
+    let result = { status: 0, next: false };
+    const res = { status(code) { result.status = code; return this; }, json() { return this; } };
+    guard({ user }, res, () => { result.next = true; });
+    return result;
+  };
+  assert.equal(checkGuard({ role_code: 'CUSTOMER' }).status, 403,
+    'Cliente autenticado deve receber 403 ao tentar comprovar manutenção');
+  assert.equal(checkGuard({ role_code: 'WORKSHOP_STAFF', workshop: {
+    workshop_id: 'ws1', can_prove_services: 0
+  } }).status, 403, 'Colaborador sem permissão deve receber 403');
+  assert.equal(checkGuard({ role_code: 'WORKSHOP_STAFF', workshop: {
+    workshop_id: 'ws1', can_prove_services: 1
+  } }).next, true, 'Oficina com permissão pode comprovar serviços');
+  assert.equal(checkGuard({ role_code: 'ADMIN' }).next, true,
+    'Admin permanece autorizado para processos administrativos');
 
   new vm.Script(clientModule, { filename: 'clientMaintenanceReadonly.js' });
 
