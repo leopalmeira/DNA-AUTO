@@ -1948,6 +1948,47 @@ router.get('/:identifier/predictive-maintenance', authenticateToken, authorizeTr
     }
 });
 
+// Painel de manutenção do cliente — somente leitura e vinculado à conta do titular.
+// Pendências: cronograma calculado no servidor. Concluídas: somente serviços
+// comprovados ou confirmados por oficina; declarações do proprietário não concluem alertas.
+router.get('/:identifier/maintenance-overview', authenticateToken, authorizeTrackingVehicleOwner, (req, res) => {
+    try {
+        const vehicle = findVehicleByIdentifier(req.params.identifier);
+        if (!vehicle) return res.status(404).json({ success: false, error: 'Veículo não encontrado.' });
+
+        const calculated = PredictiveMaintenanceService.recalculatePredictions(db, vehicle.id);
+        const completed = db.prepare(`
+            SELECT sr.id, sr.service_title AS title, sr.description, sr.category,
+                   sr.service_date AS date, sr.mileage,
+                   COALESCE(w.trade_name, 'Oficina credenciada') AS workshop_name,
+                   sr.proof_level
+            FROM service_records sr
+            LEFT JOIN workshops w ON w.id = sr.workshop_id
+            WHERE sr.vehicle_id = ?
+              AND sr.workshop_id IS NOT NULL
+              AND sr.proof_level >= 3
+              AND sr.workshop_confirmation_status = 'CONFIRMED'
+            ORDER BY sr.service_date DESC, sr.created_at DESC
+            LIMIT 100
+        `).all(vehicle.id);
+
+        res.set('Cache-Control', 'no-store');
+        res.json({
+            success: true,
+            vehicle: {
+                id: vehicle.id,
+                license_plate: vehicle.license_plate,
+                current_estimated_km: calculated.current_estimated_km
+            },
+            pending: Array.isArray(calculated.all_predictions) ? calculated.all_predictions : [],
+            completed
+        });
+    } catch (err) {
+        console.error('Erro ao obter painel de manutenção somente leitura:', err);
+        res.status(500).json({ success: false, error: 'Falha ao consultar as manutenções do veículo.' });
+    }
+});
+
 // 8. Forçar Recálculo de Manutenção Preditiva
 router.post('/:identifier/predictive-maintenance/recalculate', authenticateToken, authorizeTrackingVehicleOwner, (req, res) => {
     try {
