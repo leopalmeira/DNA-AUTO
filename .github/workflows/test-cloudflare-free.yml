@@ -32,5 +32,25 @@ jobs:
         run: npx --yes wrangler@4 d1 execute dna-auto-staging --local --file=/tmp/dna-cloudflare-schema.sql --config=cloudflare/api/wrangler.ci.toml
       - name: Validar perfis iniciais do banco vazio
         run: npx --yes wrangler@4 d1 execute dna-auto-staging --local --file=cloudflare/api/sql/seed-roles.sql --config=cloudflare/api/wrangler.ci.toml
+      - name: Smoke test do Worker real em workerd com D1 local (sem Cloudflare remoto)
+        shell: bash
+        run: |
+          cat > cloudflare/api/.dev.vars <<'EOF'
+          JWT_SECRET="segredo-local-de-testes-apenas-na-CI-dna-auto-clf-2026"
+          BOOTSTRAP_TOKEN="token-local-de-testes-apenas-na-CI-dna-auto-2026"
+          EOF
+          npx --yes wrangler@4 dev --local --config=cloudflare/api/wrangler.ci.toml --ip=127.0.0.1 --port=8787 > "$RUNNER_TEMP/wrangler-local.log" 2>&1 &
+          WORKER_PID=$!
+          trap 'kill "$WORKER_PID" 2>/dev/null || true; rm -f cloudflare/api/.dev.vars' EXIT
+          READY=0
+          for i in $(seq 1 45); do
+            if curl --silent --fail "http://127.0.0.1:8787/api/v1/health" > "$RUNNER_TEMP/health-local.json"; then READY=1; break; fi
+            sleep 1
+          done
+          if [ "$READY" != 1 ]; then
+            tail -80 "$RUNNER_TEMP/wrangler-local.log"
+            exit 1
+          fi
+          node cloudflare/api/test/local-worker-smoke.mjs
       - name: Validar os tres sites Cloudflare Pages
         run: node --test cloudflare/pages/build.test.cjs
