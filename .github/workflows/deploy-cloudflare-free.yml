@@ -1,6 +1,9 @@
 name: Implantar DNA AUTO somente na Cloudflare Free
 on:
   workflow_dispatch:
+  push:
+    branches: [infra/cloudflare-gratuito]
+    paths: ['.github/cloudflare/ACIONAR_PUBLICACAO.md']
 permissions:
   contents: read
 concurrency:
