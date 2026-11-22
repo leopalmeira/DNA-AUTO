@@ -165,3 +165,20 @@ test('sem R2 não aceita anexos e não registra serviço incompleto', async () =
   assert.equal((await result.json()).code, 'R2_NOT_CONFIGURED');
   assert.equal(sqlite.prepare('SELECT COUNT(*) AS count FROM service_records').get().count, 1);
 });
+
+test('cadastro direto do cliente com placa cria DNA e login sem oficina', async () => {
+  const reg = await call('/auth/register-client', 'POST', {
+    name: 'Proprietário Direto', email: 'direto@dna.test',
+    password: 'SenhaDireta@2026', plate: 'XYZ9A88',
+    brand: 'Marca Direta', model: 'Sedan', year: 2024
+  });
+  assert.equal(reg.status, 201, JSON.stringify(reg.json));
+  assert.equal(reg.json.user.vehicle.license_plate, 'XYZ9A88');
+  assert.ok(reg.json.user.vehicle.dna_code.startsWith('DNA-BR-'));
+  const login = await call('/auth/login', 'POST', {
+    email: 'direto@dna.test', password: 'SenhaDireta@2026'
+  });
+  assert.equal(login.status, 200);
+  assert.equal(login.json.user.vehicle.license_plate, 'XYZ9A88');
+  assert.deepEqual(sqlite.pragma('foreign_key_check'), []);
+});
