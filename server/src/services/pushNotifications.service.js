@@ -40,6 +40,7 @@ function register(userId, token) {
   if (!userId || !/^[\w:-]{30,4096}$/.test(String(token||''))) throw new Error('Token ou usuário inválido.');
   db.prepare('INSERT INTO dna_push_devices(token,user_id) VALUES (?,?) ON CONFLICT(token) DO UPDATE SET user_id=excluded.user_id, updated_at=CURRENT_TIMESTAMP').run(token,userId);
 }
+function unregister(userId,token) { init(); db.prepare('DELETE FROM dna_push_devices WHERE user_id=? AND token=?').run(userId,String(token||'')); }
 function vehicleOwner(vehicleId) {
   return db.prepare('SELECT v.id,v.license_plate,v.brand,v.model, o.name owner_name, COALESCE(o.user_id,u.id) user_id FROM vehicles v '+
     'LEFT JOIN owners o ON o.id=COALESCE(v.current_owner_id,(SELECT t.new_owner_id FROM ownership_transfers t WHERE t.vehicle_id=v.id AND t.status="COMPLETED" ORDER BY t.completed_at DESC LIMIT 1)) '+
@@ -110,4 +111,4 @@ function acknowledge(id,secret,action) {
   db.prepare('UPDATE dna_push_devices SET last_received_at=CURRENT_TIMESTAMP WHERE token=?').run(row.token);
   return true;
 }
-module.exports={init,configured,register,devices,deliveries,send,acknowledge,vehicleOwner};
+module.exports={init,configured,register,unregister,devices,deliveries,send,acknowledge,vehicleOwner};
