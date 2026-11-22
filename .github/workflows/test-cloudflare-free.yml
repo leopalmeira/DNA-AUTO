@@ -23,7 +23,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: node --check cloudflare/api/src/index.mjs && node --check cloudflare/scripts/export-schema.cjs
-      - run: node --test cloudflare/api/test/worker.test.mjs
+      - run: node --test cloudflare/api/test/worker.test.mjs cloudflare/api/test/security.test.mjs cloudflare/api/test/integration.test.mjs
       - name: Testar exportacao sem dados reais (SQLite para D1)
         run: node --test cloudflare/scripts/export-live-db.test.cjs
       - run: node cloudflare/scripts/export-schema.cjs /tmp/dna-cloudflare-schema.sql && test -s /tmp/dna-cloudflare-schema.sql
