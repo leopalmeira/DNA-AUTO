@@ -7490,7 +7490,9 @@
                 this.officialWorkshopName = data.workshop.trade_name;
             }
         } catch (err) {
-            if (err && err.message && (err.message.includes('não encontrada') || err.message.includes('404'))) {
+            // Uma sessão revogada ou expirada não pode continuar no painel da oficina.
+            if (err?.status === 401 || err?.code === 'AUTH_TOKEN_MISSING' || err?.code === 'AUTH_TOKEN_INVALID' ||
+                (err && err.message && (err.message.includes('não encontrada') || err.message.includes('404')))) {
                 localStorage.removeItem('dna_logged_user');
                 localStorage.removeItem('dna_token');
                 localStorage.setItem('dna_logged_out', 'true');
