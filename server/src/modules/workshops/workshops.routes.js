@@ -967,6 +967,74 @@ router.get('/:id/appointments', (req, res) => {
     }
 });
 
+// Agendamento do cliente autenticado. Dados do titular/placa vêm apenas do banco.
+// Não utiliza WhatsApp Business API; a confirmação é automática quando houver vaga.
+router.post('/:id/client-appointments', authenticateToken, (req, res) => {
+    try {
+        const workshop = db.prepare(`SELECT id, trade_name, status FROM workshops WHERE id = ?`).get(req.params.id);
+        if (!workshop || !['ACTIVE', 'APPROVED'].includes(workshop.status)) return res.status(404).json({ error: 'Oficina credenciada indisponível.' });
+        const { vehicle_id, service_title, appointment_date, appointment_time } = req.body || {};
+        const service = String(service_title || '').trim();
+        const date = String(appointment_date || '').trim();
+        const time = String(appointment_time || '').trim();
+        if (!vehicle_id || !service || service.length > 120 || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) {
+            return res.status(400).json({ error: 'Veículo, serviço, data e horário válidos são obrigatórios.' });
+        }
+        const [year, month, day] = date.split('-').map(Number);
+        const parsed = new Date(Date.UTC(year, month - 1, day));
+        if (parsed.getUTCFullYear() !== year || parsed.getUTCMonth() !== month - 1 || parsed.getUTCDate() !== day) {
+            return res.status(400).json({ error: 'A data informada é inválida.' });
+        }
+        const nowBR = new Date().toLocaleString('sv-SE', { timeZone: 'America/Sao_Paulo', hour12: false });
+        if ((date + ' ' + time) <= nowBR.slice(0,16)) return res.status(400).json({ error: 'Selecione um horário futuro.' });
+        const vehicle = db.prepare(`
+            SELECT v.id, v.license_plate, v.brand, v.model,
+                   o.name AS owner_name, o.phone AS owner_phone, o.email AS owner_email, o.user_id AS owner_user_id
+            FROM vehicles v
+            LEFT JOIN owners o ON o.id = COALESCE(v.current_owner_id, (
+                SELECT t.new_owner_id FROM ownership_transfers t
+                WHERE t.vehicle_id = v.id AND t.status = 'COMPLETED'
+                ORDER BY t.completed_at DESC LIMIT 1
+            ))
+            WHERE v.id = ?
+        `).get(String(vehicle_id));
+        if (!vehicle) return res.status(404).json({ error: 'Veículo não encontrado.' });
+        const sameUser = vehicle.owner_user_id && vehicle.owner_user_id === req.user.id;
+        const sameEmail = vehicle.owner_email && req.user.email && String(vehicle.owner_email).toLowerCase() === String(req.user.email).toLowerCase();
+        if (!sameUser && !sameEmail) return res.status(403).json({ error: 'Somente o titular do veículo pode agendar este serviço.' });
+        const ownerName = String(vehicle.owner_name || req.user.name || '').trim();
+        const ownerPhone = String(vehicle.owner_phone || req.user.phone || '').trim();
+        if (!ownerName || !ownerPhone) return res.status(400).json({ error: 'Titular deve ter nome e WhatsApp cadastrados para agendar.' });
+        const record = {
+            id: 'app_' + crypto.randomBytes(9).toString('hex'),
+            workshop_id: workshop.id, vehicle_id: vehicle.id, license_plate: vehicle.license_plate,
+            vehicle_model: [vehicle.brand, vehicle.model].filter(Boolean).join(' '),
+            owner_name: ownerName, owner_phone: ownerPhone, service_title: service,
+            appointment_date: date, appointment_time: time, status: 'CONFIRMED',
+            notes: 'Confirmado pelo titular no aplicativo DNA AUTO'
+        };
+        const save = db.transaction(() => {
+            const conflict = db.prepare(`SELECT id FROM workshop_appointments WHERE workshop_id = ? AND appointment_date = ? AND appointment_time = ? AND status != 'CANCELLED' LIMIT 1`).get(workshop.id, date, time);
+            if (conflict) return false;
+            db.prepare(`INSERT INTO workshop_appointments (id, workshop_id, vehicle_id, license_plate, vehicle_model, owner_name, owner_phone, service_title, appointment_date, appointment_time, status, notes)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+                record.id, record.workshop_id, record.vehicle_id, record.license_plate,
+                record.vehicle_model, record.owner_name, record.owner_phone, record.service_title,
+                record.appointment_date, record.appointment_time, record.status, record.notes
+            );
+            return true;
+        });
+        if (!save()) return res.status(409).json({ error: 'Horário ocupado nesta oficina. Selecione outro.' });
+        try {
+            const { publishSyncEvent } = require('../../services/syncEvents.service');
+            publishSyncEvent(db, { eventType: 'CLIENT_APPOINTMENT_CONFIRMED', sourceApp: 'CLIENTE', entityType: 'APPOINTMENT', entityId: record.id, payload: { workshop_id: workshop.id, vehicle_id: vehicle.id, appointment_date: date, appointment_time: time } });
+        } catch (syncError) { console.warn('Falha ao sincronizar agendamento:', syncError.message); }
+        return res.status(201).json({ success: true, message: 'Agendamento confirmado na oficina.', appointment: record });
+    } catch (error) {
+        console.error('Erro no agendamento autenticado:', error);
+        return res.status(500).json({ error: 'Não foi possível registrar o agendamento.' });
+    }
+});
 // Criar novo agendamento
 router.post('/:id/appointments', (req, res) => {
     try {

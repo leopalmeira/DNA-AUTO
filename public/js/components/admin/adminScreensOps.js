@@ -85,6 +85,8 @@ const AdminScreensOps = {
     // --------------------------------------------------------------------------
     async renderAlerts() {
         const data = await API.getMaintenanceAlerts();
+        let push = {configured:false,vehicles:[],deliveries:[]};
+        try { push = await API.request('/admin/push/devices'); } catch (error) { push.error=error.message; }
         const UI = AdminView.ui();
         const alerts = data.alerts || [];
         const esc = AdminView.esc;
@@ -95,6 +97,30 @@ const AdminScreensOps = {
                 title: `Alertas Preventivos da Frota (${num(alerts.length)})`,
                 subtitle: 'Veículos com itens de manutenção próximos do vencimento conforme quilometragem registrada.'
             })}
+
+                <div class="adm-card" style="margin-bottom:18px;">
+                    <div class="adm-card-header"><h3 class="adm-card-title">Teste de notificação Android com aplicativo fechado</h3></div>
+                    <p style="margin:0 0 14px;font-size:13px;line-height:1.55;">Selecione o cliente e o veículo, o serviço e os quilômetros restantes. O teste usa Firebase, não WhatsApp. Envio aceito pelo Google não confirma chegada; somente RECEIVED indica confirmação do Android.</p>
+                    <div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));align-items:end;">
+                        <label class="adm-field">Cliente e veículo<select id="adm-push-vehicle" class="adm-select" style="width:100%;">
+                            ${(push.vehicles||[]).map(v=>`<option value="${esc(v.vehicle_id)}">${esc(v.owner_name)} · ${esc(v.license_plate)} · ${esc(v.brand+' '+v.model)} (${Number(v.devices_count)||0} aparelho(s))</option>`).join('')}
+                        </select></label>
+                        <label class="adm-field">Manutenção<select id="adm-push-service" class="adm-select" style="width:100%;"><option value="Troca das pastilhas de freio">Troca das pastilhas de freio</option><option value="Troca da correia dentada">Troca da correia dentada</option><option value="Troca de óleo e filtros">Troca de óleo e filtros</option><option value="Revisão preventiva">Revisão preventiva</option></select></label>
+                        <label class="adm-field">Quilômetros restantes<input id="adm-push-km" class="adm-input" type="number" min="0" max="5000" value="5" style="width:100%;" /></label>
+                        <button type="button" class="adm-btn adm-btn-primary" onclick="AdminScreensOps.sendPushTest()" ${!push.configured||!(push.vehicles||[]).some(v=>v.devices_count>0)?'disabled':''}>Enviar notificação de teste</button>
+                    </div>
+                    <p style="margin-top:10px;font-size:12px;color:var(--adm-text-muted,#64748B);">${push.configured?'Firebase configurado no servidor.':'Firebase ainda não configurado no Render.'} ${(push.vehicles||[]).filter(v=>v.devices_count>0).length} veículo(s) com celular registrado. ${push.error?'Falha: '+esc(push.error):''}</p>
+                    <div id="adm-push-feedback" role="status" aria-live="polite"></div>
+                    <h4 style="margin:14px 0 8px;">Últimas tentativas de envio</h4>
+                    ${UI.EnterpriseDataTable({rows:(push.deliveries||[]).slice(0,12),emptyTitle:'Nenhuma notificação remota enviada ainda.',columns:[
+                      {key:'plate',label:'Placa',render:d=>esc(d.license_plate||'-')},
+                      {key:'service_title',label:'Serviço',render:d=>esc(d.service_title)},
+                      {key:'remaining_km',label:'Faltam',render:d=>num(d.remaining_km)+' km'},
+                      {key:'status',label:'Confirmação',render:d=>esc(d.status)},
+                      {key:'created_at',label:'Enviado',render:d=>esc(AdminView.formatDateTime(d.created_at))}
+                    ]})}
+                </div>
+
 
             <div class="adm-card">
                 ${UI.EnterpriseDataTable({
@@ -118,6 +144,25 @@ const AdminScreensOps = {
                 })}
             </div>
         `;
+    },
+
+    async sendPushTest() {
+        const vehicle_id=document.getElementById('adm-push-vehicle')?.value;
+        const service_title=document.getElementById('adm-push-service')?.value;
+        const remaining_km=Number(document.getElementById('adm-push-km')?.value);
+        const el=document.getElementById('adm-push-feedback');
+        if (!vehicle_id || !service_title || !Number.isInteger(remaining_km) || remaining_km<0 || remaining_km>5000) {
+            if (el) el.textContent='Selecione um veículo, a manutenção e a quilometragem válida.';
+            return;
+        }
+        if (el) el.textContent='Enviando teste pelo Firebase...';
+        try {
+            const data=await API.request('/admin/push/test',{method:'POST',body:JSON.stringify({vehicle_id,service_title,remaining_km})});
+            if (el) el.textContent='Teste enviado. Status: '+(data.results||[]).map(r=>r.status).join(', ')+'. Aguarde RECEIVED no histórico para confirmar chegada.';
+            await AdminView.reloadCurrentScreen();
+        } catch(error) {
+            if (el) el.textContent='Falha no teste: '+error.message;
+        }
     },
 
     // --------------------------------------------------------------------------

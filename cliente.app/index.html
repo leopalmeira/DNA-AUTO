@@ -7627,6 +7627,7 @@ async function handleLoginSubmit(event) {
     // Sucesso! Usuário validado pelo banco de dados SQLite
     localStorage.setItem('dna_token', data.token);
     localStorage.setItem('dna_auto_token', data.token);
+    window.dispatchEvent(new Event('dna-user-logged-in'));
     if (data.user) {
       localStorage.setItem('dna_logged_user', JSON.stringify(data.user));
       if (data.user.name) localStorage.setItem('dna_user_name', data.user.name);
@@ -9242,51 +9243,57 @@ function closeScheduleModal() {
 
 async function submitClientAppointment(e) {
   e.preventDefault();
-  const wsId = document.getElementById('sched-workshop-id').value;
-  const serviceType = document.getElementById('sched-service-type').value;
-  const date = document.getElementById('sched-date').value;
-  const time = document.getElementById('sched-time').value;
-  const notes = document.getElementById('sched-notes').value;
-
-  const o = oficinasDaRede.find(x => String(x.id) === String(wsId)) || oficinasDaRede[0];
-
-  try {
-    // Tenta persistir no backend se disponível
-    const payload = {
-      license_plate: 'BRA2E19',
-      owner_name: 'Carlos Alberto Silva',
-      owner_phone: '11988887777',
-      service_title: serviceType,
-      appointment_date: date,
-      appointment_time: time,
-      notes: notes || 'Agendamento solicitado pelo aplicativo do cliente DNA AUTO'
-    };
-
-    fetch('/api/v1/workshops/' + (o.backend_id || 'ws_veloce') + '/appointments', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).catch(() => {});
-
-    closeScheduleModal();
-
-    // Mensagem WhatsApp para a oficina
-    const wppMsg = encodeURIComponent(
-      'Olá ' + o.nome + '! Gostaria de confirmar meu agendamento pelo DNA AUTO:\n' +
-      '🚗 Veículo: Toyota Corolla (BRA2E19)\n' +
-      '🔧 Serviço: ' + serviceType + '\n' +
-      '📅 Data: ' + date.split('-').reverse().join('/') + ' às ' + time + '\n' +
-      (notes ? '📝 Obs: ' + notes : '')
-    );
-    const wppUrl = 'https://wa.me/' + o.whatsapp + '?text=' + wppMsg;
-
-    alert('✅ Agendamento solicitado com sucesso!\n\nOficina: ' + o.nome + '\nServiço: ' + serviceType + '\nData: ' + date.split('-').reverse().join('/') + ' às ' + time + '\n\nVocê será redirecionado para o WhatsApp da oficina para confirmação imediata.');
-    window.open(wppUrl, '_blank');
-
-  } catch (err) {
-    alert('✅ Agendamento registrado com sucesso!');
-    closeScheduleModal();
+  const el=id=>document.getElementById(id);
+  const workshopId=el('sched-workshop-id')?.value;
+  const service=(el('sched-service-type')?.value || '').trim();
+  const date=el('sched-date')?.value || '';
+  const time=el('sched-time')?.value || '';
+  const notes=(el('sched-notes')?.value || '').trim();
+  const selected=oficinasDaRede.find(o=>String(o.id)===String(workshopId));
+  if (!selected || !service || !date || !time || Date.parse(date+'T'+time) < Date.now()) {
+    toast('Escolha oficina, serviço e uma data e hora futuras.');
+    return false;
   }
+  const session=localStorage.getItem('dna_token')||localStorage.getItem('dna_auto_token');
+  if (!session) {toast('Entre em sua conta antes de agendar.');return false;}
+  const secured={Authorization:'Bearer '+session,'Content-Type':'application/json'};
+  try {
+    const [vr,wr]=await Promise.all([
+      fetch('/api/v1/vehicles/my-vehicles',{headers:secured}),
+      fetch('/api/v1/workshops/network',{headers:secured})
+    ]);
+    if (!vr.ok || !wr.ok) throw new Error('Não foi possível consultar veículo e oficina.');
+    const vehicles=(await vr.json()).vehicles||[];
+    const workshops=(await wr.json()).workshops||[];
+    const plate=String(localStorage.getItem('dna_registered_plate')||window.currentRegisteredVehicle?.license_plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
+    const vehicle=vehicles.find(v=>String(v.license_plate||'').replace(/[^A-Z0-9]/gi,'').toUpperCase()===plate);
+    if (!vehicle) throw new Error('Seu veículo não está vinculado à conta. Corrija o cadastro antes de agendar.');
+    const realWorkshop=workshops.find(w=>w.source==='database' && String(w.id)===String(selected.backend_id||selected.id));
+    if (realWorkshop) {
+      const resp=await fetch('/api/v1/workshops/'+encodeURIComponent(realWorkshop.id)+'/client-appointments',{
+        method:'POST',headers:secured,
+        body:JSON.stringify({vehicle_id:vehicle.id,service_title:service,appointment_date:date,appointment_time:time,notes})
+      });
+      const outcome=await resp.json();
+      if (!resp.ok || !outcome.success) throw new Error(outcome.error||'Horário indisponível, escolha outro.');
+      closeScheduleModal();
+      alert('Agendamento confirmado na oficina '+realWorkshop.name+' para '+date.split('-').reverse().join('/')+' às '+time+'. Já consta na agenda DNA AUTO.');
+      return false;
+    }
+    // Oficina exibida no mapa, mas ainda não credenciada para agenda direta.
+    // Somente solicita via WhatsApp do próprio cliente; não cria registro fictício.
+    const digits=String(selected.whatsapp||selected.telefone||'').replace(/\D/g,'');
+    const phone=digits.startsWith('55')?digits:'55'+digits;
+    if (!/^55\d{10,11}$/.test(phone)) throw new Error('Esta oficina ainda não tem WhatsApp confirmado.');
+    const fullName=[vehicle.brand,vehicle.model].filter(Boolean).join(' ');
+    const msg=['Olá, '+selected.nome+'! Sou cliente DNA AUTO e gostaria de solicitar um agendamento.',
+      'Serviço: '+service,'Veículo: '+fullName+' · Placa '+vehicle.license_plate,
+      'Data desejada: '+date.split('-').reverse().join('/')+' às '+time,
+      notes?'Observações: '+notes:'','Por favor, confirme a disponibilidade.'].filter(Boolean).join('\n');
+    toast('Solicitação pronta. Confirme o envio pelo seu WhatsApp; a oficina responderá.');
+    window.location.href='https://wa.me/'+phone+'?text='+encodeURIComponent(msg);
+  } catch(error) {toast(error.message||'Falha ao agendar. Tente novamente.');}
+  return false;
 }
 
 function initOficinasMap() {
@@ -10079,6 +10086,7 @@ async function carregarDadosUsuarioLogado() {
 }
 
 function fazerLogoutDoApp() {
+  if (window.DnaPushClient?.unregister) void window.DnaPushClient.unregister();
   closeProfileModal();
   closeCarModal();
   closeServiceDetailModal();
@@ -10422,4 +10430,5 @@ document.addEventListener('focusout', () => {
   }, 150);
 });
 </script>
+<script src="/cliente.app/js/dnaPushClient.js"></script>
 </body></html>

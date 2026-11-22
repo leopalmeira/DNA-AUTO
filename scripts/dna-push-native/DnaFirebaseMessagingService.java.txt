@@ -1,0 +1,99 @@
+package PACKAGE_DNA;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Build;
+import androidx.core.app.NotificationCompat;
+import com.google.firebase.messaging.FirebaseMessagingService;
+import com.google.firebase.messaging.RemoteMessage;
+import org.json.JSONObject;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
+public final class DnaFirebaseMessagingService extends FirebaseMessagingService {
+    private static final String ENDPOINT = __SERVER_URL__ + "/api/v1/push/ack";
+    private static final String CHANNEL = "dna_auto_maintenance_fcm_v1";
+
+    @Override public void onNewToken(String token) {
+        super.onNewToken(token);
+        getSharedPreferences("dna_push",MODE_PRIVATE).edit().putString("fcm_token",token).apply();
+    }
+    @Override public void onMessageReceived(RemoteMessage message) {
+        super.onMessageReceived(message);
+        Map<String,String> data = message.getData();
+        if (!"maintenance".equals(data.get("dna_alert"))) return;
+        String id = data.get("delivery_id"), secret=data.get("ack_secret");
+        if (id == null || secret == null) return;
+        String title = data.get("title"), body=data.get("body");
+        try {
+            JSONObject obj = new JSONObject();
+            for (Map.Entry<String,String> field : data.entrySet()) obj.put(field.getKey(),field.getValue());
+            getSharedPreferences("dna_push",MODE_PRIVATE).edit().putString("last_alert",obj.toString()).apply();
+        } catch(Exception ignored) {}
+        NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel channel = new NotificationChannel(CHANNEL,"DNA AUTO — Alertas de manutenção",NotificationManager.IMPORTANCE_HIGH);
+            channel.enableVibration(true);
+            channel.setDescription("Manutenções próximas do vencimento e agendamento");
+            nm.createNotificationChannel(channel);
+        }
+        Intent open = new Intent(this,MainActivity.class);
+        open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        open.putExtra("dna_push_open_id",id);
+        open.putExtra("dna_push_open_secret",secret);
+        PendingIntent pi = PendingIntent.getActivity(this, id.hashCode(), open,
+            PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
+        Notification notification = new NotificationCompat.Builder(this,CHANNEL)
+            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+            .setContentTitle(title == null ? "DNA AUTO — Manutenção" : title)
+            .setContentText(body == null ? "Toque para agendar serviço." : body)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(body == null ? "Toque para agendar." : body))
+            .setContentIntent(pi).setAutoCancel(true)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .setDefaults(Notification.DEFAULT_SOUND|Notification.DEFAULT_VIBRATE)
+            .build();
+        boolean permitted = androidx.core.app.NotificationManagerCompat.from(this).areNotificationsEnabled();
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel current = nm.getNotificationChannel(CHANNEL);
+            permitted = permitted && current != null && current.getImportance() > NotificationManager.IMPORTANCE_NONE;
+        }
+        if (permitted) {
+            try {
+                nm.notify(id.hashCode(),notification);
+                acknowledgeAsync(id,secret,"RECEIVED");
+            } catch(SecurityException e) {
+                android.util.Log.w("DNA-PUSH", "Notificação não permitida pelo Android.");
+            }
+        } else {
+            android.util.Log.w("DNA-PUSH", "Canal de notificações desativado pelo usuário.");
+        }
+    }
+    public static void acknowledgeAsync(String id, String secret, String action) {
+        if (id == null || secret == null || id.isEmpty() || secret.isEmpty()) return;
+        new Thread(() -> {
+            HttpURLConnection conn = null;
+            try {
+                conn = (HttpURLConnection) new URL(ENDPOINT).openConnection();
+                conn.setRequestMethod("POST"); conn.setConnectTimeout(9000); conn.setReadTimeout(9000);
+                conn.setDoOutput(true);
+                conn.setRequestProperty("Content-Type","application/json; charset=utf-8");
+                JSONObject data = new JSONObject();
+                data.put("delivery_id",id);data.put("ack_secret",secret);data.put("action",action);
+                try (OutputStream stream=conn.getOutputStream()) {
+                    stream.write(data.toString().getBytes(StandardCharsets.UTF_8));
+                }
+                conn.getResponseCode();
+            } catch(Exception e) { android.util.Log.w("DNA-PUSH", "ACK indisponível: "+e.getMessage()); }
+            finally { if(conn!=null) conn.disconnect(); }
+        },"dna-push-ack").start();
+    }
+}

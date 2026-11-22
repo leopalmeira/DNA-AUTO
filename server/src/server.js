@@ -123,6 +123,7 @@ const billingRoutes = require('./modules/billing/billing.routes');
 const integrationsRoutes = require('./modules/integrations/integrations.routes');
 const reportsRoutes = require('./modules/reports/reports.routes');
 const representativesRoutes = require('./modules/representatives/representatives.routes');
+const pushRoutes = require('./modules/push/push.routes');
 
 const { blockRepresentativeOutsidePortal } = require('./middlewares/auth');
 app.use('/api/v1', blockRepresentativeOutsidePortal);
@@ -138,6 +139,7 @@ app.use('/api/v1/billing', billingRoutes);
 app.use('/api/v1/integrations', integrationsRoutes);
 app.use('/api/v1/reports', reportsRoutes);
 app.use('/api/v1/representatives', representativesRoutes);
+app.use('/api/v1/push', pushRoutes);
 
 // Healthcheck
 app.get('/api/v1/health', (req, res) => {

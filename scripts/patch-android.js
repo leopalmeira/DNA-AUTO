@@ -160,8 +160,9 @@ fs.writeFileSync(mainActivityPath, [
   'public class MainActivity extends BridgeActivity {',
   '    @Override',
   '    protected void onCreate(Bundle savedInstanceState) {',
-  ...(isOficina ? [] : ['        registerPlugin(DnaMileagePlugin.class);']),
+  ...(isOficina ? [] : ['        registerPlugin(DnaMileagePlugin.class);', '        registerPlugin(DnaPushPlugin.class);']),
   '        super.onCreate(savedInstanceState);',
+  ...(!isOficina ? ['        handlePushOpen(getIntent());'] : []),
   '        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);',
   '        getWindow().setStatusBarColor(Color.TRANSPARENT);',
   `        getWindow().setNavigationBarColor(Color.parseColor("${navBarColor}"));`,
@@ -181,6 +182,20 @@ fs.writeFileSync(mainActivityPath, [
     '        }'
   ]),
   '    }',
+  ...(!isOficina ? [
+    '    @Override protected void onNewIntent(android.content.Intent intent) {',
+    '        super.onNewIntent(intent);',
+    '        setIntent(intent);',
+    '        handlePushOpen(intent);',
+    '    }',
+    '    private void handlePushOpen(android.content.Intent intent) {',
+    '        if (intent == null) return;',
+    '        String delivery = intent.getStringExtra("dna_push_open_id");',
+    '        if (delivery != null && !delivery.isEmpty()) {',
+    '            getSharedPreferences("dna_push", 0).edit().putString("opened_id", delivery).apply();',
+    '        }',
+    '    }'
+  ] : []),
   '}',
   ''
 ].join('\n'));
@@ -218,3 +233,4 @@ console.log(`✅ Android project patched for ${target} (${pkg} v${versionName} c
 
 // Serviço independente da WebView, apenas no APK do cliente.
 if (!isOficina) require('./dna-mileage-android')(pkg, path.join(process.cwd(), 'android'));
+if (!isOficina) require('./dna-push-android')(pkg, path.join(process.cwd(), 'android'), serverUrl);
