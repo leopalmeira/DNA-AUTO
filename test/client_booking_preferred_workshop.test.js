@@ -25,7 +25,9 @@ async function main() {
     // uma oficina qualquer como se fosse a de instalação.
     assert.equal((ownerView.match(/async fetchWorkshopsNetwork\(\)/g) || []).length, 1,
         'Não pode haver outro carregador sobrescrevendo a prioridade por veículo');
-    assert.ok(ownerView.includes('window.openBookingWorkshopPicker(serviceName)'),
+        assert.ok(html.includes("async function openBookingWorkshopPicker(serviceName = '', selectedVehicle = null)"),
+        'A seleção deve aceitar explicitamente o veículo ativo da conta');
+    assert.ok(ownerView.includes('window.openBookingWorkshopPicker(serviceName, selected)'),
         'Todo agendamento pela tela alternativa deve abrir o seletor preferencial');
     assert.ok(!ownerView.includes("list.find(w => w.installed_here) || list[0]"),
         'É proibido tratar a primeira oficina aleatória como ativadora do veículo');
