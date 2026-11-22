@@ -6165,7 +6165,7 @@ nav[aria-label="Navegação principal"] button {
 }
 
 
-</style><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+</style><link rel="stylesheet" href="/css/maintenance-readonly.css?v=1"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 </head><body><main class="app"><section class="screen splash active" id="splash">
   <div class="splash-wrapper">
     <img class="splash-bg" src="/img/splash-clean-bg.png" alt="DNA Auto Splash">
@@ -6677,137 +6677,14 @@ nav[aria-label="Navegação principal"] button {
     <div class="alertas-intro">
       <h1>Alertas &amp; Manutenções</h1>
       <p>Fique informado sobre o que precisa fazer no seu veículo.</p>
+      <div class="dna-maint-readonly-hint" aria-label="Informações somente para consulta">🔒 Consulta somente leitura · Atualizações pela oficina</div>
     </div>
-    <div class="alertas-tabs">
-      <button class="alertas-tab active" id="tab-btn-pending" type="button" data-filter="pending" onclick="filterAlerts('pending', this)">Pendentes (<span id="alertas-pending-count">4</span>)</button>
-      <button class="alertas-tab" id="tab-btn-done" type="button" data-filter="done" onclick="filterAlerts('done', this)">Concluídos (<span id="alertas-done-count">2</span>)</button>
+    <div class="alertas-tabs" role="tablist" aria-label="Filtrar manutenções">
+      <button class="alertas-tab active" id="tab-btn-pending" type="button" data-filter="pending" role="tab" aria-selected="true" onclick="filterAlerts('pending', this)">Pendentes (<span id="alertas-pending-count">0</span>)</button>
+      <button class="alertas-tab" id="tab-btn-done" type="button" data-filter="done" role="tab" aria-selected="false" onclick="filterAlerts('done', this)">Concluídos (<span id="alertas-done-count">0</span>)</button>
     </div>
-    <div class="alertas-list" id="alertas-list">
-      
-      <!-- 1. Troca de Óleo do Motor -->
-      <article class="alert-item red" id="card-alert-oleo" data-alert-id="alerta-oleo" data-status="pending">
-        <div class="alert-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5m0 3v.2"/></svg>
-        </div>
-        <div class="alert-copy">
-          <h2>Troca de Óleo de Motor</h2>
-          <p class="alert-distance">Faltam 3.000 km</p>
-          <p class="alert-recommended">Recomendado aos 75.000 km · Óleo 5W30 Sintético e Filtro</p>
-          <div class="alert-actions-bar">
-            <button class="alert-detail-btn" type="button" onclick="toast('Detalhes: Troca de óleo 5W30 Sintético + Filtro Mahle. Recomendado a cada 10.000 km.')">
-              Ver detalhes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
-            </button>
-            <button class="alert-conclude-btn" type="button" onclick="concluirAlertaServico('alerta-oleo', 'Troca de Óleo de Motor', event)">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-              Concluir
-            </button>
-          </div>
-        </div>
-      </article>
-
-      <!-- 2. Pastilha de Freio -->
-      <article class="alert-item yellow" id="card-alert-freio" data-alert-id="alerta-freio" data-status="pending">
-        <div class="alert-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5m0 3v.2"/></svg>
-        </div>
-        <div class="alert-copy">
-          <h2>Pastilhas de Freio Dianteiras</h2>
-          <p class="alert-distance">Faltam 5.000 km</p>
-          <p class="alert-recommended">Recomendado aos 45.000 km · Jogo de Pastilhas Cerâmica Bosch</p>
-          <div class="alert-actions-bar">
-            <button class="alert-detail-btn" type="button" onclick="toast('Detalhes: Inspeção de espessura das pastilhas e discos de freio dianteiros.')">
-              Ver detalhes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
-            </button>
-            <button class="alert-conclude-btn" type="button" onclick="concluirAlertaServico('alerta-freio', 'Pastilhas de Freio Dianteiras', event)">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-              Concluir
-            </button>
-          </div>
-        </div>
-      </article>
-
-      <!-- 3. Troca de Correia Dentada -->
-      <article class="alert-item yellow" id="card-alert-correia" data-alert-id="alerta-correia" data-status="pending">
-        <div class="alert-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5m0 3v.2"/></svg>
-        </div>
-        <div class="alert-copy">
-          <h2>Troca de Correia Dentada &amp; Tensor</h2>
-          <p class="alert-distance">Faltam 12.000 km</p>
-          <p class="alert-recommended">Recomendado aos 100.000 km ou 5 anos · Kit Correia Gates + Tensor</p>
-          <div class="alert-actions-bar">
-            <button class="alert-detail-btn" type="button" onclick="toast('Detalhes: Substituição preventiva do kit de correia dentada, rolamento e tensor.')">
-              Ver detalhes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
-            </button>
-            <button class="alert-conclude-btn" type="button" onclick="concluirAlertaServico('alerta-correia', 'Troca de Correia Dentada', event)">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-              Concluir
-            </button>
-          </div>
-        </div>
-      </article>
-
-      <!-- 4. Troca de Óleo do Câmbio Automático -->
-      <article class="alert-item blue" id="card-alert-cambio" data-alert-id="alerta-cambio" data-status="pending">
-        <div class="alert-icon">
-          <svg viewBox="0 0 24 24"><path d="M12 3 2.5 20h19L12 3Z"/><path d="M12 9v5m0 3v.2"/></svg>
-        </div>
-        <div class="alert-copy">
-          <h2>Troca de Óleo de Câmbio Automático</h2>
-          <p class="alert-distance">Faltam 18.000 km</p>
-          <p class="alert-recommended">Recomendado aos 80.000 km · Fluido ATF CVT FE + Filtro interno</p>
-          <div class="alert-actions-bar">
-            <button class="alert-detail-btn" type="button" onclick="toast('Detalhes: Troca por diálise completa do fluido da transmissão automática CVT.')">
-              Ver detalhes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
-            </button>
-            <button class="alert-conclude-btn" type="button" onclick="concluirAlertaServico('alerta-cambio', 'Troca de Óleo de Câmbio Automático', event)">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-              Concluir
-            </button>
-          </div>
-        </div>
-      </article>
-
-      <!-- 5. Fluido de Freio DOT 4 (Concluído previamente) -->
-      <article class="alert-item neutral done-item" id="card-alert-fluido" data-alert-id="alerta-fluido" data-status="done" style="display:none;">
-        <div class="alert-icon">
-          <svg viewBox="0 0 24 24"><path d="M8 4h8l1 3 3 2v9l-8 4-8-4V9l3-2 1-3Z"/><path d="M12 8v5l3 2"/></svg>
-        </div>
-        <div class="alert-copy">
-          <h2>Fluido de Freio DOT 4</h2>
-          <p class="alert-distance">Concluído aos 80.000 km</p>
-          <p class="alert-recommended">Substituído com sangria técnica total · Válido até 100.000 km</p>
-          <div class="alert-actions-bar">
-            <button class="alert-detail-btn" type="button" onclick="toast('Registro auditado: Fluido de Freio DOT 4 Bosch substituído com sucesso.')">
-              Ver detalhes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
-            </button>
-            <button class="alert-reopen-btn" type="button" onclick="reabrirAlertaServico('alerta-fluido', 'Fluido de Freio DOT 4', event)">
-              Reabrir Alerta
-            </button>
-          </div>
-        </div>
-      </article>
-
-      <!-- 6. Velas de Ignição Iridium (Concluído previamente) -->
-      <article class="alert-item neutral done-item" id="card-alert-velas" data-alert-id="alerta-velas" data-status="done" style="display:none;">
-        <div class="alert-icon">
-          <svg viewBox="0 0 24 24"><path d="M8 4h8l1 3 3 2v9l-8 4-8-4V9l3-2 1-3Z"/><path d="M12 8v5l3 2"/></svg>
-        </div>
-        <div class="alert-copy">
-          <h2>Velas de Ignição Iridium NGK</h2>
-          <p class="alert-distance">Concluído aos 60.000 km</p>
-          <p class="alert-recommended">Substituição do jogo quádruplo · Próxima revisão aos 120.000 km</p>
-          <div class="alert-actions-bar">
-            <button class="alert-detail-btn" type="button" onclick="toast('Registro auditado: Velas de Ignição Iridium NGK substituídas.')">
-              Ver detalhes <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h15m-6-6 6 6-6 6"/></svg>
-            </button>
-            <button class="alert-reopen-btn" type="button" onclick="reabrirAlertaServico('alerta-velas', 'Velas de Ignição Iridium', event)">
-              Reabrir Alerta
-            </button>
-          </div>
-        </div>
-      </article>
-
+    <div class="alertas-list" id="alertas-list" aria-live="polite">
+      <div class="dna-maint-empty">Consultando manutenções do veículo...</div>
     </div>
   </div>
   <nav class="alertas-bottom-nav" aria-label="Navegação principal">
@@ -7562,6 +7439,7 @@ function go(id){
     });
   });
 
+  if (id === 'alertas' && window.DNAClientMaintenance) window.DNAClientMaintenance.refresh();
   if (id === 'register') {
     const plateInput = document.getElementById('reg-placa');
     if (plateInput && plateInput.value && plateInput.value.trim().length === 7 && !window.currentRegisteredVehicle) {
@@ -7965,7 +7843,8 @@ async function handleRegisterSubmit(event) {
   }
   return false;
 }
-</script><script src="/js/components/clientTrackingEngine.js?v=2.5.6"></script>
+</script><script src="/js/components/clientMaintenanceReadonly.js?v=1"></script>
+<script src="/js/components/clientTrackingEngine.js?v=2.5.6"></script>
 <script src="/js/components/ownerView.js?v=2.5.6"></script>
 <script>
 // --- SCRIPTS DO GRÁFICO INTERATIVO DE GASTOS COM O CARRO ---
@@ -9318,123 +9197,12 @@ function initOficinasMap() {
 
 
 // ─── LÓGICA DE CONCLUSÃO E REABERTURA DE ALERTAS E MANUTENÇÕES ───
-function filterAlerts(status, btn) {
-  document.querySelectorAll('.alertas-tab').forEach(b => b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-
-  const pendingItems = document.querySelectorAll('#alertas-list .alert-item[data-status="pending"]');
-  const doneItems = document.querySelectorAll('#alertas-list .alert-item[data-status="done"]');
-
-  if (status === 'pending') {
-    pendingItems.forEach(el => el.style.display = 'flex');
-    doneItems.forEach(el => el.style.display = 'none');
-  } else {
-    pendingItems.forEach(el => el.style.display = 'none');
-    doneItems.forEach(el => el.style.display = 'flex');
-  }
+// REMOVIDA: a oficina registra/comprova; o cliente somente consulta.
+function filterAlerts(status) {
+  if (window.DNAClientMaintenance) window.DNAClientMaintenance.filter(status === 'done' ? 'done' : 'pending');
 }
-
 function atualizarContadoresAlertas() {
-  const pendingCount = document.querySelectorAll('#alertas-list .alert-item[data-status="pending"]').length;
-  const doneCount = document.querySelectorAll('#alertas-list .alert-item[data-status="done"]').length;
-
-  const pEl = document.getElementById('alertas-pending-count');
-  const dEl = document.getElementById('alertas-done-count');
-  if (pEl) pEl.textContent = pendingCount;
-  const sideAlertCount = document.getElementById('alertCount');
-  if (sideAlertCount) sideAlertCount.textContent = pendingCount;
-  if (dEl) dEl.textContent = doneCount;
-
-  // Atualizar badge do dashboard
-  const dashBadge = document.querySelector('#dashboard .card[onclick*="alertas"] .badge');
-  const dashMetric = document.querySelector('#dashboard .card[onclick*="alertas"] .metric');
-  if (dashBadge) dashBadge.textContent = pendingCount;
-  if (dashMetric) dashMetric.textContent = pendingCount + ' pendente' + (pendingCount === 1 ? '' : 's');
-}
-
-function concluirAlertaServico(alertId, serviceName, event) {
-  if (event) event.stopPropagation();
-  const card = document.getElementById('card-alert-' + alertId.replace('alerta-', ''));
-  if (!card) return;
-
-  card.setAttribute('data-status', 'done');
-  card.classList.remove('red', 'yellow', 'blue');
-  card.classList.add('neutral', 'done-item');
-
-  // Adicionar botão de reabrir se não tiver
-  const actionsBar = card.querySelector('.alert-actions-bar');
-  if (actionsBar) {
-    const concludeBtn = actionsBar.querySelector('.alert-conclude-btn');
-    if (concludeBtn) concludeBtn.remove();
-
-    if (!actionsBar.querySelector('.alert-reopen-btn')) {
-      const reopenBtn = document.createElement('button');
-      reopenBtn.className = 'alert-reopen-btn';
-      reopenBtn.type = 'button';
-      reopenBtn.textContent = 'Reabrir Alerta';
-      reopenBtn.onclick = (e) => reabrirAlertaServico(alertId, serviceName, e);
-      actionsBar.appendChild(reopenBtn);
-    }
-  }
-
-  // Salvar no localStorage
-  try {
-    const concluded = JSON.parse(localStorage.getItem('dna_concluded_alerts') || '[]');
-    if (!concluded.includes(alertId)) {
-      concluded.push(alertId);
-      localStorage.setItem('dna_concluded_alerts', JSON.stringify(concluded));
-    }
-  } catch(e) {}
-
-  // Ocultar da aba pendentes atual
-  const activeTab = document.querySelector('.alertas-tab.active');
-  if (activeTab && activeTab.dataset.filter === 'pending') {
-    card.style.display = 'none';
-  }
-
-  atualizarContadoresAlertas();
-  toast('✅ ' + serviceName + ' concluído com sucesso! Registro auditado no Passaporte.');
-}
-
-function reabrirAlertaServico(alertId, serviceName, event) {
-  if (event) event.stopPropagation();
-  const card = document.getElementById('card-alert-' + alertId.replace('alerta-', ''));
-  if (!card) return;
-
-  card.setAttribute('data-status', 'pending');
-  card.classList.remove('neutral', 'done-item');
-  if (alertId === 'alerta-oleo') card.classList.add('red');
-  else if (alertId === 'alerta-cambio') card.classList.add('blue');
-  else card.classList.add('yellow');
-
-  const actionsBar = card.querySelector('.alert-actions-bar');
-  if (actionsBar) {
-    const reopenBtn = actionsBar.querySelector('.alert-reopen-btn');
-    if (reopenBtn) reopenBtn.remove();
-
-    if (!actionsBar.querySelector('.alert-conclude-btn')) {
-      const concludeBtn = document.createElement('button');
-      concludeBtn.className = 'alert-conclude-btn';
-      concludeBtn.type = 'button';
-      concludeBtn.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Concluir';
-      concludeBtn.onclick = (e) => concluirAlertaServico(alertId, serviceName, e);
-      actionsBar.appendChild(concludeBtn);
-    }
-  }
-
-  try {
-    let concluded = JSON.parse(localStorage.getItem('dna_concluded_alerts') || '[]');
-    concluded = concluded.filter(x => x !== alertId);
-    localStorage.setItem('dna_concluded_alerts', JSON.stringify(concluded));
-  } catch(e) {}
-
-  const activeTab = document.querySelector('.alertas-tab.active');
-  if (activeTab && activeTab.dataset.filter === 'done') {
-    card.style.display = 'none';
-  }
-
-  atualizarContadoresAlertas();
-  toast('Alerta ' + serviceName + ' reaberto e movido para Pendentes.');
+  if (window.DNAClientMaintenance) window.DNAClientMaintenance.render();
 }
 
 // ─── SINCRONIZAÇÃO DINÂMICA DO CARD DO VEÍCULO NA DASHBOARD ───
@@ -10044,34 +9812,8 @@ async function carregarDadosUsuarioLogado() {
     // Atualizar o card do veículo na dashboard
     atualizarCardVeiculoDashboard(window.currentRegisteredVehicle);
 
-    // Restaurar alertas concluídos salvos
-    try {
-      const concluded = JSON.parse(localStorage.getItem('dna_concluded_alerts') || '[]');
-      concluded.forEach(alertId => {
-        const card = document.getElementById('card-alert-' + alertId.replace('alerta-', ''));
-        if (card) {
-          card.setAttribute('data-status', 'done');
-          card.classList.remove('red', 'yellow', 'blue');
-          card.classList.add('neutral', 'done-item');
-          const actionsBar = card.querySelector('.alert-actions-bar');
-          if (actionsBar) {
-            const concludeBtn = actionsBar.querySelector('.alert-conclude-btn');
-            if (concludeBtn) concludeBtn.remove();
-            if (!actionsBar.querySelector('.alert-reopen-btn')) {
-              const reopenBtn = document.createElement('button');
-              reopenBtn.className = 'alert-reopen-btn';
-              reopenBtn.type = 'button';
-              reopenBtn.textContent = 'Reabrir Alerta';
-              reopenBtn.onclick = (e) => reabrirAlertaServico(alertId, 'Manutenção', e);
-              actionsBar.appendChild(reopenBtn);
-            }
-          }
-        }
-      });
-      if (typeof atualizarContadoresAlertas === 'function') {
-        atualizarContadoresAlertas();
-      }
-    } catch(e) {}
+    // Sem dados locais de conclusão: situação registrada exclusivamente pela oficina.
+    if (window.DNAClientMaintenance) window.DNAClientMaintenance.render();
 
   } catch(e) {
     console.warn('Erro em carregarDadosUsuarioLogado:', e);
