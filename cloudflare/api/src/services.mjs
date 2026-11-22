@@ -47,14 +47,20 @@ async function workshopService(request, env, user, body, files) {
   const total = partsCost + labor;
   badRequest(!Number.isSafeInteger(total) || total <= 0, 'O custo total do serviço deve ser maior que zero.');
   // Nunca criar registro de anexo sem persistencia configurada; evita arquivos perdidos.
-  if (files.length && (!env.MEDIA || typeof env.MEDIA.put !== 'function')) {
-    throw new ApiError(503, 'O armazenamento R2 de fotos/documentos ainda não foi configurado.', 'R2_NOT_CONFIGURED');
+  const kvMode = Boolean(env.MEDIA_KV && typeof env.MEDIA_KV.put === 'function');
+  const r2Mode = Boolean(!kvMode && env.MEDIA && typeof env.MEDIA.put === 'function');
+  if (files.length && !kvMode && !r2Mode) {
+    throw new ApiError(503, 'Armazenamento Cloudflare de fotos/documentos não configurado.', 'MEDIA_NOT_CONFIGURED');
   }
   if (files.length > 7) throw new ApiError(413, 'Limite de até 6 fotos e 1 nota fiscal.');
   const uploaded = [];
   for (const file of files) {
     if (!['photos', 'photo', 'invoice'].includes(file.field)) throw new ApiError(400, 'Campo de arquivo não autorizado.');
-    if (file.file.size > 10 * 1024 * 1024) throw new ApiError(413, 'Arquivo acima de 10 MB.');
+    // Workers KV Free tem 1 GB por conta, max. 25MiB por valor.
+    // Limite menor reduz risco de lotar o espaço na fase piloto gratuita.
+    const maxBytes = kvMode ? 2 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.file.size > maxBytes)
+      throw new ApiError(413, kvMode ? 'Arquivo acima de 2 MB no plano gratuito.' : 'Arquivo acima de 10 MB.');
     const mime = file.file.type;
     if (!['image/jpeg','image/png','image/webp','application/pdf'].includes(mime)) throw new ApiError(400, 'Tipo de arquivo não permitido.');
     if (file.field !== 'invoice' && mime === 'application/pdf') throw new ApiError(400, 'PDF somente para nota fiscal.');
@@ -68,9 +74,12 @@ async function workshopService(request, env, user, body, files) {
   try {
     for (const entry of files) {
       const key = 'dna-auto/' + (entry.field === 'invoice' ? 'invoices/' : 'photos/') + crypto.randomUUID();
-      await env.MEDIA.put(key, await entry.file.arrayBuffer(), {
-        httpMetadata: { contentType: entry.file.type }
-      });
+      const bytes = await entry.file.arrayBuffer();
+      if (kvMode) {
+        await env.MEDIA_KV.put(key, bytes, { metadata: { contentType: entry.file.type } });
+      } else {
+        await env.MEDIA.put(key, bytes, { httpMetadata: { contentType: entry.file.type } });
+      }
       const url = new URL(request.url);
       const fileUrl = url.origin + '/api/v1/media/' + key;
       const record = { key, url: fileUrl };
@@ -120,8 +129,9 @@ async function workshopService(request, env, user, body, files) {
     ]);
     await transact(db, writes);
   } catch (err) {
-    if (env.MEDIA) for (const uploadedFile of uploaded) {
-      try { await env.MEDIA.delete(uploadedFile.key); } catch {}
+    const storage = kvMode ? env.MEDIA_KV : env.MEDIA;
+    if (storage) for (const uploadedFile of uploaded) {
+      try { await storage.delete(uploadedFile.key); } catch {}
     }
     throw err;
   }
@@ -145,7 +155,7 @@ async function serviceHistory(db, user, identifier) {
   return respond({ success: true, services, vehicle });
 }
 async function serveMedia(request, env, user, key) {
-  if (!env.MEDIA) throw new ApiError(503, 'Armazenamento R2 não configurado.');
+  if (!env.MEDIA_KV && !env.MEDIA) throw new ApiError(503, 'Armazenamento Cloudflare não configurado.');
   const pathname = new URL(request.url).origin + '/api/v1/media/' + key;
   const record = await dbFirst(env.DB, [
     'SELECT vehicle_id FROM vehicle_photos WHERE file_path = ?',
@@ -154,6 +164,16 @@ async function serveMedia(request, env, user, key) {
   if (!record) throw new ApiError(404, 'Arquivo não localizado.');
   const vehicle = await getVehicle(env.DB, record.vehicle_id);
   await ensureVehicleAccess(env.DB, user, vehicle);
+  if (env.MEDIA_KV) {
+    const object = await env.MEDIA_KV.getWithMetadata(key, { type: 'arrayBuffer' });
+    if (!object || !object.value) throw new ApiError(404, 'Arquivo não localizado.');
+    return new Response(object.value, {
+      headers: {
+        'Content-Type': object.metadata?.contentType || 'application/octet-stream',
+        'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff'
+      }
+    });
+  }
   const object = await env.MEDIA.get(key);
   if (!object) throw new ApiError(404, 'Arquivo não localizado.');
   return new Response(object.body, {
