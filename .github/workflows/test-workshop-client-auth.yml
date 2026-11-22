@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 15
     env:
       NODE_ENV: test
-      DB_PATH: ${{ runner.temp }}/dna-auth-workshop-test.sqlite
+      DB_PATH: /tmp/dna-auth-workshop-test.sqlite
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
