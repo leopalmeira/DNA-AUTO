@@ -71,7 +71,7 @@ async function send({ vehicleId, service, km=5, source='ADMIN_TEST', dedupe=null
   for (const item of registered) {
     const id='push_'+crypto.randomBytes(10).toString('hex'), secret=crypto.randomBytes(24).toString('hex');
     const key=dedupe ? dedupe+':'+crypto.createHash('sha256').update(item.token).digest('hex').slice(0,16):null;
-    if (key && db.prepare('SELECT id FROM dna_push_deliveries WHERE dedupe_key=?').get(key)) {results.push({status:'ALREADY_SENT'});continue;}
+    if (key) { const prior=db.prepare('SELECT id,status FROM dna_push_deliveries WHERE dedupe_key=?').get(key); if (prior && prior.status!=='FAILED') {results.push({status:'ALREADY_SENT'});continue;} if(prior) db.prepare('DELETE FROM dna_push_deliveries WHERE id=?').run(prior.id); }
     db.prepare('INSERT INTO dna_push_deliveries (id,token,user_id,vehicle_id,service_title,remaining_km,source,dedupe_key,ack_hash) VALUES (?,?,?,?,?,?,?,?,?)')
       .run(id,item.token,veh.user_id,vehicleId,service,km,source,key,crypto.createHash('sha256').update(secret).digest('hex'));
     const payload={message:{token:item.token, android:{priority:'HIGH',ttl:'86400s'},data:{
@@ -89,7 +89,7 @@ async function send({ vehicleId, service, km=5, source='ADMIN_TEST', dedupe=null
         if (/UNREGISTERED|SENDER_ID_MISMATCH/.test(JSON.stringify(body))) db.prepare('DELETE FROM dna_push_devices WHERE token=?').run(item.token);
         results.push({id,status:'FAILED',error:err});
       } else {
-        db.prepare('UPDATE dna_push_deliveries SET status="ACCEPTED_BY_FCM",accepted_at=CURRENT_TIMESTAMP WHERE id=?').run(id);
+        db.prepare('UPDATE dna_push_deliveries SET status=CASE WHEN status IN ("RECEIVED","OPENED") THEN status ELSE "ACCEPTED_BY_FCM" END,accepted_at=CURRENT_TIMESTAMP WHERE id=?').run(id);
         results.push({id,status:'ACCEPTED_BY_FCM'});
       }
     } catch(error) {
