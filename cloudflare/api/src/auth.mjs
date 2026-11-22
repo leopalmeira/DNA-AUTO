@@ -1,5 +1,6 @@
 import { ApiError, hashPassword, verifyPassword, signJwt,
   verifyBootstrapKey, makeId, normalizeEmail, normalizePlate } from './security.mjs';
+import { vehicleWrites } from './vehicles.mjs';
 import { dbFirst, transact, requireRole, workshopForUser, getString,
   badRequest, respond } from './dbutils.mjs';
 
@@ -61,13 +62,21 @@ async function registerClient(db, env, b) {
   const hash = await hashPassword(password);
   const phone = getString(b, 'phone', 'whatsapp');
   const cpf = getString(b, 'cpf', 'document_cpf') || 'NAO_INFORMADO';
-  await transact(db, [
+  const statements = [
     ['INSERT OR IGNORE INTO roles (id, code, name) VALUES (?, ?, ?)', 'role_owner', 'OWNER', 'Proprietário de Veículo'],
     ['INSERT INTO users (id, name, email, phone, role_id, password_hash, status, must_change_password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       userId, name, email, phone, 'role_owner', hash, 'ACTIVE', 0],
     ['INSERT INTO owners (id, user_id, name, document_cpf, email, phone) VALUES (?, ?, ?, ?, ?, ?)',
       ownerId, userId, name, cpf, email, phone]
-  ]);
+  ];
+  const plate = normalizePlate(getString(b, 'license_plate', 'plate'));
+  if (plate) {
+    const exists = await dbFirst(db, 'SELECT id FROM vehicles WHERE license_plate = ?', plate);
+    if (exists) throw new ApiError(409, 'Placa já cadastrada. Procure a oficina responsável.');
+    const vehicle = await vehicleWrites(b, ownerId, null);
+    statements.push(...vehicle.writes);
+  }
+  await transact(db, statements);
   const user = { id: userId, name, email, phone, role_code: 'OWNER', role_name: 'Proprietário de Veículo', must_change_password: 0 };
   return respond(await loginProfile(env, user), 201);
 }
