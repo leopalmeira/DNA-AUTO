@@ -1860,21 +1860,9 @@ const OwnerView = {
         } catch (_) {}
     },
 
-    // Buscar Rede de Oficinas Credenciadas
-    async fetchWorkshopsNetwork() {
-        if (this._workshopsLoaded) return;
-        this._workshopsLoaded = true;
-        try {
-            const res = await fetch('/api/v1/workshops/network');
-            if (res.ok) {
-                const data = await res.json();
-                if (data.success && Array.isArray(data.workshops)) {
-                    this.workshopsList = data.workshops;
-                }
-            }
-        } catch (_) {}
-    },
-
+    // A única implementação de fetchWorkshopsNetwork acima consulta o vínculo
+    // da oficina que ativou o DNA e preserva a prioridade por veículo.
+    
     // Renderização do App
     async render() {
         const container = document.getElementById('view-content');
@@ -4098,120 +4086,18 @@ const OwnerView = {
     },
 
     // ── MODAL: REVISÃO E AGENDAMENTO (LINK DIRETO COM OFICINA DE INSTALAÇÃO OU ESCOLHER OUTRA) ──
-    openSchedulingModal() {
-        const v = this.vehicleData || {};
-        let modal = document.getElementById('dna-scheduling-modal');
-        if (!modal) {
-            const div = document.createElement('div');
-            div.id = 'dna-scheduling-modal';
-            div.className = 'modal-overlay';
-            document.body.appendChild(div);
-            modal = div;
-        }
-
-        const list = Array.isArray(this.workshopsList) ? this.workshopsList : [];
-        if (list.length === 0) {
-            modal.innerHTML = `
-                <div class="modal-container" style="max-width:480px; background:#0B132B; border:1.5px solid #00D4FF; box-shadow:0 12px 40px rgba(0,0,0,0.85); border-radius:18px; padding:20px; text-align:center;">
-                    <div style="font-size:28px; margin-bottom:10px;">🏢</div>
-                    <h3 style="color:#FFFFFF; font-size:16px; font-weight:800; margin:0 0 8px;">Rede Credenciada DNA AUTO</h3>
-                    <p style="color:#94A3B8; font-size:12.5px; line-height:1.5; margin:0 0 16px;">
-                        Carregando oficinas credenciadas para agendamento...
-                    </p>
-                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('dna-scheduling-modal').classList.remove('active')">Fechar</button>
-                </div>
-            `;
-            modal.classList.add('active');
-            this.fetchWorkshopsNetwork().then(() => {
-                if (modal.classList.contains('active')) this.openSchedulingModal();
-            });
+    // Todas as entradas de agendamento utilizam o mesmo seletor de oficinas,
+    // evitando marcar falsamente a primeira da lista como oficina de origem.
+    openSchedulingModal(serviceName = '') {
+        if (typeof window.openBookingWorkshopPicker === 'function') {
+            window.openBookingWorkshopPicker(serviceName);
             return;
         }
-
-        const installedWorkshop = list.find(w => w.installed_here) || list[0];
-        const otherWorkshops = list.filter(w => w.id !== installedWorkshop.id);
-        const cleanPhone = (installedWorkshop.phone || '11998765432').replace(/\D/g, '');
-        const waText = encodeURIComponent(`Olá ${installedWorkshop.name}! Sou cliente DNA AUTO com o veículo ${v.full_title} (Placa ${v.license_plate}). Gostaria de agendar uma revisão periódica.`);
-
-        modal.innerHTML = `
-            <div class="modal-container" style="max-width:480px; background:#0B132B; border:1.5px solid #00D4FF; box-shadow:0 12px 40px rgba(0,0,0,0.85); border-radius:18px; padding:0; overflow:hidden;">
-                <!-- Topbar TOTVS do Modal -->
-                <div class="modal-header" style="border-bottom:1px solid #1E293B; padding:16px 20px; display:flex; justify-content:space-between; align-items:center; background:#101B2E;">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="width:36px; height:36px; border-radius:8px; background:rgba(255,210,28,0.12); display:flex; align-items:center; justify-content:center; font-size:18px;">🛠️</div>
-                        <div>
-                            <h3 style="margin:0; font-size:15px; font-weight:800; color:#FFFFFF;">Revisão & Agendamento</h3>
-                            <span style="font-size:11px; color:#FFD21C; font-weight:700;">Rede Credenciada DNA AUTO</span>
-                        </div>
-                    </div>
-                    <button class="modal-close-btn" style="color:#94A3B8; font-size:22px; cursor:pointer; background:none; border:none; padding:4px;" onclick="document.getElementById('dna-scheduling-modal').classList.remove('active')">&times;</button>
-                </div>
-
-                <div class="modal-body" style="padding:18px; display:flex; flex-direction:column; gap:14px; max-height:80vh; overflow-y:auto;">
-                    <!-- Card Destacado: Oficina Onde Foi Instalado o Equipamento (PREFERENCIAL) -->
-                    <div style="background:linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(16,27,46,0.95) 100%); border:2px solid #00D4FF; border-radius:14px; padding:16px; position:relative; box-shadow:0 4px 20px rgba(0,212,255,0.15);">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                            <span style="background:#00D4FF; color:#0B132B; font-size:10px; font-weight:900; padding:3px 8px; border-radius:4px; letter-spacing:0.5px; text-transform:uppercase;">
-                                ★ OFICINA ONDE INSTALOU (PREFERENCIAL)
-                            </span>
-                            <span style="font-size:11px; font-weight:800; color:#FFD21C;">⭐ ${installedWorkshop.rating}</span>
-                        </div>
-
-                        <h4 style="font-size:16px; font-weight:800; color:#FFFFFF; margin:4px 0 2px;">${installedWorkshop.name}</h4>
-                        <div style="font-size:12px; color:#94A3B8; margin-bottom:8px;">
-                            <span>${installedWorkshop.type || 'Auto Center'}</span> • <span>${installedWorkshop.neighborhood} (${installedWorkshop.distance})</span>
-                        </div>
-                        <div style="font-size:11px; color:#CBD5E1; background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:6px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.06);">
-                            <strong style="color:#00D4FF;">Especialidades:</strong> ${installedWorkshop.specialties}
-                        </div>
-
-                        <!-- Botão Agendar Direto via WhatsApp -->
-                        <a href="https://wa.me/55${cleanPhone}?text=${waText}" target="_blank" class="btn btn-primary" style="background:linear-gradient(135deg, #10B981 0%, #059669 100%); color:#FFFFFF; font-weight:800; font-size:13px; padding:12px; border-radius:8px; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 15px rgba(16,185,129,0.35);">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-                            <span>Agendar Revisão na Oficina Preferencial</span>
-                        </a>
-                    </div>
-
-                    <!-- Divisor / Opção de escolher outras -->
-                    <div style="display:flex; align-items:center; gap:10px; margin:4px 0;">
-                        <div style="flex:1; height:1px; background:#1E293B;"></div>
-                        <span style="font-size:11px; color:#64748B; font-weight:700; text-transform:uppercase;">Ou escolha outra credenciada</span>
-                        <div style="flex:1; height:1px; background:#1E293B;"></div>
-                    </div>
-
-                    <!-- Lista de outras Oficinas e Auto Centers credenciados -->
-                    <div style="display:flex; flex-direction:column; gap:8px;">
-                        ${otherWorkshops.map(w => {
-                            const wPhone = (w.phone || '11998765432').replace(/\D/g, '');
-                            const wMsg = encodeURIComponent(`Olá ${w.name}! Sou cliente DNA AUTO com o veículo ${v.full_title} (Placa ${v.license_plate}). Gostaria de agendar uma revisão.`);
-                            return `
-                                <div style="background:#101B2E; border:1px solid #1E293B; border-radius:10px; padding:12px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
-                                    <div style="flex:1;">
-                                        <div style="display:flex; align-items:center; gap:6px;">
-                                            <h5 style="margin:0; font-size:13px; font-weight:800; color:#FFFFFF;">${w.name}</h5>
-                                            <span style="font-size:9.5px; background:rgba(0,212,255,0.12); color:#00D4FF; padding:1px 5px; border-radius:4px; font-weight:700;">${w.type || 'Oficina'}</span>
-                                        </div>
-                                        <div style="font-size:11px; color:#94A3B8; margin-top:2px;">
-                                            <span>⭐ ${w.rating}</span> • <span>${w.neighborhood} (${w.distance})</span>
-                                        </div>
-                                    </div>
-                                    <a href="https://wa.me/55${wPhone}?text=${waMsg}" target="_blank" class="btn btn-sm" style="background:#0066FF; color:#FFFFFF; font-weight:700; font-size:11px; padding:6px 12px; border-radius:6px; text-decoration:none; white-space:nowrap;">
-                                        Agendar
-                                    </a>
-                                </div>
-                            `;
-                        }).join('')}
-                    </div>
-
-                    <button class="btn btn-secondary" onclick="document.getElementById('dna-scheduling-modal').classList.remove('active'); OwnerView.navigateTo('workshops');" style="background:#0E1726; color:#00D4FF; border:1px solid rgba(0,212,255,0.3); font-weight:700; font-size:12px; padding:10px; border-radius:8px; cursor:pointer;">
-                        Ver Todas as Credenciadas & Auto Centers
-                    </button>
-                </div>
-            </div>
-        `;
-
-        modal.classList.add('active');
+        // Compatibilidade com páginas antigas sem o seletor: mostrar a rede
+        // (com a oficina de origem priorizada pelo endpoint autenticado).
+        this.navigateTo('workshops');
     },
+    
     // ── CARD EXCLUSIVO DE MONITORAMENTO OBD (ÁREA DO VEÍCULO & CLIENTE LEIGO) ──
     toggleObdTechnicalDetails() {
         const el = document.getElementById('dna-obd-tech-details');
