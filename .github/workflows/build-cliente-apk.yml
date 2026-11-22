@@ -41,6 +41,8 @@ on:
       - 'android-oficina/**'
       - 'scripts/patch-android.js'
       - 'scripts/dna-mileage-android.js'
+      - 'scripts/dna-push-android.js'
+      - 'scripts/dna-push-native/**'
       - '.github/workflows/build-cliente-apk.yml'
   pull_request:
     branches:
@@ -49,6 +51,8 @@ on:
       - 'android-client/**'
       - 'scripts/patch-android.js'
       - 'scripts/dna-mileage-android.js'
+      - 'scripts/dna-push-android.js'
+      - 'scripts/dna-push-native/**'
       - '.github/workflows/build-cliente-apk.yml'
 
 jobs:
@@ -74,8 +78,17 @@ jobs:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
           INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.6' }}
           INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '256' }}
+          INPUT_FCM_ANDROID_APP_ID: ${{ secrets.DNA_FCM_ANDROID_APP_ID }}
+          INPUT_FCM_API_KEY: ${{ secrets.DNA_FCM_API_KEY }}
+          INPUT_FCM_PROJECT_ID: ${{ secrets.DNA_FCM_PROJECT_ID }}
+          INPUT_FCM_SENDER_ID: ${{ secrets.DNA_FCM_SENDER_ID }}
         run: |
           npm install
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            for var in INPUT_FCM_ANDROID_APP_ID INPUT_FCM_API_KEY INPUT_FCM_PROJECT_ID INPUT_FCM_SENDER_ID; do
+              if [ -z "${!var}" ]; then echo "::error::Firebase Android não configurado: $var"; exit 1; fi
+            done
+          fi
           node ../scripts/patch-android.js cliente --config-only
           npx cap add android
           npx cap sync android
