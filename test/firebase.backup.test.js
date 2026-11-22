@@ -10,7 +10,8 @@ async function main() {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'dna-firebase-test-'));
     const dbPath = path.join(directory, 'test.db');
     const local = new Database(dbPath);
-    local.exec('CREATE TABLE preserved (id INTEGER PRIMARY KEY, value TEXT); INSERT INTO preserved(value) VALUES ("cliente_antes_do_commit")');
+    local.exec("CREATE TABLE preserved (id INTEGER PRIMARY KEY, value TEXT)");
+    local.prepare("INSERT INTO preserved(value) VALUES (?)").run("cliente_antes_do_commit");
     local.close();
     const original = fs.readFileSync(dbPath);
     fs.unlinkSync(dbPath);
