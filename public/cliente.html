@@ -6357,6 +6357,76 @@ nav[aria-label="Navegação principal"] button {
   #preventivas .rev-premium-card .rev-link { font-size: 10px; }
 }
 
+
+/* Oficina de origem prioritária no fluxo Agendar Serviço — isolado do catálogo/mapa existente. */
+.dna-booking-picker-overlay {
+  position:fixed; inset:0; z-index:160000; padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom));
+  background:rgba(6,23,51,.75); backdrop-filter:blur(7px);
+  display:flex; align-items:center; justify-content:center; box-sizing:border-box;
+}
+.dna-booking-picker-panel {
+  width:100%; max-width:440px; max-height:90dvh; min-height:220px; display:flex; flex-direction:column;
+  box-sizing:border-box; background:linear-gradient(165deg,#f7fbff,#ebf4ff);
+  border:1px solid #d8e5f7; border-radius:22px; padding:19px 16px;
+  box-shadow:0 24px 58px rgba(0,14,35,.32);
+}
+.dna-booking-picker-head {
+  display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+  padding:4px 3px 13px; border-bottom:1px solid #d9e6f5;
+}
+.dna-booking-picker-kicker {
+  font:800 10px Inter,system-ui,sans-serif; letter-spacing:.8px; color:#176fe3;
+}
+.dna-booking-picker-head h2 {
+  margin:5px 0 7px; color:#081e45; font:800 22px/1.15 Inter,system-ui,sans-serif; letter-spacing:-.4px;
+}
+.dna-booking-picker-head p {
+  margin:0; color:#4b6385; font:500 12px/1.48 Inter,system-ui,sans-serif;
+}
+.dna-booking-picker-close {
+  flex:0 0 auto; border:0; width:34px; height:34px; border-radius:12px;
+  color:#315176; background:#e0ebf9; font-size:25px; cursor:pointer;
+}
+.dna-booking-picker-list {
+  min-height:70px; overflow-y:auto; overscroll-behavior:contain;
+  padding:14px 2px 8px; color:#4b6385; font-size:12px;
+}
+.dna-booking-group-title {
+  color:#496583; font:800 11px Inter,system-ui,sans-serif;
+  margin:3px 0 10px; letter-spacing:.15px;
+}
+.dna-booking-workshop {
+  width:100%; display:flex; align-items:center; justify-content:space-between; gap:9px;
+  text-align:left; padding:13px 12px; margin:0 0 10px;
+  border:1px solid #d9e5f4; background:#fff; border-radius:15px;
+  box-shadow:0 4px 11px rgba(18,67,122,.06); cursor:pointer;
+}
+.dna-booking-workshop-origin {
+  border:2px solid #1677f3; background:linear-gradient(125deg,#f0f7ff,#fff);
+  box-shadow:0 7px 18px rgba(22,119,243,.13);
+}
+.dna-booking-workshop:focus-visible { outline:3px solid #0066ff; outline-offset:2px; }
+.dna-booking-workshop-info { min-width:0; display:flex; flex-direction:column; gap:5px; }
+.dna-booking-workshop-meta {
+  color:#617793; font:750 10px Inter,system-ui,sans-serif;
+}
+.dna-booking-workshop-origin .dna-booking-workshop-meta { color:#0063cf; }
+.dna-booking-workshop-title {
+  color:#081f46; font:800 14px/1.25 Inter,system-ui,sans-serif; overflow-wrap:anywhere;
+}
+.dna-booking-workshop-address {
+  color:#5b718b; font:500 11px/1.4 Inter,system-ui,sans-serif; overflow-wrap:anywhere;
+}
+.dna-booking-workshop-action {
+  flex:0 0 auto; white-space:nowrap; color:#006fe6;
+  font:800 11px Inter,system-ui,sans-serif;
+}
+@media(max-width:350px) {
+  .dna-booking-picker-panel { padding:14px 11px; }
+  .dna-booking-workshop { flex-wrap:wrap; }
+  .dna-booking-workshop-action { margin-left:auto; }
+}
+
 </style><link rel="stylesheet" href="/css/maintenance-readonly.css?v=1"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 </head><body><main class="app"><section class="screen splash active" id="splash">
   <div class="splash-wrapper">
@@ -7508,7 +7578,7 @@ nav[aria-label="Navegação principal"] button {
     </div>
 
     <div style="display:flex; flex-direction:column; gap:9px; margin-top:16px;">
-      <button type="button" class="btn-sheet-action" onclick="closePreventivaModal(); go('oficinas');" style="background:linear-gradient(110deg,#0070f3,#0052cc); box-shadow:0 6px 16px rgba(0,102,255,0.3);">
+      <button type="button" class="btn-sheet-action" onclick="closePreventivaModal(); openBookingWorkshopPicker(window.__dnaLastPreventivaService || '')" style="background:linear-gradient(110deg,#0070f3,#0052cc); box-shadow:0 6px 16px rgba(0,102,255,0.3);">
         📍 Agendar em Oficina Credenciada
       </button>
       <button type="button" class="btn-sheet-action" onclick="closePreventivaModal()" style="background:#f0f5fb; color:#1b3964; border:1px solid #cfdeee; box-shadow:none;">
@@ -7746,6 +7816,8 @@ async function handleLoginSubmit(event) {
       window.currentRegisteredVehicle = data.primaryVehicle;
     }
 
+    dnaBookingVehicle = null;
+    dnaBookingOptions = [];
     carregarDadosUsuarioLogado();
 
     // Se for primeiro acesso com senha padrão "123456" ou must_change_password = true,
@@ -9323,7 +9395,138 @@ function openOficinaModal(id) {
   if (overlay) overlay.classList.add('open');
 }
 
-function openScheduleModal(workshop) {
+
+// Seletor de oficinas para agendamento: oficina ativadora sempre em primeiro lugar.
+// A preferência vem do servidor e nunca é deduzida de um número de catálogo local.
+let dnaBookingOptions = [];
+let dnaBookingSelectedService = '';
+let dnaBookingVehicle = null;
+
+function dnaBookingEscape(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, char =>
+    ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[char]));
+}
+
+function closeBookingWorkshopPicker() {
+  document.getElementById('dna-booking-picker')?.remove();
+}
+
+function dnaBookingBuildItem(workshop) {
+  const item = document.createElement('button');
+  item.type = 'button';
+  item.className = 'dna-booking-workshop' + (workshop.is_origin ? ' dna-booking-workshop-origin' : '');
+  item.setAttribute('aria-label', (workshop.is_origin ? 'Sua oficina de origem: ' : 'Escolher oficina: ') + workshop.name);
+  const heading = document.createElement('span');
+  heading.className = 'dna-booking-workshop-title';
+  heading.textContent = workshop.name;
+  const sub = document.createElement('span');
+  sub.className = 'dna-booking-workshop-address';
+  sub.textContent = workshop.address || [workshop.city, workshop.state].filter(Boolean).join('/');
+  const meta = document.createElement('span');
+  meta.className = 'dna-booking-workshop-meta';
+  meta.textContent = workshop.is_origin ? '★ Sua oficina de origem · Preferencial' : 'Oficina credenciada DNA AUTO';
+  const action = document.createElement('span');
+  action.className = 'dna-booking-workshop-action';
+  action.textContent = 'Escolher →';
+  const info = document.createElement('span');
+  info.className = 'dna-booking-workshop-info';
+  info.append(meta, heading, sub);
+  item.append(info, action);
+  item.addEventListener('click', () => {
+    const current = dnaBookingOptions.find(w => String(w.id) === String(workshop.id));
+    if (!current) return;
+    closeBookingWorkshopPicker();
+    // O formulário original pertence à tela de oficinas: mantê-la ativa antes de exibi-lo.
+    go('oficinas');
+    openScheduleModal({
+      id: current.id, backend_id: current.id, nome: current.name,
+      cidade: [current.city, current.state].filter(Boolean).join('/'),
+      telefone: current.phone, whatsapp: current.whatsapp, is_origin: current.is_origin
+    }, dnaBookingSelectedService);
+  });
+  return item;
+}
+
+async function openBookingWorkshopPicker(serviceName = '') {
+  dnaBookingSelectedService = String(serviceName || '').trim();
+  closeBookingWorkshopPicker();
+  const overlay = document.createElement('div');
+  overlay.id = 'dna-booking-picker';
+  overlay.className = 'dna-booking-picker-overlay';
+  overlay.innerHTML = '<section class="dna-booking-picker-panel" role="dialog" aria-modal="true" aria-labelledby="dna-booking-picker-title">' +
+    '<header class="dna-booking-picker-head"><div><span class="dna-booking-picker-kicker">DNA AUTO · AGENDAMENTO</span>' +
+    '<h2 id="dna-booking-picker-title">Escolha sua oficina</h2>' +
+    '<p>A oficina que ativou seu DNA AUTO aparece primeiro. Você pode escolher qualquer outra.</p></div>' +
+    '<button type="button" class="dna-booking-picker-close" aria-label="Fechar seleção de oficina">×</button></header>' +
+    '<div id="dna-booking-picker-list" class="dna-booking-picker-list" aria-live="polite">Carregando oficinas vinculadas ao seu veículo...</div>' +
+    '</section>';
+  overlay.querySelector('.dna-booking-picker-close').onclick = closeBookingWorkshopPicker;
+  overlay.addEventListener('click', event => { if (event.target === overlay) closeBookingWorkshopPicker(); });
+  document.body.appendChild(overlay);
+
+  const list = overlay.querySelector('#dna-booking-picker-list');
+  const token = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+  if (!token) {
+    list.textContent = 'Faça login no DNA AUTO para visualizar suas oficinas e solicitar um agendamento.';
+    return;
+  }
+  try {
+    let v = window.currentRegisteredVehicle || null;
+    let identifier = v?.id || v?.license_plate || localStorage.getItem('dna_registered_plate');
+    if (!identifier) {
+      const mineRes = await fetch('/api/v1/vehicles/my-vehicles', {
+        headers: { Authorization: 'Bearer ' + token }, cache: 'no-store'
+      });
+      if (!mineRes.ok) throw new Error('Não foi possível localizar seu veículo.');
+      const mine = await mineRes.json();
+      v = Array.isArray(mine.vehicles) ? mine.vehicles[0] : null;
+      identifier = v?.id || v?.license_plate;
+    }
+    if (!identifier) throw new Error('Nenhum veículo vinculado à sua conta.');
+    const res = await fetch('/api/v1/vehicles/' + encodeURIComponent(identifier) + '/booking-workshops', {
+      headers: { Authorization: 'Bearer ' + token }, cache: 'no-store'
+    });
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) throw new Error('Faça login com o titular deste veículo para agendar.');
+      throw new Error('Não foi possível consultar a rede de oficinas. Tente novamente.');
+    }
+    const data = await res.json();
+    if (!data.success || !Array.isArray(data.workshops)) throw new Error('Lista de oficinas indisponível.');
+    dnaBookingVehicle = { ...(v || {}), license_plate: data.license_plate, id: data.vehicle_id };
+    const seen = new Set();
+    dnaBookingOptions = data.workshops.filter(w => {
+      if (!w || !w.id || !w.name || seen.has(String(w.id))) return false;
+      seen.add(String(w.id));
+      return true;
+    }).sort((a,b) => Number(Boolean(b.is_origin)) - Number(Boolean(a.is_origin)));
+    if (!overlay.isConnected) return;
+    list.replaceChildren();
+    if (!dnaBookingOptions.length) {
+      list.textContent = 'Ainda não há oficinas disponíveis para agendamento. Consulte a rede DNA AUTO mais tarde.';
+      return;
+    }
+    const origin = dnaBookingOptions.find(w => w.is_origin);
+    if (origin) {
+      const title = document.createElement('h3');
+      title.className = 'dna-booking-group-title';
+      title.textContent = 'Sua oficina preferencial';
+      list.appendChild(title);
+      list.appendChild(dnaBookingBuildItem(origin));
+    }
+    const remaining = dnaBookingOptions.filter(w => !w.is_origin);
+    if (remaining.length) {
+      const title = document.createElement('h3');
+      title.className = 'dna-booking-group-title';
+      title.textContent = origin ? 'Outras oficinas disponíveis' : 'Oficinas credenciadas disponíveis';
+      list.appendChild(title);
+      remaining.forEach(w => list.appendChild(dnaBookingBuildItem(w)));
+    }
+  } catch (err) {
+    if (overlay.isConnected) list.textContent = err.message || 'Erro ao carregar oficinas.';
+  }
+}
+
+function openScheduleModal(workshop, preferredService = '') {
   const overlayOficinas = document.getElementById('oficinas-overlay');
   if (overlayOficinas) overlayOficinas.classList.remove('open');
 
@@ -9332,7 +9535,33 @@ function openScheduleModal(workshop) {
   const dateInput = document.getElementById('sched-date');
 
   if (wsName) wsName.textContent = workshop.nome + ' · ' + (workshop.cidade || 'SP');
-  if (wsId) wsId.value = workshop.id;
+  if (wsId) wsId.value = workshop.backend_id || workshop.id;
+
+  // Mostrar o veículo verdadeiro e conservar o serviço que motivou o agendamento.
+  const realVehicle = dnaBookingVehicle || window.currentRegisteredVehicle || {};
+  const plate = realVehicle.license_plate || localStorage.getItem('dna_registered_plate') || '';
+  const label = document.getElementById('sched-vehicle-label');
+  if (label) label.value = [realVehicle.brand, realVehicle.model, realVehicle.version_label].filter(Boolean).join(' ') +
+    (plate ? ' (' + plate + ')' : '');
+  const serviceField = document.getElementById('sched-service-type');
+  if (serviceField) {
+    const requested = String(preferredService || '').trim();
+    const oldAuto = serviceField.querySelector('option[data-booking-custom="1"]');
+    if (oldAuto) oldAuto.remove();
+    if (requested) {
+      const existing = Array.from(serviceField.options).find(opt =>
+        opt.value.toLowerCase() === requested.toLowerCase() ||
+        opt.textContent.toLowerCase().includes(requested.toLowerCase())
+      );
+      if (existing) serviceField.value = existing.value;
+      else {
+        const option = new Option(requested, requested);
+        option.setAttribute('data-booking-custom', '1');
+        serviceField.appendChild(option);
+        serviceField.value = requested;
+      }
+    } else serviceField.selectedIndex = 0;
+  }
 
   // Data mínima: amanhã
   if (dateInput) {
@@ -9353,50 +9582,71 @@ function closeScheduleModal() {
 
 async function submitClientAppointment(e) {
   e.preventDefault();
-  const wsId = document.getElementById('sched-workshop-id').value;
-  const serviceType = document.getElementById('sched-service-type').value;
-  const date = document.getElementById('sched-date').value;
-  const time = document.getElementById('sched-time').value;
-  const notes = document.getElementById('sched-notes').value;
-
-  const o = oficinasDaRede.find(x => String(x.id) === String(wsId)) || oficinasDaRede[0];
-
+  const wsId = document.getElementById('sched-workshop-id')?.value;
+  const o = dnaBookingOptions.find(x => String(x.id) === String(wsId)) ||
+    oficinasDaRede.find(x => String(x.backend_id || x.id) === String(wsId));
+  if (!o || !(o.backend_id || o.id)) {
+    alert('Selecione uma oficina válida antes de continuar.');
+    return;
+  }
+  const workshopId = String(o.backend_id || o.id);
+  const token = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+  const serviceType = document.getElementById('sched-service-type')?.value || '';
+  const date = document.getElementById('sched-date')?.value || '';
+  const time = document.getElementById('sched-time')?.value || '';
+  const notes = document.getElementById('sched-notes')?.value || '';
+  let storedUser = {};
+  try { storedUser = JSON.parse(localStorage.getItem('dna_logged_user') || '{}') || {}; } catch (_) {}
+  const vehicle = dnaBookingVehicle || window.currentRegisteredVehicle || storedUser.vehicle || {};
+  const plate = String(vehicle.license_plate || localStorage.getItem('dna_registered_plate') || '').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if (!/^[A-Z0-9]{7}$/.test(plate)) {
+    alert('Não foi possível identificar a placa do seu veículo. Acesse seu cadastro e tente novamente.');
+    return;
+  }
+  if (!date || !time || !serviceType) {
+    alert('Informe o serviço, a data e o horário desejados.');
+    return;
+  }
+  const submit = document.querySelector('#schedule-service-form button[type="submit"]');
+  if (submit) submit.disabled = true;
   try {
-    // Tenta persistir no backend se disponível
     const payload = {
-      license_plate: 'BRA2E19',
-      owner_name: 'Carlos Alberto Silva',
-      owner_phone: '11988887777',
+      vehicle_id: vehicle.id || null,
+      license_plate: plate,
+      vehicle_model: [vehicle.brand,vehicle.model,vehicle.version_label].filter(Boolean).join(' ') || 'Veículo cadastrado',
+      owner_name: storedUser.name || vehicle.owner_name || 'Cliente DNA AUTO',
+      owner_phone: storedUser.phone || vehicle.owner_phone || '',
       service_title: serviceType,
       appointment_date: date,
       appointment_time: time,
-      notes: notes || 'Agendamento solicitado pelo aplicativo do cliente DNA AUTO'
+      notes: notes || 'Solicitado pelo aplicativo Cliente DNA AUTO'
     };
-
-    fetch('/api/v1/workshops/' + (o.backend_id || 'ws_veloce') + '/appointments', {
+    const res = await fetch('/api/v1/workshops/' + encodeURIComponent(workshopId) + '/appointments', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: 'Bearer ' + token } : {})
+      },
       body: JSON.stringify(payload)
-    }).catch(() => {});
-
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok || !result.success) throw new Error(result.error || 'A oficina não confirmou o horário. Escolha outro horário e tente novamente.');
     closeScheduleModal();
-
-    // Mensagem WhatsApp para a oficina
-    const wppMsg = encodeURIComponent(
-      'Olá ' + o.nome + '! Gostaria de confirmar meu agendamento pelo DNA AUTO:\n' +
-      '🚗 Veículo: Toyota Corolla (BRA2E19)\n' +
-      '🔧 Serviço: ' + serviceType + '\n' +
-      '📅 Data: ' + date.split('-').reverse().join('/') + ' às ' + time + '\n' +
-      (notes ? '📝 Obs: ' + notes : '')
-    );
-    const wppUrl = 'https://wa.me/' + o.whatsapp + '?text=' + wppMsg;
-
-    alert('✅ Agendamento solicitado com sucesso!\n\nOficina: ' + o.nome + '\nServiço: ' + serviceType + '\nData: ' + date.split('-').reverse().join('/') + ' às ' + time + '\n\nVocê será redirecionado para o WhatsApp da oficina para confirmação imediata.');
-    window.open(wppUrl, '_blank');
-
+    alert('✅ Agendamento confirmado!\n\nOficina: ' + (o.name || o.nome) +
+      '\nServiço: ' + serviceType + '\nData: ' + date.split('-').reverse().join('/') + ' às ' + time);
+    const phone = String(o.whatsapp || o.telefone || o.phone || '').replace(/\D/g, '');
+    if (phone) {
+      const formattedPhone = phone.startsWith('55') ? phone : '55' + phone;
+      const message = 'Olá, ' + (o.name || o.nome) + '! Confirmei meu agendamento pelo DNA AUTO:\n' +
+        '🚗 Veículo: ' + plate + '\n🔧 Serviço: ' + serviceType +
+        '\n📅 Data: ' + date.split('-').reverse().join('/') + ' às ' + time +
+        (notes ? '\n📝 Observações: ' + notes : '');
+      window.open('https://wa.me/' + formattedPhone + '?text=' + encodeURIComponent(message), '_blank');
+    }
   } catch (err) {
-    alert('✅ Agendamento registrado com sucesso!');
-    closeScheduleModal();
+    alert('Não foi possível concluir o agendamento: ' + err.message);
+  } finally {
+    if (submit) submit.disabled = false;
   }
 }
 
@@ -9661,6 +9911,7 @@ function preencherModalDetalhesVeiculo(v, plateFallback) {
 
 // ═══ SISTEMA DE MODAL EXCLUSIVO DE REVISÕES PREVENTIVAS ═══
 function openPreventivaModal(nome, falta, km, total, perc, intervalo, criticidade, especificacao, itens, desc) {
+  window.__dnaLastPreventivaService = nome;
   const modal = document.getElementById('preventiva-detail-modal');
   if (!modal) return;
   const elTitle = document.getElementById('modal-prev-title');
@@ -10187,10 +10438,7 @@ function renderSidebarNavigation() {
     } else if (route === 'oficinas') {
       go('oficinas');
     } else if (route === 'agendar') {
-      go('oficinas');
-      setTimeout(() => {
-        toast('Selecione uma oficina credenciada para agendar o serviço.');
-      }, 350);
+      openBookingWorkshopPicker();
     } else if (route === 'documentos') {
       go('gastos');
     } else if (route === 'alertas') {
