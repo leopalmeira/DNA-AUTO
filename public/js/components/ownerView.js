@@ -84,6 +84,8 @@ const OwnerView = {
     workshopFilterTab: 'all',
     workshopSearchQuery: '',
     _workshopsLoaded: false,
+    _workshopsVehicleKey: null,
+    _workshopsLoadingKey: null,
 
     // Sincronizar Imediatamente Usuário e Veículo Ativo do LocalStorage (Zero Espera / Zero "Olá, João!")
     syncFromLocalStorage() {
@@ -218,6 +220,10 @@ const OwnerView = {
         this.vehicleData.user_name = 'Proprietário';
         this.vehicleData.user_email = '';
         this._backendSynced = false;
+        this._workshopsLoaded = false;
+        this._workshopsVehicleKey = null;
+        this._workshopsLoadingKey = null;
+        this.workshopsList = [];
         this.toggleDrawer(false);
         this.render();
     },
@@ -1477,16 +1483,52 @@ const OwnerView = {
         return { totalCents, semesterCents, yearCents, partsList, hasExpenses: totalCents > 0 };
     },
 
+    // Rede de oficinas com preferência pela oficina que ativou o DNA do veículo selecionado.
+    // A prioridade é recalculada por veículo, nunca reaproveitada de outro proprietário.
     async fetchWorkshopsNetwork() {
-        if (this._workshopsLoaded) return;
+        const vehicleKey = String(this.vehicleData?.id || this.vehicleData?.license_plate || '').trim();
+        if (this._workshopsLoaded && this._workshopsVehicleKey === vehicleKey) return;
+        if (this._workshopsLoadingKey === vehicleKey) return;
+        this._workshopsLoadingKey = vehicleKey;
         try {
             const res = await API.getWorkshopsNetwork();
-            if (res && res.success && Array.isArray(res.workshops) && res.workshops.length > 0) {
-                this.workshopsList = res.workshops;
-                this._workshopsLoaded = true;
-                this.render();
+            const network = res?.success && Array.isArray(res.workshops) ? res.workshops : [];
+            let origin = null;
+            const token = (typeof API !== 'undefined' && API.token) ||
+                localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+            if (vehicleKey && vehicleKey !== '---' && token) {
+                const preferredRes = await fetch('/api/v1/vehicles/' + encodeURIComponent(vehicleKey) + '/booking-workshops', {
+                    headers: { Authorization: 'Bearer ' + token }, cache: 'no-store'
+                }).catch(() => null);
+                if (preferredRes?.ok) {
+                    const data = await preferredRes.json().catch(() => null);
+                    origin = data?.success && Array.isArray(data.workshops)
+                        ? data.workshops.find(w => w.is_origin) || null : null;
+                }
             }
-        } catch (_) {}
+            const currentKey = String(this.vehicleData?.id || this.vehicleData?.license_plate || '').trim();
+            if (currentKey !== vehicleKey) return;
+
+            const dedup = new Set();
+            const mapped = [];
+            if (origin) {
+                dedup.add(String(origin.id));
+                mapped.push({ ...origin, is_origin: true });
+            }
+            for (const w of network) {
+                if (!w?.id || dedup.has(String(w.id))) continue;
+                dedup.add(String(w.id));
+                mapped.push({ ...w, is_origin: Boolean(origin && String(w.id) === String(origin.id)) });
+            }
+            this.workshopsList = mapped;
+            this._workshopsLoaded = true;
+            this._workshopsVehicleKey = vehicleKey;
+            this.render();
+        } catch (err) {
+            console.warn('[DNA Auto Cliente] Falha ao carregar rede de oficinas:', err);
+        } finally {
+            if (this._workshopsLoadingKey === vehicleKey) this._workshopsLoadingKey = null;
+        }
     },
 
 
@@ -3725,10 +3767,9 @@ const OwnerView = {
 
     // ── 10. TELA: OFICINAS DA REDE — DADOS REAIS DO SERVIDOR ──
     renderWorkshopsScreen() {
-        if (!this._workshopsLoaded) {
-            this.fetchWorkshopsNetwork().then(() => {
-                if (this.currentTab === 'workshops') this.render();
-            });
+        const key = String(this.vehicleData?.id || this.vehicleData?.license_plate || '').trim();
+        if (!this._workshopsLoaded || this._workshopsVehicleKey !== key) {
+            this.fetchWorkshopsNetwork();
         }
 
         const q = (this.workshopSearchQuery || '').toLowerCase();
@@ -3736,6 +3777,7 @@ const OwnerView = {
 
         let list = serverWorkshops.map(w => ({
             id: w.id,
+            isOrigin: w.is_origin === true,
             name: w.name || w.trade_name || 'Oficina Credenciada',
             rating: w.rating || '5.0',
             reviews: w.reviews || '1',
@@ -3784,7 +3826,7 @@ const OwnerView = {
                             <span style="font-size:12px;">As oficinas homologadas na sua região aparecerão aqui automaticamente.</span>
                         </div>
                     ` : list.map(w => `
-                        <div class="dna-print-workshop-card">
+                        <div class="dna-print-workshop-card" ${w.isOrigin ? 'style="border:2px solid #1677f3; background:#f0f7ff;"' : ''}>
                             <div class="dna-print-ws-media">
                                 <img src="${w.photoUrl}" alt="${w.name}" class="dna-print-ws-img" onerror="this.onerror=null; this.src='/img/splash-car-hero.png';" />
                                 ${w.city ? `<span class="dna-print-ws-dist-badge">${w.city}${w.uf ? '/' + w.uf : ''}</span>` : ''}
@@ -3793,6 +3835,7 @@ const OwnerView = {
                             <div class="dna-print-ws-content">
                                 <div class="dna-print-ws-title-row">
                                     <h5 class="dna-print-ws-title">${w.name}</h5>
+                                    ${w.isOrigin ? '<span style="font-size:10px;font-weight:800;color:#0063cf;background:#dbeafe;padding:5px 8px;border-radius:999px;">★ Sua oficina de origem</span>' : ''}
                                     <span class="dna-print-ws-rating">⭐ ${w.rating}</span>
                                 </div>
 
