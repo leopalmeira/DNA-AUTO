@@ -157,6 +157,46 @@ export async function handleWorkshops(request, env, path, body, loadUser) {
     ].join(' '), workshopId, workshopId, workshopId);
     return respond({ success: true, dashboard: counts, ...counts });
   }
+  if (request.method === 'GET' && action === 'financial-summary') {
+    const user = await loadUser();
+    requireRole(user, 'WORKSHOP_OWNER', 'ADMIN');
+    await ensureWorkshopMember(db, user, workshopId);
+    const workshop = await dbFirst(db, 'SELECT id, trade_name, cnpj, city, state FROM workshops WHERE id = ?', workshopId);
+    if (!workshop) throw new ApiError(404, 'Oficina não encontrada.');
+    const total = await dbFirst(db, [
+      'SELECT COUNT(*) AS total, COALESCE(SUM(total_cost_cents), 0) AS value',
+      'FROM service_records WHERE workshop_id = ?'
+    ].join(' '), workshopId);
+    const vehicles = await dbAll(db, [
+      'SELECT v.id, v.license_plate, v.brand, v.model FROM vehicles v',
+      'WHERE v.workshop_id = ? ORDER BY v.created_at DESC LIMIT 50'
+    ].join(' '), workshopId);
+    const pending = await dbFirst(db, [
+      'SELECT COALESCE(SUM(amount_cents), 0) AS amount FROM workshop_attendance_fees',
+      "WHERE workshop_id = ? AND status IN ('CONFIRMED','PENDING')"
+    ].join(' '), workshopId);
+    const registered = await dbFirst(db, [
+      'SELECT COUNT(*) AS amount FROM client_activations WHERE workshop_id = ?'
+    ].join(' '), workshopId);
+    // Nao transformar cadastros em receita sem conciliacao financeira real.
+    return respond({
+      success: true, workshop: { ...workshop, name: workshop.trade_name },
+      summary: {
+        registered_vehicles_count: registered?.amount || 0,
+        passports_activated_count: 0,
+        commission_generated_cents: 0,
+        platform_share_cents: 0,
+        mechanical_total_revenue_cents: total?.value || 0,
+        pending_obligation_to_dna_cents: pending?.amount || 0,
+        commissions_received_cents: 0
+      },
+      registered_vehicles: vehicles,
+      challenge: { current: 0, target: 100 },
+      days_remaining: null,
+      settlement_status: 'NOT_CONFIGURED',
+      billing_warning: 'Valores de ativacao zerados ate a integracao de pagamentos e conciliacao.'
+    });
+  }
   if (request.method === 'GET' && action === 'maintenance-alerts') {
     const user = await loadUser();
     await ensureWorkshopMember(db, user, workshopId);
