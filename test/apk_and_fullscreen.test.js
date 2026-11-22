@@ -48,6 +48,17 @@ async function runTests() {
         assert.ok(html.includes('getInstalledRelatedApps'), `${label} deve checar getInstalledRelatedApps`);
     }
 
+    // Regressão: botão único, comparação nativa e remoção imediata ao atualizar.
+    assert.ok(!oficinaHtml.includes('id="dna-update-later"'), 'Oficina não deve oferecer o botão Depois');
+    assert.ok(oficinaHtml.includes('resolveInstalledOficinaApkContext'), 'Versão instalada deve ser lida do pacote Android');
+    assert.ok(oficinaHtml.includes('nativeApp.getInfo()'), 'App.getInfo deve ter prioridade sobre URL antiga');
+    assert.ok(oficinaHtml.includes('installedCode < availableCode'), 'Quando versionCode existe ele prevalece sobre semver');
+    assert.ok(oficinaHtml.includes('hideOficinaApkUpdateModal()'), 'Modal deve ser removido se app está atualizado');
+    assert.ok(oficinaHtml.includes('browser.open({ url: apkUrl.href })'), 'Botão deve abrir navegador Android para instalação');
+    const oficinaNativeConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'android-oficina', 'capacitor.config.json'), 'utf8'));
+    assert.ok(oficinaNativeConfig.server.url.includes('apk_version=2.5.7&apk_code=257'), 'APK precisa anunciar versão 2.5.7');
+    assert.strictEqual(oficinaNativeConfig.android.appendUserAgent, 'DNAOficinaAPK/2.5.7');
+
     // 4. Testar endpoints reais de versão dos APKs e Asset Links via HTTP
     const server = await new Promise((resolve) => {
         const s = http.createServer(app);
@@ -73,7 +84,8 @@ async function runTests() {
         const vOficina = await vOficinaRes.json();
         assert.strictEqual(vOficina.success, true);
         assert.strictEqual(vOficina.app, 'oficina');
-        assert.strictEqual(vOficina.version, '2.5.6');
+        assert.strictEqual(vOficina.version, '2.5.7');
+        assert.strictEqual(vOficina.version_code, 257);
         assert.strictEqual(vOficina.package_name, 'br.com.dnaauto.oficina');
         assert.strictEqual(vOficina.apk_available, true);
         assert.strictEqual(vOficina.apk_url, '/downloads/dna-auto-oficina.apk');
