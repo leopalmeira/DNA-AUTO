@@ -4714,6 +4714,14 @@
         formData.append('responsible_technician_name', this.getLoggedWorkshopUser?.().name || 'Profissional da Oficina');
         formData.append('workshop_id', this.getEffectiveWorkshopId?.() || this.currentWorkshopId || '');
         this.appendServiceFiles(formData);
+        // Não envie POST sem JWT: o backend rejeita com AUTH_TOKEN_MISSING.
+        // Mantém os campos e anexos visíveis para uma nova tentativa após login.
+        const activeToken = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+        if (!activeToken || localStorage.getItem('dna_logged_out') === 'true') {
+            this.showToast('Sessão da oficina encerrada. Entre novamente para registrar o serviço. Os dados permanecem na tela.', 'error', 8000);
+            return;
+        }
+        if (typeof API !== 'undefined' && typeof API.setToken === 'function') API.setToken(activeToken);
         this._savingMobileService = true;
         try {
             if (typeof API === 'undefined' || typeof API.registerWorkshopService !== 'function') {
@@ -4737,8 +4745,12 @@
             this.switchMobileSection('dashboard');
         } catch (err) {
             console.error('Falha ao persistir serviço:', err);
-            this.showToast('Não foi possível salvar: ' + (err.message || 'verifique sua conexão') +
-                '. Os dados continuam na tela para nova tentativa.', 'error', 7000);
+            if (err.status === 401 || err.code === 'AUTH_TOKEN_MISSING' || err.code === 'AUTH_TOKEN_INVALID') {
+                this.showToast('Sessão expirada ou inválida. Faça login novamente na oficina; os dados permanecem na tela até sair.', 'error', 8000);
+            } else {
+                this.showToast('Não foi possível salvar: ' + (err.message || 'verifique sua conexão') +
+                    '. Os dados continuam na tela para nova tentativa.', 'error', 7000);
+            }
         } finally {
             this._savingMobileService = false;
         }
@@ -7030,7 +7042,13 @@
         this.stockAuthenticated = false;
         localStorage.setItem('dna_logged_out', 'true');
         localStorage.removeItem('dna_logged_user');
-        localStorage.removeItem('dna_token');
+        // Limpa também o token em memória e o alias legado, para não misturar sessões.
+        if (typeof API !== 'undefined' && typeof API.setToken === 'function') {
+            API.setToken(null);
+        } else {
+            localStorage.removeItem('dna_token');
+            localStorage.removeItem('dna_auto_token');
+        }
 
         const container = document.getElementById('view-content');
         if (!container) return;
@@ -7329,12 +7347,13 @@
                 }));
             }
 
-            if (!res || (!res.token && !res.id && !res.workshop_id && (!res.user || !res.user.id))) {
-                throw new Error((res && res.error) || (res && res.message) || 'Não foi possível criar a conta. Tente novamente.');
+            // Cadastro só é considerado autenticado quando há um JWT e vínculo com oficina.
+            if (!res?.token || !res?.user?.workshop?.workshop_id) {
+                throw new Error((res && (res.error || res.message)) || 'Cadastro sem sessão válida. Entre com seu e-mail e senha.');
             }
 
-            // ✅ Cadastro aprovado
-            if (res.token) localStorage.setItem('dna_token', res.token);
+            // ✅ Cadastro aprovado: sincroniza token persistido e cliente de API em memória.
+            API.setToken(res.token);
             if (res.user) localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
             if (res.user && res.user.workshop && res.user.workshop.workshop_id) {
                 localStorage.setItem('dna_workshop_id', res.user.workshop.workshop_id);
@@ -7377,10 +7396,14 @@
             if (!res || !res.token) {
                 throw new Error((res && res.error) || (res && res.message) || 'E-mail ou senha incorretos.');
             }
+            if (!res.user || !res.user.workshop?.workshop_id ||
+                !String(res.user.role_code || '').toUpperCase().startsWith('WORKSHOP')) {
+                throw new Error('Esta conta não possui acesso de oficina. Entre com as credenciais da oficina ou do registrador.');
+            }
 
-            // ✅ Login aprovado pela API
+            // ✅ Login aprovado pela API: atualizar o JWT também no cliente em memória.
+            API.setToken(res.token);
             localStorage.removeItem('dna_logged_out');
-            localStorage.setItem('dna_token', res.token);
             if (res.user) localStorage.setItem('dna_logged_user', JSON.stringify(res.user));
             if (res.user && res.user.workshop) {
                 this.officialWorkshopName = res.user.workshop.trade_name || res.user.workshop.workshop_name || 'Auto Center';
@@ -7388,9 +7411,6 @@
                     localStorage.setItem('dna_workshop_id', res.user.workshop.workshop_id);
                     this.currentWorkshopId = res.user.workshop.workshop_id;
                 }
-            } else {
-                localStorage.setItem('dna_workshop_id', 'ws_veloce');
-                this.currentWorkshopId = 'ws_veloce';
             }
             this.currentSection = 'dashboard';
             this.renderMobileShell();
@@ -7448,11 +7468,19 @@
 
         // Se o usuário estiver deslogado, sem oficina ativa, ou a URL solicitar login, exibe a tela de login com imagem DNA AUTO
         const isLoggedOut = localStorage.getItem('dna_logged_out') === 'true';
-        if (isLoggedOut || !activeWorkshopId || window.location.hash === '#login') {
+        const savedToken = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+        let savedUser = null;
+        try { savedUser = JSON.parse(localStorage.getItem('dna_logged_user') || 'null'); } catch (_) {}
+        const hasWorkshopSession = Boolean(savedToken && savedUser?.workshop?.workshop_id &&
+            String(savedUser.role_code || '').toUpperCase().startsWith('WORKSHOP'));
+        if (isLoggedOut || !hasWorkshopSession || !activeWorkshopId || window.location.hash === '#login') {
             document.body.classList.remove('force-desktop-mode');
             this.showOficinaLoginScreen();
             return;
         }
+
+        // A sessão pode ter sido restaurada pelo PWA antes da inicialização de API.
+        API.setToken(savedToken);
 
         // Carrega dados base
         try {
