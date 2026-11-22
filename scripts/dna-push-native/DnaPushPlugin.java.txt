@@ -1,0 +1,53 @@
+package PACKAGE_DNA;
+import android.content.Context;
+import android.content.SharedPreferences;
+import com.getcapacitor.JSObject;
+import com.getcapacitor.Plugin;
+import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginMethod;
+import com.getcapacitor.annotation.CapacitorPlugin;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.messaging.FirebaseMessaging;
+import org.json.JSONObject;
+
+@CapacitorPlugin(name="DnaPush")
+public class DnaPushPlugin extends Plugin {
+    @PluginMethod
+    public void getToken(PluginCall call) {
+        if (FirebaseApp.getApps(getContext()).isEmpty()) {
+            call.reject("Firebase não configurado neste APK. Atualize a configuração antes de testar.");
+            return;
+        }
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful() || task.getResult() == null) {
+                call.reject("Falha ao registrar dispositivo no Firebase.");
+                return;
+            }
+            String token = task.getResult();
+            getContext().getSharedPreferences("dna_push",Context.MODE_PRIVATE).edit().putString("fcm_token",token).apply();
+            JSObject result = new JSObject();
+            result.put("token",token);
+            call.resolve(result);
+        });
+    }
+
+    @PluginMethod
+    public void getPendingAlert(PluginCall call) {
+        SharedPreferences p = getContext().getSharedPreferences("dna_push",Context.MODE_PRIVATE);
+        String raw = p.getString("last_alert","");
+        JSObject obj = new JSObject();
+        if (!raw.isEmpty()) {
+            try { obj = JSObject.fromJSONObject(new JSONObject(raw)); }
+            catch (Exception ignored) { }
+        }
+        String openedId = p.getString("opened_id","");
+        if (!openedId.isEmpty() && openedId.equals(obj.optString("delivery_id"))) {
+            obj.put("opened_by_notification",true);
+            DnaFirebaseMessagingService.acknowledgeAsync(
+                obj.optString("delivery_id"),obj.optString("ack_secret"),"OPENED"
+            );
+        }
+        p.edit().remove("last_alert").remove("opened_id").apply();
+        call.resolve(obj);
+    }
+}
