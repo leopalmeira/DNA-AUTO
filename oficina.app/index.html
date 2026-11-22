@@ -448,13 +448,12 @@
             const params = new URLSearchParams(window.location.search);
             const urlVer = params.get('apk_version') || params.get('native_version');
             const urlCode = params.get('apk_code');
-            if (urlVer) localStorage.setItem('dna_oficina_apk_version', urlVer);
-            if (urlCode) localStorage.setItem('dna_oficina_apk_version_code', urlCode);
-
             const ua = navigator.userAgent || '';
             const isCapacitor = Boolean(window.Capacitor && (window.Capacitor.isNativePlatform?.() || window.Capacitor.platform === 'android'));
-            const isWebView = ua.includes('DNAOficinaAPK') || /; wv\)/i.test(ua);
-            const isNativeShell = Boolean(isCapacitor || isWebView || urlVer || urlCode);
+            // Querystring e WebView genérica não provam instalação de APK.
+            const isNativeShell = Boolean(isCapacitor || /DNAOficinaAPK\//i.test(ua));
+            if (isNativeShell && urlVer) localStorage.setItem('dna_oficina_apk_version', urlVer);
+            if (isNativeShell && urlCode) localStorage.setItem('dna_oficina_apk_version_code', urlCode);
             return {
                 isNativeShell,
                 version: isNativeShell ? (urlVer || localStorage.getItem('dna_oficina_apk_version') || null) : null,
@@ -490,6 +489,7 @@
         }
 
         function showApkUpdateModal(serverInfo, installedCtx) {
+            if (!serverInfo?.apk_available || !serverInfo.apk_url) return;
             let modal = document.getElementById('dna-update-modal');
             if (!modal) {
                 modal = document.createElement('div');
@@ -522,7 +522,8 @@
                         event.preventDefault();
                         browser.open({ url: apkUrl.href }).catch((err) => {
                             console.warn('[DNA Oficina] Falha ao abrir navegador nativo:', err);
-                            window.location.assign(apkUrl.href);
+                            const tab = window.open(apkUrl.href, '_blank');
+                            if (!tab) window.location.assign(apkUrl.href);
                         });
                     }
                     // APKs antigos: o link real continua clicável (fallback HTTPS).
@@ -554,6 +555,11 @@
             return { updateNeeded, server: info, installed: ctx };
         }
 
+        // Revalidar após o Android fechar o instalador, sem usar versão antiga em cache.
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) checkOficinaApkUpdate().catch(() => {});
+        });
+
         function isAndroidMobileBrowser() {
             const ua = navigator.userAgent || '';
             const isAndroid = /Android/i.test(ua);
@@ -568,7 +574,7 @@
             try {
                 if (typeof navigator.getInstalledRelatedApps === 'function') {
                     const apps = await navigator.getInstalledRelatedApps();
-                    if (Array.isArray(apps) && apps.some(a => a.id === 'br.com.dnaauto.oficina' || apps.length > 0)) return true;
+                    if (Array.isArray(apps) && apps.some(app => app.id === 'br.com.dnaauto.oficina')) return true;
                 }
             } catch (_) {}
             return false;
