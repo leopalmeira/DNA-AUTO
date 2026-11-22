@@ -190,14 +190,14 @@ router.post('/login', (req, res) => {
             } catch (_) {}
         }
 
-        // Suporte adicional resiliente para Clientes no Primeiro Acesso e Funcionários com senha inicial '123456'
+        // Compatibilidade antiga SOMENTE para registradores. Para clientes, a
+        // senha inicial precisa coincidir com o hash persistido no banco.
         if (!passwordMatch && cleanPassword === '123456') {
-            const isStaffOrFirstAccess = Boolean(
+            const isStaff = Boolean(
                 user.role_code === 'WORKSHOP_STAFF' ||
-                user.role_id === 'role_workshop_staff' ||
-                Number(user.must_change_password) === 1
+                user.role_id === 'role_workshop_staff'
             );
-            if (isStaffOrFirstAccess) {
+            if (isStaff) {
                 passwordMatch = true;
                 try {
                     const newHash = bcrypt.hashSync('123456', 10);
@@ -476,7 +476,13 @@ router.post('/register-client', async (req, res) => {
         const mustChangeFlag = isInitialDefaultPassword ? 1 : 0;
 
         const cleanEmail = email.trim().toLowerCase();
-        const existing = db.prepare('SELECT id, name, phone, role_id FROM users WHERE LOWER(email) = ?').get(cleanEmail);
+        const existing = db.prepare('SELECT id, name, phone, role_id FROM users WHERE LOWER(TRIM(email)) = ?').get(cleanEmail);
+        if (existing) {
+            return res.status(409).json({
+                code: 'EMAIL_ALREADY_REGISTERED',
+                error: 'E-mail já cadastrado. Faça login ou use a recuperação de senha.'
+            });
+        }
 
         let userId = existing ? existing.id : `usr_${Date.now()}`;
         let existingOwner = existing ? db.prepare('SELECT id FROM owners WHERE user_id = ? OR LOWER(email) = ?').get(userId, cleanEmail) : null;

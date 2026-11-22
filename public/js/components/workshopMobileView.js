@@ -3722,58 +3722,33 @@
         const existingVeh = this._lastLookedUpVehicle || this.findVehicleByPlate(plate) || {};
 
         try {
-            const regPayload = {
-                name,
+            // O cadastro é confirmado por uma única rota, que persiste conta,
+            // vínculo do veículo e ativação antes de declarar sucesso.
+            const wsId = this.getEffectiveWorkshopId ? this.getEffectiveWorkshopId() : this.currentWorkshopId;
+            if (!wsId || typeof API === 'undefined' || !API.registerClientActivation) {
+                throw new Error('A oficina não está autenticada. Entre novamente no app da oficina.');
+            }
+            const regResult = await API.registerClientActivation(wsId, {
+                license_plate: plate,
+                client_name: name,
+                client_phone: phone,
                 whatsapp: phone,
-                phone,
                 email,
                 password,
-                must_change_password: true,
-                registered_by_workshop: true,
-                license_plate: plate,
-                plate: plate,
                 brand: existingVeh.brand || undefined,
-                model: existingVeh.model || undefined,
-                year: existingVeh.year || undefined,
-                color: existingVeh.color || undefined,
-                fuel_type: existingVeh.fuel_type || undefined
-            };
-
-            let regResult = null;
-            if (typeof API !== 'undefined' && API.registerClient) {
-                regResult = await API.registerClient(regPayload);
-            } else {
-                const resp = await fetch('/api/v1/auth/register-client', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(regPayload)
-                });
-                const data = await resp.json().catch(() => ({}));
-                if (!resp.ok) {
-                    throw new Error(data.error || 'Erro ao registrar cliente.');
-                }
-                regResult = data;
+                model: existingVeh.model || undefined
+            });
+            if (!regResult || !regResult.success || !regResult.login_ready ||
+                regResult.client?.email?.toLowerCase() !== email) {
+                throw new Error('A conta do cliente não foi confirmada. Tente novamente.');
             }
+            const existingAccount = Boolean(regResult.client.account_existing);
+            const successMsg = existingAccount
+                ? `✅ Veículo ${plate} vinculado a ${name}!\nO cliente já possui conta com e-mail ${email}: deve usar a senha pessoal atual ou recuperá-la no app.`
+                : `🎉 Veículo ${plate} e cliente ${name} cadastrados!\nO cliente pode entrar com e-mail ${email} e senha inicial 123456. No primeiro acesso deverá criar sua senha pessoal.`;
+            this.showToast(successMsg, 'success', 6000);            this.showToast(successMsg, 'success', 6000);
 
-            // Sincroniza ativação na oficina
-            const wsId = this.getEffectiveWorkshopId ? this.getEffectiveWorkshopId() : 'ws_veloce';
-            if (typeof API !== 'undefined' && API.registerClientActivation) {
-                await API.registerClientActivation(wsId, {
-                    license_plate: plate,
-                    client_name: name,
-                    client_phone: phone,
-                    whatsapp: phone,
-                    email,
-                    password,
-                    brand: existingVeh.brand || undefined,
-                    model: existingVeh.model || undefined
-                }).catch(() => {});
-            }
-
-            const successMsg = `🎉 Veículo ${plate} e cliente ${name} cadastrados com sucesso!\nO cliente já pode acessar o App DNA AUTO com o e-mail ${email} e a senha inicial 123456 (com solicitação para cadastrar sua nova senha pessoal).`;
-            this.showToast(successMsg, 'success', 6000);
-
-            const vehIdFromReg = regResult?.user?.vehicle?.id || regResult?.vehicle?.id || existingVeh?.id || ('veh_' + plate);
+            const vehIdFromReg = regResult.vehicle?.id || regResult.client?.vehicle_id;
             const newVehObj = {
                 id: vehIdFromReg,
                 vehicle_id: vehIdFromReg,

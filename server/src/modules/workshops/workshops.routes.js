@@ -1722,6 +1722,28 @@ router.post('/:id/clients/register-activation', async (req, res) => {
             return res.status(400).json({ error: 'Número de WhatsApp do cliente é obrigatório.' });
         }
 
+        if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+            return res.status(400).json({ error: 'Informe um e-mail válido para o acesso do cliente.' });
+        }
+        // A conta de um cliente não pode ser assumida por outro perfil nem ter
+        // sua senha pessoal redefinida por um novo cadastro da oficina.
+        try { db.exec('ALTER TABLE users ADD COLUMN must_change_password INTEGER DEFAULT 0'); } catch (_) {}
+        const existingClientUser = cleanEmail
+            ? db.prepare('SELECT id, role_id, status, must_change_password FROM users WHERE LOWER(TRIM(email)) = ?').get(cleanEmail)
+            : null;
+        if (existingClientUser && existingClientUser.role_id !== 'role_owner') {
+            return res.status(409).json({
+                code: 'EMAIL_IN_USE_BY_ANOTHER_ROLE',
+                error: 'Este e-mail já pertence a outro perfil. Utilize o e-mail do proprietário.'
+            });
+        }
+        if (existingClientUser && ['BLOCKED', 'SUSPENDED'].includes(existingClientUser.status)) {
+            return res.status(409).json({
+                code: 'ACCOUNT_NOT_ACTIVE',
+                error: 'Este cadastro está bloqueado. Solicite a regularização da conta.'
+            });
+        }
+
         let workshop = db.prepare(`SELECT id, trade_name FROM workshops WHERE id = ?`).get(workshopId);
         if (!workshop) {
             workshop = db.prepare(`SELECT id, trade_name FROM workshops LIMIT 1`).get();
@@ -1844,39 +1866,44 @@ router.post('/:id/clients/register-activation', async (req, res) => {
         } catch (_) {}
 
         let userId = null;
-        if (cleanEmail && cleanEmail.includes('@')) {
-            const initialPass = (rawPassword && String(rawPassword).trim().length >= 6) ? String(rawPassword).trim() : '123456';
-            const mustChange = (initialPass === '123456') ? 1 : 0;
-            let existingUser = db.prepare('SELECT id FROM users WHERE LOWER(email) = ?').get(cleanEmail);
-            if (existingUser) {
-                userId = existingUser.id;
-                const passHash = bcrypt.hashSync(initialPass, 10);
+        let mustChangeFirstAccess = false;
+        const accountAlreadyExisted = Boolean(existingClientUser);
+        if (cleanEmail) {
+            if (existingClientUser) {
+                userId = existingClientUser.id;
+                mustChangeFirstAccess = Number(existingClientUser.must_change_password) === 1;
+                // O cliente poderá entrar usando a senha que já possui.
                 db.prepare(`
                     UPDATE users
-                    SET password_hash = ?,
-                        name = COALESCE(NULLIF(?, ''), name),
+                    SET name = COALESCE(NULLIF(?, ''), name),
                         phone = COALESCE(NULLIF(?, ''), phone),
-                        must_change_password = ?,
                         updated_at = CURRENT_TIMESTAMP
                     WHERE id = ?
-                `).run(passHash, clientName, rawPhone || null, mustChange, userId);
+                `).run(clientName, rawPhone || null, userId);
             } else {
-                userId = `usr_${Date.now()}`;
-                const passHash = bcrypt.hashSync(initialPass, 10);
+                const initialPass = (rawPassword && String(rawPassword).trim().length >= 6)
+                    ? String(rawPassword).trim() : '123456';
+                mustChangeFirstAccess = initialPass === '123456';
+                userId = `usr_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
                 db.prepare(`
                     INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo, must_change_password)
                     VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0, ?)
-                `).run(userId, clientName, cleanEmail, passHash, rawPhone || null, mustChange);
+                `).run(userId, clientName, cleanEmail, bcrypt.hashSync(initialPass, 10), rawPhone || null, mustChangeFirstAccess ? 1 : 0);
             }
         }
 
         // 3. Verifica ou cria Proprietário
         let owner = null;
         if (userId) {
-            owner = db.prepare(`SELECT * FROM owners WHERE user_id = ? OR LOWER(email) = ?`).get(userId, cleanEmail);
-        }
-        if (!owner) {
-            owner = db.prepare(`SELECT * FROM owners WHERE phone = ? OR name = ?`).get(rawPhone, clientName);
+            // Não vincular a conta de outro proprietário por coincidência de nome/telefone.
+            owner = db.prepare(`
+                SELECT * FROM owners
+                WHERE user_id = ? OR (LOWER(TRIM(email)) = ? AND (user_id IS NULL OR user_id = ?))
+                ORDER BY CASE WHEN user_id = ? THEN 0 ELSE 1 END
+                LIMIT 1
+            `).get(userId, cleanEmail, userId, userId);
+        } else {
+            owner = db.prepare('SELECT * FROM owners WHERE phone = ? AND user_id IS NULL LIMIT 1').get(rawPhone);
         }
 
         if (owner) {
@@ -1989,6 +2016,7 @@ router.post('/:id/clients/register-activation', async (req, res) => {
 
         res.status(201).json({
             success: true,
+            login_ready: Boolean(userId),
             message: `Cliente ${clientName} cadastrado com sucesso! Veículo vinculado à garagem digital com DNA gerado.`,
             activation_code: activationCode,
             dna_code: dnaCode,
@@ -1997,6 +2025,8 @@ router.post('/:id/clients/register-activation', async (req, res) => {
                 name: clientName,
                 whatsapp: rawPhone,
                 email: cleanEmail || null,
+                account_existing: accountAlreadyExisted,
+                must_change_password: mustChangeFirstAccess,
                 plate: plate,
                 vehicle_id: vehicle.id
             },

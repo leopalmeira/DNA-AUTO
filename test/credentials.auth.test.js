@@ -127,6 +127,50 @@ async function run() {
         assert.strictEqual(loginNewPassRes.data.must_change_password, false, 'must_change_password deve ser falso');
         console.log('✅ Login com nova senha pessoal validado com sucesso.');
 
+        // ─── Cadastro REAL pela Oficina → login → troca de senha → segundo veículo ───
+        const officeEmail = `cliente.oficina.${testRunId}@teste.com.br`;
+        const officePlate = `OFI${String(testRunId).slice(-4)}`;
+        const activation = await postJson('/api/v1/workshops/ws_veloce/clients/register-activation', {
+            license_plate: officePlate, client_name: 'Cliente da Oficina',
+            client_phone: testClientPhone, email: officeEmail, password: '123456',
+            brand: 'Toyota', model: 'Corolla'
+        });
+        assert.strictEqual(activation.status, 201, 'Cadastro/ativação pela oficina deve retornar 201');
+        assert.strictEqual(activation.data.login_ready, true);
+        assert.strictEqual(activation.data.client.account_existing, false);
+        assert.ok(activation.data.client.vehicle_id, 'Veículo deve ser vinculado');
+        const officeLogin = await postJson('/api/v1/auth/login', { email: officeEmail, password: '123456' });
+        assert.strictEqual(officeLogin.status, 200, 'Login com senha inicial da oficina deve funcionar');
+        assert.ok(officeLogin.data.token, 'JWT deve ser gerado');
+        assert.strictEqual(officeLogin.data.must_change_password, true);
+        assert.strictEqual(officeLogin.data.primaryVehicle.license_plate, officePlate);
+        const badLogin = await postJson('/api/v1/auth/login', { email: officeEmail, password: 'errada' });
+        assert.strictEqual(badLogin.status, 401, 'Senha incorreta não pode entrar');
+        const passChanged = await postJson('/api/v1/auth/change-initial-password', {
+            email: officeEmail, current_password: '123456',
+            new_password: 'SenhaPessoal#2026', confirm_password: 'SenhaPessoal#2026'
+        }, officeLogin.data.token);
+        assert.strictEqual(passChanged.status, 200, 'Cliente deve poder trocar senha');
+        const secondActivation = await postJson('/api/v1/workshops/ws_veloce/clients/register-activation', {
+            license_plate: `OFJ${String(testRunId).slice(-4)}`,
+            client_name: 'Cliente da Oficina', client_phone: testClientPhone,
+            email: officeEmail, password: '123456', brand: 'Honda', model: 'Civic'
+        });
+        assert.strictEqual(secondActivation.status, 201, 'Segundo veículo deve ser vinculado');
+        assert.strictEqual(secondActivation.data.client.account_existing, true);
+        const loginPersonal = await postJson('/api/v1/auth/login', {
+            email: officeEmail, password: 'SenhaPessoal#2026'
+        });
+        assert.strictEqual(loginPersonal.status, 200, 'Senha pessoal deve continuar funcionando');
+        assert.strictEqual(loginPersonal.data.must_change_password, false);
+        const oldPassword = await postJson('/api/v1/auth/login', { email: officeEmail, password: '123456' });
+        assert.strictEqual(oldPassword.status, 401, 'Senha inicial antiga não pode ser reutilizada');
+        const takeover = await postJson('/api/v1/auth/register-client', {
+            name: 'Cadastro Indevido', email: officeEmail, password: '123456'
+        });
+        assert.strictEqual(takeover.status, 409, 'Cadastro público não pode redefinir senha existente');
+        console.log('✅ Cadastro pela oficina, login, troca de senha, vínculo de veículos e proteção aprovados.');
+
         // ─── 8. Oficina cadastra novo Registrador / Funcionário ───
         console.log('\n[Cenário 8] Oficina cadastra Registrador técnico com senha gerada...');
         const regStaffRes = await postJson('/api/v1/workshops/ws_veloce/registrars', {
