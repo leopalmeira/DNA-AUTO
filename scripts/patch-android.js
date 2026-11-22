@@ -15,6 +15,30 @@ const pathPrefix = isOficina ? '/oficina' : '/cliente';
 const customScheme = isOficina ? 'dnaoficina' : 'dnaauto';
 const navBarColor = isOficina ? '#010712' : '#020712';
 
+// Corrige versão anunciada pelo APK na URL interna e no User-Agent ANTES do cap sync.
+// Assim, o novo APK não continuará se identificando como a versão 2.5.4.
+const configPath = path.join(process.cwd(), 'capacitor.config.json');
+const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+config.server.url = serverUrl + pathPrefix + '?apk_version=' + encodeURIComponent(versionName) + '&apk_code=' + encodeURIComponent(versionCode);
+config.android.appendUserAgent = (isOficina ? 'DNAOficinaAPK/' : 'DNAAutoAPK/') + versionName;
+fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+
+const packageJsonPath = path.join(process.cwd(), 'package.json');
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+packageJson.version = versionName;
+fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
+
+const fallbackIndexPath = path.join(process.cwd(), 'www', 'index.html');
+if (fs.existsSync(fallbackIndexPath)) {
+  const fallbackHtml = fs.readFileSync(fallbackIndexPath, 'utf8')
+    .replace(/apk_version=[0-9.]+&apk_code=[0-9]+/g, 'apk_version=' + versionName + '&apk_code=' + versionCode);
+  fs.writeFileSync(fallbackIndexPath, fallbackHtml);
+}
+
+if (process.argv.includes('--config-only')) {
+  console.log('Capacitor config sincronizado: ' + target + ' v' + versionName + ' (' + versionCode + ')');
+  process.exit(0);
+}
 // 1. versionCode / versionName no build.gradle
 const gradlePath = path.join(process.cwd(), 'android', 'app', 'build.gradle');
 let gradle = fs.readFileSync(gradlePath, 'utf8');
