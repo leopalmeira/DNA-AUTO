@@ -3547,14 +3547,14 @@
                         <div class="dna-input-group">
                             <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
                                 <label class="dna-input-label" style="margin-bottom:0;">Senha Inicial de Acesso do Cliente *</label>
-                                <span style="font-size:10.5px; font-weight:800; color:#10B981; background:rgba(16,185,129,0.14); padding:2px 8px; border-radius:999px; border:1px solid rgba(16,185,129,0.35);">✓ Gravada: 123456</span>
+                                <span style="font-size:10.5px; font-weight:800; color:#10B981; background:rgba(16,185,129,0.14); padding:2px 8px; border-radius:999px; border:1px solid rgba(16,185,129,0.35);">✓ Senha individual</span>
                             </div>
                             <div style="position:relative;">
-                                <input type="text" id="mobile-reg-owner-pass" class="form-control" value="123456" readonly style="height:48px; padding:0 40px 0 14px; font-weight:800; letter-spacing:2px; color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important; background:rgba(11,22,44,0.95) !important; border:1px solid rgba(0,102,255,0.4);" />
-                                <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:#10B981; font-size:16px;" title="Senha inicial padrão gravada">🔒</span>
+                                <input type="text" id="mobile-reg-owner-pass" class="form-control" value="" placeholder="Gerada ao concluir o cadastro" readonly style="height:48px; padding:0 40px 0 14px; font-weight:800; letter-spacing:2px; color:#FFFFFF !important; -webkit-text-fill-color:#FFFFFF !important; background:rgba(11,22,44,0.95) !important; border:1px solid rgba(0,102,255,0.4);" />
+                                <span style="position:absolute; right:12px; top:50%; transform:translateY(-50%); color:#10B981; font-size:16px;" title="Senha temporária única gerada com segurança">🔒</span>
                             </div>
                             <div style="margin-top:6px; background:rgba(0,102,255,0.1); border:1px solid rgba(0,102,255,0.28); border-radius:10px; padding:10px 12px; font-size:11.5px; color:#CBD5E1; line-height:1.45;">
-                                💡 <strong style="color:#FFFFFF;">Acesso Fácil para o Cliente:</strong> A senha inicial <strong style="color:#00D4FF;">123456</strong> já fica gravada. Basta pedir para o cliente baixar o app e entrar com o <strong>e-mail dele</strong> e a senha <strong>123456</strong>. No primeiro acesso será solicitada a troca de senha, e depois ele poderá alterar seus dados pessoais dentro do app.
+                                💡 <strong style="color:#FFFFFF;">Acesso Fácil para o Cliente:</strong> Ao concluir o cadastro, o sistema gera uma <strong style="color:#00D4FF;">senha temporária exclusiva</strong> para o cliente. Compartilhe a senha de forma privada com ele. No primeiro acesso será solicitada a troca da senha.
                             </div>
                         </div>
                     </div>
@@ -3688,7 +3688,7 @@
         const name = (document.getElementById('mobile-reg-owner-name')?.value || '').trim();
         const phone = (document.getElementById('mobile-reg-owner-wpp')?.value || '').trim();
         const email = (document.getElementById('mobile-reg-owner-email')?.value || '').trim().toLowerCase();
-        const password = (document.getElementById('mobile-reg-owner-pass')?.value || '').trim() || '123456';
+        const password = (document.getElementById('mobile-reg-owner-pass')?.value || '').trim();
 
         if (!plate || plate.length < 7) {
             this.showToast('Digite a placa completa do veículo (7 caracteres).', 'warning');
@@ -3743,10 +3743,15 @@
                 throw new Error('A conta do cliente não foi confirmada. Tente novamente.');
             }
             const existingAccount = Boolean(regResult.client.account_existing);
+            const assignedPassword = regResult.initial_password || '';
             const successMsg = existingAccount
                 ? `✅ Veículo ${plate} vinculado a ${name}!\nO cliente já possui conta com e-mail ${email}: deve usar a senha pessoal atual ou recuperá-la no app.`
-                : `🎉 Veículo ${plate} e cliente ${name} cadastrados!\nO cliente pode entrar com e-mail ${email} e senha inicial 123456. No primeiro acesso deverá criar sua senha pessoal.`;
-            this.showToast(successMsg, 'success', 6000);            this.showToast(successMsg, 'success', 6000);
+                : `🎉 Veículo ${plate} e cliente ${name} cadastrados!\nO cliente entra com e-mail ${email} e senha temporária: ${assignedPassword || 'veja a mensagem de confirmação'}. No primeiro acesso deverá criar sua senha pessoal.`;
+            this.showToast(successMsg, 'success', 15000);
+            if (assignedPassword) {
+                const passField = document.getElementById('mobile-reg-owner-pass');
+                if (passField) passField.value = assignedPassword;
+            }
 
             const vehIdFromReg = regResult.vehicle?.id || regResult.client?.vehicle_id;
             const newVehObj = {
