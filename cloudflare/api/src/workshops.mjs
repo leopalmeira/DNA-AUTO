@@ -75,7 +75,7 @@ async function registerClientByWorkshop(db, env, user, workshopId, body) {
       'UPDATE vehicles SET current_owner_id = ? WHERE id = ? AND current_owner_id IS NULL', oid, v.id
     ]);
   }
-  const activationCode = crypto.randomUUID().replace(/-/g, '').slice(0, 10).toUpperCase();
+  const activationCode = crypto.randomUUID().replace(/-/g, '').slice(0, 16).toUpperCase();
   writes.push([
     'INSERT INTO client_activations (id, workshop_id, client_name, whatsapp, email, license_plate, activation_code, vehicle_id, owner_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     makeId('act'), workshopId, name, phone, email, plate, activationCode, v.id, oid, 'PENDING'
