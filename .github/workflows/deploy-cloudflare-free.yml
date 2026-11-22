@@ -60,7 +60,7 @@ jobs:
           for(const [key,value] of Object.entries(sites))fs.appendFileSync(process.env.GITHUB_ENV,'DNA_'+(key==='WORKSHOP'?'OFICINA':key)+'_BASE_URL='+value+'\n');
           let toml=fs.readFileSync('cloudflare/api/wrangler.toml','utf8');
           if(!toml.includes('SUBSTITUIR_PELO_ID_REAL_DO_D1'))throw Error('Configuração D1 inválida');
-          toml=toml.replace('SUBSTITUIR_PELO_ID_REAL_DO_D1',id);
+          toml=toml.replace('SUBSTITUIR_PELO_ID_REAL_DO_D1',id).replace('database_name = "dna-auto-staging"', 'database_name = "dna-auto-free"');
           toml+='\n[vars]\nALLOWED_ORIGINS = '+JSON.stringify(Object.values(sites).join(','))+'\nCLIENT_BASE_URL = '+JSON.stringify(sites.CLIENT)+'\n';
           fs.writeFileSync('cloudflare/api/wrangler.toml',toml);
           NODE
