@@ -1,0 +1,21 @@
+package PACKAGE_DNA;
+import android.app.Application;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+public final class DnaApp extends Application {
+    @Override public void onCreate() {
+        super.onCreate();
+        final String appId = __FIREBASE_APP_ID__;
+        final String apiKey = __FIREBASE_API_KEY__;
+        final String projectId = __FIREBASE_PROJECT_ID__;
+        final String senderId = __FIREBASE_SENDER_ID__;
+        if (appId.isEmpty() || apiKey.isEmpty() || projectId.isEmpty() || senderId.isEmpty()) {
+            android.util.Log.w("DNA-PUSH", "Firebase Android não configurado. Push desativado neste APK.");
+            return;
+        }
+        FirebaseOptions options = new FirebaseOptions.Builder()
+            .setApplicationId(appId).setApiKey(apiKey)
+            .setProjectId(projectId).setGcmSenderId(senderId).build();
+        if (FirebaseApp.getApps(this).isEmpty()) FirebaseApp.initializeApp(this, options);
+    }
+}
