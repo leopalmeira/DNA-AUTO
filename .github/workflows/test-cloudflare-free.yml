@@ -24,6 +24,8 @@ jobs:
       - run: npm ci
       - run: node --check cloudflare/api/src/index.mjs && node --check cloudflare/scripts/export-schema.cjs
       - run: node --test cloudflare/api/test/worker.test.mjs
+      - name: Testar exportacao sem dados reais (SQLite para D1)
+        run: node --test cloudflare/scripts/export-live-db.test.cjs
       - run: node cloudflare/scripts/export-schema.cjs /tmp/dna-cloudflare-schema.sql && test -s /tmp/dna-cloudflare-schema.sql
       - name: Validar os tres sites Cloudflare Pages
         run: node --test cloudflare/pages/build.test.cjs

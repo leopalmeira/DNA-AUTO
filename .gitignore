@@ -15,3 +15,10 @@ scratch/
 
 # Artefatos gerados para Cloudflare Pages (nao versionar)
 cloudflare/pages/dist-*/
+
+# Dumps privados e manifests da migracao D1
+*.db-wal
+*.db-shm
+cloudflare/exports/
+*d1-data*.sql
+*d1-data*.sql.manifest.json

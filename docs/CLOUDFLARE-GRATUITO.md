@@ -19,7 +19,7 @@ Etapas obrigatorias antes de qualquer migracao:
 6. Testar cadastro completo, login, services, JWT e historicos com contas de homologacao.
 7. Depois configurar Cloudflare Pages e URL base da API nos aplicativos. So apos validar mudar o trafego e desligar o Render.
 
-Limites Free de referencia: Workers 100 mil requisicoes/dia; D1 5 GB, 5 milhoes linhas lidas/dia e 100 mil gravadas/dia. Cotas ultrapassadas fazem requisicoes falharem. Nao ha garantia de capacidade ilimitada.
+Limites Free de referencia: Workers 100 mil requisicoes/dia; D1 500 MB por banco (5 GB por conta), 5 milhoes linhas lidas/dia e 100 mil gravadas/dia. Cotas ultrapassadas fazem requisicoes falharem. Nao ha garantia de capacidade ilimitada.
 
 Firebase Cloud Storage requer Blaze (faturamento), portanto NAO o usaremos nesta fase. Codigo Firebase anterior permanece opcional/desativado na ausencia de credenciais.
 
@@ -28,3 +28,23 @@ https://developers.cloudflare.com/workers/platform/limits/
 https://developers.cloudflare.com/d1/platform/pricing/
 https://developers.cloudflare.com/pages/platform/limits/
 https://firebase.google.com/docs/storage/faqs-storage-changes-announced-sept-2024
+
+## Exportacao segura do banco real (bloqueada ate haver copia autorizada)
+
+Nao existe dump real de clientes versionado no GitHub. A ferramenta `cloudflare/scripts/export-live-db.cjs` requer um arquivo SQLite de backup **consistente** obtido do Render sem interromper o sistema e um destino fora do repositorio:
+
+```
+node cloudflare/scripts/export-live-db.cjs /copia-privada/dna_auto.db /copia-privada/dna-d1.sql
+```
+
+A ferramenta verifica integridade e chaves estrangeiras, cria snapshot via API nativa SQLite (WAL), rejeita comandos acima do limite de 100 KB do D1, exporta todas as tabelas, registros e indices e gera `dna-d1.sql.manifest.json` com contagens e hashes SHA-256. Os arquivos tem permissoes restritas, nunca devem ir para GitHub nem ser enviados por mensagens. Nao sobrescreve arquivos existentes. O dump inclui dados pessoais e credenciais em hash; proteger e apagar com procedimento seguro apos validacao.
+
+**Importar apenas em D1 NOVO E VAZIO de homologacao**, depois de autorizar Cloudflare e verificar compatibilidade real com Wrangler. Em ambiente autorizado:
+
+```
+npx wrangler d1 execute dna-auto-staging --remote --file=/copia-privada/dna-d1.sql --config=cloudflare/api/wrangler.toml
+```
+
+Se qualquer comando falhar, nao alterar o Render. Comparar para cada tabela `SELECT COUNT(*)`, FKs, IDs, login, cadastro, servicos e historico com o manifesto; fazer novo snapshot final depois de congelar gravacoes para evitar perder alteracoes ocorridas durante a copia. A exportacao por si so **nao realiza importacao**, nao garante D1 pronto, nem substitui a migracao da API sincrona, fotos, notificacoes e WhatsApp.
+
+Atenção: uploads atualmente gravados em disco e sessao Baileys (WhatsApp) nao podem ser substituidos apenas por Pages/Workers/D1; definir armazenamento e integracao gratuitos adequados e testar antes de descontinuar Render. O plano Free pode bloquear operacoes ao exceder cotas.
