@@ -60,6 +60,9 @@ async function workshopService(request, env, user, body, files) {
     if (file.field !== 'invoice' && mime === 'application/pdf') throw new ApiError(400, 'PDF somente para nota fiscal.');
   }
   const serviceId = makeId('srv');
+  const hasProofPhoto = files.some(item => item.field !== 'invoice');
+  const proofLevel = hasProofPhoto ? 4 : 3;
+  const proofStatus = hasProofPhoto ? 'WORKSHOP_PROVEN' : 'WORKSHOP_CONFIRMED';
   const photoFiles = [];
   const invoiceFiles = [];
   try {
@@ -77,9 +80,9 @@ async function workshopService(request, env, user, body, files) {
     }
     const writes = [
       [
-        'INSERT INTO service_records (id, vehicle_id, workshop_id, service_date, mileage, category, service_title, description, parts_cost_cents, labor_cost_cents, total_cost_cents, warranty_months, proof_level, proof_status, workshop_confirmation_status, workshop_confirmation_date, registered_by_user_id, part_photo_url, responsible_technician_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 4, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)',
+        'INSERT INTO service_records (id, vehicle_id, workshop_id, service_date, mileage, category, service_title, description, parts_cost_cents, labor_cost_cents, total_cost_cents, warranty_months, proof_level, proof_status, workshop_confirmation_status, workshop_confirmation_date, registered_by_user_id, part_photo_url, responsible_technician_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?)',
         serviceId, vehicle.id, workshopId, date, mileage, category, title, description,
-        partsCost, labor, total, Number(body.warranty_months || 6), 'WORKSHOP_PROVEN',
+        partsCost, labor, total, Number(body.warranty_months || 6), proofLevel, proofStatus,
         'CONFIRMED', user.id, photoFiles[0]?.url || null,
         getString(body, 'responsible_technician_name') || user.name
       ],
@@ -123,7 +126,7 @@ async function workshopService(request, env, user, body, files) {
     throw err;
   }
   return respond({
-    success: true, serviceId, proof_level: 4, proof_status: 'WORKSHOP_PROVEN',
+    success: true, serviceId, proof_level: proofLevel, proof_status: proofStatus,
     registered_by_user_id: user.id, launched_by_name: user.name,
     responsible_technician_name: user.name, part_photo_url: photoFiles[0]?.url || null,
     total_cost_cents: total, parts_cost_cents: partsCost, labor_cost_cents: labor,
