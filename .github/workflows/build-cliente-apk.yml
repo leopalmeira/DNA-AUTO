@@ -18,11 +18,11 @@ on:
       oficina_version_name:
         description: 'Versão exclusiva do APK da Oficina'
         required: true
-        default: '2.5.7'
+        default: '2.5.8'
       oficina_version_code:
         description: 'Código inteiro exclusivo do APK da Oficina'
         required: true
-        default: '257'
+        default: '258'
       cliente_update_required:
         description: 'Exibir atualização obrigatória do Cliente (somente APK novo assinado)'
         type: boolean
@@ -89,8 +89,8 @@ jobs:
         working-directory: android-oficina
         env:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
-          INPUT_VERSION_NAME: ${{ github.event.inputs.oficina_version_name || '2.5.7' }}
-          INPUT_VERSION_CODE: ${{ github.event.inputs.oficina_version_code || '257' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.oficina_version_name || '2.5.8' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.oficina_version_code || '258' }}
         run: |
           npm install
           node ../scripts/patch-android.js oficina --config-only

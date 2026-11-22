@@ -186,7 +186,14 @@ fs.writeFileSync(mainActivityPath, [
 ].join('\n'));
 
 // 6. Ícones Oficiais do Aplicativo (Substitui ícones padrão do Capacitor)
-const sourceIconPath = path.join(__dirname, '..', 'cliente.app', 'img', 'icons', 'icon-512x512.png');
+if (isOficina) {
+  // Mantém o símbolo do Cliente intocado; os PNGs exclusivos são gerados
+  // antes de injetar os recursos no APK da Oficina.
+  require('node:child_process').execFileSync(process.execPath,
+    [path.join(__dirname,'build-oficina-icons.js')], { stdio: 'inherit' });
+}
+const sourceIconPath = path.join(__dirname,'..',
+  isOficina ? 'oficina.app' : 'cliente.app', 'img', 'icons', 'icon-512x512.png');
 const mipmapDirs = [
   'mipmap-mdpi',
   'mipmap-hdpi',

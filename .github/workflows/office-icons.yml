@@ -1,0 +1,36 @@
+name: Publicar icones exclusivos DNA Oficina
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'oficina.app/img/icons/icon-oficina.svg'
+      - 'scripts/build-oficina-icons.js'
+      - '.github/workflows/office-icons.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  icons:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar renderizador de icones
+        run: npm install --no-audit --no-fund --prefix android-oficina
+      - name: Gerar todas as resolucoes de icone
+        run: node scripts/build-oficina-icons.js
+      - name: Conferir icone exclusivo
+        run: |
+          node -e "const f=require('fs');const x=f.readFileSync('oficina.app/img/icons/icon-512x512.png');if(x.subarray(0,8).toString('hex')!=='89504e470d0a1a0a'||x.readUInt32BE(16)!==512)process.exit(1)"
+          node -e "const f=require('fs'),h=require('crypto').createHash;const a=h('sha256').update(f.readFileSync('oficina.app/img/icons/icon-512x512.png')).digest('hex');const b=h('sha256').update(f.readFileSync('cliente.app/img/icons/icon-512x512.png')).digest('hex');if(a===b)process.exit(1)"
+      - name: Publicar imagens PNG no GitHub
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add oficina.app/img/icons/icon-192x192.png oficina.app/img/icons/icon-512x512.png oficina.app/img/icons/maskable-icon-512x512.png oficina.app/img/icons/apple-touch-icon.png oficina.app/img/icons/favicon.png
+          if ! git diff --cached --quiet; then
+            git commit -m "assets(oficina): publicar ícones exclusivos em PNG"
+            git push origin HEAD:master
+          fi
