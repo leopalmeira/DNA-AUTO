@@ -3767,8 +3767,8 @@ const OwnerView = {
             id: w.id,
             isOrigin: w.is_origin === true,
             name: w.name || w.trade_name || 'Oficina Credenciada',
-            rating: w.rating || '5.0',
-            reviews: w.reviews || '1',
+            rating: w.rating || '',
+            reviews: w.reviews || '',
             distance: w.distance || '',
             uf: w.state || '',
             city: w.city || '',
@@ -3777,6 +3777,7 @@ const OwnerView = {
             phone: String(w.phone || '').replace(/\D/g, ''),
             address: w.address || `${w.city || ''} ${w.state || ''}`.trim()
         }));
+        list.sort((a, b) => Number(b.isOrigin) - Number(a.isOrigin));
 
         if (q) {
             list = list.filter(w =>
@@ -3824,7 +3825,7 @@ const OwnerView = {
                                 <div class="dna-print-ws-title-row">
                                     <h5 class="dna-print-ws-title">${w.name}</h5>
                                     ${w.isOrigin ? '<span style="font-size:10px;font-weight:800;color:#0063cf;background:#dbeafe;padding:5px 8px;border-radius:999px;">★ Sua oficina de origem</span>' : ''}
-                                    <span class="dna-print-ws-rating">⭐ ${w.rating}</span>
+                                    ${w.rating ? `<span class="dna-print-ws-rating">⭐ ${w.rating}</span>` : ''}
                                 </div>
 
                                 <p class="dna-print-ws-specs"><b>Atuação:</b> ${w.specialties}</p>
@@ -4090,7 +4091,10 @@ const OwnerView = {
     // evitando marcar falsamente a primeira da lista como oficina de origem.
     openSchedulingModal(serviceName = '') {
         if (typeof window.openBookingWorkshopPicker === 'function') {
-            window.openBookingWorkshopPicker(serviceName);
+            const selected = (this.vehicleData?.id ||
+                (this.vehicleData?.license_plate && this.vehicleData.license_plate !== '---'))
+                ? this.vehicleData : null;
+            window.openBookingWorkshopPicker(serviceName, selected);
             return;
         }
         // Compatibilidade com páginas antigas sem o seletor: mostrar a rede
