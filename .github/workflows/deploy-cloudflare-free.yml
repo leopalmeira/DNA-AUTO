@@ -43,11 +43,11 @@ jobs:
           npx --yes wrangler@4 d1 list --json > "$RUNNER_TEMP/d1-list.json"
           DATABASE_ID="$(node -e 'const x=require(process.argv[1]);const a=Array.isArray(x)?x:x.result||[];const d=a.find(v=>v.name==="dna-auto-free");if(d)process.stdout.write(d.uuid||d.id||"")' "$RUNNER_TEMP/d1-list.json")"
           if [ -z "$DATABASE_ID" ]; then
-            npx --yes wrangler@4 d1 create dna-auto-free --json > "$RUNNER_TEMP/d1-create.json"
+            npx --yes wrangler@4 d1 create dna-auto-free > "$RUNNER_TEMP/d1-create.log"
             npx --yes wrangler@4 d1 list --json > "$RUNNER_TEMP/d1-list.json"
             DATABASE_ID="$(node -e 'const x=require(process.argv[1]);const a=Array.isArray(x)?x:x.result||[];const d=a.find(v=>v.name==="dna-auto-free");if(d)process.stdout.write(d.uuid||d.id||"")' "$RUNNER_TEMP/d1-list.json")"
           fi
-          test -n "$DATABASE_ID"
+          test -n "$DATABASE_ID" || { echo "::error::D1 nao encontrado"; exit 1; }
           echo "DNA_D1_DATABASE_ID=$DATABASE_ID" >> "$GITHUB_ENV"
       - name: Preparar URLs cloudflare e ligação do banco
         shell: bash
@@ -70,8 +70,27 @@ jobs:
       - name: Instalar esquema e roles SEM dados do Render
         shell: bash
         run: |
-          npx --yes wrangler@4 d1 execute dna-auto-free --remote --file="$RUNNER_TEMP/dna-empty-schema.sql" --config=cloudflare/api/wrangler.toml
-          npx --yes wrangler@4 d1 execute dna-auto-free --remote --file=cloudflare/api/sql/seed-roles.sql --config=cloudflare/api/wrangler.toml
+          npx --yes wrangler@4 d1 execute dna-auto-free --remote --command="SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';" --json --config=cloudflare/api/wrangler.toml > "$RUNNER_TEMP/d1-state.json"
+          EXISTING="$(node -e '
+            const v=require(process.argv[1]);
+            const row=Array.isArray(v)?v[0]:v;
+            const n=row?.results?.[0]?.n ?? row?.[0]?.results?.[0]?.n;
+            if(!Number.isInteger(n)){console.error("Estado remoto D1 inesperado");process.exit(2);}
+            process.stdout.write(String(n));
+          ' "$RUNNER_TEMP/d1-state.json")"
+          if [ "$EXISTING" -eq 0 ]; then
+            npx --yes wrangler@4 d1 execute dna-auto-free --remote --yes --file="$RUNNER_TEMP/dna-empty-schema.sql" --config=cloudflare/api/wrangler.toml
+            npx --yes wrangler@4 d1 execute dna-auto-free --remote --yes --file=cloudflare/api/sql/seed-roles.sql --config=cloudflare/api/wrangler.toml
+          else
+            echo "::notice::D1 ja contem tabelas, nenhuma importacao automatica realizada."
+          fi
+          npx --yes wrangler@4 d1 execute dna-auto-free --remote --command="SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name IN ('roles','users','workshops','vehicles','service_records','client_activations');" --json --config=cloudflare/api/wrangler.toml > "$RUNNER_TEMP/d1-required.json"
+          node -e '
+            const v=require(process.argv[1]);
+            const row=Array.isArray(v)?v[0]:v;
+            const n=row?.results?.[0]?.n ?? row?.[0]?.results?.[0]?.n;
+            if(n!==6){console.error("Erro: banco D1 com esquema incompleto");process.exit(1);}
+          ' "$RUNNER_TEMP/d1-required.json"
       - name: Publicar API Worker com segredos
         shell: bash
         run: |
