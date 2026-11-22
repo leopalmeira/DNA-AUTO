@@ -1,0 +1,9 @@
+name = "dna-auto-api-ci"
+main = "src/index.mjs"
+compatibility_date = "2026-11-22"
+workers_dev = false
+
+[[d1_databases]]
+binding = "DB"
+database_name = "dna-auto-staging"
+database_id = "00000000-0000-4000-8000-000000000001"

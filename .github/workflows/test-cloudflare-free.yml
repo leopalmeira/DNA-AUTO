@@ -27,5 +27,7 @@ jobs:
       - name: Testar exportacao sem dados reais (SQLite para D1)
         run: node --test cloudflare/scripts/export-live-db.test.cjs
       - run: node cloudflare/scripts/export-schema.cjs /tmp/dna-cloudflare-schema.sql && test -s /tmp/dna-cloudflare-schema.sql
+      - name: Validar SQL gerado no emulador Cloudflare D1 (sem credenciais)
+        run: npx --yes wrangler@4 d1 execute dna-auto-staging --local --file=/tmp/dna-cloudflare-schema.sql --config=cloudflare/api/wrangler.ci.toml
       - name: Validar os tres sites Cloudflare Pages
         run: node --test cloudflare/pages/build.test.cjs
