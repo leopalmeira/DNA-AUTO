@@ -4054,6 +4054,35 @@ const OwnerView = {
         }
     },
 
+    sendSchedulingWhatsApp(workshopIndex) {
+        const service = (document.getElementById('dna-scheduling-service')?.value || '').trim();
+        const date = document.getElementById('dna-scheduling-date')?.value || '';
+        const time = document.getElementById('dna-scheduling-time')?.value || '';
+        const feedback = document.getElementById('dna-scheduling-feedback');
+        const fail = msg => { if (feedback) feedback.textContent = msg; };
+        if (!service || !date || !time) return fail('Informe o serviço, dia e horário antes de enviar.');
+        if (Date.parse(date + 'T' + time) < Date.now()) return fail('Escolha um dia e horário futuros.');
+        const choices = Array.isArray(this.workshopsList) ? this.workshopsList : [];
+        const preferred = choices.find(w => w.installed_here) || choices[0];
+        const ordered = preferred ? [preferred, ...choices.filter(w => w.id !== preferred.id)] : [];
+        const workshop = ordered[workshopIndex];
+        const digits = String(workshop?.whatsapp || workshop?.phone || '').replace(/\D/g, '');
+        const phone = digits.startsWith('55') ? digits : '55' + digits;
+        if (!workshop || !/^55\d{10,11}$/.test(phone)) return fail('A oficina não tem WhatsApp válido cadastrado.');
+        const vehicle = this.vehicleData || {};
+        if (!vehicle.license_plate || vehicle.license_plate === '---') return fail('Cadastre seu veículo antes de agendar.');
+        const msg = [
+            'Olá, ' + workshop.name + '! Sou ' + (vehicle.user_name || 'cliente DNA AUTO') + '.',
+            'Gostaria de solicitar: ' + service + '.',
+            'Veículo: ' + (vehicle.full_title || vehicle.brand + ' ' + vehicle.model) + '.',
+            'Placa: ' + vehicle.license_plate + '.',
+            'Data desejada: ' + date.split('-').reverse().join('/') + '.',
+            'Horário desejado: ' + time + '.',
+            'Por favor, confirme a disponibilidade. Obrigado!'
+        ].join('\n');
+        // Apenas abre o WhatsApp pessoal do cliente; a API comercial não é acionada.
+        window.location.href = 'https://wa.me/' + phone + '?text=' + encodeURIComponent(msg);
+    },
     // ── MODAL: REVISÃO E AGENDAMENTO (LINK DIRETO COM OFICINA DE INSTALAÇÃO OU ESCOLHER OUTRA) ──
     openSchedulingModal() {
         const v = this.vehicleData || {};
@@ -4105,6 +4134,15 @@ const OwnerView = {
                 </div>
 
                 <div class="modal-body" style="padding:18px; display:flex; flex-direction:column; gap:14px; max-height:80vh; overflow-y:auto;">
+<div style="display:grid;gap:8px;padding:14px;background:#12253C;border:1px solid #00D4FF;border-radius:12px;">
+  <strong style="font-size:16px;color:#FFFFFF;">Selecione a manutenção, dia e horário</strong>
+  <label style="font-size:13px;color:#FFFFFF;">Serviço<input id="dna-scheduling-service" maxlength="120" value="Manutenção preventiva" style="display:block;width:100%;box-sizing:border-box;padding:12px;border-radius:8px;background:#FFFFFF;color:#0F172A;" /></label>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+    <label style="font-size:13px;color:#FFFFFF;">Dia<input id="dna-scheduling-date" type="date" style="display:block;width:100%;box-sizing:border-box;padding:10px;background:#FFFFFF;color:#0F172A;border-radius:8px;" /></label>
+    <label style="font-size:13px;color:#FFFFFF;">Horário<input id="dna-scheduling-time" type="time" value="09:00" style="display:block;width:100%;box-sizing:border-box;padding:10px;background:#FFFFFF;color:#0F172A;border-radius:8px;" /></label>
+  </div>
+  <div id="dna-scheduling-feedback" role="status" aria-live="polite" style="font-size:12px;color:#BAE6FD;">Escolha a oficina abaixo. O WhatsApp será aberto com a mensagem pronta; você confirma o envio.</div>
+</div>
                     <!-- Card Destacado: Oficina Onde Foi Instalado o Equipamento (PREFERENCIAL) -->
                     <div style="background:linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(16,27,46,0.95) 100%); border:2px solid #00D4FF; border-radius:14px; padding:16px; position:relative; box-shadow:0 4px 20px rgba(0,212,255,0.15);">
                         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
@@ -4123,9 +4161,9 @@ const OwnerView = {
                         </div>
 
                         <!-- Botão Agendar Direto via WhatsApp -->
-                        <a href="https://wa.me/55${cleanPhone}?text=${waText}" target="_blank" class="btn btn-primary" style="background:linear-gradient(135deg, #10B981 0%, #059669 100%); color:#FFFFFF; font-weight:800; font-size:13px; padding:12px; border-radius:8px; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 15px rgba(16,185,129,0.35);">
+                        <a href="#" onclick="event.preventDefault(); OwnerView.sendSchedulingWhatsApp(0);" target="_blank" class="btn btn-primary" style="background:linear-gradient(135deg, #10B981 0%, #059669 100%); color:#FFFFFF; font-weight:800; font-size:13px; padding:12px; border-radius:8px; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 4px 15px rgba(16,185,129,0.35);">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-                            <span>Agendar Revisão na Oficina Preferencial</span>
+                            <span>Solicitar pelo WhatsApp da oficina</span>
                         </a>
                     </div>
 
@@ -4152,7 +4190,7 @@ const OwnerView = {
                                             <span>⭐ ${w.rating}</span> • <span>${w.neighborhood} (${w.distance})</span>
                                         </div>
                                     </div>
-                                    <a href="https://wa.me/55${wPhone}?text=${waMsg}" target="_blank" class="btn btn-sm" style="background:#0066FF; color:#FFFFFF; font-weight:700; font-size:11px; padding:6px 12px; border-radius:6px; text-decoration:none; white-space:nowrap;">
+                                    <a href="#" onclick="event.preventDefault(); OwnerView.sendSchedulingWhatsApp(${otherWorkshops.indexOf(w) + 1});" target="_blank" class="btn btn-sm" style="background:#0066FF; color:#FFFFFF; font-weight:700; font-size:11px; padding:6px 12px; border-radius:6px; text-decoration:none; white-space:nowrap;">
                                         Agendar
                                     </a>
                                 </div>
