@@ -19,7 +19,22 @@ router.get('/catalog/parts', (req, res) => {
 });
 
 // Registrar Serviço pela Oficina (Nível 4: ✅ SERVIÇO COMPROVADO)
-router.post('/workshop-register', authenticateToken, (req, res, next) => {
+// Somente colaboradores de oficinas com permissão de comprovar serviços ou ADMIN
+// podem concluir manutenções. O login de CLIENTE não autoriza essa operação.
+function requireWorkshopProofPermission(req, res, next) {
+    if (req.user?.role_code === 'ADMIN') return next();
+    const linkedWorkshop = req.user?.workshop;
+    if (!linkedWorkshop?.workshop_id || Number(linkedWorkshop.can_prove_services) !== 1) {
+        return res.status(403).json({
+            success: false,
+            code: 'WORKSHOP_PROOF_REQUIRED',
+            error: 'Somente a oficina responsável pode registrar ou confirmar manutenções.'
+        });
+    }
+    next();
+}
+
+router.post('/workshop-register', authenticateToken, requireWorkshopProofPermission, (req, res, next) => {
     upload.fields([
         { name: 'photos', maxCount: 6 },
         { name: 'invoice', maxCount: 1 }
@@ -55,6 +70,16 @@ router.post('/workshop-register', authenticateToken, (req, res, next) => {
         } = req.body;
 
         // Foto e nota fiscal opcionais; valores informados em centavos.
+        // Impede que um funcionário registre serviços em nome de outra oficina.
+        if (req.user?.role_code !== 'ADMIN' && workshop_id &&
+            String(workshop_id) !== String(req.user?.workshop?.workshop_id)) {
+            return res.status(403).json({
+                success: false,
+                code: 'WORKSHOP_SCOPE_MISMATCH',
+                error: 'Esta conta não possui vínculo com a oficina informada.'
+            });
+        }
+
         const parsedPartsForValidation = (() => {
             try {
                 const data = typeof parts_json === 'string' ? JSON.parse(parts_json) : (parts_json || []);
@@ -740,7 +765,7 @@ router.post('/owner-declare', authenticateToken, upload.fields([
 
 // Decisão da Oficina sobre Serviço Declarado pelo Proprietário (Item 21)
 // Opções: CONFIRMAR, NÃO RECONHEÇO, SOLICITAR MAIS INFORMAÇÕES
-router.post('/:id/confirm-decision', authenticateToken, (req, res) => {
+router.post('/:id/confirm-decision', authenticateToken, requireWorkshopProofPermission, (req, res) => {
     try {
         const serviceId = req.params.id;
         const { decision, notes } = req.body;
@@ -759,6 +784,17 @@ router.post('/:id/confirm-decision', authenticateToken, (req, res) => {
 
         if (!service) {
             return res.status(404).json({ error: 'Registro de serviço não encontrado.' });
+        }
+
+        // A confirmação só pode partir da oficina vinculada ao serviço.
+        if (req.user?.role_code !== 'ADMIN' &&
+            (!service.workshop_id ||
+                String(service.workshop_id) !== String(req.user?.workshop?.workshop_id))) {
+            return res.status(403).json({
+                success: false,
+                code: 'WORKSHOP_SCOPE_MISMATCH',
+                error: 'A confirmação só pode ser realizada pela oficina responsável.'
+            });
         }
 
         let newProofLevel = service.proof_level;
