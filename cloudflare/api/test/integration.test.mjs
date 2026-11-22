@@ -138,6 +138,11 @@ test('integração completa D1: bootstrap, oficina, cliente, login, serviço e h
   const serviceBody = await srv.json();
   assert.equal(srv.status, 201, JSON.stringify(serviceBody));
   assert.equal(serviceBody.total_cost_cents, 15500);
+  assert.equal(serviceBody.proof_level, 3, 'sem foto nao e prova nivel 4');
+  assert.equal(serviceBody.proof_status, 'WORKSHOP_CONFIRMED');
+  assert.equal(serviceBody.attendance_fee, null, 'sem foto nao deve faturar taxa');
+  assert.equal(sqlite.prepare('SELECT proof_level FROM service_records WHERE id = ?').get(serviceBody.serviceId).proof_level, 3);
+
   const customerHistory = await call('/vehicles/' + client.json.vehicle.id + '/history', 'GET', undefined, clientToken);
   assert.equal(customerHistory.status, 200);
   assert.equal(customerHistory.json.services.length, 1);
