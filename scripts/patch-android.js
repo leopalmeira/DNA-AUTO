@@ -162,6 +162,7 @@ fs.writeFileSync(mainActivityPath, [
   '    protected void onCreate(Bundle savedInstanceState) {',
   ...(isOficina ? [] : ['        registerPlugin(DnaMileagePlugin.class);', '        registerPlugin(DnaPushPlugin.class);']),
   '        super.onCreate(savedInstanceState);',
+  ...(!isOficina ? ['        handlePushOpen(getIntent());'] : []),
   '        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);',
   '        getWindow().setStatusBarColor(Color.TRANSPARENT);',
   `        getWindow().setNavigationBarColor(Color.parseColor("${navBarColor}"));`,
@@ -181,6 +182,20 @@ fs.writeFileSync(mainActivityPath, [
     '        }'
   ]),
   '    }',
+  ...(!isOficina ? [
+    '    @Override protected void onNewIntent(android.content.Intent intent) {',
+    '        super.onNewIntent(intent);',
+    '        setIntent(intent);',
+    '        handlePushOpen(intent);',
+    '    }',
+    '    private void handlePushOpen(android.content.Intent intent) {',
+    '        if (intent == null) return;',
+    '        String delivery = intent.getStringExtra("dna_push_open_id");',
+    '        if (delivery != null && !delivery.isEmpty()) {',
+    '            getSharedPreferences("dna_push", 0).edit().putString("opened_id", delivery).apply();',
+    '        }',
+    '    }'
+  ] : []),
   '}',
   ''
 ].join('\n'));
