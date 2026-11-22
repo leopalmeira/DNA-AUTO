@@ -15,7 +15,7 @@ if (!Object.hasOwn(mapping, type)) {
 }
 function getApiBaseUrl() {
     const raw = String(process.env.DNA_API_BASE_URL || '').trim();
-    if (!raw) return null;
+    if (!raw) throw Error('DNA_API_BASE_URL e obrigatoria para publicar um Pages independente.');
     let url;
     try { url = new URL(raw); } catch { throw Error('DNA_API_BASE_URL precisa ser URL HTTPS valida.'); }
     if (url.protocol !== 'https:' || !url.hostname || url.username || url.password ||
@@ -24,7 +24,20 @@ function getApiBaseUrl() {
     }
     return url.origin + url.pathname;
 }
+function getSiteBase(name) {
+    const raw = String(process.env[name] || '').trim();
+    let url;
+    try { url = new URL(raw); } catch { throw Error(name + ' precisa de URL HTTPS valida.'); }
+    if (url.protocol !== 'https:' || url.pathname !== '/' || url.username || url.password || url.search || url.hash ||
+        url.hostname.endsWith('.onrender.com')) {
+        throw Error(name + ' deve ser um endereco HTTPS independente do Render (somente dominio).');
+    }
+    return url.origin;
+}
 const apiBaseUrl = getApiBaseUrl();
+const clientBase = getSiteBase('DNA_CLIENT_BASE_URL');
+const workshopBase = getSiteBase('DNA_OFICINA_BASE_URL');
+const adminBase = getSiteBase('DNA_ADMIN_BASE_URL');
 const config = mapping[type];
 const dir = path.join(__dirname, config.output);
 fs.rmSync(dir, { recursive: true, force: true });
@@ -50,6 +63,28 @@ fs.writeFileSync(path.join(dir, '_headers'), [
     '/sw.js', '  Cache-Control: no-store, max-age=0',
     '/manifest.json', '  Cache-Control: no-store, max-age=0', ''
 ].join('\n'));
+// Elimina referencia a Render em TODOS os arquivos textuais publicados nos tres Pages.
+function rewriteTextLinks(directory) {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+        const full = path.join(directory, entry.name);
+        if (entry.isDirectory()) { rewriteTextLinks(full); continue; }
+        if (!entry.isFile() || !/\.(html|js|css|json|xml|txt)$/i.test(entry.name)) continue;
+        let original = fs.readFileSync(full, 'utf8');
+        const changed = original
+            .replace(/https:\/\/[a-z0-9-]+\.onrender\.com\/cliente(?:\/?)/gi, clientBase + '/')
+            .replace(/https:\/\/[a-z0-9-]+\.onrender\.com\/oficina(?:\/?)/gi, workshopBase + '/')
+            .replace(/https:\/\/[a-z0-9-]+\.onrender\.com/gi, adminBase);
+        if (changed !== original) fs.writeFileSync(full, changed);
+    }
+}
+rewriteTextLinks(dir);
+fs.writeFileSync(path.join(dir, '_redirects'), [
+    '/cliente ' + clientBase + '/ 302',
+    '/oficina ' + workshopBase + '/ 302',
+    '/admin / 302',
+    '/representante /representante.html 200',
+    ''
+].join('\\n'));
 if (!fs.existsSync(path.join(dir, 'index.html'))) throw new Error('index.html ausente no build.');
 console.log('Cloudflare Pages: site "' + type + '" preparado em ' + dir +
     (apiBaseUrl ? ' usando API externa configurada.' : ' (API relativa; homologacao pendente).'));

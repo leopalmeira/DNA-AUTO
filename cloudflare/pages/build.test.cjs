@@ -8,9 +8,14 @@ const directory = path.resolve(__dirname);
 const root = path.resolve(directory, '..', '..');
 const command = path.join(directory, 'build.cjs');
 const apiUrl = 'https://dna-api-staging.example.workers.dev/api/v1';
+const urls = {
+    DNA_CLIENT_BASE_URL: 'https://dna-cliente.example.pages.dev',
+    DNA_OFICINA_BASE_URL: 'https://dna-oficina.example.pages.dev',
+    DNA_ADMIN_BASE_URL: 'https://dna-admin.example.pages.dev'
+};
 function build(name, envUrl = '') {
     return execFileSync(process.execPath, [command, name], {
-        cwd: root, stdio: 'pipe', env: { ...process.env, DNA_API_BASE_URL: envUrl }
+        cwd: root, stdio: 'pipe', env: { ...process.env, ...urls, DNA_API_BASE_URL: envUrl || apiUrl }
     });
 }
 for (const name of ['cliente', 'oficina', 'admin']) {
@@ -24,7 +29,9 @@ for (const name of ['cliente', 'oficina', 'admin']) {
             assert.ok(fs.existsSync(path.join(dist, 'js', 'api.js')));
             if (name !== 'admin') assert.ok(fs.existsSync(path.join(dist, name + '.app', 'index.html')));
             const source = name === 'admin' ? path.join(root, 'public', 'index.html') : path.join(root, name + '.app', 'index.html');
-            assert.equal(fs.readFileSync(path.join(dist, 'index.html'), 'utf8'), fs.readFileSync(source, 'utf8'));
+            assert.ok(fs.readFileSync(path.join(dist, 'index.html'), 'utf8').length > 0);
+            assert.ok(fs.existsSync(path.join(dist, '_redirects')));
+            assert.ok(!fs.readFileSync(path.join(dist, 'index.html'), 'utf8').includes('onrender.com'));
         } finally { fs.rmSync(dist, { recursive: true, force: true }); }
     });
     test('Cloudflare Pages injeta API HTTPS so nos builds de ' + name, () => {
@@ -47,8 +54,17 @@ test('build recusa URL insegura de API e nao inclui credenciais', () => {
         'https://example.com/api/v1?token=abc'
     ]) {
         const result = spawnSync(process.execPath, [command, 'cliente'], {
-            cwd: root, encoding: 'utf8', env: { ...process.env, DNA_API_BASE_URL: value }
+            cwd: root, encoding: 'utf8', env: { ...process.env, ...urls, DNA_API_BASE_URL: value }
         });
         assert.notEqual(result.status, 0, value);
     }
+});
+
+test('build sem as quatro URLs falha, evitando publicar site que aponte ao Render', () => {
+    const res = spawnSync(process.execPath, [command, 'cliente'], {
+        cwd: root, encoding: 'utf8',
+        env: { ...process.env, DNA_API_BASE_URL: apiUrl, DNA_CLIENT_BASE_URL: '',
+            DNA_OFICINA_BASE_URL: '', DNA_ADMIN_BASE_URL: '' }
+    });
+    assert.notEqual(res.status, 0);
 });

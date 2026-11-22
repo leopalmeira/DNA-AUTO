@@ -26,3 +26,14 @@ O script agora reescreve apenas as COPIAS geradas de js/api.js e seus caminhos l
 Teste: node --test cloudflare/pages/build.test.cjs
 
 Importante: build nao equivale a deploy e nunca desliga o Render.
+
+## Modo somente Cloudflare (nova instalacao)
+
+O build exige **quatro** variaveis de ambiente HTTPS, definidas em cada projeto Pages:
+
+- DNA_API_BASE_URL: URL do Worker terminando em /api/v1.
+- DNA_CLIENT_BASE_URL: dominio do Pages Cliente.
+- DNA_OFICINA_BASE_URL: dominio do Pages Oficina.
+- DNA_ADMIN_BASE_URL: dominio do Pages Admin.
+
+Os builds param com erro se alguma estiver ausente. Arquivos HTML/JS/JSON/CSS copiados para Pages tem URLs antigas onrender.com substituidas pelos dominios Cloudflare e links /cliente, /oficina e /representante redirecionados. O repositorio original NAO e modificado; apenas artefatos gerados. O Render jamais e chamado pelos novos sites. Os enderecos reais devem ser preenchidos somente apos criar os projetos na sua conta Cloudflare.
