@@ -457,8 +457,8 @@
             const isNativeShell = Boolean(isCapacitor || isWebView || urlVer || urlCode);
             return {
                 isNativeShell,
-                version: urlVer || localStorage.getItem('dna_oficina_apk_version') || null,
-                versionCode: Number(urlCode || localStorage.getItem('dna_oficina_apk_version_code') || 0) || null
+                version: isNativeShell ? (urlVer || localStorage.getItem('dna_oficina_apk_version') || null) : null,
+                versionCode: isNativeShell ? (Number(urlCode || localStorage.getItem('dna_oficina_apk_version_code') || 0) || null) : null
             };
         }
 
