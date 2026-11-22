@@ -10086,6 +10086,7 @@ async function carregarDadosUsuarioLogado() {
 }
 
 function fazerLogoutDoApp() {
+  if (window.DnaPushClient?.unregister) void window.DnaPushClient.unregister();
   closeProfileModal();
   closeCarModal();
   closeServiceDetailModal();
