@@ -13,6 +13,12 @@ async function main() {
     assert.ok(html.includes("openBookingWorkshopPicker(window.__dnaLastPreventivaService || '')"),
         'Agendamento da revisão deve preservar serviço escolhido');
     assert.ok(!html.includes("license_plate: 'BRA2E19'"), 'Proibidos dados fictícios no envio');
+    assert.ok(html.includes("btnSchedule.onclick = () => {") &&
+        html.includes('openBookingWorkshopPicker();'),
+        'Botão Agendar Serviço do mapa também deve abrir a lista com prioridade');
+    assert.ok(html.includes("let v = selectedVehicle || window.currentRegisteredVehicle || null;"),
+        'A versão SPA deve permitir agendamento para o veículo ativo, sem herdar outro');
+
 
     const ownerView = read('cliente.app/js/components/ownerView.js');
     assert.equal(ownerView,read('public/js/components/ownerView.js'),
@@ -27,6 +33,10 @@ async function main() {
         'Não pode haver outro carregador sobrescrevendo a prioridade por veículo');
         assert.ok(html.includes("async function openBookingWorkshopPicker(serviceName = '', selectedVehicle = null)"),
         'A seleção deve aceitar explicitamente o veículo ativo da conta');
+    assert.ok(ownerView.includes("list = data.workshops"),
+        'Lista alternativa deve usar o mesmo catálogo autenticado do agendamento');
+    assert.ok(ownerView.includes('list.sort((a, b) => Number(b.isOrigin) - Number(a.isOrigin))'),
+        'Oficina que ativou o veículo deve permanecer em primeiro na outra interface');
     assert.ok(ownerView.includes('window.openBookingWorkshopPicker(serviceName, selected)'),
         'Todo agendamento pela tela alternativa deve abrir o seletor preferencial');
     assert.ok(!ownerView.includes("list.find(w => w.installed_here) || list[0]"),
@@ -38,12 +48,11 @@ async function main() {
     const loaderText = ownerView.slice(loaderStart, loaderEnd);
     const ownerLoader = new Function('API', 'localStorage', 'fetch', 'console',
         'return ({' + loaderText + '\n}).fetchWorkshopsNetwork;')(
-        {getWorkshopsNetwork: async () => ({success:true,workshops:[
-            {id:'ws_a',name:'Outra Oficina'}, {id:'ws_z',name:'Minha Oficina'}
-        ]})},
+        {},
         {getItem: key => key === 'dna_token' ? 'token-teste' : null},
         async url => ({ok:true,json:async () => ({success:true,workshops:[
-            {id:url.includes('veh2') ? 'ws_a' : 'ws_z',is_origin:true,name:'Preferida'}
+            {id:'ws_a',name:'Outra Oficina',is_origin:url.includes('veh2')},
+            {id:'ws_z',name:'Minha Oficina',is_origin:!url.includes('veh2')}
         ]})}),
         console
     );
@@ -177,6 +186,13 @@ async function main() {
     assert.equal(data.license_plate,'ABC1D23');
     assert.equal(data.owner_name,'Cliente Teste');
     assert.ok(messages.some(m=>m.includes('Agendamento confirmado')));
+    // Seleção explícita de outro veículo não pode reutilizar a oficina anterior.
+    await api.openBookingWorkshopPicker('Alinhamento', {
+        id:'veh2',license_plate:'XYZ9E99',brand:'Honda',model:'Fit'
+    });
+    assert.ok(calls.some(c => c.url.includes('/vehicles/veh2/booking-workshops')),
+        'Agendamento do segundo carro precisa consultar seu próprio vínculo');
+
     console.log('✅ Agendamento preferencial, escolha alternativa, proteção do veículo e dados reais: OK');
 }
 main().catch(err=>{console.error(err);process.exitCode=1;});
