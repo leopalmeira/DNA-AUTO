@@ -23,6 +23,16 @@ on:
         description: 'Código inteiro exclusivo do APK da Oficina'
         required: true
         default: '257'
+      cliente_update_required:
+        description: 'Exibir atualização obrigatória do Cliente (somente APK novo assinado)'
+        type: boolean
+        required: false
+        default: false
+      oficina_update_required:
+        description: 'Exibir atualização obrigatória da Oficina (somente APK novo assinado)'
+        type: boolean
+        required: false
+        default: false
   push:
     branches:
       - master
@@ -95,7 +105,7 @@ jobs:
       # O APK debug muda a assinatura a cada runner. Nunca publicar debug como
       # atualização de produção: usar a MESMA chave privada em todos os builds.
       - name: Assinar APKs de produção com keystore persistente
-        if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
+        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
         env:
           DNA_ANDROID_KEYSTORE_BASE64: ${{ secrets.DNA_ANDROID_KEYSTORE_BASE64 }}
           DNA_ANDROID_STORE_PASSWORD: ${{ secrets.DNA_ANDROID_STORE_PASSWORD }}
@@ -128,7 +138,46 @@ jobs:
             rm "dna-auto-$item-aligned.apk"
           done
 
+      # Assinatura Android é a identidade do app. Se mudar, atualizar sem desinstalar é impossível.
+      # Não substitua o APK anterior por um binário com assinatura diferente.
+      - name: Garantir compatibilidade com assinatura dos APKs já publicados
+        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if gh release view apk-latest >/dev/null 2>&1; then
+            mkdir -p /tmp/dna-previous-apks
+            gh release download apk-latest --pattern 'dna-auto-*.apk' --dir /tmp/dna-previous-apks
+            BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n1)
+            for item in cliente oficina; do
+              PREVIOUS="/tmp/dna-previous-apks/dna-auto-$item.apk"
+              NEXT="dna-auto-$item.apk"
+              if [ -s "$PREVIOUS" ]; then
+                PREVIOUS_SHA=$("$BUILD_TOOLS/apksigner" verify --print-certs "$PREVIOUS" | awk -F ': ' '/Signer #1 certificate SHA-256 digest/{print $2;exit}')
+                NEXT_SHA=$("$BUILD_TOOLS/apksigner" verify --print-certs "$NEXT" | awk -F ': ' '/Signer #1 certificate SHA-256 digest/{print $2;exit}')
+                test -n "$PREVIOUS_SHA" && test -n "$NEXT_SHA"
+                if [ "${PREVIOUS_SHA,,}" != "${NEXT_SHA,,}" ]; then
+                  echo "::error::Assinatura Android incompatível com o APK $item já instalado. Recuperar a keystore ORIGINAL (não gerar outra) para atualizar sem desinstalar."
+                  exit 1
+                fi
+              fi
+            done
+          fi
+
+      - name: Criar manifesto de versões assinadas e obrigatoriedade individual
+        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
+        env:
+          CLIENTE_VERSION: ${{ github.event.inputs.version_name }}
+          CLIENTE_CODE: ${{ github.event.inputs.version_code }}
+          OFICINA_VERSION: ${{ github.event.inputs.oficina_version_name }}
+          OFICINA_CODE: ${{ github.event.inputs.oficina_version_code }}
+          CLIENTE_REQUIRED: ${{ github.event.inputs.cliente_update_required }}
+          OFICINA_REQUIRED: ${{ github.event.inputs.oficina_update_required }}
+        run: node scripts/generate-apk-release-manifest.js
+
       - name: Extrair SHA-256 dos Certificados
+        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
         id: cert
         run: |
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n1)
@@ -141,24 +190,28 @@ jobs:
           echo "sha256_oficina=$SHA_OFICINA" >> $GITHUB_OUTPUT
 
       - name: Publicar Artifacts dna-auto-apks
+        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: dna-auto-apks
           path: |
             dna-auto-cliente.apk
             dna-auto-oficina.apk
+            dna-auto-release.json
 
       - name: Publicar Release Pública 'apk-latest'
-        if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
+        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VNAME="Cliente v${{ github.event.inputs.version_name || '2.5.6' }} / Oficina v${{ github.event.inputs.oficina_version_name || '2.5.7' }}"
           if gh release view apk-latest >/dev/null 2>&1; then
+            gh release delete-asset apk-latest dna-auto-release.json -y >/dev/null 2>&1 || true
             gh release upload apk-latest dna-auto-cliente.apk dna-auto-oficina.apk --clobber
+            gh release upload apk-latest dna-auto-release.json --clobber
             gh release edit apk-latest --title "DNA AUTO APKs — ${VNAME}" --notes "APKs assinados com keystore persistente. GPS em segundo plano com consentimento e alertas de hodômetro."
           else
-            gh release create apk-latest dna-auto-cliente.apk dna-auto-oficina.apk \
+            gh release create apk-latest dna-auto-cliente.apk dna-auto-oficina.apk dna-auto-release.json \
               --title "DNA AUTO APKs — ${VNAME}" \
               --notes "APKs assinados com keystore persistente. GPS em segundo plano com consentimento e alertas de hodômetro."
           fi
