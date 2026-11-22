@@ -426,6 +426,9 @@ class PredictiveMaintenanceService {
             FROM service_records sr
             LEFT JOIN workshops w ON sr.workshop_id = w.id
             WHERE sr.vehicle_id = ?
+              AND sr.workshop_id IS NOT NULL
+              AND sr.proof_level >= 3
+              AND sr.workshop_confirmation_status = 'CONFIRMED'
             ORDER BY sr.service_date DESC, sr.mileage DESC
         `).all(vehicleId);
 
