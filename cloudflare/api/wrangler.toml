@@ -1,0 +1,10 @@
+name = "dna-auto-api-staging"
+main = "src/index.mjs"
+compatibility_date = "2026-11-22"
+workers_dev = true
+
+# Conta Cloudflare D1 precisa ser autorizada pelo proprietario uma unica vez.
+[[d1_databases]]
+binding = "DB"
+database_name = "dna-auto-staging"
+database_id = "SUBSTITUIR_PELO_ID_REAL_DO_D1"

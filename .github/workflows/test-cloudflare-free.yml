@@ -1,0 +1,27 @@
+name: Validar migracao gratuita Cloudflare
+on:
+  push:
+    branches:
+      - infra/cloudflare-gratuito
+    paths:
+      - "cloudflare/**"
+      - ".github/workflows/test-cloudflare-free.yml"
+  workflow_dispatch:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NODE_ENV: test
+      DB_PATH: /tmp/dna-ci-cloudflare.db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: node --check cloudflare/api/src/index.mjs && node --check cloudflare/scripts/export-schema.cjs
+      - run: node --test cloudflare/api/test/worker.test.mjs
+      - run: node cloudflare/scripts/export-schema.cjs /tmp/dna-cloudflare-schema.sql && test -s /tmp/dna-cloudflare-schema.sql
