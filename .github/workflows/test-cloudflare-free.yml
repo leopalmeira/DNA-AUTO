@@ -51,6 +51,10 @@ jobs:
             tail -80 "$RUNNER_TEMP/wrangler-local.log"
             exit 1
           fi
-          node cloudflare/api/test/local-worker-smoke.mjs
+          if ! node cloudflare/api/test/local-worker-smoke.mjs; then
+            echo "::error::Smoke test do workerd falhou; diagnostico do worker:"
+            tail -120 "$RUNNER_TEMP/wrangler-local.log"
+            exit 1
+          fi
       - name: Validar os tres sites Cloudflare Pages
         run: node --test cloudflare/pages/build.test.cjs
