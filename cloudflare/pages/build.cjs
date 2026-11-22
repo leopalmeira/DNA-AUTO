@@ -19,7 +19,7 @@ function getApiBaseUrl() {
     let url;
     try { url = new URL(raw); } catch { throw Error('DNA_API_BASE_URL precisa ser URL HTTPS valida.'); }
     if (url.protocol !== 'https:' || !url.hostname || url.username || url.password ||
-        url.search || url.hash || url.pathname !== '/api/v1') {
+        url.search || url.hash || url.pathname !== '/api/v1' || url.hostname.endsWith('.onrender.com')) {
         throw Error('DNA_API_BASE_URL deve ser HTTPS, sem credenciais/parametros, terminando em /api/v1.');
     }
     return url.origin + url.pathname;
@@ -84,7 +84,7 @@ fs.writeFileSync(path.join(dir, '_redirects'), [
     '/admin / 302',
     '/representante /representante.html 200',
     ''
-].join('\\n'));
+].join('\n'));
 if (!fs.existsSync(path.join(dir, 'index.html'))) throw new Error('index.html ausente no build.');
 console.log('Cloudflare Pages: site "' + type + '" preparado em ' + dir +
     (apiBaseUrl ? ' usando API externa configurada.' : ' (API relativa; homologacao pendente).'));
