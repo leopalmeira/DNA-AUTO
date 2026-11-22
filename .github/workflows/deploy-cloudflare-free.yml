@@ -1,0 +1,117 @@
+name: Implantar DNA AUTO somente na Cloudflare Free
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: dna-auto-cloudflare
+  cancel-in-progress: false
+jobs:
+  implantar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NODE_ENV: test
+      DB_PATH: /tmp/dna-cloudflare-deploy-validation.db
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      DNA_JWT_SECRET: ${{ secrets.DNA_JWT_SECRET }}
+      DNA_BOOTSTRAP_TOKEN: ${{ secrets.DNA_BOOTSTRAP_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: infra/cloudflare-gratuito
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Validar acesso e scripts localmente
+        shell: bash
+        run: |
+          test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
+          test -n "$DNA_JWT_SECRET" && test -n "$DNA_BOOTSTRAP_TOKEN"
+          node --test cloudflare/api/test/security.test.mjs cloudflare/api/test/worker.test.mjs cloudflare/api/test/integration.test.mjs
+          node cloudflare/scripts/export-schema.cjs "$RUNNER_TEMP/dna-empty-schema.sql"
+          npx --yes wrangler@4 d1 execute dna-auto-staging --local --file="$RUNNER_TEMP/dna-empty-schema.sql" --config=cloudflare/api/wrangler.ci.toml
+      - name: Criar D1 novo ou reutilizar a base vazia Cloudflare
+        shell: bash
+        run: |
+          npx --yes wrangler@4 d1 list --json > "$RUNNER_TEMP/d1-list.json"
+          DATABASE_ID="$(node -e 'const x=require(process.argv[1]);const a=Array.isArray(x)?x:x.result||[];const d=a.find(v=>v.name==="dna-auto-free");if(d)process.stdout.write(d.uuid||d.id||"")' "$RUNNER_TEMP/d1-list.json")"
+          if [ -z "$DATABASE_ID" ]; then
+            npx --yes wrangler@4 d1 create dna-auto-free --json > "$RUNNER_TEMP/d1-create.json"
+            npx --yes wrangler@4 d1 list --json > "$RUNNER_TEMP/d1-list.json"
+            DATABASE_ID="$(node -e 'const x=require(process.argv[1]);const a=Array.isArray(x)?x:x.result||[];const d=a.find(v=>v.name==="dna-auto-free");if(d)process.stdout.write(d.uuid||d.id||"")' "$RUNNER_TEMP/d1-list.json")"
+          fi
+          test -n "$DATABASE_ID"
+          echo "DNA_D1_DATABASE_ID=$DATABASE_ID" >> "$GITHUB_ENV"
+      - name: Preparar URLs cloudflare e ligação do banco
+        shell: bash
+        run: |
+          node - <<'NODE'
+          const fs=require('fs');
+          const id=process.env.DNA_D1_DATABASE_ID;
+          if(!/^[a-f0-9-]{36}$/i.test(id))throw Error('UUID D1 inválido');
+          const suffix=process.env.CLOUDFLARE_ACCOUNT_ID.slice(0,8).toLowerCase();
+          const names={CLIENT:'dna-auto-cliente-'+suffix,WORKSHOP:'dna-auto-oficina-'+suffix,ADMIN:'dna-auto-admin-'+suffix};
+          const sites={CLIENT:'https://'+names.CLIENT+'.pages.dev',WORKSHOP:'https://'+names.WORKSHOP+'.pages.dev',ADMIN:'https://'+names.ADMIN+'.pages.dev'};
+          for(const [key,value] of Object.entries(names))fs.appendFileSync(process.env.GITHUB_ENV,'DNA_PROJECT_'+key+'='+value+'\n');
+          for(const [key,value] of Object.entries(sites))fs.appendFileSync(process.env.GITHUB_ENV,'DNA_'+(key==='WORKSHOP'?'OFICINA':key)+'_BASE_URL='+value+'\n');
+          let toml=fs.readFileSync('cloudflare/api/wrangler.toml','utf8');
+          if(!toml.includes('SUBSTITUIR_PELO_ID_REAL_DO_D1'))throw Error('Configuração D1 inválida');
+          toml=toml.replace('SUBSTITUIR_PELO_ID_REAL_DO_D1',id);
+          toml+='\n[vars]\nALLOWED_ORIGINS = '+JSON.stringify(Object.values(sites).join(','))+'\nCLIENT_BASE_URL = '+JSON.stringify(sites.CLIENT)+'\n';
+          fs.writeFileSync('cloudflare/api/wrangler.toml',toml);
+          NODE
+      - name: Instalar esquema e roles SEM dados do Render
+        shell: bash
+        run: |
+          npx --yes wrangler@4 d1 execute dna-auto-free --remote --file="$RUNNER_TEMP/dna-empty-schema.sql" --config=cloudflare/api/wrangler.toml
+          npx --yes wrangler@4 d1 execute dna-auto-free --remote --file=cloudflare/api/sql/seed-roles.sql --config=cloudflare/api/wrangler.toml
+      - name: Publicar API Worker com segredos
+        shell: bash
+        run: |
+          npx --yes wrangler@4 deploy --config=cloudflare/api/wrangler.toml
+          printf '%s' "$DNA_JWT_SECRET" | npx --yes wrangler@4 secret put JWT_SECRET --config=cloudflare/api/wrangler.toml
+          printf '%s' "$DNA_BOOTSTRAP_TOKEN" | npx --yes wrangler@4 secret put BOOTSTRAP_TOKEN --config=cloudflare/api/wrangler.toml
+          SUBDOMAIN="$(curl --fail --silent --show-error -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/subdomain" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const x=JSON.parse(s);if(!x.success||!x.result?.subdomain)process.exit(1);process.stdout.write(x.result.subdomain)})')"
+          test -n "$SUBDOMAIN"
+          echo "DNA_API_BASE_URL=https://dna-auto-api-staging.$SUBDOMAIN.workers.dev/api/v1" >> "$GITHUB_ENV"
+      - name: Criar projetos Pages se necessário
+        shell: bash
+        run: |
+          npx --yes wrangler@4 pages project list --json > "$RUNNER_TEMP/pages.json"
+          for project in "$DNA_PROJECT_CLIENT" "$DNA_PROJECT_WORKSHOP" "$DNA_PROJECT_ADMIN"; do
+            if ! node -e 'const x=require(process.argv[1]);const a=Array.isArray(x)?x:x.result||[];process.exit(a.some(v=>v.name===process.argv[2])?0:1)' "$RUNNER_TEMP/pages.json" "$project"; then
+              npx --yes wrangler@4 pages project create "$project" --production-branch=infra/cloudflare-gratuito
+            fi
+          done
+      - name: Publicar os três sites com API Cloudflare
+        shell: bash
+        run: |
+          for app in cliente oficina admin; do
+            node cloudflare/pages/build.cjs "$app"
+            case "$app" in
+              cliente) project="$DNA_PROJECT_CLIENT" ;;
+              oficina) project="$DNA_PROJECT_WORKSHOP" ;;
+              admin) project="$DNA_PROJECT_ADMIN" ;;
+            esac
+            npx --yes wrangler@4 pages deploy "cloudflare/pages/dist-$app" --project-name="$project" --branch=infra/cloudflare-gratuito
+          done
+      - name: Conferir publicações
+        shell: bash
+        run: |
+          curl --fail --silent --show-error "$DNA_API_BASE_URL/health" > "$RUNNER_TEMP/health.json"
+          node -e 'const x=require(process.argv[1]);if(x.status!=="STAGING_SCHEMA_READY")process.exit(1)' "$RUNNER_TEMP/health.json"
+          for url in "$DNA_CLIENT_BASE_URL" "$DNA_OFICINA_BASE_URL" "$DNA_ADMIN_BASE_URL"; do
+            curl --retry 4 --retry-delay 2 --fail --silent --show-error --output /dev/null "$url/"
+          done
+          {
+            echo "## Links Cloudflare para homologação"
+            echo "- API: $DNA_API_BASE_URL"
+            echo "- Cliente: $DNA_CLIENT_BASE_URL"
+            echo "- Oficina: $DNA_OFICINA_BASE_URL"
+            echo "- Admin: $DNA_ADMIN_BASE_URL"
+            echo "ATENÇÃO: falta bootstrap seguro do administrador e validação real antes da produção."
+          } >> "$GITHUB_STEP_SUMMARY"
