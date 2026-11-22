@@ -5405,46 +5405,40 @@
 
     WorkshopView.financialAuthenticated = false;
 
-    WorkshopView.getFinancialPassword = function() {
-        return localStorage.getItem('dna_finance_pwd') || '123456';
-    };
-
-    WorkshopView.handleVerifyFinancialPassword = function() {
-        const input = document.getElementById('dna-ws-fin-pin') || document.getElementById('mobile-finance-pwd-input') || document.getElementById('ws-unlock-finance-pass');
-        const err = document.getElementById('mobile-finance-pwd-error');
-        const pwd = (input ? input.value : '').trim();
-        const expected = this.getFinancialPassword();
-
-        if (pwd === '123456' || pwd === expected || pwd === 'admin123' || pwd === 'master2026') {
-            this.financialAuthenticated = true;
-            if (typeof sessionStorage !== 'undefined') {
-                sessionStorage.setItem('dna_finance_unlocked', 'true');
+    // O frontend apenas controla a exibição. A API sempre verifica papel/permissões.
+    WorkshopView.handleVerifyFinancialPassword = async function() {
+        const input = document.getElementById('dna-ws-fin-pin')
+            || document.getElementById('mobile-finance-pwd-input')
+            || document.getElementById('ws-unlock-finance-pass');
+        const error = document.getElementById('mobile-finance-pwd-error');
+        const password = input ? input.value : '';
+        try {
+            if (!password || !API || typeof API.verifyManagerPassword !== 'function') {
+                throw new Error('Entre com a senha pessoal do gestor.');
             }
+            const answer = await API.verifyManagerPassword(password);
+            if (!answer || answer.verified !== true) throw new Error('Credenciais não confirmadas.');
+            this.financialAuthenticated = true;
+            if (error) error.style.display = 'none';
+            if (input) input.value = '';
             if (typeof this.showToast === 'function') {
-                this.showToast('🔓 Painel Financeiro desbloqueado com sucesso!', 'success', 3000);
+                this.showToast('🔓 Identidade do gestor confirmada.', 'success', 3000);
             }
             const viewport = document.getElementById('ws-mobile-active-viewport');
             if (viewport) viewport.innerHTML = this.renderMobileActiveSection();
-        } else {
-            if (err) err.style.display = 'block';
-            if (typeof this.showToast === 'function') {
-                this.showToast('Senha de acesso financeiro incorreta. Tente 123456.', 'error');
+        } catch (err) {
+            this.financialAuthenticated = false;
+            if (error) {
+                error.style.display = 'block';
+                error.textContent = err.message || 'Senha inválida.';
             }
-            if (input) {
-                input.value = '';
-                input.focus();
-            }
+            if (typeof this.showToast === 'function') this.showToast('Acesso ao financeiro negado.', 'error');
+            if (input) { input.value = ''; input.focus(); }
         }
     };
 
     WorkshopView.handleChangeFinancialPassword = function() {
-        const newPwd = prompt('Digite a nova senha de 6 dígitos para o Painel Financeiro:');
-        if (!newPwd || newPwd.trim().length < 4) {
-            alert('A senha deve ter pelo menos 4 caracteres.');
-            return;
-        }
-        localStorage.setItem('dna_finance_pwd', newPwd.trim());
-        alert('✅ Senha do Painel Financeiro alterada com sucesso! Guarde sua nova senha com segurança.');
+        alert('A senha do financeiro é a senha pessoal da sua conta de gestor. Para alterá-la, acesse Perfil > Alterar senha.');
     };
 
     WorkshopView.handleLockFinancialPanel = function() {
@@ -5457,10 +5451,6 @@
     };
 
     WorkshopView.renderMobileFinancialView = function() {
-        if (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('dna_finance_unlocked') === 'true') {
-            this.financialAuthenticated = true;
-        }
-
         // Se ainda não autenticado com senha, exibe a tela de bloqueio com PIN
         if (!this.financialAuthenticated) {
             return `
@@ -5479,13 +5469,13 @@
                         </div>
                         <h3 style="color: #fff; font-size: 20px; font-weight: 800; margin-bottom: 8px;">Acesso Restrito</h3>
                         <p style="color: var(--dna-ws-muted); font-size: 13.5px; line-height: 1.5; margin-bottom: 24px;">
-                            O Painel Financeiro contém informações confidenciais de faturamento e repasses. Digite o PIN de Segurança para desbloquear.
+                            O Painel Financeiro contém informações confidenciais de faturamento e repasses. Digite o senha pessoal do gestor para desbloquear.
                         </p>
 
                         <div style="margin-bottom: 24px;">
-                            <input type="password" id="dna-ws-fin-pin" maxlength="6" placeholder="••••••" onkeydown="if(event.key==='Enter') WorkshopView.handleVerifyFinancialPassword()" style="width: 100%; max-width: 220px; padding: 14px 16px; font-size: 24px; text-align: center; letter-spacing: 8px; border-radius: 12px; border: 1.5px solid rgba(0, 212, 255, 0.3); background: rgba(2, 6, 23, 0.8); color: #fff; outline: none; transition: all 0.2s ease;">
-                            <div style="font-size: 11px; color: #64748B; margin-top: 8px;">Senha padrão inicial: <strong>123456</strong></div>
-                            <div id="mobile-finance-pwd-error" style="display:none; color:#EF4444; font-size:12px; margin-top:6px; font-weight:700;">Senha incorreta. Digite 123456.</div>
+                            <input type="password" id="dna-ws-fin-pin" autocomplete="current-password" placeholder="Senha do gestor" onkeydown="if(event.key==='Enter') WorkshopView.handleVerifyFinancialPassword()" style="width: 100%; max-width: 220px; padding: 14px 16px; font-size: 24px; text-align: center; letter-spacing: 8px; border-radius: 12px; border: 1.5px solid rgba(0, 212, 255, 0.3); background: rgba(2, 6, 23, 0.8); color: #fff; outline: none; transition: all 0.2s ease;">
+                            <div style="font-size: 11px; color: #64748B; margin-top: 8px;">Use a senha da sua conta de gestor.</div>
+                            <div id="mobile-finance-pwd-error" style="display:none; color:#EF4444; font-size:12px; margin-top:6px; font-weight:700;">Senha incorreta ou acesso negado.</div>
                         </div>
 
                         <button onclick="WorkshopView.handleVerifyFinancialPassword()" style="width: 100%; padding: 14px 20px; border-radius: 12px; border: none; background: linear-gradient(135deg, var(--dna-ws-cyan), var(--dna-ws-blue)); color: #fff; font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3); transition: transform 0.15s ease;">

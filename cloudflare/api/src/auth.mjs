@@ -182,6 +182,16 @@ export async function handleAuth(request, env, path, body, loadUser) {
   if (path === '/auth/register-client' && method === 'POST') return registerClient(db, env, body);
   if (path === '/auth/register-owner' && method === 'POST') return registerClient(db, env, body);
   if (path === '/auth/register-workshop' && method === 'POST') return registerWorkshop(db, env, body);
+  if (path === '/auth/verify-manager-password' && method === 'POST') {
+    const user = await loadUser();
+    requireRole(user, 'WORKSHOP_OWNER', 'ADMIN');
+    const submitted = String(body.password || '');
+    const row = await dbFirst(db, 'SELECT password_hash FROM users WHERE id = ?', user.id);
+    if (!row || !(await verifyPassword(submitted, row.password_hash))) {
+      throw new ApiError(403, 'Senha da conta incorreta.');
+    }
+    return respond({ success: true, verified: true });
+  }
   if (path === '/auth/me' && method === 'GET') {
     const u = await loadUser();
     const p = await loginProfile(env, u);
