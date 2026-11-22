@@ -48,3 +48,7 @@ npx wrangler d1 execute dna-auto-staging --remote --file=/copia-privada/dna-d1.s
 Se qualquer comando falhar, nao alterar o Render. Comparar para cada tabela `SELECT COUNT(*)`, FKs, IDs, login, cadastro, servicos e historico com o manifesto; fazer novo snapshot final depois de congelar gravacoes para evitar perder alteracoes ocorridas durante a copia. A exportacao por si so **nao realiza importacao**, nao garante D1 pronto, nem substitui a migracao da API sincrona, fotos, notificacoes e WhatsApp.
 
 Atenção: uploads atualmente gravados em disco e sessao Baileys (WhatsApp) nao podem ser substituidos apenas por Pages/Workers/D1; definir armazenamento e integracao gratuitos adequados e testar antes de descontinuar Render. O plano Free pode bloquear operacoes ao exceder cotas.
+
+## CORS de seguranca (staging)
+
+O Worker apenas permite chamadas de navegador cujos dominios estejam explicitamente em ALLOWED_ORIGINS, separados por virgula (HTTPS, sem barra ao final). Configurar origens reais dos projetos Pages e dominios adicionais; outros Origin recebem HTTP 403. Requisicoes sem Origin (ferramentas CLI) nao sao consideradas prova de autenticacao, e os endpoints continuam bloqueados ate a migracao completa. Testes automatizados verificam preflight e bloqueio de origem inesperada.

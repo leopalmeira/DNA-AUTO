@@ -41,3 +41,23 @@ test('login, ativacao e servicos nao podem gravar antes da migracao', async () =
         assert.equal((await r.json()).code, 'CLOUDFLARE_MIGRATION_INCOMPLETE');
     }
 });
+test('CORS exige origem explicitamente permitida para API em dominio separado', async () => {
+    const env = { ALLOWED_ORIGINS: 'https://dna-auto-cliente.pages.dev, https://dna-auto-oficina.pages.dev' };
+    const good = await worker.fetch(req('/api/v1/auth/login', {
+        method: 'OPTIONS',
+        headers: { Origin: 'https://dna-auto-cliente.pages.dev', 'Access-Control-Request-Method': 'POST' }
+    }), env);
+    assert.equal(good.status, 204);
+    assert.equal(good.headers.get('Access-Control-Allow-Origin'), 'https://dna-auto-cliente.pages.dev');
+    assert.match(good.headers.get('Access-Control-Allow-Headers'), /Authorization/);
+    const bad = await worker.fetch(req('/api/v1/auth/login', {
+        method: 'OPTIONS',
+        headers: { Origin: 'https://malicioso.example', 'Access-Control-Request-Method': 'POST' }
+    }), env);
+    assert.equal(bad.status, 403);
+    assert.equal(bad.headers.get('Access-Control-Allow-Origin'), null);
+    const noConfig = await worker.fetch(req('/api/v1/health', {
+        headers: { Origin: 'https://dna-auto-cliente.pages.dev' }
+    }), { DB: mockD1(tables) });
+    assert.equal(noConfig.status, 403);
+});
