@@ -25,6 +25,10 @@ services:
         value: https://dna-auto-vua4.onrender.com
       - key: DB_PATH
         sync: false
+      - key: FIREBASE_STORAGE_BUCKET
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
       - key: JWT_SECRET
         sync: false
       - key: WDAPI_TOKEN

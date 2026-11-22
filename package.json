@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node server/src/server.js",
+    "start": "node server/bootstrap.js",
     "seed": "node server/src/database/seed.js",
     "test:api": "node test/api.test.js",
     "test:oficina:components": "node test/oficina.components.test.js",
@@ -22,7 +22,8 @@
     "test:monitoring": "node test/monitoring_tracking.test.js",
     "test:client_maintenance": "node test/client_maintenance_readonly.test.js",
     "test:client_booking": "node test/client_booking_preferred_workshop.test.js",
-    "test:cors": "node --test test/cors_policy.test.js"
+    "test:cors": "node --test test/cors_policy.test.js",
+    "test:firebase:backup": "node test/firebase.backup.test.js"
   },
   "keywords": [],
   "author": "",

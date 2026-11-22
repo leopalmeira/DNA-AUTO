@@ -1,0 +1,24 @@
+name: Testar backup Firebase do DNA AUTO
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'server/bootstrap.js'
+      - 'server/src/services/firebaseBackup.service.js'
+      - 'test/firebase.backup.test.js'
+      - 'package.json'
+      - '.github/workflows/test-firebase-backup.yml'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: node --check server/bootstrap.js && node --check server/src/services/firebaseBackup.service.js && node --check test/firebase.backup.test.js
+      - run: npm run test:firebase:backup
