@@ -81,9 +81,9 @@ async function main() {
         'CREATE TABLE workshops(id TEXT PRIMARY KEY,trade_name TEXT,address_street TEXT,' +
         'address_number TEXT,address_neighborhood TEXT,city TEXT,state TEXT,phone TEXT,' +
         'whatsapp_official TEXT,status TEXT,verified_badge INTEGER);');
-    db.exec("INSERT INTO vehicles VALUES('veh1',NULL,'ABC1D23'),('veh2','ws_z','XYZ9E99'),('veh3',NULL,'DEF4H44');" +
-        "INSERT INTO vehicle_dna VALUES('veh1','ws_z');" +
-        "INSERT INTO client_activations VALUES('veh3','DEF4H44','ws_a','2026-11-20','2026-11-19');" +
+    db.exec("INSERT INTO vehicles VALUES('veh1',NULL,'ABC1D23'),('veh2','ws_z','XYZ9E99'),('veh3',NULL,'DEF4H44'),('veh4','ws_z','GHI5J55');" +
+        "INSERT INTO vehicle_dna VALUES('veh1','ws_z'),('veh4','ws_z');" +
+        "INSERT INTO client_activations VALUES('veh3','DEF4H44','ws_a','2026-11-20','2026-11-19'),('veh4','GHI5J55','ws_a','2026-11-20','2026-11-19'),('veh4','GHI5J55','ws_z','2026-11-21','2026-11-21');" +
         "INSERT INTO workshops(id,trade_name,status,verified_badge) VALUES" +
         "('ws_a','Outra Oficina','ACTIVE',1)," +
         "('ws_z','Minha Oficina','APPROVED',1)," +
@@ -114,6 +114,10 @@ async function main() {
     assert.equal(r.body.workshops.length,2,'Bloqueadas não são oferecidas');
     assert.equal(get('veh2').body.origin_workshop_id,'ws_z','Fallback por veículo');
     assert.equal(get('veh3').body.origin_workshop_id,'ws_a','Fallback por cadastro de adesão');
+    assert.equal(get('veh4').body.origin_workshop_id,'ws_a',
+        'A oficina que cadastrou originalmente deve vencer ativação e recadastro posterior');
+    assert.equal(get('veh4').body.workshops[0].name,'Outra Oficina',
+        'Oficina cadastradora deve abrir como primeira opção');
     assert.equal(get('missing').status,404);
     db.close();
 
