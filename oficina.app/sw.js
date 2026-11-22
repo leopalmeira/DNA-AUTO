@@ -1,5 +1,5 @@
 // DNA AUTO Service Worker — PWA Oficial (Google Play Store & TWA Ready)
-const CACHE_NAME = 'dna-oficina-v2.5.8';
+const CACHE_NAME = 'dna-oficina-v2.5.9-auth';
 const ASSETS_TO_CACHE = ['/oficina/','/oficina/manifest.json','/oficina/img/icons/icon-192x192.png','/oficina/img/icons/icon-512x512.png','/oficina/img/icons/maskable-icon-512x512.png'];
 
 // Instalação do Service Worker: Faz pré-cache dos assets estáticos
@@ -35,6 +35,23 @@ self.addEventListener('fetch', (event) => {
 
     // Ignora requisições de API para que dados dinâmicos estejam sempre atualizados
     if (url.pathname.startsWith('/api/')) {
+        return;
+    }
+
+    // Scripts de autenticação e lançamento NUNCA devem vir primeiro de cache antigo.
+    // Na versão anterior, o stale-while-revalidate entregava JS antigo no primeiro acesso.
+    if (url.origin === self.location.origin && (url.pathname.endsWith('.js') || url.pathname.endsWith('.css'))) {
+        event.respondWith(
+            fetch(new Request(req, { cache: 'no-store' }))
+                .then((freshRes) => {
+                    if (freshRes && freshRes.ok) {
+                        const clone = freshRes.clone();
+                        event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.put(req, clone)));
+                    }
+                    return freshRes;
+                })
+                .catch(() => caches.match(req))
+        );
         return;
     }
 
