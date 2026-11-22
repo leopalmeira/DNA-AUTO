@@ -37,7 +37,7 @@ public class DnaPushPlugin extends Plugin {
         String raw = p.getString("last_alert","");
         JSObject obj = new JSObject();
         if (!raw.isEmpty()) {
-            try { obj = JSObject.fromJSONObject(new JSONObject(raw)); }
+            try { JSONObject stored = new JSONObject(raw); java.util.Iterator<String> keys = stored.keys(); while(keys.hasNext()) { String key=keys.next(); obj.put(key,stored.optString(key)); } }
             catch (Exception ignored) { }
         }
         String openedId = p.getString("opened_id","");
