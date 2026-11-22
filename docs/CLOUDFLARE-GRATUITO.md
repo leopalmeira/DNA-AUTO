@@ -7,7 +7,7 @@ A instalação é **nova e vazia**. Não migrar dados, usuários, senhas, fotos 
 - Cloudflare Pages: Cliente, Oficina e Admin, em três projetos independentes.
 - Cloudflare Workers: API WebCrypto com rotas REST e autorização por perfil.
 - Cloudflare D1: SQLite relacional persistente, começando **sem clientes, oficinas e veículos**.
-- Cloudflare R2: **opcional e ainda não provisionado**. Anexos não são aceitos até R2 estar configurado e confirmado no plano gratuito; serviços sem anexo funcionam.
+- Cloudflare KV no plano Free: fotos e PDFs pequenos (até 2 MB por arquivo), armazenamento privado com chave UUID e autenticação. No Free, a cota é de 1 GB e 1.000 gravações/dia; operações excedentes falham sem gerar cobrança automática. A visibilidade global pode levar até 60 segundos. R2 permanece desativado e não será criado.
 
 Os arquivos `server/` e o esquema antigo são preservados como referência de desenvolvimento. Não executam em Workers. `render.yaml` foi retirado desta branch.
 
@@ -15,7 +15,7 @@ Os arquivos `server/` e o esquema antigo são preservados como referência de de
 
 Código de API D1 parcial desenvolvido e testado com simulador SQLite; não houve implantação autenticada na conta Cloudflare. Os testes de código abrangem cadastro, login, lançamento de serviço, histórico e oficina preferencial. O status de homologação `/api/v1/health` retorna `production_ready: false` mesmo com o esquema instalado.
 
-Ainda exigem implementação ou validação específica antes de produção: módulos administrativos avançados, financeiro, representantes, WhatsApp, notificações, manutenção preditiva, anexos R2, integração Android nativa e todos os demais endpoints do Express legado não portados (retornam HTTP 501). Não prometer funcionalidade inexistente.
+Ainda exigem implementação ou validação específica antes de produção: módulos administrativos avançados, financeiro, representantes, WhatsApp, notificações, manutenção preditiva, anexos KV na conta real, integração Android nativa e todos os demais endpoints do Express legado não portados (retornam HTTP 501). Não prometer funcionalidade inexistente.
 
 ## Publicação isolada e automatizada pelo GitHub
 
@@ -23,7 +23,7 @@ Workflow: `.github/workflows/deploy-cloudflare-free.yml`.
 Branch de implantação: `infra/cloudflare-gratuito`.
 
 Conectar a conta Cloudflare ao processo autorizado e cadastrar **GitHub Actions Secrets**, nunca colocar tokens no commit:
-- `CF_API_TOKEN` — token Cloudflare com permissões mínimas necessárias para Workers, Pages e D1.
+- `CF_API_TOKEN` — token Cloudflare com permissões mínimas necessárias para Workers, Pages, D1 e Workers KV Storage Edit.
 - `CF_ACCOUNT_ID` — ID de conta Cloudflare.
 - `DNA_JWT_SECRET` — sequência aleatória de pelo menos 32 caracteres.
 - `DNA_BOOTSTRAP_TOKEN` — chave aleatória diferente, de pelo menos 32 caracteres, usada UMA vez para criar o admin.
@@ -67,3 +67,9 @@ Fontes:
 - https://developers.cloudflare.com/d1/platform/limits/
 - https://developers.cloudflare.com/d1/platform/pricing/
 - https://developers.cloudflare.com/pages/platform/limits/
+
+## Anexos pequenos no plano gratuito
+
+O deploy tentará criar/reutilizar o namespace KV `dna-auto-media-free`, sem R2. Fotos e PDFs são limitados a **2 MB por arquivo**, armazenados como valores privados (não públicos). O acesso é mediado pela API Worker, que valida o token e o vínculo do usuário ao veículo. Limite Free KV: 1 GB e 1.000 gravações/dia, com bloqueio ao exceder. A disponibilidade no edge pode levar até 60 segundos. É solução de piloto; antes de crescer, será necessário definir política de retenção, limites de uso e armazenamento de longo prazo sem ultrapassar cotas.
+
+Fontes: https://developers.cloudflare.com/kv/platform/pricing/ e https://developers.cloudflare.com/kv/platform/limits/

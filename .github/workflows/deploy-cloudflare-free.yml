@@ -34,7 +34,7 @@ jobs:
         run: |
           test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID"
           test -n "$DNA_JWT_SECRET" && test -n "$DNA_BOOTSTRAP_TOKEN"
-          node --test cloudflare/api/test/security.test.mjs cloudflare/api/test/worker.test.mjs cloudflare/api/test/integration.test.mjs
+          node --test cloudflare/api/test/security.test.mjs cloudflare/api/test/worker.test.mjs cloudflare/api/test/integration.test.mjs cloudflare/scripts/provision-kv.test.cjs
           node cloudflare/scripts/export-schema.cjs "$RUNNER_TEMP/dna-empty-schema.sql"
           npx --yes wrangler@4 d1 execute dna-auto-staging --local --file="$RUNNER_TEMP/dna-empty-schema.sql" --config=cloudflare/api/wrangler.ci.toml
       - name: Criar D1 novo ou reutilizar a base vazia Cloudflare
@@ -49,6 +49,12 @@ jobs:
           fi
           test -n "$DATABASE_ID" || { echo "::error::D1 nao encontrado"; exit 1; }
           echo "DNA_D1_DATABASE_ID=$DATABASE_ID" >> "$GITHUB_ENV"
+      - name: Provisionar namespace KV Free para fotos e NFs (sem R2 pago)
+        shell: bash
+        run: |
+          MEDIA_ID="$(node cloudflare/scripts/provision-kv.cjs)"
+          [[ "$MEDIA_ID" =~ ^[a-f0-9]{32}$ ]] || { echo "::error::ID KV invalido"; exit 1; }
+          echo "DNA_MEDIA_KV_ID=$MEDIA_ID" >> "$GITHUB_ENV"
       - name: Preparar URLs cloudflare e ligação do banco
         shell: bash
         run: |
@@ -64,6 +70,9 @@ jobs:
           let toml=fs.readFileSync('cloudflare/api/wrangler.toml','utf8');
           if(!toml.includes('SUBSTITUIR_PELO_ID_REAL_DO_D1'))throw Error('Configuração D1 inválida');
           toml=toml.replace('SUBSTITUIR_PELO_ID_REAL_DO_D1',id).replace('database_name = "dna-auto-staging"', 'database_name = "dna-auto-free"');
+          const mediaId=process.env.DNA_MEDIA_KV_ID;
+          if(!/^[a-f0-9]{32}$/.test(mediaId))throw Error('ID KV Free invalido');
+          toml+='\n[[kv_namespaces]]\nbinding = "MEDIA_KV"\nid = "'+mediaId+'"\n';
           toml+='\n[vars]\nALLOWED_ORIGINS = '+JSON.stringify(Object.values(sites).join(','))+'\nCLIENT_BASE_URL = '+JSON.stringify(sites.CLIENT)+'\n';
           fs.writeFileSync('cloudflare/api/wrangler.toml',toml);
           NODE

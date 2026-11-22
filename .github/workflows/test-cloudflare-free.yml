@@ -26,7 +26,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: node --check cloudflare/api/src/index.mjs && node --check cloudflare/scripts/export-schema.cjs
-      - run: node --test cloudflare/api/test/worker.test.mjs cloudflare/api/test/security.test.mjs cloudflare/api/test/integration.test.mjs
+      - run: node --test cloudflare/api/test/worker.test.mjs cloudflare/api/test/security.test.mjs cloudflare/api/test/integration.test.mjs cloudflare/scripts/provision-kv.test.cjs
       - run: node cloudflare/scripts/export-schema.cjs /tmp/dna-cloudflare-schema.sql && test -s /tmp/dna-cloudflare-schema.sql
       - name: Validar SQL gerado no emulador Cloudflare D1 (sem credenciais)
         run: npx --yes wrangler@4 d1 execute dna-auto-staging --local --file=/tmp/dna-cloudflare-schema.sql --config=cloudflare/api/wrangler.ci.toml

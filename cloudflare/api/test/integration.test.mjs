@@ -173,7 +173,7 @@ test('integração completa D1: bootstrap, oficina, cliente, login, serviço e h
   assert.equal(stats.json.totalOwners, 2);
   assert.deepEqual(sqlite.pragma('foreign_key_check'), []);
 });
-test('sem R2 não aceita anexos e não registra serviço incompleto', async () => {
+test('sem armazenamento Cloudflare não aceita anexos nem registra serviço incompleto', async () => {
   const workshopUser = await call('/auth/login', 'POST',
     { email: 'oficina@dna.test', password: 'OficinaForte@2026' });
   const form = new FormData();
@@ -184,7 +184,7 @@ test('sem R2 não aceita anexos e não registra serviço incompleto', async () =
   form.set('photos', new File([new Uint8Array([1,2,3])], 'foto.jpg', { type: 'image/jpeg' }));
   const result = await worker.fetch(req('/services/workshop-register', 'POST', form, workshopUser.json.token), env);
   assert.equal(result.status, 503);
-  assert.equal((await result.json()).code, 'R2_NOT_CONFIGURED');
+  assert.equal((await result.json()).code, 'MEDIA_NOT_CONFIGURED');
   assert.equal(sqlite.prepare('SELECT COUNT(*) AS count FROM service_records').get().count, 1);
 });
 
@@ -203,4 +203,50 @@ test('cadastro direto do cliente com placa cria DNA e login sem oficina', async 
   assert.equal(login.status, 200);
   assert.equal(login.json.user.vehicle.license_plate, 'XYZ9A88');
   assert.deepEqual(sqlite.pragma('foreign_key_check'), []);
+});
+
+test('KV gratuito: foto privada gera prova nivel 4 e taxa de R$ 6,90', async () => {
+  const files = new Map();
+  const storage = {
+    async put(key, buffer, options) {
+      files.set(key, { bytes: buffer.slice(0), metadata: options.metadata });
+    },
+    async getWithMetadata(key) {
+      const stored = files.get(key);
+      return stored ? { value: stored.bytes.slice(0), metadata: stored.metadata } :
+        { value: null, metadata: null };
+    },
+    async delete(key) { files.delete(key); }
+  };
+  const withMedia = { ...env, MEDIA_KV: storage };
+  const login = await call('/auth/login', 'POST', {
+    email: 'oficina@dna.test', password: 'OficinaForte@2026'
+  });
+  assert.equal(login.status, 200);
+  const form = new FormData();
+  form.set('license_plate', 'ABC1D23');
+  form.set('service_title', 'Troca de amortecedor');
+  form.set('mileage', '42000');
+  form.set('labor_cost_cents', '25000');
+  form.set('photos', new File([new Uint8Array([0xff,0xd8,0xff,0xd9])],
+    'foto.jpg', { type: 'image/jpeg' }));
+  const response = await worker.fetch(req('/services/workshop-register', 'POST', form, login.json.token), withMedia);
+  const body = await response.json();
+  assert.equal(response.status, 201, JSON.stringify(body));
+  assert.equal(body.proof_level, 4);
+  assert.equal(body.proof_status, 'WORKSHOP_PROVEN');
+  assert.equal(body.attendance_fee.amount_cents, 690);
+  assert.ok(body.part_photo_url);
+  const mediaPath = new URL(body.part_photo_url).pathname.replace(/^\/api\/v1/, '');
+  const read = await worker.fetch(req(mediaPath, 'GET', undefined, login.json.token), withMedia);
+  assert.equal(read.status, 200);
+  assert.equal(read.headers.get('Content-Type'), 'image/jpeg');
+  assert.deepEqual(new Uint8Array(await read.arrayBuffer()), new Uint8Array([0xff,0xd8,0xff,0xd9]));
+  const otherOwner = await call('/auth/login', 'POST', {
+    email: 'outro@dna.test', password: 'OutraSenhaForte@2026'
+  });
+  assert.equal(otherOwner.status, 200);
+  const unauthorized = await worker.fetch(req(mediaPath, 'GET', undefined, otherOwner.json.token), withMedia);
+  assert.equal(unauthorized.status, 403);
+  assert.equal(files.size, 1);
 });
