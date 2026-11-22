@@ -6165,6 +6165,198 @@ nav[aria-label="Navegação principal"] button {
 }
 
 
+
+/* Revisões Preventivas: redesign exclusivo dos CINCO cards internos.
+   Não modifica cabeçalho, rodapé, outras telas, modal nem o cálculo existente. */
+#preventivas .cards {
+  gap: 14px !important;
+  padding: 2px 2px 18px !important;
+}
+#preventivas .cards > .rev-premium-card {
+  display: grid !important;
+  grid-template-columns: 47px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 12px !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 17px 15px 15px !important;
+  border: 1px solid #e0eaf5 !important;
+  border-radius: 21px !important;
+  background: linear-gradient(145deg, #fff 0%, #f8fbff 100%) !important;
+  box-shadow: 0 7px 24px rgba(30,70,120,.095), 0 1px 3px rgba(30,70,120,.055) !important;
+  box-sizing: border-box !important;
+  color: #0b1e40 !important;
+  transition: transform .18s ease, box-shadow .18s ease !important;
+  -webkit-tap-highlight-color: transparent;
+  text-align: left !important;
+  overflow: hidden;
+  cursor: pointer !important;
+}
+#preventivas .cards > .rev-premium-card:active {
+  transform: scale(.988) !important;
+  box-shadow: 0 3px 12px rgba(30,70,120,.10) !important;
+}
+#preventivas .cards > .rev-premium-card:focus-visible {
+  outline: 3px solid #1d73f4 !important;
+  outline-offset: 2px;
+}
+#preventivas .rev-premium-card .iconbox {
+  width: 47px !important;
+  height: 47px !important;
+  border-radius: 15px !important;
+  background: linear-gradient(145deg,#e8f3ff,#f5faff) !important;
+  border: 1px solid #dbeafa;
+  box-shadow: inset 0 1px 0 #fff, 0 3px 9px rgba(28,92,170,.08) !important;
+  color: #086de5 !important;
+  display:grid !important;
+  place-items:center !important;
+}
+#preventivas .rev-premium-card .iconbox svg {
+  width: 25px !important;
+  height: 25px !important;
+  stroke-width: 2.15 !important;
+}
+#preventivas .rev-premium-card .details {
+  min-width: 0 !important;
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 0 !important;
+}
+#preventivas .rev-premium-card .rev-eyebrow {
+  font-family: Inter,system-ui,sans-serif;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 1.05px;
+  color: #3270b5;
+  line-height: 1.35;
+  margin: 0 0 5px;
+}
+#preventivas .rev-premium-card .name {
+  display: block;
+  font-family: Inter,system-ui,sans-serif !important;
+  font-size: clamp(15px,4vw,17px) !important;
+  line-height: 1.24 !important;
+  font-weight: 800 !important;
+  letter-spacing: -.34px !important;
+  color: #0c2043 !important;
+  white-space: normal !important;
+  overflow-wrap: break-word;
+  margin-bottom: 13px;
+}
+#preventivas .rev-premium-card .rev-metrics {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+#preventivas .rev-premium-card .rev-metric {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+#preventivas .rev-premium-card .rev-metric small {
+  font-family: Inter,system-ui,sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #71839b;
+}
+#preventivas .rev-premium-card .rev-metric strong {
+  font-family: Inter,system-ui,sans-serif;
+  font-size: clamp(12px,3.5vw,14px);
+  line-height: 1.25;
+  font-weight: 800;
+  color: #172e52;
+  white-space: nowrap;
+}
+#preventivas .rev-premium-card .progress-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  margin: 0 0 14px;
+  min-width: 0 !important;
+}
+#preventivas .rev-premium-card .progress {
+  position: relative;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  height: 8px !important;
+  background: #e0e9f4 !important;
+  border-radius: 999px !important;
+  overflow: hidden !important;
+}
+#preventivas .rev-premium-card .fill {
+  display: block;
+  height: 100% !important;
+  background: linear-gradient(90deg,#15bbf1,#0866ee) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 0 7px rgba(21,128,255,.18);
+}
+#preventivas .rev-premium-card .rev-percent {
+  flex: 0 0 auto;
+  font-family: Inter,system-ui,sans-serif;
+  color: #56708f;
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+#preventivas .rev-premium-card .rev-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+  border-top: 1px solid #e6edf5;
+  padding-top: 11px;
+}
+#preventivas .rev-premium-card .tag {
+  flex: 0 1 auto !important;
+  display: inline-flex !important;
+  padding: 7px 10px !important;
+  border-radius: 10px !important;
+  background: #fff2d2 !important;
+  border: 1px solid #ffe0a3 !important;
+  color: #9b5c05 !important;
+  font-size: 11.5px !important;
+  font-family: Inter,system-ui,sans-serif !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  letter-spacing: -.1px !important;
+  white-space: normal !important;
+  box-sizing: border-box !important;
+}
+#preventivas .rev-premium-card .rev-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  color: #0769e5;
+  font-family: Inter,system-ui,sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+#preventivas .rev-premium-card .rev-link svg {
+  width: 14px;
+  height: 14px;
+}
+@media (max-width: 355px) {
+  #preventivas .cards > .rev-premium-card {
+    grid-template-columns: 41px minmax(0,1fr) !important;
+    padding: 14px 11px !important;
+    gap: 9px !important;
+  }
+  #preventivas .rev-premium-card .iconbox { width: 41px !important; height: 41px !important; }
+  #preventivas .rev-premium-card .rev-metrics { gap: 5px; }
+  #preventivas .rev-premium-card .rev-metric strong { font-size: 11px; }
+  #preventivas .rev-premium-card .tag { font-size: 10px !important; padding: 7px 8px !important; }
+  #preventivas .rev-premium-card .rev-link { font-size: 10px; }
+}
+
 </style><link rel="stylesheet" href="/css/maintenance-readonly.css?v=1"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 </head><body><main class="app"><section class="screen splash active" id="splash">
   <div class="splash-wrapper">
@@ -6564,83 +6756,123 @@ nav[aria-label="Navegação principal"] button {
         <p>Acompanhe as próximas manutenções recomendadas para o seu veículo.</p>
       </div>
       <section class="cards" aria-label="Manutenções preventivas">
-        <button class="card" type="button" data-label="Troca de óleo e filtro" onclick="tap(this); openPreventivaModal('Troca de óleo do motor e filtro', 'Faltam 3.000 km', '12.000', '15.000', 80, '10.000 km ou 12 meses', 'Alta / Preventiva Crucial', 'Óleo Sintético 5W-30 API SP / ILSAC GF-6 + Filtro Blindado OEM', 'Substituição completa do lubrificante do cárter, troca do anel de vedação do bujão, instalação do filtro de óleo homologado e aferição técnica de estanqueidade.', 'A troca preventiva de óleo no prazo estrito evita borras, atrito metálico precoce e mantém o consumo de combustível e a potência nos padrões de fábrica.')">
-          <span class="iconbox">
+        <button class="card rev-premium-card" type="button" data-label="Troca de óleo e filtro" onclick="tap(this); openPreventivaModal('Troca de óleo do motor e filtro', 'Faltam 3.000 km', '12.000', '15.000', 80, '10.000 km ou 12 meses', 'Alta / Preventiva Crucial', 'Óleo Sintético 5W-30 API SP / ILSAC GF-6 + Filtro Blindado OEM', 'Substituição completa do lubrificante do cárter, troca do anel de vedação do bujão, instalação do filtro de óleo homologado e aferição técnica de estanqueidade.', 'A troca preventiva de óleo no prazo estrito evita borras, atrito metálico precoce e mantém o consumo de combustível e a potência nos padrões de fábrica.')" aria-label="Troca de óleo e filtro. Faltam 3.000 km. Abrir detalhes da revisão">
+          <span class="iconbox" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <rect x="5" y="5" width="14" height="16" rx="2"/><path d="M9 3v4m6-4v4M9 12l2 2 4-4"/>
             </svg>
           </span>
           <span class="details">
+            <span class="rev-eyebrow">LUBRIFICAÇÃO</span>
             <span class="name">Troca de óleo e filtro</span>
-            <span class="progress-row">
-              <span class="progress"><span class="fill" style="width:80%"></span></span>
-              <span class="tag">Faltam 3.000 km</span>
+            <span class="rev-metrics">
+              <span class="rev-metric"><small>Km considerado</small><strong>12.000 km</strong></span>
+              <span class="rev-metric"><small>Próxima revisão</small><strong>15.000 km</strong></span>
             </span>
-            <span class="distance">12.000 / 15.000 km</span>
+            <span class="progress-row">
+              <span class="progress" role="progressbar" aria-label="Progresso do intervalo de revisão" aria-valuemin="0" aria-valuemax="100" aria-valuenow="80"><span class="fill" style="width:80%"></span></span>
+              <span class="rev-percent">80%</span>
+            </span>
+            <span class="rev-footer">
+              <span class="tag">Faltam 3.000 km</span>
+              <span class="rev-link">Ver detalhes <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h13m-5-5 5 5-5 5"/></svg></span>
+            </span>
           </span>
         </button>
 
-        <button class="card" type="button" data-label="Correia dentada" onclick="tap(this); openPreventivaModal('Correia dentada e tensor', 'Faltam 40.000 km', '60.000', '100.000', 60, '100.000 km ou 5 anos', 'Crítica / Gravíssima', 'Correia sincronizadora reforçada HNBR + Rolamento tensor mecânico', 'Verificação do sincronismo mecânico do cabeçote, inspeção de microfissuras na borracha, teste de folga no tensor e substituição preventiva preventiva do kit completo.', 'A quebra da correia dentada em funcionamento causa o choque violento dos pistões com as válvulas, gerando retífica completa de motor e custos elevadíssimos.')">
-          <span class="iconbox">
+        <button class="card rev-premium-card" type="button" data-label="Correia dentada" onclick="tap(this); openPreventivaModal('Correia dentada e tensor', 'Faltam 40.000 km', '60.000', '100.000', 60, '100.000 km ou 5 anos', 'Crítica / Gravíssima', 'Correia sincronizadora reforçada HNBR + Rolamento tensor mecânico', 'Verificação do sincronismo mecânico do cabeçote, inspeção de microfissuras na borracha, teste de folga no tensor e substituição preventiva preventiva do kit completo.', 'A quebra da correia dentada em funcionamento causa o choque violento dos pistões com as válvulas, gerando retífica completa de motor e custos elevadíssimos.')" aria-label="Correia dentada. Faltam 40.000 km. Abrir detalhes da revisão">
+          <span class="iconbox" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="6" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="12" cy="18" r="2.4"/><path d="m8 7 3 8m5-8-3 8M8.5 6h7"/>
             </svg>
           </span>
           <span class="details">
+            <span class="rev-eyebrow">SINCRONISMO DO MOTOR</span>
             <span class="name">Correia dentada</span>
-            <span class="progress-row">
-              <span class="progress"><span class="fill" style="width:60%"></span></span>
-              <span class="tag">Faltam 40.000 km</span>
+            <span class="rev-metrics">
+              <span class="rev-metric"><small>Km considerado</small><strong>60.000 km</strong></span>
+              <span class="rev-metric"><small>Próxima revisão</small><strong>100.000 km</strong></span>
             </span>
-            <span class="distance">60.000 / 100.000 km</span>
+            <span class="progress-row">
+              <span class="progress" role="progressbar" aria-label="Progresso do intervalo de revisão" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60"><span class="fill" style="width:60%"></span></span>
+              <span class="rev-percent">60%</span>
+            </span>
+            <span class="rev-footer">
+              <span class="tag">Faltam 40.000 km</span>
+              <span class="rev-link">Ver detalhes <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h13m-5-5 5 5-5 5"/></svg></span>
+            </span>
           </span>
         </button>
 
-        <button class="card" type="button" data-label="Pastilha de freio" onclick="tap(this); openPreventivaModal('Pastilhas de freio dianteiras e traseiras', 'Faltam 20.000 km', '20.000', '40.000', 50, '30.000 a 40.000 km', 'Alta / Segurança Ativa', 'Pastilhas cerâmicas de baixo ruído e menor liberação de fuligem (DOT homologado)', 'Medição com paquímetro da espessura do material de atrito, lubrificação dos pinos guias das pinças com graxa de silicone e verificação do empeno dos discos de freio.', 'Pastilhas gastas aumentam perigosamente o espaço de parada e destroem a pista de contato dos discos de freio por atrito ferro com ferro.')">
-          <span class="iconbox">
+        <button class="card rev-premium-card" type="button" data-label="Pastilha de freio" onclick="tap(this); openPreventivaModal('Pastilhas de freio dianteiras e traseiras', 'Faltam 20.000 km', '20.000', '40.000', 50, '30.000 a 40.000 km', 'Alta / Segurança Ativa', 'Pastilhas cerâmicas de baixo ruído e menor liberação de fuligem (DOT homologado)', 'Medição com paquímetro da espessura do material de atrito, lubrificação dos pinos guias das pinças com graxa de silicone e verificação do empeno dos discos de freio.', 'Pastilhas gastas aumentam perigosamente o espaço de parada e destroem a pista de contato dos discos de freio por atrito ferro com ferro.')" aria-label="Pastilha de freio. Faltam 20.000 km. Abrir detalhes da revisão">
+          <span class="iconbox" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2h6v2m-7 9 3 3 5-6m-8 8h8"/>
             </svg>
           </span>
           <span class="details">
+            <span class="rev-eyebrow">SISTEMA DE FREIOS</span>
             <span class="name">Pastilha de freio</span>
-            <span class="progress-row">
-              <span class="progress"><span class="fill" style="width:50%"></span></span>
-              <span class="tag">Faltam 20.000 km</span>
+            <span class="rev-metrics">
+              <span class="rev-metric"><small>Km considerado</small><strong>20.000 km</strong></span>
+              <span class="rev-metric"><small>Próxima revisão</small><strong>40.000 km</strong></span>
             </span>
-            <span class="distance">20.000 / 40.000 km</span>
+            <span class="progress-row">
+              <span class="progress" role="progressbar" aria-label="Progresso do intervalo de revisão" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><span class="fill" style="width:50%"></span></span>
+              <span class="rev-percent">50%</span>
+            </span>
+            <span class="rev-footer">
+              <span class="tag">Faltam 20.000 km</span>
+              <span class="rev-link">Ver detalhes <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h13m-5-5 5 5-5 5"/></svg></span>
+            </span>
           </span>
         </button>
 
-        <button class="card" type="button" data-label="Filtro de ar do motor" onclick="tap(this); openPreventivaModal('Filtro de ar do motor e cabine', 'Faltam 18.000 km', '12.000', '30.000', 40, '15.000 a 30.000 km', 'Média / Eficiência & Consumo', 'Elemento filtrante de microfibra antibacteriana e alta retenção de partículas', 'Substituição do filtro de admissão do motor e higienização com troca do filtro antipólen de cabine.', 'Filtro de ar saturado restringe a passagem de ar para o motor, elevando o consumo de combustível e acumulando fungos e ácaros no ar-condicionado.')">
-          <span class="iconbox">
+        <button class="card rev-premium-card" type="button" data-label="Filtro de ar do motor" onclick="tap(this); openPreventivaModal('Filtro de ar do motor e cabine', 'Faltam 18.000 km', '12.000', '30.000', 40, '15.000 a 30.000 km', 'Média / Eficiência & Consumo', 'Elemento filtrante de microfibra antibacteriana e alta retenção de partículas', 'Substituição do filtro de admissão do motor e higienização com troca do filtro antipólen de cabine.', 'Filtro de ar saturado restringe a passagem de ar para o motor, elevando o consumo de combustível e acumulando fungos e ácaros no ar-condicionado.')" aria-label="Filtro de ar do motor. Faltam 18.000 km. Abrir detalhes da revisão">
+          <span class="iconbox" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <path d="M5 5h8l3-3 3 3-3 3h-4v8h-3v4H5z"/><path d="M8 8v8m4-6 4 3 4-3m-4 3v5"/>
             </svg>
           </span>
           <span class="details">
+            <span class="rev-eyebrow">FILTRAGEM DO MOTOR</span>
             <span class="name">Filtro de ar do motor</span>
-            <span class="progress-row">
-              <span class="progress"><span class="fill" style="width:40%"></span></span>
-              <span class="tag">Faltam 18.000 km</span>
+            <span class="rev-metrics">
+              <span class="rev-metric"><small>Km considerado</small><strong>12.000 km</strong></span>
+              <span class="rev-metric"><small>Próxima revisão</small><strong>30.000 km</strong></span>
             </span>
-            <span class="distance">12.000 / 30.000 km</span>
+            <span class="progress-row">
+              <span class="progress" role="progressbar" aria-label="Progresso do intervalo de revisão" aria-valuemin="0" aria-valuemax="100" aria-valuenow="40"><span class="fill" style="width:40%"></span></span>
+              <span class="rev-percent">40%</span>
+            </span>
+            <span class="rev-footer">
+              <span class="tag">Faltam 18.000 km</span>
+              <span class="rev-link">Ver detalhes <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h13m-5-5 5 5-5 5"/></svg></span>
+            </span>
           </span>
         </button>
 
-        <button class="card" type="button" data-label="Fluido de freio" onclick="tap(this); openPreventivaModal('Fluido de freio hidráulico', 'Faltam 20.000 km', '20.000', '40.000', 50, '40.000 km ou 2 anos', 'Alta / Segurança Térmica', 'Fluido sintético DOT 4 / DOT 5.1 com ponto de ebulição seco > 260°C', 'Teste de contaminação por umidade com caneta óptica de ebuliometria, sangria computadorizada e troca do fluido no reservatório principal e pinças.', 'O fluido de freio é higroscópico (absorve água da atmosfera). Fluido velho ferve em frenagens intensas, gerando vapor que causa perda total do pedal de freio.')">
-          <span class="iconbox">
+        <button class="card rev-premium-card" type="button" data-label="Fluido de freio" onclick="tap(this); openPreventivaModal('Fluido de freio hidráulico', 'Faltam 20.000 km', '20.000', '40.000', 50, '40.000 km ou 2 anos', 'Alta / Segurança Térmica', 'Fluido sintético DOT 4 / DOT 5.1 com ponto de ebulição seco > 260°C', 'Teste de contaminação por umidade com caneta óptica de ebuliometria, sangria computadorizada e troca do fluido no reservatório principal e pinças.', 'O fluido de freio é higroscópico (absorve água da atmosfera). Fluido velho ferve em frenagens intensas, gerando vapor que causa perda total do pedal de freio.')" aria-label="Fluido de freio. Faltam 20.000 km. Abrir detalhes da revisão">
+          <span class="iconbox" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <path d="M12 2 20 5v6c0 5-3 8-8 11-5-3-8-6-8-11V5z"/><path d="m9 12 2 2 4-4"/>
             </svg>
           </span>
           <span class="details">
+            <span class="rev-eyebrow">SISTEMA DE FREIOS</span>
             <span class="name">Fluido de freio</span>
-            <span class="progress-row">
-              <span class="progress"><span class="fill" style="width:50%"></span></span>
-              <span class="tag">Faltam 20.000 km</span>
+            <span class="rev-metrics">
+              <span class="rev-metric"><small>Km considerado</small><strong>20.000 km</strong></span>
+              <span class="rev-metric"><small>Próxima revisão</small><strong>40.000 km</strong></span>
             </span>
-            <span class="distance">20.000 / 40.000 km</span>
+            <span class="progress-row">
+              <span class="progress" role="progressbar" aria-label="Progresso do intervalo de revisão" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><span class="fill" style="width:50%"></span></span>
+              <span class="rev-percent">50%</span>
+            </span>
+            <span class="rev-footer">
+              <span class="tag">Faltam 20.000 km</span>
+              <span class="rev-link">Ver detalhes <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h13m-5-5 5 5-5 5"/></svg></span>
+            </span>
           </span>
         </button>
       </section>
