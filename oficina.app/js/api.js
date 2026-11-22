@@ -28,8 +28,11 @@ const API = {
 
     async request(endpoint, options = {}) {
         const headers = options.headers || {};
-        if (this.token) {
-            headers['Authorization'] = `Bearer ${this.token}`;
+        // O login pode acontecer depois de inicializar o cliente API (PWA/Android).
+        // Recupere o JWT atualizado em vez de enviar a requisição sem Authorization.
+        const activeToken = this.token || localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
+        if (activeToken) {
+            headers['Authorization'] = `Bearer ${activeToken}`;
         }
         if (this.currentDemoUserId) {
             headers['X-Demo-User-Id'] = this.currentDemoUserId;
@@ -45,7 +48,10 @@ const API = {
             const res = await fetch(`${this.baseUrl}${endpoint}`, options);
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                throw new Error(data.error || data.message || `Erro HTTP ${res.status}`);
+                const err = new Error(data.error || data.message || `Erro HTTP ${res.status}`);
+                err.status = res.status;
+                err.code = data.code || null;
+                throw err;
             }
             return data;
         } catch (err) {
