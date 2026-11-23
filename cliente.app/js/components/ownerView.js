@@ -5855,7 +5855,9 @@ const OwnerView = {
                     </div>
 
                     <div style="font-size:11px;color:#CBD5E1;line-height:1.5;margin:0 0 14px;">
-                        Para rastrear com o aplicativo fechado, ative o monitoramento e autorize localização precisa, notificações e, quando disponível, localização durante todo o tempo nas configurações do Android. O serviço exibirá uma notificação persistente e poderá ser interrompido pela economia de bateria ou pelas restrições do fabricante. GPS do telefone pode incluir viagens em outro carro; confirme a leitura real do painel.
+                        ${window.DnaTrackingEngine?.nativePlugin()
+                            ? 'Ative o monitoramento e autorize localização precisa e notificações. Para tentar retomar após reiniciar o aparelho, permita a localização durante todo o tempo nas configurações do Android. A economia de bateria do aparelho pode interromper o serviço.'
+                            : 'Nesta versão, o GPS acompanha a quilometragem enquanto a tela do DNA AUTO estiver aberta.'} GPS do telefone pode incluir viagens em outro carro; confirme a leitura real do painel.
                     </div>
 
                     <!-- Simulação de Testes em Bancada -->
@@ -5977,6 +5979,9 @@ const OwnerView = {
     async savePrivacyPreferences(enabled) {
         const plate = this.vehicleData.license_plate;
         try {
+            const engine = window.DnaTrackingEngine;
+            if (enabled && !engine) throw new Error('O monitoramento ainda não carregou. Tente novamente.');
+            if (enabled) await engine.requestTrackingPermissions();
             // Primeiro grava consentimento no servidor: o APK só pode iniciar
             // coleta de GPS quando o veículo estiver vinculado ao titular.
             const res = await API.saveVehicleMonitoringPreferences(plate, {
@@ -5994,7 +5999,7 @@ const OwnerView = {
                 }
             }
             await this.fetchVehicleExtras(plate);
-            this.showOwnerToast(enabled ? 'GPS autorizado. Acompanhamento ativado.' : 'GPS desativado.', 'success');
+            this.showOwnerToast(enabled ? (window.DnaTrackingEngine.nativePlugin() ? 'GPS ativado em segundo plano.' : 'GPS ativado para uso com a tela aberta.') : 'GPS desativado.', 'success');
         } catch (error) {
             this.showOwnerToast(error.message || 'Falha ao configurar monitoramento.', 'error');
         }
