@@ -7,14 +7,6 @@
   "orientation": "portrait",
   "background_color": "#020712",
   "theme_color": "#020712",
-  "prefer_related_applications": false,
-  "related_applications": [
-    {
-      "platform": "play",
-      "id": "br.com.dnaauto.cliente",
-      "url": "/downloads/dna-auto-cliente.apk"
-    }
-  ],
   "description": "Passaporte Digital, histórico de revisões, telemetria Mini OBD2 e serviços do seu carro.",
   "icons": [
     {

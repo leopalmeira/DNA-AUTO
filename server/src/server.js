@@ -17,107 +17,8 @@ const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const PORT = process.env.PORT || 3000;
 const APP_VERSION = '2.5.6';
 const ADMIN_CENTRAL_VERSION = '2.6.0';
-const APK_VERSION_CODE = Number(process.env.DNA_APK_VERSION_CODE || 256);
-const OFICINA_APK_VERSION = '2.5.7';
-const OFICINA_APK_VERSION_CODE = Number(process.env.DNA_OFICINA_APK_VERSION_CODE || 257);
 const ANDROID_PACKAGE_NAME = process.env.ANDROID_PACKAGE_NAME || 'br.com.dnaauto.cliente';
 const ANDROID_OFICINA_PACKAGE_NAME = process.env.ANDROID_OFICINA_PACKAGE_NAME || 'br.com.dnaauto.oficina';
-const GITHUB_APK_RELEASE_BASE = (process.env.DNA_APK_RELEASE_BASE || 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest').replace(/\/$/, '');
-
-// O app nunca deve anunciar uma atualização sem APK de produção publicado e
-// manifesto que descreva a versão/código do mesmo binário assinado.
-const APK_RELEASE_METADATA_URL = 'https://api.github.com/repos/leopalmeira/DNA-AUTO/releases/tags/apk-latest';
-const APK_RELEASE_CACHE_MS = 5 * 60 * 1000;
-let verifiedApkCache = { expires: 0, apps: null, pending: null };
-
-async function fetchVerifiedApkRelease() {
-    if (Date.now() < verifiedApkCache.expires) return verifiedApkCache.apps;
-    if (verifiedApkCache.pending) return verifiedApkCache.pending;
-    verifiedApkCache.pending = (async () => {
-        let apps = null;
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 6500);
-        try {
-            const releaseRes = await fetch(APK_RELEASE_METADATA_URL, {
-                headers: { 'Accept': 'application/vnd.github+json', 'User-Agent': 'DNA-AUTO-APK-Updater' },
-                signal: controller.signal
-            });
-            if (!releaseRes.ok) throw new Error('GitHub Release indisponível: HTTP ' + releaseRes.status);
-            const release = await releaseRes.json();
-            const assets = new Map((release.assets || []).map(asset => [asset.name, asset]));
-            const manifestAsset = assets.get('dna-auto-release.json');
-            if (!manifestAsset || !manifestAsset.browser_download_url) {
-                throw new Error('Release sem manifesto assinado de versões: publicação não validada');
-            }
-            const manifestRes = await fetch(manifestAsset.browser_download_url, {
-                headers: { 'Accept': 'application/json' },
-                signal: controller.signal
-            });
-            if (!manifestRes.ok) throw new Error('Manifesto de versões indisponível: HTTP ' + manifestRes.status);
-            const manifest = await manifestRes.json();
-            if (manifest.schema_version !== 1 || manifest.signature_scheme !== 'release-keystore' ||
-                manifest.release_tag !== 'apk-latest') {
-                throw new Error('Manifesto de APK incompatível');
-            }
-            const verified = {};
-            for (const appType of ['cliente', 'oficina']) {
-                const entry = manifest.apps && manifest.apps[appType];
-                const expectedName = 'dna-auto-' + appType + '.apk';
-                const asset = assets.get(expectedName);
-                if (!entry || entry.apk_name !== expectedName ||
-                    entry.package_name !== 'br.com.dnaauto.' + appType ||
-                    !/^\d+\.\d+\.\d+$/.test(entry.version) ||
-                    !Number.isSafeInteger(entry.version_code) || entry.version_code < 1 ||
-                    !Number.isSafeInteger(entry.apk_size) || entry.apk_size <= 0 ||
-                    !/^[a-f0-9]{64}$/i.test(entry.sha256 || '') ||
-                    !asset || asset.size !== entry.apk_size || !asset.browser_download_url) {
-                    throw new Error('APK da release sem versão/arquivo correspondente: ' + appType);
-                }
-                verified[appType] = {
-                    version: entry.version,
-                    version_code: entry.version_code,
-                    mandatory: entry.mandatory === true,
-                    download_url: asset.browser_download_url
-                };
-            }
-            apps = verified;
-        } catch (err) {
-            console.warn('[APK Updater] Atualizações temporariamente indisponíveis:', err.message);
-        } finally {
-            clearTimeout(timeout);
-        }
-        verifiedApkCache.apps = apps;
-        verifiedApkCache.expires = Date.now() + (apps ? APK_RELEASE_CACHE_MS : 60 * 1000);
-        return apps;
-    })().finally(() => { verifiedApkCache.pending = null; });
-    return verifiedApkCache.pending;
-}
-
-function resolveApkInfo(appType = 'cliente', publishedApps = null) {
-    const isOficina = appType === 'oficina';
-    const fileName = isOficina ? 'dna-auto-oficina.apk' : 'dna-auto-cliente.apk';
-    const packageName = isOficina ? ANDROID_OFICINA_PACKAGE_NAME : ANDROID_PACKAGE_NAME;
-    const published = publishedApps && publishedApps[appType];
-    const candidates = [
-        path.join(__dirname, '..', 'uploads', 'apk', fileName),
-        path.join(__dirname, '..', '..', 'public', 'downloads', fileName)
-    ];
-    const localApkPath = candidates.find((p) => fs.existsSync(p)) || null;
-    return {
-        app: appType,
-        // A versão do código web não é a versão do APK publicado.
-        version: published ? published.version : null,
-        version_code: published ? published.version_code : null,
-        min_version_code: published && published.mandatory ? published.version_code : null,
-        force_update: Boolean(published && published.mandatory),
-        apk_available: Boolean(published && (localApkPath || published.download_url)),
-        local_apk_path: localApkPath,
-        apk_url: published ? '/downloads/' + fileName : null,
-        redirect_url: published ? published.download_url : null,
-        package_name: packageName,
-        release_notes: process.env.DNA_APK_RELEASE_NOTES || 'Melhorias de estabilidade, desempenho e segurança.'
-    };
-}
 const DEPLOYED_AT = new Date().toISOString();
 const GIT_COMMIT = (process.env.RENDER_GIT_COMMIT || process.env.GIT_COMMIT || '').slice(0, 7) || null;
 
@@ -201,77 +102,42 @@ app.get('/api/v1/health', (req, res) => {
         version: APP_VERSION,
         commit: GIT_COMMIT,
         deployedAt: DEPLOYED_AT,
-        features: ['maintenance-bot-10h-17h', 'agenda-pdf-d1', 'support-tickets', 'real-client-dossier', 'android-apk-updater'],
+        features: ['maintenance-bot-10h-17h', 'agenda-pdf-d1', 'support-tickets', 'real-client-dossier'],
         timestamp: new Date().toISOString()
     });
 });
 
-// Controle de Versão & Distribuição dos APKs Android (Cliente e Oficina)
-async function sendApkVersionResponse(req, res, appType) {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
-    const info = resolveApkInfo(appType, await fetchVerifiedApkRelease());
+// Compatibilidade com versões antigas que ainda consultam a distribuição Android.
+function sendApkVersionResponse(res, appType) {
+    res.set('Cache-Control', 'no-store');
     res.json({
         success: true,
-        app: info.app,
-        version: info.version,
-        version_code: info.version_code,
-        min_version_code: info.min_version_code,
-        force_update: info.force_update,
-        apk_available: info.apk_available,
-        apk_url: info.apk_url,
-        package_name: info.package_name,
-        release_notes: info.release_notes,
+        app: appType,
+        version: null,
+        version_code: null,
+        min_version_code: null,
+        force_update: false,
+        apk_available: false,
+        apk_url: null,
+        package_name: appType === 'oficina' ? ANDROID_OFICINA_PACKAGE_NAME : ANDROID_PACKAGE_NAME,
         updated_at: DEPLOYED_AT
     });
 }
 
-async function sendApkDownloadResponse(req, res, appType) {
-    res.set('Cache-Control', 'no-store');
-    const info = resolveApkInfo(appType, await fetchVerifiedApkRelease());
-    const fileName = appType === 'oficina' ? 'dna-auto-oficina.apk' : 'dna-auto-cliente.apk';
-    if (!info.apk_available) {
-        return res.status(503).json({
-            error: 'Nenhum APK de produção validado está disponível. Publique uma release assinada com dna-auto-release.json.',
-            apk_available: false
-        });
-    }
-    if (info.local_apk_path) {
-        res.setHeader('Content-Type', 'application/vnd.android.package-archive');
-        return res.download(info.local_apk_path, fileName);
-    }
-    return res.redirect(302, info.redirect_url);
-}
-
 app.get('/api/v1/app/version', (req, res) => {
-    const requestedApp = (req.query.app || '').toString().trim().toLowerCase() === 'oficina' ? 'oficina' : 'cliente';
-    return sendApkVersionResponse(req, res, requestedApp);
+    const appType = String(req.query.app || '').trim().toLowerCase() === 'oficina' ? 'oficina' : 'cliente';
+    sendApkVersionResponse(res, appType);
 });
-app.get('/api/v1/app/version-oficina', (req, res) => sendApkVersionResponse(req, res, 'oficina'));
-app.get('/downloads/dna-auto-cliente.apk', (req, res) => sendApkDownloadResponse(req, res, 'cliente'));
-app.get('/downloads/dna-auto-oficina.apk', (req, res) => sendApkDownloadResponse(req, res, 'oficina'));
+app.get('/api/v1/app/version-oficina', (req, res) => sendApkVersionResponse(res, 'oficina'));
 
-// Digital Asset Links (Android App Links + getInstalledRelatedApps)
+app.get(['/downloads/dna-auto-cliente.apk', '/downloads/dna-auto-oficina.apk'], (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.status(410).json({ apk_available: false });
+});
+
 app.get('/.well-known/assetlinks.json', (req, res) => {
-    const rawFingerprints = (process.env.ANDROID_SHA256_FINGERPRINT || '').split(',').map((s) => s.trim()).filter(Boolean);
-    res.setHeader('Content-Type', 'application/json');
-    res.json([
-        {
-            relation: ['delegate_permission/common.handle_all_urls'],
-            target: {
-                namespace: 'android_app',
-                package_name: ANDROID_PACKAGE_NAME,
-                sha256_cert_fingerprints: rawFingerprints
-            }
-        },
-        {
-            relation: ['delegate_permission/common.handle_all_urls'],
-            target: {
-                namespace: 'android_app',
-                package_name: ANDROID_OFICINA_PACKAGE_NAME,
-                sha256_cert_fingerprints: rawFingerprints
-            }
-        }
-    ]);
+    res.set('Cache-Control', 'no-store');
+    res.json([]);
 });
 
 // Endpoint de Ativação do Cliente via Código da Oficina

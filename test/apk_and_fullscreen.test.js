@@ -6,7 +6,7 @@ const http = require('http');
 const app = require('../server/src/server');
 
 async function runTests() {
-    console.log('🧪 Iniciando Testes Edge-to-Edge Fullscreen & APK Updater/Installer (Cliente + Oficina)...');
+    console.log('🧪 Iniciando Testes de abertura web e tela cheia (Cliente + Oficina)...');
 
     const clienteHtml = fs.readFileSync(path.join(__dirname, '..', 'cliente.app', 'index.html'), 'utf8');
     const publicClienteHtml = fs.readFileSync(path.join(__dirname, '..', 'public', 'cliente.html'), 'utf8');
@@ -33,69 +33,20 @@ async function runTests() {
 
     assert.ok(oficinaHtml.includes('viewport-fit=cover'), 'Oficina deve ter viewport-fit=cover');
     assert.ok(oficinaHtml.includes('apple-mobile-web-app-status-bar-style" content="black-translucent"'), 'Oficina deve ter status bar translucent');
-    assert.ok(oficinaHtml.includes('rel="manifest" href="./manifest.json"'), 'Oficina deve vincular manifest.json');
+    assert.ok(oficinaHtml.includes('rel="manifest" href="/oficina.app/manifest.json"'), 'Oficina deve vincular manifest.json');
     assert.strictEqual(oficinaManifest.display, 'fullscreen', 'Manifest oficina display deve ser fullscreen');
     assert.strictEqual(oficinaManifest.theme_color, '#010712', 'Manifest oficina theme_color deve ser #010712');
     assert.ok(/\.ws-splash-screen\s*\{[\s\S]*?position:\s*fixed;[\s\S]*?inset:\s*0;/.test(oficinaCss), 'Splash oficina deve ser fixed inset: 0');
     assert.ok(/\.ws-splash-hero-bg\s*\{[\s\S]*?object-fit:\s*cover;/.test(oficinaCss), 'Hero bg splash oficina deve usar object-fit: cover');
 
-    // 3. Verificar presença da lógica de Atualização Centrada ("Atualizar App") e Detecção APK em ambos os apps
-    for (const [label, html] of [['Cliente', clienteHtml], ['Oficina', oficinaHtml]]) {
-        assert.ok(html.includes('dna-update-modal'), `${label} deve possuir modal dna-update-modal`);
-        assert.ok(html.includes('Atualizar App'), `${label} deve exibir título Atualizar App`);
-        assert.ok(html.includes('DNAAppUpdater'), `${label} deve expor DNAAppUpdater`);
-        assert.ok(html.includes('DNAApkInstaller'), `${label} deve expor DNAApkInstaller`);
-        assert.ok(html.includes('getInstalledRelatedApps'), `${label} deve checar getInstalledRelatedApps`);
+    for (const html of [clienteHtml, oficinaHtml]) {
+        assert.ok(!html.includes('triggerApkAutoDownload'));
+        assert.ok(!html.includes('dna-update-modal'));
+    }
+    for (const manifest of [clienteManifest, publicManifest, oficinaManifest]) {
+        assert.ok(!manifest.related_applications);
     }
 
-    // Regressão: botão único, comparação nativa e remoção imediata ao atualizar.
-    assert.ok(!clienteHtml.includes('id="dna-update-later"'), 'Cliente não deve oferecer o botão Depois');
-    assert.ok(clienteHtml.includes('resolveInstalledClientApkContext'), 'Cliente deve ler versão Android real');
-    assert.ok(clienteHtml.includes('nativeApp.getInfo()'), 'Cliente deve dar prioridade ao pacote Android');
-    assert.ok(clienteHtml.includes('installedCode < availableCode'), 'Cliente deve dar prioridade ao versionCode');
-    assert.ok(clienteHtml.includes('hideClientApkUpdateModal()'), 'Cliente deve remover modal quando atualizado');
-    assert.ok(clienteHtml.includes('browser.open({ url: apkUrl.href })'), 'Cliente deve abrir navegador Android');
-    const clienteDependencies = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'android-client', 'package.json'), 'utf8')).dependencies;
-    assert.ok(clienteDependencies['@capacitor/app'], 'Cliente precisa do plugin App para ler versão instalada');
-    assert.ok(clienteDependencies['@capacitor/browser'], 'Cliente precisa do plugin Browser para baixar APK no Android');
-    assert.ok(!oficinaHtml.includes('id="dna-update-later"'), 'Oficina não deve oferecer o botão Depois');
-    assert.ok(oficinaHtml.includes('resolveInstalledOficinaApkContext'), 'Versão instalada deve ser lida do pacote Android');
-    assert.ok(oficinaHtml.includes('nativeApp.getInfo()'), 'App.getInfo deve ter prioridade sobre URL antiga');
-    assert.ok(oficinaHtml.includes('installedCode < availableCode'), 'Quando versionCode existe ele prevalece sobre semver');
-    assert.ok(oficinaHtml.includes('hideOficinaApkUpdateModal()'), 'Modal deve ser removido se app está atualizado');
-    assert.ok(oficinaHtml.includes('browser.open({ url: apkUrl.href })'), 'Botão deve abrir navegador Android para instalação');
-    const oficinaNativeConfig = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'android-oficina', 'capacitor.config.json'), 'utf8'));
-    assert.ok(oficinaNativeConfig.server.url.includes('apk_version=2.5.7&apk_code=257'), 'APK precisa anunciar versão 2.5.7');
-    assert.strictEqual(oficinaNativeConfig.android.appendUserAgent, 'DNAOficinaAPK/2.5.7');
-
-    // A release pública deve ter APKs assinados e manifesto com versões reais.
-    // Simular GitHub para testes determinísticos e sem rede externa.
-    const releaseManifestUrl = 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/dna-auto-release.json';
-    const releaseApiUrl = 'https://api.github.com/repos/leopalmeira/DNA-AUTO/releases/tags/apk-latest';
-    const sha = 'a'.repeat(64);
-    const manifest = {
-        schema_version: 1,
-        release_tag: 'apk-latest',
-        signature_scheme: 'release-keystore',
-        apps: {
-            cliente: { apk_name: 'dna-auto-cliente.apk', package_name: 'br.com.dnaauto.cliente', version: '2.5.6', version_code: 256, mandatory: true, apk_size: 12345, sha256: sha },
-            oficina: { apk_name: 'dna-auto-oficina.apk', package_name: 'br.com.dnaauto.oficina', version: '2.5.7', version_code: 257, mandatory: true, apk_size: 12346, sha256: sha }
-        }
-    };
-    const assets = [
-        { name: 'dna-auto-release.json', size: 700, browser_download_url: releaseManifestUrl },
-        { name: 'dna-auto-cliente.apk', size: 12345, browser_download_url: 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/dna-auto-cliente.apk' },
-        { name: 'dna-auto-oficina.apk', size: 12346, browser_download_url: 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/dna-auto-oficina.apk' }
-    ];
-    const originalFetch = global.fetch;
-    global.fetch = (resource, options) => {
-        const url = String(resource);
-        if (url === releaseApiUrl) return Promise.resolve(new Response(JSON.stringify({ assets }), { status: 200 }));
-        if (url === releaseManifestUrl) return Promise.resolve(new Response(JSON.stringify(manifest), { status: 200 }));
-        return originalFetch(resource, options);
-    };
-
-    // 4. Testar endpoints reais de versão dos APKs e Asset Links via HTTP
     const server = await new Promise((resolve) => {
         const s = http.createServer(app);
         s.listen(0, '127.0.0.1', () => resolve(s));
@@ -105,49 +56,39 @@ async function runTests() {
         const port = server.address().port;
         const base = `http://127.0.0.1:${port}`;
 
-        const vClienteRes = await fetch(`${base}/api/v1/app/version`);
-        assert.strictEqual(vClienteRes.status, 200);
-        const vCliente = await vClienteRes.json();
-        assert.strictEqual(vCliente.success, true);
-        assert.strictEqual(vCliente.app, 'cliente');
-        assert.strictEqual(vCliente.version, '2.5.6');
-        assert.strictEqual(vCliente.package_name, 'br.com.dnaauto.cliente');
-        assert.strictEqual(vCliente.apk_available, true);
-        assert.strictEqual(vCliente.apk_url, '/downloads/dna-auto-cliente.apk');
-        assert.strictEqual(vCliente.force_update, true);
-        assert.strictEqual(vCliente.version_code, 256);
+        for (const [endpoint, appType] of [
+            ['/api/v1/app/version', 'cliente'],
+            ['/api/v1/app/version?app=oficina', 'oficina'],
+            ['/api/v1/app/version-oficina', 'oficina']
+        ]) {
+            const result = await fetch(base + endpoint);
+            assert.strictEqual(result.status, 200);
+            const info = await result.json();
+            assert.strictEqual(info.success, true);
+            assert.strictEqual(info.app, appType);
+            assert.strictEqual(info.apk_available, false);
+            assert.strictEqual(info.apk_url, null);
+            assert.strictEqual(info.force_update, false);
+        }
 
-        const vOficinaRes = await fetch(`${base}/api/v1/app/version-oficina`);
-        assert.strictEqual(vOficinaRes.status, 200);
-        const vOficina = await vOficinaRes.json();
-        assert.strictEqual(vOficina.success, true);
-        assert.strictEqual(vOficina.app, 'oficina');
-        assert.strictEqual(vOficina.version, '2.5.7');
-        assert.strictEqual(vOficina.version_code, 257);
-        assert.strictEqual(vOficina.package_name, 'br.com.dnaauto.oficina');
-        assert.strictEqual(vOficina.apk_available, true);
-        assert.strictEqual(vOficina.apk_url, '/downloads/dna-auto-oficina.apk');
+        for (const appType of ['cliente', 'oficina']) {
+            const page = await fetch(base + '/' + appType + '/');
+            assert.strictEqual(page.status, 200);
+            assert.match(page.headers.get('content-type'), /text\/html/);
+            assert.ok(!(await page.text()).includes('triggerApkAutoDownload'));
 
-        const alRes = await fetch(`${base}/.well-known/assetlinks.json`);
-        assert.strictEqual(alRes.status, 200);
-        const alData = await alRes.json();
-        assert.ok(Array.isArray(alData) && alData.length === 2);
-        assert.strictEqual(alData[0].target.package_name, 'br.com.dnaauto.cliente');
-        assert.strictEqual(alData[1].target.package_name, 'br.com.dnaauto.oficina');
+            const download = await fetch(base + '/downloads/dna-auto-' + appType + '.apk', { redirect: 'manual' });
+            assert.strictEqual(download.status, 410);
+            assert.strictEqual(download.headers.get('location'), null);
+        }
 
-        // Verificar resposta dos downloads sem seguir redirecionamento externo
-        const dlCliente = await fetch(`${base}/downloads/dna-auto-cliente.apk`, { redirect: 'manual' });
-        assert.ok(dlCliente.status === 200 || dlCliente.status === 302, `Download APK cliente retornou status inesperado: ${dlCliente.status}`);
-
-        const dlOficina = await fetch(`${base}/downloads/dna-auto-oficina.apk`, { redirect: 'manual' });
-        assert.ok(dlOficina.status === 200 || dlOficina.status === 302, `Download APK oficina retornou status inesperado: ${dlOficina.status}`);
-
-        console.log('✅ Todos os testes de Edge-to-Edge Fullscreen, Versionamento APK e Asset Links (Cliente + Oficina) passaram!');
+        const assetLinks = await fetch(base + '/.well-known/assetlinks.json');
+        assert.deepStrictEqual(await assetLinks.json(), []);
+        console.log('Cliente e Oficina abrem pela web com tela cheia e sem distribuição de APK.');
     } finally {
         if (server) {
             server.close();
         }
-        global.fetch = originalFetch;
     }
 }
 
