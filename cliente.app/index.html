@@ -2572,123 +2572,66 @@ section.splash .splash-bg {
 
 /* ═══ TELA DE LOGIN OFICIAL REFINADA (CICLO 108) ═══ */
 #login.screen {
-  background: #010916 !important;
-  min-height: 100dvh !important;
-  height: 100dvh !important;
-  max-height: 100dvh !important;
-  box-sizing: border-box !important;
-  display: none;
-  flex-direction: column !important;
-  justify-content: flex-end !important;
-  align-items: center !important;
-  padding: 0 !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  position: relative !important;
-}
-#login.screen.active {
-  display: flex !important;
+  min-height: 100vh;
+  min-height: 100dvh;
+  justify-content: flex-end;
+  align-items: center;
+  isolation: isolate;
+  padding: 230px 20px 24px;
+  padding: clamp(180px, 40vh, 420px) max(20px, env(safe-area-inset-right))
+    max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  background: #041126;
 }
 .login-hero-container {
-  position: relative !important;
-  width: 100% !important;
-  max-width: 480px !important;
-  flex: 1 1 auto !important;
-  min-height: 220px !important;
-  max-height: calc(100dvh - 275px) !important;
-  background: radial-gradient(ellipse at 50% 60%, #041936 0%, #010916 78%) !important;
-  display: flex !important;
-  align-items: flex-end !important;
-  justify-content: center !important;
-  margin: 0 auto !important;
-  padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 0 !important;
-  box-sizing: border-box !important;
-  overflow: hidden !important;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.login-hero-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 20%, #04112622 36%, #041126 77%);
+  pointer-events: none;
 }
 .login-hero-banner-img {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 390px !important;
-  object-fit: contain !important;
-  object-position: center bottom !important;
-  display: block !important;
-  margin: 0 auto !important;
-  padding: 0 !important;
-  pointer-events: none !important;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center top;
 }
 .login-back-pill {
-  position: absolute !important;
-  top: max(14px, env(safe-area-inset-top, 14px)) !important;
-  left: 14px !important;
-  z-index: 30 !important;
-  width: 38px !important;
-  height: 38px !important;
-  border-radius: 50% !important;
-  border: 1.5px solid #00c3ff !important;
-  background: rgba(8, 22, 44, 0.7) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  display: grid !important;
-  place-items: center !important;
-  cursor: pointer !important;
-  box-shadow: 0 0 14px rgba(0, 195, 255, 0.35) !important;
-  transition: transform 0.15s ease, background 0.15s ease !important;
-}
-.login-back-pill:active {
-  transform: scale(0.92) !important;
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #5483ae;
+  border-radius: 50%;
+  background: #071830e8;
+  display: grid;
+  place-items: center;
 }
 .login-sheet-card {
-  width: 100% !important;
-  max-width: 480px !important;
-  background: #ffffff !important;
-  border-radius: 28px 28px 0 0 !important;
-  padding: clamp(16px, 2.4vh, 22px) clamp(16px, 4vw, 22px) calc(clamp(16px, 2.4vh, 22px) + env(safe-area-inset-bottom, 0px)) !important;
-  box-sizing: border-box !important;
-  box-shadow: 0 -12px 32px rgba(0, 5, 15, 0.28) !important;
-  margin: -16px auto 0 !important;
-  position: relative !important;
-  z-index: 10 !important;
-  flex: 0 0 auto !important;
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: flex-start !important;
+  width: 100%;
+  max-width: 410px;
+  background: #f8fbff;
+  border-radius: 24px;
+  padding: clamp(18px, 5vw, 26px);
+  box-shadow: 0 16px 42px #0006;
 }
-
-@media (max-height: 580px) {
-  #login.screen {
-    justify-content: flex-start !important;
-    height: auto !important;
-    min-height: 100% !important;
-    max-height: none !important;
-    overflow-y: auto !important;
-    padding-bottom: calc(40px + env(safe-area-inset-bottom, 16px)) !important;
-  }
-  .login-hero-container {
-    min-height: 60px !important;
-    max-height: 80px !important;
-    flex: 0 0 auto !important;
-    opacity: 0.35 !important;
-  }
-  .login-sheet-card {
-    margin-top: 0 !important;
-    border-radius: 20px 20px 0 0 !important;
-  }
+.login-heading {
+  margin: 0 0 16px;
+  color: #0b2447;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -.035em;
 }
-
 body.keyboard-open #login.screen {
-  justify-content: flex-start !important;
-  height: 100dvh !important;
-  max-height: 100dvh !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-}
-body.keyboard-open .login-hero-container {
-  display: none !important;
-}
-body.keyboard-open .login-sheet-card {
-  margin-top: calc(16px + env(safe-area-inset-top, 0px)) !important;
-  border-radius: 24px !important;
-  padding-bottom: calc(220px + env(safe-area-inset-bottom, 20px)) !important;
+  justify-content: flex-start;
+  padding-top: max(64px, calc(env(safe-area-inset-top) + 52px));
 }
 .login-native-form {
   display: flex !important;
@@ -2745,7 +2688,8 @@ body.keyboard-open .login-sheet-card {
   outline: 0 !important;
   background: transparent !important;
   padding: 0 14px !important;
-  font-size: 14px !important;
+  min-width: 0;
+  font-size: 16px !important;
   font-weight: 500 !important;
   color: #0f172a !important;
   font-family: inherit !important;
@@ -5495,35 +5439,6 @@ html, body {
   box-sizing: border-box !important;
 }
 
-/* ── 3. TELA LOGIN (#login) ── */
-body:not(.keyboard-open) #login .login-hero-container {
-  padding: var(--dna-safe-top) var(--dna-safe-right) 10px var(--dna-safe-left) !important;
-  box-sizing: border-box !important;
-}
-
-#login .login-back-pill {
-  top: var(--dna-safe-top) !important;
-  left: var(--dna-safe-left) !important;
-}
-
-#login .login-sheet-card {
-  padding: 22px var(--dna-safe-right) calc(22px + var(--dna-safe-bottom)) var(--dna-safe-left) !important;
-  box-sizing: border-box !important;
-}
-
-@media (max-height: 580px) {
-  body:not(.keyboard-open) #login .login-hero-container {
-    min-height: 76px !important;
-    max-height: 96px !important;
-    padding-top: var(--dna-safe-top) !important;
-  }
-}
-
-body.keyboard-open #login .login-sheet-card {
-  margin-top: var(--dna-safe-top) !important;
-  padding: 20px var(--dna-safe-right) calc(200px + var(--dna-safe-bottom)) var(--dna-safe-left) !important;
-}
-
 /* ── 4. TELA CADASTRO (#register) ── */
 #register.screen {
   height: 100dvh !important;
@@ -6467,8 +6382,8 @@ nav[aria-label="Navegação principal"] button {
     <img src="img/login-hero-official.png?v=2.5.5" alt="DNA AUTO - Seu veículo sempre protegido" class="login-hero-banner-img" />
   </div>
 
-  <!-- Card Branco de Login (Bottom Sheet posicionado abaixo do carro sem sobreposição) -->
   <div class="login-sheet-card">
+    <h1 class="login-heading">Acesse sua conta</h1>
     <div id="login-error-box" class="login-error-alert" style="display:none;">
       <span>⚠️</span>
       <span id="login-error-text"></span>
@@ -8148,8 +8063,8 @@ async function handleRegisterSubmit(event) {
   return false;
 }
 </script><script src="/js/components/clientMaintenanceReadonly.js?v=1"></script>
-<script src="/js/components/clientTrackingEngine.js?v=2.5.6"></script>
-<script src="/js/components/ownerView.js?v=2.5.6"></script>
+<script src="/js/components/clientTrackingEngine.js?v=2.5.6-gps"></script>
+<script src="/js/components/ownerView.js?v=2.5.6-gps"></script>
 <script>
 // --- SCRIPTS DO GRÁFICO INTERATIVO DE GASTOS COM O CARRO ---
 const gastosMonths = [

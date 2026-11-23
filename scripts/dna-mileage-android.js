@@ -25,13 +25,52 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.Permission;
+import com.getcapacitor.annotation.PermissionCallback;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-@CapacitorPlugin(name = "DnaMileage")
+@CapacitorPlugin(name = "DnaMileage", permissions = {
+    @Permission(alias = "preciseLocation", strings = {
+        Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION
+    }),
+    @Permission(alias = "trackingNotifications", strings = {Manifest.permission.POST_NOTIFICATIONS})
+})
 public class DnaMileagePlugin extends Plugin {
     private SharedPreferences prefs() {
         return getContext().getSharedPreferences("dna_mileage_native", Context.MODE_PRIVATE);
+    }
+
+    @PluginMethod
+    public void requestTrackingPermissions(PluginCall call) {
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissionForAlias("preciseLocation", call, "onLocationPermission");
+            return;
+        }
+        onLocationPermission(call);
+    }
+
+    @PermissionCallback
+    private void onLocationPermission(PluginCall call) {
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            call.reject("Autorize a localização precisa nas permissões do Android e tente novamente.");
+            return;
+        }
+        if (Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissionForAlias("trackingNotifications", call, "onTrackingNotificationPermission");
+            return;
+        }
+        call.resolve();
+    }
+
+    @PermissionCallback
+    private void onTrackingNotificationPermission(PluginCall call) {
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            call.reject("Autorize as notificações do DNA AUTO nas configurações do Android e tente novamente.");
+            return;
+        }
+        call.resolve();
     }
 
     @PluginMethod

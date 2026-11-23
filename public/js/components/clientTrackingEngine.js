@@ -83,6 +83,29 @@ const DnaTrackingEngine = {
         return cap.Plugins?.DnaMileage || (typeof cap.registerPlugin === 'function' ? cap.registerPlugin('DnaMileage') : null);
     },
 
+    async requestTrackingPermissions() {
+        const native = this.nativePlugin();
+        if (native) {
+            try {
+                await native.requestTrackingPermissions();
+            } catch (error) {
+                if (error?.code !== 'UNIMPLEMENTED') throw error;
+                // APKs anteriores ainda usam as permissões concedidas nas configurações.
+            }
+            return;
+        }
+        if (!navigator.geolocation) throw new Error('GPS indisponível neste navegador.');
+        const permission = await navigator.permissions?.query({ name: 'geolocation' }).catch(() => null);
+        if (permission?.state === 'granted') return;
+        await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(
+            resolve,
+            error => reject(new Error(error.code === 1
+                ? 'Autorize a localização para o DNA AUTO nas permissões do navegador.'
+                : 'Não foi possível obter a localização. Confira se o GPS está ligado.')),
+            { timeout: 15000, maximumAge: 60000 }
+        ));
+    },
+
     async startNativeTracking() {
         const native = this.nativePlugin();
         if (!native || this._nativeStarting) return this.isTracking;
