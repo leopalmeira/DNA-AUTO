@@ -10347,11 +10347,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const curScreen = window.location.hash.replace('#', '') || 'dashboard';
     setTimeout(() => {
       go(curScreen);
+      window.dnaStartupReady = true;
     }, 40);
   } else {
     // Se não tiver login/cadastro ativo, o acesso direto é IMPEDIDO! Abre na Splash
     setTimeout(() => {
       go('splash');
+      window.dnaStartupReady = true;
     }, 40);
   }
 });
@@ -10478,8 +10480,8 @@ function renderSidebarNavigation() {
 
 // Inicializar navegação da sidebar assim que carregar
 document.addEventListener('DOMContentLoaded', () => {
-  renderSidebarNavigation();
   initClientApkLifecycle();
+  renderSidebarNavigation();
 });
 
 // ── ATUALIZAÇÃO CENTRADA DO APK & DOWNLOAD AUTOMÁTICO INTELIGENTE (ANDROID) ──

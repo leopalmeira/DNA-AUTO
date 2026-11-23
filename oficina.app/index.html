@@ -424,11 +424,13 @@
                 API.setToken(token);
             }
 
-            // Renderizar ERP da Oficina
-            await WorkshopView.render();
-
-            // Ciclo de vida APK Android da Oficina (Download automático & Atualização)
+            // Iniciar a verificacao do APK em paralelo com o carregamento do painel.
             initOficinaApkLifecycle();
+            try {
+                await WorkshopView.render();
+            } finally {
+                window.dnaStartupReady = true;
+            }
         });
 
         function compareSemver(a, b) {
