@@ -255,7 +255,7 @@ fs.writeFileSync(mainActivityPath, [
   '    }',
   '',
   '    @Override',
-  '    protected void onDestroy() {',
+  '    public void onDestroy() {',
   '        removeStartupVideo();',
   '        super.onDestroy();',
   '    }',
