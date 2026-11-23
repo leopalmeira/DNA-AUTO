@@ -23,6 +23,10 @@ on:
         description: 'Código inteiro exclusivo do APK da Oficina'
         required: true
         default: '258'
+      migrate_legacy_signature:
+        description: 'Permitir troca única da assinatura dos APKs legados (exige reinstalação)'
+        type: boolean
+        default: false
       cliente_update_required:
         description: 'Exibir atualização obrigatória do Cliente (somente APK novo assinado)'
         type: boolean
@@ -52,6 +56,10 @@ on:
       - 'scripts/android/startup.mp4'
       - 'scripts/dna-mileage-android.js'
       - '.github/workflows/build-cliente-apk.yml'
+
+concurrency:
+  group: android-build-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build-apks:
@@ -141,13 +149,31 @@ jobs:
           done
 
       # Assinatura Android é a identidade do app. Se mudar, atualizar sem desinstalar é impossível.
-      # Não substitua o APK anterior por um binário com assinatura diferente.
+      # Apenas a migração explícita da release legada permite trocar a assinatura.
       - name: Garantir compatibilidade com assinatura dos APKs já publicados
         if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MIGRATE_LEGACY_SIGNATURE: ${{ inputs.migrate_legacy_signature }}
+          CLIENTE_REQUIRED: ${{ inputs.cliente_update_required }}
+          OFICINA_REQUIRED: ${{ inputs.oficina_update_required }}
         run: |
           set -euo pipefail
+          if [ "$MIGRATE_LEGACY_SIGNATURE" = true ]; then
+            if [ "$CLIENTE_REQUIRED" = true ] || [ "$OFICINA_REQUIRED" = true ]; then
+              echo "::error::A migração da assinatura exige reinstalação manual. Desative a atualização obrigatória."
+              exit 1
+            fi
+            ASSETS=$(gh release view apk-latest --json assets --jq '.assets[].name')
+            if ! grep -Fxq dna-auto-cliente.apk <<< "$ASSETS" ||
+               ! grep -Fxq dna-auto-oficina.apk <<< "$ASSETS" ||
+               grep -Fxq dna-auto-release.json <<< "$ASSETS"; then
+              echo "::error::A troca de assinatura só é permitida para a release legada com ambos os APKs e sem manifesto."
+              exit 1
+            fi
+            echo "::notice::Migração legada autorizada. A nova assinatura será exigida nas próximas atualizações."
+            exit 0
+          fi
           if gh release view apk-latest >/dev/null 2>&1; then
             mkdir -p /tmp/dna-previous-apks
             gh release download apk-latest --pattern 'dna-auto-*.apk' --dir /tmp/dna-previous-apks
@@ -206,14 +232,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          RELEASE_NOTES="APKs assinados com keystore persistente. GPS em segundo plano com consentimento e alertas de hodômetro."
+          if [ "${{ inputs.migrate_legacy_signature }}" = true ]; then
+            RELEASE_NOTES="$RELEASE_NOTES A assinatura mudou. Quem tem a versão anterior deve desinstalá-la e instalar este APK uma vez. Dados guardados apenas no aparelho podem ser apagados."
+          fi
           VNAME="Cliente v${{ github.event.inputs.version_name || '2.5.6' }} / Oficina v${{ github.event.inputs.oficina_version_name || '2.5.7' }}"
           if gh release view apk-latest >/dev/null 2>&1; then
             gh release delete-asset apk-latest dna-auto-release.json -y >/dev/null 2>&1 || true
             gh release upload apk-latest dna-auto-cliente.apk dna-auto-oficina.apk --clobber
             gh release upload apk-latest dna-auto-release.json --clobber
-            gh release edit apk-latest --title "DNA AUTO APKs — ${VNAME}" --notes "APKs assinados com keystore persistente. GPS em segundo plano com consentimento e alertas de hodômetro."
+            gh release edit apk-latest --title "DNA AUTO APKs — ${VNAME}" --notes "$RELEASE_NOTES"
           else
             gh release create apk-latest dna-auto-cliente.apk dna-auto-oficina.apk dna-auto-release.json \
               --title "DNA AUTO APKs — ${VNAME}" \
-              --notes "APKs assinados com keystore persistente. GPS em segundo plano com consentimento e alertas de hodômetro."
+              --notes "$RELEASE_NOTES"
           fi
