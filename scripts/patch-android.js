@@ -137,6 +137,17 @@ if (fs.existsSync(stylesPath)) {
   }
 }
 
+const startupResDir = path.join(process.cwd(), 'android', 'app', 'src', 'main', 'res');
+const startupAssets = path.join(__dirname, '..', 'cliente.app', 'img');
+for (const [source, folder, resource] of [
+  ['dna-startup.mp4', 'raw', 'dna_startup.mp4'],
+  ['dna-startup.jpg', 'drawable-nodpi', 'dna_startup_poster.jpg']
+]) {
+  const resourceDir = path.join(startupResDir, folder);
+  fs.mkdirSync(resourceDir, { recursive: true });
+  fs.copyFileSync(path.join(startupAssets, source), path.join(resourceDir, resource));
+}
+
 // 5. MainActivity.java com Edge-to-Edge WindowCompat e notch shortEdges
 const mainActivityPath = path.join(process.cwd(), 'android', 'app', 'src', 'main', 'java', ...pkgPath.split('/'), 'MainActivity.java');
 fs.writeFileSync(mainActivityPath, [
@@ -161,6 +172,7 @@ fs.writeFileSync(mainActivityPath, [
   '    @Override',
   '    protected void onCreate(Bundle savedInstanceState) {',
   ...(isOficina ? [] : ['        registerPlugin(DnaMileagePlugin.class);']),
+  '        registerPlugin(StartupPlugin.class);',
   '        super.onCreate(savedInstanceState);',
   '        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);',
   '        getWindow().setStatusBarColor(Color.TRANSPARENT);',
@@ -175,12 +187,14 @@ fs.writeFileSync(mainActivityPath, [
   '        if (controller != null) {',
   '            controller.setAppearanceLightStatusBars(false);',
   '        }',
+  '        if (savedInstanceState == null) showStartup();',
   ...(isOficina ? [] : [
     '        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {',
     '            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 12033);',
     '        }'
   ]),
   '    }',
+  require('./dna-startup-android')(),
   '}',
   ''
 ].join('\n'));

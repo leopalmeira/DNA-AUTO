@@ -40,6 +40,8 @@ on:
       - 'android-client/**'
       - 'android-oficina/**'
       - 'scripts/patch-android.js'
+      - 'scripts/dna-startup-android.js'
+      - 'cliente.app/img/dna-startup.*'
       - 'scripts/dna-mileage-android.js'
       - '.github/workflows/build-cliente-apk.yml'
   pull_request:
@@ -48,6 +50,8 @@ on:
     paths:
       - 'android-client/**'
       - 'scripts/patch-android.js'
+      - 'scripts/dna-startup-android.js'
+      - 'cliente.app/img/dna-startup.*'
       - 'scripts/dna-mileage-android.js'
       - '.github/workflows/build-cliente-apk.yml'
 

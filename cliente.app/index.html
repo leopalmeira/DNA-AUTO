@@ -6428,7 +6428,62 @@ nav[aria-label="Navegação principal"] button {
 }
 
 </style><link rel="stylesheet" href="/css/maintenance-readonly.css?v=1"/><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-</head><body><main class="app"><section class="screen splash active" id="splash">
+<style>
+#dna-startup {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: grid;
+  place-items: center;
+  background: #07101a center / contain no-repeat;
+}
+#dna-startup video {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+</style>
+</head><body>
+<div id="dna-startup" role="status" aria-label="Carregando DNA AUTO">
+  <video muted loop playsinline aria-hidden="true"></video>
+</div>
+<script>
+(() => {
+  const overlay = document.getElementById('dna-startup');
+  const video = overlay.querySelector('video');
+  const nativeSplash = () => window.Capacitor?.Plugins?.DnaStartup;
+  const finish = () => {
+    clearTimeout(deadline);
+    video.pause();
+    overlay.remove();
+    video.removeAttribute('src');
+    video.load();
+    nativeSplash()?.finish().catch(() => {});
+  };
+  const deadline = setTimeout(finish, 12000);
+  document.addEventListener('dna:startup-ready', finish, { once: true });
+  if (nativeSplash()) {
+    overlay.remove();
+    return;
+  }
+
+  const root = location.pathname === '/' || location.pathname === '/index.html'
+    ? '/'
+    : '/cliente.app/';
+  overlay.style.backgroundImage = 'url(' + root + 'img/dna-startup.jpg)';
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    video.addEventListener('playing', () => { video.style.visibility = 'visible'; });
+    video.addEventListener('error', () => { video.style.visibility = 'hidden'; });
+    video.src = root + 'img/dna-startup.mp4';
+    video.play().catch(() => {});
+  }
+})();
+</script>
+<main class="app"><section class="screen splash active" id="splash">
   <div class="splash-wrapper">
     <img class="splash-bg" src="/img/splash-clean-bg.png" alt="DNA Auto Splash">
     <div class="splash-overlay">
@@ -10346,12 +10401,20 @@ document.addEventListener('DOMContentLoaded', () => {
     carregarDadosUsuarioLogado();
     const curScreen = window.location.hash.replace('#', '') || 'dashboard';
     setTimeout(() => {
-      go(curScreen);
+      try {
+        go(curScreen);
+      } finally {
+        document.dispatchEvent(new Event('dna:startup-ready'));
+      }
     }, 40);
   } else {
     // Se não tiver login/cadastro ativo, o acesso direto é IMPEDIDO! Abre na Splash
     setTimeout(() => {
-      go('splash');
+      try {
+        go('splash');
+      } finally {
+        document.dispatchEvent(new Event('dna:startup-ready'));
+      }
     }, 40);
   }
 });
