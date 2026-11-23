@@ -132,7 +132,11 @@ jobs:
           printf '%s' "$DNA_ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/dna-auto-release.keystore
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n1)
           for item in cliente oficina; do
-            pushd "android-$item/android" >/dev/null
+            project=android-client
+            if [ "$item" = oficina ]; then
+              project=android-oficina
+            fi
+            pushd "$project/android" >/dev/null
             chmod +x gradlew
             ./gradlew assembleRelease
             SRC="app/build/outputs/apk/release/app-release-unsigned.apk"
