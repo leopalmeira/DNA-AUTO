@@ -70,7 +70,10 @@ for (const appType of ['cliente', 'oficina']) {
         fs.readFile(path.join(PROJECT_ROOT, appType + '.app', 'index.html'), 'utf8', (error, html) => {
             if (error) return next(error);
             const link = `<a id="dna-android-download" href="${apkPath}" style="position:fixed;z-index:1000;right:16px;bottom:calc(16px + env(safe-area-inset-bottom, 0px));display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:24px;background:#08244b;color:#fff;border:1px solid #5bb8ff;font:600 14px system-ui,sans-serif;text-decoration:none">Baixar ou atualizar app Android</a>`;
-            res.type('html').send(html.replace('</body>', () => link + '\n</body>'));
+            const autoDownload = appType === 'cliente' && /^\/cliente\/?$/.test(req.path)
+                ? '<script>document.getElementById("dna-android-download").click();</script>'
+                : '';
+            res.type('html').send(html.replace('</body>', () => link + autoDownload + '\n</body>'));
         });
     });
 }
