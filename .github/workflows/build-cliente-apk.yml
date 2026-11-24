@@ -114,22 +114,23 @@ jobs:
 
       # O APK debug muda a assinatura a cada runner. Nunca publicar debug como
       # atualização de produção: usar a MESMA chave privada em todos os builds.
-      - name: Assinar APKs de produção com keystore persistente
+      - name: Assinar APKs com a chave de teste persistente
         if: github.ref == 'refs/heads/master' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
         env:
-          DNA_ANDROID_KEYSTORE_BASE64: ${{ secrets.DNA_ANDROID_KEYSTORE_BASE64 }}
-          DNA_ANDROID_STORE_PASSWORD: ${{ secrets.DNA_ANDROID_STORE_PASSWORD }}
-          DNA_ANDROID_KEY_ALIAS: ${{ secrets.DNA_ANDROID_KEY_ALIAS }}
-          DNA_ANDROID_KEY_PASSWORD: ${{ secrets.DNA_ANDROID_KEY_PASSWORD }}
+          DNA_ANDROID_TEST_SIGNING: ${{ secrets.DNA_ANDROID_TEST_SIGNING }}
         run: |
           set -euo pipefail
-          for var in DNA_ANDROID_KEYSTORE_BASE64 DNA_ANDROID_STORE_PASSWORD DNA_ANDROID_KEY_ALIAS DNA_ANDROID_KEY_PASSWORD; do
-            if [ -z "${!var}" ]; then
-              echo "::error::Secret ${var} ausente. Não publicar APK com assinatura temporária."
-              exit 1
-            fi
-          done
-          printf '%s' "$DNA_ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/dna-auto-release.keystore
+          umask 077
+          if [ -z "$DNA_ANDROID_TEST_SIGNING" ]; then
+            echo "::error::Configure o segredo DNA_ANDROID_TEST_SIGNING antes de publicar."
+            exit 1
+          fi
+          KEYSTORE=$(mktemp)
+          trap 'rm -f "$KEYSTORE"' EXIT
+          printf '%s' "$DNA_ANDROID_TEST_SIGNING" | jq -er '.keystore' | base64 -d > "$KEYSTORE"
+          export DNA_ANDROID_STORE_PASSWORD
+          DNA_ANDROID_STORE_PASSWORD=$(printf '%s' "$DNA_ANDROID_TEST_SIGNING" | jq -er '.password')
+          unset DNA_ANDROID_TEST_SIGNING
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n1)
           for item in cliente oficina; do
             project=android-client
@@ -142,10 +143,10 @@ jobs:
             SRC="app/build/outputs/apk/release/app-release-unsigned.apk"
             "$BUILD_TOOLS/zipalign" -f -p 4 "$SRC" "../../dna-auto-$item-aligned.apk"
             "$BUILD_TOOLS/apksigner" sign \
-              --ks /tmp/dna-auto-release.keystore \
-              --ks-key-alias "$DNA_ANDROID_KEY_ALIAS" \
+              --ks "$KEYSTORE" \
+              --ks-key-alias dna-auto-test \
               --ks-pass env:DNA_ANDROID_STORE_PASSWORD \
-              --key-pass env:DNA_ANDROID_KEY_PASSWORD \
+              --key-pass env:DNA_ANDROID_STORE_PASSWORD \
               --out "../../dna-auto-$item.apk" "../../dna-auto-$item-aligned.apk"
             "$BUILD_TOOLS/apksigner" verify --verbose "../../dna-auto-$item.apk"
             popd >/dev/null
