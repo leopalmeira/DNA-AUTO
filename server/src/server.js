@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const { pipeline } = require('node:stream/promises');
 
 // Inicialização do Banco
 require('./database/db');
@@ -150,10 +151,51 @@ app.get('/api/v1/app/version', (req, res) => {
 });
 app.get('/api/v1/app/version-oficina', (req, res) => sendApkVersionResponse(res, 'oficina'));
 
-app.get(['/downloads/dna-auto-cliente.apk', '/downloads/dna-auto-oficina.apk'], (req, res) => {
+app.get(['/downloads/dna-auto-cliente.apk', '/downloads/dna-auto-oficina.apk'], async (req, res) => {
     res.set('Cache-Control', 'no-store');
-    const filename = path.basename(req.path);
-    res.redirect(302, 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/' + filename);
+    const filename = path.basename(req.path).toLowerCase();
+    const url = 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/' + filename;
+    const disconnected = new AbortController();
+    res.once('close', () => disconnected.abort());
+
+    const headers = { 'Accept-Encoding': 'identity' };
+    if (req.get('Range')) headers.Range = req.get('Range');
+    if (req.get('If-Range')) headers['If-Range'] = req.get('If-Range');
+
+    try {
+        const apk = await fetch(url, {
+            method: req.method,
+            headers,
+            signal: AbortSignal.any([disconnected.signal, AbortSignal.timeout(120_000)])
+        });
+
+        if (apk.status === 416 && headers.Range) {
+            const contentRange = apk.headers.get('content-range');
+            if (contentRange) res.set('Content-Range', contentRange);
+            await apk.body?.cancel();
+            return res.status(416).end();
+        }
+        if (!apk.ok || (req.method !== 'HEAD' && !apk.body)) {
+            await apk.body?.cancel();
+            return res.status(502).send('APK temporariamente indisponível. Tente novamente em instantes.');
+        }
+
+        res.status(apk.status).set({
+            'Content-Type': 'application/vnd.android.package-archive',
+            'Content-Disposition': `attachment; filename="${filename}"`
+        });
+        for (const header of ['content-length', 'content-range', 'accept-ranges', 'etag', 'last-modified']) {
+            const value = apk.headers.get(header);
+            if (value) res.set(header, value);
+        }
+
+        if (req.method === 'HEAD') return res.end();
+        await pipeline(apk.body, res);
+    } catch {
+        if (!res.destroyed && !res.headersSent) {
+            res.status(502).send('APK temporariamente indisponível. Tente novamente em instantes.');
+        }
+    }
 });
 
 app.get('/.well-known/assetlinks.json', (req, res) => {

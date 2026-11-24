@@ -85,9 +85,38 @@ async function runTests() {
             assert.strictEqual(nativePage.status, 200);
             assert.ok(!(await nativePage.text()).includes('dna-android-download'));
 
-            const download = await fetch(base + '/downloads/dna-auto-' + appType + '.apk', { redirect: 'manual' });
-            assert.strictEqual(download.status, 302);
-            assert.strictEqual(download.headers.get('location'), 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/dna-auto-' + appType + '.apk');
+            const filename = 'dna-auto-' + appType + '.apk';
+            const releaseUrl = 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/' + filename;
+            const originalFetch = global.fetch;
+            const apk = Buffer.from([0x50, 0x4b, 0x03, 0x04]);
+            global.fetch = (url, options) => {
+                if (url !== releaseUrl) return originalFetch(url, options);
+                assert.strictEqual(options.method, 'GET');
+                if (options.headers.Range) {
+                    assert.strictEqual(options.headers.Range, 'bytes=0-1');
+                    return Promise.resolve(new Response(apk.subarray(0, 2), {
+                        status: 206, headers: { 'Content-Length': '2', 'Content-Range': 'bytes 0-1/4' }
+                    }));
+                }
+                return Promise.resolve(new Response(apk, { headers: { 'Content-Length': '4' } }));
+            };
+
+            try {
+                const downloadUrl = base + '/downloads/' + filename;
+                const download = await fetch(downloadUrl, { redirect: 'manual' });
+                assert.strictEqual(download.status, 200);
+                assert.strictEqual(download.headers.get('location'), null);
+                assert.strictEqual(download.headers.get('content-type'), 'application/vnd.android.package-archive');
+                assert.strictEqual(download.headers.get('content-disposition'), `attachment; filename="${filename}"`);
+                assert.deepStrictEqual(Buffer.from(await download.arrayBuffer()), apk);
+
+                const partial = await fetch(downloadUrl, { headers: { Range: 'bytes=0-1' } });
+                assert.strictEqual(partial.status, 206);
+                assert.strictEqual(partial.headers.get('content-range'), 'bytes 0-1/4');
+                assert.deepStrictEqual(Buffer.from(await partial.arrayBuffer()), apk.subarray(0, 2));
+            } finally {
+                global.fetch = originalFetch;
+            }
         }
 
         const assetLinks = await fetch(base + '/.well-known/assetlinks.json');
