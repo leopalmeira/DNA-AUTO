@@ -56,8 +56,8 @@ self.addEventListener('fetch', (event) => {
     const req = event.request;
     const url = new URL(req.url);
 
-    // Ignora requisições de API para que dados dinâmicos estejam sempre atualizados
-    if (url.pathname.startsWith('/api/')) {
+    // APIs e instaladores Android devem sempre passar pela rede.
+    if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/downloads/')) {
         return;
     }
 

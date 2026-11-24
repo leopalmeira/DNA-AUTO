@@ -75,7 +75,15 @@ async function runTests() {
             const page = await fetch(base + '/' + appType + '/');
             assert.strictEqual(page.status, 200);
             assert.match(page.headers.get('content-type'), /text\/html/);
-            assert.ok(!(await page.text()).includes('triggerApkAutoDownload'));
+            const html = await page.text();
+            assert.ok(!html.includes('triggerApkAutoDownload'));
+            assert.ok(html.includes('href="/downloads/dna-auto-' + appType + '.apk"'));
+
+            const nativePage = await fetch(base + '/' + appType, {
+                headers: { 'User-Agent': appType === 'cliente' ? 'DNAAutoAPK/2.5.20' : 'DNAOficinaAPK/2.5.21' }
+            });
+            assert.strictEqual(nativePage.status, 200);
+            assert.ok(!(await nativePage.text()).includes('dna-android-download'));
 
             const download = await fetch(base + '/downloads/dna-auto-' + appType + '.apk', { redirect: 'manual' });
             assert.strictEqual(download.status, 302);
