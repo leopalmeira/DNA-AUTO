@@ -10,19 +10,19 @@ on:
       version_name:
         description: 'Versão dos APKs (ex: 2.5.7)'
         required: true
-        default: '2.5.8'
+        default: '2.5.9'
       version_code:
         description: 'Código inteiro da versão (ex: 257)'
         required: true
-        default: '258'
+        default: '259'
       oficina_version_name:
         description: 'Versão exclusiva do APK da Oficina'
         required: true
-        default: '2.5.10'
+        default: '2.5.11'
       oficina_version_code:
         description: 'Código inteiro exclusivo do APK da Oficina'
         required: true
-        default: '260'
+        default: '261'
       migrate_legacy_signature:
         description: 'Permitir troca única da assinatura dos APKs legados (exige reinstalação)'
         type: boolean
@@ -82,8 +82,8 @@ jobs:
         working-directory: android-client
         env:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
-          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.8' }}
-          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '258' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.9' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '259' }}
         run: |
           npm install
           node ../scripts/patch-android.js cliente --config-only
@@ -99,8 +99,8 @@ jobs:
         working-directory: android-oficina
         env:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
-          INPUT_VERSION_NAME: ${{ github.event.inputs.oficina_version_name || '2.5.10' }}
-          INPUT_VERSION_CODE: ${{ github.event.inputs.oficina_version_code || '260' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.oficina_version_name || '2.5.11' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.oficina_version_code || '261' }}
         run: |
           npm install
           node ../scripts/patch-android.js oficina --config-only
@@ -212,10 +212,10 @@ jobs:
       - name: Criar manifesto de versões assinadas e obrigatoriedade individual
         if: github.ref == 'refs/heads/master' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
         env:
-          CLIENTE_VERSION: ${{ github.event.inputs.version_name || '2.5.8' }}
-          CLIENTE_CODE: ${{ github.event.inputs.version_code || '258' }}
-          OFICINA_VERSION: ${{ github.event.inputs.oficina_version_name || '2.5.10' }}
-          OFICINA_CODE: ${{ github.event.inputs.oficina_version_code || '260' }}
+          CLIENTE_VERSION: ${{ github.event.inputs.version_name || '2.5.9' }}
+          CLIENTE_CODE: ${{ github.event.inputs.version_code || '259' }}
+          OFICINA_VERSION: ${{ github.event.inputs.oficina_version_name || '2.5.11' }}
+          OFICINA_CODE: ${{ github.event.inputs.oficina_version_code || '261' }}
           CLIENTE_REQUIRED: ${{ github.event.inputs.cliente_update_required }}
           OFICINA_REQUIRED: ${{ github.event.inputs.oficina_update_required }}
         run: node scripts/generate-apk-release-manifest.js
@@ -252,7 +252,7 @@ jobs:
           if [ "${{ inputs.migrate_legacy_signature }}" = true ]; then
             RELEASE_NOTES="$RELEASE_NOTES A assinatura mudou. Quem tem a versão anterior deve desinstalá-la e instalar este APK uma vez. Dados guardados apenas no aparelho podem ser apagados."
           fi
-          VNAME="Cliente v${{ github.event.inputs.version_name || '2.5.8' }} / Oficina v${{ github.event.inputs.oficina_version_name || '2.5.10' }}"
+          VNAME="Cliente v${{ github.event.inputs.version_name || '2.5.9' }} / Oficina v${{ github.event.inputs.oficina_version_name || '2.5.11' }}"
           if gh release view apk-latest >/dev/null 2>&1; then
             gh release delete-asset apk-latest dna-auto-release.json -y >/dev/null 2>&1 || true
             gh release upload apk-latest dna-auto-cliente.apk dna-auto-oficina.apk --clobber
