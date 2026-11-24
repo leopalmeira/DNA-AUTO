@@ -117,19 +117,31 @@ jobs:
       - name: Assinar APKs de produção com keystore persistente
         if: github.ref == 'refs/heads/master' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
         env:
-          DNA_ANDROID_KEYSTORE_BASE64: ${{ secrets.DNA_ANDROID_KEYSTORE_BASE64 }}
-          DNA_ANDROID_STORE_PASSWORD: ${{ secrets.DNA_ANDROID_STORE_PASSWORD }}
-          DNA_ANDROID_KEY_ALIAS: ${{ secrets.DNA_ANDROID_KEY_ALIAS }}
-          DNA_ANDROID_KEY_PASSWORD: ${{ secrets.DNA_ANDROID_KEY_PASSWORD }}
+          DNA_ANDROID_TEST_SIGNING: ${{ secrets.DNA_ANDROID_TEST_SIGNING }}
         run: |
           set -euo pipefail
-          for var in DNA_ANDROID_KEYSTORE_BASE64 DNA_ANDROID_STORE_PASSWORD DNA_ANDROID_KEY_ALIAS DNA_ANDROID_KEY_PASSWORD; do
-            if [ -z "${!var}" ]; then
-              echo "::error::Secret ${var} ausente. Não publicar APK com assinatura temporária."
-              exit 1
-            fi
-          done
-          printf '%s' "$DNA_ANDROID_KEYSTORE_BASE64" | base64 -d > /tmp/dna-auto-release.keystore
+          if [ -z "$DNA_ANDROID_TEST_SIGNING" ]; then
+            echo '::error::Secret DNA_ANDROID_TEST_SIGNING ausente.'
+            exit 1
+          fi
+          umask 077
+          KEYSTORE=$(mktemp "$RUNNER_TEMP/dna-auto-keystore.XXXXXX")
+          trap 'rm -f "$KEYSTORE"' EXIT
+          printf '%s' "$DNA_ANDROID_TEST_SIGNING" | jq -er '.keystore | strings | select(length > 0)' | base64 -d > "$KEYSTORE"
+          DNA_ANDROID_SIGNING_PASSWORD=$(printf '%s' "$DNA_ANDROID_TEST_SIGNING" | jq -er '.password | strings | select(length > 0)')
+          MASKED_PASSWORD=${DNA_ANDROID_SIGNING_PASSWORD//%/%25}
+          MASKED_PASSWORD=${MASKED_PASSWORD//$'\r'/%0D}
+          MASKED_PASSWORD=${MASKED_PASSWORD//$'\n'/%0A}
+          printf '::add-mask::%s\n' "$MASKED_PASSWORD"
+          export DNA_ANDROID_SIGNING_PASSWORD
+          unset DNA_ANDROID_TEST_SIGNING MASKED_PASSWORD
+          KEYSTORE_ENTRIES=$(keytool -J-Duser.language=en -J-Duser.country=US -list -v \
+            -keystore "$KEYSTORE" -storepass:env DNA_ANDROID_SIGNING_PASSWORD)
+          mapfile -t KEY_ALIASES < <(awk '/^Alias name: / {alias = substr($0, 13)} /^Entry type: PrivateKeyEntry$/ {print alias}' <<< "$KEYSTORE_ENTRIES")
+          if [ "${#KEY_ALIASES[@]}" -ne 1 ] || [ -z "${KEY_ALIASES[0]}" ]; then
+            echo '::error::O arquivo de assinatura deve conter exatamente uma chave privada.'
+            exit 1
+          fi
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n1)
           for item in cliente oficina; do
             project=android-client
@@ -142,10 +154,10 @@ jobs:
             SRC="app/build/outputs/apk/release/app-release-unsigned.apk"
             "$BUILD_TOOLS/zipalign" -f -p 4 "$SRC" "../../dna-auto-$item-aligned.apk"
             "$BUILD_TOOLS/apksigner" sign \
-              --ks /tmp/dna-auto-release.keystore \
-              --ks-key-alias "$DNA_ANDROID_KEY_ALIAS" \
-              --ks-pass env:DNA_ANDROID_STORE_PASSWORD \
-              --key-pass env:DNA_ANDROID_KEY_PASSWORD \
+              --ks "$KEYSTORE" \
+              --ks-key-alias "${KEY_ALIASES[0]}" \
+              --ks-pass env:DNA_ANDROID_SIGNING_PASSWORD \
+              --key-pass env:DNA_ANDROID_SIGNING_PASSWORD \
               --out "../../dna-auto-$item.apk" "../../dna-auto-$item-aligned.apk"
             "$BUILD_TOOLS/apksigner" verify --verbose "../../dna-auto-$item.apk"
             popd >/dev/null
