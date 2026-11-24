@@ -7026,7 +7026,6 @@
                     <button type="button" class="ws-splash-btn-cadastrar" onclick="WorkshopView.showOficinaRegisterForm()">
                         <span>Cadastrar</span>
                     </button>
-                    ${window.Capacitor?.isNativePlatform?.() ? '' : '<a class="ws-splash-btn-cadastrar" style="text-decoration:none;box-sizing:border-box" href="https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/dna-auto-oficina.apk">Baixar APK Android</a>'}
                 </div>
             </div>
         `;
