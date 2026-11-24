@@ -4,7 +4,7 @@ const path = require('path');
 const target = process.argv[2] || 'cliente';
 const isOficina = target === 'oficina';
 
-const serverUrl = (process.env.INPUT_SERVER_URL || 'https://dna-auto-byin.onrender.com').replace(/\/$/, '');
+const serverUrl = (process.env.INPUT_SERVER_URL || 'https://dna-auto-vua4.onrender.com').replace(/\/$/, '');
 const versionName = process.env.INPUT_VERSION_NAME || '2.5.6';
 const versionCode = process.env.INPUT_VERSION_CODE || '256';
 const host = new URL(serverUrl).hostname;
@@ -31,7 +31,7 @@ fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
 const fallbackIndexPath = path.join(process.cwd(), 'www', 'index.html');
 if (fs.existsSync(fallbackIndexPath)) {
   const fallbackHtml = fs.readFileSync(fallbackIndexPath, 'utf8')
-    .replace(/apk_version=[0-9.]+&apk_code=[0-9]+/g, 'apk_version=' + versionName + '&apk_code=' + versionCode);
+    .replace(/https?:\/\/[^/'"]+\/(?:cliente|oficina)\?apk_version=[0-9.]+&apk_code=[0-9]+/g, () => config.server.url);
   fs.writeFileSync(fallbackIndexPath, fallbackHtml);
 }
 
@@ -192,9 +192,7 @@ fs.writeFileSync(mainActivityPath, [
   '    private FrameLayout startupOverlay;',
   '    private TextureView startupVideo;',
   '    private MediaPlayer startupPlayer;',
-  '    private boolean startupPlaybackComplete;',
   '    private boolean requestedNotificationPermission;',
-  '    private boolean startupReady;',
   '    private final Runnable startupPlaybackTimeout = this::finishStartupVideo;',
   '',
   '    @Override',
@@ -218,16 +216,8 @@ fs.writeFileSync(mainActivityPath, [
   '        showStartupVideo();',
   '    }',
   '',
-  '    @Override',
-  '    public void onRestart() {',
-  '        super.onRestart();',
-  '        showStartupVideo();',
-  '    }',
-  '',
   '    private void showStartupVideo() {',
   '        if (startupOverlay != null || getBridge() == null) return;',
-  '        startupReady = false;',
-  '        startupPlaybackComplete = false;',
   '        WindowInsetsControllerCompat insets = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());',
   '        insets.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);',
   '        insets.hide(WindowInsetsCompat.Type.systemBars());',
@@ -251,7 +241,6 @@ fs.writeFileSync(mainActivityPath, [
   '        addContentView(startupOverlay, new ViewGroup.LayoutParams(',
   '            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));',
   '        startupHandler.postDelayed(startupPlaybackTimeout, 30000);',
-  '        checkStartupReady();',
   '    }',
   '',
   '    private void playStartupVideo(SurfaceTexture texture) {',
@@ -276,9 +265,7 @@ fs.writeFileSync(mainActivityPath, [
   '            });',
   '            player.setLooping(false);',
   '            player.setOnCompletionListener(media -> {',
-  '                if (media != startupPlayer) return;',
-  '                startupPlaybackComplete = true;',
-  '                if (startupReady) finishStartupVideo();',
+  '                if (media == startupPlayer) finishStartupVideo();',
   '            });',
   '            fitStartupVideo(player);',
   '            player.start();',
@@ -299,20 +286,6 @@ fs.writeFileSync(mainActivityPath, [
   '        float scale = Math.min((float) width / videoWidth, (float) height / videoHeight);',
   '        startupVideo.setScaleX(scale * videoWidth / width);',
   '        startupVideo.setScaleY(scale * videoHeight / height);',
-  '    }',
-  '',
-  '    private void checkStartupReady() {',
-  '        if (startupOverlay == null) return;',
-  '        if (startupReady && startupPlaybackComplete) {',
-  '            finishStartupVideo();',
-  '            return;',
-  '        }',
-  '        FrameLayout overlay = startupOverlay;',
-  '        getBridge().getWebView().evaluateJavascript("window.dnaStartupReady === true", ready -> {',
-  '            if (startupOverlay != overlay) return;',
-  '            startupReady = "true".equals(ready);',
-  '            startupHandler.postDelayed(this::checkStartupReady, 120);',
-  '        });',
   '    }',
   '',
   '    private void removeStartupVideo() {',
