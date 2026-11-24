@@ -106,14 +106,6 @@ if (!isOficina && !xml.includes('android:name=".DnaMileageService"')) {
     </receiver>
   </application>`);
 }
-// Use the bundled video in place of Capacitor's static launch screen.
-const launchTheme = '@style/DnaStartupTheme';
-const mainActivityTag = /<activity\b[^>]*\bandroid:name="\.MainActivity"[^>]*>/;
-const launcher = xml.match(mainActivityTag)?.[0];
-if (!launcher || !launcher.includes('android:theme=')) {
-  throw new Error('MainActivity launch theme not found in AndroidManifest.xml');
-}
-xml = xml.replace(launcher, launcher.replace(/android:theme="[^"]+"/, `android:theme="${launchTheme}"`));
 fs.writeFileSync(manifestPath, xml);
 
 // 3. strings.xml com asset_statements
@@ -132,6 +124,22 @@ if (!stringsXml.includes('asset_statements')) {
 const stylesPath = path.join(process.cwd(), 'android', 'app', 'src', 'main', 'res', 'values', 'styles.xml');
 if (fs.existsSync(stylesPath)) {
   let styles = fs.readFileSync(stylesPath, 'utf8');
+  const launchStyle = /(<style name="AppTheme\.NoActionBarLaunch"[^>]*>)[\s\S]*?(<\/style>)/;
+  if (!launchStyle.test(styles)) {
+    throw new Error('Capacitor launch style not found in styles.xml');
+  }
+  // Keep the Capacitor launch theme and remove its stock logo drawable.
+  styles = styles.replace(launchStyle, (_, open, close) => [
+    open,
+    `        <item name="android:windowBackground">${navBarColor}</item>`,
+    `        <item name="android:navigationBarColor">${navBarColor}</item>`,
+    '        <item name="android:windowLightNavigationBar">false</item>',
+    `        <item name="windowSplashScreenBackground">${navBarColor}</item>`,
+    '        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>',
+    '        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>',
+    '    ' + close
+  ].join('\n'));
+
   if (!styles.includes('windowTranslucentStatus')) {
     styles = styles.replace(
       '<item name="windowNoTitle">true</item>',
@@ -141,42 +149,9 @@ if (fs.existsSync(stylesPath)) {
         '        <item name="android:statusBarColor">@android:color/transparent</item>'
       ].join('\n')
     );
-    fs.writeFileSync(stylesPath, styles);
   }
+  fs.writeFileSync(stylesPath, styles);
 }
-
-// Android 12+ draws a system launch window before the app can render video.
-const startupResDir = path.dirname(path.dirname(stylesPath));
-const startupThemeItems = [
-  `        <item name="android:windowBackground">${navBarColor}</item>`,
-  `        <item name="android:navigationBarColor">${navBarColor}</item>`,
-  '        <item name="android:windowFullscreen">true</item>',
-  '        <item name="android:windowLightNavigationBar">false</item>'
-];
-
-function writeStartupTheme(directory, items) {
-  const valuesDir = path.join(startupResDir, directory);
-  fs.mkdirSync(valuesDir, { recursive: true });
-  const theme = [
-    '<?xml version="1.0" encoding="utf-8"?>',
-    '<resources>',
-    '    <style name="DnaStartupTheme" parent="AppTheme.NoActionBar">',
-    ...startupThemeItems,
-    ...items,
-    '    </style>',
-    '</resources>',
-    ''
-  ].join('\n');
-  fs.writeFileSync(path.join(valuesDir, 'dna_startup_theme.xml'), theme);
-}
-
-writeStartupTheme('values', [
-  '        <item name="android:windowDisablePreview">true</item>'
-]);
-writeStartupTheme('values-v31', [
-  `        <item name="android:windowSplashScreenBackground">${navBarColor}</item>`,
-  '        <item name="android:windowSplashScreenAnimatedIcon">@android:color/transparent</item>'
-]);
 
 // 5. MainActivity.java com Edge-to-Edge WindowCompat e notch shortEdges
 const mainActivityPath = path.join(process.cwd(), 'android', 'app', 'src', 'main', 'java', ...pkgPath.split('/'), 'MainActivity.java');
@@ -226,6 +201,7 @@ fs.writeFileSync(mainActivityPath, [
   '    protected void onCreate(Bundle savedInstanceState) {',
   ...(isOficina ? [] : ['        registerPlugin(DnaMileagePlugin.class);']),
   '        super.onCreate(savedInstanceState);',
+  `        getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(Color.parseColor("${navBarColor}")));`,
   '        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);',
   '        getWindow().setStatusBarColor(Color.TRANSPARENT);',
   `        getWindow().setNavigationBarColor(Color.parseColor("${navBarColor}"));`,
@@ -289,7 +265,10 @@ fs.writeFileSync(mainActivityPath, [
   '        try {',
   '            player.setSurface(surface);',
   '            player.setOnErrorListener((media, what, extra) -> {',
-  '                if (media == startupPlayer) finishStartupVideo();',
+  '                if (media == startupPlayer) {',
+  '                    android.util.Log.e("DnaStartup", "Video playback failed: " + what + "/" + extra);',
+  '                    finishStartupVideo();',
+  '                }',
   '                return true;',
   '            });',
   '            player.setOnVideoSizeChangedListener((media, width, height) -> {',
