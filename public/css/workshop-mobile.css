@@ -4082,7 +4082,7 @@ select:-webkit-autofill:focus {
     flex-direction: column;
     justify-content: flex-end;
     align-items: center;
-    padding: calc(20px + env(safe-area-inset-top, 0px)) 20px calc(46px + env(safe-area-inset-bottom, 24px));
+    padding: calc(20px + env(safe-area-inset-top, 0px)) 20px calc(82px + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
     overflow: hidden;
     color: #FFFFFF;
@@ -4221,7 +4221,6 @@ select:-webkit-autofill:focus {
     width: calc(100% - 32px);
     max-width: 360px;
     margin: 0 auto;
-    margin-bottom: calc(28px + env(safe-area-inset-bottom, 20px));
     box-sizing: border-box;
 }
 
