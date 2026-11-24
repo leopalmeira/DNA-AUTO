@@ -1518,30 +1518,22 @@
   box-sizing: border-box;
 }
 #register .register-hero-native {
-  position: relative;
-  padding: calc(6px + env(safe-area-inset-top, 0px)) 14px 10px;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.95fr);
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  box-sizing: border-box;
-  overflow: hidden;
+  flex: none;
+  gap: clamp(8px, 3vw, 14px);
 }
 #register .hero-copy {
-  position: relative;
-  z-index: 2;
-  flex: 1 1 54%;
-  max-width: 54%;
-  padding-top: 0;
+  min-width: 0;
 }
 #register .hero-copy h1 {
-  font-size: 18px;
+  font-size: clamp(17px, 4.8vw, 20px);
   line-height: 1.2;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.4px;
   font-weight: 800;
   margin: 0 0 5px;
   color: #07183f;
-  white-space: nowrap;
 }
 #register .hero-copy p {
   font-size: 11.5px;
@@ -1550,23 +1542,12 @@
   margin: 0;
   font-weight: 500;
 }
-#register .car-wrap {
-  position: relative;
-  flex: 0 0 43%;
-  max-width: 43%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  pointer-events: none;
-}
 #register .car-wrap img {
-  width: 100%;
-  max-width: 165px;
-  height: auto;
-  aspect-ratio: 720 / 335;
-  object-fit: contain;
   display: block;
-  filter: drop-shadow(0 8px 14px rgba(7, 24, 63, 0.16));
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 6px rgba(7, 24, 63, 0.16));
 }
 #register .register-form-native {
   padding: 0 14px 15px;
@@ -5534,26 +5515,15 @@ body.keyboard-open #login .login-sheet-card {
   box-sizing: border-box !important;
 }
 
-#register .register-hero-native {
-  padding: 6px var(--dna-safe-right) 14px var(--dna-safe-left) !important;
-  gap: 12px !important;
-  box-sizing: border-box !important;
-}
-
-#register .hero-copy {
-  min-width: 0 !important;
-}
-
-#register .hero-copy h1 {
-  white-space: normal !important;
-  font-size: clamp(17.5px, 4.8vw, 20px) !important;
-  line-height: 1.18 !important;
-}
-
-#register .car-wrap img {
-  max-width: 100% !important;
+#register .app-header .logo {
+  width: min(152px, 100%) !important;
   height: auto !important;
-  object-fit: contain !important;
+  max-width: 100% !important;
+  max-height: none !important;
+}
+
+#register .register-hero-native {
+  padding: 4px var(--dna-safe-right) 16px var(--dna-safe-left);
 }
 
 #register .register-form-native {
@@ -6572,7 +6542,7 @@ nav[aria-label="Navegação principal"] button {
       <p>Junte-se à rede de proteção e mantenha o histórico do seu veículo sempre com você.</p>
     </div>
     <div class="car-wrap">
-      <img class="car" src="img/cadastro-car-hero.png" alt="DNA AUTO Veículo">
+      <img class="car" src="/cliente/img/cadastro-car-hero.png" width="720" height="335" alt="DNA AUTO Veículo">
     </div>
   </div>
   <form id="reg-form" class="register-form-native" novalidate="novalidate" onsubmit="return handleRegisterSubmit(event)">
