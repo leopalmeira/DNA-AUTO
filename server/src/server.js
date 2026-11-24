@@ -59,10 +59,9 @@ const staticHeaders = {
     }
 };
 
-// O navegador oferece a instalação manual. A WebView nativa usa a página original.
+// O acesso direto pelo navegador mantém o download automático do Cliente sem exibir um botão.
 for (const appType of ['cliente', 'oficina']) {
     const pageRoutes = ['/' + appType, '/' + appType + '/index.html'];
-    const apkPath = '/downloads/dna-auto-' + appType + '.apk';
     app.get(pageRoutes, (req, res, next) => {
         res.vary('User-Agent');
         staticHeaders.setHeaders(res);
@@ -70,11 +69,13 @@ for (const appType of ['cliente', 'oficina']) {
 
         fs.readFile(path.join(PROJECT_ROOT, appType + '.app', 'index.html'), 'utf8', (error, html) => {
             if (error) return next(error);
-            const link = `<a id="dna-android-download" href="${apkPath}" style="position:fixed;z-index:1000;right:16px;bottom:calc(16px + env(safe-area-inset-bottom, 0px));display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:24px;background:#08244b;color:#fff;border:1px solid #5bb8ff;font:600 14px system-ui,sans-serif;text-decoration:none">Baixar ou atualizar app Android</a>`;
-            const autoDownload = appType === 'cliente' && /^\/cliente\/?$/.test(req.path)
-                ? '<script>document.getElementById("dna-android-download").click();</script>'
-                : '';
-            res.type('html').send(html.replace('</body>', () => link + autoDownload + '\n</body>'));
+            if (appType !== 'cliente' || !/^\/cliente\/?$/.test(req.path)) {
+                return res.type('html').send(html);
+            }
+
+            const autoDownload = '<a id="dna-android-download" href="/downloads/dna-auto-cliente.apk" hidden></a>'
+                + '<script>if (!window.matchMedia("(display-mode: standalone)").matches && !navigator.standalone) { document.getElementById("dna-android-download").click(); }</script>';
+            res.type('html').send(html.replace('</body>', () => autoDownload + '\n</body>'));
         });
     });
 }

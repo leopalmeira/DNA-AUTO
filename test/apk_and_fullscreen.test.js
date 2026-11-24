@@ -77,7 +77,13 @@ async function runTests() {
             assert.match(page.headers.get('content-type'), /text\/html/);
             const html = await page.text();
             assert.ok(!html.includes('triggerApkAutoDownload'));
-            assert.ok(html.includes('href="/downloads/dna-auto-' + appType + '.apk"'));
+            assert.ok(!html.includes('Baixar ou atualizar app Android'));
+            if (appType === 'cliente') {
+                assert.ok(html.includes('href="/downloads/dna-auto-cliente.apk" hidden'));
+                assert.ok(html.includes('document.getElementById("dna-android-download").click()'));
+            } else {
+                assert.ok(!html.includes('dna-android-download'));
+            }
 
             const nativePage = await fetch(base + '/' + appType, {
                 headers: { 'User-Agent': appType === 'cliente' ? 'DNAAutoAPK/2.5.20' : 'DNAOficinaAPK/2.5.21' }
@@ -121,7 +127,7 @@ async function runTests() {
 
         const assetLinks = await fetch(base + '/.well-known/assetlinks.json');
         assert.deepStrictEqual(await assetLinks.json(), []);
-        console.log('Cliente e Oficina abrem pela web com tela cheia e download manual de APK.');
+        console.log('Cliente e Oficina abrem pela web em tela cheia, com os APKs disponíveis por links diretos.');
     } finally {
         if (server) {
             server.close();
