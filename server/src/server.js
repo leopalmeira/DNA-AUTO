@@ -132,7 +132,8 @@ app.get('/api/v1/app/version-oficina', (req, res) => sendApkVersionResponse(res,
 
 app.get(['/downloads/dna-auto-cliente.apk', '/downloads/dna-auto-oficina.apk'], (req, res) => {
     res.set('Cache-Control', 'no-store');
-    res.status(410).json({ apk_available: false });
+    const filename = path.basename(req.path);
+    res.redirect(302, 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/' + filename);
 });
 
 app.get('/.well-known/assetlinks.json', (req, res) => {

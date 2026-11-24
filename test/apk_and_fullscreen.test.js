@@ -78,13 +78,13 @@ async function runTests() {
             assert.ok(!(await page.text()).includes('triggerApkAutoDownload'));
 
             const download = await fetch(base + '/downloads/dna-auto-' + appType + '.apk', { redirect: 'manual' });
-            assert.strictEqual(download.status, 410);
-            assert.strictEqual(download.headers.get('location'), null);
+            assert.strictEqual(download.status, 302);
+            assert.strictEqual(download.headers.get('location'), 'https://github.com/leopalmeira/DNA-AUTO/releases/download/apk-latest/dna-auto-' + appType + '.apk');
         }
 
         const assetLinks = await fetch(base + '/.well-known/assetlinks.json');
         assert.deepStrictEqual(await assetLinks.json(), []);
-        console.log('Cliente e Oficina abrem pela web com tela cheia e sem distribuição de APK.');
+        console.log('Cliente e Oficina abrem pela web com tela cheia e download manual de APK.');
     } finally {
         if (server) {
             server.close();

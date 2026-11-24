@@ -8,21 +8,21 @@ on:
         required: true
         default: 'https://dna-auto-byin.onrender.com'
       version_name:
-        description: 'Versão dos APKs (ex: 2.5.6)'
+        description: 'Versão dos APKs (ex: 2.5.7)'
         required: true
-        default: '2.5.6'
+        default: '2.5.7'
       version_code:
-        description: 'Código inteiro da versão (ex: 256)'
+        description: 'Código inteiro da versão (ex: 257)'
         required: true
-        default: '256'
+        default: '257'
       oficina_version_name:
         description: 'Versão exclusiva do APK da Oficina'
         required: true
-        default: '2.5.8'
+        default: '2.5.9'
       oficina_version_code:
         description: 'Código inteiro exclusivo do APK da Oficina'
         required: true
-        default: '258'
+        default: '259'
       migrate_legacy_signature:
         description: 'Permitir troca única da assinatura dos APKs legados (exige reinstalação)'
         type: boolean
@@ -82,8 +82,8 @@ jobs:
         working-directory: android-client
         env:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
-          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.6' }}
-          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '256' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.version_name || '2.5.7' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.version_code || '257' }}
         run: |
           npm install
           node ../scripts/patch-android.js cliente --config-only
@@ -99,8 +99,8 @@ jobs:
         working-directory: android-oficina
         env:
           INPUT_SERVER_URL: ${{ github.event.inputs.server_url || 'https://dna-auto-byin.onrender.com' }}
-          INPUT_VERSION_NAME: ${{ github.event.inputs.oficina_version_name || '2.5.8' }}
-          INPUT_VERSION_CODE: ${{ github.event.inputs.oficina_version_code || '258' }}
+          INPUT_VERSION_NAME: ${{ github.event.inputs.oficina_version_name || '2.5.9' }}
+          INPUT_VERSION_CODE: ${{ github.event.inputs.oficina_version_code || '259' }}
         run: |
           npm install
           node ../scripts/patch-android.js oficina --config-only
@@ -115,7 +115,7 @@ jobs:
       # O APK debug muda a assinatura a cada runner. Nunca publicar debug como
       # atualização de produção: usar a MESMA chave privada em todos os builds.
       - name: Assinar APKs de produção com keystore persistente
-        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/master' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
         env:
           DNA_ANDROID_KEYSTORE_BASE64: ${{ secrets.DNA_ANDROID_KEYSTORE_BASE64 }}
           DNA_ANDROID_STORE_PASSWORD: ${{ secrets.DNA_ANDROID_STORE_PASSWORD }}
@@ -155,7 +155,7 @@ jobs:
       # Assinatura Android é a identidade do app. Se mudar, atualizar sem desinstalar é impossível.
       # Apenas a migração explícita da release legada permite trocar a assinatura.
       - name: Garantir compatibilidade com assinatura dos APKs já publicados
-        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/master' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MIGRATE_LEGACY_SIGNATURE: ${{ inputs.migrate_legacy_signature }}
@@ -198,18 +198,18 @@ jobs:
           fi
 
       - name: Criar manifesto de versões assinadas e obrigatoriedade individual
-        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/master' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
         env:
-          CLIENTE_VERSION: ${{ github.event.inputs.version_name }}
-          CLIENTE_CODE: ${{ github.event.inputs.version_code }}
-          OFICINA_VERSION: ${{ github.event.inputs.oficina_version_name }}
-          OFICINA_CODE: ${{ github.event.inputs.oficina_version_code }}
+          CLIENTE_VERSION: ${{ github.event.inputs.version_name || '2.5.7' }}
+          CLIENTE_CODE: ${{ github.event.inputs.version_code || '257' }}
+          OFICINA_VERSION: ${{ github.event.inputs.oficina_version_name || '2.5.9' }}
+          OFICINA_CODE: ${{ github.event.inputs.oficina_version_code || '259' }}
           CLIENTE_REQUIRED: ${{ github.event.inputs.cliente_update_required }}
           OFICINA_REQUIRED: ${{ github.event.inputs.oficina_update_required }}
         run: node scripts/generate-apk-release-manifest.js
 
       - name: Extrair SHA-256 dos Certificados
-        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/master' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
         id: cert
         run: |
           BUILD_TOOLS=$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n1)
@@ -222,7 +222,7 @@ jobs:
           echo "sha256_oficina=$SHA_OFICINA" >> $GITHUB_OUTPUT
 
       - name: Publicar Artifacts dna-auto-apks
-        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/master' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
         uses: actions/upload-artifact@v4
         with:
           name: dna-auto-apks
@@ -232,7 +232,7 @@ jobs:
             dna-auto-release.json
 
       - name: Publicar Release Pública 'apk-latest'
-        if: github.ref == 'refs/heads/master' && github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/master' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -240,7 +240,7 @@ jobs:
           if [ "${{ inputs.migrate_legacy_signature }}" = true ]; then
             RELEASE_NOTES="$RELEASE_NOTES A assinatura mudou. Quem tem a versão anterior deve desinstalá-la e instalar este APK uma vez. Dados guardados apenas no aparelho podem ser apagados."
           fi
-          VNAME="Cliente v${{ github.event.inputs.version_name || '2.5.6' }} / Oficina v${{ github.event.inputs.oficina_version_name || '2.5.7' }}"
+          VNAME="Cliente v${{ github.event.inputs.version_name || '2.5.7' }} / Oficina v${{ github.event.inputs.oficina_version_name || '2.5.9' }}"
           if gh release view apk-latest >/dev/null 2>&1; then
             gh release delete-asset apk-latest dna-auto-release.json -y >/dev/null 2>&1 || true
             gh release upload apk-latest dna-auto-cliente.apk dna-auto-oficina.apk --clobber
