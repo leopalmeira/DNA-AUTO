@@ -716,22 +716,11 @@ function handleChangeInitialPassword(req, res) {
             const targetUser = findUserByIdentifier(rawIdent) || (req.body.user_id ? db.prepare('SELECT * FROM users WHERE id = ?').get(req.body.user_id) : null);
             if (targetUser) {
                 const curPass = String(req.body.current_password || req.body.currentPassword || '').trim();
-                let match = (curPass === '123456');
-                if (!match && targetUser.password_hash) {
-                    match = bcrypt.compareSync(curPass, targetUser.password_hash);
-                    if (!match && curPass.length >= 4) {
-                        match = bcrypt.compareSync(curPass.toUpperCase(), targetUser.password_hash) ||
-                                bcrypt.compareSync(curPass.toLowerCase(), targetUser.password_hash);
-                    }
-                }
-                if (!match) {
-                    try {
-                        const wu = db.prepare('SELECT generated_password FROM workshop_users WHERE user_id = ?').get(targetUser.id);
-                        if (wu && wu.generated_password && curPass.toLowerCase() === String(wu.generated_password).trim().toLowerCase()) {
-                            match = true;
-                        }
-                    } catch (_) {}
-                }
+                const match = Boolean(
+                    targetUser.password_hash &&
+                    !['BLOCKED', 'SUSPENDED'].includes(targetUser.status) &&
+                    bcrypt.compareSync(curPass, targetUser.password_hash)
+                );
                 if (match) {
                     userId = targetUser.id;
                     userName = targetUser.name;
