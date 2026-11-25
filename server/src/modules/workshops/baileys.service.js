@@ -754,7 +754,7 @@ class BaileysWorkshopService {
                 }
             }
         } catch (sockErr) {
-            console.warn('Baileys socket init warning:', sockErr.message);
+            console.warn('Baileys socket init warning:', item.confidential ? 'Falha no envio do convite' : sockErr.message);
         }
 
         return sessionState;
@@ -817,7 +817,7 @@ class BaileysWorkshopService {
                     };
                 }
             } catch (evoErr) {
-                console.warn('⚠️ Erro ao inicializar via Evolution API, acionando fallback nativo:', evoErr.message);
+                console.warn('⚠️ Erro ao inicializar via Evolution API, acionando fallback nativo:', item.confidential ? 'Falha no envio do convite' : evoErr.message);
             }
         }
 
@@ -1025,7 +1025,7 @@ class BaileysWorkshopService {
     // ──────────────────────────────────────────────────────────────────────────
     // 6. FILA DE ENVIO E DESPACHO DE MENSAGENS
     // ──────────────────────────────────────────────────────────────────────────
-    async enqueueMessage({ workshopId, recipientPhone, recipientName, message, vehicleId, clientId, serviceType, licensePlate, mediaType = 'TEXT', mediaUrl = null, mediaCaption = null, fileName = null }) {
+    async enqueueMessage({ workshopId, recipientPhone, recipientName, message, vehicleId, clientId, serviceType, licensePlate, mediaType = 'TEXT', mediaUrl = null, mediaCaption = null, fileName = null, confidential = false }) {
         if (!recipientPhone || (!message && !mediaUrl)) {
             throw new Error('Telefone do destinatário e mensagem ou arquivo de mídia são obrigatórios.');
         }
@@ -1034,12 +1034,14 @@ class BaileysWorkshopService {
         const messageId = `wmsg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
         const finalMessage = message || (mediaType === 'IMAGE' ? '📷 Foto' : mediaType === 'AUDIO' ? '🎙️ Áudio' : mediaType === 'VIDEO' ? '🎥 Vídeo' : '');
 
+        const storedMessage = confidential ? 'Convite de primeiro acesso ao DNA Auto' : finalMessage;
+
         // Registra mensagem no banco como PENDING
         db.prepare(`
             INSERT INTO whatsapp_messages (
                 id, workshop_id, client_id, vehicle_id, phone_number, message, status, created_at
             ) VALUES (?, ?, ?, ?, ?, ?, 'PENDING', CURRENT_TIMESTAMP)
-        `).run(messageId, workshopId, clientId || null, vehicleId || null, cleanRecipient, finalMessage);
+        `).run(messageId, workshopId, clientId || null, vehicleId || null, cleanRecipient, storedMessage);
 
         // Registra imediatamente na Central de Atendimento (chat bidirecional)
         const chatMsg = this.saveChatMessage({
@@ -1048,10 +1050,10 @@ class BaileysWorkshopService {
             clientName: recipientName || 'Cliente',
             vehiclePlate: licensePlate || null,
             direction: 'OUTGOING',
-            message: finalMessage,
+            message: storedMessage,
             mediaType: mediaType || 'TEXT',
             mediaUrl: mediaUrl || null,
-            mediaCaption: mediaCaption || message || null,
+            mediaCaption: confidential ? null : mediaCaption || message || null,
             status: 'DELIVERED',
             isRead: 1
         });
@@ -1060,6 +1062,7 @@ class BaileysWorkshopService {
         const queueItem = {
             id: messageId,
             chatMessageId: chatMsg ? chatMsg.id : null,
+            confidential,
             workshopId,
             recipientPhone: cleanRecipient,
             recipientName: recipientName || 'Cliente',
@@ -1197,13 +1200,14 @@ class BaileysWorkshopService {
                     `).run(item.id);
                 }
             } catch (err) {
-                console.error(`Erro ao enviar mensagem ${item.id}:`, err.message);
+                const errorMessage = item.confidential ? 'Falha no envio do convite' : err.message;
+                console.error(`Erro ao enviar mensagem ${item.id}:`, errorMessage);
                 db.prepare(`
                     UPDATE whatsapp_messages
                     SET status = 'FAILED',
                         error = ?
                     WHERE id = ?
-                `).run(err.message, item.id);
+                `).run(errorMessage, item.id);
             }
         }
 
