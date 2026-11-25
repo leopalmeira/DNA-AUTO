@@ -56,3 +56,24 @@
 }
 .login-features span { font-size: .9rem; }
 .brand{font-size:1.45rem;letter-spacing:.04em}.brand span{color:#67afff}#layout{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100dvh}aside{padding:24px 16px;background:#0c1828;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:24px}nav{display:grid;gap:8px}nav button,#logout{text-align:left;background:transparent;color:#d7e5fa}nav button[aria-current]{background:#173354}nav .attention{border:2px solid #ff737f;color:#ffd6dc}#count{margin-left:.3rem}#logout{margin-top:auto}.content{max-width:1200px;width:100%;padding:clamp(18px,4vw,56px)}header p,.muted{color:var(--muted)}h1,h2,p{overflow-wrap:anywhere}header h1{margin:.25rem 0 1.25rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:14px}.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin:0 0 12px}.card h2{font-size:1.1rem;margin:0 0 .6rem}.card p{margin:.55rem 0}.card img{display:block;max-width:100%;width:220px;max-height:160px;object-fit:contain;margin:10px 0;border-radius:7px}.card form{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin-top:16px}.card form label{width:170px}.late,#loginError,#status.error{color:#ffa5af}.table{width:100%;overflow:auto}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid var(--line)}@media(max-width:740px){#layout{grid-template-columns:1fr}aside{border-right:0;border-bottom:1px solid var(--line)}nav{display:flex;flex-wrap:wrap}.content{padding-top:14px}}
+.login-shell { width: min(100%, 1080px); }
+.login-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    overflow: hidden;
+    background: #0b1727;
+    box-shadow: 0 24px 80px #02071080;
+}
+.login-photo { position: relative; min-height: 480px; background: #101e30; }
+.login-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.login-access { min-width: 0; padding: clamp(24px, 4vw, 48px); }
+.login-intro { text-align: left; margin: 0 0 22px; }
+.login-brand { display: flex; align-items: center; gap: 10px; }
+.login form { width: 100%; margin: 0; }
+@media (max-width: 740px) {
+    .login-main { grid-template-columns: 1fr; }
+    .login-photo { min-height: clamp(180px, 48vw, 300px); }
+    .login-photo img { object-position: center 32%; }
+}
