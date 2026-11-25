@@ -16,6 +16,27 @@ try {
     db.exec(`ALTER TABLE workshop_users ADD COLUMN generated_password TEXT`);
 } catch (_) {}
 
+db.exec(`
+    CREATE TABLE IF NOT EXISTS workshop_client_first_access (
+        user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        window_started_at INTEGER NOT NULL DEFAULT 0
+    )
+`);
+
+function allowWorkshopFirstAccessAttempt(userId) {
+    const now = Date.now();
+    const cutoff = now - 15 * 60 * 1000;
+    const result = db.prepare(`
+        UPDATE workshop_client_first_access
+        SET attempts = CASE WHEN window_started_at <= ? THEN 1 ELSE attempts + 1 END,
+            window_started_at = CASE WHEN window_started_at <= ? THEN ? ELSE window_started_at END
+        WHERE user_id = ? AND (window_started_at <= ? OR attempts < 5)
+    `).run(cutoff, cutoff, now, userId, cutoff);
+    return result.changes > 0 ||
+        !db.prepare('SELECT 1 FROM workshop_client_first_access WHERE user_id = ?').get(userId);
+}
+
 // Localizador universal resiliente de usuário por E-mail, CPF, Telefone/WhatsApp, Placa ou CNPJ
 function findUserByIdentifier(rawIdentifier) {
     if (!rawIdentifier) return null;
@@ -154,6 +175,10 @@ router.post('/login', (req, res) => {
 
         if (user.status === 'BLOCKED' || user.status === 'SUSPENDED') {
             return res.status(403).json({ error: 'Conta inativa ou bloqueada.' });
+        }
+
+        if (!allowWorkshopFirstAccessAttempt(user.id)) {
+            return res.status(429).json({ error: 'Muitas tentativas. Aguarde 15 minutos e tente novamente.' });
         }
 
         // Verificação segura de credenciais com suporte a variações de digitação mobile e senha gerada
@@ -716,6 +741,9 @@ function handleChangeInitialPassword(req, res) {
             const targetUser = findUserByIdentifier(rawIdent) || (req.body.user_id ? db.prepare('SELECT * FROM users WHERE id = ?').get(req.body.user_id) : null);
             if (targetUser) {
                 const curPass = String(req.body.current_password || req.body.currentPassword || '').trim();
+                if (!allowWorkshopFirstAccessAttempt(targetUser.id)) {
+                    return res.status(429).json({ error: 'Muitas tentativas. Aguarde 15 minutos e tente novamente.' });
+                }
                 const match = Boolean(
                     targetUser.password_hash &&
                     !['BLOCKED', 'SUSPENDED'].includes(targetUser.status) &&
@@ -758,6 +786,7 @@ function handleChangeInitialPassword(req, res) {
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         `).run(passwordHash, userId);
+        db.prepare('DELETE FROM workshop_client_first_access WHERE user_id = ?').run(userId);
 
         logAudit({
             user: { id: userId, name: userName || 'Cliente', role_code: userRole || 'OWNER' },
