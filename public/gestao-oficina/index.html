@@ -2,10 +2,27 @@
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Gestão da oficina | DNA Auto</title><link rel="stylesheet" href="/gestao-oficina/painel.css"><script defer src="/gestao-oficina/painel.js"></script></head>
 <body>
-<main id="login" class="login"><form id="signin"><strong class="brand">DNA<span> AUTO</span></strong><h1>Gerencie seus clientes</h1>
+<main id="login" class="login">
+  <div class="login-shell">
+    <header class="login-intro">
+      <strong class="brand">DNA<span> AUTO</span></strong>
+      <h1>Gerencie seus clientes</h1>
+      <p>O DNA Auto reúne os agendamentos, os veículos e os serviços da sua oficina em um só lugar.</p>
+    </header>
+    <form id="signin" aria-labelledby="signin-title">
+      <h2 id="signin-title">Acesse sua oficina</h2>
+      <p>Use o e-mail e a senha da sua conta de dono da oficina.</p>
 <label>E-mail<input name="email" type="email" autocomplete="username" required></label>
 <label>Senha<input name="password" type="password" autocomplete="current-password" required></label>
-<button>Entrar</button><p id="loginError" role="alert"></p></form></main>
+<button>Entrar</button><p id="loginError" role="alert"></p>
+    </form>
+    <ul class="login-features">
+      <li><strong>Agenda e veículos</strong><span>Consulte os próximos atendimentos e os veículos cadastrados.</span></li>
+      <li><strong>Serviços pendentes</strong><span>Veja os serviços aguardando valor e informe o preço para concluir o lançamento.</span></li>
+      <li><strong>Financeiro</strong><span>Consulte o resumo financeiro da oficina.</span></li>
+    </ul>
+  </div>
+</main>
 <div id="layout" hidden><aside><strong class="brand">DNA<span> AUTO</span></strong><nav aria-label="Painel da oficina">
 <button data-page="overview">Visão geral</button><button data-page="appointments">Agendamentos</button><button data-page="vehicles">Veículos</button>
 <button data-page="pending" id="pendingLink">Serviços aguardando valor <strong id="count"></strong></button><button data-page="finance">Financeiro</button></nav>
