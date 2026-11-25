@@ -77,3 +77,24 @@
     .login-photo { min-height: clamp(180px, 48vw, 300px); }
     .login-photo img { object-position: center 32%; }
 }
+
+.login-main { background: #0c1725; box-shadow: 0 15px 48px #02071050; }
+.login-photo img { object-position: center 40%; }
+.login-brand-symbol {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    background: #0a0f16;
+    border: 1px solid #ffd21c73;
+    border-radius: 8px;
+}
+.login-brand .brand { color: #fff; font-size: 18px; font-weight: 900; letter-spacing: .5px; }
+.login-brand .brand span { color: #ffd21c; }
+.login-intro h1 { margin-top: 20px; }
+.login form { border: 0; box-shadow: none; padding: 0; background: transparent; }
+.login-features { gap: 14px 24px; }
+.login-features li { background: transparent; border: 0; border-top: 1px solid var(--line); border-radius: 0; padding: 12px 0 0; }
+@media (max-width: 740px) {
+    .login-photo { min-height: clamp(150px, 40vw, 250px); }
+}

@@ -1,22 +1,22 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gestão da oficina | DNA Auto</title><link rel="stylesheet" href="/gestao-oficina/painel.css?v=2"><script defer src="/gestao-oficina/painel.js"></script></head>
+<title>Gestão da oficina | DNA Auto</title><link rel="stylesheet" href="/gestao-oficina/painel.css?v=3"><script defer src="/gestao-oficina/painel.js"></script></head>
 <body>
 <main id="login" class="login">
   <div class="login-shell">
     <div class="login-main">
       <div class="login-photo">
-        <img src="/gestao-oficina/profissional-oficina.png" alt="Profissional sorridente de braços cruzados na oficina" width="1024" height="1024">
+        <img src="/gestao-oficina/profissional-oficina.png" alt="Profissional de braços cruzados em uma oficina" width="1024" height="1024">
       </div>
       <div class="login-access">
         <header class="login-intro">
-          <div class="login-brand"><img src="/img/icons/dna-logo.svg" alt="" width="44" height="44"><strong class="brand">DNA<span> AUTO</span></strong></div>
+          <div class="login-brand"><span class="login-brand-symbol"><img src="/gestao-oficina/marca-dna.svg" alt="" width="24" height="24"></span><strong class="brand">DNA <span>AUTO</span></strong></div>
           <h1>Mais gestão para sua oficina</h1>
-          <p>Organize os atendimentos do seu auto center, acompanhe os veículos dos clientes e resolva pendências de serviço em um só lugar.</p>
+          <p>Veja quem está agendado, consulte os veículos dos clientes e finalize os serviços com valor pendente.</p>
         </header>
         <form id="signin" aria-labelledby="signin-title">
           <h2 id="signin-title">Acesse sua oficina</h2>
-          <p>Entre com o e-mail e a senha da sua conta de dono da oficina.</p>
+          <p>Use os mesmos dados de acesso do app Oficina.</p>
           <label>E-mail<input name="email" type="email" autocomplete="username" required></label>
           <label>Senha<input name="password" type="password" autocomplete="current-password" required></label>
           <button>Entrar</button>
@@ -31,7 +31,7 @@
     </ul>
   </div>
 </main>
-<div id="layout" hidden><aside><strong class="brand">DNA<span> AUTO</span></strong><nav aria-label="Painel da oficina">
+<div id="layout" hidden><aside><div class="login-brand"><span class="login-brand-symbol"><img src="/gestao-oficina/marca-dna.svg" alt="" width="24" height="24"></span><strong class="brand">DNA <span>AUTO</span></strong></div><nav aria-label="Painel da oficina">
 <button data-page="overview">Visão geral</button><button data-page="appointments">Agendamentos</button><button data-page="vehicles">Veículos</button>
 <button data-page="pending" id="pendingLink">Serviços aguardando valor <strong id="count"></strong></button><button data-page="finance">Financeiro</button></nav>
 <button id="logout">Sair</button></aside><main class="content"><header><p id="shop"></p><h1 id="title"></h1></header><p id="status" role="status"></p><section id="view"></section></main></div>
