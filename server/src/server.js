@@ -82,6 +82,14 @@ for (const appType of ['cliente', 'oficina']) {
 
 // Servir Uploads e Frontend Estático
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+app.get('/gestao-oficina', (req, res) => {
+    const query = req.originalUrl.slice(req.path.length);
+    res.redirect(301, '/gestao' + query);
+});
+app.get('/gestao', (req, res) => {
+    staticHeaders.setHeaders(res);
+    res.sendFile('public/gestao-oficina/index.html', { root: PROJECT_ROOT });
+});
 app.use(express.static(path.join(__dirname, '..', '..', 'public'), staticHeaders));
 app.use('/cliente.app', express.static(path.join(__dirname, '..', '..', 'cliente.app'), staticHeaders));
 app.use('/oficina.app', express.static(path.join(__dirname, '..', '..', 'oficina.app'), staticHeaders));

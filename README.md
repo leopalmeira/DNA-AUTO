@@ -8,7 +8,7 @@
 
 ## Gestão web da oficina
 
-Abra [dnaauto.app/gestao-oficina/](https://dnaauto.app/gestao-oficina/) e entre com o e-mail e a senha da conta **dono da oficina**. No ambiente local, execute `npm ci` e `npm start` com Node.js 22 ou superior e abra `/gestao-oficina/` no mesmo servidor dos aplicativos.
+Abra [dnaauto.app/gestao](https://dnaauto.app/gestao) e entre com o e-mail e a senha da conta **dono da oficina**. No ambiente local, execute `npm ci` e `npm start` com Node.js 22 ou superior e abra `/gestao` no mesmo servidor dos aplicativos.
 
 - **Visão geral:** veículos em atendimento, agendamentos e pendências da oficina.
 - **Serviços aguardando valor:** o funcionário envia pelo app da oficina uma foto do serviço em um veículo cadastrado. O painel destaca o botão de pendências em vermelho. O prazo de 24 horas começa no envio do funcionário, e lançamentos vencidos aparecem como atrasados.
