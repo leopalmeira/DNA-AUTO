@@ -1701,14 +1701,17 @@ function generateActivationCode() {
 }
 
 // 1. Cadastrar Cliente & Gerar Código de Ativação pela Oficina
-router.post('/:id/clients/register-activation', async (req, res) => {
+router.post('/:id/clients/register-activation', authenticateToken, async (req, res) => {
     try {
         const workshopId = req.params.id;
+        if (!req.user || !checkWorkshopAccess(req, workshopId)) {
+            return res.status(403).json({ error: 'Acesso restrito à equipe da oficina.' });
+        }
         const plate = (req.body.license_plate || req.body.plate || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
         const clientName = (req.body.client_name || req.body.owner_name || req.body.name || req.body.full_name || '').trim();
         const rawPhone = (req.body.whatsapp || req.body.phone || req.body.client_phone || req.body.owner_phone || '').trim();
         const cleanEmail = (req.body.email || req.body.client_email || req.body.owner_email || '').trim().toLowerCase();
-        const rawPassword = req.body.password || req.body.client_password || req.body.owner_password || '';
+        const recipientPhone = baileysService.normalizePhoneNumber(rawPhone);
         const brand = (req.body.brand || '').trim();
         const model = (req.body.model || req.body.vehicle_model || '').trim();
 
@@ -1718,18 +1721,18 @@ router.post('/:id/clients/register-activation', async (req, res) => {
         if (!clientName) {
             return res.status(400).json({ error: 'Nome do cliente é obrigatório.' });
         }
-        if (!rawPhone || rawPhone.length < 8) {
+        if (!/^55\d{10,11}$/.test(recipientPhone)) {
             return res.status(400).json({ error: 'Número de WhatsApp do cliente é obrigatório.' });
         }
 
-        if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
             return res.status(400).json({ error: 'Informe um e-mail válido para o acesso do cliente.' });
         }
         // A conta de um cliente não pode ser assumida por outro perfil nem ter
         // sua senha pessoal redefinida por um novo cadastro da oficina.
         try { db.exec('ALTER TABLE users ADD COLUMN must_change_password INTEGER DEFAULT 0'); } catch (_) {}
         const existingClientUser = cleanEmail
-            ? db.prepare('SELECT id, role_id, status, must_change_password FROM users WHERE LOWER(TRIM(email)) = ?').get(cleanEmail)
+            ? db.prepare('SELECT id, role_id, status, must_change_password, phone FROM users WHERE LOWER(TRIM(email)) = ?').get(cleanEmail)
             : null;
         if (existingClientUser && existingClientUser.role_id !== 'role_owner') {
             return res.status(409).json({
@@ -1744,25 +1747,7 @@ router.post('/:id/clients/register-activation', async (req, res) => {
             });
         }
 
-        let workshop = db.prepare(`SELECT id, trade_name FROM workshops WHERE id = ?`).get(workshopId);
-        if (!workshop) {
-            workshop = db.prepare(`SELECT id, trade_name FROM workshops LIMIT 1`).get();
-        }
-        if (!workshop) {
-            try {
-                db.prepare(`
-                    INSERT OR IGNORE INTO workshops (
-                        id, company_name, trade_name, cnpj, email, phone,
-                        address_street, address_number, address_neighborhood, city, state, zip_code, status
-                    ) VALUES (
-                        'ws_veloce', 'Veloce Manutenção Automotiva LTDA', 'Veloce Auto Center',
-                        '12.345.678/0001-99', 'contato@veloceautocenter.com.br', '(11) 98765-4321',
-                        'Av. das Oficinas', '1000', 'Centro', 'São Paulo', 'SP', '01001-000', 'ACTIVE'
-                    )
-                `).run();
-                workshop = db.prepare('SELECT id, trade_name FROM workshops WHERE id = ?').get('ws_veloce');
-            } catch (_) {}
-        }
+        const workshop = db.prepare('SELECT id, trade_name FROM workshops WHERE id = ?').get(workshopId);
         if (!workshop) {
             return res.status(404).json({ error: 'Oficina credenciada não configurada.' });
         }
@@ -1860,35 +1845,27 @@ router.post('/:id/clients/register-activation', async (req, res) => {
             }
         }
 
-        // 2. Provisiona Usuário e Proprietário caso e-mail tenha sido fornecido (Senha inicial padrão 123456 com troca no 1º acesso)
+        // 2. Provisiona Usuário e Proprietário caso e-mail tenha sido fornecido (senha temporária exclusiva com troca no primeiro acesso)
         try {
             db.exec(`ALTER TABLE users ADD COLUMN must_change_password INTEGER DEFAULT 0`);
         } catch (_) {}
 
         let userId = null;
+        let temporaryPassword = null;
         let mustChangeFirstAccess = false;
         const accountAlreadyExisted = Boolean(existingClientUser);
         if (cleanEmail) {
             if (existingClientUser) {
                 userId = existingClientUser.id;
                 mustChangeFirstAccess = Number(existingClientUser.must_change_password) === 1;
-                // O cliente poderá entrar usando a senha que já possui.
-                db.prepare(`
-                    UPDATE users
-                    SET name = COALESCE(NULLIF(?, ''), name),
-                        phone = COALESCE(NULLIF(?, ''), phone),
-                        updated_at = CURRENT_TIMESTAMP
-                    WHERE id = ?
-                `).run(clientName, rawPhone || null, userId);
             } else {
-                const initialPass = (rawPassword && String(rawPassword).trim().length >= 6)
-                    ? String(rawPassword).trim() : '123456';
-                mustChangeFirstAccess = initialPass === '123456';
+                temporaryPassword = crypto.randomBytes(12).toString('base64url');
+                mustChangeFirstAccess = true;
                 userId = `usr_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
                 db.prepare(`
                     INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo, must_change_password)
                     VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0, ?)
-                `).run(userId, clientName, cleanEmail, bcrypt.hashSync(initialPass, 10), rawPhone || null, mustChangeFirstAccess ? 1 : 0);
+                `).run(userId, clientName, cleanEmail, bcrypt.hashSync(temporaryPassword, 10), rawPhone || null, mustChangeFirstAccess ? 1 : 0);
             }
         }
 
@@ -2011,11 +1988,36 @@ router.post('/:id/clients/register-activation', async (req, res) => {
 
         const baseUrl = process.env.SERVER_URL || 'https://dna-auto-vua4.onrender.com';
         const clientAppUrl = `${baseUrl}/cliente?code=${activationCode}`;
+        let invitation = { status: 'NOT_SENT' };
+        const verifiedRecipient = !accountAlreadyExisted ||
+            baileysService.normalizePhoneNumber(existingClientUser.phone || '') === recipientPhone;
+        if (verifiedRecipient) {
+            const lines = [
+                `Olá, ${clientName}! A oficina ${workshop.trade_name} cadastrou seu veículo no DNA Auto.`,
+                'Baixe o app Cliente: https://dnaauto.app/cliente',
+                `E-mail: ${cleanEmail}`
+            ];
+            if (temporaryPassword) {
+                lines.push(`Senha temporária: ${temporaryPassword}`, 'No primeiro acesso, crie sua nova senha.');
+            }
+            try {
+                const queued = await baileysService.enqueueMessage({
+                    workshopId, recipientPhone, recipientName: clientName,
+                    message: lines.join('\n'), vehicleId: vehicle.id, clientId: owner.id,
+                    licensePlate: plate, confidential: true
+                });
+                invitation = { status: queued.status, message_id: queued.message_id };
+            } catch (_) {
+                invitation = { status: 'FAILED' };
+            }
+        }
+
         const formattedPrice = `R$ ${(registrationFeeCents / 100).toFixed(2).replace('.', ',')}`;
         const formattedSplit = `R$ ${(workshopSplitCents / 100).toFixed(2).replace('.', ',')}`;
 
         res.status(201).json({
             success: true,
+            whatsapp_invitation: invitation,
             login_ready: Boolean(userId),
             message: `Cliente ${clientName} cadastrado com sucesso! Veículo vinculado à garagem digital com DNA gerado.`,
             activation_code: activationCode,
