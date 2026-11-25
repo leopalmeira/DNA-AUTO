@@ -1,8 +1,13 @@
 const LandingHomeView = {
+    audience: 'oficina',
+
     render() {
-        document.title = 'DNA AUTO | O histórico do seu carro';
+        const workshop = this.audience === 'oficina';
+        document.title = workshop ? 'DNA AUTO | Para oficinas' : 'DNA AUTO | O histórico do seu carro';
         document.querySelector('meta[name="description"]')?.setAttribute(
-            'content', 'Acompanhe serviços, comprovantes e próximas revisões do seu carro com o DNA AUTO.'
+            'content', workshop
+                ? 'Registre os serviços da sua oficina, compartilhe comprovantes e ajude seus clientes a acompanhar as próximas revisões.'
+                : 'Acompanhe serviços, comprovantes e próximas revisões do seu carro com o DNA AUTO.'
         );
 
         const container = document.getElementById('view-content');
@@ -50,11 +55,41 @@ const LandingHomeView = {
                 }
                 .dna-home .home-brand { display: inline-flex; align-items: center; gap: 9px; font-weight: 800; }
                 .dna-home .home-brand img { width: 36px; height: 36px; object-fit: contain; }
+                .dna-home .home-audience {
+                    display: inline-flex;
+                    gap: 4px;
+                    padding: 4px;
+                    background: var(--surface);
+                    border: 1px solid var(--line);
+                    border-radius: 11px;
+                }
+                .dna-home .home-audience button {
+                    min-height: 44px;
+                    padding: 6px 14px;
+                    border: 1px solid transparent;
+                    border-radius: 7px;
+                    background: transparent;
+                    color: var(--muted);
+                    font: inherit;
+                    font-size: .875rem;
+                    font-weight: 700;
+                    cursor: pointer;
+                }
+                .dna-home .home-audience button:hover { color: var(--ink); }
+                .dna-home .home-audience button[aria-pressed="true"] {
+                    background: #1555d2;
+                    border-color: #568bfb;
+                    color: #fff;
+                }
+                .dna-home .home-audience button:focus-visible {
+                    outline: 2px solid var(--accent);
+                    outline-offset: 2px;
+                }
                 .dna-home .home-links { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; font-size: .875rem; }
                 .dna-home .home-links a { padding-block: 7px; }
                 .dna-home .home-links a:hover { color: var(--accent); }
                 .dna-home .home-hero-area { background: radial-gradient(ellipse at 76% 42%, #132c51, #071122 67%); }
-                .dna-home .home-hero-grid, .dna-home .home-workshop {
+                .dna-home .home-hero-grid {
                     display: grid;
                     grid-template-columns: 1fr 1fr;
                     align-items: center;
@@ -139,10 +174,10 @@ const LandingHomeView = {
                     margin-bottom: 10px;
                 }
                 .dna-home .home-steps p { color: var(--muted); margin-top: 8px; }
-                .dna-home .home-workshop img {
+                .dna-home .home-workshop-photo {
                     display: block;
                     width: 100%;
-                    max-height: 290px;
+                    height: clamp(180px, 24vw, 290px);
                     object-fit: cover;
                     object-position: center 35%;
                     border-radius: 14px;
@@ -156,7 +191,7 @@ const LandingHomeView = {
                 .dna-home .home-footer { border-top: 1px solid var(--line); color: var(--muted); font-size: .875rem; }
                 @media (max-width: 760px) {
                     .dna-home .home-wrap { width: calc(100% - 32px); }
-                    .dna-home .home-hero-grid, .dna-home .home-workshop, .dna-home .home-steps { grid-template-columns: 1fr; }
+                    .dna-home .home-hero-grid, .dna-home .home-steps { grid-template-columns: 1fr; }
                     .dna-home .home-links { gap: 4px 16px; }
                 }
                 @media (max-width: 440px) {
@@ -170,14 +205,67 @@ const LandingHomeView = {
                             <img src="/img/splash-d-logo.png" width="36" height="36" alt="">
                             <span>DNA AUTO</span>
                         </a>
-                        <nav class="home-links" aria-label="Navegação principal">
-                            <a href="#como-funciona">Como funciona</a>
-                            <a href="#oficinas">Para oficinas</a>
-                            <a href="/oficina">Entrar no painel</a>
-                        </nav>
+                        <div class="home-audience" role="group" aria-label="Escolha seu perfil">
+                            <button type="button" data-home-audience="oficina" aria-pressed="${workshop}">Oficina</button>
+                            <button type="button" data-home-audience="motorista" aria-pressed="${!workshop}">Motorista</button>
+                        </div>
                     </div>
                 </header>
                 <main>
+                    ${workshop ? `
+                    <section class="home-hero-area" aria-labelledby="home-title">
+                        <div class="home-wrap home-hero-grid">
+                            <div>
+                                <h1 id="home-title">Organize os serviços da sua oficina. <span>Facilite o retorno do cliente.</span></h1>
+                                <p class="home-copy">Registre serviços, quilometragem, fotos e notas fiscais em um só lugar. Seu cliente acompanha o histórico do carro e as próximas revisões pelo app DNA AUTO.</p>
+                                <div class="home-actions">
+                                    <a class="home-cta home-cta-primary" href="/parceiro">Conhecer a parceria</a>
+                                    <a class="home-cta" href="/oficina">Entrar no painel</a>
+                                </div>
+                            </div>
+                            <figure class="home-preview">
+                                <figcaption>Atendimento da oficina · Exemplo ilustrativo</figcaption>
+                                <img class="home-workshop-photo" src="/img/ws-hero-mechanic.jpg" alt="Profissional da oficina consultando um tablet ao lado do veículo" width="265" height="217">
+                                <div class="home-record">
+                                    <h3>Troca de óleo e filtro</h3>
+                                    <p>Quilometragem do atendimento: 82.000 km</p>
+                                    <p>Foto e nota fiscal anexadas</p>
+                                </div>
+                                <div class="home-next">
+                                    <strong>Histórico disponível para o cliente</strong>
+                                    <p>O serviço fica associado ao veículo no DNA AUTO.</p>
+                                </div>
+                            </figure>
+                        </div>
+                    </section>
+                    <section class="home-section" id="como-funciona">
+                        <div class="home-wrap">
+                            <h2>Como funciona na oficina</h2>
+                            <ol class="home-steps">
+                                <li><h3>Identifique o veículo</h3><p>Localize o carro pela placa e registre o atendimento no painel.</p></li>
+                                <li><h3>Documente o serviço</h3><p>Informe o que foi feito, registre a quilometragem e anexe fotos e nota fiscal quando disponíveis.</p></li>
+                                <li><h3>Ajude o cliente a planejar a próxima revisão</h3><p>O cliente acompanha o histórico do carro e as próximas manutenções no celular.</p></li>
+                            </ol>
+                        </div>
+                    </section>
+                    <section class="home-section">
+                        <div class="home-wrap home-faq">
+                            <h2>Perguntas frequentes de oficinas</h2>
+                            <details>
+                                <summary>Como faço para minha oficina participar?</summary>
+                                <p>Veja as condições comerciais e os canais de atendimento na <a href="/parceiro">página de parceria</a>.</p>
+                            </details>
+                            <details>
+                                <summary>O que o cliente vê depois do atendimento?</summary>
+                                <p>O cliente consulta o serviço registrado e os comprovantes adicionados ao histórico do veículo.</p>
+                            </details>
+                            <details>
+                                <summary>Minha oficina já usa o DNA AUTO. Onde entro?</summary>
+                                <p>Acesse o <a href="/oficina">painel da oficina</a> com a conta usada no cadastro.</p>
+                            </details>
+                        </div>
+                    </section>
+                    ` : `
                     <section class="home-hero-area" aria-labelledby="home-title">
                         <div class="home-wrap home-hero-grid">
                             <div>
@@ -185,7 +273,6 @@ const LandingHomeView = {
                                 <p class="home-copy">A oficina registra a manutenção. Você acompanha os serviços, consulta fotos e notas fiscais anexadas e sabe quando chega a próxima revisão.</p>
                                 <div class="home-actions">
                                     <a class="home-cta home-cta-primary" href="/cliente">Baixar app do motorista</a>
-                                    <a class="home-cta" href="/parceiro">Conhecer a parceria</a>
                                 </div>
                             </div>
                             <figure class="home-preview">
@@ -213,18 +300,6 @@ const LandingHomeView = {
                             </ol>
                         </div>
                     </section>
-                    <section class="home-section" id="oficinas">
-                        <div class="home-wrap home-workshop">
-                            <div>
-                                <h2>Registre o serviço de hoje e ajude o cliente a voltar na hora certa.</h2>
-                                <p class="home-copy">Organize os atendimentos da sua oficina e disponibilize o histórico para o cliente consultar pelo celular.</p>
-                                <div class="home-actions">
-                                    <a class="home-cta home-cta-primary" href="/parceiro">Conhecer a parceria para oficinas</a>
-                                </div>
-                            </div>
-                            <img src="/img/ws-hero-mechanic.jpg" alt="Profissional da oficina consultando um tablet ao lado do veículo" width="265" height="217" loading="lazy">
-                        </div>
-                    </section>
                     <section class="home-section">
                         <div class="home-wrap home-faq">
                             <h2>Perguntas frequentes</h2>
@@ -236,28 +311,35 @@ const LandingHomeView = {
                                 <summary>O que consigo consultar no app?</summary>
                                 <p>Os serviços registrados, a quilometragem, as próximas revisões e os comprovantes anexados aos atendimentos.</p>
                             </details>
-                            <details>
-                                <summary>Como minha oficina participa e onde vejo as condições?</summary>
-                                <p>Consulte a <a href="/parceiro">página de parceria para oficinas</a> para conhecer as condições comerciais e solicitar atendimento.</p>
-                            </details>
                         </div>
                     </section>
+                    `}
                 </main>
                 <footer class="home-footer">
                     <div class="home-wrap">
                         <span>© ${new Date().getFullYear()} DNA AUTO</span>
                         <nav class="home-links" aria-label="Links do rodapé">
                             <a href="mailto:suporte@dnaauto.com.br">Suporte</a>
-                            <a href="/cliente">App do motorista</a>
-                            <a href="/oficina">Painel da oficina</a>
+                            ${workshop ? '<a href="/oficina">Painel da oficina</a>' : '<a href="/cliente">App do motorista</a>'}
                         </nav>
                     </div>
                 </footer>
             </div>
         `;
 
+        for (const button of container.querySelectorAll('[data-home-audience]')) {
+            button.addEventListener('click', () => {
+                const audience = button.dataset.homeAudience;
+                if (audience === this.audience) return;
+
+                this.audience = audience;
+                this.render();
+                container.querySelector('[data-home-audience][aria-pressed="true"]')?.focus();
+            });
+        }
+
         const sectionId = window.location.hash.slice(1);
-        if (['como-funciona', 'oficinas'].includes(sectionId)) {
+        if (sectionId === 'como-funciona') {
             document.getElementById(sectionId)?.scrollIntoView();
         }
     }
