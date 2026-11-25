@@ -1859,13 +1859,16 @@ router.post('/:id/clients/register-activation', authenticateToken, async (req, r
                 userId = existingClientUser.id;
                 mustChangeFirstAccess = Number(existingClientUser.must_change_password) === 1;
             } else {
-                temporaryPassword = crypto.randomBytes(12).toString('base64url');
+                temporaryPassword = String(crypto.randomInt(100000, 1000000));
                 mustChangeFirstAccess = true;
                 userId = `usr_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
-                db.prepare(`
-                    INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo, must_change_password)
-                    VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0, ?)
-                `).run(userId, clientName, cleanEmail, bcrypt.hashSync(temporaryPassword, 10), rawPhone || null, mustChangeFirstAccess ? 1 : 0);
+                db.transaction(() => {
+                    db.prepare(`
+                        INSERT INTO users (id, name, email, password_hash, phone, role_id, status, is_demo, must_change_password)
+                        VALUES (?, ?, ?, ?, ?, 'role_owner', 'ACTIVE', 0, 1)
+                    `).run(userId, clientName, cleanEmail, bcrypt.hashSync(temporaryPassword, 10), rawPhone);
+                    db.prepare('INSERT INTO workshop_client_first_access (user_id) VALUES (?)').run(userId);
+                })();
             }
         }
 
