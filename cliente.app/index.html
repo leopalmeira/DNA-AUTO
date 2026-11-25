@@ -2250,7 +2250,7 @@ section.splash .splash-bg {
   padding: 0 !important;
   overflow-y: auto;
   scroll-padding-block: 12px;
-  background: #eaf2fc;
+  background: #f4f8fe;
 }
 #login.screen.active {
   display: flex;
@@ -2259,23 +2259,24 @@ section.splash .splash-bg {
   position: relative;
   flex: 0 0 auto;
   width: 100%;
-  min-height: clamp(224px, 66vw, 288px);
-  padding: calc(var(--dna-safe-top) + 44px) var(--dna-safe-right) 22px var(--dna-safe-left);
+  min-height: max(224px, calc(var(--login-resting-height, 100dvh) - 340px));
+  padding: calc(var(--dna-safe-top) + 52px) var(--dna-safe-right) 22px var(--dna-safe-left);
   text-align: center;
   background:
-    linear-gradient(180deg, #f3f8ff 0%, #eaf3fbc9 37%, transparent 75%),
-    url('img/login-hero-clean.jpg') right bottom / cover no-repeat;
+    linear-gradient(180deg, #eff6ff 0%, #eff6ff 28%, transparent 72%),
+    url('img/login-hero-clean.jpg') right bottom / auto 76% no-repeat,
+    #eff6ff;
 }
 .login-branding img {
   display: block;
-  width: min(220px, 80%);
+  width: min(246px, 82%);
   height: auto;
   margin: 0 auto;
 }
 .login-branding p {
   margin: 6px 0 0;
   color: #153566;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
 }
 .login-back-pill {
@@ -2295,13 +2296,13 @@ section.splash .splash-bg {
 }
 .login-sheet-card {
   position: relative;
-  flex: 0 0 auto;
+  flex: 1 0 auto;
   width: 100%;
-  margin-top: -14px;
-  padding: 20px var(--dna-safe-right) calc(12px + var(--dna-safe-bottom)) var(--dna-safe-left);
+  margin-top: -22px;
+  padding: 24px var(--dna-safe-right) calc(16px + var(--dna-safe-bottom)) var(--dna-safe-left);
   border-radius: 22px 22px 0 0;
-  background: linear-gradient(180deg, #f6faff, #eaf2fc);
-  box-shadow: 0 -5px 18px #173d6125;
+  background: #f4f8fe;
+  box-shadow: 0 -5px 18px #173d611a;
 }
 .login-hero-container,
 .login-sheet-card {
@@ -7303,7 +7304,9 @@ function go(id){
   window.scrollTo(0,0);
 
   if (id === 'login') {
-    document.getElementById('login').scrollTop = 0;
+    const login = document.getElementById('login');
+    login.scrollTop = 0;
+    login.style.removeProperty('--login-resting-height');
     const emailInput = document.getElementById('login-email');
     const passwordInput = document.getElementById('login-password');
     const errorBox = document.getElementById('login-error-box');
@@ -10074,6 +10077,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Mantém o campo focado visível quando o teclado reduz a área útil.
 const loginViewport = window.visualViewport;
+const loginScreen = document.getElementById('login');
+loginScreen.addEventListener('focusin', (event) => {
+  if (event.target.matches('.login-field-box input') &&
+      !loginScreen.style.getPropertyValue('--login-resting-height')) {
+    loginScreen.style.setProperty('--login-resting-height', `${loginScreen.clientHeight}px`);
+  }
+});
 if (loginViewport) {
   loginViewport.addEventListener('resize', () => {
     const login = document.getElementById('login');
@@ -10084,6 +10094,10 @@ if (loginViewport) {
 
     login.style.setProperty('--login-viewport-height', `${loginViewport.height}px`);
     const field = document.activeElement.closest('#login .login-field-box');
+    const restingHeight = parseFloat(login.style.getPropertyValue('--login-resting-height'));
+    if (!field && loginViewport.height >= restingHeight) {
+      login.style.removeProperty('--login-resting-height');
+    }
     field?.scrollIntoView({ block: 'nearest' });
   });
 }
