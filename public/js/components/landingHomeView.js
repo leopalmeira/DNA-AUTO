@@ -182,6 +182,21 @@ const LandingHomeView = {
                     object-position: center 35%;
                     border-radius: 14px;
                 }
+                .dna-home .home-conversion {
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) auto;
+                    align-items: center;
+                    gap: 24px;
+                    padding: clamp(24px, 5vw, 56px);
+                    border: 1px solid #35547d;
+                    border-radius: 22px;
+                    background: radial-gradient(ellipse at 85% 0%, #17396b, #101f38 75%);
+                }
+                .dna-home .home-cta span { margin-left: 10px; }
+                .dna-home .home-hero-workshop {
+                    background: radial-gradient(ellipse at 82% 25%, #1b4273, #071122 70%);
+                }
+                .dna-home .home-hero-workshop .home-workshop-photo { object-position: 50% 37%; }
                 .dna-home .home-faq { max-width: 790px; }
                 .dna-home .home-faq h2 { margin-bottom: 24px; }
                 .dna-home .home-faq details { padding: 14px 0; border-bottom: 1px solid var(--line); }
@@ -191,7 +206,8 @@ const LandingHomeView = {
                 .dna-home .home-footer { border-top: 1px solid var(--line); color: var(--muted); font-size: .875rem; }
                 @media (max-width: 760px) {
                     .dna-home .home-wrap { width: calc(100% - 32px); }
-                    .dna-home .home-hero-grid, .dna-home .home-steps { grid-template-columns: 1fr; }
+                    .dna-home .home-hero-grid, .dna-home .home-steps, .dna-home .home-conversion { grid-template-columns: 1fr; }
+                    .dna-home .home-conversion .home-cta { justify-self: start; }
                     .dna-home .home-links { gap: 4px 16px; }
                 }
                 @media (max-width: 440px) {
@@ -213,44 +229,54 @@ const LandingHomeView = {
                 </header>
                 <main>
                     ${workshop ? `
-                    <section class="home-hero-area" aria-labelledby="home-title">
+                    <section class="home-hero-area home-hero-workshop" aria-labelledby="home-title">
                         <div class="home-wrap home-hero-grid">
                             <div>
-                                <h1 id="home-title">Organize os serviços da sua oficina. <span>Facilite o retorno do cliente.</span></h1>
-                                <p class="home-copy">Registre serviços, quilometragem, fotos e notas fiscais em um só lugar. Seu cliente acompanha o histórico do carro e as próximas revisões pelo app DNA AUTO.</p>
+                                <h1 id="home-title">Dê ao cliente um motivo para <span>voltar à sua oficina.</span></h1>
+                                <p class="home-copy">Entregue um histórico digital de cada serviço. Com fotos, notas fiscais e a próxima revisão no celular, o cliente sabe o que foi feito e quando voltar.</p>
                                 <div class="home-actions">
-                                    <a class="home-cta home-cta-primary" href="/parceiro">Conhecer a parceria</a>
+                                    <a class="home-cta home-cta-primary" href="/parceiro">Quero ser oficina parceira <span aria-hidden="true">→</span></a>
                                     <a class="home-cta" href="/oficina">Entrar no painel</a>
                                 </div>
                             </div>
                             <figure class="home-preview">
-                                <figcaption>Atendimento da oficina · Exemplo ilustrativo</figcaption>
+                                <figcaption>Exemplo de registro de serviço</figcaption>
                                 <img class="home-workshop-photo" src="/img/ws-hero-mechanic.jpg" alt="Profissional da oficina consultando um tablet ao lado do veículo" width="265" height="217">
                                 <div class="home-record">
                                     <h3>Troca de óleo e filtro</h3>
-                                    <p>Quilometragem do atendimento: 82.000 km</p>
+                                    <p>Serviço realizado aos 82.000 km</p>
                                     <p>Foto e nota fiscal anexadas</p>
                                 </div>
                                 <div class="home-next">
-                                    <strong>Histórico disponível para o cliente</strong>
-                                    <p>O serviço fica associado ao veículo no DNA AUTO.</p>
+                                    <strong>Próxima troca prevista aos 92.000 km</strong>
+                                    <p>O motorista acompanha a previsão no app.</p>
                                 </div>
                             </figure>
                         </div>
                     </section>
                     <section class="home-section" id="como-funciona">
                         <div class="home-wrap">
-                            <h2>Como funciona na oficina</h2>
+                            <h2>O atendimento acaba. O histórico fica.</h2>
+                            <p class="home-copy">Da entrada do veículo à próxima revisão, veja como o DNA AUTO encaixa na rotina da oficina.</p>
                             <ol class="home-steps">
                                 <li><h3>Identifique o veículo</h3><p>Localize o carro pela placa e registre o atendimento no painel.</p></li>
                                 <li><h3>Documente o serviço</h3><p>Informe o que foi feito, registre a quilometragem e anexe fotos e nota fiscal quando disponíveis.</p></li>
-                                <li><h3>Ajude o cliente a planejar a próxima revisão</h3><p>O cliente acompanha o histórico do carro e as próximas manutenções no celular.</p></li>
+                                <li><h3>Oriente a próxima visita</h3><p>Com o histórico no app, o motorista pode consultar o último serviço e se planejar para a próxima revisão.</p></li>
                             </ol>
                         </div>
                     </section>
                     <section class="home-section">
+                        <div class="home-wrap home-conversion">
+                            <div>
+                                <h2>O cliente leva o carro. Sua oficina fica no histórico.</h2>
+                                <p class="home-copy">Conheça as condições para integrar sua oficina ao DNA AUTO e começar a registrar atendimentos.</p>
+                            </div>
+                            <a class="home-cta home-cta-primary" href="/parceiro">Quero ser oficina parceira <span aria-hidden="true">→</span></a>
+                        </div>
+                    </section>
+                    <section class="home-section">
                         <div class="home-wrap home-faq">
-                            <h2>Perguntas frequentes de oficinas</h2>
+                            <h2>Dúvidas antes de começar?</h2>
                             <details>
                                 <summary>Como faço para minha oficina participar?</summary>
                                 <p>Veja as condições comerciais e os canais de atendimento na <a href="/parceiro">página de parceria</a>.</p>
@@ -269,8 +295,8 @@ const LandingHomeView = {
                     <section class="home-hero-area" aria-labelledby="home-title">
                         <div class="home-wrap home-hero-grid">
                             <div>
-                                <h1 id="home-title">O histórico do seu carro, <span>na palma da mão.</span></h1>
-                                <p class="home-copy">A oficina registra a manutenção. Você acompanha os serviços, consulta fotos e notas fiscais anexadas e sabe quando chega a próxima revisão.</p>
+                                <h1 id="home-title">Saiba o que já foi feito <span>e quando revisar de novo.</span></h1>
+                                <p class="home-copy">Consulte a última troca de óleo, confira os comprovantes enviados pela oficina e acompanhe as próximas revisões do seu carro pelo DNA AUTO.</p>
                                 <div class="home-actions">
                                     <a class="home-cta home-cta-primary" href="/cliente">Baixar app do motorista</a>
                                 </div>
@@ -298,6 +324,15 @@ const LandingHomeView = {
                                 <li><h3>A oficina registra o serviço</h3><p>O registro inclui o trabalho realizado, a quilometragem e os comprovantes enviados.</p></li>
                                 <li><h3>Acompanhe no app</h3><p>Consulte o histórico do veículo e confira as próximas revisões.</p></li>
                             </ol>
+                        </div>
+                    </section>
+                    <section class="home-section">
+                        <div class="home-wrap home-conversion">
+                            <div>
+                                <h2>Seu histórico vai com você.</h2>
+                                <p class="home-copy">Acesse o app para consultar os serviços registrados pelas oficinas parceiras.</p>
+                            </div>
+                            <a class="home-cta home-cta-primary" href="/cliente">Baixar app do motorista <span aria-hidden="true">→</span></a>
                         </div>
                     </section>
                     <section class="home-section">
