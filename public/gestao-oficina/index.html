@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestão da oficina | DNA Auto</title><link rel="stylesheet" href="/gestao-oficina/painel.css"><script defer src="/gestao-oficina/painel.js"></script></head>
+<body>
+<main id="login" class="login"><form id="signin"><strong class="brand">DNA<span> AUTO</span></strong><h1>Gerencie seus clientes</h1>
+<label>E-mail<input name="email" type="email" autocomplete="username" required></label>
+<label>Senha<input name="password" type="password" autocomplete="current-password" required></label>
+<button>Entrar</button><p id="loginError" role="alert"></p></form></main>
+<div id="layout" hidden><aside><strong class="brand">DNA<span> AUTO</span></strong><nav aria-label="Painel da oficina">
+<button data-page="overview">Visão geral</button><button data-page="appointments">Agendamentos</button><button data-page="vehicles">Veículos</button>
+<button data-page="pending" id="pendingLink">Serviços aguardando valor <strong id="count"></strong></button><button data-page="finance">Financeiro</button></nav>
+<button id="logout">Sair</button></aside><main class="content"><header><p id="shop"></p><h1 id="title"></h1></header><p id="status" role="status"></p><section id="view"></section></main></div>
+</body></html>

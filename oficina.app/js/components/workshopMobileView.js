@@ -4450,6 +4450,7 @@
                     <!-- 4. FOTOS LADO A LADO: FOTO DA PEÇA (ESQUERDA) + FOTO DA NOTA FISCAL (DIREITA) -->
                     ${this.renderSideBySideProofsSection('srv-detail')}
 
+                    ${!this.isStaffUser() ? `
                     <!-- 4.1 PEÇAS UTILIZADAS / APLICADAS NO SERVIÇO -->
                     <div style="background:var(--dna-ws-bg-card); border:1px solid var(--dna-ws-border); border-radius:var(--dna-ws-radius-lg); padding:14px; display:flex; flex-direction:column; gap:10px;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -4493,6 +4494,7 @@
                         </div>
                     </div>
 
+                    ` : ''}
                     <!-- 5. CONDIÇÃO PARA TROCA -->
                     <div style="background:var(--dna-ws-bg-card); border:1px solid var(--dna-ws-border); border-radius:var(--dna-ws-radius-lg); padding:14px; display:flex; flex-direction:column; gap:12px; width:100%; box-sizing:border-box;">
                         <span class="dna-mobile-section-label">Condição para Próxima Troca</span>
@@ -4656,21 +4658,22 @@
         }
         const s = this.selectedMobileService || this.monitoredServicesCatalog[0];
         const km = Number(document.getElementById('mobile-srv-last-km')?.value);
+        const staff = this.isStaffUser();
         const rawLabor = document.getElementById('mobile-srv-labor-cost')?.value.trim() || '';
         const labor = Number(rawLabor);
         const parts = Array.isArray(this.mobileDetailParts) ? this.mobileDetailParts : [];
         const validParts = parts.every(p => Number(p.quantity) > 0 &&
             Number.isSafeInteger(Number(p.unit_price_cents)) && Number(p.unit_price_cents) > 0);
-        if (!Number.isFinite(km) || km <= 0 || !rawLabor ||
+        if (!Number.isFinite(km) || km <= 0 || (!staff && (!rawLabor ||
             !Number.isFinite(labor) || labor < 0 || !validParts ||
-            (labor === 0 && parts.length === 0)) {
+            (labor === 0 && parts.length === 0)))) {
             this.showToast('Informe quilometragem, valor da mão de obra e valor de cada peça. O total deve ser maior que zero.', 'warning', 6500);
             return;
         }
         const laborCents = Math.round(labor * 100);
         const partsCents = parts.reduce((sum, p) => sum + Number(p.unit_price_cents) * Number(p.quantity), 0);
         const totalCents = laborCents + partsCents;
-        if (!Number.isSafeInteger(totalCents) || totalCents <= 0) {
+        if (!staff && (!Number.isSafeInteger(totalCents) || totalCents <= 0)) {
             this.showToast('O valor total do serviço deve ser maior que zero.', 'warning');
             return;
         }
@@ -4688,7 +4691,14 @@
         formData.append('total_cost_cents', String(totalCents));
         formData.append('responsible_technician_name', this.getLoggedWorkshopUser?.().name || 'Profissional da Oficina');
         formData.append('workshop_id', this.getEffectiveWorkshopId?.() || this.currentWorkshopId || '');
-        this.appendServiceFiles(formData);
+        if (staff) {
+            const photo = this.mobilePhotoFiles?.[0];
+            if (!photo) return this.showToast('Anexe uma foto do serviço antes de enviar.', 'warning');
+            for (const field of ['labor_cost_cents', 'parts_json', 'total_cost_cents']) formData.delete(field);
+            formData.append('photos', photo, photo.name || 'servico.jpg');
+        } else {
+            this.appendServiceFiles(formData);
+        }
         // Não envie POST sem JWT: o backend rejeita com AUTH_TOKEN_MISSING.
         // Mantém os campos e anexos visíveis para uma nova tentativa após login.
         const activeToken = localStorage.getItem('dna_token') || localStorage.getItem('dna_auto_token');
@@ -4702,7 +4712,9 @@
             if (typeof API === 'undefined' || typeof API.registerWorkshopService !== 'function') {
                 throw new Error('API da oficina indisponível.');
             }
-            const result = await API.registerWorkshopService(formData);
+            const result = staff
+                ? await API.registerWorkshopService(formData, '/services/price-queue')
+                : await API.registerWorkshopService(formData);
             if (!result || !result.success || !result.serviceId) {
                 throw new Error(result?.error || 'O servidor não confirmou o registro.');
             }
@@ -4713,7 +4725,7 @@
             this.mobileInvoicePhoto = null;
             this.mobileInvoiceFile = null;
             this.mobileInvoiceAttachment = null;
-            this.showToast('Serviço salvo no histórico do veículo ' + plate +
+            this.showToast(staff ? 'Serviço enviado. Aguardando valor do dono da oficina.' : 'Serviço salvo no histórico do veículo ' + plate +
                 '. Valor total R$ ' + (totalCents / 100).toLocaleString('pt-BR', {minimumFractionDigits: 2}) +
                 '. Protocolo: ' + result.serviceId, 'success', 6000);
             if (typeof this.loadWorkshopMenuSummary === 'function') this.loadWorkshopMenuSummary();

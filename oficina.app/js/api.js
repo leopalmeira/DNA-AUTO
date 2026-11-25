@@ -200,8 +200,8 @@ const API = {
     getPartsCatalog() {
         return this.request('/services/catalog/parts');
     },
-    registerWorkshopService(formData) {
-        return this.request('/services/workshop-register', {
+    registerWorkshopService(formData, endpoint = '/services/workshop-register') {
+        return this.request(endpoint, {
             method: 'POST',
             body: formData
         });

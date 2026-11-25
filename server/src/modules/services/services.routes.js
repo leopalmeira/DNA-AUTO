@@ -51,7 +51,9 @@ router.post('/workshop-register', authenticateToken, requireWorkshopProofPermiss
         }
         next();
     });
-}, (req, res) => {
+}, registerWorkshopService);
+
+function registerWorkshopService(req, res) {
     try {
         const {
             vehicle_id,
@@ -266,7 +268,7 @@ router.post('/workshop-register', authenticateToken, requireWorkshopProofPermiss
             || (req.user && req.user.name)
             || 'Profissional da Oficina';
 
-        let effectiveLauncherId = (dbUser && dbUser.id) || (req.user && req.user.id) || null;
+        let effectiveLauncherId = req.publishedDraft?.technician_id || (dbUser && dbUser.id) || (req.user && req.user.id) || null;
         if (effectiveLauncherId) {
             const userExists = db.prepare('SELECT id FROM users WHERE id = ?').get(effectiveLauncherId);
             if (!userExists) effectiveLauncherId = null;
@@ -468,14 +470,17 @@ router.post('/workshop-register', authenticateToken, requireWorkshopProofPermiss
             // 6. Taxa Oficial por Atendimento Concluído com Comprovação Fotográfica (R$ 6,90 / 690 centavos)
             // Regra de Negócio: O lançamento de fotos na placa é a confirmação material de que o serviço foi
             // realizado no veículo e constitui o fato gerador da cobrança única de R$ 6,90 da oficina.
-            let feeRegistered = false;
             let feeId = null;
-            if (effectiveWorkshopId) {
+            if (effectiveWorkshopId && (!req.publishedDraft || db.prepare(`
+                SELECT 1 FROM vehicle_dna WHERE vehicle_id = ? AND date(activated_at) < date(?)
+            `).get(targetVehicleId, dateVal))) {
                 try {
-                    const idempotencyKey = `att_srv_${serviceId}_690`;
+                    const idempotencyKey = req.publishedDraft
+                        ? `att_return_${effectiveWorkshopId}_${targetVehicleId}_${dateVal}_690`
+                        : `att_srv_${serviceId}_690`;
                     const existingFee = db.prepare('SELECT id FROM workshop_attendance_fees WHERE idempotency_key = ?').get(idempotencyKey);
                     if (!existingFee) {
-                        feeId = 'att_fee_' + Date.now();
+                        feeId = 'att_fee_' + crypto.randomUUID();
                         db.prepare(`
                             INSERT INTO workshop_attendance_fees (
                                 id, workshop_id, service_record_id, vehicle_id, amount_cents, status, idempotency_key, notes
@@ -488,9 +493,9 @@ router.post('/workshop-register', authenticateToken, requireWorkshopProofPermiss
                             idempotencyKey,
                             `Taxa de atendimento comprovado com foto de peça/serviço - ${titleVal}`
                         );
-                        feeRegistered = true;
                     }
                 } catch (feeErr) {
+                    if (req.publishedDraft) throw feeErr;
                     console.warn('Registro de taxa de atendimento preservado:', feeErr.message);
                 }
             }
@@ -528,17 +533,150 @@ router.post('/workshop-register', authenticateToken, requireWorkshopProofPermiss
             parts_cost_cents: partsCostCents,
             labor_cost_cents: laborCost,
             service_date: dateVal,
-            attendance_fee: {
+            attendance_fee: db.prepare('SELECT id FROM workshop_attendance_fees WHERE service_record_id = ?').get(serviceId) ? {
                 amount_cents: 690,
                 formatted: 'R$ 6,90',
                 status: 'CONFIRMED',
                 message: 'Taxa única de R$ 6,90 faturada por atendimento comprovado com foto.'
-            },
+            } : null,
             message: `Serviço registrado com sucesso por ${effectiveLauncherName}!`
         });
     } catch (err) {
         console.error('Erro ao registrar serviço na oficina:', err);
         res.status(500).json({ error: 'Erro ao registrar serviço: ' + (err.message || 'Falha interna.') });
+    }
+}
+
+
+const multer = require('multer');
+const queuePhoto = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024, files: 1 } });
+
+db.exec(`
+    CREATE TABLE IF NOT EXISTS workshop_price_queue (
+        id TEXT PRIMARY KEY,
+        workshop_id TEXT NOT NULL,
+        vehicle_id TEXT NOT NULL,
+        technician_id TEXT NOT NULL,
+        technician_name TEXT NOT NULL,
+        details TEXT NOT NULL,
+        photo BLOB NOT NULL,
+        mime TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        service_id TEXT,
+        published_by TEXT
+    );
+    CREATE INDEX IF NOT EXISTS workshop_price_queue_pending
+    ON workshop_price_queue(workshop_id, service_id, created_at);
+`);
+
+function requireWorkshopOwner(req, res, next) {
+    if (req.user.role_code !== 'WORKSHOP_OWNER' || !req.user.workshop?.workshop_id) {
+        return res.status(403).json({ error: 'Acesso exclusivo do dono da oficina.' });
+    }
+    next();
+}
+
+router.post('/price-queue', authenticateToken, requireWorkshopProofPermission, queuePhoto.single('photos'), (req, res) => {
+        const file = req.file;
+        const workshop = req.user.workshop?.workshop_id;
+        const { vehicle_id, service_title, category, description, service_date } = req.body;
+        const mileage = Number(req.body.mileage);
+        if (!workshop || !vehicle_id || !service_title?.trim() || !Number.isSafeInteger(mileage) || mileage <= 0 ||
+            !file || !['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) {
+            return res.status(400).json({ error: 'Informe veículo, serviço, quilometragem e anexe uma foto JPEG, PNG ou WebP.' });
+        }
+        const vehicle = db.prepare(`
+            SELECT v.id FROM vehicles v JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+            WHERE (v.id = ? OR UPPER(REPLACE(v.license_plate, '-', '')) = ?)
+            AND (vd.activated_by_workshop_id = ? OR EXISTS (
+                SELECT 1 FROM service_records sr WHERE sr.vehicle_id = v.id AND sr.workshop_id = ?
+            ))
+        `).get(vehicle_id, String(vehicle_id).replace(/-/g, '').toUpperCase(), workshop, workshop);
+        if (!vehicle) return res.status(404).json({ error: 'Veículo sem cadastro vinculado à oficina.' });
+
+        const id = crypto.randomUUID();
+        db.prepare(`
+            INSERT INTO workshop_price_queue
+                (id, workshop_id, vehicle_id, technician_id, technician_name, details, photo, mime)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `).run(id, workshop, vehicle.id, req.user.id, req.user.name,
+            JSON.stringify({ service_title, category, description, service_date, mileage }),
+            file.buffer, file.mimetype);
+        res.status(201).json({ success: true, serviceId: id, status: 'AWAITING_PRICE' });
+});
+
+const ownerAccess = [authenticateToken, requireWorkshopOwner];
+
+router.get('/price-queue', ...ownerAccess, (req, res) => {
+    res.set('Cache-Control', 'private, no-store');
+    const workshop = req.user.workshop.workshop_id;
+    const pending = db.prepare(`
+        SELECT q.id, q.details, q.created_at, v.license_plate, v.brand, v.model,
+               o.name AS owner_name, COALESCE(u.phone, o.phone) AS phone
+        FROM workshop_price_queue q JOIN vehicles v ON q.vehicle_id = v.id
+        LEFT JOIN owners o ON v.current_owner_id = o.id
+        LEFT JOIN users u ON o.user_id = u.id
+        WHERE q.workshop_id = ? AND q.service_id IS NULL
+        ORDER BY q.created_at, q.id
+    `).all(workshop).map(({ details, ...row }) => ({ ...row, ...JSON.parse(details) }));
+    const appointments = db.prepare(`
+        SELECT appointment_date, appointment_time, status, license_plate, vehicle_model, service_title
+        FROM workshop_appointments WHERE workshop_id = ?
+        ORDER BY appointment_date, appointment_time
+    `).all(workshop);
+    const vehicles = db.prepare(`
+        SELECT DISTINCT v.license_plate, v.brand, v.model
+        FROM vehicles v JOIN vehicle_dna vd ON vd.vehicle_id = v.id
+        WHERE vd.activated_by_workshop_id = ?
+    `).all(workshop);
+    res.json({ pending, appointments, vehicles });
+});
+
+router.get('/price-queue/:id/photo', ...ownerAccess, (req, res) => {
+    const row = db.prepare('SELECT photo, mime FROM workshop_price_queue WHERE id = ? AND workshop_id = ? AND service_id IS NULL')
+        .get(req.params.id, req.user.workshop.workshop_id);
+    if (!row) return res.sendStatus(404);
+    res.set('Cache-Control', 'private, no-store').type(row.mime).send(row.photo);
+});
+
+router.post('/price-queue/:id/publish', ...ownerAccess, (req, res) => {
+    const amount = req.body?.amount_cents;
+    if (!Number.isSafeInteger(amount) || amount <= 0) {
+        return res.status(400).json({ error: 'Informe um valor válido maior que zero.' });
+    }
+    const workshop = req.user.workshop.workshop_id;
+    const publish = db.transaction(() => {
+        const row = db.prepare('SELECT * FROM workshop_price_queue WHERE id = ? AND workshop_id = ?')
+            .get(req.params.id, workshop);
+        if (!row) return { status: 404, payload: { error: 'Pendência não encontrada.' } };
+        if (row.service_id) return { status: 200, payload: { success: true, serviceId: row.service_id } };
+
+        let status = 500;
+        let payload;
+        registerWorkshopService({
+            user: req.user,
+            ip: req.ip,
+            body: {
+                ...JSON.parse(row.details), vehicle_id: row.vehicle_id, workshop_id: workshop,
+                labor_cost_cents: amount, responsible_technician_name: row.technician_name,
+                part_photo_url: 'data:' + row.mime + ';base64,' + row.photo.toString('base64')
+            },
+            publishedDraft: row
+        }, {
+            status(code) { status = code; return this; },
+            json(body) { payload = body; }
+        });
+        if (!payload?.success) throw new Error('Falha ao publicar o serviço. A pendência foi mantida.');
+        db.prepare('UPDATE workshop_price_queue SET service_id = ?, published_by = ?, photo = X\'\' WHERE id = ?')
+            .run(payload.serviceId, req.user.id, row.id);
+        return { status, payload };
+    });
+    try {
+        const result = publish.immediate();
+        res.status(result.status).json(result.payload);
+    } catch (err) {
+        console.error('Falha na publicação:', err.message);
+        res.status(500).json({ error: 'Falha ao publicar o serviço. A pendência foi mantida.' });
     }
 });
 

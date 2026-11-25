@@ -3,8 +3,19 @@
 [![Status do Deploy](https://img.shields.io/badge/Render-Deploy%20Online-10b981?style=for-the-badge&logo=render)](https://dna-auto-vua4.onrender.com/)
 [![Node.js Version](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=node.js)](https://nodejs.org)
 [![Database](https://img.shields.io/badge/Database-SQLite%203%20(better--sqlite3)-003B57?style=for-the-badge&logo=sqlite)](https://sqlite.org)
-[![Testes Automatizados](https://img.shields.io/badge/Testes-100%25%20Aprovados%20(Auth%20%2B%20Oficina%20%2B%20API)-brightgreen?style=for-the-badge&logo=jest)](file:///c:/Users/User/Desktop/DNA-AUTO/test/)
+[![Testes Automatizados](https://img.shields.io/badge/Testes-100%25%20Aprovados%20(Auth%20%2B%20Oficina%20%2B%20API)-brightgreen?style=for-the-badge&logo=jest)](./test/)
 [![Oferta Oficial](https://img.shields.io/badge/Ativa%C3%A7%C3%A3o%20Plataforma-R%24%2049%2C90%20(50%25%20Oficina)-FFD21C?style=for-the-badge)](https://dna-auto-vua4.onrender.com/)
+
+## Gestão web da oficina
+
+Abra [dnaauto.app/gestao-oficina/](https://dnaauto.app/gestao-oficina/) e entre com o e-mail e a senha da conta **dono da oficina**. No ambiente local, execute `npm ci` e `npm start` com Node.js 22 ou superior e abra `/gestao-oficina/` no mesmo servidor dos aplicativos.
+
+- **Visão geral:** veículos em atendimento, agendamentos e pendências da oficina.
+- **Serviços aguardando valor:** o funcionário envia pelo app da oficina uma foto do serviço em um veículo cadastrado. O painel destaca o botão de pendências em vermelho. O prazo de 24 horas começa no envio do funcionário, e lançamentos vencidos aparecem como atrasados.
+- **Publicação:** o dono confere placa, veículo, cliente, serviço e foto, informa o valor e envia. O sistema publica o registro no histórico do cliente e remove o card da fila após confirmação. O lançamento guarda quem enviou e quem publicou.
+- **Financeiro:** o mês mostra a parte da oficina nos cadastros, o valor dos serviços registrados, o repasse dos cadastros e as taxas pendentes. O cadastro custa R$ 49,90, com R$ 24,95 para a oficina e R$ 24,95 para o DNA Auto. O painel apresenta a previsão para transferência única no dia 30, com ajuste para o último dia em fevereiro. O valor exibido é uma previsão calculada a partir dos registros existentes.
+- **Retorno pela fila:** a taxa de R$ 6,90 nasce na publicação com foto e valor quando a data do serviço é posterior à ativação do veículo. A fila agrupa os serviços da mesma oficina, veículo e data em um retorno. O extrato existente também pode incluir taxas de fluxos legados.
+- **Produção:** a fila é persistida no mesmo SQLite da aplicação. Preserve o banco com disco persistente e `DB_PATH` configurado. Consulte `npm test` para a suíte do projeto.
 
 > **Identidade & Histórico Digital Definitivo do Automóvel.**  
 > Cada veículo possui um DNA permanente. Toda a história do carro — desde trocas de óleo e correias dentadas até revisões de suspensão, fotos de peças substituídas e notas fiscais — acompanha o veículo durante toda a sua vida útil, eliminando golpes na revenda e valorizando o bem em até 15%.
