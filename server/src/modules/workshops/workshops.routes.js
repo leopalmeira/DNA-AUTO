@@ -1994,7 +1994,7 @@ router.post('/:id/clients/register-activation', authenticateToken, async (req, r
         if (verifiedRecipient) {
             const lines = [
                 `Olá, ${clientName}! A oficina ${workshop.trade_name} cadastrou seu veículo no DNA Auto.`,
-                'Baixe o app Cliente: https://dnaauto.app/cliente',
+                'Baixe o app Cliente: https://dnaauto.app/downloads/dna-auto-cliente.apk',
                 `E-mail: ${cleanEmail}`
             ];
             if (temporaryPassword) {
