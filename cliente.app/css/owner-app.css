@@ -7122,3 +7122,40 @@ body.is-owner-app .dna-phone-frame {
 .dna-print-btn-primary:active {
     transform: scale(0.98);
 }
+
+
+/* Ajustes de viewport e teclado virtual — Cliente DNA AUTO */
+#login.screen.auth {
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: auto;
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+}
+#login.screen.auth[style*="--login-viewport-height"] {
+  min-height: var(--login-viewport-height);
+}
+#login .login-form-container {
+  flex-shrink: 0;
+  scroll-margin-top: 20px;
+  scroll-margin-bottom: 28px;
+}
+#login input, #login textarea, #login select {
+  scroll-margin-top: 24px;
+  scroll-margin-bottom: 32px;
+}
+body.login-keyboard-open #login.screen.auth {
+  justify-content: flex-start;
+  overflow-y: auto;
+  padding-bottom: max(32px, env(safe-area-inset-bottom, 0px));
+}
+@media (max-height: 700px) {
+  #login .login-hero-container { flex-shrink: 0; }
+  #login .login-form-container { margin-top: 12px; margin-bottom: 12px; }
+}

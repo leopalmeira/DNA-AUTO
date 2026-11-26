@@ -10062,49 +10062,76 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSidebarNavigation();
 });
 
-// Mantém o campo focado visível quando o teclado reduz a área útil.
+// Mantém campos visíveis com teclado virtual em Android e iOS.
 const loginViewport = window.visualViewport;
-const loginScreen = document.getElementById('login');
-loginScreen.addEventListener('focusin', (event) => {
-  if (event.target.matches('.login-field-box input') &&
-      !loginScreen.style.getPropertyValue('--login-resting-height')) {
-    loginScreen.style.setProperty('--login-resting-height', `${loginScreen.clientHeight}px`);
+const getLoginScreen = () => document.getElementById('login');
+
+document.addEventListener('focusin', (event) => {
+  const login = getLoginScreen();
+  if (!login || !login.contains(event.target) ||
+      !event.target.matches('input, textarea, select')) return;
+  if (!login.style.getPropertyValue('--login-resting-height')) {
+    login.style.setProperty('--login-resting-height', `${login.clientHeight}px`);
   }
+  document.body.classList.add('login-keyboard-open');
+  requestAnimationFrame(() => {
+    try { event.target.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) {}
+  });
 });
+
+document.addEventListener('focusout', () => {
+  setTimeout(() => {
+    const login = getLoginScreen();
+    const active = document.activeElement;
+    if (login && (!active || !login.contains(active))) {
+      document.body.classList.remove('login-keyboard-open');
+      login.style.removeProperty('--login-resting-height');
+    }
+  }, 180);
+});
+
 if (loginViewport) {
-  loginViewport.addEventListener('resize', () => {
-    const login = document.getElementById('login');
+  const syncLoginViewport = () => {
+    const login = getLoginScreen();
+    if (!login) return;
     if (!login.classList.contains('active') || loginViewport.scale !== 1) {
       login.style.removeProperty('--login-viewport-height');
       return;
     }
-
-    login.style.setProperty('--login-viewport-height', `${loginViewport.height}px`);
-    const field = document.activeElement.closest('#login .login-field-box');
-    const restingHeight = parseFloat(login.style.getPropertyValue('--login-resting-height'));
-    if (!field && loginViewport.height >= restingHeight) {
+    login.style.setProperty('--login-viewport-height', `${Math.round(loginViewport.height)}px`);
+    const active = document.activeElement;
+    const field = active && active.closest ? active.closest('#login input, #login textarea, #login select') : null;
+    const restingHeight = parseFloat(login.style.getPropertyValue('--login-resting-height')) || 0;
+    if (!field && loginViewport.height >= restingHeight - 24) {
       login.style.removeProperty('--login-resting-height');
+      document.body.classList.remove('login-keyboard-open');
+    } else if (field) {
+      requestAnimationFrame(() => {
+        try { field.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) {}
+      });
     }
-    field?.scrollIntoView({ block: 'nearest' });
-  });
+  };
+  loginViewport.addEventListener('resize', syncLoginViewport);
+  loginViewport.addEventListener('scroll', syncLoginViewport);
+  window.addEventListener('orientationchange', () => setTimeout(syncLoginViewport, 250));
 }
 
-// Gerenciamento de teclado virtual nos demais formulários do Cliente
-document.addEventListener('focusin', (e) => {
-  if (e.target.matches('input, textarea') && !e.target.closest('#login')) {
+// Formulários restantes do Cliente: rolar o campo para a área visível.
+document.addEventListener('focusin', (event) => {
+  if (event.target.matches('input, textarea, select') && !event.target.closest('#login')) {
     document.body.classList.add('keyboard-open');
     setTimeout(() => {
-      try { e.target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(_) {}
+      try { event.target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
     }, 120);
   }
 });
 document.addEventListener('focusout', () => {
   setTimeout(() => {
     const active = document.activeElement;
-    if (!active || (active.tagName !== 'INPUT' && active.tagName !== 'TEXTAREA')) {
+    if (!active || !active.matches || !active.matches('input, textarea, select')) {
       document.body.classList.remove('keyboard-open');
     }
-  }, 150);
+  }, 180);
 });
 </script>
 </body></html>
