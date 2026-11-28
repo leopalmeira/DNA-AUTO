@@ -7159,3 +7159,77 @@ body.login-keyboard-open #login.screen.auth {
   #login .login-hero-container { flex-shrink: 0; }
   #login .login-form-container { margin-top: 12px; margin-bottom: 12px; }
 }
+
+
+/* Login Cliente: recolhe o hero e mantém e-mail + senha visíveis com teclado. */
+#login.screen.auth {
+  height: var(--login-viewport-height, 100dvh) !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  align-items: stretch !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 !important;
+}
+#login .login-hero-container {
+  flex: 0 0 auto !important;
+  min-height: max(270px, calc(var(--login-resting-height, 100dvh) - 340px)) !important;
+  transition: min-height .18s ease, opacity .18s ease;
+}
+#login .login-sheet-card {
+  flex: 1 0 auto !important;
+  min-width: 0;
+}
+body.login-keyboard-open #login.screen.auth {
+  justify-content: flex-start !important;
+  padding-bottom: 0 !important;
+}
+body.login-keyboard-open #login .login-hero-container {
+  flex-basis: 0 !important;
+  min-height: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+body.login-keyboard-open #login .login-sheet-card {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 12px var(--dna-safe-right) max(12px, env(safe-area-inset-bottom, 0px)) var(--dna-safe-left) !important;
+  border-top: 0 !important;
+  box-shadow: none !important;
+}
+body.login-keyboard-open #login .login-native-form {
+  gap: 9px !important;
+}
+body.login-keyboard-open #login .login-field-box {
+  height: 50px !important;
+  min-height: 50px !important;
+}
+body.login-keyboard-open #login .login-options-row {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+body.login-keyboard-open #login .login-pill-btn {
+  margin-top: 2px !important;
+  height: 48px !important;
+}
+#login input, #login textarea, #login select {
+  scroll-margin-top: 8px !important;
+  scroll-margin-bottom: 8px !important;
+}
+@media (max-height: 420px) {
+  body.login-keyboard-open #login .login-sheet-card {
+    padding-top: 6px !important;
+  }
+  body.login-keyboard-open #login .login-native-form {
+    gap: 6px !important;
+  }
+  body.login-keyboard-open #login .login-field-box {
+    height: 46px !important;
+    min-height: 46px !important;
+  }
+}
