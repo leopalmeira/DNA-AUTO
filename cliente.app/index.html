@@ -10062,59 +10062,85 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSidebarNavigation();
 });
 
-// Mantém campos visíveis com teclado virtual em Android e iOS.
+// Login responsivo ao teclado virtual (Android/iOS).
+// O painel inteiro sobe: nunca centralizamos somente o campo focado.
 const loginViewport = window.visualViewport;
 const getLoginScreen = () => document.getElementById('login');
+let loginKeyboardSession = false;
+let loginViewportSyncFrame = 0;
+
+function setLoginKeyboardState(open) {
+  const login = getLoginScreen();
+  if (!login) return;
+  if (open) {
+    if (!loginKeyboardSession) {
+      loginKeyboardSession = true;
+      login.style.setProperty('--login-resting-height', `${login.clientHeight}px`);
+      document.body.classList.add('login-keyboard-open');
+      requestAnimationFrame(() => {
+        login.scrollTop = 0;
+      });
+    }
+  } else if (loginKeyboardSession) {
+    loginKeyboardSession = false;
+    document.body.classList.remove('login-keyboard-open');
+    login.style.removeProperty('--login-resting-height');
+    login.scrollTop = 0;
+  }
+}
+
+function syncLoginViewport() {
+  const login = getLoginScreen();
+  if (!login) return;
+  if (!login.classList.contains('active')) {
+    login.style.removeProperty('--login-viewport-height');
+    setLoginKeyboardState(false);
+    return;
+  }
+  const viewportHeight = loginViewport && loginViewport.scale === 1
+    ? loginViewport.height
+    : window.innerHeight;
+  login.style.setProperty('--login-viewport-height', `${Math.round(viewportHeight)}px`);
+  const restingHeight = parseFloat(login.style.getPropertyValue('--login-resting-height')) || window.innerHeight;
+  const activeField = document.activeElement && document.activeElement.closest
+    ? document.activeElement.closest('#login input, #login textarea, #login select')
+    : null;
+  const keyboardVisible = loginKeyboardSession && viewportHeight < restingHeight - 90;
+  if (keyboardVisible) {
+    // Mantém o início do cartão de login no topo da área útil.
+    if (!loginViewportSyncFrame) {
+      loginViewportSyncFrame = requestAnimationFrame(() => {
+        loginViewportSyncFrame = 0;
+        login.scrollTop = 0;
+      });
+    }
+  } else if (loginKeyboardSession && (!activeField || viewportHeight >= restingHeight - 90)) {
+    setLoginKeyboardState(false);
+  }
+}
 
 document.addEventListener('focusin', (event) => {
   const login = getLoginScreen();
   if (!login || !login.contains(event.target) ||
       !event.target.matches('input, textarea, select')) return;
-  if (!login.style.getPropertyValue('--login-resting-height')) {
-    login.style.setProperty('--login-resting-height', `${login.clientHeight}px`);
-  }
-  document.body.classList.add('login-keyboard-open');
-  requestAnimationFrame(() => {
-    try { event.target.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) {}
-  });
+  setLoginKeyboardState(true);
+  requestAnimationFrame(syncLoginViewport);
 });
 
 document.addEventListener('focusout', () => {
   setTimeout(() => {
     const login = getLoginScreen();
     const active = document.activeElement;
-    if (login && (!active || !login.contains(active))) {
-      document.body.classList.remove('login-keyboard-open');
-      login.style.removeProperty('--login-resting-height');
-    }
-  }, 180);
+    if (login && (!active || !login.contains(active))) setLoginKeyboardState(false);
+  }, 220);
 });
 
 if (loginViewport) {
-  const syncLoginViewport = () => {
-    const login = getLoginScreen();
-    if (!login) return;
-    if (!login.classList.contains('active') || loginViewport.scale !== 1) {
-      login.style.removeProperty('--login-viewport-height');
-      return;
-    }
-    login.style.setProperty('--login-viewport-height', `${Math.round(loginViewport.height)}px`);
-    const active = document.activeElement;
-    const field = active && active.closest ? active.closest('#login input, #login textarea, #login select') : null;
-    const restingHeight = parseFloat(login.style.getPropertyValue('--login-resting-height')) || 0;
-    if (!field && loginViewport.height >= restingHeight - 24) {
-      login.style.removeProperty('--login-resting-height');
-      document.body.classList.remove('login-keyboard-open');
-    } else if (field) {
-      requestAnimationFrame(() => {
-        try { field.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) {}
-      });
-    }
-  };
   loginViewport.addEventListener('resize', syncLoginViewport);
   loginViewport.addEventListener('scroll', syncLoginViewport);
-  window.addEventListener('orientationchange', () => setTimeout(syncLoginViewport, 250));
 }
+window.addEventListener('resize', syncLoginViewport);
+window.addEventListener('orientationchange', () => setTimeout(syncLoginViewport, 250));
 
 // Formulários restantes do Cliente: rolar o campo para a área visível.
 document.addEventListener('focusin', (event) => {
