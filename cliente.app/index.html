@@ -10067,6 +10067,7 @@ document.addEventListener('DOMContentLoaded', () => {
 const loginViewport = window.visualViewport;
 const getLoginScreen = () => document.getElementById('login');
 let loginKeyboardSession = false;
+let loginKeyboardWasVisible = false;
 let loginViewportSyncFrame = 0;
 
 function setLoginKeyboardState(open) {
@@ -10075,6 +10076,7 @@ function setLoginKeyboardState(open) {
   if (open) {
     if (!loginKeyboardSession) {
       loginKeyboardSession = true;
+      loginKeyboardWasVisible = false;
       login.style.setProperty('--login-resting-height', `${login.clientHeight}px`);
       document.body.classList.add('login-keyboard-open');
       requestAnimationFrame(() => {
@@ -10083,6 +10085,7 @@ function setLoginKeyboardState(open) {
     }
   } else if (loginKeyboardSession) {
     loginKeyboardSession = false;
+    loginKeyboardWasVisible = false;
     document.body.classList.remove('login-keyboard-open');
     login.style.removeProperty('--login-resting-height');
     login.scrollTop = 0;
@@ -10107,6 +10110,7 @@ function syncLoginViewport() {
     : null;
   const keyboardVisible = loginKeyboardSession && viewportHeight < restingHeight - 90;
   if (keyboardVisible) {
+    loginKeyboardWasVisible = true;
     // Mantém o início do cartão de login no topo da área útil.
     if (!loginViewportSyncFrame) {
       loginViewportSyncFrame = requestAnimationFrame(() => {
@@ -10114,7 +10118,7 @@ function syncLoginViewport() {
         login.scrollTop = 0;
       });
     }
-  } else if (loginKeyboardSession && (!activeField || viewportHeight >= restingHeight - 90)) {
+  } else if (loginKeyboardSession && loginKeyboardWasVisible && (!activeField || viewportHeight >= restingHeight - 90)) {
     setLoginKeyboardState(false);
   }
 }
